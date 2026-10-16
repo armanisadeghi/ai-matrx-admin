@@ -6,11 +6,14 @@
  * not the turn's answer row, and must be absent on a step with no text (a
  * tool-call-only step) instead of opening an empty editor.
  */
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { buildChatMessageActions } from "@ai-matrx/chat/agents/components/messages-display/rich-document/chatMessageActions";
 import { getSourceAdapter } from "@ai-matrx/rich-content/rich-document/actions/sources/index";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 function stepContext(messageId: string, text: string) {
   const config = buildChatMessageActions({

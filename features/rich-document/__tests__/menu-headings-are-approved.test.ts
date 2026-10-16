@@ -15,13 +15,16 @@
  */
 jest.mock("@ai-matrx/rich-content/utils/alchemy-icon-keys", () => ({ registerAlchemyIcon: () => "app:Icon" }));
 
-import "../actions/handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { createActionRegistry, createClickTarget, type ActionProvider } from "@ai-matrx/alchemy/actions";
 import { buildMenuModel, unapprovedHeadings } from "@ai-matrx/alchemy/menu";
 import { richDocumentActionProvider, richDocumentClickTarget, richDocumentTargetHost } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "../test-utils/chatContext";
 import { contextMenuActionsFromModel } from "@ai-matrx/context-menu/model";
 import type { MenuModel, MenuNode, MenuSection } from "@ai-matrx/context-menu/model";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 const ports = { diagnostics: { capture: jest.fn() } };
 

@@ -18,12 +18,15 @@
  * the registry and the chat menu builder does not exist.
  */
 
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction, resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext, RICH_MESSAGE } from "../../test-utils/chatContext";
 import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-markdown";
 import { toAdvancedMenuItems } from "@ai-matrx/rich-content/rich-document/variants/RegistryActionMenu";
 import type { MenuItem } from "@ai-matrx/rich-content/host/app-bindings";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 /** Former chat menu key → the registry id that now owns the behavior. */
 const FORMER_CHAT_ACTIONS: Record<

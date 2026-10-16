@@ -10,13 +10,11 @@
 // own save path via the source adapter — there's no `onSave` in the data
 // payload.
 //
-// edit-history / fork-at-message / delete-message stay chat-only because
-// they touch cx_message.content_history / forkConversation / the host's
-// destructive-vs-fork dialog respectively. Generalizing them to notes /
-// prompts requires new infrastructure that doesn't exist yet (note version
-// browser, prompt-result branching) — out of scope for Phase 1.
+// fork-at-message stays chat-only because it touches forkConversation.
+// delete-message and edit-history are @ai-matrx/chat's own
+// (registerChatMessageActions).
 
-import { Edit, History, GitBranch, Trash2, Send } from "lucide-react";
+import { Edit, GitBranch, Send } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
@@ -179,33 +177,6 @@ registerActionIfAbsent({
 });
 
 registerActionIfAbsent({
-  id: "edit-history",
-  writesSource: true,
-  label: (ctx) => {
-    const ext =
-      ctx.extensions?.type === "chat-message" ? ctx.extensions : null;
-    return ext && ext.contentHistoryCount > 0
-      ? `Edit history (${ext.contentHistoryCount})`
-      : "Edit history";
-  },
-  icon: History,
-  iconColor: "text-amber-500 dark:text-amber-400",
-  category: "edit",
-  supportedSources: ["chat-message"],
-  renderSlot: "overflow",
-  order: 1,
-  visible: (ctx) =>
-    ctx.extensions?.type === "chat-message" &&
-    ctx.extensions.contentHistoryCount > 0 &&
-    Boolean(ctx.callbacks?.onRequestEditHistory),
-  run: (ctx) => {
-    // The dialog is host-owned (the chat bar) so it survives the menu closing.
-    ctx.callbacks?.onRequestEditHistory?.();
-    ctx.onClose();
-  },
-});
-
-registerActionIfAbsent({
   id: "fork-at-message",
   writesSource: true,
   label: "Fork at this message",
@@ -277,23 +248,6 @@ registerActionIfAbsent({
       console.error("[fork-at-message] failed", err);
       toast.error(getErrorMessage(err, "Failed to fork conversation"));
     }
-  },
-});
-
-registerActionIfAbsent({
-  id: "delete-message",
-  writesSource: true,
-  label: "Delete message",
-  icon: Trash2,
-  iconColor: "text-red-500 dark:text-red-400",
-  category: "edit",
-  supportedSources: ["chat-message"],
-  renderSlot: "overflow",
-  order: 3,
-  visible: (ctx) => Boolean(ctx.callbacks?.onRequestDelete),
-  run: (ctx) => {
-    ctx.onClose();
-    ctx.callbacks?.onRequestDelete?.();
   },
 });
 

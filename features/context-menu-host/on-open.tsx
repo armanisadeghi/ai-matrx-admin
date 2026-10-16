@@ -4,8 +4,8 @@
  * this module together with the menu body (`loadOnOpen` in ./register), so
  * none of it is in the shell's eager graph.
  */
-// Side effect: the copy/save/export/convert rich-document handlers self-register.
-import "@/features/rich-document/actions/handlers";
+// The rich-document actions (chat's message actions + this app's handlers) register on the call below.
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 // The designed menu's own stylesheet arrives with the menu on first open (this module is loaded
 // by `loadOnOpen`), never in the global stylesheet every page pays for.
 import "@ai-matrx/context-menu/styles.css";
@@ -35,6 +35,9 @@ import { useOpenSurfaceAgentBindWindow } from "@/features/overlays/openers/surfa
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
 import { getManifest } from "@/features/surfaces/manifests/registry";
 import DocumentAgentReview from "@/features/rich-document/hosts/DocumentAgentReview";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 /** A hook: the engine calls it once per open menu, unconditionally. */
 function useAppContextMenuBindings(): ContextMenuHostBindings {

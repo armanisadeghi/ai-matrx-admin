@@ -18,7 +18,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import "../actions/handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import {
   AI_SUBMENU_LABEL,
@@ -33,6 +33,9 @@ import {
   type MenuNode,
 } from "@ai-matrx/context-menu/model";
 import type { ContextMenuActions } from "@ai-matrx/context-menu/model";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 const noop = () => {};
 

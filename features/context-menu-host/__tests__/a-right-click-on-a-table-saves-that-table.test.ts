@@ -7,10 +7,13 @@
  * table the person clicked was never what was saved. RED on HEAD: the overlay's text was the whole
  * answer; GREEN: it is the clicked table's header + rows, read from the rendered DOM.
  */
-import "@/features/rich-document/actions/handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "@/features/rich-document/test-utils/chatContext";
 import { preloadTableShape, tableTextAtTarget } from "@ai-matrx/context-menu/engine";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 const ANSWER = `<div>
   <ul><li>Apple</li><li>Strawberry</li><li>Orange</li></ul>

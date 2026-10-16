@@ -6,10 +6,13 @@
  */
 import * as fs from "fs";
 import * as path from "path";
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { contentForDestination, contentForPrint } from "../utils";
 import { chatContext } from "../../test-utils/chatContext";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 const ENVELOPED =
   'Your checklist:\n\n<artifact type="table" id="t1" version="1" title="Table 1">\n| Step | Owner |\n| --- | --- |\n| Payroll | Dana |\n</artifact>\n';

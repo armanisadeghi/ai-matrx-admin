@@ -6,10 +6,13 @@
  *
  * Break it names: any registered rich-document action whose icon renders text → red.
  */
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement, type ComponentType } from "react";
 import { getAllActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 it("no action icon renders a letter", () => {
   const lettered = getAllActions()

@@ -5,12 +5,15 @@
  * present or ABSENT (never dead) by what the source and its host can do.
  */
 
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction, resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { parseFirstMarkdownTable, tableToDelimited } from "@ai-matrx/rich-content/rich-document/actions/markdownTable";
 import { chatContext, RICH_MESSAGE } from "../../test-utils/chatContext";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 function noteContext(
   overrides: Partial<RichDocumentActionContext> = {},

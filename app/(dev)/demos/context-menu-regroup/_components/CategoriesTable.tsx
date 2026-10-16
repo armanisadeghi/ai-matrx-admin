@@ -6,12 +6,15 @@
 // own rows (a quiz's Open / Take, a note's Move to Folder…) differ per page; the
 // ones the three contexts above resolved are listed under "This item".
 
-import "@/features/rich-document/actions/handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAllActions, toAlchemyAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { CONTEXT_MENU_ENGINE_ID_PREFIXES, CONTEXT_MENU_ENGINE_ROWS } from "@ai-matrx/context-menu/engine";
 import { matchRule, type MenuGrouping } from "@ai-matrx/context-menu/engine";
 import type { RegroupAudit } from "@ai-matrx/context-menu/engine";
 import type { Action } from "@ai-matrx/alchemy/actions";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 interface Item {
   id: string;

@@ -8,10 +8,13 @@
  * real chat menu builder, not on a source string.
  */
 
-import "@/features/rich-document/actions/handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { toAdvancedMenuItems } from "@ai-matrx/rich-content/rich-document/variants/RegistryActionMenu";
 import { chatContext } from "@/features/rich-document/test-utils/chatContext";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 function menuKeys(role: "assistant" | "user"): string[] {
   const ctx = chatContext(role);

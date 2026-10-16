@@ -17,11 +17,14 @@ jest.mock("@ai-matrx/chat/agents/redux/agent-definition/selectors", () => ({
   selectAgentOutputSchema: () => boundSchema,
 }));
 
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { getAction, getAllActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "../../test-utils/chatContext";
 import { parseStructuredAgentAnswer, structuredAnswerMarkdown } from "@/components/mardown-display/blocks/json/structured-answer-text";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 // The persisted answer of that conversation, verbatim shape.
 const ANSWER = {
