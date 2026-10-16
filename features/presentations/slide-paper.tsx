@@ -33,7 +33,7 @@ export function deckLook(deck: Pick<Deck, "theme">) {
 const HEX = /^#[0-9a-f]{6}$/i;
 
 /** The CSS that makes Format → Text on a slide's layout text win over the layout's own classes. */
-export function slideTextFormatCss(style: TextStyle): string {
+export function slideTextFormatCss(style: TextStyle, scope = ""): string {
   const rules: string[] = [];
   if (style.bold !== undefined) rules.push(`font-weight:${style.bold ? 700 : 400} !important`);
   if (style.italic !== undefined) rules.push(`font-style:${style.italic ? "italic" : "normal"} !important`);
@@ -43,7 +43,14 @@ export function slideTextFormatCss(style: TextStyle): string {
   if (style.lineHeight) rules.push(`line-height:${style.lineHeight} !important`);
   if (style.scale && style.scale !== 1) rules.push(`zoom:${style.scale}`);
   if (rules.length === 0) return "";
-  return `[data-slide-fmt] :is(h1,h2,h3,h4,p,li,blockquote,figcaption){${rules.join(";")}}`;
+  return `[data-slide-fmt${scope ? `="${scope}"` : ""}] :is(h1,h2,h3,h4,p,li,blockquote,figcaption){${rules.join(";")}}`;
+}
+
+/** A short stable id for one format rule set, so each look gets its own scope and one hoisted style tag. */
+export function slideFormatScope(css: string): string {
+  let h = 5381;
+  for (let i = 0; i < css.length; i++) h = ((h * 33) ^ css.charCodeAt(i)) >>> 0;
+  return h.toString(36);
 }
 
 /** One slide on its stage (960×540 widescreen, or the deck's own slide size), scaled to the box the parent gives (`className`). */
@@ -68,7 +75,9 @@ export function PaperSlide({
 }) {
   const { theme, variant, fontFamily } = deckLook(deck);
   const bg = slideBackgroundOf(slide);
-  const fmt = slideTextFormatCss(slideTextStyleOf(slide));
+  const textStyle = slideTextStyleOf(slide);
+  const fmtScope = slideTextFormatCss(textStyle) ? slideFormatScope(slideTextFormatCss(textStyle)) : "";
+  const fmt = fmtScope ? slideTextFormatCss(textStyle, fmtScope) : "";
   const colorTokens: Record<string, string> =
     bg?.color && HEX.test(bg.color) ? { "--card": hexToHslTriplet(bg.color), "--background": hexToHslTriplet(bg.color) } : {};
   return (
@@ -76,10 +85,16 @@ export function PaperSlide({
       <div
         className={cn("relative h-full w-full", bg?.image && "[&_.bg-card]:!bg-transparent")}
         style={{ ...slidePaperStyle(deck), ...(colorTokens as CSSProperties), fontFamily }}
-        data-slide-fmt={fmt ? "" : undefined}
+        data-slide-fmt={fmtScope || undefined}
         data-slide-background={bg ? (bg.image ? "image" : "color") : undefined}
       >
-        {fmt ? <style>{fmt}</style> : null}
+        {/* Hoisted to <head> (React keys it by href): a <style> left inside the card put its CSS text into the
+            card's own text, so anything that reads a card's text (search, copy, a11y tools, tests) saw it as part of the deck's name. */}
+        {fmt ? (
+          <style href={`slide-fmt-${fmtScope}`} precedence="default">
+            {fmt}
+          </style>
+        ) : null}
         {bg?.image ? (
           <div className="absolute inset-0 overflow-hidden rounded-xl">
             <InlineMediaRef ref={bg.image} size="fill" fit="cover" fallback={null} />
