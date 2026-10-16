@@ -1,6 +1,5 @@
 import {
   CONNECT_TIMEOUT_MS,
-  elapsedText,
   parsePendingConnect,
   resumeStep,
 } from "@/features/ai-work/lib/claudeConnectFlow";
@@ -33,9 +32,5 @@ describe("resuming a Claude sign-in after a reload", () => {
     expect(parsePendingConnect("{bad")).toBeNull();
     expect(parsePendingConnect(JSON.stringify({ slot: "", startedAt: 5 }))).toBeNull();
     expect(parsePendingConnect(null)).toBeNull();
-  });
-  it("the wait is counted", () => {
-    expect(elapsedText(0)).toBe("0:00");
-    expect(elapsedText(102_400)).toBe("1:42");
   });
 });

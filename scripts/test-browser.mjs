@@ -11,6 +11,7 @@
 // Sign-in uses `pnpm dev-login` (single-use nonce for <name>.localhost:3001); no credential is ever printed.
 import net from 'node:net';
 import fs from 'node:fs';
+import { formatDurationMs } from '@ai-matrx/kit/format';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -110,7 +111,7 @@ async function serve(name) {
       try {
         const r = await Promise.race([
           handlers[req.cmd](req.args || {}),
-          new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout after ${CMD_TIMEOUT_MS / 1000}s`)), (req.args?.timeout ? req.args.timeout * 1000 + 5000 : CMD_TIMEOUT_MS))),
+          new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout after ${formatDurationMs(CMD_TIMEOUT_MS, { style: "compact" })}`)), (req.args?.timeout ? req.args.timeout * 1000 + 5000 : CMD_TIMEOUT_MS))),
         ]);
         c.end(JSON.stringify({ ok: true, ...r }) + '\n');
       } catch (e) { c.end(JSON.stringify({ ok: false, error: String(e.message).split('\n')[0] }) + '\n'); }

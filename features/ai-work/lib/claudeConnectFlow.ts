@@ -343,8 +343,3 @@ export function resumeStep(
   return { kind: "forget" };
 }
 
-/** "0:42": the sandbox wait, counted, so a long boot reads as progress. */
-export function elapsedText(ms: number): string {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}

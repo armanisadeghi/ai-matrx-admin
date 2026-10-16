@@ -279,6 +279,10 @@
         {
           "file": "features/marketing/crawler/follow-session.test.ts",
           "why": "PROVABLY NOT A DISPLAYED DURATION: the matched line builds an ISO-8601 timestamp fixture (`2026-10-12T21:MM:00Z`), zero-padding a minute-of-hour into a date string; no elapsed time becomes a unit string."
+        },
+        {
+          "file": "scripts/preview-ready.mjs",
+          "reason": "NOT a display: the remaining hit (Date.now() - capWaitSaid > 60000) is a throttle comparison on a millisecond budget; every duration this script prints already goes through formatDurationMs/formatDurationSeconds. Checked 2026-10-15."
         }
       ],
       "shapeCensus": [
@@ -459,10 +463,6 @@
         {
           "file": "features/marketing/seo/ai-visibility/__tests__/try-one-prompt-prices-then-asks.test.tsx",
           "why": "PROVABLY NOT A DISPLAY FORMATTER: the `$${usd}` here is a test FIXTURE reproducing, byte for byte, the over_max_cost error message aidream's tool dispatcher sends (\"estimated at $X (N points), above your max_cost_usd of $Y\"). The test proves the UI turns that server sentence into points; formatting the fixture through formatUsd would make it lie about what the server sends. Nothing in this file renders money. (2026-10-07 formatter-drain lane)"
-        },
-        {
-          "file": "features/templates/files/thumbnail/snapshot-preview-svg.ts",
-          "reason": "NOT formatUsd: the template thumbnail renders a spreadsheet cell through the cell's OWN Excel number-format pattern (currency, percent, grouping and decimals all read from the pattern), the same engine role as design-system's field-format registry. formatUsd's fixed $ voice cannot honour a user-authored pattern. Checked 2026-10-12."
         },
         {
           "file": "features/templates/files/seeds/workbook-templates.ts",
@@ -1827,6 +1827,10 @@
         {
           "file": "lib/progress/sizedEstimate.ts",
           "why": "PROVABLY NOT A DISPLAY STRING: `(rate.perMegabyteMs * known.bytes) / BYTES_PER_MB` and `(rate.perThousandWordsMs * known.words) / 1_000` are ESTIMATION MATH \u2014 a measured milliseconds-per-megabyte rate multiplied by a size to predict how long work will take. There is no unit label and no rendered string on either line; the number that comes out is milliseconds, not bytes. The one place this file DID render a size (\"1.2 MB\" in the progress caption) was collapsed onto formatFileSize in the same change (2026-09-17)."
+        },
+        {
+          "file": "lib/diagnostics/loadTrace.ts",
+          "reason": "NOT a display: kb() turns resource byte sizes into NUMBERS in a load-trace report object (keys wireKB/unpackedKB carry the unit), sorted and compared by the page-load guard. formatFileSize would put the unit inside the value. Checked 2026-10-15."
         }
       ],
       "shapeCensus": [

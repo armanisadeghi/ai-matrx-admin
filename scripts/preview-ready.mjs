@@ -41,6 +41,7 @@ import http from "node:http";
 import os from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { formatDurationMs, formatDurationSeconds } from "@ai-matrx/kit/format";
 import { browserStability } from "./lib/preview-browser-stability.mjs";
 import { diagnoseBuildError, verdictOf } from "./lib/preview-ready-judge.mjs";
 
@@ -108,7 +109,7 @@ const overload = load / cores;
 if (!budgetSec) budgetSec = overload > 3 ? 900 : overload > 1.5 ? 600 : 360;
 say(
   `machine: load ${load.toFixed(0)} on ${cores} cores${freePct != null ? `, ${freePct}% memory free` : ""}` +
-    (overload > 3 ? " — overloaded by other work; pages compile slowly, waiting up to " + Math.round(budgetSec / 60) + " min" : ""),
+    (overload > 3 ? " — overloaded by other work; pages compile slowly, waiting up to " + formatDurationSeconds(budgetSec, { style: "coarse" }) : ""),
 );
 
 // ── 2. server ────────────────────────────────────────────────────────────────
@@ -338,7 +339,7 @@ async function signedInLoad(target) {
 }
 
 // ── run ──────────────────────────────────────────────────────────────────────
-if (!(await waitForListener())) notReady(`port ${PORT} never answered in ${Math.round(budgetSec / 60)} min`);
+if (!(await waitForListener())) notReady(`port ${PORT} never answered in ${formatDurationSeconds(budgetSec, { style: "coarse" })}`);
 say(`listener: port ${PORT} answers (${secs()}s)`);
 
 let restarted = false;
@@ -375,7 +376,7 @@ for (let attempt = 1; attempt <= 2; attempt++) {
     break;
   }
   say(`sign-in: FAILED — ${v.why}`);
-  if (v.kind === "timeout") notReady(`${route} did not load within ${Math.round(budgetSec / 60)} min (${r.error}; machine load ${os.loadavg()[0].toFixed(0)})`);
+  if (v.kind === "timeout") notReady(`${route} did not load within ${formatDurationSeconds(budgetSec, { style: "coarse" })} (${r.error}; machine load ${os.loadavg()[0].toFixed(0)})`);
   if (v.kind !== "page-error") {
     if (v.kind === "signed-out" && attempt === 1) continue; // one retry: a nonce raced another mint
     notReady(v.why);
@@ -435,7 +436,7 @@ for (const extra of warm) {
   const t0 = Date.now();
   const r = await signedInLoad(extra);
   const v = verdictOf(r, extra, say);
-  say(v.ok ? `warm: ${extra} compiled and loads signed in (${((Date.now() - t0) / 1000).toFixed(0)}s)` : `warm: ${extra} — ${v.why}`);
+  say(v.ok ? `warm: ${extra} compiled and loads signed in (${formatDurationMs(Date.now() - t0, { style: "compact" })})` : `warm: ${extra} — ${v.why}`);
   if (!v.ok && v.kind === "page-error") {
     const d = await diagnoseBuildError(r.body || "", ROOT);
     for (const line of d.lines) say(`  ${line}`);
@@ -447,8 +448,7 @@ let lane = "free";
 try {
   if (existsSync(LANE_LOCK)) {
     const owner = existsSync(join(LANE_LOCK, "owner")) ? readFileSync(join(LANE_LOCK, "owner"), "utf8").trim() : "unknown";
-    const ageMin = Math.round((Date.now() - statSync(LANE_LOCK).mtimeMs) / 60000);
-    lane = `held by ${owner} for ${ageMin} min`;
+    lane = `held by ${owner} for ${formatDurationMs(Date.now() - statSync(LANE_LOCK).mtimeMs, { style: "coarse" })}`;
   }
 } catch {
   /* unreadable lock: report free */

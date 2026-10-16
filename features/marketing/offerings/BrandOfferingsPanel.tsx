@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { DecisionControl, Button, PropertyRow, type DecisionAnswer } from "@ai-matrx/design-system/controls";
 import { ErrorNotice, Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { formatCount } from "@ai-matrx/kit/format";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { selectRunEmissions, selectRunStatus } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
@@ -193,8 +194,8 @@ export function BrandOfferingsPanel({ brand }: Props) {
       if (quote.points > 0) {
         const ok = await confirm({
           title: "Refresh products & services",
-          description: `Up to ${quote.points.toLocaleString()} points: ${quote.paid_sources.map((p) => p.source).join(", ")}.`,
-          confirmLabel: `Spend up to ${quote.points.toLocaleString()} points`,
+          description: `Up to ${formatCount(quote.points)} points: ${quote.paid_sources.map((p) => p.source).join(", ")}.`,
+          confirmLabel: `Spend up to ${formatCount(quote.points)} points`,
         });
         if (!ok) return;
       }

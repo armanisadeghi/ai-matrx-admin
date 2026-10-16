@@ -27,6 +27,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { getUserMessage } from "@ai-matrx/api";
 import { resolveBaseUrl } from "@/lib/python-client";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
@@ -38,7 +39,6 @@ import {
 } from "@/features/ai-work/lib/connectClaudeAccount";
 import {
   claudeAnswerAt,
-  elapsedText,
   parsePendingConnect,
   PENDING_CONNECT_KEY,
   resumeStep,
@@ -154,7 +154,7 @@ function useElapsed(since: number | null): string | null {
     const t = window.setInterval(() => setNow(Date.now()), 1_000);
     return () => window.clearInterval(t);
   }, [since]);
-  return since === null ? null : elapsedText(now - since);
+  return since === null ? null : formatDurationMs(now - since);
 }
 
 export function ClaudeAccountsPanel() {
