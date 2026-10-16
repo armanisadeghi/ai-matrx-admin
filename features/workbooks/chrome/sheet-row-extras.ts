@@ -5,6 +5,8 @@
  * so every function is tested directly (`__tests__/sheet-row-extras.test.ts`).
  */
 
+import { parseDelimited } from "@ai-matrx/kit/delimited";
+
 // ─── Spreadsheet settings ───
 
 export type Recalculation = "on-change" | "on-change-and-minute" | "on-change-and-hour";
@@ -302,52 +304,15 @@ function splitTopLevel(text: string): string[] {
 
 // ─── CSV (Data connectors) ───
 
-/** RFC 4180 text → rows (quotes, doubled quotes, CRLF). Numbers stay text here; `csvCell` types them. */
-export function parseCsv(text: string, delimiter = ","): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cur = "";
-  let quoted = false;
-  const src = text.replace(/^﻿/, "");
-  for (let i = 0; i < src.length; i += 1) {
-    const ch = src[i]!;
-    if (quoted) {
-      if (ch === '"') {
-        if (src[i + 1] === '"') {
-          cur += '"';
-          i += 1;
-        } else quoted = false;
-      } else cur += ch;
-    } else if (ch === '"') quoted = true;
-    else if (ch === delimiter) {
-      row.push(cur);
-      cur = "";
-    } else if (ch === "\n" || ch === "\r") {
-      if (ch === "\r" && src[i + 1] === "\n") i += 1;
-      row.push(cur);
-      rows.push(row);
-      row = [];
-      cur = "";
-    } else cur += ch;
-  }
-  if (cur !== "" || row.length) {
-    row.push(cur);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.some((c) => c !== ""));
+/** CSV / TSV / semicolon text → rows, through the platform's one reader (`@ai-matrx/kit/delimited`; it guesses the delimiter, honours quotes and a BOM). Numbers stay text here; `csvCell` types them. */
+export function parseCsv(text: string): string[][] {
+  return parseDelimited(text, { skipEmptyLines: "greedy" }).data;
 }
 
 /** One CSV field as a cell value: a plain number becomes a number, everything else stays text. */
 export function csvCell(v: string): string | number {
   const t = v.trim();
   return t !== "" && /^-?\d+(\.\d+)?$/.test(t) ? Number(t) : v;
-}
-
-/** The delimiter a text file most likely uses (comma, tab or semicolon), by its first line. */
-export function sniffDelimiter(text: string): string {
-  const first = text.split(/\r?\n/, 1)[0] ?? "";
-  const count = (d: string) => first.split(d).length;
-  return [",", "\t", ";"].reduce((best, d) => (count(d) > count(best) ? d : best), ",");
 }
 
 export interface SheetConnector {
@@ -453,12 +418,34 @@ export function normalizeMacros(raw: unknown): SheetMacro[] {
 
 export interface SheetPrefs {
   /** The function-name list that opens as you type "=". */
-  autocomplete: boolean;
+  functionSuggestions: boolean;
   /** The argument hint under the cell while you write a formula. */
   formulaHints: boolean;
+  /** Tools → Autocomplete: a value already in the column is offered as you type text (Tab takes it). */
+  columnAutocomplete: boolean;
 }
 
 export function normalizePrefs(raw: unknown): SheetPrefs {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  return { autocomplete: r.autocomplete !== false, formulaHints: r.formulaHints !== false };
+  // `autocomplete` is what the function-name list was saved as before Autocomplete became its own setting.
+  return { functionSuggestions: (r.functionSuggestions ?? r.autocomplete) !== false, formulaHints: r.formulaHints !== false, columnAutocomplete: r.columnAutocomplete !== false };
+}
+
+// ─── Protect panel title ───
+
+export interface ProtectTarget {
+  /** Univer UnitObject: 2 = whole sheet, 3 = a range. */
+  unitType?: number;
+  range?: { startRow: number; endRow: number; startColumn: number; endColumn: number; rangeType?: number } | null;
+}
+
+/** The side panel's title for what is being protected (Univer's own is always "Protect Rows and Columns"). */
+export function protectPanelTitle(t: ProtectTarget): string {
+  if (t.unitType === 2) return "Protect sheet";
+  const r = t.range;
+  if (!r) return "Protect range";
+  if (r.rangeType === 1) return r.startRow === r.endRow ? "Protect row" : "Protect rows";
+  if (r.rangeType === 2) return r.startColumn === r.endColumn ? "Protect column" : "Protect columns";
+  if (r.startRow === r.endRow && r.startColumn === r.endColumn) return "Protect cell";
+  return "Protect range";
 }

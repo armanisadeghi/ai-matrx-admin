@@ -1,4 +1,5 @@
-import { hasHeaderRow, SHEET_THEMES, applyThemeToSheet, columnStats, describeColumnStats } from "../chrome/sheet-extras";
+import { hasHeaderRow, SHEET_THEMES, applyThemeToSheet, columnStats, describeColumnStats, trimTrailingBlankRows } from "../chrome/sheet-extras";
+import { showColumnStats } from "../chrome/sheet-commands";
 
 describe("Column stats", () => {
   it("counts filled, blank, unique and the most common values per column", () => {
@@ -51,5 +52,22 @@ describe("Theme", () => {
   });
   it("does nothing on an empty sheet", () => {
     expect(applyThemeToSheet(SHEET_THEMES[0]!, () => { throw new Error("no"); }, 0, 0)).toBe(0);
+  });
+});
+
+describe("Column stats on a short column of a tall sheet", () => {
+  it("counts blanks inside the used range, not down to the sheet's last row", () => {
+    const column = [["Score"], [4], [9], [""], [6]];
+    const sheet = {
+      getLastRow: () => 99,
+      getRange: (_r: number, _c: number, rows: number) => ({ getValues: () => Array.from({ length: rows }, (_, i) => column[i] ?? [""]) }),
+    };
+    let text = "";
+    const host = { api: { getActiveWorkbook: () => ({ getActiveSheet: () => sheet }) }, report: (_t: string, body: string) => void (text = body) };
+    const selected = { getValues: () => [[4]], getRange: () => ({ startRow: 1, endRow: 1, startColumn: 0, endColumn: 0 }) };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    showColumnStats(host as any, selected as any);
+    expect(text).toContain("Score: 3 filled, 1 blank");
+    expect(trimTrailingBlankRows([[1], [""], [null], [""]])).toEqual([[1]]);
   });
 });

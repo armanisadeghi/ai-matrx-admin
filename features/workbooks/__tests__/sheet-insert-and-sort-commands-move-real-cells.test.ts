@@ -76,7 +76,7 @@ function boot() {
     openPanel: () => undefined,
     viewOverlays: { state: () => ({ formulas: false, protectedRanges: false }), toggle: () => undefined },
     macros: { list: () => [], recording: () => false, start: () => undefined, stop: () => undefined, cancel: () => undefined, replay: () => undefined },
-    prefs: { get: () => ({ autocomplete: true, formulaHints: true }), toggle: () => undefined },
+    prefs: { get: () => ({ functionSuggestions: true, formulaHints: true, columnAutocomplete: true }), toggle: () => undefined },
     print: () => undefined,
     formulaBarVisible: () => true,
     toggleFormulaBar: () => undefined,

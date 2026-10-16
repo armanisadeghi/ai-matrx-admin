@@ -102,7 +102,7 @@ function fakeHost(values: unknown[][] = [["a"]], formulas: string[][] = [[""]]) 
     viewOverlays: { state: () => ({ formulas: false, protectedRanges: false }), toggle: rec("host.toggleOverlay") },
     macros: { list: () => [], recording: () => false, start: rec("host.macroStart"), stop: rec("host.macroStop"), cancel: rec("host.macroCancel"), replay: rec("host.macroReplay") },
     filterViews: { list: () => [], saveCurrent: rec("host.saveFilterView"), apply: rec("host.applyFilterView") },
-    prefs: { get: () => ({ autocomplete: true, formulaHints: true }), toggle: rec("host.togglePref") },
+    prefs: { get: () => ({ functionSuggestions: true, formulaHints: true, columnAutocomplete: true }), toggle: rec("host.togglePref") },
   };
   return { host, calls };
 }

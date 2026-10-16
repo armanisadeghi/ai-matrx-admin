@@ -71,6 +71,7 @@ import {
   describeColumnStats,
   hasHeaderRow,
   type ThemeRangeLike,
+  trimTrailingBlankRows,
 } from "./sheet-extras";
 
 // ─── the slice of Univer's facade this map uses (structural, so tests can fake it) ───
@@ -414,7 +415,7 @@ export function showColumnStats(h: SheetChromeHost, r: RangeLike) {
   if (values.length < 2 && sheet?.getRange && sheet.getLastRow) {
     const rows = sheet.getLastRow() + 1;
     const cols = sel.endColumn - sel.startColumn + 1;
-    if (rows > 1) values = sheet.getRange(0, sel.startColumn, rows, cols).getValues();
+    if (rows > 1) values = trimTrailingBlankRows(sheet.getRange(0, sel.startColumn, rows, cols).getValues());
   }
   const titled = hasHeaderRow(values);
   const text = describeColumnStats(columnStats(titled ? values.slice(1) : values), titled ? values[0] : undefined);
@@ -1057,11 +1058,11 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           label: "Suggestion controls",
           keywords: ["hints", "suggestions"],
           items: [
-            { kind: "action", id: "tools.suggestions.functions", label: "Function suggestions while typing", checked: () => h.prefs.get().autocomplete, run: () => h.prefs.toggle("autocomplete") },
+            { kind: "action", id: "tools.suggestions.functions", label: "Function suggestions while typing", checked: () => h.prefs.get().functionSuggestions, run: () => h.prefs.toggle("functionSuggestions") },
             { kind: "action", id: "tools.suggestions.hints", label: "Argument hints while typing", checked: () => h.prefs.get().formulaHints, run: () => h.prefs.toggle("formulaHints") },
           ],
         },
-        { kind: "action", id: "tools.autocomplete", label: "Autocomplete", keywords: ["autocomplete formulas"], checked: () => h.prefs.get().autocomplete, run: () => h.prefs.toggle("autocomplete") },
+        { kind: "action", id: "tools.autocomplete", label: "Autocomplete", keywords: ["autocomplete", "complete values", "column"], checked: () => h.prefs.get().columnAutocomplete, run: () => h.prefs.toggle("columnAutocomplete") },
         { kind: "separator" },
         soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
         soon("tools.accessibility", "Accessibility", "editor.tools.accessibility"),

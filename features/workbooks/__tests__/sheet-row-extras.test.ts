@@ -15,8 +15,8 @@ import {
   normalizePrefs,
   normalizeSettings,
   parseCsv,
+  protectPanelTitle,
   recalcIntervalMs,
-  sniffDelimiter,
   type FilterSheetLike,
 } from "../chrome/sheet-row-extras";
 import { extraFromMetadata, withExtra } from "../sheet-extras-service";
@@ -35,9 +35,10 @@ describe("spreadsheet settings", () => {
     expect(recalcIntervalMs("on-change-and-minute")).toBe(60_000);
     expect(recalcIntervalMs("on-change-and-hour")).toBe(3_600_000);
   });
-  it("defaults both Tools preferences on", () => {
-    expect(normalizePrefs(undefined)).toEqual({ autocomplete: true, formulaHints: true });
-    expect(normalizePrefs({ autocomplete: false })).toEqual({ autocomplete: false, formulaHints: true });
+  it("defaults every Tools preference on, each independent of the others", () => {
+    expect(normalizePrefs(undefined)).toEqual({ functionSuggestions: true, formulaHints: true, columnAutocomplete: true });
+    expect(normalizePrefs({ columnAutocomplete: false })).toEqual({ functionSuggestions: true, formulaHints: true, columnAutocomplete: false });
+    expect(normalizePrefs({ autocomplete: false })).toMatchObject({ functionSuggestions: false, columnAutocomplete: true });
   });
 });
 
@@ -116,10 +117,12 @@ describe("csv", () => {
     expect(rows[2]!.map(csvCell)).toEqual([3, 4.5]);
     expect(csvCell("007a")).toBe("007a");
   });
-  it("picks the delimiter from the first line", () => {
-    expect(sniffDelimiter("a\tb\tc\n1\t2\t3")).toBe("\t");
-    expect(sniffDelimiter("a;b;c")).toBe(";");
-    expect(sniffDelimiter("a,b")).toBe(",");
+  it("reads tab and semicolon files through the same one reader", () => {
+    expect(parseCsv("a\tb\tc\n1\t2\t3")).toEqual([["a", "b", "c"], ["1", "2", "3"]]);
+    expect(parseCsv("a;b;c\n1;2;3")).toEqual([["a", "b", "c"], ["1", "2", "3"]]);
+  });
+  it("reads a quoted header and a leading BOM", () => {
+    expect(parseCsv('\uFEFF"total_bill","tip"\n16.99,1.01\n')).toEqual([["total_bill", "tip"], ["16.99", "1.01"]]);
   });
 });
 
@@ -180,5 +183,16 @@ describe("View → Show paints, never edits", () => {
     expect(isCellProtected(rule, false, 2, 0)).toBe(true);
     expect(isCellProtected(rule, false, 3, 0)).toBe(false);
     expect(isCellProtected([], true, 50, 9)).toBe(true);
+  });
+});
+
+describe("Protect panel title", () => {
+  it("matches what is selected, never always 'Rows and Columns'", () => {
+    const at = (r: number, c: number, r2 = r, c2 = c, rangeType?: number) => ({ range: { startRow: r, endRow: r2, startColumn: c, endColumn: c2, rangeType } });
+    expect(protectPanelTitle(at(1, 1))).toBe("Protect cell");
+    expect(protectPanelTitle(at(1, 1, 3, 2))).toBe("Protect range");
+    expect(protectPanelTitle(at(0, 2, 99, 2, 2))).toBe("Protect column");
+    expect(protectPanelTitle(at(4, 0, 5, 25, 1))).toBe("Protect rows");
+    expect(protectPanelTitle({ unitType: 2 })).toBe("Protect sheet");
   });
 });
