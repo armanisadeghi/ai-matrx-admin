@@ -42,19 +42,50 @@ export type DecisionQuestion =
       criteria: { true: string; false: string };
     };
 
-export function newQuestion(): DecisionQuestion {
-  return {
+// The answer name each type starts with; a second question of the same type
+// gets `_2`, `_3`… so adding a question never creates a duplicate name.
+const DEFAULT_NAMES: Record<DecisionQuestion["type"], string> = {
+  choice: "decision",
+  score: "score",
+  noul: "truth",
+};
+
+function uniqueName(base: string, taken: ReadonlySet<string>): string {
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}_${n}`)) n += 1;
+  return `${base}_${n}`;
+}
+
+export function newQuestion(
+  type: DecisionQuestion["type"],
+  existing: readonly DecisionQuestion[] = [],
+): DecisionQuestion {
+  const taken = new Set(existing.map((question) => question.name.trim()));
+  const base = {
     id: crypto.randomUUID(),
-    name: "decision",
-    type: "choice",
+    name: uniqueName(DEFAULT_NAMES[type], taken),
     instructions: "",
-    instructionsMode: "text",
+    instructionsMode: "text" as const,
     instructionsJson: "{}",
-    criteriaMode: "rows",
+    criteriaMode: "rows" as const,
+  };
+  if (type === "score")
+    return { ...base, type, criteriaJson: "[]", criteria: ["", ""] };
+  if (type === "noul")
+    return {
+      ...base,
+      type,
+      criteriaJson: "{}",
+      criteria: { true: "", false: "" },
+    };
+  return {
+    ...base,
+    type,
     criteriaJson: "{}",
     criteria: [
-      { key: "yes", description: "" },
-      { key: "no", description: "" },
+      { key: "", description: "" },
+      { key: "", description: "" },
     ],
   };
 }
@@ -76,14 +107,9 @@ export function parseDecisionValue(
   }
 }
 
-export function isDecisionQuestionType(
-  value: string,
-): value is DecisionQuestion["type"] {
-  return value === "choice" || value === "score" || value === "noul";
-}
-
 export function questionErrors(questions: DecisionQuestion[]): string[] {
   const errors: string[] = [];
+  if (questions.length === 0) errors.push("Add at least one question.");
   const names = new Set<string>();
   for (const question of questions) {
     const name = question.name.trim();
@@ -156,7 +182,7 @@ export function questionErrors(questions: DecisionQuestion[]): string[] {
       for (const criterion of question.criteria) {
         const key = criterion.key.trim();
         if (!key)
-          errors.push(`“${name || "Unnamed question"}” has an unnamed choice.`);
+          errors.push(`“${name || "Unnamed question"}” has an option with no name.`);
         else if (keys.has(key))
           errors.push(
             `“${name || "Unnamed question"}” repeats choice “${key}”.`,

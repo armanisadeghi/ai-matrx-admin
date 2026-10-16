@@ -1,7 +1,6 @@
 "use client";
 
-import { ListChecks, Loader2, Play, RefreshCw, Scale } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Play, RefreshCw, Scale } from "lucide-react";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -19,7 +18,6 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { DecisionQuestionEditor } from "./DecisionQuestionEditor";
 import {
   decisionQuestionPayload,
-  newQuestion,
   parseDecisionValue,
   questionErrors,
   type DecisionQuestion,
@@ -30,6 +28,8 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { ALL_DECISIONS_REVIEW_HREF } from "@/features/agents/decision-review/service";
 import { SegmentedControl, PropertyRow } from "@ai-matrx/design-system/controls";
+import { ListTapButton, ShareTapButton } from "@ai-matrx/design-system/tap-target/buttons";
+import RouteHeader from "@/features/shell/components/header/RouteHeader";
 
 export function DecisionPlayground() {
   const dispatch = useAppDispatch();
@@ -39,9 +39,10 @@ export function DecisionPlayground() {
   const [offeringId, setOfferingId] = useState<string | undefined>();
   const [stateMode, setStateMode] = useState<"text" | "json">("text");
   const [state, setState] = useState("");
-  const [questions, setQuestions] = useState<DecisionQuestion[]>([
-    newQuestion(),
-  ]);
+  const [questions, setQuestions] = useState<DecisionQuestion[]>([]);
+  // What is missing shows only after someone presses Run — never on load,
+  // and Run is never disabled for it.
+  const [showIssues, setShowIssues] = useState(false);
   const [result, setResult] = useState<DecisionResultView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -114,7 +115,11 @@ export function DecisionPlayground() {
   }, [dispatch, executionId, organizationState, recoverAttempt]);
 
   const parsedState = parseDecisionValue(state, stateMode, "State");
-  const validationErrors = [
+  // A Set: two blank options must not list the same message twice.
+  const validationErrors = Array.from(new Set([
+    ...(organizationState === "ready"
+      ? []
+      : ["Your organization is still loading."]),
     ...(model
       ? []
       : [
@@ -124,17 +129,20 @@ export function DecisionPlayground() {
         ]),
     ...(parsedState.error ? [parsedState.error] : []),
     ...questionErrors(questions),
-  ];
+  ]));
 
   const run = () => {
+    if (busy) return;
     if (
-      busy ||
       organizationState !== "ready" ||
       parsedState.value === undefined ||
       validationErrors.length > 0 ||
       !model
-    )
+    ) {
+      setShowIssues(true);
       return;
+    }
+    setShowIssues(false);
     setBusy(true);
     setError(null);
     const payloadQuestions: Record<string, Record<string, unknown>> = {};
@@ -164,145 +172,149 @@ export function DecisionPlayground() {
       .finally(() => setBusy(false));
   };
 
+  const shareHref = result
+    ? `?execution_id=${encodeURIComponent(result.executionId)}`
+    : undefined;
+
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-4 p-4 lg:p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex items-center gap-2 text-violet-700 dark:text-violet-300">
-          <Scale className="size-5" />
-          <h1 className="text-lg font-semibold text-foreground">
-            Decision playground
-          </h1>
-        </div>
-        <div className="flex items-center gap-3">
-          {result && (
-            <a
-              className="text-sm font-medium text-primary hover:underline"
-              href={`?execution_id=${encodeURIComponent(result.executionId)}`}
-            >
-              Share this result
-            </a>
-          )}
-          <Button asChild variant="outline">
-            <Link href={`${ALL_DECISIONS_REVIEW_HREF}?source=model`}>
-              <ListChecks className="size-4" />
-              Review answers
-            </Link>
-          </Button>
-        </div>
-      </header>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]">
-        <main className="space-y-4">
-          <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-            <label className="mb-2 block text-sm font-medium">
-              Decision model
-            </label>
-            <ModelListDropdown
-              value={model}
-              onValueChange={(modelId) => {
-                setModel(modelId);
-                setOfferingId(undefined);
-              }}
-              inputModalities={["text"]}
-              outputModalities={["decision"]}
-              selectionPurpose="decision"
-              pinnedOfferingId={offeringId}
-              onOfferingPinChange={setOfferingId}
-              placeholder="Choose a decision model"
-              aria-label="Decision model"
-            />
-          </section>
-          <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <label className="text-sm font-medium">State</label>
-              <ModeSwitch value={stateMode} onChange={setStateMode} />
-            </div>
-            <ProTextarea
-              value={state}
-              onChange={(event) => setState(event.target.value)}
-              placeholder={
-                stateMode === "text"
-                  ? "Describe the situation to evaluate"
-                  : '{\n  "customer": "…"\n}'
-              }
-              aria-label="Decision state"
-              autoGrow
-              minHeight={160}
-              maxHeight={360}
-              className="font-mono text-sm"
-            />
-          </section>
-          <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-medium">Questions</h2>
-                <p className="text-xs text-muted-foreground">
-                  Name each answer so a workflow can use it directly.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setQuestions([...questions, newQuestion()])}
-              >
-                Add question
-              </Button>
-            </div>
-            <DecisionQuestionEditor
-              questions={questions}
-              onChange={setQuestions}
-            />
-          </section>
-          {validationErrors.length > 0 && (
-            <section className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-950 dark:text-amber-100">
-              <p className="font-medium">Ready check</p>
-              <ul className="mt-1 list-disc pl-5">
-                {validationErrors.map((message, rowIndex, allRows) => (
-                  <li key={message}>{message}{rowIndex === allRows.length - 1 && <ErrorAlchemyMenu error={allRows} />}</li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {error && (
-            <section className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-ink">
-              {error}
-              <ErrorAlchemyMenu error={error} />
-            </section>
-          )}
-          <Button
-            icon={busy ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Play />
+    <>
+      <RouteHeader
+        left={
+          <span className="flex min-w-0 items-center gap-2 pl-2">
+            <Scale className="size-4 shrink-0 text-primary" />
+            <span className="truncate text-sm font-medium text-foreground">
+              Decisions
+            </span>
+          </span>
+        }
+        right={
+          <>
+            {shareHref && (
+              <ShareTapButton
+                variant="transparent"
+                href={shareHref}
+                tooltip="Link to this result"
+                ariaLabel="Link to this result"
+              />
             )}
-            variant="primary"
-            type="button"
-            onClick={run}
-            disabled={
-              busy ||
-              organizationState !== "ready" ||
-              validationErrors.length > 0
-            }
-            className="w-full sm:w-auto"
-          >
-            {busy ? "Running decision…" : "Run decision"}
-          </Button>
-        </main>
-        <aside className="min-w-0">
-          <OrganizationContextNotice
-            state={organizationState}
-            what="Decisions"
-            onRetry={retry}
-            compact
-          />
-          <DecisionResultCard
-            result={result}
-            loading={recovering}
-            readError={recoverError}
-            onRetry={() => setRecoverAttempt((n) => n + 1)}
-          />
-        </aside>
+            <ListTapButton
+              variant="transparent"
+              href={`${ALL_DECISIONS_REVIEW_HREF}?source=model`}
+              label="Review answers"
+              ariaLabel="Review answers"
+            />
+          </>
+        }
+      />
+      <div className="h-full w-full overflow-y-auto overscroll-contain bg-textured">
+        <div className="mx-auto grid w-full max-w-6xl gap-5 px-4 pb-10 pt-[calc(var(--shell-header-h)+1rem)] xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.75fr)]">
+          <main className="min-w-0 space-y-6">
+            <section className="space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <StepLabel step={1}>The situation</StepLabel>
+                <ModeSwitch value={stateMode} onChange={setStateMode} />
+              </div>
+              <ProTextarea
+                value={state}
+                onChange={(event) => setState(event.target.value)}
+                placeholder={
+                  stateMode === "text"
+                    ? "Describe the situation to evaluate"
+                    : '{\n  "customer": "…"\n}'
+                }
+                aria-label="Decision state"
+                autoGrow
+                minHeight={140}
+                maxHeight={360}
+                className={stateMode === "json" ? "font-mono text-sm" : "text-sm"}
+              />
+            </section>
+            <section className="space-y-2.5">
+              <StepLabel step={2}>
+                {questions.length === 0 ? "What do you want to know?" : "Questions"}
+              </StepLabel>
+              <DecisionQuestionEditor
+                questions={questions}
+                onChange={setQuestions}
+              />
+            </section>
+            <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+              <StepLabel step={3}>Run it</StepLabel>
+              <div className="flex flex-wrap items-center gap-3">
+                <ModelListDropdown
+                  value={model}
+                  onValueChange={(modelId) => {
+                    setModel(modelId);
+                    setOfferingId(undefined);
+                  }}
+                  inputModalities={["text"]}
+                  outputModalities={["decision"]}
+                  selectionPurpose="decision"
+                  pinnedOfferingId={offeringId}
+                  onOfferingPinChange={setOfferingId}
+                  placeholder="Choose a decision model"
+                  aria-label="Decision model"
+                />
+                <Button
+                  icon={busy ? <Loader2 className="animate-spin" /> : <Play />}
+                  variant="primary"
+                  type="button"
+                  onClick={run}
+                  disabled={busy}
+                  className="ml-auto"
+                >
+                  {busy ? "Running decision…" : "Run decision"}
+                </Button>
+              </div>
+              {showIssues && validationErrors.length > 0 && (
+                <div role="alert" className="rounded-lg bg-muted/50 p-3 text-sm">
+                  <p className="font-medium text-foreground">Before it can run</p>
+                  <ul className="mt-1 list-disc space-y-0.5 pl-5 text-muted-foreground">
+                    {validationErrors.map((message, rowIndex, allRows) => (
+                      <li key={message}>
+                        {message}
+                        {rowIndex === allRows.length - 1 && <ErrorAlchemyMenu error={allRows} />}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {error && (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-ink">
+                  {error}
+                  <ErrorAlchemyMenu error={error} />
+                </div>
+              )}
+            </section>
+          </main>
+          <aside className="min-w-0">
+            <OrganizationContextNotice
+              state={organizationState}
+              what="Decisions"
+              onRetry={retry}
+              compact
+            />
+            <DecisionResultCard
+              result={result}
+              loading={recovering}
+              readError={recoverError}
+              onRetry={() => setRecoverAttempt((n) => n + 1)}
+            />
+          </aside>
+        </div>
       </div>
-    </div>
+    </>
+  );
+}
+
+function StepLabel({ step, children }: { step: number; children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+      <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs tabular-nums text-primary-ink">
+        {step}
+      </span>
+      {children}
+    </h2>
   );
 }
 

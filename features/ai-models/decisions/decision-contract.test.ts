@@ -1,5 +1,6 @@
 import {
   decisionQuestionPayload,
+  newQuestion,
   questionErrors,
   type DecisionQuestion,
 } from "./decision-form";
@@ -100,5 +101,20 @@ describe("native decision request contract", () => {
       legend: { 2: { label: "High" } },
     });
     expect(result?.requestId).toBe("request-1");
+  });
+});
+
+describe("adding questions", () => {
+  // A second question used to reuse the first one's name ("decision"), which
+  // the duplicate-name check then refused with no way out.
+  it("gives every new question a name no other question has", () => {
+    const first = newQuestion("choice");
+    const second = newQuestion("choice", [first]);
+    const third = newQuestion("choice", [first, second]);
+    expect(new Set([first.name, second.name, third.name]).size).toBe(3);
+    expect(questionErrors([first, second, third]).some((message) => message.includes("repeated"))).toBe(false);
+  });
+  it("says a question is needed when there are none", () => {
+    expect(questionErrors([])).toContain("Add at least one question.");
   });
 });
