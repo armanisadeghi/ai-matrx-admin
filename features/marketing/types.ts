@@ -775,7 +775,7 @@ export interface CreateBrandAssetInput {
    * promoted from crawl/discovery evidence; "uploaded" = user file upload;
    * "stock" = saved from a licensed-free stock provider (Unsplash).
    */
-  source?:
+  source:
     "discovered" | "uploaded" | "manual" | "generated" | "research" | "stock";
 }
 
@@ -844,7 +844,7 @@ export interface CreateBusinessFactInput {
   kind: BusinessFactKind;
   label: string | null;
   /** `discovered` when a finding the person confirmed (its provenance rides `metadata`); default `manual`. */
-  source?: "manual" | "discovered";
+  source: "manual" | "discovered";
   /** Provenance of a discovered fact: where it was found, by what, and how sure it was. */
   metadata?: Json;
   /**
