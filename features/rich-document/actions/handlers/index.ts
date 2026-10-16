@@ -27,7 +27,6 @@ import "./feedback";
 import "./app";
 import "./server-api";
 import "./answer-tools";
-import "./conversation-section";
 import "./annotations";
 // The non-chat half of the package's `edit` / `open-fullscreen-editor` (message-actions W1a).
 import "./host-edit-bodies";

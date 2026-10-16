@@ -25,7 +25,9 @@ const SCRIPT = join(ROOT, "scripts/check-rich-document-action-ratchet.mjs");
 
 it("no web handler registers an id the package registers", () => {
   require("@/features/rich-document/actions/handlers");
-  expect(recorded.length).toBeGreaterThan(50);
+  // The walker is not blind: it records exactly the rows the ratchet file still lists here.
+  const ratchet = require("../web-action-ratchet.json") as { staysWeb: string[]; awaitingMove: string[] };
+  expect(recorded.length).toBe(ratchet.staysWeb.length + ratchet.awaitingMove.length);
   expect(CHAT_MESSAGE_ACTION_IDS.length).toBeGreaterThan(0);
   expect(recorded.filter((id) => CHAT_MESSAGE_ACTION_IDS.includes(id))).toEqual([]);
 });
