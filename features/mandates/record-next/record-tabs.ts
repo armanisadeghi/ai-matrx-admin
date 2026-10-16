@@ -48,12 +48,13 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   type LucideIcon,
+  BadgeDollarSign,
 } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import type { MandateWorkspaceTab } from "@/features/mandates/workspace/MandateWorkspace";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 
-export type RecordTabId = MandateWorkspaceTab | "overrides-simple" | "runs" | "candidates";
+export type RecordTabId = MandateWorkspaceTab | "overrides-simple" | "runs" | "candidates" | "approvals";
 
 /**
  * A small badge beside a tab's name (the Candidates tab's "2/3"). `tone`
@@ -100,6 +101,8 @@ export const RECORD_TABS: readonly RecordTab[] = [
   // member seats keep their own run history (MandateRecordBody).
   { id: "runs", label: "Runs", icon: History },
   { id: "candidates", label: "Candidates", icon: GitCompareArrows },
+  // Spend approval: status, decision history, held runs, spend (Arman 2026-10-16). Admin route only.
+  { id: "approvals", label: "Approvals", icon: BadgeDollarSign, admin: true },
 ];
 
 /** The hosts' one way to put a per-mandate badge on a tab. Pure. */

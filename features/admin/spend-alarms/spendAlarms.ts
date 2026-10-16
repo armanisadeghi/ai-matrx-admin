@@ -10,6 +10,7 @@
 // door, `alarmActions` decides which actions apply. Both are pure so the guard tests can
 // prove every kind opens something real.
 
+import { approvalSubjectHref } from "@/features/admin/spend-approvals/spendApprovals";
 import { formatCount } from "@ai-matrx/kit/format";
 import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { supabase } from "@/utils/supabase/client";
@@ -581,7 +582,10 @@ export function refHref(key: keyof AlarmRefs, value: string, refs: AlarmRefs = {
     case "organization_id":
       return `/administration/scopes-context/organizations/${value}`;
     case "approval_id":
-      return `/administration/billing/approvals?id=${encodeURIComponent(value)}`;
+      // The subject's own approval page when the alarm names the subject (every hold / opened alarm does).
+      return refs.subject_kind && refs.subject_ref
+        ? approvalSubjectHref(refs.subject_kind, refs.subject_ref)
+        : `/administration/billing/approvals?id=${encodeURIComponent(value)}`;
     case "source_id": {
       const build = refs.source_kind ? SOURCE_KIND_HREF[refs.source_kind] : undefined;
       return build ? build(value) : null;

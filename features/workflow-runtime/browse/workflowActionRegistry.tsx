@@ -13,6 +13,7 @@
 import {
   Archive,
   ArchiveRestore,
+  BadgeDollarSign,
   CalendarClock,
   ClipboardCopy,
   Copy,
@@ -159,6 +160,18 @@ export function buildWorkflowMenu(ctx: WorkflowMenuContext): ItemMenuConfig {
             icon: CalendarClock,
             href: `${base}/${workflow.id}/triggers`,
           },
+          // The admin seat: this workflow's spend approval (status, history, held runs, spend).
+          ...(base === ADMIN_WORKFLOWS_BASE_PATH
+            ? [
+                {
+                  kind: "link" as const,
+                  id: "approvals",
+                  label: "Spend approval",
+                  icon: BadgeDollarSign,
+                  href: `${base}/${workflow.id}/approvals`,
+                },
+              ]
+            : []),
           {
             kind: "link",
             id: "open-new-tab",

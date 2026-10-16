@@ -581,9 +581,48 @@ export function approvalStatusSync(orgId: string | null, subjects: [string, stri
 
 // ── Doors ───────────────────────────────────────────────────────────────────
 
+/** The approvals LIST, paged to and highlighting one approval. Prefer {@link approvalSubjectHref}. */
 export function approvalHref(id: string, seat: ApprovalSeat, orgSlug?: string): string {
   const base = seat === "org" && orgSlug ? orgSpendApprovalsPath(orgSlug) : SPEND_APPROVALS_ADMIN_PATH;
   return `${base}?id=${encodeURIComponent(id)}`;
+}
+
+// ── One subject's approval page (Arman 2026-10-16) ──────────────────────────
+// Every subject has exactly one approval record (billing.run_approval_subject_uq). Its page lives
+// beside the subject where the subject has a home (an agent's Approvals tab, a mandate's Approvals
+// tab, a workflow's /approvals), and under the approvals list for every other kind.
+
+export interface ApprovalSubject {
+  kind: ApprovalSubjectKind;
+  id: string;
+}
+
+/** True for the approvals that belong on this subject's page: its own record, plus (for an agent)
+ *  the mandates it ran and (for a mandate) the agent rows that hold it. */
+export function rowMatchesSubject(r: Pick<SpendApprovalRow, "subject_kind" | "subject_id" | "agent_id" | "feature_mandate_key">, s: ApprovalSubject): boolean {
+  if (r.subject_kind === s.kind && r.subject_id === s.id) return true;
+  if (s.kind === "agent") return r.agent_id === s.id;
+  if (s.kind === "mandate") return r.feature_mandate_key === s.id;
+  return false;
+}
+
+/** The generic record route: `/administration/billing/approvals/<kind>/<id>` (or the org seat's). */
+export function approvalRecordHref(kind: string, subjectId: string, seat: ApprovalSeat = "admin", orgSlug?: string): string {
+  const base = seat === "org" && orgSlug ? orgSpendApprovalsPath(orgSlug) : SPEND_APPROVALS_ADMIN_PATH;
+  return `${base}/${encodeURIComponent(kind)}/${encodeURIComponent(subjectId)}`;
+}
+
+/** THE door to one subject's approval: its home tab when it has one, else the record route.
+ *  Mirror (server): aidream ``run_approvals.approval_url``. */
+export function approvalSubjectHref(kind: string, subjectId: string, seat: ApprovalSeat = "admin", orgSlug?: string): string {
+  if (seat === "admin") {
+    if (kind === "agent") return `/administration/agents/system-agents/agents/${encodeURIComponent(subjectId)}/approvals`;
+    if (kind === "mandate") return `/administration/intelligence/mandates/${encodeURIComponent(subjectId)}/approvals`;
+    if (kind === "workflow" && !subjectId.startsWith("system:")) {
+      return `/administration/automation/workflows/${encodeURIComponent(subjectId)}/approvals`;
+    }
+  }
+  return approvalRecordHref(kind, subjectId, seat, orgSlug);
 }
 
 /** Where the subject itself lives, for this seat. */

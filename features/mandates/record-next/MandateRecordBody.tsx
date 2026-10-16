@@ -47,6 +47,7 @@ import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { featureLabelOf } from "@/features/mandates/feature-label";
 import { MandateNotesPanel } from "@/features/mandates/components/MandateNotesPanel";
+import { SubjectApprovalsPanel } from "@/features/admin/spend-approvals/SubjectApprovalsPanel";
 import { MandateLineageLine } from "@/features/mandates/components/MandateLineageLine";
 import {
   TriadGoalSection,
@@ -380,14 +381,14 @@ function OneMandateRecordBody({
     .map((tab) => tab.id)
     .filter(
       (id): id is MandateWorkspaceTab =>
-        id !== "overrides-simple" && id !== "runs" && id !== "candidates",
+        id !== "overrides-simple" && id !== "runs" && id !== "candidates" && id !== "approvals",
     );
   // Runs and Candidates are live reads, not saved mandate data — they export
   // as Definition.
   const exportTab: MandateWorkspaceTab =
     activeTab === "overrides-simple"
       ? "overrides"
-      : activeTab === "runs" || activeTab === "candidates"
+      : activeTab === "runs" || activeTab === "candidates" || activeTab === "approvals"
         ? "definition"
         : activeTab;
   // The export's scope is the mandate's HOME, never the viewer (mandate-home.ts).
@@ -669,6 +670,23 @@ function OneMandateRecordBody({
           ) : null}
         </div>
       )}
+      {/* THE APPROVALS TAB (admin route): this mandate's one spend approval — status, history,
+          held runs, spend (Arman 2026-10-16; features/admin/spend-approvals). */}
+      {perspective === "system" ? (
+        <div
+          role="tabpanel"
+          id="mandate-panel-approvals"
+          hidden={activeTab !== "approvals"}
+          className={activeTab === "approvals" ? "space-y-3" : "hidden"}
+        >
+          {activeTab === "approvals" ? (
+            <SubjectApprovalsPanel
+              subject={{ kind: "mandate", id: storedMandateKey(data.mandate.mandate_key) }}
+              seat="admin"
+            />
+          ) : null}
+        </div>
+      ) : null}
       {/* THE CANDIDATES TAB (every seat) — beside the ten, never inside one
           (Mandate Candidates, PLAN §2.6). The seat decides the default rung:
           the admin route tries for Everyone, an organization page for that

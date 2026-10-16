@@ -97,6 +97,20 @@ export async function fetchHeldRun(id: string): Promise<HeldRun | null> {
   return data ? fromRow(data as Record<string, unknown>) : null;
 }
 
+/** Held runs the spend-approval gate stopped for these approvals (``refs.approval_id``) — newest first. */
+export async function fetchHeldRunsForApprovals(approvalIds: string[]): Promise<HeldRun[]> {
+  if (approvalIds.length === 0) return [];
+  const { data, error } = await billing()
+    .from("held_run")
+    .select(COLUMNS)
+    .in("refs->>approval_id", approvalIds)
+    .is("deleted_at", null)
+    .order("last_seen_at", { ascending: false })
+    .limit(50);
+  if (error) throw pgErrorToError(error);
+  return ((data ?? []) as Record<string, unknown>[]).map(fromRow);
+}
+
 /** Held runs whose request ids appear on this alarm's occurrences — newest first. */
 export async function fetchHeldRunsForAlarm(alarmId: string): Promise<HeldRun[]> {
   const { data: occ, error: occError } = await billing()

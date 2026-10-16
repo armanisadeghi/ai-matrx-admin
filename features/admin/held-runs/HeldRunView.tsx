@@ -5,6 +5,7 @@
 // "Replay and watch" — the same mandate with the frozen inputs, as the person who clicks, streamed
 // in the chat window. Every replay is kept on the held run (billing.held_run_note_replay).
 
+import { approvalSubjectHref } from "@/features/admin/spend-approvals/spendApprovals";
 import { fetchMandateLabels } from "@/features/admin/spend-alarms/spendAlarms";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -157,6 +158,14 @@ export function HeldRunView({ id }: { id: string }) {
                 {replays.length ? "Replay again" : "Replay and watch"}
               </Button>
               <span className="text-sm text-muted-foreground">{replayCostLine(run.estimated_cost_usd)}</span>
+              {run.refs.approval_id && run.refs.subject_kind && run.refs.subject_id ? (
+                <Link
+                  className="text-sm underline"
+                  href={approvalSubjectHref(run.refs.subject_kind, run.refs.subject_id)}
+                >
+                  Open approval
+                </Link>
+              ) : null}
               {taskId ? (
                 <>
                   <Button variant="outline" onClick={() => void setTask(false)} disabled={taskEnabled === false}>

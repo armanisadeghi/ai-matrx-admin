@@ -12,7 +12,7 @@ import { ApprovalStatusSelect } from "./ApprovalStatusSelect";
 import {
   APPROVAL_STATUS_LABEL,
   approvalFor,
-  approvalHref,
+  approvalSubjectHref,
   decideSpendApproval,
   refreshApprovalStatus,
   underThresholdLabel,
@@ -91,7 +91,7 @@ export function RunApprovalCell({
   }
   if (hit) {
     return (
-      <Link href={approvalHref(hit.id, seat, orgSlug)} className="hover:underline">
+      <Link href={approvalSubjectHref(hit.subject_kind, hit.subject_id, seat, orgSlug)} className="hover:underline">
         <ApprovalStatusText status={hit.status} />
       </Link>
     );

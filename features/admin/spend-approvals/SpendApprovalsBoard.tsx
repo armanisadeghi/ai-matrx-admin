@@ -42,6 +42,9 @@ import {
   fetchSpendApprovals,
   firstRunHref,
   subjectHref,
+  approvalSubjectHref,
+  rowMatchesSubject,
+  type ApprovalSubject,
   mandateKeyHref,
   useApprovalColorKnobs,
   type ApprovalColorKnobs,
@@ -77,6 +80,8 @@ const EVENT_LABEL: Record<string, string> = {
   withdrawn: "Withdrawn",
   expired: "Expired",
   reset: "Tracking reset",
+  volume_hold: "Held by volume",
+  merged: "Duplicates merged",
 };
 
 function useApprovals(orgId: string | null) {
@@ -104,7 +109,7 @@ function eventUntil(e: SpendApprovalEvent): string | null {
   return d && typeof d.expires_at === "string" ? d.expires_at : null;
 }
 
-function HistoryList({ id }: { id: string }) {
+export function HistoryList({ id }: { id: string }) {
   const [events, setEvents] = useState<SpendApprovalEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -328,10 +333,16 @@ export function SpendApprovalsBoard({
   orgId,
   seat,
   orgSlug,
+  subject,
+  onRows,
 }: {
   orgId: string | null;
   seat: ApprovalSeat;
   orgSlug?: string;
+  /** One subject's page: only the approvals that belong to it (rowMatchesSubject). */
+  subject?: ApprovalSubject;
+  /** The subject's rows, each time they load or change (the subject page's history + held runs). */
+  onRows?: (rows: SpendApprovalRow[]) => void;
 }) {
   const { rows, setRows, loading, error, reload } = useApprovals(orgId);
   const { format } = useCostDisplay();
@@ -345,7 +356,12 @@ export function SpendApprovalsBoard({
   const [bulk, setBulk] = useState<{ decision: "approve" | "reject" | "reset"; rows: SpendApprovalRow[] } | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  const visible = rows.filter((r) => status === "all" || r.status === status);
+  const own = subject ? rows.filter((r) => rowMatchesSubject(r, subject)) : rows;
+  const visible = own.filter((r) => status === "all" || r.status === status);
+  useEffect(() => {
+    if (onRows && !loading) onRows(own);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- own is derived from rows + subject
+  }, [rows, loading, subject?.kind, subject?.id]);
 
   const perRunTone = (v: number | null | undefined): Tone => (knobs ? costTone(v, knobs.avgRedUsd, knobs.avgAmberUsd) : null);
   const monthlyTone = (v: number | null | undefined): Tone =>
@@ -438,6 +454,24 @@ export function SpendApprovalsBoard({
       width: 140,
       cell: (r) => <span className="whitespace-nowrap text-xs">{SUBJECT_KIND_LABEL[r.subject_kind]}</span>,
     },
+    ...(subject && own.length <= 1
+      ? []
+      : [
+          {
+            id: "approval_page",
+            header: "Approval",
+            accessorFn: (r: SpendApprovalRow) => r.id,
+            width: 90,
+            cell: (r: SpendApprovalRow) => (
+              <Link
+                href={approvalSubjectHref(r.subject_kind, r.subject_id, seat, orgSlug)}
+                className="whitespace-nowrap text-xs text-primary hover:underline"
+              >
+                Open
+              </Link>
+            ),
+          } satisfies MatrxColumnDef<SpendApprovalRow>,
+        ]),
     // Feature → Key → Agent: the same identity the mandate list leads with (Mandate → Feature → Key → Holder).
     {
       id: "feature",
@@ -774,7 +808,7 @@ export function SpendApprovalsBoard({
           columns={columns}
           getRowId={(r) => r.id}
           isLoading={loading}
-          tableId={`spend-approvals-${seat}`}
+          tableId={subject ? `spend-approvals-${seat}-subject` : `spend-approvals-${seat}`}
           viewTabsStore={{
             views: viewPrefs.savedViews ?? [],
             onChange: (savedViews) => setViewPrefs({ savedViews }),
@@ -782,7 +816,7 @@ export function SpendApprovalsBoard({
           focusRowId={focusId}
           headerWrap="two-lines"
           read={readOf({ loading, error }, { what: "spend approvals" })}
-          emptyState={{ title: "No spend approvals" }}
+          emptyState={{ title: subject ? "No spend approval for this" : "No spend approvals" }}
           selection={{
             selectedIds,
             onSelectedIdsChange: setSelectedIds,
