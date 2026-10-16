@@ -538,3 +538,16 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
     },
   });
 }
+
+// Page-load trace markers (`performance.mark("load:…")`, lib/diagnostics/loadTrace.ts) run at
+// module load in browser code. jsdom's `performance` has no `mark`, so every suite that imports a
+// marked module crashed before its first test. A no-op stand-in keeps those modules importable.
+{
+  const perf = globalThis.performance as Performance & { mark?: unknown; measure?: unknown };
+  if (perf && typeof perf.mark !== "function") {
+    (perf as { mark: (name: string) => undefined }).mark = () => undefined;
+  }
+  if (perf && typeof perf.measure !== "function") {
+    (perf as { measure: (name: string) => undefined }).measure = () => undefined;
+  }
+}
