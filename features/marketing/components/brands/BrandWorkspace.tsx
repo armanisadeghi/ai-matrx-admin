@@ -59,6 +59,7 @@ import { brandAccountHref } from "@/features/marketing/social/property-account-h
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { businessFactValueText } from "@/features/marketing/lib/business-fact-value";
+import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { BrandAiVisibilityCard } from "@/features/marketing/seo/ai-visibility/brand/BrandAiVisibilityCard";
 import { BrandTopicalMapCard } from "@/features/marketing/seo/topical-map/components/BrandTopicalMapCard";
@@ -478,9 +479,11 @@ function BusinessFactRow({
           {subLabel}
         </span>
       ) : null}
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={value}>
-        {value}
-      </span>
+      {contactFactValue({ kind: fact.kind, value, className: "flex min-w-0 flex-1 text-sm text-foreground" }) ?? (
+        <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={value}>
+          {value}
+        </span>
+      )}
       {copies > 1 ? (
         <span
           className="shrink-0 type-meta tabular-nums text-muted-foreground"

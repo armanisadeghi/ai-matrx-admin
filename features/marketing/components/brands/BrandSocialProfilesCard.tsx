@@ -36,6 +36,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { trackableOwn, useTrackOwn } from "@/features/marketing/social/components/useTrackOwn";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
+import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { BrandProperty } from "@/features/marketing/types";
@@ -196,32 +197,68 @@ export function BrandSocialProfilesCard({
             ) : (
               <PropertyKindMark kind={r.platform} size={28} />
             );
-          const body = (
-            <span className="flex min-w-0 items-center gap-2.5">
-              {avatar}
-              <span className="flex min-w-0 flex-col leading-tight">
-                <span className="flex min-w-0 items-center gap-1.5">
-                  <span className="truncate text-sm font-medium text-foreground">{r.name}</span>
-                  {a && showOwnerChip(a, brandKind) ? (
-                    <PersonOwnerChip canEdit={canEdit} propertyId={a.propertyId} ownerName={a.ownerName ?? null} organizationId={organizationId} brandId={brandId} />
-                  ) : null}
-                </span>
-                {busyRow === r.id && progress ? (
-                  <span className="truncate text-xs text-primary">{progress}</span>
-                ) : (
-                  <span className="truncate text-xs text-muted-foreground">
-                    {[platformLabel(r.platform), r.handle || null].filter(Boolean).join(" · ")}
-                  </span>
-                )}
-              </span>
+          // The handle is THE contact value (its own peek and copy), so it sits outside the row's link.
+          const profileValue = a && r.handle ? (a.profileUrl || a.handle) : null;
+          const handleValue = profileValue
+            ? contactFactValue({ kind: "social_profile", value: profileValue, platform: a?.platform, className: "inline-flex min-w-0 text-xs" })
+            : null;
+          const nameLine = (
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span className="truncate text-sm font-medium text-foreground">{r.name}</span>
+              {a && showOwnerChip(a, brandKind) ? (
+                <PersonOwnerChip canEdit={canEdit} propertyId={a.propertyId} ownerName={a.ownerName ?? null} organizationId={organizationId} brandId={brandId} />
+              ) : null}
             </span>
           );
-          return r.href ? (
-            <Link href={r.href} className="block min-w-0 max-md:flex max-md:min-h-11 max-md:items-center" data-clickable="">
-              {body}
-            </Link>
-          ) : (
-            body
+          const subLine =
+            busyRow === r.id && progress ? (
+              <span className="truncate text-xs text-primary">{progress}</span>
+            ) : handleValue ? (
+              <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                <span className="shrink-0">{platformLabel(r.platform)} ·</span>
+                {handleValue}
+              </span>
+            ) : (
+              <span className="truncate text-xs text-muted-foreground">
+                {[platformLabel(r.platform), r.handle || null].filter(Boolean).join(" · ")}
+              </span>
+            );
+          const text = (
+            <span className="flex min-w-0 flex-col leading-tight">
+              {nameLine}
+              {subLine}
+            </span>
+          );
+          if (!r.href) {
+            return (
+              <span className="flex min-w-0 items-center gap-2.5">
+                {avatar}
+                {text}
+              </span>
+            );
+          }
+          if (!handleValue) {
+            return (
+              <Link href={r.href} className="block min-w-0 max-md:flex max-md:min-h-11 max-md:items-center" data-clickable="">
+                <span className="flex min-w-0 items-center gap-2.5">
+                  {avatar}
+                  {text}
+                </span>
+              </Link>
+            );
+          }
+          return (
+            <span className="flex min-w-0 items-center gap-2.5 max-md:min-h-11">
+              <Link href={r.href} className="shrink-0" data-clickable="" aria-label={r.name}>
+                {avatar}
+              </Link>
+              <span className="flex min-w-0 flex-col leading-tight">
+                <Link href={r.href} className="block min-w-0" data-clickable="">
+                  {nameLine}
+                </Link>
+                {subLine}
+              </span>
+            </span>
           );
         },
       },
