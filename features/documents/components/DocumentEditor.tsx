@@ -65,6 +65,7 @@ import {
   ICommandService,
   type IDocumentData,
   type Univer,
+  IUndoRedoService,
 } from "@univerjs/core";
 import { defaultTheme } from "@univerjs/themes";
 import { UniverDocsCorePreset } from "@univerjs/preset-docs-core";
@@ -134,6 +135,7 @@ import { matrxImagePorts } from "@ai-matrx/office/univer";
 import { disposeUniverInstance } from "@ai-matrx/office/univer";
 import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
+import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
@@ -154,7 +156,8 @@ import type {
   DocumentAwareness,
   DocumentCollabFactory,
 } from "@ai-matrx/office/docs";
-import type { CommandServiceLike } from "@ai-matrx/office/univer/collab";
+import type { CommandServiceLike, DocsOtNotice } from "@ai-matrx/office/univer/collab";
+import { getLatestDocumentSnapshot } from "@ai-matrx/office/docs";
 import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 
 import { getClaimsUser } from "@ai-matrx/auth";
@@ -402,6 +405,7 @@ export default function DocumentEditor({
         },
         editable: () => editableRef.current,
         unitId: () => apiRef.current?.getActiveDocument()?.getId?.() ?? null,
+        undoRedo: () => resolveUndoRedoService(kept.univer),
       });
     const parked = model.takeParkedEditor() as ParkedDocumentEditor<KeptUniver> | null;
     if (parked) {
@@ -414,11 +418,7 @@ export default function DocumentEditor({
         booted = kept;
         setUnitId(kept.unitId);
         setBootState("ready");
-        if (collabRef.current) {
-          void model.startCollab(collabFactoryFor(documentId)).catch((err) => {
-            console.warn("[document] collab boot failed — falling back to solo mode", err);
-          });
-        }
+        if (collabRef.current) void startDocumentRoom(model, documentId);
       } catch (err) {
         kept.host.remove();
         disposeUniverInstance(kept.univer);
@@ -529,14 +529,7 @@ export default function DocumentEditor({
         booted = kept;
         setBootState("ready");
 
-        if (collabRef.current) {
-          void model.startCollab(collabFactoryFor(documentId)).catch((err) => {
-            console.warn(
-              "[document] collab boot failed — falling back to solo mode",
-              err,
-            );
-          });
-        }
+        if (collabRef.current) void startDocumentRoom(model, documentId);
       } catch (err) {
         if (cancelled) return;
         setLoadError(err instanceof Error ? err.message : String(err));
@@ -1032,6 +1025,85 @@ function resolveCommandService(univer: Univer): CommandServiceLike {
     );
   }
   return resolved;
+}
+
+/** Univer's undo/redo service for one instance (the co-editing room rebases its items over peers' edits). */
+function resolveUndoRedoService(univer: Univer): unknown {
+  const injector = (univer as unknown as { __getInjector?: () => { get: <T>(token: unknown) => T | undefined } }).__getInjector?.();
+  try {
+    return injector?.get<unknown>(IUndoRedoService as unknown) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** What a co-editing notice says, in plain words (our toast). */
+function showCollabNotice(n: DocsOtNotice): void {
+  switch (n.kind) {
+    case "rolled_back":
+      toast({
+        title: n.reason === "replace" ? "This document was restored" : "Your last edit was undone",
+        description:
+          n.reason === "replace"
+            ? "Someone restored an earlier version while you were typing."
+            : "It clashed with a change someone else made at the same moment.",
+        variant: n.reason === "replace" ? "default" : "destructive",
+      });
+      return;
+    case "overridden":
+      toast({ title: "Someone edited the same text", description: "Their change came in last, so it was kept." });
+      return;
+    case "read_only":
+      toast({ title: "This document stopped syncing", description: "Reload the page to keep editing.", variant: "destructive" });
+      return;
+    case "not_shared":
+      toast({ title: "That change was undone", description: "It can't be shared with other editors yet." });
+      return;
+    case "not_live":
+      toast({ title: "Reconnecting", description: "Your last keystroke was made while reconnecting and was not kept." });
+      return;
+  }
+}
+
+/**
+ * Join the document's co-editing room: the ordered log (C3) when the document's room exists or
+ * `collab.ot_rooms` opens one, otherwise the 0.6 relay. A document already on the ordered log never falls back
+ * to the relay (a relay seat's saves would never reach the room); a failed start says so.
+ */
+async function startDocumentRoom(model: DocumentModel, documentId: string): Promise<void> {
+  let ordered = false;
+  try {
+    const { documentUsesOrderedRoom, documentOtFactory } = await import("@ai-matrx/office/univer/collab");
+    const knob = await readCollabOtRooms();
+    ordered = await documentUsesOrderedRoom(documentId, knob, async () => {
+      const res = await getLatestDocumentSnapshot(documentId);
+      return res.success && res.data === null;
+    });
+    if (!ordered) {
+      await model.startCollab(collabFactoryFor(documentId));
+      return;
+    }
+    const { data: userData } = await getClaimsUser(supabase);
+    const uid = userData?.user?.id;
+    if (!uid) return;
+    const clientId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `c-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    await model.startOtRoom(
+      documentOtFactory({
+        documentId,
+        uid,
+        clientId,
+        readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
+        onNotice: showCollabNotice,
+        onIncident: (i) => console.warn(`[document] co-editing incident ${i.kind} at rev ${i.rev}`, i.detail ?? ""),
+      }),
+    );
+  } catch (err) {
+    console.warn("[document] co-editing room did not start", err);
+    if (ordered) {
+      toast({ title: "Live editing is not connected", description: "Reload the page before editing this document.", variant: "destructive" });
+    }
+  }
 }
 
 /**

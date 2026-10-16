@@ -395,6 +395,7 @@ create table if not exists platform.change_plan (
 );
 create index if not exists change_plan_actor on platform.change_plan (actor, created_at desc);
 create index if not exists change_plan_roots on platform.change_plan using gin (root_ids);
+create index if not exists change_plan_undone_by on platform.change_plan (undone_by) where undone_by is not null;
 
 create table if not exists platform.change_item (
   plan_id    uuid not null references platform.change_plan (id) on delete cascade,
@@ -416,14 +417,9 @@ alter table platform.change_plan enable row level security;
 alter table platform.change_item enable row level security;
 drop policy if exists platform_admin_read on platform.change_plan;
 create policy platform_admin_read on platform.change_plan for select using ((select public.is_platform_admin()));
-drop policy if exists actor_read on platform.change_plan;
-create policy actor_read on platform.change_plan for select to authenticated using (actor = (select auth.uid()));
 drop policy if exists platform_admin_read on platform.change_item;
 create policy platform_admin_read on platform.change_item for select using ((select public.is_platform_admin()));
-drop policy if exists actor_read on platform.change_item;
-create policy actor_read on platform.change_item for select to authenticated
-  using (exists (select 1 from platform.change_plan p where p.id = plan_id and p.actor = (select auth.uid())));
-grant select on platform.change_plan, platform.change_item to authenticated, service_role;
+grant select on platform.change_plan, platform.change_item to service_role;
 
 comment on table platform.change_plan is 'Move and archive change log (System): one row per previewed or committed change. Plan § 14.2.';
 comment on table platform.change_item is 'Move and archive change log (System): every row the engine wrote, with old values. Plan § 14.2.';
@@ -506,6 +502,33 @@ on conflict (feature, key) do nothing;
 -- archive_confirm_over is widened to the platform: a person may set it too (plan § 9, § 10).
 update platform.feature_knob set overridable_by = '{organization,user}'
  where feature = 'custom' and key = 'archive_confirm_over' and not ('user' = any(overridable_by));
+
+
+-- ------------------------------------------------------------ registration (machinery)
+insert into platform.entity_types (token, schema_name, table_name, label, audit_class, audit_class_reason, table_ref, type)
+values
+  ('relationship_rule', 'platform', 'relationship_rule', 'Relationship rule', 'machinery',
+   'Engine register read only by platform.change_records and the guards; no person reads it in the app.', 'platform.relationship_rule'::regclass, 'system'),
+  ('change_plan', 'platform', 'change_plan', 'Change plan', 'machinery',
+   'Change log written and read by platform.change_records; people see it only through that door.', 'platform.change_plan'::regclass, 'system'),
+  ('change_item', 'platform', 'change_item', 'Change item', 'machinery',
+   'Change log rows written and read by platform.change_records; people see them only through that door.', 'platform.change_item'::regclass, 'system'),
+  ('org_move_txn', 'entity_data_private', 'org_move_txn', 'Change marker', 'machinery',
+   'Transaction marker the engine writes and deletes inside one transaction; guards read it.', 'entity_data_private.org_move_txn'::regclass, 'system')
+on conflict (token) do nothing;
+alter table entity_data_private.org_move_txn enable row level security;
+
+
+-- ------------------------------------------------------------ access decisions (server-only definers)
+insert into platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason,
+  declared_by, non_client_lane, signed_in_callers, anonymous_callers)
+select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid), array(select unnest(p.proargtypes))::oid[],
+       'Move and archive machinery; takes no entity id from a caller.', '20261016100000_move_archive_register_and_change_log',
+       'server_only: migrations and the move-and-archive engine call this; no client ever calls it directly.', false, false
+  from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'platform' and p.proname in ('declare_relationship_rule', 'classify_relationships', 'change_marker')
+   and not exists (select 1 from platform.client_callable_door d where d.schema_name = n.nspname and d.function_name = p.proname
+                     and d.identity_args = pg_catalog.pg_get_function_identity_arguments(p.oid));
 
 -- ------------------------------------------------------------------------ run it
 select platform.classify_relationships();

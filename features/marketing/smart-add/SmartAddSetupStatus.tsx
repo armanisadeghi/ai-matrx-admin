@@ -72,6 +72,7 @@ export function SmartAddBasicsGate({ brandId }: { brandId: string; organizationI
           <HumanGatePanel
             entityType="web_brand"
             entityId={brandId}
+            bare
             onAnswered={() => {
               setOpen(false);
               void queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup", brandId] });

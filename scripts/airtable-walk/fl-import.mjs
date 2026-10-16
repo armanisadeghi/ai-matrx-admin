@@ -12,7 +12,13 @@ await page.getByText("Import", { exact: true }).last().click();
 await page.waitForTimeout(800);
 const [fc] = await Promise.all([page.waitForEvent("filechooser"), page.getByText("Notion export (.zip)").click()]);
 await fc.setFiles("/Users/armanisadeghi/code/aidream/aidream/services/notion_import/fixtures/juniper_vale_export.zip");
-for (let i = 0; i < 18; i++) { await page.waitForTimeout(5000); const t = await page.locator("body").innerText(); if (/unmatched|matched|imported|failed|stopped/i.test(t) && i > 1) { } }
-await page.screenshot({ path: process.env.OUT + "/import.png", fullPage: false });
-console.log((await page.locator("body").innerText()).slice(0, 3000));
+const snap = async (n) => { await page.screenshot({ path: `${process.env.OUT}/import-${n}.png`, timeout: 120000 }).catch(() => {}); };
+for (let i = 0; i < 20; i++) {
+  await page.waitForTimeout(6000);
+  const t = await page.evaluate(() => document.body.innerText, null).catch(() => "(busy)");
+  const hit = t.split("\n").filter((l) => /unmatched|matched|imported|failed|stopped|Admin|report|rows|pages/i.test(l) && l.length < 200);
+  console.log(i, page.url().slice(-40), hit.slice(0, 12).join(" | "));
+  if (i % 4 === 3) await snap(i);
+}
+await snap("final");
 await browser.close();

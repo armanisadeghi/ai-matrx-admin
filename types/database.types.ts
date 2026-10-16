@@ -28137,6 +28137,7 @@ export type Database = {
         Args: { p_hash: string; p_ref: string; p_rev: number; p_room: string }
         Returns: undefined
       }
+      _collab_floor: { Args: { p_room: string }; Returns: number }
       _collab_knob: {
         Args: { p_default: number; p_key: string; p_org: string }
         Returns: number
@@ -98738,6 +98739,72 @@ export type Database = {
         }
         Relationships: []
       }
+      page_vitals: {
+        Row: {
+          app_version: string | null
+          cls: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          device: string | null
+          fcp_ms: number | null
+          id: string
+          inp_ms: number | null
+          lcp_ms: number | null
+          metadata: Json
+          nav_type: string | null
+          organization_id: string
+          route_pattern: string
+          stage: string
+          ttfb_ms: number | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          app_version?: string | null
+          cls?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          device?: string | null
+          fcp_ms?: number | null
+          id?: string
+          inp_ms?: number | null
+          lcp_ms?: number | null
+          metadata?: Json
+          nav_type?: string | null
+          organization_id: string
+          route_pattern: string
+          stage: string
+          ttfb_ms?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          app_version?: string | null
+          cls?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          device?: string | null
+          fcp_ms?: number | null
+          id?: string
+          inp_ms?: number | null
+          lcp_ms?: number | null
+          metadata?: Json
+          nav_type?: string | null
+          organization_id?: string
+          route_pattern?: string
+          stage?: string
+          ttfb_ms?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       provision_base_contract_pending: {
         Row: {
           attached_at: string | null
@@ -100959,6 +101026,25 @@ export type Database = {
         }
         Relationships: []
       }
+      page_vitals_daily: {
+        Row: {
+          cls_p50: number | null
+          cls_p90: number | null
+          day: string | null
+          fcp_p50: number | null
+          fcp_p90: number | null
+          inp_p50: number | null
+          inp_p90: number | null
+          lcp_p50: number | null
+          lcp_p90: number | null
+          loads: number | null
+          route_pattern: string | null
+          stage: string | null
+          ttfb_p50: number | null
+          ttfb_p90: number | null
+        }
+        Relationships: []
+      }
       v_deprecated_table_access: {
         Row: {
           calls: number | null
@@ -101765,6 +101851,10 @@ export type Database = {
       _outsider_parent_matches: {
         Args: { p_id: string; p_parent: string; p_resource: string }
         Returns: boolean
+      }
+      _page_vital_clamp: {
+        Args: { p_max: number; p_value: string }
+        Returns: number
       }
       _pick_list_born_in_store: {
         Args: {
@@ -104482,6 +104572,10 @@ export type Database = {
         Returns: number
       }
       record_entity_title: { Args: { p_id: string }; Returns: string }
+      record_page_vitals: {
+        Args: { p_organization_id: string; p_rows: Json }
+        Returns: number
+      }
       record_removal_rights: {
         Args: { p_id: string; p_type: string }
         Returns: Json
@@ -105193,6 +105287,15 @@ export type Database = {
           inserted: number
           removed: number
           updated: number
+        }[]
+      }
+      system_content_person_owner_report: {
+        Args: never
+        Returns: {
+          offenders: number
+          sample_ids: string[]
+          table_name: string
+          trigger_attached: boolean
         }[]
       }
       table_lives_in: { Args: { p_table_id: string }; Returns: string }
@@ -148258,6 +148361,347 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_site_kpis"
             referencedColumns: ["site_id"]
+          },
+        ]
+      }
+      temp_brand_firmographic: {
+        Row: {
+          annual_revenue: string | null
+          brand_id: string
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          employee_count_range: string | null
+          entity_type: string | null
+          funding: string | null
+          google_place_id: string | null
+          id: string
+          knowledge_graph_id: string | null
+          languages_spoken: string | null
+          live_chat: string | null
+          metadata: Json
+          organization_id: string
+          ownership_type: string | null
+          parent_company_name: string | null
+          parent_party_id: string | null
+          payment_methods: string | null
+          price_range: string | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          response_time: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          target_market: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          annual_revenue?: string | null
+          brand_id: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          employee_count_range?: string | null
+          entity_type?: string | null
+          funding?: string | null
+          google_place_id?: string | null
+          id?: string
+          knowledge_graph_id?: string | null
+          languages_spoken?: string | null
+          live_chat?: string | null
+          metadata?: Json
+          organization_id: string
+          ownership_type?: string | null
+          parent_company_name?: string | null
+          parent_party_id?: string | null
+          payment_methods?: string | null
+          price_range?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          response_time?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          target_market?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          annual_revenue?: string | null
+          brand_id?: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          employee_count_range?: string | null
+          entity_type?: string | null
+          funding?: string | null
+          google_place_id?: string | null
+          id?: string
+          knowledge_graph_id?: string | null
+          languages_spoken?: string | null
+          live_chat?: string | null
+          metadata?: Json
+          organization_id?: string
+          ownership_type?: string | null
+          parent_company_name?: string | null
+          parent_party_id?: string | null
+          payment_methods?: string | null
+          price_range?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          response_time?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          target_market?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "temp_brand_firmographic_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      temp_brand_presence: {
+        Row: {
+          brand_id: string
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          domain: string | null
+          follower_count: number | null
+          id: string
+          label: string
+          location_id: string | null
+          metadata: Json
+          organization_id: string
+          platform_name: string | null
+          presence_type: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          rating: number | null
+          review_count: number | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          source_fact_id: string | null
+          source_item_id: string | null
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          domain?: string | null
+          follower_count?: number | null
+          id?: string
+          label: string
+          location_id?: string | null
+          metadata?: Json
+          organization_id: string
+          platform_name?: string | null
+          presence_type: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          rating?: number | null
+          review_count?: number | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_fact_id?: string | null
+          source_item_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          domain?: string | null
+          follower_count?: number | null
+          id?: string
+          label?: string
+          location_id?: string | null
+          metadata?: Json
+          organization_id?: string
+          platform_name?: string | null
+          presence_type?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          rating?: number | null
+          review_count?: number | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_fact_id?: string | null
+          source_item_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "temp_brand_presence_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "temp_brand_presence_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "business_location"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "temp_brand_presence_source_fact_id_fkey"
+            columns: ["source_fact_id"]
+            isOneToOne: false
+            referencedRelation: "business_fact"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "temp_brand_presence_source_item_id_fkey"
+            columns: ["source_item_id"]
+            isOneToOne: false
+            referencedRelation: "discovered_item"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      temp_brand_recognition: {
+        Row: {
+          brand_id: string
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          issuer_name: string | null
+          issuer_party_id: string | null
+          metadata: Json
+          name: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          recognition_type: string
+          reference_number: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          source_fact_id: string | null
+          source_item_id: string | null
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          valid_from_text: string | null
+          valid_until_text: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+          year: number | null
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          issuer_name?: string | null
+          issuer_party_id?: string | null
+          metadata?: Json
+          name: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          recognition_type: string
+          reference_number?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_fact_id?: string | null
+          source_item_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          valid_from_text?: string | null
+          valid_until_text?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+          year?: number | null
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          issuer_name?: string | null
+          issuer_party_id?: string | null
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          recognition_type?: string
+          reference_number?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_fact_id?: string | null
+          source_item_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          valid_from_text?: string | null
+          valid_until_text?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "temp_brand_recognition_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "temp_brand_recognition_source_fact_id_fkey"
+            columns: ["source_fact_id"]
+            isOneToOne: false
+            referencedRelation: "business_fact"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "temp_brand_recognition_source_item_id_fkey"
+            columns: ["source_item_id"]
+            isOneToOne: false
+            referencedRelation: "discovered_item"
+            referencedColumns: ["id"]
           },
         ]
       }
