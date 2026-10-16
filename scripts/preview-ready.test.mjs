@@ -43,10 +43,42 @@ test("the walk cap's refusal and parking are named as such, not as a page error"
 });
 
 test("STALE SERVER: the installed package exports the name — a restart fixes it (the GmailMark case)", async () => {
-  const d = await diagnoseBuildError(turbopackError("components/icons/google-brand.tsx", "GmailMark"), ROOT);
-  assert.equal(d.stale, true, d.lines.join("\n"));
-  assert.match(d.lines.join("\n"), /export GmailMark is missing \(imported in components\/icons\/google-brand\.tsx:10\)/);
-  assert.match(d.lines.join("\n"), /STALE SERVER/);
+  const root = mkdtempSync(join(tmpdir(), "preview-ready-judge-"));
+  try {
+    symlinkSync(join(ROOT, "node_modules"), join(root, "node_modules"));
+    mkdirSync(join(root, "components", "icons"), { recursive: true });
+    writeFileSync(
+      join(root, "components", "icons", "google-brand.tsx"),
+      'import {\n  GmailMark as PkgGmail,\n} from "@ai-matrx/chat/utils/connectors/marks";\nexport const m = PkgGmail;\n',
+    );
+    const d = await diagnoseBuildError(turbopackError("components/icons/google-brand.tsx", "GmailMark"), root);
+    assert.equal(d.stale, true, d.lines.join("\n"));
+    assert.match(d.lines.join("\n"), /export GmailMark is missing \(imported in components\/icons\/google-brand\.tsx:10\)/);
+    assert.match(d.lines.join("\n"), /STALE SERVER/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("an export missing from one of OUR modules is CODE even when the file also imports an @ai-matrx package", async () => {
+  const root = mkdtempSync(join(tmpdir(), "preview-ready-judge-"));
+  try {
+    symlinkSync(join(ROOT, "node_modules"), join(root, "node_modules"));
+    mkdirSync(join(root, "features"), { recursive: true });
+    writeFileSync(
+      join(root, "features", "y.tsx"),
+      'import { Button } from "@ai-matrx/design-system/controls";\nimport { NotExportedHere } from "@/components/x";\nexport const z = [Button, NotExportedHere];\n',
+    );
+    const d = await diagnoseBuildError(turbopackError("features/y.tsx", "NotExportedHere"), root);
+    assert.equal(d.stale, false, d.lines.join("\n"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a 200 from a public route without a sign-in cookie is NOT READY", () => {
+  assert.equal(verdictOf({ status: 200, body: "<html></html>", finalPath: "/dashboard", signedInCookie: false }, "/dashboard").kind, "signed-out");
+  assert.equal(verdictOf({ status: 200, body: "<html></html>", finalPath: "/dashboard", signedInCookie: true }, "/dashboard").ok, true);
 });
 
 test("CODE: an import ahead of the installed package is named with its owner, never restarted", async () => {

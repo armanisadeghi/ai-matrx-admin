@@ -234,7 +234,8 @@ function request(path, { cookies = {}, timeoutMs = 30000, host = HOST } = {}) {
   });
 }
 
-const deadline = started + budgetSec * 1000;
+// The budget starts here, after any install wait, so a long install never eats the page check.
+const deadline = Date.now() + budgetSec * 1000;
 const left = () => Math.max(0, deadline - Date.now());
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -325,7 +326,7 @@ async function signedInLoad(target) {
         path = loc.pathname + loc.search;
         continue;
       }
-      return { ...r, finalPath: path, hops };
+      return { ...r, finalPath: path, hops, signedInCookie: Object.keys(cookies).some((k) => /^sb-[\w-]*auth/.test(k)) /* sb-matrx-auth-v2.N (chunked) */ };
     }
     return { status: 0, error: "too many redirects", finalPath: path, hops };
   } finally {
@@ -338,6 +339,7 @@ if (!(await waitForListener())) notReady(`port ${PORT} never answered in ${Math.
 say(`listener: port ${PORT} answers (${secs()}s)`);
 
 let restarted = false;
+let verified = false;
 let capWaitSaid = 0;
 let settleWaits = 0;
 for (let attempt = 1; attempt <= 2; attempt++) {
@@ -365,18 +367,29 @@ for (let attempt = 1; attempt <= 2; attempt++) {
   }
   const v = verdictOf(r, route, say);
   if (v.ok) {
+    verified = true;
     say(`sign-in: ${route} loaded signed in as ${member ? "test@test.com" : "admin@admin.com"} on ${HOST} (${secs()}s)`);
     break;
   }
   say(`sign-in: FAILED — ${v.why}`);
   if (v.kind === "timeout") notReady(`${route} did not load within ${Math.round(budgetSec / 60)} min (${r.error}; machine load ${os.loadavg()[0].toFixed(0)})`);
+  if (v.kind !== "page-error") {
+    if (v.kind === "signed-out" && attempt === 1) continue; // one retry: a nonce raced another mint
+    notReady(v.why);
+  }
   const d = await diagnoseBuildError(`${r.body || ""}\n${logTailSince(logStart)}`, ROOT);
   for (const line of d.lines) say(line);
   if (d.stale && repair && !restarted) {
+    // A restart under someone else's held run is exactly what holds exist to stop.
+    const others = otherHoldsNow();
+    if (others.length) {
+      notReady(`the preview serves code from before a package install, and another run holds it (${others.join(", ")}); it restarts when that run ends`);
+    }
     say("repair: restarting the preview so it serves the installed packages");
     restartServer();
     restarted = true;
     if (!(await waitForListener())) notReady("the restarted preview never answered");
+    attempt--; // the restart earns a fresh look, never a READY without one
     continue;
   }
   // Another session's edit in progress: those usually settle within a minute (the next save fixes
@@ -391,6 +404,9 @@ for (let attempt = 1; attempt <= 2; attempt++) {
   if (v.kind === "signed-out" && attempt === 1) continue; // one retry: a nonce raced another mint
   notReady(v.why);
 }
+
+// READY only after a verified signed-in load — never by falling out of the loop.
+if (!verified) notReady(`${route} never loaded signed in`);
 
 // ── 6b. warm the run's other routes ──────────────────────────────────────────
 for (const extra of warm) {
