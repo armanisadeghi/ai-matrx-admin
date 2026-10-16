@@ -33,7 +33,13 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useLateIdleReady } from "@/lib/boot/lateIdle";
-import { SHELL_COUNTS_QUERY_KEY, invalidateShellCounts, useShellCounts, type ShellCounts } from "@/lib/boot/shellCounts";
+import {
+  SHELL_COUNTS_QUERY_KEY,
+  invalidateShellCounts,
+  shellSectionFailed,
+  useShellCounts,
+  type ShellCounts,
+} from "@/lib/boot/shellCounts";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -44,6 +50,7 @@ import {
   clearInbox,
   fetchInbox,
   fetchInboxKinds,
+  fetchInboxSummary,
   fetchInboxOrganizations,
   fetchMyWorkWaiting,
   markAllMyNotificationsRead,
@@ -81,6 +88,7 @@ export const INBOX_PAGE_SIZE = 50;
 
 export const INBOX_QUERY_KEY = ["inbox"] as const;
 const feedPrefix = (userId: string | null) => [...INBOX_QUERY_KEY, "feed", userId] as const;
+const summaryKey = (userId: string | null) => [...INBOX_QUERY_KEY, "summary", userId] as const;
 const workKey = (userId: string | null) => [...INBOX_QUERY_KEY, "work-waiting", userId] as const;
 
 // `custom.inbox_counts` and `my_inbox_summary` are real but not free; the header mounts this on
@@ -141,12 +149,24 @@ export function useInboxCounts(): InboxCounts {
   // `custom.inbox_counts` counts them — so the approvals share leaves them out here and each
   // waiting change adds one to the bell, not two.
   const approvalCount = approvals.unknown ? null : approvals.count - approvals.storeCount;
-  const work =
-    shell.isError || shell.data === undefined
-      ? null
-      : shell.data.work.reduce((sum, o) => sum + o.waiting, 0);
-  const workSnoozed = (shell.data?.work ?? []).reduce((sum, o) => sum + o.snoozed, 0);
-  const s = shell.data?.inbox ?? null;
+  // Each section falls back to its OWN old read only when ITS count came back null (or the whole
+  // read failed): one failing count never blanks the others.
+  const inboxFailed = shellSectionFailed(shell, "inbox");
+  const workFailed = shellSectionFailed(shell, "work");
+  const summaryFallback = useQuery({
+    queryKey: summaryKey(userId),
+    queryFn: fetchInboxSummary,
+    enabled: userId !== null && inboxFailed,
+    refetchInterval: badgeRefetchInterval,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    staleTime: INBOX_BADGE_STALE_MS,
+  });
+  const workFallback = useWorkWaiting(workFailed);
+  const workRows = workFailed ? (workFallback.data ?? null) : (shell.data?.work ?? null);
+  const work = workRows === null ? null : workRows.reduce((sum, o) => sum + o.waiting, 0);
+  const workSnoozed = (workRows ?? []).reduce((sum, o) => sum + o.snoozed, 0);
+  const s = inboxFailed ? (summaryFallback.data?.summary ?? null) : (shell.data?.inbox ?? null);
   // Until the person's saved marks load, no place counts (empty marks would read all as new).
   // Marks move only when the person opens the bell — never on a refetch (badge.ts).
   const places: Record<string, PlaceReading> = memory.ready
@@ -169,8 +189,13 @@ export function useInboxCounts(): InboxCounts {
     if (!s || s.unseenNeedsYou + s.unseenDirect + s.unseenUpdates === 0) return;
     // Optimistic: the badge clears the moment the bell opens.
     queryClient.setQueryData([...SHELL_COUNTS_QUERY_KEY, userId], (prev: ShellCounts | undefined) =>
-      prev
+      prev?.inbox
         ? { ...prev, inbox: { ...prev.inbox, unseenNeedsYou: 0, unseenDirect: 0, unseenUpdates: 0 } }
+        : prev,
+    );
+    queryClient.setQueryData(summaryKey(userId), (prev: typeof summaryFallback.data) =>
+      prev
+        ? { ...prev, summary: { ...prev.summary, unseenNeedsYou: 0, unseenDirect: 0, unseenUpdates: 0 } }
         : prev,
     );
     void markInboxSeen()
@@ -179,19 +204,21 @@ export function useInboxCounts(): InboxCounts {
       })
       .finally(() => {
         void queryClient.invalidateQueries({ queryKey: SHELL_COUNTS_QUERY_KEY });
+        void queryClient.invalidateQueries({ queryKey: summaryKey(userId) });
       });
   };
 
   return {
     summary: s,
-    triage: true,
+    triage: inboxFailed ? (summaryFallback.data?.triage ?? true) : true,
     approvals: approvalCount,
     work,
     workSnoozed,
     badge,
     updatesDot: (s?.unseenUpdates ?? 0) > 0,
-    // Only a failed read is "unavailable" — still loading is not (RESEARCH.md T5).
-    partial: shell.isError,
+    // Only a part whose own read failed, fallback included, is "unavailable" — still loading is
+    // not (RESEARCH.md T5), and a failure in an unrelated section (assists, KG) never counts.
+    partial: (inboxFailed && summaryFallback.isError) || (workFailed && workFallback.isError),
     markSeen,
   };
 }

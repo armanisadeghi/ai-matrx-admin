@@ -56,7 +56,7 @@ import {
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useShellCounts } from "@/lib/boot/shellCounts";
+import { shellSectionFailed, useShellCounts } from "@/lib/boot/shellCounts";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAccessToken,
@@ -117,7 +117,9 @@ export default function AssistsDock() {
   // settles) says whether any exist; the list loads only then. A later count read (window focus,
   // the 5-minute visible refresh) re-reads the list when it can have changed.
   const shell = useShellCounts();
-  const shellAssists = shell.data?.assists ?? null;
+  // Only this section's own failure falls back to loading the list outright (the old read).
+  const assistsFailed = shellSectionFailed(shell, "assists");
+  const shellAssists = assistsFailed ? 1 : (shell.data?.assists ?? null);
   const shellAt = shell.dataUpdatedAt;
   const lastShellAt = useRef<number | null>(null);
   useEffect(() => {

@@ -28,7 +28,7 @@ import {
   selectOrganizationName,
 } from "@/lib/redux/slices/appContextSlice";
 import { useNeedsYou } from "@/features/capture-ladder/useNeedsYou";
-import { useShellCounts } from "@/lib/boot/shellCounts";
+import { shellSectionFailed, useShellCounts } from "@/lib/boot/shellCounts";
 import {
   NEEDS_YOU_SOURCE_KEY,
   produceNeedsYouAssist,
@@ -50,7 +50,8 @@ export function NeedsYouAssistProducer(): null {
   const shell = useShellCounts();
   const pendingAssists = useAppSelector(selectPendingAssists);
   const hasRowToRetire = pendingAssists.some((a) => a.sourceKey === NEEDS_YOU_SOURCE_KEY);
-  const waiting = (shell.data?.needsYou ?? 0) > 0;
+  // This section failing opens the queue anyway (the old read); the other sections never do.
+  const waiting = shellSectionFailed(shell, "needsYou") || (shell.data?.needsYou ?? 0) > 0;
   const [opened, setOpened] = useState(false);
   if (!opened && (waiting || hasRowToRetire)) setOpened(true);
   const { state, handoffs } = useNeedsYou({ enabled: opened });

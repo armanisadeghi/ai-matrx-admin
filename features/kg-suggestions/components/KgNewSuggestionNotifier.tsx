@@ -31,7 +31,7 @@ import {
   fetchAckedSuggestionIds,
 } from "@/features/kg-suggestions/service/kgSuggestionAckService";
 import { isLowConfidence } from "@/features/kg-suggestions/constants";
-import { useShellCounts } from "@/lib/boot/shellCounts";
+import { shellSectionFailed, useShellCounts } from "@/lib/boot/shellCounts";
 
 const TOAST_ID = "kg-new-suggestion";
 // Nothing is READ for this toast until the shell's count says a suggestion is pending.
@@ -74,7 +74,8 @@ export default function KgNewSuggestionNotifier() {
   // The shell's ONE count read (after the page settles) says whether any suggestion is pending; the
   // three reads below (both ledgers + the ack set) run only then, at most once per 30 minutes.
   const shell = useShellCounts();
-  const lateReady = (shell.data?.kgPending ?? 0) > 0;
+  // This section failing runs the check anyway (the old read); the other sections never do.
+  const lateReady = shellSectionFailed(shell, "kgPending") || (shell.data?.kgPending ?? 0) > 0;
   // `due` = the late tier opened AND this browser has not looked in the last 30 minutes.
   const [due, setDue] = useState(false);
   const claimedRef = useRef<string | null>(null);

@@ -20,7 +20,10 @@ import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { useLateIdleReady } from "./lateIdle";
 
-import { SHELL_COUNTS_QUERY_KEY, invalidateShellCounts } from "./shellCountsKey";
+import {
+  SHELL_COUNTS_QUERY_KEY,
+  invalidateShellCounts,
+} from "./shellCountsKey";
 
 export { SHELL_COUNTS_QUERY_KEY, invalidateShellCounts };
 const STALE_MS = 60_000;
@@ -44,19 +47,44 @@ export interface ShellWorkRow {
   overdue: number;
 }
 
+/**
+ * Each section is `null` when ITS count failed in the database (the door answers the rest anyway).
+ * A consumer falls back to its own old read for a null section only — never for the others.
+ */
 export interface ShellCounts {
-  inbox: ShellInboxSummary;
-  work: ShellWorkRow[];
+  inbox: ShellInboxSummary | null;
+  work: ShellWorkRow[] | null;
   /** Presentable assists waiting (the dock loads its list only when this is above zero). */
-  assists: number;
+  assists: number | null;
   /** Capture handoffs waiting on the person's browser. */
-  needsYou: number;
+  needsYou: number | null;
   /** Pending KG suggestions, before the person's acknowledgements and the confidence floor. */
-  kgPending: number;
+  kgPending: number | null;
+}
+
+export type ShellSection =
+  "inbox" | "work" | "assists" | "needsYou" | "kgPending";
+
+/**
+ * True when the shell read has SETTLED and did not give this section: the whole read failed with
+ * nothing cached, or the read answered but this section's count came back null. False while the
+ * read is still loading (not known yet is not failed).
+ */
+export function shellSectionFailed(
+  shell: { data: ShellCounts | undefined; isError: boolean },
+  section: ShellSection,
+): boolean {
+  if (shell.data !== undefined) return shell.data[section] === null;
+  return shell.isError;
 }
 
 function int(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+/** A count the database could not give is `null`, never zero. */
+function intOrNull(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 export function parseShellCounts(data: unknown): ShellCounts {
@@ -64,46 +92,58 @@ export function parseShellCounts(data: unknown): ShellCounts {
     throw new Error("platform.shell_counts returned no object.");
   }
   const d = data as Record<string, unknown>;
-  const i = (typeof d.inbox === "object" && d.inbox !== null ? d.inbox : {}) as Record<string, unknown>;
-  const work = Array.isArray(d.work) ? d.work : [];
+  const hasInbox = typeof d.inbox === "object" && d.inbox !== null;
+  const i = (hasInbox ? d.inbox : {}) as Record<string, unknown>;
   return {
-    inbox: {
-      unseenNeedsYou: int(i.unseen_needs_you),
-      unseenDirect: int(i.unseen_direct),
-      unseenUpdates: int(i.unseen_updates),
-      unread: int(i.unread),
-      inbox: int(i.inbox),
-      snoozed: int(i.snoozed),
-      done: int(i.done),
-    },
-    work: work.flatMap((value): ShellWorkRow[] => {
-      const r = value as Record<string, unknown>;
-      if (typeof r?.organization_id !== "string") return [];
-      return [
-        {
-          organization_id: r.organization_id,
-          organization_name: typeof r.organization_name === "string" ? r.organization_name : null,
-          waiting: int(r.waiting),
-          snoozed: int(r.snoozed),
-          overdue: int(r.overdue),
+    inbox: !hasInbox
+      ? null
+      : {
+          unseenNeedsYou: int(i.unseen_needs_you),
+          unseenDirect: int(i.unseen_direct),
+          unseenUpdates: int(i.unseen_updates),
+          unread: int(i.unread),
+          inbox: int(i.inbox),
+          snoozed: int(i.snoozed),
+          done: int(i.done),
         },
-      ];
-    }),
-    assists: int(d.assists),
-    needsYou: int(d.needs_you),
-    kgPending: int(d.kg_pending),
+    work: !Array.isArray(d.work)
+      ? null
+      : d.work.flatMap((value): ShellWorkRow[] => {
+          const r = value as Record<string, unknown>;
+          if (typeof r?.organization_id !== "string") return [];
+          return [
+            {
+              organization_id: r.organization_id,
+              organization_name:
+                typeof r.organization_name === "string"
+                  ? r.organization_name
+                  : null,
+              waiting: int(r.waiting),
+              snoozed: int(r.snoozed),
+              overdue: int(r.overdue),
+            },
+          ];
+        }),
+    assists: intOrNull(d.assists),
+    needsYou: intOrNull(d.needs_you),
+    kgPending: intOrNull(d.kg_pending),
   };
 }
 
 export async function fetchShellCounts(): Promise<ShellCounts> {
-  const { data, error } = await createClient().schema("platform").rpc("shell_counts" as never);
+  const { data, error } = await createClient()
+    .schema("platform")
+    .rpc("shell_counts" as never);
   if (error) throw operationFailed("count what is waiting on you", error);
   return parseShellCounts(data);
 }
 
 /** Visible tabs re-read every 5 minutes; hidden tabs never poll. */
 function refetchInterval(): number | false {
-  return typeof document !== "undefined" && document.visibilityState === "visible" ? POLL_MS : false;
+  return typeof document !== "undefined" &&
+    document.visibilityState === "visible"
+    ? POLL_MS
+    : false;
 }
 
 /**
