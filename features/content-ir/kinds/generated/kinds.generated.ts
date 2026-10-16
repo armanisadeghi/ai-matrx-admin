@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "5ccb5a033d8a";
+export const KIND_REGISTRY_FINGERPRINT = "7bd2fd2d7057";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1927,6 +1927,61 @@ export interface CaptionOption {
   __kind?: string;
   hashtags?: string[];
   platform?: string | null;
+}
+
+/**
+ * How the words on screen LOOK. Read it off the frames; never guess what a caption 'usually' looks like.
+ *  *
+ *  * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface CaptionStyle {
+  case?: "upper" | "lower" | "sentence" | "title" | null;
+  /**
+   * Lines shown at once
+   */
+  lines?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  weight?: "light" | "regular" | "bold" | "black" | null;
+  /**
+   * static, word-by-word, pop-in, slide, typewriter, fade
+   */
+  animation?: string | null;
+  /**
+   * e.g. clean sans, heavy condensed, rounded, handwritten, serif
+   */
+  font_feel?: string | null;
+  /**
+   * Main text colour, hex or a plain colour name
+   */
+  fill_color?: string | null;
+  /**
+   * Outline colour, if any
+   */
+  stroke_color?: string | null;
+  /**
+   * Words shown at once
+   */
+  words_per_cue?: number | null;
+  /**
+   * How the currently spoken word is marked
+   */
+  highlight_mode?: "none" | "color" | "box" | "pop" | null;
+  /**
+   * The closest engine caption preset, or none when nothing fits
+   */
+  nearest_preset?: "karaoke-bold" | "box-highlight" | "pop-in" | "one-word-impact" | "clean-subtitle" | "bebas-headline" | "none" | null;
+  /**
+   * Centre of the text block, 0 left to 100 right
+   */
+  position_x_pct?: number | null;
+  /**
+   * Centre of the text block, 0 top to 100 bottom
+   */
+  position_y_pct?: number | null;
+  highlight_color?: string | null;
 }
 
 /**
@@ -4230,7 +4285,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 119 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 118 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
 
@@ -10103,6 +10158,31 @@ export interface VideoGroundTruth {
 }
 
 /**
+ * The first seconds, as SEEN. ``spoken_text`` is never filled by the model: the merge fills it from STT.
+ *  *
+ *  * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface VideoHook {
+  end_s?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  device?: "question" | "claim" | "shock" | "promise" | "story" | "demo" | "contrast" | "other" | null;
+  /**
+   * What the viewer sees in the first seconds
+   */
+  visual?: string | null;
+  start_s?: number | null;
+  spoken_text?: string | null;
+  /**
+   * Set by the merge only
+   */
+  spoken_source?: "stt" | null;
+  on_screen_text?: string | null;
+}
+
+/**
  * * Shared by 2 kinds (agent_definition, agent_factory_build).
  */
 export interface VideoMediaPart {
@@ -10139,17 +10219,73 @@ export interface VideoOnScreenText {
   end: number;
   text: string;
   start: number;
-  style?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  };
+  style?: CaptionStyle | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+}
+
+/**
+ * A graphic laid over the footage that is not the caption: a label, sticker, spec card, logo, arrow, progress bar.
+ *  *
+ *  * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface VideoOverlay {
+  /**
+   * label, sticker, logo, arrow, lower_third, progress_bar, emoji, other
+   */
+  kind: string;
+  text?: string | null;
+  end_s?: number | null;
+  h_pct?: number | null;
+  w_pct?: number | null;
+  /**
+   * Left edge, 0 to 100 of frame width
+   */
+  x_pct?: number | null;
+  /**
+   * Top edge, 0 to 100 of frame height
+   */
+  y_pct?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  start_s?: number | null;
+  description?: string | null;
+}
+
+/**
+ * * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface VideoPacing {
+  /**
+   * e.g. rapid A/B alternation, slow single take, escalating
+   */
+  style?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  avg_shot_s?: number | null;
+  cuts_per_min?: number | null;
+}
+
+/**
+ * A recurring role in the video (host, product, screen recording, reaction) that a clone must re-cast.
+ *  *
+ *  * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface VideoRole {
+  id: string;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  on_camera?: boolean | null;
+  description?: string | null;
 }
 
 /**
@@ -54734,7 +54870,7 @@ export interface VideoResult {
  * Sound (``music``, ``sfx``) is never read by the video model: ``music`` is ``{"status": "not_analysed"}`` until a
  * music-ID step exists.
  *  *
- *  * Kind `video_structure` (registry v2).
+ *  * Kind `video_structure` (registry v3).
  */
 export interface VideoStructure {
   sfx?: ({
@@ -54744,13 +54880,7 @@ export interface VideoStructure {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   })[];
-  hook?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  } | null;
+  hook?: VideoHook | null;
   beats?: VideoBeat[];
   model?: string | null;
   music?: {
@@ -54760,43 +54890,19 @@ export interface VideoStructure {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   } | null;
-  roles?: ({
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  })[];
+  roles?: VideoRole[];
   shots?: VideoShot[];
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "video_structure";
-  pacing?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  } | null;
+  pacing?: VideoPacing | null;
   post_id: string;
   cost_usd?: number | null;
-  overlays?: ({
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  })[];
+  overlays?: VideoOverlay[];
   ground_truth: VideoGroundTruth;
   why_it_works?: string | null;
-  caption_style?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  } | null;
+  caption_style?: CaptionStyle | null;
   disagreements?: VideoDisagreement[];
   on_screen_text?: VideoOnScreenText[];
 }
@@ -54806,51 +54912,21 @@ export interface VideoStructure {
  * works. It never reports sound (speech, music, effects): those come from STT or are marked not analysed. The
  * platform merges this with the measured ground truth into ``video_structure``.
  *  *
- *  * Kind `video_structure_read` (registry v2).
+ *  * Kind `video_structure_read` (registry v3).
  */
 export interface VideoStructureRead {
-  hook?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  } | null;
+  hook?: VideoHook | null;
   beats?: VideoBeat[];
-  roles?: ({
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  })[];
+  roles?: VideoRole[];
   shots?: VideoShot[];
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "video_structure_read";
-  pacing?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  } | null;
-  overlays?: ({
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  })[];
+  pacing?: VideoPacing | null;
+  overlays?: VideoOverlay[];
   why_it_works?: string | null;
-  caption_style?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: JsonValue | string | undefined;
-  } | null;
+  caption_style?: CaptionStyle | null;
   on_screen_text?: VideoOnScreenText[];
 }
 
