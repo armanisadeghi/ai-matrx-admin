@@ -33,7 +33,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 | **Overlay system skill** | [`.claude/skills/overlay-system/SKILL.md`](../.claude/skills/overlay-system/SKILL.md) | Register overlay ID, write opener, wire `OverlayController`, debug render. **Start here.** |
 | **RichDocument actions skill** | [`.claude/skills/rich-document-actions/SKILL.md`](../.claude/skills/rich-document-actions/SKILL.md) | Add a “Save to X” menu action via `registerAction` + `openOverlay` (or stage Redux bridge like tasks). |
 | **Overlays FEATURE** | [`features/overlays/FEATURE.md`](../features/overlays/FEATURE.md) | Deep reference for overlay slice, catalogue, callback groups. |
-| **The one action registry** (ALC-15; `ContentActionBar` and `contentActionRegistry` were deleted) | [`features/rich-document/actions/handlers/save.ts`](../features/rich-document/actions/handlers/save.ts) | Copy an existing action (`save-to-notes`, `save-to-code`, `save-to-task`). |
+| **The one action registry** (ALC-15; `ContentActionBar` and `contentActionRegistry` were deleted) | `@ai-matrx/chat` `agents/components/messages-display/rich-document/actions/` (`register-w2a.ts`, `register-w3c.ts`, `register-w3d.ts`, `bodies/`); web entry `ensureWebRichDocumentRegistrations` in [`rich-document-registrations.ts`](../features/rich-content-host/rich-document-registrations.ts) | Copy an existing descriptor + body (`save-to-notes`, `save-to-code`, `save-to-task`) in the package; every host inherits it. |
 | **Code-splitting skill** | [`.claude/skills/code-splitting/SKILL.md`](../.claude/skills/code-splitting/SKILL.md) | Lazy-load Core/Shell in `OverlayController` via `lazyOverlay` — never stack `dynamic()` boundaries. |
 
 ### Domain-specific (partial families today)
@@ -41,7 +41,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 | Resource | Path | Use when |
 |----------|------|----------|
 | **Data tables FEATURE** | [`features/data-tables/FEATURE.md`](../features/data-tables/FEATURE.md) | UDT table save engine: `reconcile.ts`, `save-to-table.ts`, existing `SaveTableModal` / `AppendToTableDialog`. |
-| **RichDocument save handlers** | [`features/rich-document/actions/handlers/save.ts`](../features/rich-document/actions/handlers/save.ts) | How scratch / notes / code / task saves are orchestrated today. |
+| **RichDocument save actions** | `@ai-matrx/chat` `register-w2a.ts` / `register-w3c.ts` / `register-w3d.ts` + `bodies/` | How scratch / notes / code / task saves are orchestrated today. |
 
 ### Reference implementations (copy structure)
 
@@ -81,7 +81,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 | Shells | [`QuickNoteSaveOverlay.tsx`](../features/notes/actions/quick-save/QuickNoteSaveOverlay.tsx) (prod), [`QuickNoteSaveWindow.tsx`](../features/window-panels/windows/notes/QuickNoteSaveWindow.tsx), [`QuickNoteSaveDialog.tsx`](../features/notes/actions/quick-save/QuickNoteSaveDialog.tsx), [`QuickNoteSavePopover.tsx`](../features/notes/actions/quick-save/QuickNoteSavePopover.tsx) |
 | Overlay IDs | `saveToNotes`, `saveToNotesFullscreen`, `quickNoteSaveWindow` |
 | Opener | [`saveToNotes.tsx`](../features/overlays/openers/saveToNotes.tsx) |
-| **Usage example** | [`save.ts` → `save-to-notes`](../features/rich-document/actions/handlers/save.ts) (opens `saveToNotes`) |
+| **Usage example** | `register-w2a.ts` → `save-to-notes` (body in `bodies/w2a-actions.ts`; opens the quick-note-save window) |
 
 ### 2. Code
 
@@ -93,7 +93,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 | Overlay ID | `saveToCode` |
 | Opener | [`saveToCode.tsx`](../features/overlays/openers/saveToCode.tsx) |
 | Trigger | [`SaveToCodeButton.tsx`](../features/code-files/actions/SaveToCodeButton.tsx) |
-| **Usage example** | [`save.ts` → `save-to-code`](../features/rich-document/actions/handlers/save.ts) |
+| **Usage example** | `register-w3c.ts` → `save-to-code` (body in `bodies/w3c-actions.ts`) |
 
 ### 3. Tasks
 
@@ -105,7 +105,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 | Bridge | [`CreateTaskFromSourceDialog.tsx`](../features/tasks/widgets/CreateTaskFromSourceDialog.tsx) (stages `setPendingSource` → opens window) |
 | Overlay ID | `taskQuickCreateWindow` |
 | Opener | [`taskQuickCreateWindow.tsx`](../features/overlays/openers/taskQuickCreateWindow.tsx) |
-| **Usage example** | [`save.ts` → `save-to-task`](../features/rich-document/actions/handlers/save.ts) |
+| **Usage example** | `register-w3d.ts` → `save-to-task` (body in `bodies/w3d-actions.ts`) |
 
 ---
 
@@ -120,9 +120,9 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 | **Projects** | Peek + task project picker only; no quick-save family | [`ProjectPeek.tsx`](../features/organizations/peek/kinds/ProjectPeek.tsx) |
 | **Agent shortcuts** | Hook + window; create-in-place, not content capture | [`useShortcutQuickCreate.ts`](../features/agent-shortcuts/hooks/useShortcutQuickCreate.ts), [`AgentShortcutQuickCreateWindow.tsx`](../features/window-panels/windows/agents/AgentShortcutQuickCreateWindow.tsx) |
 
-**One-click shortcuts (no modal):** Notes [`SaveToScratchButton`](../features/notes/actions/SaveToScratchButton.tsx), Code scratch in [`save.ts` → `save-code-to-scratch`](../features/rich-document/actions/handlers/save.ts).
+**One-click shortcuts (no modal):** Notes [`SaveToScratchButton`](../features/notes/actions/SaveToScratchButton.tsx), Code scratch in `register-w3d.ts` → `save-code-to-scratch`.
 
-**Generic save orchestration:** [`rich-document/actions/handlers/save.ts`](../features/rich-document/actions/handlers/save.ts) dispatches to notes/code/task scratch flows.
+**Generic save orchestration:** the package's `register-w2a.ts` / `register-w3c.ts` / `register-w3d.ts` descriptors dispatch to the notes/code/task scratch flows through host seams (UI slots) the web wires.
 
 ---
 
@@ -142,7 +142,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 - [ ] **Artifact / Canvas** — capture block or canvas state to artifact store
 - [ ] **Research document** — save synthesis / source bundle to research pipeline
 - [ ] **PDF derivative** — save extraction/redaction result as new PDF doc
-- [ ] **Generic file** — extend `save-as-file` (rich-document `handlers/save.ts`) to full Core+Hook (name, folder, format)
+- [ ] **Generic file** — extend `save-as-file` (descriptor in the package's `descriptors/export.ts`) to full Core+Hook (name, folder, format)
 - [ ] **Scope / context item** — capture value into a scope dimension
 - [ ] **Dictionary term** — quick-add term + pronunciation from selection
 - [ ] **Podcast episode** — capture script/notes into episode draft

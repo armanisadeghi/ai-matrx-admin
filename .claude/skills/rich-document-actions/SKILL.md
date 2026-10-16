@@ -25,9 +25,10 @@ Canonical how-to for the **RichDocument** system — the wrapper that pairs the 
   └─ action variant (bar / menu / …)
         │ looks up handlers by id
         ▼
-  actions/registry.ts                ← Layer 2: the action registry. Module-scope
-  actions/handlers/*.ts                 Map<id, RichDocumentAction>, populated by
-                                        self-registering handler modules.
+  @ai-matrx/rich-content provider      ← Layer 2: the action registry. Module-scope
+  @ai-matrx/chat register*.ts           Map<id, RichDocumentAction>, populated by the
+  + web actions/handlers/*.ts           package's registerChatMessageActions() and the
+                                        web-only handlers.
         │ source-specific edit/delete
         ▼
   actions/sources/*.ts               ← per-source adapters (ContentSourceAdapter)
@@ -163,17 +164,18 @@ This is how the toolbar appears in **every** editor mode (plain / split / wysiwy
 
 ## TASK: Add a new action
 
-1. Pick the right handler module under `features/rich-document/actions/handlers/` (`copy.ts`, `save.ts`, `export.ts`, `print.ts`, `edit.ts`, `feedback.ts`, `creator.ts`, `fullscreen-editor.ts`, `stubs.ts`, `app.ts`, `server-api.ts`) or add a new one and import it in `actions/handlers/index.ts`.
-2. Call `registerAction` at module load:
+Where actions live: the message actions are in `@ai-matrx/chat` (source `../aidream/apps/shared/chat/src/agents/components/messages-display/rich-document/actions/`): descriptors in `register.ts`, `register-w2a.ts`, `register-w2b.ts`, `register-w3c.ts`, `register-w3d.ts` and `descriptors/` (id, label, icon, `visible` load with the menu), run bodies in `bodies/` (each `run` imports its body on first click). `registerChatMessageActions()` registers them once, register-if-absent per id. This app has ONE entry, `ensureWebRichDocumentRegistrations` (`features/rich-content-host/rich-document-registrations.ts`): it calls that and loads the web-only handlers in `features/rich-document/actions/handlers/` (`notes-and-comments`, `apply-to-source`, `attach-artifact-to-chat`, `code-block-apply-to-file`). Every non-chat surface that needs the actions (right-click, notes, tests) calls it too.
+
+1. **Default: add it to the package** so every host inherits it. Add a descriptor to the right `register-*.ts` (or `descriptors/*.ts`) and its body to `bodies/*.ts`; reach host-only things (dialogs, windows, routes) through the host seams, never by importing the app. Publish, then `pnpm sync:matrx-packages` here.
+2. **Only a context a package host cannot serve** gets a web handler: add a module under `features/rich-document/actions/handlers/`, import it in `handlers/index.ts`, and register through `registerActionIfAbsent` (`handlers/register-if-absent.ts`), never `registerAction` directly. The web list only shrinks: `actions/web-action-ratchet.json` + `web-action-ratchet.test.ts` fail on a web id the package registers or a new web-only id.
+3. The descriptor shape:
 
 ```ts
-import { registerAction } from "../registry";
-
-registerAction({
-  id: "my-action", // unique; built-ins are in RichDocumentActionId
+{
+  id: "my-action", // unique
   label: "Do the thing", // string OR (ctx) => string for dynamic labels
   icon: SomeLucideIcon,
-  iconColor: "text-blue-500 dark:text-blue-400", // optional, preserves visual variety
+  iconColor: "text-blue-500 dark:text-blue-400", // optional
   category: "save", // feedback|copy|export|save|edit|share|creator|app|admin
   supportedSources: "*", // or ["chat-message", "note", ...]
   renderSlot: "overflow", // "primary" (inline) | "overflow" (⋯) | "both"
@@ -186,13 +188,13 @@ registerAction({
     await doSomething(ctx.content);
     toast.success("Done"); // handlers OWN their toasts/dialogs
   },
-});
+}
 ```
 
-3. **Place it in the menu hierarchy:** add its id to a section in `features/rich-document/variants/shared/menuStructure.ts` (top-level array for promoted items, or a submenu's `actionIds`). If you skip this, it falls into a trailing "extras" group.
-4. **Source-specific behavior goes through the adapter**, never hard-coded: call `ctx.sourceAdapter.edit({ newContent, source, dispatch })` rather than dispatching a chat thunk directly. That's how one generic `edit` action works for chat (editMessage), notes (NotesAPI.update), etc.
-5. **Auth-gated actions:** call `requireAuth(ctx, key, featureName, description)` from `actions/utils.ts` at the top of `run`; it opens the authGate overlay and returns false when signed out.
-6. Overlay `instanceId`s: use `ctx.instanceKey("prefix")` so two documents on one page don't collide.
+4. **Place it in the menu hierarchy:** add its id to a section in `menuStructure` (top-level array for promoted items, or a submenu's `actionIds`). If you skip this, it falls into a trailing "extras" group.
+5. **Source-specific behavior goes through the adapter**, never hard-coded: call `ctx.sourceAdapter.edit({ newContent, source, dispatch })` rather than dispatching a chat thunk directly. That's how one generic `edit` action works for chat (editMessage), notes (NotesAPI.update), etc.
+6. **Auth-gated actions:** call `requireAuth(ctx, key, featureName, description)` at the top of `run`; it opens the authGate overlay and returns false when signed out.
+7. Overlay `instanceId`s: use `ctx.instanceKey("prefix")` so two documents on one page don't collide.
 
 For a per-surface, app-specific action, prefer `actions={{ extra: [...] }}` at the call site over a global registry entry.
 
@@ -216,7 +218,7 @@ The shape is `{ overlayId, data, instanceId }` — **not** `{ component, props }
 1. Add the variant to `ContentSource` (and, if it carries chat-style baggage, `SourceExtensions`) in `features/rich-document/types.ts`.
 2. Create `actions/sources/<type>.ts` implementing `ContentSourceAdapter` — at minimum `instanceKeyPrefix(source)`; add `edit` / `delete` / `reRun` if the source supports them (they gate the `edit` / `delete` actions' visibility).
 3. Register it in `actions/sources/index.ts` (`SOURCE_ADAPTERS` map).
-4. If `save-to-task` should link a parent, add the source to `sourceToEntityType()` in `actions/handlers/save.ts`.
+4. If `save-to-task` should link a parent, add the source to `taskEntityOf()` in the package's `bodies/w3d-actions.ts`.
 5. Add the new `type` to the `RichDocumentActionId` source-compatibility expectations in any actions that should support it (`supportedSources`).
 
 ---
@@ -259,9 +261,9 @@ features/rich-document/
 ├── RichDocumentActionProvider.tsx   ← headless: registers the toolkit for a surfaceId WITHOUT the engine (renders null)
 ├── types.ts                         ← ContentSource, RichDocumentAction(Context), variant/position/behavior, adapter, specs
 ├── actions/
-│   ├── registry.ts                  ← registerAction / getAction / resolveActions
+│   ├── (registry: @ai-matrx/rich-content `rich-document/actions/provider` — registerAction / getAction / resolveActions)
 │   ├── utils.ts                     ← requireAuth, getErrorMessage, extractFirstCodeBlock, buildTaskTitle, resolveActionLabel
-│   ├── handlers/*.ts                ← self-registering action modules (index.ts imports them all)
+│   ├── handlers/*.ts                ← the web-only handlers (registerActionIfAbsent; index.ts imports them)
 │   └── sources/*.ts                 ← per-source ContentSourceAdapter + SOURCE_ADAPTERS map
 ├── variants/
 │   ├── ActionBar / MiniActionBar / MenuVariant   ← inline variants
