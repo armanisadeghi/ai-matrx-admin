@@ -26,12 +26,28 @@ export interface UseScopeTreeReturn {
   refresh: () => Promise<void>;
 }
 
-export function useScopeTree(): UseScopeTreeReturn {
+const NO_ORGANIZATIONS: OrgNode[] = [];
+const NOT_ENGAGED_SELECTOR_VALUE = {
+  organizations: NO_ORGANIZATIONS,
+  status: "idle" as const,
+  error: null,
+  fetchedAt: null,
+};
+const readNothing = () => null;
+const readNoOrganizations = () => NO_ORGANIZATIONS;
+const readIdle = () => NOT_ENGAGED_SELECTOR_VALUE.status;
+
+/**
+ * `enabled: false` is the explicit "not needed yet" — a closed menu, an unopened panel. The hook
+ * then reads a static empty view and never touches `state.scopesTree`, so the store's demand
+ * enhancer (scopeTreeDemand.ts) sees no read and the tree does not load. Default true.
+ */
+export function useScopeTree({ enabled = true }: { enabled?: boolean } = {}): UseScopeTreeReturn {
   const dispatch = useAppDispatch();
-  const organizations = useAppSelector(selectOrganizationsList);
-  const status = useAppSelector(selectTreeStatus);
-  const error = useAppSelector(selectTreeError);
-  const fetchedAt = useAppSelector(selectTreeFetchedAt);
+  const organizations = useAppSelector(enabled ? selectOrganizationsList : readNoOrganizations);
+  const status = useAppSelector(enabled ? selectTreeStatus : readIdle);
+  const error = useAppSelector(enabled ? selectTreeError : readNothing);
+  const fetchedAt = useAppSelector(enabled ? selectTreeFetchedAt : readNothing);
 
   return useMemo(
     () => ({
