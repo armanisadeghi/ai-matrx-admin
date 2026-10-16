@@ -15,7 +15,7 @@
  */
 
 import { useState } from "react";
-import { Maximize2, Moon, Star, Sun, X } from "lucide-react";
+import { Check, Maximize2, Moon, Star, Sun, X } from "lucide-react";
 import { Button, DecisionControl, Field, PropertyRow, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { avatarInitial } from "./avatarInitial";
@@ -339,7 +339,7 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
-      <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} ask={person ? "Is this you?" : "Are these yours?"}>
+      <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} ask={person ? "Is this you?" : "Are these yours?"} selected={logoGroups.filter((g) => isKept(g.lead.key)).length}>
         <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
           {logoGroups.map((g) => (
             <Shared key={g.id} id={g.lead.key} as="div" className="empty:hidden">
@@ -539,9 +539,12 @@ function Slot({
   empty,
   hint,
   after,
+  selected,
   children,
 }: {
   title: string;
+  /** Picker slots: how many tiles are selected, shown on the header line. */
+  selected?: number;
   /** The question every row answers with Yes / No / Other ("Is this yours?"). */
   ask?: string;
   empty: string | null;
@@ -555,6 +558,9 @@ function Slot({
         {title}
         {ask && !empty ? <span className="font-normal text-muted-foreground">{ask}</span> : null}
         {hint && !empty ? <span className="font-normal text-muted-foreground">{hint}</span> : null}
+        {selected !== undefined && !empty ? (
+          <span className="ml-auto font-medium text-foreground" data-testid="smart-add-selected-count">{selected} selected</span>
+        ) : null}
       </h3>
       {empty ? <p className="px-4 py-1 text-sm text-muted-foreground">{empty}</p> : children}
       {after}
@@ -707,7 +713,6 @@ function LogoChoice({
   const kept = decision === "yes" || decision === "preferred";
   const primary = decision === "preferred";
   const [broken, setBroken] = useState(false);
-  const [ratio, setRatio] = useState(1);
   const [backdrop, setBackdrop] = useState<Backdrop>("auto");
   const [auto, setAuto] = useState<"light" | "dark" | "checker">("checker");
   const [open, setOpen] = useState(false);
@@ -716,12 +721,10 @@ function LogoChoice({
   const src = /^https?:\/\//i.test(raw) ? proxiedExternalImageUrl(raw) : raw;
   const shade = backdrop === "auto" ? auto : backdrop;
   const bg = shade === "dark" ? "bg-zinc-800" : shade === "light" ? "bg-zinc-50" : CHECKER;
-  const wide = ratio > 1.5;
   const where = whereOf(item);
   const cycle = () => setBackdrop((b) => (b === "auto" ? (auto === "dark" ? "light" : "dark") : b === "dark" ? "light" : "dark"));
   const onLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
-    if (img.naturalWidth && img.naturalHeight) setRatio(img.naturalWidth / img.naturalHeight);
     const b = brightnessOf(img);
     if (b === null) return;
     setAuto(shadeForBrightness(b));
@@ -743,7 +746,7 @@ function LogoChoice({
   // A link the site never served is not offered at all (no dead tile to keep or skip).
   if (broken) return null;
   return (
-    <figure className={`flex flex-col items-center gap-1 animate-in fade-in duration-300 ${wide ? "w-40 sm:w-48" : "w-[5.25rem] sm:w-24"}`}>
+    <figure className={`flex flex-col items-center gap-1 animate-in fade-in duration-300 w-[5.25rem] sm:w-24`}>
       <span className="relative w-full">
         {/* ui-exception: an image tile you select; the 28px Button cannot hold a 96px image */}
         <button
@@ -752,14 +755,23 @@ function LogoChoice({
           aria-pressed={kept}
           aria-label={`${kept ? "Keep" : "Skip"} this image${where ? ` (${where})` : ""}`}
           onClick={kept ? onClear : onToggle}
-          className={`flex h-[5.25rem] w-full items-center justify-center overflow-hidden rounded-lg border p-1.5 sm:h-24 ${bg} ${primary ? "border-primary ring-2 ring-primary" : kept ? "border-primary/60 ring-1 ring-primary/60" : "border-border"}`}
+          className={`relative flex h-[5.25rem] w-full items-center justify-center overflow-hidden rounded-lg border p-2 outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground sm:h-24 ${bg} ${kept ? "border-primary ring-2 ring-inset ring-primary" : "border-border"}`}
           data-testid="smart-add-logo"
+          data-selected={kept ? "true" : "false"}
         >
           {picture("max-h-full max-w-full object-contain")}
+          {/* Same corner on every tile: empty circle = not selected, filled primary check = selected. Never touches the image. */}
+          <span
+            aria-hidden
+            className={`pointer-events-none absolute right-1 top-1 flex size-5 items-center justify-center rounded-full border-2 ${kept ? "border-primary bg-primary text-primary-foreground" : "border-foreground bg-background"}`}
+            data-testid="smart-add-logo-check"
+          >
+            {kept ? <Check className="size-3" strokeWidth={3} /> : null}
+          </span>
         </button>
         {badge}
         {kept ? (
-          <span className="absolute -right-1.5 -top-1.5">
+          <span className="absolute -bottom-1.5 -right-1.5">
             <Button
               variant={primary ? "primary" : "outline"}
               aria-label={primary ? "Main image" : "Make this the main image"}
