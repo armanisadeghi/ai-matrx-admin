@@ -61,7 +61,7 @@ export function EpisodeTitlePanel({
         <Button
           variant={hasOptions ? "quiet" : "primary"}
           disabled={busy || !episode || noScript}
-          onClick={() => void generate()}
+          onClick={() => void generate("user")}
         >
           {busy ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />

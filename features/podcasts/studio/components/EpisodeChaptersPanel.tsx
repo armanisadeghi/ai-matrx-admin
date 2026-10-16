@@ -162,7 +162,7 @@ export function EpisodeChaptersPanel({
   // Keep a surface-written list visible through an unsuccessful regeneration.
   // Only a newly persisted canonical list may replace the READ twin.
   const regenerate = useCallback(async () => {
-    if (await generate()) setWritten(null);
+    if (await generate("user")) setWritten(null);
   }, [generate]);
 
   useSurfaceWriteHandlers(PODCAST_RUN_SURFACE_NAME, {
