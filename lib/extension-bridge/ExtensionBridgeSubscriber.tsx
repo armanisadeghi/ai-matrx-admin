@@ -19,15 +19,21 @@
  * handler. The window-panels translation belongs at the consumer layer
  * so the hook stays free of feature-specific knowledge.
  *
- * Renders nothing. Cheap to mount: short-circuits when no user is signed
- * in (the underlying hook does too) and listens passively until torn
- * down. Bundles only this file + `openPanelHandler` + the Redux action
- * — no window-panels component code is pulled into the static graph.
+ * Renders nothing. The channel is joined ONLY when Matrx Extend is actually
+ * in this browser: after the page settles (`useLateIdleReady`), the page asks
+ * `chrome.runtime` — which exists on a page only when an installed extension
+ * lists this origin as externally connectable — and pings the known ids
+ * (`detectExtensionId`, local IPC, no network). No answer → no channel. Before
+ * 2026-10-16 every signed-in tab joined `matrx-extension-bridge:<userId>` at
+ * mount, extension or not. Bundles only this file + `openPanelHandler` + the
+ * Redux action — no window-panels component code is pulled into the static graph.
  */
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { detectExtensionId, isChromeRpcAvailable } from "./chrome-rpc";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useExtensionBridgeChannel } from "@/hooks/useExtensionBridgeChannel";
@@ -37,7 +43,27 @@ import {
   type OpenPanelResult,
 } from "./openPanelHandler";
 
-export function ExtensionBridgeSubscriber(): null {
+export function ExtensionBridgeSubscriber() {
+  const userId = useSelector(selectUserId);
+  const settled = useLateIdleReady();
+  const [present, setPresent] = useState(false);
+
+  useEffect(() => {
+    if (!settled || !userId || present || !isChromeRpcAvailable()) return undefined;
+    let cancelled = false;
+    void detectExtensionId().then((found) => {
+      if (!cancelled && found) setPresent(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settled, userId, present]);
+
+  if (!present || !userId) return null;
+  return <ExtensionBridgeChannel />;
+}
+
+function ExtensionBridgeChannel(): null {
   const dispatch = useAppDispatch();
   const userId = useSelector(selectUserId);
   const { onMessage, reply, isAuthenticated } = useExtensionBridgeChannel();
