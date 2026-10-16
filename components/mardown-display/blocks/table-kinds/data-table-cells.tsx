@@ -51,6 +51,7 @@
  * a list says how many things are in it, and a record shows its fields.
  */
 
+import { EmailValue } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
 import { Button, Badge } from "@ai-matrx/design-system/controls";
 import React from "react";
@@ -279,14 +280,9 @@ const UrlCell: React.FC<{ value: string }> = ({ value }) => (
 );
 
 const EmailCell: React.FC<{ value: string }> = ({ value }) => (
-  <a
-    href={`mailto:${value}`}
-    title={`Write to ${value}`}
-    onClick={(event) => event.stopPropagation()}
-    className="break-all text-primary hover:underline"
-  >
-    {value}
-  </a>
+  <span className="inline-flex min-w-0 max-w-full" onClick={(event) => event.stopPropagation()}>
+    <EmailValue email={value} />
+  </span>
 );
 
 /**

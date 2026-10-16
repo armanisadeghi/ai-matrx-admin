@@ -1,3 +1,7 @@
+"use client";
+
+import { mailtoHref } from "@ai-matrx/design-system";
+
 const HERO_TITLE_LINE_1 = "Command your";
 const HERO_TITLE_LINE_2 = "autonomous future";
 const STATUS_BADGE_TEXT = "Something incredible is in the works";
@@ -33,7 +37,7 @@ export default function ComingSoonPage({
           </span>
         </div>
         <a
-          href="mailto:hello@ai-matrx.com"
+          href={mailtoHref("hello@ai-matrx.com")}
           className="text-sm font-medium text-zinc-400 hover:text-white transition-colors duration-200"
         >
           Contact Us

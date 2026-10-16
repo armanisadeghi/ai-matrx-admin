@@ -1,3 +1,4 @@
+import { EmailValue } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { siteConfig } from "@/config/extras/site";
@@ -73,7 +74,7 @@ export default function TermsAndConditionsPage() {
           Reply <strong>STOP</strong> to any AI Matrx message to unsubscribe.
           After opting out, you may receive one final confirmation message.
           Reply <strong>HELP</strong> for help, or email{" "}
-          <a href={`mailto:${SMS_SUPPORT_EMAIL}`}>{SMS_SUPPORT_EMAIL}</a>. You
+          <EmailValue email={SMS_SUPPORT_EMAIL} owner="AI Matrx support" />. You
           can also disable SMS notifications in User Settings.
         </p>
 
@@ -113,7 +114,7 @@ export default function TermsAndConditionsPage() {
             {siteConfig.legalOperatorUrl}
           </OutboundLink>
           <br />
-          Email: <a href={`mailto:${SMS_SUPPORT_EMAIL}`}>{SMS_SUPPORT_EMAIL}</a>
+          Email: <EmailValue email={SMS_SUPPORT_EMAIL} owner="AI Matrx support" />
         </p>
       </article>
     </div>

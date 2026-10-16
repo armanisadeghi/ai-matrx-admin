@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialHandleValue } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { Badge } from "@/components/ui/badge";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -101,15 +102,9 @@ export function YouTubeAnalyticsResult({
         {lagDays && lagDays > 0 ? (
           <Badge variant="outline">{lagDays}d provider lag</Badge>
         ) : null}
-        <a
-          href={`https://www.youtube.com/channel/${encodeURIComponent(report.channel_id)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Open YouTube channel ${report.channel_id}`}
-          className="break-all rounded bg-muted px-2 py-1 font-mono text-muted-foreground underline-offset-2 hover:underline"
-        >
-          {report.channel_id}
-        </a>
+        <span className="inline-flex min-w-0">
+          <SocialHandleValue value={`https://www.youtube.com/channel/${encodeURIComponent(report.channel_id)}`} platform="youtube" />
+        </span>
       </div>
 
       <KpiGrid className="grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">

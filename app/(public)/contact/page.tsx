@@ -1,5 +1,6 @@
 "use client";
 
+import { EmailValue } from "@ai-matrx/design-system";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Mail, Send, Loader2, CheckCircle } from "lucide-react";
@@ -207,12 +208,7 @@ export default function ContactPage() {
           </p>
           <p className="mt-2">
             For urgent matters, please email us directly at{" "}
-            <a
-              href="mailto:support@aimatrx.com"
-              className="text-primary hover:underline"
-            >
-              support@aimatrx.com
-            </a>
+            <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />
           </p>
         </div>
       </div>

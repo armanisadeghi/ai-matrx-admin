@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialHandleValue } from "@ai-matrx/design-system";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { BING_PROVIDER } from "@/features/marketing/lib/provider-names";
 import { useState } from "react";
@@ -709,12 +710,14 @@ function MarketingConnectionsContent({ reviewMode }: { reviewMode: boolean }) {
                     {youtubePreview.data ? (
                       <div className="space-y-2 rounded-md border border-border p-2">
                         <div>
-                          <OutboundLink
-                            href={`https://www.youtube.com/channel/${youtubePreview.data.channel_id}`}
-                            className="text-xs font-semibold text-primary hover:underline"
-                          >
-                            {youtubePreview.data.title}
-                          </OutboundLink>
+                          <span className="inline-flex min-w-0 text-xs font-semibold">
+                            <SocialHandleValue
+                              value={`https://www.youtube.com/channel/${youtubePreview.data.channel_id}`}
+                              platform="youtube"
+                              name={youtubePreview.data.title}
+                              followers={youtubePreview.data.subscriber_count ?? null}
+                            />
+                          </span>
                           {/* read-gate-exempt: inside the youtubePreview.data guard — the provider's own reported channel stats, each "—" when the provider omits it, never a failed read's 0 */}
                           <p className="mt-0.5 text-[10px] text-muted-foreground">
                             {youtubePreview.data.subscriber_count?.toLocaleString() ??

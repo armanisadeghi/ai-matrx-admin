@@ -1,4 +1,5 @@
 import React from "react";
+import { EmailValue } from "@ai-matrx/design-system";
 import { siteConfig } from "@/config/extras/site";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -29,7 +30,7 @@ const PrivacyPolicyPage = () => {
         </p>
         <p>
           Questions, deletion requests, or anything else: email{" "}
-          <a href="mailto:support@aimatrx.com">support@aimatrx.com</a>.
+          <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />.
         </p>
 
         <h2>1. Scope</h2>
@@ -379,7 +380,7 @@ const PrivacyPolicyPage = () => {
           channel sync can save video details and daily channel metrics in your
           account. Disconnecting stops future access but does not itself erase
           those saved records. For deletion requests or questions, contact{" "}
-          <a href="mailto:support@aimatrx.com">support@aimatrx.com</a>.{" "}
+          <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />.{" "}
           If you explicitly include YouTube results in an agent request, the
           configured model provider may process that information as described
           in Section 3.1.
@@ -683,7 +684,7 @@ const PrivacyPolicyPage = () => {
           <li>
             <strong>Delete.</strong> Delete individual conversations or
             artifacts from inside the app. To delete your entire account, email{" "}
-            <a href="mailto:support@aimatrx.com">support@aimatrx.com</a> from
+            <EmailValue email="support@aimatrx.com" owner="AI Matrx support" /> from
             the address on file.
           </li>
           <li>
@@ -699,7 +700,7 @@ const PrivacyPolicyPage = () => {
             selected-file references. This does not delete any CRM interactions
             previously saved from matched outreach replies. To request deletion
             of those CRM copies, contact{" "}
-            <a href="mailto:support@aimatrx.com">support@aimatrx.com</a>, or
+            <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />, or
             request account deletion. You can also revoke AI Matrx from your
             Google Account permissions.
           </li>
@@ -720,7 +721,7 @@ const PrivacyPolicyPage = () => {
             reside, you may have rights of access, rectification, erasure,
             portability, restriction, and objection (GDPR, UK GDPR, CCPA/CPRA).
             To exercise any of them email{" "}
-            <a href="mailto:support@aimatrx.com">support@aimatrx.com</a> and we
+            <EmailValue email="support@aimatrx.com" owner="AI Matrx support" /> and we
             will respond within the timeframes required by the applicable law.
           </li>
         </ul>
@@ -752,7 +753,7 @@ const PrivacyPolicyPage = () => {
           minimum age in your jurisdiction). We do not knowingly collect
           personal data from children under that age. If you believe a child has
           provided us personal data, please contact{" "}
-          <a href="mailto:support@aimatrx.com">support@aimatrx.com</a> and we
+          <EmailValue email="support@aimatrx.com" owner="AI Matrx support" /> and we
           will delete it.
         </p>
 
@@ -779,7 +780,7 @@ const PrivacyPolicyPage = () => {
           <br />
           AI Matrx product
           <br />
-          Email: <a href="mailto:support@aimatrx.com">support@aimatrx.com</a>
+          Email: <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />
         </p>
       </article>
     </div>

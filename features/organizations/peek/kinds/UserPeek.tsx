@@ -14,7 +14,7 @@
 
 import React from "react";
 import { UserRound } from "lucide-react";
-import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
+import { mailtoHref, Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { resolveVisiblePerson, type VisiblePerson } from "@/features/organizations/people/visiblePeople";
 import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
@@ -46,7 +46,7 @@ export default function UserPeek({ id, open, onClose }: PeekProps) {
   const body: PeekBlock[] = [];
   if (person) {
     if (person.organizationName) body.push({ property: "Shared organization", value: person.organizationName });
-    if (person.email) body.push({ property: "Email", value: person.email, href: `mailto:${person.email}` });
+    if (person.email) body.push({ property: "Email", value: person.email, href: mailtoHref(person.email) });
     if (person.joinedAt) body.push({ property: "Member since", value: new Date(person.joinedAt).toLocaleDateString() });
   } else if (state.status === "unavailable") {
     body.push({ fact: "This person isn't someone you share an organization with.", wrap: true });

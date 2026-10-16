@@ -12,6 +12,7 @@
  * overlay world (app/DeferredOverlayWorld.tsx) on the first request.
  */
 
+import { EmailValue } from "@ai-matrx/design-system";
 import React, { useEffect, useState, useSyncExternalStore } from "react";
 import { UserRound } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
@@ -55,9 +56,7 @@ export function PersonPeekHost() {
     <PeekDialog open onClose={close} title={target.name || "Person"} icon={<UserRound className="h-4 w-4 text-violet-600 dark:text-violet-400" />} href={null}>
       {target.email ? (
         <PeekField label="Email">
-          <a href={`mailto:${target.email}`} className="text-primary hover:underline">
-            {target.email}
-          </a>
+          <EmailValue email={target.email} owner={target.name || undefined} />
         </PeekField>
       ) : null}
     </PeekDialog>

@@ -9,6 +9,7 @@
 // reason, and a member with no legal number is auto-marked `suppressed`,
 // visibly tallied, never dialed.
 
+import { parsePhone, telHref } from "@ai-matrx/design-system";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
@@ -613,7 +614,7 @@ export function CallQueuePage({ listId }: { listId: string }) {
                           variant="outline"
                           asChild
                         >
-                          <a href={`tel:${t.medium.value_key}`}>
+                          <a href={telHref(parsePhone(t.medium.value_key))}>
                             <PhoneCall className="h-3 w-3" />
                             Call
                           </a>
