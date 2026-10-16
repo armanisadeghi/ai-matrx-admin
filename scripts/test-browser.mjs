@@ -15,6 +15,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { releaseWalkSlot } from './lib/walk-release.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '..');
@@ -55,6 +56,8 @@ async function serve(name) {
   let idle;
   const bump = () => { clearTimeout(idle); idle = setTimeout(() => shutdown(), IDLE_MS); };
   async function shutdown() {
+    // Free the live-walk-cap slot at once; waiting for the server's 10-minute idle rule kept the cap full (MKT-174).
+    try { await releaseWalkSlot(page.url()); } catch {}
     try { server.close(); } catch {}
     try { await browser.close(); } catch {}
     try { fs.unlinkSync(sockPath(name)); } catch {}
