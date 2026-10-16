@@ -36,10 +36,14 @@ const slotSuffix = (surfaceKey: string, name: string) => `${surfaceKey}:${name}`
  */
 const FIRST_VISIT_SIZE: Record<string, SlotSize> = {
   "data-home:tabs": { w: 117, h: 31 },
-  "data-home:controls": { w: 147, h: 34 },
+  // controls: the "Group by" select settles at 200 wide (147 + 53), measured 2026-10-16.
+  "data-home:controls": { w: 200, h: 34 },
   // /agents/all (measured on a cold browser at 1024 and 1440): the same strip, so its first visit holds it too.
   "agents-browse:tabs": { w: 117, h: 31 },
   "agents-browse:controls": { w: 34, h: 34 },
+  // /board (the boards list): the same strip, measured on a cold browser 2026-10-16 (0.0735 before).
+  "boards-browse:tabs": { w: 117, h: 31 },
+  "boards-browse:controls": { w: 34, h: 34 },
 };
 
 /**

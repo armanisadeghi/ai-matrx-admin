@@ -535,7 +535,11 @@
     width var(--matrx-motion-duration-panel) var(--matrx-motion-ease-panel),
     background var(--shell-duration-normal) var(--shell-ease-smooth),
     border-color var(--shell-duration-normal) var(--shell-ease-smooth);
-  overflow: hidden;
+  /* `clip`, never `hidden`: a hidden box is still a scroll container, so a
+     scrollIntoView or a focus jump into the clipped domain panel scrolled the
+     whole sidebar sideways — the strip slid off and the panel's title showed
+     cut to "Mark" in the 44px rail (/marketing, 2026-10-16). Clip can't scroll. */
+  overflow: clip;
 }
 
 /* 🚨 PAGE-WIDE :has — NEVER ON body, html OR .shell-root WITH A DESCENDANT SUBJECT.
@@ -667,6 +671,16 @@
 /* An admin's footer is reserved at its last settled height before first paint (the inline script
    beside it publishes --shell-admin-footer-h), so the admin block fills space already there
    instead of growing the footer after auth resolves. Content stays bottom-aligned. */
+/* The server-known admin boolean reserves the settled height (ADMIN_FOOTER_RESERVE_PX) on a device's
+   first-ever load; the remembered height (rule below, higher specificity) still wins when present. */
+.shell-sidebar-footer[data-admin-reserve] {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  min-height: 169px;
+}
+
 html[data-admin-footer] .shell-sidebar-footer {
   display: flex;
   flex-direction: column;

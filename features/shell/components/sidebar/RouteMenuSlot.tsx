@@ -175,7 +175,10 @@ export default function RouteMenuSlot() {
 
   if (!match) return null;
 
-  const switchVisible = loading || !!RouteMenu;
+  // Visible from the server's first paint whenever the route has a menu (it is only a chunk away): the
+  // switch used to appear when the chunk loaded and pushed the whole rail down 44px.
+  const switchVisible = true;
+  const switchLoading = loading || !RouteMenu;
   // Constant swap glyph in BOTH views — the control reads identically whether
   // you're in the route menu or the main menu, so it's recognizable as ONE
   // reversible mode-switch (not a nav item). Only the destination label flips.
@@ -191,11 +194,11 @@ export default function RouteMenuSlot() {
         title={`Switch to ${switchLabel}`}
         data-visible={switchVisible ? "true" : undefined}
         onClick={handleSwitch}
-        disabled={loading}
+        disabled={switchLoading}
         aria-label={`Switch to ${switchLabel}`}
       >
         <span className="shell-nav-icon">
-          {loading ? (
+          {switchLoading ? (
             <ShellIcon
               name="Loader2"
               size={14}

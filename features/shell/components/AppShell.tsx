@@ -142,7 +142,7 @@ export default async function AppShell({
           <input type="checkbox" id="shell-panel-mobile" aria-hidden="true" />
 
           {/* When FORCE_EXCLUDE_SIDEMENU, next.config aliases these imports to stubs. */}
-          <Sidebar pathname={pathname} isAuthenticated={isAuthenticated} />
+          <Sidebar pathname={pathname} isAuthenticated={isAuthenticated} isAdmin={userData.isAdmin} />
           <Header isAuthenticated={isAuthenticated} />
           <ShellUserBlock userData={userData} isAuthenticated={isAuthenticated} />
 
