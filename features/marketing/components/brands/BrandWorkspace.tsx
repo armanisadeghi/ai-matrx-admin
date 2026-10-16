@@ -113,7 +113,7 @@ import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
 import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
-import { BrandOfferingsPanel } from "@/features/marketing/offerings/BrandOfferingsPanel";
+import { BrandOfferingsSummary } from "@/features/marketing/offerings/BrandOfferingsPanel";
 import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
 import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
@@ -149,11 +149,14 @@ import { openOutbound } from "@ai-matrx/kit/outbound";
 function RowActionButton({
   title,
   destructive,
+  disabled,
   onClick,
   children,
 }: {
   title: string;
   destructive?: boolean;
+  /** Keeps its slot when the action does not apply, so every row's icons line up. */
+  disabled?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
@@ -161,14 +164,18 @@ function RowActionButton({
     <button
       type="button"
       title={title}
+      aria-label={title}
+      disabled={disabled}
       onClick={(event) => {
         event.stopPropagation();
         onClick();
       }}
       className={
-        destructive
-          ? "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
-          : "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+        disabled
+          ? "inline-flex h-7 w-7 cursor-not-allowed items-center justify-center rounded-md text-disabled-foreground"
+          : destructive
+            ? "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
+            : "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
       }
     >
       {children}
@@ -362,16 +369,35 @@ const FACT_KIND_ORDER: BusinessFactKind[] = [
   "address",
 ];
 
-/** Kinds whose facts collapse into a bounded group once this many exist. */
-const FACT_GROUP_MIN = 3;
-/** Collapsed groups preview this many facts; the rest sit behind Show all. */
-const FACT_GROUP_PREVIEW = 4;
-/** Short single-line kinds render two-up inside a group on wide cards. */
-const TWO_UP_FACT_KINDS: ReadonlySet<BusinessFactKind> = new Set([
-  "phone",
-  "fax",
-  "email",
-]);
+/** The brand home's areas, in page order, for the section jump bar. */
+const BRAND_SECTIONS: ReadonlyArray<{ id: string; label: string }> = [
+  { id: "products-and-services", label: "Products & services" },
+  { id: "websites", label: "Websites" },
+  { id: "social-profiles", label: "Social profiles" },
+  { id: "business-facts", label: "Business facts" },
+  { id: "relationships", label: "Relationships" },
+  { id: "brand-assets", label: "Brand assets" },
+];
+
+/** Groups preview this many rows; the rest sit behind Show all. */
+const FACT_GROUP_PREVIEW = 5;
+
+/** Light semantic colour per fact family, for the group's icon chip (real tokens only). */
+type FactTone = "primary" | "success" | "warning" | "info" | "destructive";
+const FACT_TONE_CLASS: Record<FactTone, string> = {
+  primary: "bg-primary/10 text-primary-ink",
+  success: "bg-success/10 text-success-ink",
+  warning: "bg-warning/10 text-warning-ink",
+  info: "bg-info/10 text-info-ink",
+  destructive: "bg-destructive/10 text-destructive-ink",
+};
+function factTone(kind: BusinessFactKind): FactTone {
+  if (["phone", "fax", "email", "address", "hours", "location"].includes(kind)) return "success";
+  if (["website", "social_profile", "listing", "site_name", "hashtag", "identifier"].includes(kind)) return "info";
+  if (["category", "offering", "specialty", "audience", "industry_code", "metric", "funding", "founded", "technology"].includes(kind)) return "warning";
+  if (kind === "unresolved_profile") return "destructive";
+  return "primary";
+}
 
 function groupFactsByKind(
   facts: BusinessFact[],
@@ -388,95 +414,165 @@ function groupFactsByKind(
   );
 }
 
-/** One business-fact row; `compact` drops the per-row kind tile and label
- *  chrome because the surrounding group header already carries them. */
-function BusinessFactRow({
-  fact,
-  compact,
-  onEdit,
-  onDelete,
-}: {
+/** Same value, written twice (a trailing slash, a case change): one row. */
+function factFoldKey(fact: BusinessFact): string {
+  return factValueText(fact)
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\/(www\.)?/, "")
+    .replace(/\/+$/, "");
+}
+
+interface FoldedFact {
   fact: BusinessFact;
-  compact?: boolean;
-  onEdit?: () => void;
-  onDelete?: () => void;
-}) {
-  const value = factValueText(fact);
-  const factLabel =
+  copies: number;
+}
+
+function foldFacts(facts: BusinessFact[]): FoldedFact[] {
+  const out = new Map<string, FoldedFact>();
+  for (const fact of facts) {
+    const key = factFoldKey(fact);
+    const hit = out.get(key);
+    if (hit) hit.copies += 1;
+    else out.set(key, { fact, copies: 1 });
+  }
+  return [...out.values()];
+}
+
+function factLabelOf(fact: BusinessFact): string {
+  return (
     fact.label ||
     (isBusinessFactKind(fact.kind)
       ? BUSINESS_FACT_KIND_LABELS[fact.kind]
-      : (humanizeIdentifier(fact.kind) || fact.kind));
-  const actions = (
-    <div className="flex shrink-0 items-center gap-0.5">
-      <CopyButtons
-        size="xs"
-        {...webCopy({
-          kind: "web-business-fact",
-          label: factLabel,
-          description: "One human-confirmed business fact for this brand.",
-          surface: "Brand cockpit — Business facts",
-          data: fact,
-          lines: [
-            ["Fact", factLabel],
-            ["Value", value],
-            ["Kind", fact.kind],
-          ],
-          attributes: {
-            brand_id: fact.brand_id,
-            fact_id: fact.id,
-            kind: fact.kind,
-          },
-        })}
-        json={() => fact}
-      />
-      {onEdit ? (
-        <RowActionButton title="Edit fact" onClick={onEdit}>
+      : (humanizeIdentifier(fact.kind) || fact.kind))
+  );
+}
+
+/** One fact row inside its group: value in foreground, a sub-label only when it says more than the group does. */
+function BusinessFactRow({
+  folded,
+  groupLabel,
+  showLabel,
+  canEdit,
+  onEdit,
+  onDelete,
+}: {
+  folded: FoldedFact;
+  groupLabel: string;
+  showLabel: boolean;
+  canEdit: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { fact, copies } = folded;
+  const value = factValueText(fact);
+  const factLabel = factLabelOf(fact);
+  const subLabel = fact.label && fact.label.toLowerCase() !== groupLabel.toLowerCase() ? fact.label : "";
+  return (
+    <li className="flex min-h-9 min-w-0 items-center gap-3 px-3 py-0.5 hover:bg-accent/40" data-fact-id={fact.id}>
+      {showLabel ? (
+        <span className="w-40 shrink-0 truncate type-label" title={subLabel || undefined}>
+          {subLabel}
+        </span>
+      ) : null}
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={value}>
+        {value}
+      </span>
+      {copies > 1 ? (
+        <span
+          className="shrink-0 type-meta tabular-nums text-muted-foreground"
+          title={`Saved ${copies} times with the same value`}
+        >
+          ×{copies}
+        </span>
+      ) : null}
+      <div className="flex shrink-0 items-center gap-0.5">
+        <CopyButtons
+          size="xs"
+          label={`${factLabel}: ${value}`}
+          sourceId={`web-business-fact:${fact.id}`}
+          data={fact}
+          dataType="Agent"
+        />
+        <RowActionButton title={canEdit ? "Edit fact" : "Only editors can edit"} disabled={!canEdit} onClick={onEdit}>
           <Pencil className="h-3.5 w-3.5" />
         </RowActionButton>
-      ) : null}
-      {onDelete ? (
-        <RowActionButton title="Delete fact" destructive onClick={onDelete}>
+        <RowActionButton
+          title={canEdit ? "Delete fact" : "Only editors can delete"}
+          destructive
+          disabled={!canEdit}
+          onClick={onDelete}
+        >
           <Trash2 className="h-3.5 w-3.5" />
         </RowActionButton>
-      ) : null}
-    </div>
-  );
-  if (compact) {
-    return (
-      <li className="flex min-w-0 items-center gap-2 py-0.5">
-        <div className="min-w-0 flex-1">
-          {fact.label ? (
-            <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              {fact.label}
-            </p>
-          ) : null}
-          <p className="truncate text-sm text-foreground" title={value}>
-            {value}
-          </p>
-        </div>
-        {actions}
-      </li>
-    );
-  }
-  const FactIcon = isBusinessFactKind(fact.kind)
-    ? FACT_KIND_ICONS[fact.kind]
-    : Info;
-  return (
-    <li className="flex items-center gap-3 px-3 py-2">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
-        <FactIcon className="h-4 w-4 text-muted-foreground" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {factLabel}
-        </p>
-        <p className="truncate text-sm text-foreground" title={value}>
-          {value}
-        </p>
       </div>
-      {actions}
     </li>
+  );
+}
+
+/** One kind of fact: the kind's colour chip and name once, then its rows. */
+function BusinessFactGroup({
+  kind,
+  facts,
+  canEdit,
+  expanded,
+  onToggle,
+  onEdit,
+  onDelete,
+}: {
+  kind: BusinessFactKind;
+  facts: BusinessFact[];
+  canEdit: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+  onEdit: (fact: BusinessFact) => void;
+  onDelete: (fact: BusinessFact) => void;
+}) {
+  const label = BUSINESS_FACT_KIND_LABELS[kind];
+  const folded = foldFacts(facts);
+  const visible = expanded ? folded : folded.slice(0, FACT_GROUP_PREVIEW);
+  // The sub-label column shows only when it tells rows apart (Industry vs Business type), never one name repeated.
+  const subLabels = new Set(
+    folded
+      .map(({ fact }) => (fact.label ?? "").trim().toLowerCase())
+      .filter((l) => l && l !== label.toLowerCase()),
+  );
+  const showLabel = subLabels.size > 1;
+  const GroupIcon = FACT_KIND_ICONS[kind];
+  return (
+    <section className="min-w-0" data-fact-group={kind}>
+      <div className="flex h-9 items-center gap-2 bg-muted px-3">
+        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${FACT_TONE_CLASS[factTone(kind)]}`}>
+          <GroupIcon className="h-3.5 w-3.5" />
+        </span>
+        <h3 className="text-sm font-medium text-foreground">{label}</h3>
+        <span className="type-meta tabular-nums text-muted-foreground">{folded.length}</span>
+      </div>
+      <ul className="divide-y divide-border">
+        {visible.map((item) => (
+          <BusinessFactRow
+            key={item.fact.id}
+            folded={item}
+            groupLabel={label}
+            showLabel={showLabel}
+            canEdit={canEdit}
+            onEdit={() => onEdit(item.fact)}
+            onDelete={() => onDelete(item.fact)}
+          />
+        ))}
+      </ul>
+      {folded.length > FACT_GROUP_PREVIEW ? (
+        <button
+          type="button"
+          className="flex h-8 w-full items-center gap-1 border-t border-border px-3 text-xs font-medium text-primary hover:bg-accent/40"
+          onClick={onToggle}
+          aria-expanded={expanded}
+        >
+          <ChevronDown className={expanded ? "h-3.5 w-3.5 rotate-180 transition-transform" : "h-3.5 w-3.5 transition-transform"} />
+          {expanded ? "Show less" : `Show all ${folded.length}`}
+        </button>
+      ) : null}
+    </section>
   );
 }
 
@@ -807,8 +903,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <Badge variant="outline">{current.industry}</Badge>
                 ) : null}
                 <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
-                {socialProperties.length > 0 ? (
-                  <span className="ml-1 inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+              </div>
+                {properties.isLoading || socialProperties.length > 0 ? (
+                  // Own line, height held while the accounts load, so the hero never grows under the reader.
+                  <span className="mt-2 flex h-6 max-w-full items-center gap-x-2 overflow-hidden">
                     {socialProperties.slice(0, 8).map((property) => {
                       const accountRow = (socialAccounts.data ?? []).find((r) => r.propertyId === property.id);
                       const href = accountRow
@@ -855,7 +953,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     ) : null}
                   </span>
                 ) : null}
-              </div>
               {current.description ? (
                 <p
                   className="mt-2 line-clamp-3 max-w-prose text-sm leading-6 text-muted-foreground"
@@ -930,6 +1027,46 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             <SmartAddBasicsGate brandId={current.id} />
           </section>
 
+          {/* Section jumps: the home is long, so every area is one click away; sub-pages sit at the end. */}
+          <nav
+            aria-label="Brand sections"
+            className="sticky top-[var(--shell-header-h)] z-10 flex min-w-0 items-center gap-1 overflow-x-auto rounded-lg border border-border bg-card px-2 py-1 shadow-sm"
+          >
+            {BRAND_SECTIONS.map((section) => (
+              <a
+                key={section.id}
+                href={`#${section.id}`}
+                className="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-sm text-foreground hover:bg-accent"
+              >
+                {section.label}
+              </a>
+            ))}
+            <span className="mx-1 h-4 w-px shrink-0 bg-border" aria-hidden="true" />
+            <Link
+              href={marketingRoutes.brandOfferings(brandId)}
+              className="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent"
+            >
+              Products list
+            </Link>
+            <Link
+              href={marketingRoutes.brandIdentity(brandId)}
+              className="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent"
+            >
+              Identity
+            </Link>
+            <Link
+              href={marketingRoutes.brandDiscovery(brandId)}
+              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent"
+            >
+              Inbox
+              {pending.data ? (
+                <span className="rounded bg-warning/10 px-1.5 type-meta tabular-nums text-warning-ink">
+                  {pending.data.toLocaleString()}
+                </span>
+              ) : null}
+            </Link>
+          </nav>
+
           {/* Every fetch the platform does for this brand: setup, crawls, posts. */}
           <BrandBackgroundWork brand={current} canEdit={canEdit} />
 
@@ -956,13 +1093,17 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             canEdit={canEdit}
           />
 
-          {/* Products & services: found from the brand's site, accounts and listings, each with its quote; Yes / No. */}
-          <section className="min-w-0 rounded-lg border border-border bg-card p-3" id="products-and-services">
-            <h2 className="type-title mb-2">Products &amp; services</h2>
-            <BrandOfferingsPanel
+          {/* Products & services: a one-line summary here; the grouped table lives on its own page. */}
+          <SectionCard
+            title="Products & services"
+            anchor="products-and-services"
+            className="scroll-mt-24"
+            action={{ label: "Open list", href: marketingRoutes.brandOfferings(brandId) }}
+          >
+            <BrandOfferingsSummary
               brand={{ id: current.id, name: current.name, organizationId: current.organization_id }}
             />
-          </section>
+          </SectionCard>
 
           {/* What AI says about this brand — the owner is the brand, so it shows with or without a site. */}
           <BrandAiVisibilityCard
@@ -974,6 +1115,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
 
           <SectionCard
             title="Websites"
+            anchor="websites"
+            className="scroll-mt-24"
             copy={websitesCopy}
             action={
               canEdit
@@ -1085,7 +1228,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             )}
           </SectionCard>
 
-          <div className={`grid gap-3 lg:grid-cols-2${isPersonBrand(current) ? " -order-1" : ""}`}>
+          <div className={`grid gap-3${isPersonBrand(current) ? " -order-1" : ""}`}>
+            <div id="social-profiles" className="min-w-0 scroll-mt-24">
             <BrandSocialProfilesCard
               brandId={current.id}
               brandSeg={marketingSeg(current)}
@@ -1097,10 +1241,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               onEdit={(property) => setPropertyEditor({ open: true, property })}
               onDelete={(property) => setDeletingProperty(property)}
             />
+            </div>
 
             <SectionCard
               title={overviewCopy.factsTitle}
-              className="lg:col-span-2"
+              anchor="business-facts"
+              className="scroll-mt-24"
               copy={factsCopy}
               action={
                 canEdit
@@ -1117,82 +1263,20 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 </p>
               ) : (
                 <div className="divide-y divide-border">
-                  {factGroups.map(([kind, groupFacts]) => {
-                    if (groupFacts.length < FACT_GROUP_MIN) {
-                      return (
-                        <ul key={kind}>
-                          {groupFacts.map((fact) => (
-                            <BusinessFactRow
-                              key={fact.id}
-                              fact={fact}
-                              onEdit={canEdit ? () => setFactEditor({ open: true, fact }) : undefined}
-                              onDelete={canEdit ? () => setDeletingFact(fact) : undefined}
-                            />
-                          ))}
-                        </ul>
-                      );
-                    }
-                    const expanded = Boolean(expandedFactKinds[kind]);
-                    const visible = expanded
-                      ? groupFacts
-                      : groupFacts.slice(0, FACT_GROUP_PREVIEW);
-                    const GroupIcon = FACT_KIND_ICONS[kind];
-                    return (
-                      <div key={kind} className="px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
-                            <GroupIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                          </span>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            {BUSINESS_FACT_KIND_LABELS[kind]}
-                          </p>
-                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
-                            {groupFacts.length}
-                          </span>
-                        </div>
-                        <ul
-                          className={
-                            TWO_UP_FACT_KINDS.has(kind)
-                              ? "mt-1 grid gap-x-4 pl-8 sm:grid-cols-2"
-                              : "mt-1 grid gap-x-4 pl-8"
-                          }
-                        >
-                          {visible.map((fact) => (
-                            <BusinessFactRow
-                              key={fact.id}
-                              fact={fact}
-                              compact
-                              onEdit={canEdit ? () => setFactEditor({ open: true, fact }) : undefined}
-                              onDelete={canEdit ? () => setDeletingFact(fact) : undefined}
-                            />
-                          ))}
-                        </ul>
-                        {groupFacts.length > FACT_GROUP_PREVIEW ? (
-                          <button
-                            type="button"
-                            className="mt-1 inline-flex items-center gap-1 pl-8 text-xs font-medium text-muted-foreground hover:text-primary"
-                            onClick={() =>
-                              setExpandedFactKinds((state) => ({
-                                ...state,
-                                [kind]: !expanded,
-                              }))
-                            }
-                          >
-                            <ChevronDown
-                              className={
-                                expanded
-                                  ? "h-3.5 w-3.5 rotate-180 transition-transform"
-                                  : "h-3.5 w-3.5 transition-transform"
-                              }
-                            />
-                            {expanded
-                              ? "Show less"
-                              : `Show all ${groupFacts.length}`}
-                          </button>
-                        ) : null}
-                      </div>
-                    );
-                  })}
+                  {factGroups.map(([kind, groupFacts]) => (
+                    <BusinessFactGroup
+                      key={kind}
+                      kind={kind}
+                      facts={groupFacts}
+                      canEdit={canEdit}
+                      expanded={Boolean(expandedFactKinds[kind])}
+                      onToggle={() =>
+                        setExpandedFactKinds((state) => ({ ...state, [kind]: !state[kind] }))
+                      }
+                      onEdit={(fact) => setFactEditor({ open: true, fact })}
+                      onDelete={(fact) => setDeletingFact(fact)}
+                    />
+                  ))}
                 </div>
               )}
             </SectionCard>
@@ -1203,6 +1287,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
 
           <SectionCard
             title="Brand assets"
+            anchor="brand-assets"
+            className="scroll-mt-24"
             copy={assetsCopy}
             headerExtra={
               // THE DOOR: the full asset desk — library, research, stock

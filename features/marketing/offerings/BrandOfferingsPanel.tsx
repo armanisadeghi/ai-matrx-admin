@@ -11,13 +11,29 @@
  */
 
 import { useEffect, useState } from "react";
-import { DecisionControl, Button, PropertyRow, type DecisionAnswer } from "@ai-matrx/design-system/controls";
-import { ErrorNotice, Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import {
+  DecisionControl,
+  Button,
+  PropertyRow,
+  type DecisionAnswer,
+} from "@ai-matrx/design-system/controls";
+import {
+  ErrorNotice,
+  Peek,
+  PeekHoverCard,
+  type PeekRecord,
+} from "@ai-matrx/design-system";
+import {
+  MatrxDataTable,
+  type MatrxColumnDef,
+} from "@ai-matrx/design-system/data-table";
 import { formatCount } from "@ai-matrx/kit/format";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
-import { selectRunEmissions, selectRunStatus } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
+import {
+  selectRunEmissions,
+  selectRunStatus,
+} from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { openWorkflowRunWindowAction } from "@/features/overlays/openers/workflowRunWindow";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { getJson, postNdjson } from "@/lib/python-client";
@@ -37,7 +53,13 @@ import {
 } from "./data";
 
 const SURFACE = "marketing.brands.offerings";
-const TERMINAL = new Set(["completed", "failed", "cancelled", "errored", "error"]);
+const TERMINAL = new Set([
+  "completed",
+  "failed",
+  "cancelled",
+  "errored",
+  "error",
+]);
 const FAMILY_LABEL: Record<string, string> = {
   own_site: "Own site",
   own_accounts: "Own accounts",
@@ -61,47 +83,303 @@ function withReferral(url: string): string {
   }
 }
 
+/** Repeated identical quotes (one page read many times) fold into one line with a count. */
+function foldQuotes(
+  item: OfferingItem,
+): { text: string; detail: string; count: number }[] {
+  const byText = new Map<
+    string,
+    { text: string; detail: string; count: number }
+  >();
+  for (const q of item.quotes) {
+    if (!q.quote || q.addressOnly) continue;
+    const text = q.quote.trim();
+    const hit = byText.get(text);
+    if (hit) hit.count += 1;
+    else
+      byText.set(text, {
+        text,
+        detail: FAMILY_LABEL[q.family] ?? q.family,
+        count: 1,
+      });
+  }
+  return [...byText.values()];
+}
+
+function linkOf(item: OfferingItem): string | null {
+  return item.quotes.find((q) => q.url)?.url ?? null;
+}
+
 function peekOf(item: OfferingItem): PeekRecord {
-  const quotes = item.quotes.filter((q) => q.quote && !q.addressOnly).slice(0, 6);
-  const facts = [
-    `Sources: ${item.families.map((f) => FAMILY_LABEL[f] ?? f).join(", ") || "address only"}`,
-    ...(item.priceText ? [`Price: ${item.priceText}`] : []),
-    ...(item.group ? [`Group: ${item.group}`] : []),
-    ...quotes.map((q) => `${FAMILY_LABEL[q.family] ?? q.family}: “${q.quote}”`),
-  ];
+  const quotes = foldQuotes(item).slice(0, 6);
+  const link = linkOf(item);
+  const kind = item.kind === "product" ? "Product" : "Service";
   return {
-    kind: item.kind === "product" ? "Product" : "Service",
+    kind,
     id: item.key,
     title: item.name,
-    subtitle: `${item.kind === "product" ? "Product" : "Service"} · ${item.certainty}`,
-    body: facts.map((fact) => ({ fact })),
+    subtitle: `${kind} · ${CERTAINTY_LABEL[item.certainty]}`,
+    body: [
+      {
+        property: "Sources",
+        value:
+          item.families.map((f) => FAMILY_LABEL[f] ?? f).join(", ") ||
+          "Address only",
+      },
+      ...(item.priceText ? [{ property: "Price", value: item.priceText }] : []),
+      ...(item.group ? [{ property: "Group", value: item.group }] : []),
+      ...(quotes.length
+        ? [
+            {
+              section: "Quotes",
+              rows: quotes.map((q) => ({
+                text: `“${q.text}”`,
+                detail:
+                  q.count > 1 ? `${q.detail} · ${q.count} times` : q.detail,
+              })),
+            },
+          ]
+        : []),
+    ],
+    ...(link ? { href: withReferral(link) } : {}),
   };
 }
 
-function OfferingRow({ item, onAnswer }: { item: OfferingItem; onAnswer: (item: OfferingItem, a: DecisionAnswer | null) => void }) {
-  const link = item.quotes.find((q) => q.url)?.url ?? null;
-  const value: DecisionAnswer | null = item.status === "confirmed" ? "yes" : item.status === "dismissed" ? "no" : null;
+const CERTAINTY_LABEL: Record<OfferingItem["certainty"], string> = {
+  confirmed: "Confirmed",
+  likely: "Likely",
+  possible: "Possible",
+};
+
+/** Light semantic colour per certainty: confirmed green, likely primary, possible amber. */
+const CERTAINTY_TONE: Record<OfferingItem["certainty"], string> = {
+  confirmed: "bg-success/10 text-success-ink",
+  likely: "bg-primary/10 text-primary-ink",
+  possible: "bg-warning/10 text-warning-ink",
+};
+
+function groupOf(item: OfferingItem): string {
+  return item.group ?? item.sourceGroups[0] ?? "Other";
+}
+
+function verdictLabel(verdict: OfferingsVerdict | null): string | null {
+  return verdict?.verdict === "complete"
+    ? "Complete"
+    : verdict?.verdict === "more_exists"
+      ? "More exists"
+      : verdict?.verdict === "cant_tell"
+        ? "Can't tell"
+        : null;
+}
+
+function offeringColumns(
+  onAnswer: (item: OfferingItem, a: DecisionAnswer | null) => void,
+): MatrxColumnDef<OfferingItem>[] {
+  return [
+    {
+      id: "name",
+      accessorKey: "name",
+      header: "Name",
+      label: "Name",
+      width: 300,
+      cell: (item) => (
+        <PeekHoverCard
+          trigger={
+            <span
+              className="block min-w-0 truncate"
+              data-offering-key={item.key}
+            >
+              {item.name}
+            </span>
+          }
+        >
+          <Peek record={peekOf(item)} />
+        </PeekHoverCard>
+      ),
+    },
+    {
+      id: "group",
+      accessorFn: groupOf,
+      header: "Group",
+      label: "Group",
+      width: 180,
+    },
+    {
+      id: "kind",
+      accessorFn: (item) => (item.kind === "product" ? "Product" : "Service"),
+      header: "Kind",
+      label: "Kind",
+      width: 100,
+      filter: "select",
+    },
+    {
+      id: "price",
+      accessorFn: (item) => item.priceText ?? "",
+      header: "Price",
+      label: "Price",
+      width: 100,
+      cell: (item) =>
+        item.priceText ? (
+          <span className="tabular-nums">{item.priceText}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "sources",
+      accessorFn: (item) => item.families.length,
+      header: "Sources",
+      label: "Sources",
+      width: 90,
+      cell: (item) => (
+        <span
+          className="tabular-nums"
+          title={item.families.map((f) => FAMILY_LABEL[f] ?? f).join(", ")}
+        >
+          {item.families.length}
+        </span>
+      ),
+    },
+    {
+      id: "certainty",
+      accessorFn: (item) => CERTAINTY_LABEL[item.certainty],
+      header: "Certainty",
+      label: "Certainty",
+      width: 110,
+      filter: "select",
+      cell: (item) => (
+        <span
+          className={`inline-flex rounded px-1.5 py-0.5 type-meta font-medium ${CERTAINTY_TONE[item.certainty]}`}
+        >
+          {CERTAINTY_LABEL[item.certainty]}
+        </span>
+      ),
+    },
+    {
+      id: "decision",
+      accessorFn: (item) =>
+        item.status === "confirmed"
+          ? "Yes"
+          : item.status === "dismissed"
+            ? "No"
+            : "Open",
+      header: "Is it theirs?",
+      label: "Is it theirs?",
+      helpText:
+        "Yes keeps it as one of the brand's products or services; No removes it for good.",
+      width: 230,
+      filter: "select",
+      cell: (item) => (
+        <DecisionControl
+          value={
+            item.status === "confirmed"
+              ? "yes"
+              : item.status === "dismissed"
+                ? "no"
+                : null
+          }
+          onChange={(a) => onAnswer(item, a)}
+          onSkip={() => onAnswer(item, null)}
+          onClear={() => onAnswer(item, null)}
+        />
+      ),
+    },
+  ];
+}
+
+/** The brand home's one-line Products & services summary; the list lives on its own page. */
+export function BrandOfferingsSummary({ brand }: Props) {
+  const [items, setItems] = useState<OfferingItem[] | null>(null);
+  const [verdict, setVerdict] = useState<OfferingsVerdict | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    Promise.all([fetchOfferingItems(brand.id), fetchOfferingsVerdict(brand.id)])
+      .then(([i, v]) => {
+        if (!live) return;
+        setItems(i);
+        setVerdict(v);
+      })
+      .catch((e: unknown) => {
+        if (live) setError(e instanceof Error ? e.message : String(e));
+      });
+    return () => {
+      live = false;
+    };
+  }, [brand.id]);
+  if (error)
+    return <ErrorNotice error={error} operation="Load products and services" />;
+  const counts = new Map<string, number>();
+  for (const it of items ?? [])
+    counts.set(groupOf(it), (counts.get(groupOf(it)) ?? 0) + 1);
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const confirmed = (items ?? []).filter(
+    (i) => i.status === "confirmed",
+  ).length;
+  const open = (items ?? []).filter((i) => i.status === "pending").length;
+  const verdictText = verdictLabel(verdict);
   return (
-    <div className="flex min-w-0 items-center gap-2 py-1" data-offering-key={item.key}>
-      <PeekHoverCard trigger={<span className="min-w-0 flex-1 truncate type-body">{item.name}</span>}>
-        <Peek record={peekOf(item)} />
-      </PeekHoverCard>
-      <span className="shrink-0 type-caption text-muted-foreground">
-        {item.kind === "product" ? "Product" : "Service"}
-        {item.priceText ? ` · ${item.priceText}` : ""} · {item.families.length || 0} source
-        {item.families.length === 1 ? "" : "s"} · {item.certainty}
-      </span>
-      {link ? (
-        <OutboundLink href={withReferral(link)} target="_blank" rel="noopener" className="shrink-0 type-caption">
-          Open
-        </OutboundLink>
+    <div
+      className="flex min-h-12 flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2"
+      data-brand-offerings-summary={brand.id}
+    >
+      <div className="min-w-0">
+        <PropertyRow
+          label="Found"
+          value={items ? formatCount(items.length) : "…"}
+        />
+      </div>
+      <div className="min-w-0">
+        <PropertyRow
+          label="Confirmed"
+          value={
+            <span className="text-success-ink tabular-nums">
+              {items ? formatCount(confirmed) : "…"}
+            </span>
+          }
+        />
+      </div>
+      <div className="min-w-0">
+        <PropertyRow
+          label="To review"
+          value={
+            <span
+              className={
+                open ? "text-warning-ink tabular-nums" : "tabular-nums"
+              }
+            >
+              {items ? formatCount(open) : "…"}
+            </span>
+          }
+        />
+      </div>
+      {verdictText ? (
+        <div className="min-w-0">
+          <PropertyRow label="Coverage" value={verdictText} />
+        </div>
       ) : null}
-      <DecisionControl
-        value={value}
-        onChange={(a) => onAnswer(item, a)}
-        onSkip={() => onAnswer(item, null)}
-        onClear={() => onAnswer(item, null)}
-      />
+      {top.length ? (
+        <div className="min-w-0">
+          <PropertyRow
+            label="Top groups"
+            value={
+              <span className="flex flex-wrap gap-1">
+                {top.map(([g, n]) => (
+                  <span
+                    key={g}
+                    className="inline-flex items-center gap-1 rounded border border-border px-1.5 type-meta"
+                  >
+                    {g}{" "}
+                    <span className="tabular-nums text-muted-foreground">
+                      {n}
+                    </span>
+                  </span>
+                ))}
+              </span>
+            }
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -128,7 +406,9 @@ export function BrandOfferingsPanel({ brand }: Props) {
       ]);
       setItems(i);
       setVerdict(v);
-      setRun((prev) => (prev && r && prev.id === r.id && !TERMINAL.has(r.status) ? prev : r));
+      setRun((prev) =>
+        prev && r && prev.id === r.id && !TERMINAL.has(r.status) ? prev : r,
+      );
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -138,12 +418,18 @@ export function BrandOfferingsPanel({ brand }: Props) {
   // First read, then again each time the watched run lands a step.
   useEffect(() => {
     let live = true;
-    Promise.all([fetchOfferingItems(brand.id), fetchOfferingsVerdict(brand.id), fetchLatestOfferingsRun(brand.id)])
+    Promise.all([
+      fetchOfferingItems(brand.id),
+      fetchOfferingsVerdict(brand.id),
+      fetchLatestOfferingsRun(brand.id),
+    ])
       .then(([i, v, r]) => {
         if (!live) return;
         setItems(i);
         setVerdict(v);
-        setRun((prev) => (prev && r && prev.id === r.id && !TERMINAL.has(r.status) ? prev : r));
+        setRun((prev) =>
+          prev && r && prev.id === r.id && !TERMINAL.has(r.status) ? prev : r,
+        );
         setError(null);
       })
       .catch((e: unknown) => {
@@ -160,7 +446,13 @@ export function BrandOfferingsPanel({ brand }: Props) {
     void fetchRunSnapshots(runId).then((snaps) =>
       builder.publish(
         [
-          { key: "offerings.run", label: "Products & services run", group: "workflow", data: run, ref: { type: "workflow_run", id: runId } },
+          {
+            key: "offerings.run",
+            label: "Products & services run",
+            group: "workflow",
+            data: run,
+            ref: { type: "workflow_run", id: runId },
+          },
           ...snaps.map((s, n) => ({
             key: `offerings.call.${s.id}`,
             label: `${n + 1}. ${s.label}`,
@@ -168,7 +460,12 @@ export function BrandOfferingsPanel({ brand }: Props) {
             data: { point: s.pointKey, snapshot: s.id },
             ref: { type: "provision_snapshot" as const, id: s.id },
           })),
-          { key: "offerings.verdict", label: "Coverage verdict", group: "derived", data: verdict },
+          {
+            key: "offerings.verdict",
+            label: "Coverage verdict",
+            group: "derived",
+            data: verdict,
+          },
         ],
         { prune: ["offerings.call."] },
       ),
@@ -188,9 +485,10 @@ export function BrandOfferingsPanel({ brand }: Props) {
 
   const refresh = async () => {
     try {
-      const { data: quote } = await getJson<{ points: number; paid_sources: { source: string; points: number }[] }>(
-        `/brand-offerings/${brand.id}/refresh/quote`,
-      );
+      const { data: quote } = await getJson<{
+        points: number;
+        paid_sources: { source: string; points: number }[];
+      }>(`/brand-offerings/${brand.id}/refresh/quote`);
       if (quote.points > 0) {
         const ok = await confirm({
           title: "Refresh products & services",
@@ -200,11 +498,25 @@ export function BrandOfferingsPanel({ brand }: Props) {
         if (!ok) return;
       }
       setRefreshing(true);
-      for await (const ev of postNdjson(`/brand-offerings/${brand.id}/refresh`, { confirm_points: quote.points })) {
-        const data = (ev as { data?: { type?: string; follow_up_run_id?: string | null } }).data;
-        if (data?.type === "brand_offerings_refreshed" && data.follow_up_run_id) {
-          setRun({ id: data.follow_up_run_id, status: "running", createdAt: new Date().toISOString() });
-          dispatch(openWorkflowRunWindowAction({ runId: data.follow_up_run_id }));
+      for await (const ev of postNdjson(
+        `/brand-offerings/${brand.id}/refresh`,
+        { confirm_points: quote.points },
+      )) {
+        const data = (
+          ev as { data?: { type?: string; follow_up_run_id?: string | null } }
+        ).data;
+        if (
+          data?.type === "brand_offerings_refreshed" &&
+          data.follow_up_run_id
+        ) {
+          setRun({
+            id: data.follow_up_run_id,
+            status: "running",
+            createdAt: new Date().toISOString(),
+          });
+          dispatch(
+            openWorkflowRunWindowAction({ runId: data.follow_up_run_id }),
+          );
         }
       }
     } catch (e) {
@@ -215,57 +527,96 @@ export function BrandOfferingsPanel({ brand }: Props) {
   };
 
   const running = !!run && !TERMINAL.has(liveStatus ?? run.status);
-  const groups = new Map<string, OfferingItem[]>();
-  for (const it of items ?? []) {
-    const g = it.group ?? it.sourceGroups[0] ?? "Other";
-    groups.set(g, [...(groups.get(g) ?? []), it]);
-  }
-  const ordered = [...groups.entries()].sort((a, b) => (a[0] === "Other" ? 1 : b[0] === "Other" ? -1 : a[0].localeCompare(b[0])));
-  const verdictText =
-    verdict?.verdict === "complete" ? "Complete" : verdict?.verdict === "more_exists" ? "More exists" : verdict?.verdict === "cant_tell" ? "Can't tell" : null;
+  const verdictText = verdictLabel(verdict);
+  const columns = offeringColumns((i, a) => void answer(i, a));
 
   return (
-    <div className="flex min-w-0 flex-col gap-3" data-brand-offerings={brand.id}>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="type-label">{error ? "Not read" : items ? `${items.length} found` : "Loading"}</span>
-        {verdictText ? (
-          <span className="type-caption text-muted-foreground">
-            {verdictText}
-            {verdict?.line ? ` · ${verdict.line}` : ""}
-          </span>
-        ) : null}
-        <span className="flex-1" />
-        {runId ? (
-          <Button variant="quiet" onClick={() => dispatch(openWorkflowRunWindowAction({ runId }))}>
-            {running ? "Watch it run" : "Last run"}
-          </Button>
-        ) : null}
-        <Button variant="outline" onClick={() => void refresh()} disabled={refreshing || running}>
-          {running ? "Running" : "Refresh"}
-        </Button>
-      </div>
-      {verdict?.actions.length && verdict.verdict !== "complete" ? (
-        <PropertyRow label="Next step" value={verdict.actions.join(" · ")} />
-      ) : null}
-      {verdict?.scopeClaims.length ? (
-        <PropertyRow
-          label="The brand says"
-          value={verdict.scopeClaims.slice(0, 3).map((c) => `“${c.quote}”`).join(" · ")}
-        />
-      ) : null}
-      {error ? <ErrorNotice error={error} operation="Load products and services" /> : null}
-      {ordered.map(([group, rows]) => (
-        <details key={group} open className="min-w-0">
-          <summary className="type-label" data-clickable="">
-            {group} <span className="text-muted-foreground">{rows.length}</span>
-          </summary>
-          <div className="flex min-w-0 flex-col pl-3">
-            {rows.map((it) => (
-              <OfferingRow key={it.key} item={it} onAnswer={(i, a) => void answer(i, a)} />
-            ))}
+    <div
+      className="flex min-w-0 flex-col gap-3"
+      data-brand-offerings={brand.id}
+    >
+      <section className="rounded-lg border border-border bg-card px-3 py-2">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <div className="min-w-0">
+            <PropertyRow
+              label="Found"
+              value={
+                error ? "Not read" : items ? formatCount(items.length) : "…"
+              }
+            />
           </div>
-        </details>
-      ))}
+          {verdictText ? (
+            <div className="min-w-0">
+              <PropertyRow
+                label="Coverage"
+                value={verdictText}
+                {...(verdict?.line ? { help: verdict.line } : {})}
+              />
+            </div>
+          ) : null}
+          {verdict?.actions.length && verdict.verdict !== "complete" ? (
+            <div className="min-w-0">
+              <PropertyRow
+                label="Next step"
+                value={verdict.actions.join(" · ")}
+              />
+            </div>
+          ) : null}
+          <span className="flex-1" />
+          {runId ? (
+            <Button
+              variant="quiet"
+              onClick={() => dispatch(openWorkflowRunWindowAction({ runId }))}
+            >
+              {running ? "Watch it run" : "Last run"}
+            </Button>
+          ) : null}
+          <Button
+            variant="outline"
+            onClick={() => void refresh()}
+            disabled={refreshing || running}
+          >
+            {running ? "Running" : "Refresh"}
+          </Button>
+        </div>
+        {verdict?.scopeClaims.length ? (
+          <div className="min-w-0">
+            <PropertyRow
+              label="The brand says"
+              value={verdict.scopeClaims
+                .slice(0, 3)
+                .map((c) => `“${c.quote}”`)
+                .join(" · ")}
+            />
+          </div>
+        ) : null}
+      </section>
+      <MatrxDataTable<OfferingItem>
+        data={items ?? []}
+        columns={columns}
+        getRowId={(item) => item.key}
+        tableId="marketing.brand-offerings"
+        read={{
+          status: error ? "error" : items ? "ready" : "loading",
+          error,
+          onRetry: () => void load(),
+          what: "products and services",
+        }}
+        isLoading={!items && !error}
+        defaultSort={{ id: "name", direction: "asc" }}
+        searchText={(item) =>
+          `${item.name} ${groupOf(item)} ${item.priceText ?? ""}`
+        }
+        grouping={{
+          columnId: "group",
+          groupableColumnIds: ["group", "kind", "certainty", "decision"],
+          order: "value-asc",
+          rowNoun: "offering",
+        }}
+        detail={{ enabled: false }}
+        pageSize={100}
+        emptyState={{ title: "No products or services found yet" }}
+      />
     </div>
   );
 }
