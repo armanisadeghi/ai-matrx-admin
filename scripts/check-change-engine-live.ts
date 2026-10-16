@@ -81,6 +81,14 @@ const ASSERT: Record<string, Array<[string, (x: Obs) => boolean]>> = {
       return o(x.advance).state === "done" && o(x.advance).rows_done === 3 && a.asset === TARGET && a.persona === TARGET && a.file === TARGET;
     }],
   ],
+  "copy-note-and-contact.sql": [
+    ["a note copies into another organization with the target's General home; the original stays", (x) => {
+      const n = o(x.note_copy);
+      return !x.error && n.org === TARGET && n.home === x.target_general && n.content === "Bring the settlement range." && x.note_original_org === SOURCE;
+    }],
+    ["a contact duplicates with its address (deep copy)", (x) => o(x.party_copy).rows === 2 && o(x.party_copy).addresses === 1 && o(x.party_copy).original_addresses === 1],
+    ["a type with no copy_mode is a named refusal", (x) => x.not_copyable === "not_copyable"],
+  ],
   "contact-and-shared-file.sql": [
     ["a contact's delete takes its address", (x) => o(x.party_delete).addr_deleted === true],
     ["restore brings contact and address back", (x) => o(x.party_restore).party_live === true && o(x.party_restore).addr_live === true],
