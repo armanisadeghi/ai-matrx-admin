@@ -61,6 +61,8 @@ import {
   saveTruth,
   type NetProgress,
 } from "../service";
+import { isRoundMetadata } from "../round-model";
+import { SmartAddRoundPage } from "./SmartAddRoundPage";
 
 const POLL_MS = 2000;
 const SYSTEMS: SystemKey[] = ["holder", "jev", "reference"];
@@ -71,6 +73,7 @@ const SYSTEM_HINT: Record<SystemKey, string> = {
 };
 
 type View = "truth" | "score";
+type Mode = "net" | "round";
 
 export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const dispatch = useAppDispatch();
@@ -86,16 +89,22 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const [busy, setBusy] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
   const [view, setView] = useState<View>("truth");
+  const [mode, setMode] = useState<Mode>("net");
   const [, startTransition] = useTransition();
   const lastChange = useRef(0); // set on mount by the signature effect below
 
   // Open a saved bench.
   useEffect(() => {
-    if (!setId) return;
+    if (!setId || !userId) return;
     let alive = true;
     loadComparisonSet(setId)
       .then(({ set, entries }) => {
         if (!alive) return;
+        // A real-round bench has its own page.
+        if (isRoundMetadata(set.metadata as Record<string, unknown> | null)) {
+          setMode("round");
+          return;
+        }
         const saved = readBench(set.metadata as Record<string, unknown> | null);
         if (!saved)
           throw new Error("This saved battle is not a Smart Add bench.");
@@ -130,11 +139,12 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     return () => {
       alive = false;
     };
-  }, [setId]);
+  }, [setId, userId]);
 
   // Who judges, from data: the web-result job's holder, and the Jev agent picked on the last bench.
   useEffect(() => {
-    if (setId) return;
+    // Only once the person is known: a read sent before sign-in hydrates goes out as anon.
+    if (setId || !userId) return;
     let alive = true;
     resolveJudges(userId)
       .then(
@@ -341,6 +351,21 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
 
   const marked = Object.keys(bench.truth).length;
 
+  // Wide net | Real round — offered only on a new bench (a saved one is one or the other).
+  const modeSwitch = setId ? null : (
+    <SegmentedControl<Mode>
+      aria-label="Bench kind"
+      value={mode}
+      onValueChange={setMode}
+      data={[
+        { value: "net", label: "Wide net" },
+        { value: "round", label: "Real round" },
+      ]}
+    />
+  );
+  if (mode === "round")
+    return <SmartAddRoundPage setId={setId} modeSwitch={modeSwitch} />;
+
   return (
     <div
       className="h-full flex flex-col overflow-hidden"
@@ -370,7 +395,9 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
           {loading ? (
             <RegionSkeleton />
           ) : !ran ? (
-            <SetupPanel
+            <>
+              {modeSwitch}
+              <SetupPanel
               bench={bench}
               patchBrand={patchBrand}
               setBench={setBench}
@@ -383,6 +410,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
               busy={busy}
               net={net}
             />
+            </>
           ) : (
             <>
               <ProgressStrip

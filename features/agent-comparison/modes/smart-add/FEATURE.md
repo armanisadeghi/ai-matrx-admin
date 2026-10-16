@@ -18,6 +18,40 @@ anyone's confidence.** Arman, 2026-10-16: "the key is not to look at confidence 
 5. **Scoreboard** — per system: right / wrong / can't tell against the marks, stranger marked ours, us
    marked not us, typical and slow call time, calls, cost; then every result some system got wrong.
 
+## Real round tab
+
+The second tab answers the same question for the judgments a Smart Add ROUND makes: **is this account
+ours** (`identity_match_1..5`, mandate `brand_intake.identity_match_decision`), **business or person**
+(`entity_kind`, `brand_intake.entity_kind_decision`) and **we think** (`we_think`, `brand_intake.we_think`).
+
+1. **One real round** — `startSystemRun(…, "smart_add_brand_identify", …)` with the inputs Smart Add sends after
+   the person confirmed their own name, site and accounts (`round-model.roundInputs`). The battle row is filed at
+   once (`metadata.smart_add_bench.kind = "round"`), so the page can close while the round runs.
+2. **Capture** — once `workflow.run.status` is final, the judgment steps are read from `workflow.node_events`
+   (status, `duration_ms`, conversation, cost, output) and each holder conversation's
+   `chat.conversation.variables` — the exact variables today's holder got. Items: one per identity step, one
+   entity, one per we-think candidate (`variables.candidates.items`). A failed holder step (e.g. its spend
+   approval) still yields its item: Jev replays it; today's AI shows "No answer".
+3. **Jev** — each item runs its Jev agent (tags `smart-add, jev, decision, identity-match | entity-kind | we-think`)
+   on the matrix runner: rows carry `agent_id` + variables, one `jev` column. Identity and entity variables are
+   the holder's own; we think gets `brand_context` (the holder's three facts) + one candidate as `item`.
+   Answers: the cell's `decision_answers` JSON, else `platform.judge_verdict` by conversation.
+4. **Truth, blind** — identity ours / not ours (+ relation from Jev's `relation` keys), entity business / person /
+   both, we think ours / not us / related / ask later. Saved on the bench and labelled onto Jev's answer
+   (`is_this_us` true/false, `relation`, `entity_kind`, `verdict`).
+5. **Scoreboard per judgment** — right / wrong / can't tell / no answer, two costly misses each, typical and slow
+   call, calls, cost. Jev's yes/no is P(yes) cut at 0.65 / 0.35; preferred and alias count as ours; ask later is
+   right only when the truth is ask later. Today's AI's we-think is ONE call for every candidate, so its calls
+   and cost are per round, Jev's per candidate.
+
+Robustness: the capture is claimed inside the guarded metadata write (a second page never starts Jev twice);
+items Jev never started get a "Run Jev on them" action; a step whose inputs cannot be read is counted as
+"steps unreadable", never dropped silently; a mark made before Jev answers is labelled when the answer lands.
+Jev agents are found through the canonical scoped list (`agx_list_scoped`, tag filter), never a raw list query.
+
+Which steps run is the round's own decision: identity runs only on accounts the we-think guard left open,
+entity only when the fixed person-or-business rules are weak — a judgment that did not run says so.
+
 ## Where things live
 
 | Concern | Where |
@@ -39,6 +73,10 @@ production fixed-rules hint is server-only and is not added. Today's AI sees 25 
 production; Jev sees one.
 
 ## Change log
+
+- 2026-10-16 — Real round tab: one real Smart Add round, its identity / entity / we-think judgments replayed
+  through Jev, blind truth, per-judgment scoreboard (`round-model.ts`, `round-service.ts`, `SmartAddRoundPage`).
+  Open: clearing a mark leaves its label on Jev's answer (no unlabel door); not yet walked on localhost.
 
 - 2026-10-16 — review fixes: no agent ids in code (judges from the mandate and tags), reference model picked,
   "Judged by" links after a run, durations in ms/s, a No answer column, phone-width table, a failed mark save
