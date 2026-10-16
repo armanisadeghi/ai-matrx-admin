@@ -50,6 +50,20 @@
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
+    "no-false-provenance-defaults-an-unknown-source-is-never-a-person": {
+      "label": "No false provenance defaults (an unknown source is never a person)",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-false-provenance-defaults",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "the-false-provenance-guard-can-still-fail-self-test": {
+      "label": "The false-provenance guard can still fail (self-test)",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-false-provenance-defaults:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "cx-source-attribution-is-registered": {
       "label": "CX source attribution is registered",
       "class": "repo-only",
