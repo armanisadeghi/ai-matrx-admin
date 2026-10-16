@@ -12,8 +12,8 @@
 import { AlertTriangle } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
-import { mergedConflictText } from "./announce";
-import type { ConflictChoice, WorkingCopyKind } from "./workingCopyKind";
+import { mergedConflictText, type ConflictChoice } from "@ai-matrx/kit/working-copy";
+import type { WorkingCopyKind } from "./reduxPort";
 import { selectWorkingCopy } from "./workingCopySlice";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

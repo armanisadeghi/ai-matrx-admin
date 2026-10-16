@@ -1,6 +1,6 @@
 /**
  * Cloud documents on THE one working-copy primitive — kind `udt_document`
- * (`lib/working-copy/workingCopyKind.ts`). The record's status / dirty / views
+ * (`@ai-matrx/kit/working-copy`). The record's status / dirty / views
  * are Redux (`workingCopies["udt_document:<id>"]`); its engine is the
  * `DocumentModel` (`./documentModel.ts`) registered on the record's session.
  *
@@ -14,7 +14,7 @@
 import type { RealtimeManager } from "@ai-matrx/data/realtime";
 import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { supabase } from "@/utils/supabase/client";
-import { defineWorkingCopyKind } from "@/lib/working-copy/workingCopyKind";
+import { defineWorkingCopyKind } from "@/lib/working-copy/reduxPort";
 import { announceWorkingCopyConflict, dismissWorkingCopyConflict } from "@/lib/working-copy/announce";
 import { openShared } from "@/lib/realtime/sharedChannel";
 import { toast } from "@/components/ui/use-toast";

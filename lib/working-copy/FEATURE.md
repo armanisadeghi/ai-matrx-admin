@@ -1,4 +1,4 @@
-# lib/working-copy — THE one working-copy primitive (Redux-backed)
+# lib/working-copy — the app's side of THE one working-copy primitive (`@ai-matrx/kit/working-copy`, Redux-backed)
 
 **THE LAW (owner, 2026-10-02):** every screen survives hide/show/remount with no lost work and no
 repeated side effects. A record's working state lives in Redux, keyed by record; every editor that shows
@@ -7,6 +7,13 @@ ONE implementation of this — here. A record editor never keeps its working tex
 feature slice, and never runs its own save timer.
 
 ## The pieces
+
+The primitive itself (`defineWorkingCopyKind`, the session registry, the coalesced commit, `mergeText`, the state
+machine `applyWorkingCopyAction`) lives in **`@ai-matrx/kit/working-copy`** and holds no store: it speaks to storage
+through a `WorkingCopyStorePort`. This folder is the host: `reduxPort.ts` is the port (and the `defineWorkingCopyKind`
+every kind here is defined through, with `store` = the Redux store a view renders from), `workingCopySlice.ts` the one
+reducer behind it, `announce.ts` / `WorkingCopyAlert.tsx` / the two `useKept*` hooks the app-only toast and UI. Where the
+table below names `workingCopyKind.ts`, `recordSessions.ts` or `coalescedCommit.ts`, read the kit.
 
 | File | What it is |
 |---|---|

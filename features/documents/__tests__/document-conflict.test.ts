@@ -11,7 +11,7 @@
  * any path that saves over a snapshot it did not show).
  */
 import { configureStore } from "@reduxjs/toolkit";
-import { defineWorkingCopyKind } from "@/lib/working-copy/workingCopyKind";
+import { defineWorkingCopyKind } from "@/lib/working-copy/reduxPort";
 import workingCopiesReducer, { getWorkingCopy } from "@/lib/working-copy/workingCopySlice";
 import { DocumentModel, type DocumentModelDeps, type DocumentSnapshotData } from "@/features/documents/document-model/documentModel";
 
