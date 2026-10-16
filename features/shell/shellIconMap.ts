@@ -6,6 +6,7 @@ import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import {
   AppWindow,
   MessagesSquare,
+  MessageSquareText,
   StickyNote,
   File,
   Rows3,
@@ -285,6 +286,7 @@ export const shellIconComponents = {
   X,
   Zap,
   MessagesSquare,
+  MessageSquareText,
   StickyNote,
   File,
   Rows3,

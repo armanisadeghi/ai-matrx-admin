@@ -3203,6 +3203,23 @@ html[data-board-embed] .shell-main {
   display: flex;
 }
 
+/* A hairline under it: a tool for this page, not a place in the navigation. */
+.shell-nav-chat {
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.shell-nav-chat::after {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  right: 0.25rem;
+  bottom: -0.3125rem;
+  height: 1px;
+  background: hsl(var(--border) / 0.6);
+  pointer-events: none;
+}
+
 .shell-root[data-shell-chat-open] .shell-nav-chat {
   background: var(--shell-pill-bg);
   border: 1px solid var(--shell-pill-border);
