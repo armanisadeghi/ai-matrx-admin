@@ -1,6 +1,13 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useContext,
+  useSyncExternalStore,
+} from "react";
 import {
   Card,
   CardContent,
@@ -22,6 +29,8 @@ import { Button, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Bug } from "lucide-react";
+import { ReactReduxContext } from "react-redux";
+import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { THEMES } from "@ai-matrx/rich-content/display/themes";
 import {
   QuestionnaireProvider,
@@ -818,21 +827,34 @@ const DebugDisplay = ({
   );
 };
 
-const DEBUG_RESPONSES = true;
+// Admin debug switch, read from the app store when one is mounted — this block
+// also renders in store-less hosts (tests, bare renderers), where it is off.
+function useAdminDebugOn(): boolean {
+  const store = useContext(ReactReduxContext)?.store;
+  return useSyncExternalStore(
+    (listener) => (store ? store.subscribe(listener) : () => {}),
+    () =>
+      store
+        ? Boolean(selectIsDebugMode(store.getState() as Parameters<typeof selectIsDebugMode>[0]))
+        : false,
+    () => false,
+  );
+}
 
+// The raw-answers view is an admin debug tool: it shows only while the admin
+// debug switch (sidebar footer) is on, and sits inside the block — never
+// `fixed`, which pinned it over the app's sidebar rail.
 const DebugToggle = ({
   active,
   onClick,
 }: {
   active: boolean;
   onClick: () => void;
-}) => {
-  if (!DEBUG_RESPONSES) return null;
-
-  return (
-    <Button variant="quiet" pressed={active} icon={<Bug />} onClick={onClick} title={active ? "Hide Debug View" : "Show Debug View"} aria-label={active ? "Hide Debug View" : "Show Debug View"} className="fixed top-10 left-4" />
-  );
-};
+}) => (
+  <div className="flex justify-end">
+    <Button variant="quiet" pressed={active} icon={<Bug />} onClick={onClick} title={active ? "Hide Debug View" : "Show Debug View"} aria-label={active ? "Hide Debug View" : "Show Debug View"} />
+  </div>
+);
 
 const SubmitAnswersRow = ({
   answeredCount,
@@ -986,6 +1008,7 @@ const QuestionnaireRendererBody = ({
     useQuestionnaireContext();
   const [questionData, setQuestionData] = useState<Record<string, QuestionMeta>>({});
   const [debugMode, setDebugMode] = useState(false);
+  const isAdminDebug = useAdminDebugOn();
   const themeColors = THEMES[theme];
 
   const formState = getFormState(uniqueId);
@@ -1118,13 +1141,15 @@ const QuestionnaireRendererBody = ({
 
   return (
     <>
-      <DebugToggle
-        active={debugMode}
-        onClick={() => setDebugMode((prev) => !prev)}
-      />
       <div
         className={`flex flex-col w-full max-w-3xl mx-auto gap-1 p-2 pb-24 ${themeColors.container.background}`}
       >
+        {isAdminDebug ? (
+          <DebugToggle
+            active={debugMode}
+            onClick={() => setDebugMode((prev) => !prev)}
+          />
+        ) : null}
         {/* Questionnaire Header with Title and Intro */}
         <QuestionnaireHeader
           title={questionnaireTitle}
@@ -1209,7 +1234,7 @@ const QuestionnaireRendererBody = ({
 
         <div className="mt-6 mb-8">
           <DebugDisplay
-            debugMode={debugMode}
+            debugMode={isAdminDebug && debugMode}
             formState={formState}
             questionData={questionData}
           />
