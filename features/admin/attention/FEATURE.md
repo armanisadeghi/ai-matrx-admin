@@ -31,8 +31,8 @@ carried raw uuids.
 | Piece | File | Role |
 |---|---|---|
 | Types | `types.ts` | `AttentionItem` (a decision, not a title), `AttentionSourceState` |
-| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts`, `sources/dated-changes.ts`, `sources/spend-alarms.ts`, `sources/deploy-freshness.ts`, `sources/dev-server-freshness.ts` | rows → items; summaries |
-| Sources (live) | `sources/useScheduleAlarmSource.ts`, `sources/useProviderOutageSource.ts`, `sources/useDatedChangeSource.ts`, `sources/useSpendAlarmSource.ts`, `sources/useDeployFreshnessSource.ts` | React Query read + the injected writes |
+| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts`, `sources/dated-changes.ts`, `sources/spend-alarms.ts`, `sources/deploy-freshness.ts`, `sources/dev-server-freshness.ts`, `sources/tool-health.ts` | rows → items; summaries |
+| Sources (live) | `sources/useScheduleAlarmSource.ts`, `sources/useProviderOutageSource.ts`, `sources/useDatedChangeSource.ts`, `sources/useSpendAlarmSource.ts`, `sources/useDeployFreshnessSource.ts`, `sources/useToolHealthSource.ts` (third-party Tool sources the breaker switched off: `tool.control_for_attention`; opens `/administration/agents/tool-control`) | React Query read + the injected writes |
 | Notice | `build-notice.ts` | live/muted partition, the title, the pill, `null` at zero; `info` counted apart; `SECTION_LIMIT` (8) rows per source, worst first, `hidden` → "+N more" to its review |
 | Row | `AttentionItemRow.tsx` | the same row on the dock AND the review page |
 | Dock | `AdminAttentionDock.tsx` | float, collapse, snooze, note dialog, runway marker |
