@@ -31,6 +31,8 @@ import {
   deleteBusinessFact,
   deleteProperty,
   deleteSite,
+  getBrand,
+  mergeBrandProfile,
   moveSiteBrand,
   updateBrand,
   type BrandRelationKind,
@@ -115,6 +117,13 @@ const PROFILE_HOME: Record<string, "brand_aliases" | "service_area" | "competito
 
 async function db() {
   return authenticatedWebDb(supabase);
+}
+
+/** The brand as the server holds it now, kept as the page's copy (background runs move it after Create). */
+async function freshBrand(ctx: PersistContext): Promise<MarketingBrand> {
+  const brand = await getBrand(ctx.getBrand().id);
+  ctx.setBrand(brand);
+  return brand;
 }
 
 async function recordDiscovered(
@@ -247,15 +256,24 @@ async function recordDiscovered(
 }
 
 async function patchProfile(ctx: PersistContext, edit: (profile: Record<string, Json>) => Record<string, Json>, before?: Record<string, Json>) {
-  const brand = ctx.getBrand();
-  const current = (isJsonRecord(brand.profile) ? { ...brand.profile } : {}) as Record<string, Json>;
-  if (before) before.profile = current as Json;
-  const next = await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { profile: edit(current) as Json } });
-  ctx.setBrand(next);
+  // Edited against the profile the server holds now: a background write never turns this answer into a conflict (MKT-151).
+  const written = await mergeBrandProfile(ctx.getBrand().id, edit);
+  ctx.setBrand(written.brand);
+  const was = written.before;
+  if (before) before.profile = was as Json;
+  const now = (isJsonRecord(written.brand.profile) ? written.brand.profile : {}) as Record<string, Json>;
+  const touched = [...new Set([...Object.keys(was), ...Object.keys(now)])].filter((k) => JSON.stringify(was[k] ?? null) !== JSON.stringify(now[k] ?? null));
+  // Undo puts back only the keys this answer changed, onto whatever the profile holds by then.
   return async () => {
-    const latest = ctx.getBrand();
-    const restored = await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { profile: current as Json } });
-    ctx.setBrand(restored);
+    const restored = await mergeBrandProfile(ctx.getBrand().id, (p) => {
+      const next = { ...p };
+      for (const k of touched) {
+        if (k in was) next[k] = was[k];
+        else delete next[k];
+      }
+      return next;
+    });
+    ctx.setBrand(restored.brand);
   };
 }
 
@@ -528,13 +546,13 @@ async function persistGap(ctx: PersistContext, item: FocusItem, answer: Answer, 
   if (kind === "name") {
     const brand = ctx.getBrand();
     const before = brand.name;
-    ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { name: value } }));
+    ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, base: brand, patch: { name: value } }));
     return {
       ...none,
       homes: [`web.brand.name:${brand.id}`],
       undo: async () => {
         const latest = ctx.getBrand();
-        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { name: before } }));
+        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, base: latest, patch: { name: before } }));
       },
     };
   }
@@ -591,7 +609,8 @@ async function persistAnswerOnce(
     // so the header and Brand assets stop showing a placeholder. A second yes adds a non-primary asset.
     const url = (ev?.image_url ?? item.value ?? "").trim();
     if (!/^https?:\/\//i.test(url)) throw new Error("This logo has no picture address to save.");
-    const brand = ctx.getBrand();
+    // Whether the brand has a logo yet is read now: the setup run saves one in the background after Create.
+    const brand = await freshBrand(ctx);
     const makePrimary = !brand.logo_url;
     const asset = await createBrandAsset({
       organizationId: ctx.organizationId,
@@ -606,11 +625,11 @@ async function persistAnswerOnce(
     homes.push(`web.brand_asset:${asset.id}`);
     undos.push(() => deleteBrandAsset(asset.id));
     if (makePrimary) {
-      ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { logo_url: url } }));
+      ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, base: brand, patch: { logo_url: url } }));
       homes.push(`web.brand.logo_url:${brand.id}`);
       undos.push(async () => {
         const latest = ctx.getBrand();
-        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { logo_url: null } }));
+        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, base: latest, patch: { logo_url: null } }));
       });
     }
   }
@@ -618,12 +637,12 @@ async function persistAnswerOnce(
     const brand = ctx.getBrand();
     const nameBefore = brand.name;
     before.name = nameBefore;
-    const next = await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { name: value } });
+    const next = await updateBrand({ brandId: brand.id, expectedVersion: brand.version, base: brand, patch: { name: value } });
     ctx.setBrand(next);
     homes.push(`web.brand.name:${brand.id}`);
     undos.push(async () => {
       const latest = ctx.getBrand();
-      ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { name: nameBefore } }));
+      ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, base: latest, patch: { name: nameBefore } }));
     });
   }
   if (answer === "alias" && item.kind === "name") {

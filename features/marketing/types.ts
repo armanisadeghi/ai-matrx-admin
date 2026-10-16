@@ -461,6 +461,11 @@ export interface CreateBrandInput {
 export interface UpdateBrandInput {
   brandId: string;
   expectedVersion: number;
+  /**
+   * The brand this edit was made against. When given, a write that loses the version race only because another
+   * writer changed OTHER fields is retried on the current version (a phantom conflict, MKT-151).
+   */
+  base?: MarketingBrand;
   patch: Partial<
     Pick<
       MarketingBrand,

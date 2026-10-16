@@ -113,6 +113,7 @@ import {
 } from "@/features/marketing/local/endowment-portfolio";
 import {
   guardedUpdate,
+  mergeJsonColumn,
   type GuardedUpdateArgs,
   type VersionedRow,
 } from "@ai-matrx/data/db";
@@ -3496,12 +3497,31 @@ export async function createBrand(
   );
 }
 
+/** Whether every field a patch writes still holds, on `current`, the value it had on `base`. */
+function patchedFieldsUnchanged(
+  patch: UpdateBrandInput["patch"],
+  base: MarketingBrand,
+  current: MarketingBrand,
+): boolean {
+  return Object.keys(patch).every(
+    (key) =>
+      JSON.stringify(current[key as keyof MarketingBrand] ?? null) ===
+      JSON.stringify(base[key as keyof MarketingBrand] ?? null),
+  );
+}
+
 export async function updateBrand(
   input: UpdateBrandInput,
 ): Promise<MarketingBrand> {
   const db = await authenticatedWebDb(supabase);
+  const base = input.base;
   return guardedUpdateOrThrow<MarketingBrand>({
     expectedVersion: input.expectedVersion,
+    // A background writer (the setup run saving the logo, a crawl) moves `version` without touching what this edit
+    // changes: that is a version the page never learned, not a conflict (MKT-151). Retried on the current version.
+    ...(base
+      ? { rebase: { isPhantom: (current: MarketingBrand) => patchedFieldsUnchanged(input.patch, base, current) } }
+      : {}),
     applyUpdate: ({ expectedVersion, nextVersion }) =>
       db
         .from("brand")
@@ -3521,6 +3541,53 @@ export async function updateBrand(
     conflictMessage:
       "This brand changed in another session. Reload and try again.",
   });
+}
+
+/**
+ * Edit web.brand.profile against the profile the server holds NOW: `edit` is re-run on a fresh read whenever
+ * another writer moved the row first, so a background write never turns a person's answer into a conflict
+ * (MKT-151). Returns the brand as written and the profile the edit replaced.
+ */
+export async function mergeBrandProfile(
+  brandId: string,
+  edit: (profile: Record<string, Json>) => Record<string, Json>,
+): Promise<{ brand: MarketingBrand; before: Record<string, Json> }> {
+  const db = await authenticatedWebDb(supabase);
+  let before: Record<string, Json> = {};
+  const result = await mergeJsonColumn<MarketingBrand>({
+    fetchCurrent: () =>
+      db
+        .from("brand")
+        .select(BRAND_COLUMNS)
+        .eq("id", brandId)
+        .is("deleted_at", null)
+        .maybeSingle(),
+    readColumn: (row) => row.profile,
+    merge: (current) => {
+      before = current as Record<string, Json>;
+      return edit({ ...before });
+    },
+    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+      db
+        .from("brand")
+        .update({ profile: value as Json, version: nextVersion })
+        .eq("id", brandId)
+        .eq("version", expectedVersion)
+        .is("deleted_at", null)
+        .select(BRAND_COLUMNS)
+        .maybeSingle(),
+  });
+  if (result.status === "saved") return { brand: result.row, before };
+  if (result.status === "error") {
+    throw result.error instanceof Error
+      ? result.error
+      : new Error(extractErrorMessage(result.error));
+  }
+  throw new Error(
+    result.status === "not_found"
+      ? "This brand is no longer available."
+      : "This brand kept changing while saving. Try again.",
+  );
 }
 
 /**

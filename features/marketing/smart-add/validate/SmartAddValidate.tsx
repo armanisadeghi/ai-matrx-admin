@@ -19,6 +19,7 @@ import type { Decision, EvidenceItem } from "../evidence";
 import type { SuggestContext, WebChoice } from "../webKinds";
 import { buildQueue, coreGaps, decisionFor, gapFacts, gapNoneLabel, isGapKey, mergeFacts, type Answer, type BrandFact, type CoreGap, type FocusItem } from "./queue";
 import { persistAnswer, type Persisted } from "./persist";
+import { reportAnswerNotSaved } from "./notSaved";
 import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logosLabel, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
 import { loadSavedAnswers, type SavedAnswers } from "./savedAnswers";
@@ -186,7 +187,8 @@ export function SmartAddValidate({
         });
       })
       .catch((error: unknown) => {
-        const message = extractErrorMessage(error);
+        // Filed and said out loud, never only a tray label (MKT-151).
+        const message = reportAnswerNotSaved({ brandId: brandRef.current.id, item, answer, value: entry.value, error });
         patch(id, { state: "failed", error: message });
         publish({ key: `validate.answer.${item.key}`, label: `Failed: ${entry.value}`, group: "inputs", data: { item, answer, error: message }, source: "smart_add.validate" });
       });
@@ -243,7 +245,8 @@ export function SmartAddValidate({
     if (saved?.persisted) {
       saved.persisted.undo().catch((error: unknown) => {
         // The undo did not land: the answer stays on record, and the tray says so.
-        setAnswered((list) => [{ ...saved, state: "failed", error: extractErrorMessage(error) }, ...list]);
+        const message = reportAnswerNotSaved({ brandId: brandRef.current.id, item: saved.item, answer: saved.answer, value: `Undo of ${saved.value}`, error });
+        setAnswered((list) => [{ ...saved, state: "failed", error: message }, ...list]);
       });
     }
   };

@@ -133,7 +133,10 @@ export async function loadSavedFindings(brand: MarketingBrand): Promise<SavedFin
     else items.push(one.item);
   }
   const profile = parseBrandProfile(brand.profile);
+  // What you do, confirmed at Create (SmartAddBrand writes metadata.smart_add.confirmed.what_you_do with the description).
+  const confirmed = rec(rec(rec(brand.metadata).smart_add).confirmed);
   const known: KnownOnBrand = {
+    about: confirmed.what_you_do === true && Boolean(brand.description?.trim()),
     names: [brand.name, ...(profile.brand_aliases ?? [])],
     hosts: [brand.website_url ?? "", ...(sites.data ?? []).flatMap((x) => [x.root_url ?? "", x.domain ?? ""])].filter(Boolean),
     urls: [

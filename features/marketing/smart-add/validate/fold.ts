@@ -38,6 +38,8 @@ export interface KnownOnBrand {
   accounts?: string[];
   /** Pictures already answered or saved as the brand's logos: a logo candidate showing one of them is not asked again (MKT-139). */
   images?: string[];
+  /** The person already settled what the brand does (an About line confirmed at Create): no About card is asked again (MKT-175). */
+  about?: boolean;
 }
 
 export const EMPTY_KNOWN: KnownOnBrand = { names: [], hosts: [], urls: [], values: [] };
@@ -212,6 +214,7 @@ function knownKeys(known: KnownOnBrand): Set<string> {
     if (platform && handle) keys.add(`acct:${platform === "twitter" ? "x" : platform}:${handle}`);
   }
   for (const img of known.images ?? []) if (/^https?:\/\//i.test(img)) keys.add(`img:${domainAddress(img)}`);
+  if (known.about) keys.add("about");
   for (const v of known.values) {
     if (!v.trim()) continue;
     const digits = v.replace(/\D/g, "").slice(-10);
