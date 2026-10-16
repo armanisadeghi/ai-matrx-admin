@@ -438,6 +438,7 @@ export async function insertRawSegment(
     .from("studio_raw_segments")
     .insert({
       session_id: input.sessionId,
+      organization_id: await sessionOrganizationId(input.sessionId),
       recording_segment_id: input.recordingSegmentId ?? null,
       chunk_index: input.chunkIndex,
       t_start: input.tStart,
@@ -1260,6 +1261,7 @@ export async function applyCleanupRun(
   // Step 2: insert the new active row.
   const insertRow: Record<string, unknown> = {
     session_id: input.sessionId,
+    organization_id: await sessionOrganizationId(input.sessionId),
     run_id: input.runId,
     pass_index: input.passIndex,
     t_start: input.tStart,
@@ -1382,8 +1384,12 @@ export async function insertConceptItems(
   inputs: InsertConceptItemInput[],
 ): Promise<import("../types").ConceptItem[]> {
   if (inputs.length === 0) return [];
-  const rows = inputs.map((i) => ({
+  const organizationIds = await Promise.all(
+    inputs.map((i) => sessionOrganizationId(i.sessionId)),
+  );
+  const rows = inputs.map((i, idx) => ({
     session_id: i.sessionId,
+    organization_id: organizationIds[idx],
     run_id: i.runId,
     pass_index: i.passIndex,
     kind: i.kind,
@@ -1548,8 +1554,12 @@ export async function insertModuleSegments(
   inputs: InsertModuleSegmentInput[],
 ): Promise<import("../types").ModuleSegment[]> {
   if (inputs.length === 0) return [];
-  const rows = inputs.map((i) => ({
+  const organizationIds = await Promise.all(
+    inputs.map((i) => sessionOrganizationId(i.sessionId)),
+  );
+  const rows = inputs.map((i, idx) => ({
     session_id: i.sessionId,
+    organization_id: organizationIds[idx],
     run_id: i.runId,
     pass_index: i.passIndex,
     module_id: i.moduleId,
