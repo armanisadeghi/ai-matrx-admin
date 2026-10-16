@@ -867,7 +867,12 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
           ? item.url
             ? contactFactValue({ kind: "social_profile", value: item.url, platform: social.kind })
             : null
-          : contactFactValue({ kind: item.guessed_kind, value: itemDisplayValue(item) });
+          : contactFactValue({
+              // The row's type as the Type column shows it (a person's pick, else the rules'), so a
+              // "Street Address" filed as Address draws as an address.
+              kind: kindPoolOf(item.category) === "fact" && !kindPending(item) ? effectiveKind(item) : item.guessed_kind,
+              value: itemDisplayValue(item),
+            });
         if (contact) {
           return (
             <span className="flex min-w-0 items-center gap-2" data-discovery-item={item.id}>
