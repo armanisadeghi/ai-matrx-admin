@@ -20,7 +20,9 @@ import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { useLateIdleReady } from "./lateIdle";
 
-export const SHELL_COUNTS_QUERY_KEY = ["shell-counts"] as const;
+import { SHELL_COUNTS_QUERY_KEY, invalidateShellCounts } from "./shellCountsKey";
+
+export { SHELL_COUNTS_QUERY_KEY, invalidateShellCounts };
 const STALE_MS = 60_000;
 const POLL_MS = 5 * 60_000;
 
@@ -126,7 +128,5 @@ export function useShellCounts() {
 /** Re-count after a write that moves a number (a notice cleared, an assist decided …). */
 export function useInvalidateShellCounts(): () => void {
   const queryClient = useQueryClient();
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: SHELL_COUNTS_QUERY_KEY });
-  };
+  return () => invalidateShellCounts(queryClient);
 }

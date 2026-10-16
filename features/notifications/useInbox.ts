@@ -33,7 +33,7 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useLateIdleReady } from "@/lib/boot/lateIdle";
-import { SHELL_COUNTS_QUERY_KEY, useShellCounts, type ShellCounts } from "@/lib/boot/shellCounts";
+import { SHELL_COUNTS_QUERY_KEY, invalidateShellCounts, useShellCounts, type ShellCounts } from "@/lib/boot/shellCounts";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -406,7 +406,7 @@ export function useInboxActions(triage = true): InboxActions {
   };
 
   const refresh = () => {
-    void queryClient.invalidateQueries({ queryKey: SHELL_COUNTS_QUERY_KEY });
+    invalidateShellCounts(queryClient);
     return queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
   };
 

@@ -26,6 +26,7 @@
  */
 
 import type { QueryClient } from "@tanstack/react-query";
+import { invalidateShellCounts } from "@/lib/boot/shellCountsKey";
 import { forgetWaitingWorkInbox } from "./sharedInbox";
 
 export const PENDING_APPROVALS_QUERY_KEY = ["approvals", "pending-count"];
@@ -44,4 +45,6 @@ export function invalidateApprovals(
     void client.invalidateQueries({ queryKey: kindQueryKey });
   }
   void client.invalidateQueries({ queryKey: PENDING_APPROVALS_QUERY_KEY });
+  // The bell reads the shell counts, a sibling of both keys above.
+  invalidateShellCounts(client);
 }
