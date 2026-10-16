@@ -131,7 +131,7 @@ it("a page nobody touches still settles: late idle opens the one read and the ca
 it("reads the person's organizations (the scope tree) only once an organization-owned connection came back", async () => {
   mockSelectOrganizationIds.mockClear();
   listInventory.mockImplementationOnce(async () => ({
-    connections: [{ id: "c1", owner_type: "organization", owner_user_id: null, organization_id: "o1" }],
+    connections: [{ id: "c1", owner_type: "organization", owner_user_id: null, organization_id: "o1", provider: "google", scopes: [], status: "active", metadata: {}, capability_health: {} }],
     resources: [],
   }) as never);
   const container = document.createElement("div");

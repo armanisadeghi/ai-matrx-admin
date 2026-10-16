@@ -33,10 +33,12 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectActiveScopeTypeIds,
   selectOrganizationId,
+  selectOrganizationName,
   selectProjectId,
   selectTaskId,
   selectScopeSelectionsContext,
 } from "@/lib/redux/slices/appContextSlice";
+import { generateOrganizationAbbreviation } from "@/features/organizations/types";
 import { useScopeTree } from "@/features/scopes/hooks/useScopeTree";
 import { resolveColor } from "@/features/scopes/constants/scope-colors";
 import { ActiveContextTree } from "./ActiveContextTree";
@@ -93,7 +95,6 @@ export function ActiveContextLensChip({
 }: ActiveContextLensChipProps) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const { organizations } = useScopeTree();
 
   const dispatch = useAppDispatch();
   // KEYED TO THE CONVERSATION, NOT THE SHELL (W-62). A persisted chat's
@@ -130,6 +131,18 @@ export function ActiveContextLensChip({
     (value): value is string => Boolean(value),
   );
   const scopeIds = displayedSendScopeIds(activeScopeIds, chatScopeIds);
+  // The scope tree is read only when the chip has something of it to show — an open picker, a
+  // selected scope or scope type, or a saved chat's own organization. Its first read starts a ~1 s
+  // shared load (scopeTreeDemand.ts) that a fresh composer at paint must not pay (2026-10-16).
+  const needsTree =
+    open ||
+    scopeIds.length > 0 ||
+    activeScopeTypeIds.length > 0 ||
+    conversationOrgId !== null;
+  const { organizations } = useScopeTree({ enabled: needsTree });
+  // Until then the active organization is named from its own name, the way the shell's
+  // organization control names it while its picker is closed.
+  const activeOrgName = useAppSelector(selectOrganizationName);
 
   const chipNodes: LensChipNode[] = [];
   if (orgId) {
@@ -138,7 +151,11 @@ export function ActiveContextLensChip({
     );
     chipNodes.push({
       kind: "org",
-      label: selectedOrganization?.abbreviation,
+      label:
+        selectedOrganization?.abbreviation ??
+        (orgId === activeOrgId && activeOrgName
+          ? generateOrganizationAbbreviation(activeOrgName)
+          : undefined),
     });
   }
 
