@@ -113,6 +113,8 @@ interface Row {
   label: string;
   url: string | null;
   kindLabel: string | null;
+  /** Kept for matching only (relation-usage.ts): its address is plain text, never an outbound or referral link. */
+  matchOnly?: boolean;
   /** A Not us logo: the removed image itself, so the row says which logo it is. */
   thumb?: string;
   sentiment?: BrandRelationRow["sentiment"];
@@ -139,7 +141,7 @@ const SENTIMENT_DOT: Record<string, string> = {
   negative: "bg-destructive",
 };
 
-function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
+export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
   const [busy, setBusy] = useState(false);
   const h = host(row.url);
   const g = row.grounding;
@@ -163,9 +165,17 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
         <Favicon hostname={h} size={16} />
       ) : null}
       <span className="truncate text-sm text-foreground">{row.label}</span>
-      {h && !row.thumb && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
+      {row.matchOnly ? (
+        <span className="min-w-0 shrink truncate text-xs text-muted-foreground" data-testid="brand-relation-address">
+          {row.url}
+        </span>
+      ) : null}
+      {h && !row.thumb && !row.matchOnly && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
       {row.sentiment ? (
         <span className={`size-1.5 shrink-0 rounded-full ${SENTIMENT_DOT[row.sentiment] ?? ""}`} aria-label={row.sentiment} />
+      ) : null}
+      {row.matchOnly && g?.reason ? (
+        <span className="shrink-0 text-xs text-muted-foreground" data-testid="brand-relation-reason">{g.reason}</span>
       ) : null}
       {row.kindLabel ? <span className="ml-auto shrink-0 text-xs text-muted-foreground">{row.kindLabel}</span> : null}
     </span>
@@ -185,7 +195,7 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
       ) : (
         body
       )}
-      {row.url ? (
+      {row.url && !row.matchOnly ? (
         <OutboundLink
           href={outboundHref(row.url)}
           className="matrx-tap-area inline-flex shrink-0 items-center text-muted-foreground hover:text-primary"
@@ -326,6 +336,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
       // A typed fact reads as itself: the credential's or award's name, the association, the headline.
       label: (typed && (fields.name ?? fields.association ?? fields.headline)) || r.label,
       url: r.url,
+      matchOnly: !isMarketingUsage(kind?.usage),
       kindLabel: typed ? factDetail(kind?.fact, fields) : (kind?.label ?? r.relationKey),
       sentiment: kind?.hasSentiment ? r.sentiment : null,
       grounding: { where: r.where, reason: r.reason, confidence: r.confidence, by: r.answeredBy },
@@ -342,6 +353,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
       id: `property:${p.id}`,
       label: p.handle ? `${p.kind} · ${p.handle}` : (p.url ?? p.kind),
       url: p.url,
+      matchOnly: true,
       kindLabel: why?.label ?? "Kept for matching",
       grounding: { where: p.kind, reason: why?.reason ?? null, confidence: null, by: why?.checkedAt ? `checked ${why.checkedAt.slice(0, 10)}` : null },
       remove: async () => {

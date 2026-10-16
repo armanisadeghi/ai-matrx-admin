@@ -148536,6 +148536,7 @@ export type Database = {
         }[]
       }
       site_page_coverage: { Args: { p_site_id: string }; Returns: Json }
+      url_match_key: { Args: { p_url: string }; Returns: string }
       url_quality_metrics: { Args: { page_url: string }; Returns: Json }
     }
     Enums: {
