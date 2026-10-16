@@ -28,6 +28,7 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useChannel } from "@ai-matrx/data/realtime/react";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { invalidateFeatureKnobs } from "@/lib/knobs/featureKnobs";
 import { notifyRefreshRequired } from "@/components/errors/refresh-directive";
 import { serverBusChannelSpec } from "@/lib/client-directives/serverBusChannel";
@@ -77,11 +78,16 @@ export function PlatformDirectiveSubscriber() {
   }, []);
 
   // Two rooms, one sink. `useChannel(null)` is the package's documented
-  // "not yet" — a signed-out tab joins nothing.
-  const userSpec = userId
+  // "not yet" — a signed-out tab joins nothing, and no tab joins before the
+  // page has settled (the load law: nothing first paint does not need leaves
+  // before it). A directive sent in that window is not lost in effect: every
+  // handler invalidates a cache the page has only just read fresh.
+  const settled = useLateIdleReady();
+  const join = Boolean(userId) && settled;
+  const userSpec = join && userId
     ? serverBusChannelSpec(userId, dispatchDirective)
     : null;
-  const platformSpec = userId
+  const platformSpec = join
     ? serverBusChannelSpec(PLATFORM_AUDIENCE, dispatchDirective)
     : null;
   useChannel(userSpec);
