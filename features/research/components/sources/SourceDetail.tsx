@@ -84,6 +84,8 @@ import { ContentViewer } from "./ContentViewer";
 import { runResearchAction } from "../../utils/researchAction";
 import { staleAnalysisSentence } from "../../utils/staleAnalysis";
 import { PasteContentModal } from "./PasteContentModal";
+import { AdvancedReadButton } from "@/features/data-sources/advanced-read";
+import { useSaveAdvancedRead } from "../../hooks/useSaveAdvancedRead";
 import { AnalyzeCurationDialog } from "./AnalyzeCurationDialog";
 import { AnalysisCard } from "../analysis/AnalysisCard";
 import { SourceTagPicker } from "./SourceTagPicker";
@@ -1071,6 +1073,10 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
   }, [refetchContent, refetchSourceEditState]);
 
   const isScraping = scrapeStream.isStreaming;
+  const saveAdvancedRead = useSaveAdvancedRead(topicId, () => {
+    refetchContent();
+    refetchSource();
+  });
 
   // The source read settled with no row (deleted, another topic's, no access)
   // or failed outright — the canonical gate says which, instead of a detail
@@ -1793,6 +1799,11 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                       Paste
                     </button>
                   </div>
+                  <AdvancedReadButton
+                    url={typedSource.url}
+                    onItem={saveAdvancedRead(sourceId)}
+                    className="items-center"
+                  />
                 </>
               ) : (
                 <>

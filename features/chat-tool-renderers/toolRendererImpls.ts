@@ -30,6 +30,7 @@ export { DocumentContentInline } from "./renderers/document-content/DocumentCont
 export { NoteToolInline } from "./renderers/note/NoteToolInline";
 export { NoteToolOverlay } from "./renderers/note/NoteToolOverlay";
 export { TopicalMapInline } from "./renderers/topical-map/TopicalMapInline";
+export { WebReadInline } from "./renderers/web-read/WebReadInline";
 export { SiteDataInline } from "./renderers/site-data/SiteDataInline";
 // The data tools' answer bodies (records / table): rows as the table, a write as a line.
 export { RecordsAnswerBody, RefusalLine } from "@/features/records-tool-display/RecordsAnswerView";

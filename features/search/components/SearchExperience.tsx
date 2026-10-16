@@ -67,6 +67,7 @@ import {
 import { SearchResultsSkeleton } from "@/features/search/components/SearchResultsSkeleton";
 import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 import { ScrapeFailureNotice } from "@/features/scraper/parts/ScrapeFailureNotice";
+import { AdvancedReadButton } from "@/features/data-sources/advanced-read";
 import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 import {
   KEYWORD_SOCIAL_PLATFORMS,
@@ -1208,6 +1209,7 @@ function PageRead({
           remedyAction={{ label: "Try again", onClick: () => inputs.readPage(special.url, special.platform) }}
         />
       )}
+      {failure && !isLoading && <AdvancedReadButton url={special.url} />}
 
       {data && (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">

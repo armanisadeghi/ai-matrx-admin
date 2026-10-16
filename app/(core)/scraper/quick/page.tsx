@@ -37,6 +37,7 @@ import { normalizeUrl } from "@/features/scraper/utils/scraper-floating-helpers"
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { AdvancedReadButton } from "@/features/data-sources/advanced-read";
 
 export default function QuickScrapePage() {
   const { copyText } = useClipboard({
@@ -67,6 +68,8 @@ export default function QuickScrapePage() {
   const [activeTab, setActiveTab] = useState("pretty");
   const [quickContentTab, setQuickContentTab] = useState("pretty");
   const [viewMode, setViewMode] = useState<"quick" | "full">("quick");
+  // The address that was actually read — what "Try advanced reader" retries, even after the box is edited.
+  const [readUrl, setReadUrl] = useState<string | null>(null);
 
   // Auto-scrape when arriving with a ?url= param
   useEffect(() => {
@@ -75,6 +78,7 @@ export default function QuickScrapePage() {
     const normalized = normalizeUrl(initialUrl);
     if (normalized) {
       setUrl(normalized);
+      setReadUrl(normalized);
       scrapeUrl(normalized).catch(console.error);
     }
     // Run on mount only
@@ -99,6 +103,7 @@ export default function QuickScrapePage() {
     const normalized = validate(url);
     if (!normalized) return;
     setUrl(normalized);
+    setReadUrl(normalized);
     setFullResult(null);
     setViewMode("quick");
     setQuickContentTab("pretty");
@@ -114,6 +119,7 @@ export default function QuickScrapePage() {
     const normalized = validate(url);
     if (!normalized) return;
     setUrl(normalized);
+    setReadUrl(normalized);
     setViewMode("full");
     setFullProcessError(null);
     fullScrapeApi.reset();
@@ -206,6 +212,14 @@ export default function QuickScrapePage() {
         },
       }}
     />
+  ) : null;
+
+  // A page that really failed can be tried with the advanced reader (priced before the click, never automatic).
+  const failureWithAdvanced = failureNotice ? (
+    <>
+      {failureNotice}
+      {readUrl ? <AdvancedReadButton url={readUrl} className="mt-3" /> : null}
+    </>
   ) : null;
 
   return (
@@ -354,7 +368,7 @@ export default function QuickScrapePage() {
         {viewMode === "full" && !fullScrapeApi.isLoading && !fullResult && (
           <div className="flex-1 overflow-auto p-4">
             <div className="max-w-3xl mx-auto">
-              {failureNotice ??
+              {failureWithAdvanced ??
                 (fullProcessError ? (
                   <ErrorNotice
                     title="Couldn't show the full scrape"
@@ -378,7 +392,7 @@ export default function QuickScrapePage() {
           <div className="flex-1 overflow-auto p-4">
             <div className="max-w-5xl mx-auto">
               {!isLoading && failureNotice && (
-                <div className="max-w-3xl mx-auto mb-4">{failureNotice}</div>
+                <div className="max-w-3xl mx-auto mb-4">{failureWithAdvanced}</div>
               )}
 
               {isLoading && !data && (

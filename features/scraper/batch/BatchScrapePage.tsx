@@ -52,6 +52,7 @@
 // Each row shows its Source and opens it. A row that did not land
 // says why (the door's own sentence), never a silent gap.
 
+import { AdvancedReadBatch, AdvancedReadResults } from "@/features/data-sources/advanced-read";
 import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -419,6 +420,12 @@ export default function BatchScrapePage() {
     [rows],
   );
 
+  // Pages that really failed: the advanced reader can be tried on them (priced first, never automatic).
+  const failedUrls = useMemo(
+    () => rows.filter((row) => row.status === "failed").map((row) => row.url),
+    [rows],
+  );
+
   const handleSendToOwnBrowser = useCallback(async () => {
     setSendingToBrowser(true);
     try {
@@ -767,6 +774,7 @@ export default function BatchScrapePage() {
                   </div>
                 </div>
               ) : null}
+              {failedUrls.length > 0 ? <AdvancedReadBatch urls={failedUrls} /> : null}
               <MatrxDataTable<BatchRow>
                 tableId="scraper-batch-results"
                 data={rows}
@@ -813,6 +821,7 @@ export default function BatchScrapePage() {
                   description: "Paste links above and press Scrape.",
                 }}
               />
+              <AdvancedReadResults urls={failedUrls} className="max-h-72 flex-shrink-0 overflow-auto" />
             </div>
           )}
         </div>

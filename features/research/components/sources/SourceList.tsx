@@ -67,6 +67,8 @@ import {
 import { useSourceFilters } from "../../hooks/useSourceFilters";
 import { SourceFilters } from "./SourceFilters";
 import { BulkActionBar } from "./BulkActionBar";
+import { AdvancedReadBatch, type AdvancedItem } from "@/features/data-sources/advanced-read";
+import { useSaveAdvancedRead } from "../../hooks/useSaveAdvancedRead";
 import { SourceTagsInline } from "./SourceTagsInline";
 import { AuthorityRankButton } from "./AuthorityRankButton";
 import { AuthorityExportButton } from "./AuthorityExportButton";
@@ -1596,6 +1598,18 @@ export default function SourceList() {
   // Cards (below md) scroll with the page; the table fills it so its pager is on screen.
   const tableWidth = useMediaQuery("(min-width: 768px)");
 
+  // Pages whose read really failed: the advanced reader is offered on them, priced first. Each answer is
+  // saved INTO its source, so the failed row becomes a read one in place.
+  const failedSources = allSources.filter((s) => s.scrape_status === "failed");
+  const saveAdvancedRead = useSaveAdvancedRead(topicId, () => {
+    refetchSources();
+    refresh();
+  });
+  const saveBatchItem = (item: AdvancedItem) => {
+    const source = failedSources.find((s) => s.url === item.url);
+    if (source) void saveAdvancedRead(source.id)(item);
+  };
+
   const tableRead: MatrxDataTableRead = sourcesError
     ? {
         status: "error",
@@ -1624,6 +1638,9 @@ export default function SourceList() {
         count={formatSourceScoreCoverage(sourceList)}
         trailing={
           <div className="ml-auto flex flex-wrap items-center gap-2">
+            {failedSources.length > 0 ? (
+              <AdvancedReadBatch urls={failedSources.map((s) => s.url)} onItem={saveBatchItem} />
+            ) : null}
             {/* Finding this topic's captured pages across everything else you know is the
                 Knowledge hub's job (KNOWLEDGE-HUB §6, H6b); triage, ranking and export stay here. */}
             <Link

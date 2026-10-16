@@ -18,6 +18,7 @@ import React from "react";
 import { CheckCircle, AlertTriangle, ListTree } from "lucide-react";
 import {
   registerToolRenderer,
+  toolRendererRegistry,
 } from "@ai-matrx/chat/tool-call-visualization/registry/registry";
 import type { ToolRegistry } from "@ai-matrx/chat/tool-call-visualization/types";
 import type { ToolLifecycleEntry } from "@ai-matrx/chat/agents/types/request.types";
@@ -55,6 +56,7 @@ const NoteToolInline = lazyToolRenderer("NoteToolInline");
 const NoteToolOverlay = lazyToolRenderer("NoteToolOverlay");
 const TopicalMapInline = lazyToolRenderer("TopicalMapInline");
 const SiteDataInline = lazyToolRenderer("SiteDataInline");
+const WebReadInline = lazyToolRenderer("WebReadInline");
 
 function seoHeaderExtras(entry: ToolLifecycleEntry): React.ReactNode {
   const variant = resolveSeoVariant(entry);
@@ -577,4 +579,11 @@ const FEATURE_TOOL_RENDERERS: ToolRegistry = {
 
 for (const [toolName, renderer] of Object.entries(FEATURE_TOOL_RENDERERS)) {
   registerToolRenderer(toolName, renderer);
+}
+
+// The package's page-read cards stay exactly as they are; the page-read tools only gain "Try advanced
+// reader" under pages that really failed (their result carries a `coverage` list).
+for (const toolName of ["web_read", "core_web_read_web_pages"]) {
+  const base = toolRendererRegistry[toolName];
+  if (base) registerToolRenderer(toolName, { ...base, InlineComponent: WebReadInline });
 }
