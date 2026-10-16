@@ -8,14 +8,13 @@
 // which opens the device picker anchored to it — and wherever the field shows
 // its "…" menu, that menu carries an "Audio settings" row too.
 
-import { useRef, useState } from "react";
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Loader2, Mic } from "lucide-react";
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
 } from "@ai-matrx/design-system";
-import { useLongPress } from "@ai-matrx/kit/hooks";
 import { cn } from "@/lib/utils";
 import {
   MicDeviceMenuPanel,
@@ -24,6 +23,8 @@ import {
 
 /** How long a press must last before it opens the device picker instead of toggling voice. */
 export const MIC_LONG_PRESS_MS = 500;
+/** A press that moves farther than this is a scroll or a drag, never a hold. */
+export const MIC_HOLD_SLOP_PX = 8;
 
 // Plain ink, no glass border: the hosts pair it with a transparent "…" tap
 // button, so the row is all non-glass (tap-target placement rule 2). The glyph
@@ -74,20 +75,41 @@ export function MicButton({
     setPickerOpen(true);
     handleOpenChange(true);
   };
-  const longPress = useLongPress(
-    () => {
-      heldRef.current = true;
-      openPicker();
+  // THE HOLD, on pointer events (mouse, pen and touch alike). A press that
+  // moves past the slop is a scroll or a drag and never opens the picker
+  // (review 2026-10-16: a touch that became a scroll popped it open mid-scroll),
+  // and a press that lands while the picker is open only closes it.
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdStart = useRef<{ x: number; y: number } | null>(null);
+  const cancelHold = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    holdStart.current = null;
+  };
+  const holdHandlers = {
+    onPointerDown: (e: ReactPointerEvent<HTMLButtonElement>) => {
+      heldRef.current = pickerOpen; // a press on the mic while the picker is open just closes it
+      if (disabled || e.button !== 0) return;
+      cancelHold();
+      holdStart.current = { x: e.clientX, y: e.clientY };
+      holdTimer.current = setTimeout(() => {
+        holdTimer.current = null;
+        heldRef.current = true;
+        openPicker();
+      }, MIC_LONG_PRESS_MS);
     },
-    {
-      threshold: MIC_LONG_PRESS_MS,
-      // Every press starts clean: a hold whose release fired no click must
-      // not swallow the next real tap.
-      onStart: () => {
-        heldRef.current = false;
-      },
+    onPointerMove: (e: ReactPointerEvent<HTMLButtonElement>) => {
+      const start = holdStart.current;
+      if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > MIC_HOLD_SLOP_PX) cancelHold();
     },
-  );
+    onPointerUp: cancelHold,
+    onPointerCancel: cancelHold,
+    onPointerLeave: cancelHold,
+    // Keyboard presses never hold: Enter / Space always toggle voice.
+    onKeyDown: () => {
+      heldRef.current = false;
+    },
+  };
 
   const micLabel = isRecording
     ? "Stop recording"
@@ -139,7 +161,7 @@ export function MicButton({
             )}
 
             <button
-              {...longPress}
+              {...holdHandlers}
               tabIndex={tabIndex}
               type="button"
               onClick={() => {

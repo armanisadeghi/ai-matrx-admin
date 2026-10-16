@@ -57,7 +57,7 @@ export function AgentToolsInjectionSwitch({
       statusText={statusText}
       icon={<Zap className="w-3.5 h-3.5" />}
       disabled={disabled}
-      warn={!modelSupportsTools && !disabled}
+      warn={!compact && !modelSupportsTools && !disabled}
       compact={compact}
       onChange={(next) =>
         dispatch(setAgentAutoToolsDisabled({ agentId, disabled: next }))

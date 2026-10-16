@@ -55,6 +55,7 @@ export default function ComparisonArtifact({
     <Suspense fallback={<MatrxMiniLoader />}>
       <ComparisonTableBlock
         comparison={comparison}
+        source={typeof data === "string" ? data : raw}
         taskId={artifactDedupKey(taskId, artifactId)}
         artifactId={artifactId}
         conversationId={conversationId}

@@ -134,7 +134,7 @@ function AgentResourcePickerAction({
           }
         >
           <Icon className="h-3.5 w-3.5" />
-          <span className="hidden @[22rem]/resource-row:inline">{batch ? "Batch add" : "Add"}</span>
+          <span className="hidden @[22rem]/resource-row:inline">{batch ? "Batch" : "Add"}</span>
         </button>
       </PopoverTrigger>
       <PopoverContent

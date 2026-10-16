@@ -499,6 +499,9 @@ function DriveLiveSession(props: {
     if (autoStartedRef.current) return;
     if (!conversationId) return;
     if (relay.status !== "idle") return;
+    // The agent's persona AND realtime model must both have resolved — a start
+    // fired before the model is refused "no realtime model resolved".
+    if (!relay.ready) return;
     autoStartedRef.current = true;
     relay.toggle();
   }, [conversationId, relay]);

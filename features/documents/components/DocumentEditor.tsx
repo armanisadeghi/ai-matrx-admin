@@ -94,7 +94,7 @@ import { DocumentOutlinePanel } from "@/features/documents/components/DocumentOu
 import { DocumentToolDialogs, type DocDialogId } from "@/features/documents/components/DocumentToolDialogs";
 import { DocumentRuler } from "@/features/documents/components/DocumentRuler";
 import { createDocEditOps, writeDocumentStyleKey } from "@ai-matrx/office/docs/tools";
-import { DOCUMENT_LANGUAGE_KEY, bookmarkFromHash, readDocumentLanguage } from "@ai-matrx/office/docs/tools";
+import { DOCUMENT_LANGUAGE_KEY, bookmarkFromHash, looksLikeMarkdown, markdownFragment, readDocumentLanguage } from "@ai-matrx/office/docs/tools";
 import { UniverFindReplacePlugin } from "@univerjs/find-replace";
 import { UniverDocsFindReplacePlugin } from "@univerjs/docs-find-replace";
 import findReplaceEnUS from "@univerjs/find-replace/locale/en-US";
@@ -300,6 +300,19 @@ export default function DocumentEditor({
       deleteRange: (start, end) =>
         liveDocument().deleteRange({ startOffset: start, endOffset: end }),
       insertText: (at, text) => liveDocument().insertText(at, text),
+      // Markdown an agent writes lands as real structure (tables, headings, lists) through the one converter.
+      insertMarkdown: (at, markdown) => {
+        const doc = liveDocument();
+        doc.setSelection?.(at, at);
+        const univer = univerRef.current;
+        if (!univer) return false;
+        return (
+          resolveCommandService(univer).syncExecuteCommand("doc.command.inner-paste", {
+            unitId: doc.getId(),
+            doc: markdownFragment(markdown),
+          }) !== false
+        );
+      },
       openPageSetup: () => setPageSetupOpen(true),
       openTool: (id) => setToolDialog(id),
       runCommand: async (commandId) => {
@@ -642,6 +655,24 @@ export default function DocumentEditor({
       }),
     [],
   );
+  // Plain text that is markdown (a pasted table above all) is drawn as structure, never typed as pipes;
+  // anything with HTML is Univer's own paste.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (bootState !== "ready" || !el || !editable || docMode !== "editing") return undefined;
+    const onPaste = (e: ClipboardEvent) => {
+      const data = e.clipboardData;
+      const text = data?.getData("text/plain") ?? "";
+      if (!data || data.types.includes("text/html") || data.files.length > 0 || !looksLikeMarkdown(text)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      void editOps.insertMarkdown(text).then((ok) => {
+        if (!ok) notice.info("Click inside the document, then paste again.", { id: "doc-paste-markdown" });
+      });
+    };
+    el.addEventListener("paste", onPaste, true);
+    return () => el.removeEventListener("paste", onPaste, true);
+  }, [bootState, editable, docMode, editOps]);
   // Viewing mode is Univer's own read-only permission on this document; a refused edit says so in our words.
   useEffect(() => {
     if (bootState !== "ready") return undefined;

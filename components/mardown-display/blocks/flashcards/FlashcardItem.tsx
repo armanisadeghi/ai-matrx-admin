@@ -26,6 +26,12 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
 import { SHOW_DEV_CONTROLS } from "@/lib/dev/devControls";
+import { Pencil } from "lucide-react";
+import { Button } from "@ai-matrx/design-system/controls";
+import {
+  InlineRowPopover,
+  type BlockControlsHandle,
+} from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 const centeredParagraph = ({
   node,
@@ -68,6 +74,8 @@ interface FlashcardItemProps {
   /** Inline card height — overrides the default scale (a focused study
    *  session gives the card the screen's height, not a list row's). */
   heightClassName?: string;
+  /** Block Controls for the set (null/absent = this surface cannot save): adds the card's edit button. */
+  controls?: BlockControlsHandle | null;
 }
 
 const FlashcardItem: React.FC<FlashcardItemProps> = ({
@@ -87,7 +95,9 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
   frontImage,
   backImage,
   heightClassName,
+  controls = null,
 }) => {
+  const [cardEditOpen, setCardEditOpen] = useState(false);
   const isPanel = presentation === "panel";
   const isControlledFlip = flipped !== undefined;
   const [internalFlipped, setInternalFlipped] = useState(false);
@@ -272,6 +282,31 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
             tooltip="[DEV] Open flashcard in window panel"
             onClick={handleOpenInWindow}
           />
+        </div>
+      )}
+      {controls && (
+        <div
+          className="absolute right-1 top-1 z-20"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <Button
+            variant="quiet"
+            icon={<Pencil />}
+            aria-label="Edit card"
+            title="Edit card"
+            data-control-field="card"
+            onClick={() => setCardEditOpen(true)}
+          />
+          {cardEditOpen && (
+            <InlineRowPopover
+              controls={controls}
+              rowsKey="rows"
+              index={index}
+              at={{ x: 0, y: 28 }}
+              onClose={() => setCardEditOpen(false)}
+            />
+          )}
         </div>
       )}
       {voiceTest && back !== null && (

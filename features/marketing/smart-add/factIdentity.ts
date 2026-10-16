@@ -8,6 +8,8 @@
 
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
+import { aliasProfileHost } from "../social/link";
+
 /** The mandate behind the facts agent's findings (keptFacts.ts re-exports the same key). */
 export const EARLY_FACTS_MANDATE = "brand_intake.early_facts";
 /** The mandate behind a person's facts, and behind what the what's-new agent reads from a new source. */
@@ -29,10 +31,13 @@ export function normalizePhone(value: string): string {
 
 /**
  * An address compares without scheme, `www.`, fragment or trailing slash; an account address (`social_profile`)
- * also without its query. `https://www.facebook.com/snowpeak/` and `http://facebook.com/snowpeak` are one account.
+ * also without its query, and an alias host is its platform's own (`twitter.com` -> `x.com`, `m.facebook.com` ->
+ * `facebook.com`; link.ts `PROFILE_HOST_ALIASES`). `https://www.facebook.com/snowpeak/` and `http://fb.com/snowpeak`
+ * are one account.
  */
 export function normalizeAddress(kind: string, value: string): string {
-  let v = value.split("#", 1)[0];
+  // An alias host is the same account page (MKT-185): `twitter.com/MichaelHyatt` is `x.com/MichaelHyatt`.
+  let v = aliasProfileHost(value.split("#", 1)[0]);
   if (kind === "social_profile") v = v.split("?", 1)[0];
   return v.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/+$/, "").toLowerCase();
 }

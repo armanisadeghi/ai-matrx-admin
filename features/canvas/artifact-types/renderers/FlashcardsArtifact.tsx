@@ -11,6 +11,8 @@ import {
 import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
 import { CanvasFlashcardsView as CanvasFlashcardsView } from "@/features/flashcards/components/CanvasFlashcardsView";
 import type { ArtifactRendererProps } from "../types";
+import { useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 export default function FlashcardsArtifact({
   raw,
   data,
@@ -31,6 +33,8 @@ export default function FlashcardsArtifact({
     : (pointerArtifactId ?? artifactId);
 
   const content = typeof data === "string" ? data : raw;
+  // Block Controls: present only where this surface can save the set (never on a read-only render).
+  const controls = useBlockControls("flashcards", typeof content === "string" ? content : "", useBlockEdit());
 
   const sd =
     (serverData as FlashcardsBlockData | undefined) ??
@@ -70,6 +74,7 @@ export default function FlashcardsArtifact({
         conversationId={conversationId}
         blockIndex={blockIndex}
         isStreamActive={streaming}
+        controls={controls}
       />
     </Suspense>
   );

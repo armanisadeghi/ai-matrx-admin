@@ -25,7 +25,7 @@ import { CanvasProvider, defineCanvasKind, registerCanvasKinds, useCanvas } from
 jest.mock("@/features/notifications/useInbox", () => ({
   useInboxCounts: () => ({ badge: 2, partial: false, updatesDot: false }),
 }));
-jest.mock("@ai-matrx/messaging/react", () => ({
+jest.mock("@ai-matrx/messaging/react/host", () => ({
   useUnreadConversationBadge: () => 1,
 }));
 jest.mock("@/features/overlays/openers/authGate", () => ({

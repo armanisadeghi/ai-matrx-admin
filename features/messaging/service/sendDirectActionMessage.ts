@@ -25,13 +25,13 @@
  * argument nobody can supply safely is a door, not a convenience.
  */
 
-import { createMessagingRepository } from "@ai-matrx/messaging/react";
+import { createMessagingRepository } from "@ai-matrx/messaging/react/host";
 import {
   asClientMessageId,
   asConversationId,
   asOrganizationId,
   asUserId,
-} from "@ai-matrx/messaging/react";
+} from "@ai-matrx/messaging/react/host";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";

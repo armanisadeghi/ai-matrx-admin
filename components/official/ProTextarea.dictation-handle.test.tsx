@@ -305,6 +305,39 @@ describe("ProTextarea mic — no chevron; right-click, hold and Audio settings",
     await box.unmount();
   });
 
+  it("holding the mic opens the picker without recording; a press that moves (a scroll) never does", async () => {
+    jest.useFakeTimers();
+    try {
+      const box = await mount({ showCopyButton: false });
+      const mic = box.container.querySelector<HTMLButtonElement>('button[aria-label="Start voice input"]')!;
+      const press = (type: string, x = 10, y = 10) =>
+        mic.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0, clientX: x, clientY: y }));
+
+      // A press that turns into a scroll: moved 30px, the timer never fires.
+      await act(async () => {
+        press("pointerdown");
+        press("pointermove", 10, 40);
+        jest.advanceTimersByTime(800);
+      });
+      expect(document.body.textContent).not.toContain("System default");
+
+      // A real hold: the picker opens, and the release does not toggle voice.
+      await act(async () => {
+        press("pointerdown");
+        jest.advanceTimersByTime(600);
+      });
+      expect(document.body.textContent).toContain("System default");
+      await act(async () => {
+        press("pointerup");
+        mic.click();
+      });
+      expect(recorderStart).not.toHaveBeenCalled();
+      await box.unmount();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it("'…' carries Audio settings whenever it shows", async () => {
     const box = await mount({});
     const more = box.container.querySelector<HTMLButtonElement>('button[aria-label="More options"]');

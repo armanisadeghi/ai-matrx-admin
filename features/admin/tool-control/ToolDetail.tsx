@@ -119,19 +119,10 @@ export function ToolDetail({ toolId }: { toolId: string }) {
   const sourceColumns: MatrxColumnDef<SourceRow>[] = [
     { id: "source", accessorFn: (r) => r.name, header: "Source", width: 200 },
     { id: "state", accessorFn: (r) => stateWords(r.ep.state).label, header: "State", width: 120, filter: "select", tone: (r) => stateWords(r.ep.state).tone },
-    { id: "success7", accessorFn: (r) => successLabel(r.card7), sortValue: (r) => (r.card7?.samples ? r.card7.decided / r.card7.samples : -1), header: "Success, 7 days", width: 160 },
-    { id: "success30", accessorFn: (r) => successLabel(r.card30), sortValue: (r) => (r.card30?.samples ? r.card30.decided / r.card30.samples : -1), header: "Success, 30 days", width: 160 },
-    { id: "p50", accessorFn: (r) => speedLabel(r.card7?.p50_ms), sortValue: (r) => r.card7?.p50_ms ?? Number.MAX_SAFE_INTEGER, header: "Typical speed", width: 120 },
-    { id: "p95", accessorFn: (r) => speedLabel(r.card7?.p95_ms), sortValue: (r) => r.card7?.p95_ms ?? Number.MAX_SAFE_INTEGER, header: "Slowest 5%", width: 120 },
-    { id: "lastOk", accessorFn: (r) => ago(r.card30?.last_success_at), sortValue: (r) => (r.card30?.last_success_at ? new Date(r.card30.last_success_at).getTime() : 0), header: "Last worked", width: 130 },
-    { id: "lastErr", accessorFn: (r) => ago(r.card30?.last_error_at), sortValue: (r) => (r.card30?.last_error_at ? new Date(r.card30.last_error_at).getTime() : 0), header: "Last failed", width: 130 },
-    { id: "run", accessorFn: (r) => r.card7?.consecutive_unexpected ?? 0, header: "Errors in a row", width: 120, tone: (r) => ((r.card7?.consecutive_unexpected ?? 0) >= 3 ? "danger" : undefined) },
-    { id: "checked", accessorFn: (r) => ago(r.ep.verified_at), sortValue: (r) => (r.ep.verified_at ? new Date(r.ep.verified_at).getTime() : 0), header: "Last check", width: 120 },
-    { id: "strip", header: "Last 48 hours", width: 230, filter: false, sortable: false, cell: (r) => <UptimeStrip rows={r.strip} /> },
     {
       id: "actions",
       header: "",
-      width: 280,
+      width: 260,
       filter: false,
       sortable: false,
       cell: (r) => {
@@ -162,6 +153,15 @@ export function ToolDetail({ toolId }: { toolId: string }) {
         );
       },
     },
+    { id: "success7", accessorFn: (r) => successLabel(r.card7), sortValue: (r) => (r.card7?.samples ? r.card7.decided / r.card7.samples : -1), header: "Success, 7 days", width: 160 },
+    { id: "success30", accessorFn: (r) => successLabel(r.card30), sortValue: (r) => (r.card30?.samples ? r.card30.decided / r.card30.samples : -1), header: "Success, 30 days", width: 160 },
+    { id: "p50", accessorFn: (r) => speedLabel(r.card7?.p50_ms), sortValue: (r) => r.card7?.p50_ms ?? Number.MAX_SAFE_INTEGER, header: "Typical speed", width: 120 },
+    { id: "p95", accessorFn: (r) => speedLabel(r.card7?.p95_ms), sortValue: (r) => r.card7?.p95_ms ?? Number.MAX_SAFE_INTEGER, header: "Slowest 5%", width: 120 },
+    { id: "lastOk", accessorFn: (r) => ago(r.card30?.last_success_at), sortValue: (r) => (r.card30?.last_success_at ? new Date(r.card30.last_success_at).getTime() : 0), header: "Last worked", width: 130 },
+    { id: "lastErr", accessorFn: (r) => ago(r.card30?.last_error_at), sortValue: (r) => (r.card30?.last_error_at ? new Date(r.card30.last_error_at).getTime() : 0), header: "Last failed", width: 130 },
+    { id: "run", accessorFn: (r) => r.card7?.consecutive_unexpected ?? 0, header: "Errors in a row", width: 120, tone: (r) => ((r.card7?.consecutive_unexpected ?? 0) >= 3 ? "danger" : undefined) },
+    { id: "checked", accessorFn: (r) => ago(r.ep.verified_at), sortValue: (r) => (r.ep.verified_at ? new Date(r.ep.verified_at).getTime() : 0), header: "Last check", width: 120 },
+    { id: "strip", header: "Last 48 hours", width: 250, filter: false, sortable: false, cell: (r) => <UptimeStrip rows={r.strip} /> },
   ];
 
   const historyColumns: MatrxColumnDef<HistoryLine>[] = [
@@ -212,7 +212,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
           </Button>
         </div>
       </div>
-      <div className="min-h-0 flex-[3]">
+      <div className="min-h-0 flex-[2]">
         <MatrxDataTable
           data={sources}
           columns={sourceColumns}
@@ -234,7 +234,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
           }}
         />
       </div>
-      <div className="min-h-0 flex-[2]">
+      <div className="min-h-0 flex-[3]">
         <MatrxDataTable
           data={history}
           columns={historyColumns}

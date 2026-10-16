@@ -319,7 +319,7 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
             title="Batch add variables and context policies from a scope type"
           >
             <Layers className="w-3.5 h-3.5" />
-            Batch add
+            Batch
           </button>
         </div>
       </div>

@@ -43,6 +43,8 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import { IconButton } from "@ai-matrx/design-system";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 export type ComparisonCriterion = Omit<
   ComparisonCriterionKind,
@@ -69,6 +71,8 @@ export interface ComparisonTableState {
 
 interface ComparisonTableBlockProps {
   comparison: ComparisonTableData;
+  /** The block's own source text (the JSON the parser read): what its Controls edit. */
+  source?: string;
   taskId?: string; // Task ID for canvas deduplication
   artifactId?: string;
   conversationId?: string;
@@ -91,6 +95,7 @@ const navBtnClass =
 
 const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
   comparison,
+  source,
   taskId,
   artifactId,
   conversationId,
@@ -101,6 +106,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  const controls = useBlockControls("comparison_table", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const makeReal = useBlockMakeReal();
@@ -589,7 +595,9 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
-                        {comparison.title}
+                        <InlineControlText controls={controls} fieldKey="title" value={comparison.title}>
+                          {comparison.title}
+                        </InlineControlText>
                       </h1>
                       {comparison.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -622,6 +630,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
                         tooltip="Expand to full screen"
                         onClick={() => setIsFullScreen(true)}
                       />
+                      <BlockControlsButton controls={controls} title="Comparison controls" />
                       {host.actions}
                     </div>
                   )}

@@ -12,6 +12,8 @@ import { resolveJsonPayload } from "../artifact-renderers";
 // render path (an anti-pattern). See the code-splitting skill.
 import MathProblem from "@/features/math/components/MathProblem";
 import type { ArtifactRendererProps } from "../types";
+import { useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 // Inline / artifact mode: accepts the full `{ math_problem: {...} }` payload —
 // matches BlockRenderer: `<MathProblemBlock problemData={block.serverData} />`.
 // Heavy client block (print dialog + persistence) — split into its own chunk.
@@ -36,6 +38,8 @@ export default function MathProblemArtifact({
   mode,
   artifactId,
 }: ArtifactRendererProps) {
+  // Block Controls: present only where this surface can save the problem (never on a read-only render).
+  const controls = useBlockControls("math_problem", typeof raw === "string" ? raw : "", useBlockEdit());
   const payload = useMemo(
     () =>
       resolveJsonPayload({
@@ -63,5 +67,5 @@ export default function MathProblemArtifact({
   }
 
   // MathProblemBlock is dynamically imported with its own loading fallback.
-  return <MathProblemBlock problemData={payload as any} artifactId={artifactId} />;
+  return <MathProblemBlock problemData={payload as any} artifactId={artifactId} controls={controls} />;
 }

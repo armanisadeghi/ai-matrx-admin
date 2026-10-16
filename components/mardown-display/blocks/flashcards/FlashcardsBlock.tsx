@@ -22,6 +22,10 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { useOpenFlashcardsBlockWindow } from "@/features/overlays/openers/flashcardsBlockWindow";
 import { Button } from "@ai-matrx/design-system/controls";
+import {
+  BlockControlsButton,
+  type BlockControlsHandle,
+} from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 interface FlashcardsBlockProps {
   content?: string;
@@ -41,6 +45,8 @@ interface FlashcardsBlockProps {
    * every card renders and nothing shows "Loading" again.
    */
   isStreamActive?: boolean;
+  /** Block Controls for the set (null/absent = this surface cannot save: no controls). */
+  controls?: BlockControlsHandle | null;
 }
 
 const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
@@ -54,6 +60,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
   conversationId,
   blockIndex,
   isStreamActive,
+  controls = null,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMobilePrompt, setShowMobilePrompt] = useState(false);
@@ -293,22 +300,25 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
         icon={<BookOpen className="h-4 w-4 text-primary" />}
         title={<span>{set.completeCount}</span>}
         controls={
-          <FlashcardsSetControls
-            layoutMode={set.layoutMode}
-            onLayoutChange={set.setLayoutMode}
-            onMobileView={enterFlashMode}
-            onPrint={set.triggerPrint}
-            deckHref={set.deckHref}
-            onSaveDeck={set.handleSaveDeck}
-            savingDeck={set.savingDeck}
-            onOpenCanvas={set.handleOpenInCanvas}
-            openingCanvas={set.openingCanvas}
-            onFullscreen={() => setIsFullscreen(true)}
-            onOpenInWindow={handleOpenInWindow}
-            isAdmin={isAdmin}
-            showFullscreen
-            showDevWindow
-          />
+          <>
+            <BlockControlsButton controls={controls} title="Flashcard controls" />
+            <FlashcardsSetControls
+              layoutMode={set.layoutMode}
+              onLayoutChange={set.setLayoutMode}
+              onMobileView={enterFlashMode}
+              onPrint={set.triggerPrint}
+              deckHref={set.deckHref}
+              onSaveDeck={set.handleSaveDeck}
+              savingDeck={set.savingDeck}
+              onOpenCanvas={set.handleOpenInCanvas}
+              openingCanvas={set.openingCanvas}
+              onFullscreen={() => setIsFullscreen(true)}
+              onOpenInWindow={handleOpenInWindow}
+              isAdmin={isAdmin}
+              showFullscreen
+              showDevWindow
+            />
+          </>
         }
         initialOpen={true}
       >
@@ -317,6 +327,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
           isComplete={set.isComplete}
           layoutMode={set.layoutMode}
           hasStreamingCard={set.hasStreamingCard}
+          controls={controls}
         />
 
         {set.flashcards.length === 0 && (

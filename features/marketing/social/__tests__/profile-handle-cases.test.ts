@@ -20,3 +20,15 @@ describe("profile handle case table (shared with matrx-social)", () => {
     }
   });
 });
+
+import { normalizeAddress } from "../../smart-add/factIdentity";
+
+describe("one account address across alias hosts (shared with matrx-social, MKT-185)", () => {
+  const table = cases as unknown as { same_account: [string, string][]; different_account: [string, string][] };
+  it.each(table.same_account)("%s is %s", (a, b) => {
+    expect(normalizeAddress("social_profile", a)).toBe(normalizeAddress("social_profile", b));
+  });
+  it.each(table.different_account)("%s is not %s", (a, b) => {
+    expect(normalizeAddress("social_profile", a)).not.toBe(normalizeAddress("social_profile", b));
+  });
+});

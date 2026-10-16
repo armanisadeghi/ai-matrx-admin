@@ -18,7 +18,7 @@
  */
 
 import { MessageTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { useUnreadConversationBadge } from "@ai-matrx/messaging/react";
+import { useUnreadConversationBadge } from "@ai-matrx/messaging/react/host";
 import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
 import { useMessagesToggle } from "@/features/messaging/canvas/messagesKind";
 

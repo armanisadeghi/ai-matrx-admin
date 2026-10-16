@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1454,
+  "routeCount": 1461,
   "routes": [
     {
       "pattern": "/",
@@ -234,6 +234,11 @@
       "source": "app/(admin)/administration/agents/system-agents/agents/[id]/surfaces/batch/page.tsx"
     },
     {
+      "pattern": "/administration/agents/system-agents/agents/[id]/test",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/system-agents/agents/[id]/test/page.tsx"
+    },
+    {
       "pattern": "/administration/agents/system-agents/agents/[id]/v/[version]",
       "status": "live",
       "source": "app/(admin)/administration/agents/system-agents/agents/[id]/v/[version]/page.tsx"
@@ -317,6 +322,16 @@
       "pattern": "/administration/agents/system-agents/shortcuts/lineage",
       "status": "live",
       "source": "app/(admin)/administration/agents/system-agents/shortcuts/lineage/page.tsx"
+    },
+    {
+      "pattern": "/administration/agents/tests",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/tests/page.tsx"
+    },
+    {
+      "pattern": "/administration/agents/tool-control",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/tool-control/page.tsx"
     },
     {
       "pattern": "/administration/ai",
@@ -1244,6 +1259,21 @@
       "source": "app/(admin)/administration/shared-knowledge/page.tsx"
     },
     {
+      "pattern": "/administration/tool-battle",
+      "status": "live",
+      "source": "app/(admin)/administration/tool-battle/page.tsx"
+    },
+    {
+      "pattern": "/administration/tool-battle/[battleId]",
+      "status": "live",
+      "source": "app/(admin)/administration/tool-battle/[battleId]/page.tsx"
+    },
+    {
+      "pattern": "/administration/tool-battle/new",
+      "status": "live",
+      "source": "app/(admin)/administration/tool-battle/new/page.tsx"
+    },
+    {
       "pattern": "/administration/ui",
       "status": "live",
       "source": "app/(admin)/administration/ui/page.tsx"
@@ -1682,6 +1712,11 @@
       "pattern": "/agents/[id]/surfaces/batch",
       "status": "live",
       "source": "app/(core)/agents/[id]/surfaces/batch/page.tsx"
+    },
+    {
+      "pattern": "/agents/[id]/test",
+      "status": "live",
+      "source": "app/(core)/agents/[id]/test/page.tsx"
     },
     {
       "pattern": "/agents/[id]/v/[version]",

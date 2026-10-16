@@ -66,7 +66,7 @@ export function AccountsPanel() {
   const columns: MatrxColumnDef<AccountRow>[] = [
     { id: "name", accessorFn: (r) => r.provider.admin_name, header: "Account", width: 240 },
     { id: "state", accessorFn: (r) => stateWords(r.provider.state).label, header: "State", width: 130, filter: "select", tone: (r) => stateWords(r.provider.state).tone },
-    { id: "direct", accessorFn: (r) => (r.provider.direct_account ? "Ours" : "Through an aggregator"), header: "Account", width: 170, filter: "select" },
+    { id: "direct", accessorFn: (r) => (r.provider.direct_account ? "Our own account" : "Through an aggregator"), header: "Reached", width: 190, filter: "select" },
     { id: "sources", accessorFn: (r) => `${r.sourcesOn} of ${r.sources}`, sortValue: (r) => r.sources, header: "Sources on", width: 120 },
     { id: "changed", accessorFn: (r) => (r.changedAt ? formatRelativeTime(r.changedAt) : "Never"), sortValue: (r) => (r.changedAt ? new Date(r.changedAt).getTime() : 0), header: "Last change", width: 140 },
     {

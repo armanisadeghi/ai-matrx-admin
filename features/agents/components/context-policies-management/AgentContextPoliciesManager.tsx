@@ -1009,7 +1009,7 @@ export function AgentContextPoliciesManager({
             title="Batch add variables and context policies from a scope type"
           >
             <Layers className="w-3.5 h-3.5" />
-            <span className="hidden @[22rem]/policy-row:inline">Batch add</span>
+            <span className="hidden @[22rem]/policy-row:inline">Batch</span>
           </button>
         </div>
       </div>

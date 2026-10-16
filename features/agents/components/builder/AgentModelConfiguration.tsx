@@ -121,7 +121,7 @@ export function AgentModelConfiguration({
     <div className="flex items-center justify-between gap-3">
       <div
         className={cn(
-          "flex items-center gap-3 min-w-0 rounded-md px-1.5 py-0.5 transition-colors",
+          "-mx-1.5 flex items-center gap-3 min-w-0 rounded-md px-1.5 py-0.5 transition-colors",
           modelMissing && "ring-1 ring-yellow-400 dark:ring-yellow-500",
         )}
       >

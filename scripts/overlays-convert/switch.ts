@@ -464,7 +464,49 @@ function emitDefinitions(): void {
     if (exists(from) && !exists(`${HOST}/${f}`)) write(`${HOST}/${f}`, read(from));
   }
   removeSupersededOverlays();
+  emitPackageWindowOverlays();
   fs.rmSync(tmp, { recursive: true, force: true });
+}
+
+/**
+ * Package-owned windows the app hosts with no app component of its own: the window id is declared
+ * by @ai-matrx/chat's CHAT_WINDOWS (ChatHostAdapter's chatWindowOverlay() check requires every id
+ * to be an app overlay) and the component ships in the chat package. Written whole every run, so a
+ * pre-switch catalogue row for the same id (if one landed) converges on this definition.
+ */
+const PACKAGE_WINDOWS: ReadonlyArray<{ id: string; label: string; windowId: string; mobile: string; component: string; spec: string; after: string }> = [
+  {
+    id: "readAloudVoiceSettings",
+    label: "Read-aloud voice",
+    windowId: "read-aloud-voice-settings",
+    mobile: "card",
+    component: "ReadAloudVoiceSettingsWindow",
+    spec: "@ai-matrx/chat/window-panels/windows/listen/ReadAloudVoiceSettingsWindow",
+    after: "listenSummaryWindow",
+  },
+];
+function emitPackageWindowOverlays(): void {
+  for (const w of PACKAGE_WINDOWS) {
+    const Pascal = w.id[0]!.toUpperCase() + w.id.slice(1);
+    for (const e of [".ts", ".tsx"]) if (e !== ".ts" && exists(`${DEFS}/${w.id}.overlay${e}`)) fs.rmSync(abs(`${DEFS}/${w.id}.overlay${e}`));
+    write(
+      `${DEFS}/${w.id}.overlay.ts`,
+      `/**\n * \`${w.id}\` — ${w.label}: a window whose component ships in @ai-matrx/chat (CHAT_WINDOWS.${w.id}).\n * Single instance; no data.\n */\nimport { defineOverlay } from "@ai-matrx/summon/react";\nimport type { OverlayWire } from "./overlay-types";\n\nexport type ${Pascal}DefinitionData = Record<string, never>;\n\nexport const ${w.id}Overlay = defineOverlay<${Pascal}DefinitionData>()({\n  id: "${w.id}",\n  label: "${w.label}",\n  instance: "single",\n  keepAlive: "none",\n  closesOnNavigation: false,\n  window: {\n    restoreDefaults: {},\n    windowId: "${w.windowId}",\n    mobile: "${w.mobile}",\n  },\n  render: () => import("./${w.id}.render"),\n});\n\ndeclare module "@ai-matrx/summon" {\n  interface OverlayRegistry {\n    ${w.id}: OverlayWire<${Pascal}DefinitionData>;\n  }\n}\n`,
+    );
+    write(
+      `${DEFS}/${w.id}.render.tsx`,
+      `"use client";\n\nimport ${w.component} from "${w.spec}";\nimport type { OverlayRenderProps } from "@ai-matrx/summon/react";\n\nexport default function OverlayRender({ close }: OverlayRenderProps) {\n  return <${w.component} isOpen onClose={() => close()} />;\n}\n`,
+    );
+    patch(`${DEFS}/registry.ts`, (t) => {
+      if (!t.includes(`import { ${w.id}Overlay } from`)) {
+        t = swap("registry.ts", t, `import { ${w.after}Overlay } from "./${w.after}.overlay";\n`, `import { ${w.after}Overlay } from "./${w.after}.overlay";\nimport { ${w.id}Overlay } from "./${w.id}.overlay";\n`);
+      }
+      if (!t.includes(`  ${w.id}Overlay,\n`)) t = swap("registry.ts", t, `  ${w.after}Overlay,\n`, `  ${w.after}Overlay,\n  ${w.id}Overlay,\n`);
+      return t;
+    });
+    patch(`${DEFS}/overlay-ids.ts`, (t) => (t.includes(`  ${w.id}: true,\n`) ? t : swap("overlay-ids.ts", t, `  ${w.after}: true,\n`, `  ${w.after}: true,\n  ${w.id}: true,\n`)));
+    resolve(`${w.id}: package window (${w.spec}) — definition + render module emitted explicitly (single instance, window ${w.windowId}, mobile ${w.mobile})`);
+  }
 }
 
 /**

@@ -84,7 +84,7 @@ export function AgentContextInjectionSwitch({
       statusText={statusText}
       icon={<Layers className="w-3.5 h-3.5" />}
       disabled={disabled}
-      warn={starved}
+      warn={!compact && starved}
       compact={compact}
       onChange={(next) =>
         dispatch(setAgentAutoContextDisabled({ agentId, disabled: next }))
