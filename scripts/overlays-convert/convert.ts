@@ -3,7 +3,7 @@
  * @ai-matrx/overlays definitions, written into a SCRATCH directory. Inert: nothing imports it and it
  * never writes inside the app tree.
  *
- *   npx tsx scripts/overlays-convert/convert.ts --out <dir> [--pkg <overlays package dir>]
+ *   npx tsx scripts/overlays-convert/convert.ts --out <dir> [--app <app dir>] [--pkg <overlays package dir>]
  *       [--defs-specifier @/features/overlays/definitions] [--no-typecheck]
  *
  * Inputs (read live): features/overlays/OverlayController.tsx, features/overlays/catalogue.ts,
@@ -38,7 +38,8 @@ function argValue(name: string): string | undefined {
   const i = argv.indexOf(name);
   return i >= 0 ? argv[i + 1] : undefined;
 }
-const APP = path.resolve(path.dirname(process.argv[1] ?? "."), "../..");
+// --app: the app tree to read (default: the checkout this script lives in). switch.ts passes a scratch export.
+const APP = path.resolve(argValue("--app") ?? path.join(path.dirname(process.argv[1] ?? "."), "../.."));
 const OUT_ARG = argValue("--out");
 if (!OUT_ARG) {
   console.error("usage: convert.ts --out <scratch dir> [--pkg <dir>] [--defs-specifier <spec>] [--no-typecheck]");
@@ -1073,10 +1074,26 @@ function resolveSpecifier(fromFile: string, spec: string): string | undefined {
   }
   return undefined;
 }
+/** Tracked .ts/.tsx files: `git ls-files` in a checkout; a filesystem walk in a scratch export (no .git). */
+function listSourceFiles(root: string): string[] {
+  if (fs.existsSync(path.join(root, ".git"))) {
+    return execFileSync("git", ["ls-files", "*.ts", "*.tsx"], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split("\n");
+  }
+  const SKIP = new Set(["node_modules", ".next", ".git", ".wt", "tmp", "work", ".matrx", "_armani", "_dev", ".claude"]);
+  const out: string[] = [];
+  const visit = (dir: string, rel: string) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.isDirectory()) {
+        if (!SKIP.has(e.name) && !e.name.startsWith(".next")) visit(path.join(dir, e.name), rel ? `${rel}/${e.name}` : e.name);
+      } else if (/\.tsx?$/.test(e.name)) out.push(rel ? `${rel}/${e.name}` : e.name);
+    }
+  };
+  visit(root, "");
+  return out;
+}
 const plan: PlanEntry[] = [];
 {
-  const files = execFileSync("git", ["ls-files", "*.ts", "*.tsx"], { cwd: APP, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 })
-    .split("\n")
+  const files = listSourceFiles(APP)
     .filter((f) => f && !f.startsWith("scripts/overlays-convert/") && fs.existsSync(path.join(APP, f)));
   for (const rel of files) {
     const full = path.join(APP, rel);
