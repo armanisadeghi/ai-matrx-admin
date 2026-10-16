@@ -19,7 +19,8 @@
  */
 
 import { createClient } from "@/utils/supabase/client";
-import { writeOne } from "@/utils/supabase/writeOne";
+import type { JsonObject } from "@ai-matrx/data/db";
+import { mergeComparisonSetMetadata } from "../service/comparisonSetsService";
 
 export const DECISION_VERDICTS_KEY = "decision_verdicts" as const;
 
@@ -72,7 +73,7 @@ export async function loadDecisionVerdicts(
 }
 
 /**
- * Write one question's verdict. Reads the set's metadata first and merges,
+ * Write one question's verdict through the guarded metadata merge,
  * so a verdict written here never discards a key another surface put on the
  * same metadata blob.
  */
@@ -81,32 +82,12 @@ export async function saveDecisionVerdict(
   questionName: string,
   answer: string,
 ): Promise<DecisionVerdicts> {
-  const client = createClient().schema("agent");
-  const { data, error } = await client
-    .from("cmp_comparison_sets")
-    .select("metadata")
-    .eq("id", setId)
-    .single();
-  if (error) throw error;
-
-  const existing =
-    data && typeof data.metadata === "object" && data.metadata !== null && !Array.isArray(data.metadata)
-      ? (data.metadata as Record<string, unknown>)
-      : {};
-  const verdicts = asVerdicts(existing[DECISION_VERDICTS_KEY]);
-
   const trimmed = answer.trim();
-  if (trimmed === "") delete verdicts[questionName];
-  else verdicts[questionName] = { answer: trimmed, notedAt: new Date().toISOString() };
-
-  await writeOne(
-    client
-      .from("cmp_comparison_sets")
-      .update({ metadata: { ...existing, [DECISION_VERDICTS_KEY]: verdicts } })
-      .eq("id", setId)
-      .select("id"),
-    { action: "save", noun: "comparison" },
-  );
-
-  return verdicts;
+  const metadata = await mergeComparisonSetMetadata(setId, (current) => {
+    const verdicts = asVerdicts(current[DECISION_VERDICTS_KEY]);
+    if (trimmed === "") delete verdicts[questionName];
+    else verdicts[questionName] = { answer: trimmed, notedAt: new Date().toISOString() };
+    return { ...current, [DECISION_VERDICTS_KEY]: verdicts } as JsonObject;
+  });
+  return asVerdicts(metadata[DECISION_VERDICTS_KEY]);
 }

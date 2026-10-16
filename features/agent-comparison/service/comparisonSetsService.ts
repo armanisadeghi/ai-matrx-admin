@@ -9,6 +9,8 @@
 import { createClient } from "@/utils/supabase/client";
 import { writeOne } from "@/utils/supabase/writeOne";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { asJsonObject, mergeJsonColumn, type JsonObject } from "@ai-matrx/data/db";
+import type { Json } from "@/types/database.types";
 import type {
   ComparisonEntryRow,
   ComparisonSetRow,
@@ -172,14 +174,37 @@ export async function updateComparisonSetMetadata(
   setId: string,
   metadata: Record<string, unknown>,
 ): Promise<void> {
-  await writeOne(
-    supabase()
-      .schema("agent").from("cmp_comparison_sets")
-      .update({ metadata })
-      .eq("id", setId)
-      .select("id"),
-    { action: "save", noun: "comparison" },
-  );
+  await mergeComparisonSetMetadata(setId, (current) => ({ ...current, ...metadata }));
+}
+
+/**
+ * THE one write to a set's `metadata`: a guarded merge on the row's `version`.
+ * Several surfaces keep their own top-level key on the same blob (a mode's
+ * setup, `decision_verdicts`, the Smart Add bench); a writer replaces only
+ * the keys it owns, so a mode's re-save can never drop another surface's key
+ * (the setup save used to overwrite the whole blob, deleting every verdict).
+ */
+export async function mergeComparisonSetMetadata(
+  setId: string,
+  merge: (current: JsonObject) => JsonObject,
+): Promise<JsonObject> {
+  const table = () => supabase().from("cmp_comparison_sets");
+  const outcome = await mergeJsonColumn<{ id: string; version: number; metadata: unknown }>({
+    fetchCurrent: () => table().select("id, version, metadata").eq("id", setId).maybeSingle(),
+    readColumn: (row) => row.metadata,
+    merge,
+    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+      table()
+        .update({ metadata: value as Json, version: nextVersion })
+        .eq("id", setId)
+        .eq("version", expectedVersion)
+        .select("id, version, metadata")
+        .maybeSingle(),
+  });
+  if (outcome.status !== "saved") {
+    throw new Error("The battle could not be saved. Reload it and try again.");
+  }
+  return asJsonObject(outcome.row.metadata);
 }
 
 /**
