@@ -124,19 +124,19 @@ function importPool(sf: ts.SourceFile, rewrite?: (spec: string) => string): Map<
   const pool = new Map<string, ImportSpec>();
   for (const st of sf.statements) {
     if (!ts.isImportDeclaration(st) || !st.importClause) continue;
-    let module = (st.moduleSpecifier as ts.StringLiteral).text;
-    if (rewrite) module = rewrite(module);
-    else module = absolutize(sf.fileName, module);
+    let spec = (st.moduleSpecifier as ts.StringLiteral).text;
+    if (rewrite) spec = rewrite(spec);
+    else spec = absolutize(sf.fileName, spec);
     const clause = st.importClause;
     const declType = clause.isTypeOnly;
-    if (clause.name) pool.set(clause.name.text, { local: clause.name.text, module, imported: "default", typeOnly: declType });
+    if (clause.name) pool.set(clause.name.text, { local: clause.name.text, module: spec, imported: "default", typeOnly: declType });
     const nb = clause.namedBindings;
-    if (nb && ts.isNamespaceImport(nb)) pool.set(nb.name.text, { local: nb.name.text, module, imported: "*", typeOnly: declType });
+    if (nb && ts.isNamespaceImport(nb)) pool.set(nb.name.text, { local: nb.name.text, module: spec, imported: "*", typeOnly: declType });
     if (nb && ts.isNamedImports(nb)) {
       for (const el of nb.elements) {
         pool.set(el.name.text, {
           local: el.name.text,
-          module,
+          module: spec,
           imported: (el.propertyName ?? el.name).text,
           typeOnly: declType || el.isTypeOnly,
         });
@@ -291,7 +291,7 @@ for (const st of ctlSf.statements) {
       if (!init || !ts.isCallExpression(init) || init.expression.getText() !== "lazyOverlay") continue;
       const name = d.name.getText();
       const loader = init.arguments[0];
-      let module = "";
+      let spec = "";
       let exportName = "default";
       if (loader && ts.isArrowFunction(loader)) {
         const body = loader.body;
@@ -303,7 +303,7 @@ for (const st of ctlSf.statements) {
           return found;
         };
         const imp = findImport(body);
-        if (imp && ts.isStringLiteral(imp.arguments[0]!)) module = absolutize(F.controller, (imp.arguments[0] as ts.StringLiteral).text);
+        if (imp && ts.isStringLiteral(imp.arguments[0]!)) spec = absolutize(F.controller, (imp.arguments[0] as ts.StringLiteral).text);
         // .then((m) => ({ default: m.Name }))
         if (ts.isCallExpression(body) && ts.isPropertyAccessExpression(body.expression) && body.expression.name.text === "then") {
           const cb = body.arguments[0];
@@ -312,8 +312,8 @@ for (const st of ctlSf.statements) {
           else flag(name, "render", `lazy component ${name}: .then() callback is not a { default: m.X } mapping; static import uses the module default, and the callback's side effects are dropped: ${cb?.getText().replace(/\s+/g, " ")}`);
         }
       }
-      if (!module) flag(name, "render", `lazy component ${name}: no import() path found`);
-      lazy.set(name, { name, module, exportName });
+      if (!spec) flag(name, "render", `lazy component ${name}: no import() path found`);
+      lazy.set(name, { name, module: spec, exportName });
     }
   }
 }
