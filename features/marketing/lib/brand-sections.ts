@@ -81,6 +81,15 @@ export const MARKETING_BRAND_SECTIONS = [
     group: "Identity",
   },
   {
+    slug: "offerings",
+    name: "Products & services",
+    titlePrefix: "Products & Services",
+    description: "What this brand sells — the products and services Smart Add found, and the tree behind them.",
+    letter: "Pq",
+    iconName: "Package",
+    group: "Identity",
+  },
+  {
     slug: "websites",
     name: "Websites",
     titlePrefix: "Websites",

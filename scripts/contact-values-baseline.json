@@ -16,11 +16,14 @@
     "features/crm/components/outreach-lists/CallQueuePage.tsx": 1,
     "features/data-tables/records-ui-host/PersonPeekHost.tsx": 1,
     "features/esign/signer/parts/Dialogs.tsx": 1,
+    "features/hr/people/directory/HrDirectoryCards.tsx": 2,
+    "features/hr/people/directory/directoryColumns.tsx": 1,
     "features/hr/people/profile/tabs/PersonalTab.tsx": 2,
     "features/marketing/components/integrations/MarketingConnectionsWorkspace.tsx": 2,
     "features/marketing/google/YouTubeAnalyticsResult.tsx": 2,
     "features/organizations/peek/kinds/UserPeek.tsx": 1,
     "features/scopes/components/reference/ContextValueDisplay.tsx": 2,
-    "features/social-connections/PinterestDataPanel.tsx": 2
+    "features/social-connections/PinterestDataPanel.tsx": 2,
+    "lib/field-formats/FormattedFieldValue.tsx": 2
   }
 }

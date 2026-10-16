@@ -15,9 +15,14 @@ The ledger of found bugs and gaps on the frontend. Twin of aidream's `FOUND_DEFE
 
 ## OPEN
 
+### D360 — Organization configuration: a choice dropdown ignores a mouse click on an option (2026-10-16)
+
+On `/organizations/<org>/settings/configuration`, opening the "Agent changes to this organization's data" dropdown and clicking "Never ask" closes the list with the value unchanged (tried three times, built-in browser on the shared preview). Arrow keys + Enter do select it, and Save then works. Likely every closed-choice knob row on that page shares the control. Fix: the option's pointer handler (probably a pointerdown/blur close race) so a click selects.
+
 ### D359 — Organization switcher omits organizations the person belongs to (2026-10-16)
 
 As admin@admin.com on the shared preview, an organization the account owns (made through `public.org_create` minutes earlier) never appears in the sidebar organization switcher, even after a reload; searching its name says "No organization matches", and none of the account's several other recently made organizations show either. `?org=<id>` on any page does switch to it, so membership is fine: the host's organization list handed to `OrganizationPicker` (`aidream/apps/shared/design-system/src/organization-picker.tsx`) is incomplete — likely capped or served from a stale cache. Fix: list every membership (page it if needed) and refresh after an organization is created.
+
 
 ### D358 — Shared validation blockers observed during surface declaration pass (2026-10-07)
 

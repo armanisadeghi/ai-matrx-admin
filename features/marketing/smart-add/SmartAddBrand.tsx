@@ -17,6 +17,8 @@
  */
 
 import { promoteSmartAddFindings } from "./promote";
+import { FoundStage } from "./found/FoundStage";
+import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
 import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,6 +32,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
+import { toast } from "@/lib/toast";
 import { FACTS_FOUND_BY, mergeConfirmedIntoPlan, planKeptFacts, saveKeptFacts, type ConfirmedContactFact } from "./keptFacts";
 import { loadFactRules, NO_FACT_RULES } from "./factRules";
 import { foundByForSource } from "./factIdentity";
@@ -51,6 +54,7 @@ import {
   createBusinessLocation,
   createProperty,
   createDiscoveredCandidates,
+  registerBrandSmartAddRuns,
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
@@ -237,12 +241,15 @@ export function SmartAddBrand({
   onValidating,
   enrich = null,
   url = null,
+  door = null,
 }: {
   onCreated?: (brand: MarketingBrand) => void;
   /** Create settled the core and the validation stage is up: the page moves the address to the brand's validate route. */
   onValidating?: (brand: MarketingBrand) => void;
   enrich?: SmartAddEnrich | null;
   url?: SmartAddAddressBinding | null;
+  /** "found": the found-first door (VISION Part 23) — the certain facts as a calm grid first, then this same page. */
+  door?: "found" | null;
 }) {
   const dispatch = useAppDispatch();
   const { format } = useCostDisplay();
@@ -297,6 +304,9 @@ export function SmartAddBrand({
   const separateLogos = (keys: string[], on: boolean) =>
     setSeparated((cur) => new Set(on ? [...cur, ...keys] : [...cur].filter((k) => !keys.includes(k))));
   const [webMarks, setWebMarks] = useState<Record<string, WebMark>>({});
+  // Found-first door: who said each finding (found/foundCards.ts › witnesses), and whether the grid has handed over.
+  const [witnesses, setWitnesses] = useState<Map<string, Set<string>>>(new Map());
+  const [foundHanded, setFoundHanded] = useState(false);
   // The facts agent's findings (kind brand_basics), answered on the validation page.
   const [facts, setFacts] = useState<BrandFact[]>([]);
   // The we-think agent's suggestions per round (run id) then finding key: they only glow an option, never answer.
@@ -496,6 +506,8 @@ export function SmartAddBrand({
     setViews({});
     viewSig.current = {};
     setItems(new Map());
+    setWitnesses(new Map());
+    setFoundHanded(false);
     setDecisions({});
     setRelations({});
     setWebChoices({});
@@ -560,6 +572,17 @@ export function SmartAddBrand({
     if (runKey) wroteRuns.current = true;
     writeAddress({ runs: runKey ? runKey.split(",") : [] });
   }, [runKey]);
+  // Enrich: the brand already exists, so each round is named on it as it starts — the facts the round finds after
+  // this moment land on the brand and reach their homes server-side, exactly like Create's (aidream land_late_facts).
+  const enrichBrandId = enrich?.snapshot.brand.id ?? null;
+  const nameRunsOnBrand = useEffectEvent((brandId: string, ids: string[]) => {
+    registerBrandSmartAddRuns(brandId, ids).catch((error: unknown) =>
+      toast.error(`This round's findings may not reach the brand: ${extractErrorMessage(error)}`),
+    );
+  });
+  useEffect(() => {
+    if (enrichBrandId && runKey) nameRunsOnBrand(enrichBrandId, runKey.split(","));
+  }, [enrichBrandId, runKey]);
 
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(
@@ -620,6 +643,7 @@ export function SmartAddBrand({
   // What the person typed is their own word: its findings are confirmed on arrival.
   const onEvidence = (incoming: EvidenceItem[]) => {
     setItems((prev) => mergeEvidence(prev, incoming));
+    if (door === "found") setWitnesses((prev) => addWitnesses(prev, incoming));
     const own = incoming.filter(
       (i) =>
         (i.field === "website" && i.source.kind === "website" && typedKeys.current.website === `website:${websiteHost(i.value)}`) ||
@@ -1201,8 +1225,9 @@ export function SmartAddBrand({
         return NO_FACT_RULES;
       });
       const factPlan = planKeptFacts(facts, (f) => {
+        // A fact with a slot is answered there; one without (a city, a tool) by its own key (the found door, validation).
         const k = factSlotKey(f);
-        return k ? decisions[k] : undefined;
+        return (k ? decisions[k] : undefined) ?? decisions[f.key];
       }, factRules, { description: basics.description, industry: basics.category, tagline: basics.tagline, brandName: basics.name });
       const brand = await createBrand({
         organizationId,
@@ -1745,6 +1770,30 @@ export function SmartAddBrand({
             })
           }
           publish={builder.publish}
+        />
+        {listeners}
+      </>
+    );
+  }
+  // Found-first door: the certain facts as a calm grid until the core is confirmed (or the person asks for everything),
+  // then THIS page, every answer kept. A resumed session whose name and website are already confirmed skips the grid.
+  if (door === "found" && !person && !enrich && !created && !foundHanded && !(basics.name && basics.websiteUrl)) {
+    const cards = foundCards({ items: visible, witnesses, facts, decisions, typedWebsiteKey: typedKeys.current.website ?? typedWebsiteKey });
+    return (
+      <>
+        <FoundStage
+          cards={cards}
+          working={working}
+          ready={foundCoreReady(cards)}
+          onLooksRight={() => {
+            const answers = foundAnswers(cards, decisions);
+            for (const a of answers) delete restoredDecisions.current[a.key];
+            setDecisions((d) => answers.reduce((acc, a) => (acc[a.key] ? acc : applyDecision(acc, items, a.key, a.decision)), d));
+            setFoundHanded(true);
+          }}
+          onReviewAll={() => setFoundHanded(true)}
+          onNotUs={() => void restart("edit")}
+          onStartOver={() => void restart("over")}
         />
         {listeners}
       </>

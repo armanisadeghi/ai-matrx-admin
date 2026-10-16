@@ -8,7 +8,7 @@ import { SmartAddBrand } from "./SmartAddBrand";
 import { StageBackdrop } from "./stage/StageBackdrop";
 import { SmartAddEnrichFlow } from "./enrich/SmartAddEnrichFlow";
 import { useSmartAddAddress } from "./useSmartAddAddress";
-import { parseValidatePath, validateAddressOwner } from "./smartAddUrl";
+import { parseSmartAddDoor, parseValidatePath, validateAddressOwner } from "./smartAddUrl";
 import { SmartAddValidatePage } from "./validate/SmartAddValidatePage";
 
 /** Smart Add on the main site, rendered by the /marketing/brands/smart-add layout: /company, /person,
@@ -19,7 +19,10 @@ export function SmartAddBrandPage() {
   const enrichBrandId = url.address.enrichBrandId;
   // The brand this live session just created: its validate address is the session itself, not a fresh load.
   const [liveBrandId, setLiveBrandId] = useState<string | null>(null);
-  const validateBrandId = parseValidatePath(usePathname() ?? "");
+  const pathname = usePathname() ?? "";
+  const validateBrandId = parseValidatePath(pathname);
+  // The found-first door (/found): the same session, opening on the found grid (after Create it is the same page).
+  const door = parseSmartAddDoor(pathname);
   return (
     <>
       <EntityModeHeader backHref={marketingRoutes.brands()} entityLabel={enrichBrandId ? "Enrich with Smart Add" : "Smart Add brand"} actions={[]} />
@@ -38,6 +41,7 @@ export function SmartAddBrandPage() {
                 url.toValidate(brand.id);
               }}
               url={url}
+              door={door}
             />
           ) : null}
         </main>

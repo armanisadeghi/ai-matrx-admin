@@ -1,0 +1,42 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/marketing/smart-add/enrich/ChangesReview.tsx
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/marketing/smart-add/enrich/ChangesReview.tsx
+  Both grew from the same COMMON version: commit 0ad9132bc2, 2026-10-16 07:55.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-16 10:36  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-16 10:47  e92b27e278  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-16 10:13  70b2bcbb14  "marketing: Inbox folds findings the brand already keeps (competitors, people, offerings); enrich summary lists new competitors, people, locations, listings, keywords, offerings, credentials"
+  LOCAL's latest change is 23m AFTER GITHUB's latest change.
+
+SIZE: common version 257 lines, LOCAL 0 lines, GITHUB 290 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL deleted the whole file.
+  GITHUB added 24 lines and removed 1 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show b71c8e06619e:'features/marketing/smart-add/enrich/ChangesReview.tsx') <(git show e92b27e27868:'features/marketing/smart-add/enrich/ChangesReview.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show e92b27e27868:'features/marketing/smart-add/enrich/ChangesReview.tsx'
+  GITHUB: git show b71c8e06619e:'features/marketing/smart-add/enrich/ChangesReview.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+(the local side deleted this file)

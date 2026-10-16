@@ -1,0 +1,67 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/marketing/offerings/BrandOfferingsWorkspace.tsx
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/marketing/offerings/BrandOfferingsWorkspace.tsx
+  Both grew from the same COMMON version: commit 0ad9132bc2, 2026-10-16 07:55.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-16 10:36  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-16 10:47  c5bf325e64  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-16 10:42  ee3f2de588  "Brand home: bounded sections + jump bar, grouped business facts, products table page"
+    2026-10-16 10:28  5cd33f4cf4  "marketing: the Inbox reads only what is pending (the server resolves kept duplicates); client duplicate helper deleted; offerings route registered in brand sections and clears the header band"
+  GITHUB's latest change is 6m AFTER LOCAL's latest change.
+
+SIZE: common version 16 lines, LOCAL 16 lines, GITHUB 16 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 2 lines and removed 2 lines.
+  GITHUB added 3 lines and removed 3 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 1 of the 3 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | <div className="h-full min-h-0 overflow-y-auto pt-[var(--shell-header-h)]" data-matrx-page-scroll="">
+      | <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 p-4">
+    Lines GITHUB deliberately REMOVED that LOCAL still has: 1
+      | <div className="h-full min-h-0 overflow-y-auto" data-matrx-page-scroll="">
+  GITHUB has 1 of the 2 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 p-4 pt-[calc(var(--shell-header-h)+0.75rem)]">
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show b71c8e06619e:'features/marketing/offerings/BrandOfferingsWorkspace.tsx') <(git show e92b27e27868:'features/marketing/offerings/BrandOfferingsWorkspace.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show e92b27e27868:'features/marketing/offerings/BrandOfferingsWorkspace.tsx'
+  GITHUB: git show b71c8e06619e:'features/marketing/offerings/BrandOfferingsWorkspace.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+"use client";
+
+/** The full-page home of one brand's Products & services (`/marketing/<brand>/offerings`). */
+
+import { BrandOfferingsPanel } from "./BrandOfferingsPanel";
+
+export function BrandOfferingsWorkspace({ brand }: { brand: { id: string; name: string; organizationId: string } }) {
+  return (
+    <div className="h-full min-h-0 overflow-y-auto" data-matrx-page-scroll="">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 p-4 pt-[calc(var(--shell-header-h)+0.75rem)]">
+        <h1 className="type-title">Products &amp; services</h1>
+        <BrandOfferingsPanel brand={brand} />
+      </div>
+    </div>
+  );
+}
