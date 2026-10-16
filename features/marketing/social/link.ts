@@ -9,14 +9,14 @@ import type { SocialPlatform } from "./types";
 
 const HOSTS: ReadonlyArray<[RegExp, SocialPlatform]> = [
   [/(^|\.)tiktok\.com$/, "tiktok"],
-  [/(^|\.)instagram\.com$/, "instagram"],
+  [/(^|\.)instagram\.com$|(^|\.)instagr\.am$/, "instagram"],
   [/(^|\.)youtube\.com$|(^|\.)youtu\.be$/, "youtube"],
-  [/(^|\.)linkedin\.com$/, "linkedin"],
-  [/(^|\.)facebook\.com$|(^|\.)fb\.com$/, "facebook"],
+  [/(^|\.)linkedin\.com$|(^|\.)lnkd\.in$/, "linkedin"],
+  [/(^|\.)facebook\.com$|(^|\.)fb\.com$|(^|\.)fb\.watch$/, "facebook"],
   [/(^|\.)x\.com$|(^|\.)twitter\.com$/, "x"],
   [/(^|\.)threads\.(com|net)$/, "threads"],
-  [/(^|\.)pinterest\.[a-z.]+$/, "pinterest"],
-  [/(^|\.)reddit\.com$/, "reddit"],
+  [/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/, "pinterest"],
+  [/(^|\.)reddit\.com$|(^|\.)redd\.it$/, "reddit"],
   [/(^|\.)snapchat\.com$/, "snapchat"],
 ];
 
@@ -40,21 +40,117 @@ export function detectPlatform(text: string): SocialPlatform | null {
   return HOSTS.find(([re]) => re.test(host))?.[1] ?? null;
 }
 
-/** True when the pasted URL points at one post/video rather than a profile. */
+const NUMERIC = /^\d+$/;
+const FACEBOOK_P_SEGMENT = /-(\d{8,})$/;
+
+/** First segments that are never an owner when read as `<owner>/status/<id>` (`x.com/i/web/status/1`). */
+const NOT_AN_OWNER = new Set([
+  "i", "intent", "share", "hashtag", "search", "home", "explore", "web", "p", "reel", "reels", "tv", "watch", "pin",
+  "groups", "events", "pages", "people", "story.php", "photo.php",
+]);
+
+export interface PostInfo {
+  post: boolean;
+  /** The bare handle of the account that owns the post, when the address carries it. */
+  owner: string | null;
+}
+
+const NOT_POST: PostInfo = { post: false, owner: null };
+const post = (owner: string | null = null): PostInfo => ({ post: true, owner });
+const bareOwner = (seg: string | undefined): string | null => (seg ?? "").replace(/^@/, "") || null;
+
+/**
+ * ONE rule for "is this address ONE post / photo / story / video / reel / status / event / share link
+ * rather than an account", and who owns it when the address says so. A post is NEVER an account: it
+ * can resolve to its owner (`facebook.com/<page>/posts/…` -> page, `x.com/<h>/status/…` -> h) or to
+ * nobody (`instagram.com/p/<code>`, `youtube.com/watch?v=`). Twin of matrx_social `_post_info`, pinned
+ * by `post_link_cases.json` (the same file the Python suite runs). Pure.
+ */
+function postInfo(platform: SocialPlatform | null, url: URL): PostInfo {
+  const h = host(url);
+  const segs = url.pathname.split("/").filter(Boolean).map((s) => decodeURIComponent(s));
+  // "twitter.com/https://twitter.com/name": a whole address pasted after the host -> read what follows it.
+  const nested = segs.findIndex((s) => /^https?:$/i.test(s));
+  const segments = nested >= 0 ? segs.slice(nested + 2) : segs;
+  const lower = segments.map((s) => s.toLowerCase());
+  const first = lower[0] ?? "";
+  const second = lower[1] ?? "";
+  const q = (name: string) => url.searchParams.get(name) ?? "";
+
+  switch (platform) {
+    case "facebook": {
+      if (h === "fb.watch") return post();
+      if (first === "story.php" || first === "permalink.php") return post(NUMERIC.test(q("id").trim()) ? q("id").trim() : null);
+      if (["photo.php", "photo", "video.php"].includes(first)) return post(NUMERIC.test(q("id").trim()) ? q("id").trim() : (/^pb\.(\d+)\./.exec(q("set"))?.[1] ?? null));
+      if (
+        ["photos", "video", "videos", "reel", "reels", "posts", "post", "watch", "events", "event", "hashtag", "stories", "media",
+          "notes", "note", "share", "sharer", "sharer.php", "share.php", "l.php", "flx"].includes(first)
+      ) return post();
+      if (first === "groups") return segments.length >= 3 && ["posts", "permalink", "post", "files", "events"].includes(lower[2]) ? post() : NOT_POST;
+      if (first === "p") return segments.length > 1 && !FACEBOOK_P_SEGMENT.test(segments[1]) ? post() : NOT_POST;
+      if (
+        !FACEBOOK_SECTIONS.has(first) && segments.length >= 3 &&
+        ["posts", "photos", "videos", "reel", "reels", "notes", "watch", "events", "stories", "live_videos", "photo", "video"].includes(second)
+      ) return post(bareOwner(segments[0]));
+      return NOT_POST;
+    }
+    case "instagram":
+      if (["p", "reel", "reels", "tv"].includes(first) && segments.length >= 2) return post();
+      if (first === "stories" && segments.length >= 3) return post(second === "highlights" ? null : bareOwner(segments[1]));
+      if (!["stories", "explore", "p", "reel", "reels", "tv"].includes(first) && segments.length >= 3 && ["p", "reel", "reels", "tv"].includes(second)) {
+        return post(bareOwner(segments[0]));
+      }
+      return NOT_POST;
+    case "x":
+      if (segments.length >= 3 && ["status", "statuses", "article"].includes(second) && !NOT_AN_OWNER.has(first)) return post(bareOwner(segments[0]));
+      return lower.includes("status") || lower.includes("statuses") ? post() : NOT_POST;
+    case "tiktok":
+      if (h === "vm.tiktok.com" || h === "vt.tiktok.com" || first === "t" || first === "video") return post();
+      if (segments.length >= 3 && first.startsWith("@") && ["video", "photo"].includes(second)) return post(bareOwner(segments[0]));
+      return NOT_POST;
+    case "threads":
+      if (segments.length >= 3 && first.startsWith("@") && ["post", "posts"].includes(second)) return post(bareOwner(segments[0]));
+      return first === "t" || first === "post" ? post() : NOT_POST;
+    case "youtube":
+      return h === "youtu.be" || ["watch", "shorts", "live", "embed", "clip", "post", "playlist", "v", "e"].includes(first) ? post() : NOT_POST;
+    case "linkedin":
+      if (["posts", "pulse"].includes(first) || (["feed", "events", "jobs", "learning", "groups", "video", "smart-links"].includes(first) && segments.length >= 2)) return post();
+      if (["in", "company", "school", "showcase"].includes(first) && segments.length >= 4 && ["posts", "post"].includes(lower[2])) return post(bareOwner(segments[1]));
+      return NOT_POST;
+    case "reddit": {
+      if (h === "redd.it" || first === "gallery" || first === "comments") return post();
+      for (let i = 0; i + 2 < segments.length; i++) {
+        if (["r", "u", "user"].includes(lower[i]) && lower[i + 2] === "comments") return post(bareOwner(segments[i + 1]));
+      }
+      return NOT_POST;
+    }
+    case "pinterest":
+      return ["pin", "ideas", "search"].includes(first) || h === "pin.it" ? post() : NOT_POST;
+    case "snapchat":
+      return ["spotlight", "story", "stories", "discover", "t", "p"].includes(first) ? post() : NOT_POST;
+    default:
+      return /\/(status|statuses|posts?|permalink)\/[^/]/.test(`${url.pathname.toLowerCase()}/`) ? post() : NOT_POST;
+  }
+}
+
+/** True when the pasted URL points at one post, photo, story or video rather than an account. */
 export function looksLikePostUrl(text: string): boolean {
   const url = parseUrl(text);
   if (!url) return false;
-  const p = url.pathname.toLowerCase();
-  return (
-    /\/video\/\d+/.test(p) ||
-    (/^\/(p|reel|reels|tv)\//.test(p) && !(host(url).endsWith("facebook.com") && /^\/p\/[^/]*-\d{8,}\/?$/.test(p))) ||
-    p.startsWith("/watch") ||
-    p.startsWith("/shorts/") ||
-    host(url) === "youtu.be" ||
-    /\/(status|statuses)\/\d+/.test(p) ||
-    /\/posts?\/[^/]/.test(p) ||
-    /\/feed\/update\//.test(p)
-  );
+  return postInfo(detectPlatform(text), url).post;
+}
+
+/**
+ * The account a post link belongs to, when the address carries it (`facebook.com/<page>/posts/…`,
+ * `x.com/<handle>/status/…`, `story.php?id=<numeric>`); null for a non-post or an anonymous post
+ * (`instagram.com/p/<code>`, `youtube.com/watch?v=`). Twin of matrx_social `post_owner`.
+ */
+export function postOwnerFromUrl(text: string): { platform: SocialPlatform; handle: string } | null {
+  const url = parseUrl(text);
+  const platform = url ? detectPlatform(text) : null;
+  if (!url || !platform) return null;
+  const info = postInfo(platform, url);
+  return info.post && info.owner ? { platform, handle: info.owner } : null;
 }
 
 function host(url: URL): string {
@@ -70,6 +166,8 @@ export function handleFromInput(text: string): string {
     if (found?.handle) return found.handle.replace(/^r\//, "").replace(/^@/, "");
   }
   if (url && platform === "facebook" && /^\/profile\.php\/?$/i.test(url.pathname)) return "";
+  // A post is never an account: its owner when the address carries one, else nothing.
+  if (url && platform && looksLikePostUrl(text)) return postOwnerFromUrl(text)?.handle ?? "";
   const raw = url
     ? (url.pathname.split("/").filter(Boolean).find((s) => s.startsWith("@")) ??
         url.pathname.split("/").filter(Boolean).pop() ??
@@ -94,6 +192,8 @@ export interface SocialLink {
   url: string;
   /** Profile links only: the handle named in the address. */
   handle: string | null;
+  /** Post links only: the handle of the account that owns the post, when the address carries it. */
+  owner?: string | null;
 }
 
 /** Hosts whose bare address is a home page, not an account. */
@@ -114,7 +214,7 @@ export function classifySocialLink(text: string): SocialLink | null {
   if (!platform) return null;
   const url = parseUrl(text);
   if (!url) return null;
-  if (looksLikePostUrl(text)) return { kind: "post", platform, url: url.href, handle: null };
+  if (looksLikePostUrl(text)) return { kind: "post", platform, url: url.href, handle: null, owner: postOwnerFromUrl(text)?.handle ?? null };
   const segments = url.pathname.split("/").filter(Boolean);
   const first = segments[0]?.toLowerCase() ?? "";
   if (NON_ACCOUNT_SEGMENTS.has(first)) return null;
@@ -140,7 +240,12 @@ function facebookProfilePhpId(url: URL): string | null {
   return /^\d+$/.test(id) ? id : null;
 }
 
-const FACEBOOK_SECTIONS = new Set(["pages", "people", "groups", "profile.php", "p", "watch", "events", "public", "fb-answers"]);
+const FACEBOOK_SECTIONS = new Set([
+  "pages", "people", "groups", "profile.php", "p", "watch", "events", "public", "fb-answers",
+  // Post-type addresses: the first segment is the kind of post, never an account (twin of matrx_social `_FACEBOOK_SECTIONS`).
+  "story.php", "photo.php", "photo", "photos", "permalink.php", "video.php", "video", "videos", "reel", "reels", "posts", "post",
+  "hashtag", "stories", "media", "notes", "note", "event", "l.php", "flx", "sharer", "sharer.php", "share", "share.php",
+]);
 
 // ---------------------------------------------------------------------------
 // The ONE account-input parser: any way a person writes a social account -> platform + handle + URL.
@@ -186,8 +291,8 @@ export function profileUrlFor(platform: SocialPlatform, handle: string, variant?
 
 export type ParsedAccount =
   | { status: "empty" }
-  /** A post/video address: not an account. */
-  | { status: "post"; platform: SocialPlatform; url: string }
+  /** A post/video address: not an account. `owner` is the account it belongs to when the address names one. */
+  | { status: "post"; platform: SocialPlatform; url: string; owner: string | null }
   /** A bare handle and no platform to put it on yet. */
   | { status: "needs_platform"; handle: string }
   /** Something that cannot be an account: an unknown site, a platform home page, spaces. */
@@ -279,7 +384,7 @@ export function parseSocialAccount(input: string | null | undefined, fallback?: 
       const site = profileSiteHandle(text);
       return site?.site === "mastodon" ? build("mastodon", site.handle, undefined, true) : { status: "invalid" };
     }
-    if (looksLikePostUrl(text)) return { status: "post", platform, url: url.href };
+    if (looksLikePostUrl(text)) return { status: "post", platform, url: url.href, owner: postOwnerFromUrl(text)?.handle ?? null };
     const found = accountFromUrl(platform, url);
     if (!found || !found.handle.trim()) return { status: "invalid" };
     return build(platform, found.handle.trim(), found.variant, true);
