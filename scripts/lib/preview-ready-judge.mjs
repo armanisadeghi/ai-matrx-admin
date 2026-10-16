@@ -34,6 +34,8 @@ export function verdictOf(r, target, say = () => {}) {
   }
   if (pathOnly.startsWith("/login") || pathOnly.startsWith("/sign")) return { ok: false, kind: "signed-out", why: `ended on ${pathOnly}: the sign-in did not stick` };
   if (r.status !== 200) return { ok: false, kind: "status", why: `${pathOnly} answered ${r.status}` };
+  // A public route answers 200 to anyone: require the sign-in cookie the dev-login set.
+  if (r.signedInCookie === false) return { ok: false, kind: "signed-out", why: `${pathOnly} loaded, but no sign-in cookie was set` };
   if (pathOnly !== target.split("?")[0]) say(`sign-in: note — ${target} redirected to ${pathOnly} (signed in; the route itself redirects)`);
   return { ok: true };
 }
@@ -61,7 +63,12 @@ export async function diagnoseBuildError(text, ROOT) {
       const source = readFileSync(join(ROOT, file), "utf8");
       // Positive evidence only: the file imports that very name from an @ai-matrx package, and the
       // judge (which certainly knows a missing export) finds nothing missing.
-      if (exp && missing.length === 0 && /@ai-matrx\//.test(source) && new RegExp(`\\b${exp[1]}\\b`).test(source)) {
+      // The missing name must be imported FROM an @ai-matrx specifier in this file; an export missing
+      // from one of our own modules is a code error a restart cannot fix.
+      const fromOurPackage = new RegExp(
+        `import\\s+(?:type\\s+)?\\{[^}]*\\b${exp?.[1]}\\b[^}]*\\}\\s*from\\s*["']@ai-matrx\\/`,
+      ).test(source);
+      if (exp && missing.length === 0 && fromOurPackage) {
         out.stale = true;
         out.lines.push("diagnosis: STALE SERVER — the installed package does export it; the server is serving code from before an install");
       } else if (missing.length) {

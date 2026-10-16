@@ -263,6 +263,27 @@ test("the monitor restarts a preview that died on its own, and names the last er
   }
 });
 
+test("a deliberate stop by another process is never read as a crash: no restart, no 'died on its own'", async () => {
+  const dir = stateDir();
+  const pid = fakeServer();
+  const marker = join(dir, "restart-ran");
+  try {
+    writeLease(dir, { pid, usedAgoSec: 0, root: REPO_ROOT, port: 3001 });
+    const monitor = spawn("bash", [SCRIPT, "monitor", String(pid), "--live"], {
+      env: { ...process.env, MATRX_PREVIEW_STATE_DIR: dir, MATRX_PREVIEW_START_CMD: `touch '${marker}'` },
+      stdio: "ignore",
+    });
+    const exited = new Promise((r) => monitor.on("exit", r));
+    await new Promise((r) => setTimeout(r, 2500));
+    sourced(dir, `stop_for_limit ${pid} "RECYCLED: replaced by a new pnpm preview:start (test)"`);
+    await Promise.race([exited, new Promise((r) => setTimeout(r, 10000))]);
+    assert.ok(!existsSync(marker), "the server's own monitor must not restart a deliberate stop");
+    assert.doesNotMatch(readFileSync(join(dir, "shared-next-dev.failed"), "utf8"), /died on its own/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("past the restart budget the watchdog stops restarting and says CRASH LOOP", () => {
   const dir = stateDir();
   const marker = join(dir, "restart-ran");

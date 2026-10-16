@@ -556,17 +556,21 @@ acquire_start_lock() {
     holder="$(head -1 "$LOCK/pid" 2>/dev/null)"
     if [[ ! -d "$LOCK" ]]; then
       if mkdir "$LOCK" 2>/dev/null; then printf '%s\n' "$$" >"$LOCK/pid"; return 0; fi
-    elif [[ -n "$holder" ]] && ! alive "$holder"; then
-      break # its holder died mid-start
-    elif [[ -z "$holder" ]] && (( attempt >= 50 )); then
-      break # a lock from before holders were recorded, empty for 10 s
+    elif { [[ -n "$holder" ]] && ! alive "$holder"; } || { [[ -z "$holder" ]] && (( attempt >= 50 )); }; then
+      # Its holder died mid-start (or it predates recorded holders and sat empty 10 s). Exactly one
+      # waiter wins the rename; the next pass takes the lock with mkdir, the others keep waiting.
+      mv "$LOCK" "$LOCK.stale.$$" 2>/dev/null && rm -rf "$LOCK.stale.$$"
+      continue
     fi
     sleep 0.2
   done
-  (( attempt < 900 )) || fail "another preview start (pid ${holder:-unknown}) has been running for 3 min; not starting a second server"
-  rm -rf "$LOCK"
-  mkdir "$LOCK" 2>/dev/null || fail "could not acquire the preview start lock"
-  printf '%s\n' "$$" >"$LOCK/pid"
+  fail "another preview start (pid ${holder:-unknown}) has been running for 3 min; not starting a second server"
+}
+
+# Only the start that took the lock removes it (a stop or a second start never pulls it out from
+# under a start that is still deleting a cache or booting).
+release_start_lock() {
+  [[ "$(head -1 "$LOCK/pid" 2>/dev/null)" == "$$" ]] && rm -rf "$LOCK"
   return 0
 }
 
@@ -731,21 +735,25 @@ cmd_start() {
   fi
 
   acquire_start_lock || return 0
-  trap 'rm -rf "$LOCK" 2>/dev/null || true' EXIT
+  trap 'release_start_lock' EXIT
 
   # Close the small race between the first process scan and lock acquisition.
   running="$(running_server)"
   if [[ -n "$running" ]]; then
     read -r pid port owner <<<"$running"
-    rm -rf "$LOCK" 2>/dev/null || true
+    release_start_lock
     slot_occupied "$pid" "$port" "$owner"
     return 0
   fi
 
   # Never a second next dev beside a live one, even one the process scan missed (still booting,
   # or its lease lost): its boot clears the running server's build folder.
-  local listener
-  listener="$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null | head -1)"
+  local listener _
+  for _ in $(seq 1 40); do # a just-stopped server may hold the port for a few seconds
+    listener="$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null | head -1)"
+    [[ -n "$listener" ]] || break
+    sleep 0.5
+  done
   if [[ -n "$listener" ]]; then
     fail "pid $listener already listens on port $PORT — not starting a second server (its boot would wipe the running one's build folder); pnpm preview:ready reuses or repairs it"
   fi
@@ -1149,13 +1157,15 @@ stop_for_limit() {
     printf '[preview] WATCHDOG: %s\n' "$reason" >>"$LOG"
     log "$reason"
   fi
+  # The lease goes FIRST: the server's own monitor reads "lease still names a dead pid" as a crash.
+  rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
   killtree "$pid" TERM
   for _ in 1 2 3 4 5 6; do
     alive "$pid" || break
     sleep 0.5
   done
   alive "$pid" && killtree "$pid" KILL
-  rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
+  return 0
 }
 
 # Keep an error storm from filling the volume. The Next process holds this file
@@ -1223,7 +1233,8 @@ cmd_monitor() {
     if [[ ! -f "$READY" ]]; then
       log_mtime="$(mtime "$LOG")"
       now="$(date +%s)"
-      if [[ "$log_mtime" != "$last_log_mtime" ]]; then
+      if [[ "$log_mtime" != "$last_log_mtime" ]] || preview_answers "$PORT"; then
+        # A server that answers is alive and compiling; the warm-up's first page may take minutes.
         last_log_mtime="$log_mtime"
         last_progress="$now"
       elif (( now - last_progress >= NO_PROGRESS_SEC )); then
@@ -1250,6 +1261,8 @@ cmd_monitor() {
     printf 'preview died on its own (last error: %s)\n' "${last_error:-none logged}" >"$FAILED"
     printf '[preview] WATCHDOG: the preview pid %s died on its own (last error: %s)\n' "$expected_pid" "${last_error:-none logged}" >>"$LOG"
     rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
+    # Its next-server child can outlive it and keep the port: end the whole group first.
+    kill -TERM -- -"$expected_pid" 2>/dev/null || true
     restart_after_stop "it died on its own (${last_error:-no error logged})" || true
   fi
 }
@@ -1335,8 +1348,12 @@ cmd_stop() {
   esac
   [[ "$owner" == "$REPO_ROOT" ]] || fail "preview lease belongs to '$owner'; stop it from its owning checkout"
 
+  local stop_mode
+  stop_mode="$(meta_value MODE)"
+  # The lease goes FIRST (see stop_for_limit): a deliberate stop is never read as a crash.
+  rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
   if alive "$pid"; then
-    log "stopping the managed preview pid $pid ($(meta_value MODE) mode)"
+    log "stopping the managed preview pid $pid (${stop_mode:-unknown} mode)"
     killtree "$pid" TERM
     for _ in 1 2 3 4 5 6; do
       alive "$pid" || break
@@ -1348,8 +1365,11 @@ cmd_stop() {
   # Keep the stopped server's log one generation: deleting it erased the only record of why the
   # previous server crashed or what it was serving (2026-10-15).
   [[ -f "$LOG" ]] && mv -f "$LOG" "$LOG.prev"
-  rm -f "$META" "$READY" "$JAR" "$FAILED" "$USED" "$TOUCHED"
-  rm -rf "$LOCK" 2>/dev/null || true
+  rm -f "$FAILED"
+  # A start lock whose holder is gone is debris; a live holder's lock is never touched.
+  local lock_holder
+  lock_holder="$(head -1 "$LOCK/pid" 2>/dev/null)"
+  [[ -d "$LOCK" ]] && ! alive "$lock_holder" && rm -rf "$LOCK"
   log "managed preview stopped; build cache $distdir was preserved"
 }
 
