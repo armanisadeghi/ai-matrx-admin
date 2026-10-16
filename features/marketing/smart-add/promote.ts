@@ -48,8 +48,10 @@ export interface PromoteDeps {
   listSites(brandId: string): Promise<PromoteSite[]>;
   /** Normalized domains already in seo.competitor on any of these sites. */
   listCompetitorDomains(siteIds: string[]): Promise<Set<string>>;
-  /** Insert-if-missing on (site_id, normalized_domain). */
-  insertCompetitors(rows: CompetitorHomeInsert[]): Promise<void>;
+  /** Insert-if-missing on (site_id, normalized_domain); returns the ids of the rows THIS call created. */
+  insertCompetitors(rows: CompetitorHomeInsert[]): Promise<string[]>;
+  /** Remove rows this path created (an undo); never called with a row a person made. */
+  deleteCompetitors(ids: string[]): Promise<void>;
   actorId(): Promise<string>;
 }
 
@@ -60,6 +62,8 @@ export interface PromoteResult {
   alreadyHome: Record<PromotedFindingType, number>;
   /** Findings whose home is the profile list itself (name or handles only, or no site yet). */
   keptOnBrand: Record<PromotedFindingType, number>;
+  /** Ids of the home rows this run created, so an undo removes exactly those and nothing a person made. */
+  createdIds: Record<PromotedFindingType, string[]>;
 }
 
 /** `https://www.Foo.com/x` | `foo.com` → `foo.com`; null when it is not a domain. */
@@ -92,11 +96,12 @@ type Promoter = (deps: PromoteDeps, brand: Awaited<ReturnType<PromoteDeps["readB
   landed: number;
   alreadyHome: number;
   keptOnBrand: number;
+  createdIds: string[];
 }>;
 
 const promoteCompetitors: Promoter = async (deps, brand) => {
   const competitors = profileCompetitors(brand.profile);
-  if (!competitors.length) return { landed: 0, alreadyHome: 0, keptOnBrand: 0 };
+  if (!competitors.length) return { landed: 0, alreadyHome: 0, keptOnBrand: 0, createdIds: [] };
   const sites = await deps.listSites(brand.id);
   const ownHosts = new Set(sites.map((s) => s.host).filter((h): h is string => Boolean(h)));
   const home = sites[0];
@@ -118,8 +123,8 @@ const promoteCompetitors: Promoter = async (deps, brand) => {
     existing.add(domain);
     inserts.push({ siteId: home.id, organizationId: brand.organizationId, createdBy: actor, domain, name: c.name });
   }
-  if (inserts.length) await deps.insertCompetitors(inserts);
-  return { landed: inserts.length, alreadyHome, keptOnBrand };
+  const createdIds = inserts.length ? await deps.insertCompetitors(inserts) : [];
+  return { landed: createdIds.length, alreadyHome, keptOnBrand, createdIds };
 };
 
 /** One promoter per finding type; a new Smart Add finding type adds its promoter here. */
@@ -133,12 +138,14 @@ export async function promoteSmartAddFindings(deps: PromoteDeps, brandId: string
     landed: { competitor: 0 },
     alreadyHome: { competitor: 0 },
     keptOnBrand: { competitor: 0 },
+    createdIds: { competitor: [] },
   };
   for (const [type, promote] of Object.entries(PROMOTERS) as [PromotedFindingType, Promoter][]) {
     const r = await promote(deps, brand);
     result.landed[type] = r.landed;
     result.alreadyHome[type] = r.alreadyHome;
     result.keptOnBrand[type] = r.keptOnBrand;
+    result.createdIds[type] = r.createdIds;
   }
   return result;
 }
@@ -178,7 +185,7 @@ export const livePromoteDeps: PromoteDeps = {
   },
   async insertCompetitors(rows) {
     const now = new Date().toISOString();
-    const { error } = await supabase
+    const { data, error } = await supabase
       .schema("seo")
       .from("competitor")
       .upsert(
@@ -197,7 +204,15 @@ export const livePromoteDeps: PromoteDeps = {
           last_observed_at: now,
         })),
         { onConflict: "site_id,normalized_domain", ignoreDuplicates: true },
-      );
+      )
+      .select("id");
+    if (error) throw error;
+    return (data ?? []).map((r) => r.id);
+  },
+  async deleteCompetitors(ids) {
+    if (!ids.length) return;
+    // seo.competitor has no soft delete; these ids are only rows promote.ts itself just created.
+    const { error } = await supabase.schema("seo").from("competitor").delete().in("id", ids);
     if (error) throw error;
   },
   async actorId() {

@@ -54,7 +54,19 @@ function memoryDeps(profile: Json, siteIds: string[] = ["site-1"]) {
     listSites: async () => siteIds.map((id) => ({ id, host: "ownsite.com" })),
     listCompetitorDomains: async () => new Set(table.map((r) => r.domain)),
     insertCompetitors: async (rows) => {
-      for (const r of rows) if (!table.some((t) => t.siteId === r.siteId && t.domain === r.domain)) table.push(r);
+      const ids: string[] = [];
+      for (const r of rows) {
+        if (table.some((t) => t.siteId === r.siteId && t.domain === r.domain)) continue;
+        table.push(r);
+        ids.push(`seo-${r.domain}`);
+      }
+      return ids;
+    },
+    deleteCompetitors: async (ids) => {
+      for (const id of ids) {
+        const i = table.findIndex((t) => `seo-${t.domain}` === id);
+        if (i >= 0) table.splice(i, 1);
+      }
     },
     actorId: async () => "user-1",
   };
@@ -91,6 +103,21 @@ describe("Smart Add promotion: every kept finding reaches a home the brand page 
     expect(table).toHaveLength(1);
     expect(again.landed.competitor).toBe(0);
     expect(again.alreadyHome.competitor).toBe(1);
+  });
+
+  it("undo removes only the rows the promotion created, never a row a person already had", async () => {
+    const { deps, table } = memoryDeps(createdProfile());
+    table.push({ siteId: "site-1", organizationId: "org-1", createdBy: "person", domain: "rivalclean.com", name: "Rival Clean" });
+    const first = await promoteSmartAddFindings(deps, "brand-1");
+    expect(first.createdIds.competitor).toEqual([]); // the person's row already covers it
+    await deps.deleteCompetitors(first.createdIds.competitor);
+    expect(table.map((r) => r.createdBy)).toEqual(["person"]);
+
+    const fresh = memoryDeps(createdProfile());
+    const made = await promoteSmartAddFindings(fresh.deps, "brand-1");
+    expect(made.createdIds.competitor).toEqual(["seo-rivalclean.com"]);
+    await fresh.deps.deleteCompetitors(made.createdIds.competitor);
+    expect(fresh.table).toHaveLength(0);
   });
 
   it("a brand with no site keeps every rival on the brand (nothing lost, nothing written)", async () => {
