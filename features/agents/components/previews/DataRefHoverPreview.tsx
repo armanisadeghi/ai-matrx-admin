@@ -37,7 +37,7 @@ export function DataRefPreviewContent({ dataRef, frame = "bare" }: DataRefPrevie
   const body: PeekBlock[] = [];
   // The record the reference points at opens like every identity in the app.
   if (entityInfo && recordId) {
-    body.push({ fact: recordName, entity: { token: entityInfo.token, id: recordId } });
+    body.push({ fact: recordName, entity: { token: entityInfo.token, id: recordId, newTab: true, showActions: true } });
   }
   if (dataRef.ref_type === "db_record") {
     body.push({ property: "ID", value: dataRef.id });
@@ -46,10 +46,11 @@ export function DataRefPreviewContent({ dataRef, frame = "bare" }: DataRefPrevie
     body.push({ property: "ID", value: dataRef.id });
     body.push({ property: "Field", value: dataRef.field_name });
   } else if (dataRef.ref_type === "db_query") {
-    body.push({
-      property: "Filter",
-      value: dataRef.filter && Object.keys(dataRef.filter).length > 0 ? JSON.stringify(dataRef.filter) : "—",
-    });
+    if (dataRef.filter && Object.keys(dataRef.filter).length > 0) {
+      body.push({ section: "Filter", code: { text: JSON.stringify(dataRef.filter, null, 2), language: "JSON" } });
+    } else {
+      body.push({ property: "Filter", value: "—" });
+    }
     if (dataRef.fields && dataRef.fields.length > 0) body.push({ property: "Fields", value: dataRef.fields.join(", ") });
     if (typeof dataRef.limit === "number") body.push({ property: "Limit", value: String(dataRef.limit) });
   }
@@ -80,7 +81,6 @@ interface DataRefHoverPreviewProps {
   children: React.ReactElement;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  className?: string;
 }
 
 export function DataRefHoverPreview({ dataRef, children, side = "top", align = "start" }: DataRefHoverPreviewProps) {

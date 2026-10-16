@@ -52,7 +52,6 @@ interface BlockHoverPreviewProps {
   children: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  className?: string;
 }
 
 export function BlockHoverPreview({

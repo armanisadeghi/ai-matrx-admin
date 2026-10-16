@@ -10,7 +10,7 @@ import { Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
 import { CheckSquare } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskById, type TaskRecord } from "@/features/agent-context/redux/tasksSlice";
-import { formatDate, peekLines } from "./peek-lines";
+import { formatDate } from "./peek-lines";
 
 const DESCRIPTION_PREVIEW_CHARS = 400;
 
@@ -36,7 +36,6 @@ export function TaskPreviewContent({ taskId, onOpen, frame = "bare" }: TaskPrevi
       ? description.slice(0, DESCRIPTION_PREVIEW_CHARS).trimEnd() + "…"
       : description;
   const dueDate = formatDate(task.due_date);
-  const lines = peekLines(truncated);
 
   const record: PeekRecord = {
     kind: "Task",
@@ -47,7 +46,7 @@ export function TaskPreviewContent({ taskId, onOpen, frame = "bare" }: TaskPrevi
       ...(task.status ? [{ property: "Status", value: task.status }] : []),
       ...(task.priority ? [{ property: "Priority", value: task.priority }] : []),
       ...(dueDate ? [{ property: "Due", value: dueDate }] : []),
-      ...(lines.length > 0 ? [{ section: "Description", items: lines }] : []),
+      ...(truncated.trim() ? [{ section: "Description", text: truncated, breaks: true }] : []),
     ],
     // The old Copy button copied the task's id.
     copyData: taskId,
@@ -62,7 +61,6 @@ interface TaskHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  className?: string;
 }
 
 export function TaskHoverPreview({ taskId, children, side = "top", align = "start", onOpen }: TaskHoverPreviewProps) {

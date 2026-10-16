@@ -9,7 +9,6 @@
 
 import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
 import { Globe } from "lucide-react";
-import { peekLines } from "./peek-lines";
 
 function parseDomain(url: string): string | null {
   try {
@@ -33,7 +32,6 @@ export function WebpagePreviewContent({ url, title, snippet, frame = "bare" }: W
   const domain = parseDomain(url);
   const trimmedTitle = title?.trim();
   const trimmedSnippet = snippet?.trim() ? (snippet.length > 400 ? snippet.slice(0, 400).trimEnd() + "…" : snippet) : "";
-  const lines = peekLines(trimmedSnippet);
 
   return (
     <Peek
@@ -47,7 +45,7 @@ export function WebpagePreviewContent({ url, title, snippet, frame = "bare" }: W
         glyph: Globe,
         body: [
           { property: "URL", value: url },
-          ...(lines.length > 0 ? [{ section: "Preview", items: lines }] : []),
+          ...(trimmedSnippet ? [{ section: "Preview", text: trimmedSnippet, breaks: true }] : []),
         ],
         // The old Copy URL button copied the address; Open went through the outbound door.
         copyData: url,
@@ -64,7 +62,6 @@ interface WebpageHoverPreviewProps {
   children: React.ReactElement;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  className?: string;
 }
 
 export function WebpageHoverPreview({ url, title, snippet, children, side = "top", align = "start" }: WebpageHoverPreviewProps) {

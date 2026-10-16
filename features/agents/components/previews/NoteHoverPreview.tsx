@@ -11,7 +11,7 @@ import { StickyNote } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectNoteById } from "@/features/notes/redux/selectors";
 import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
-import { formatDateTime, peekLines } from "./peek-lines";
+import { formatDateTime } from "./peek-lines";
 
 const CONTENT_PREVIEW_CHARS = 600;
 
@@ -33,7 +33,6 @@ export function NotePreviewContent({ noteId, onOpen, frame = "bare" }: NotePrevi
   const content = note.content ?? "";
   const truncated =
     content.length > CONTENT_PREVIEW_CHARS ? content.slice(0, CONTENT_PREVIEW_CHARS).trimEnd() + "…" : content;
-  const lines = peekLines(truncated);
 
   const record: PeekRecord = {
     kind: "Note",
@@ -42,8 +41,8 @@ export function NotePreviewContent({ noteId, onOpen, frame = "bare" }: NotePrevi
     glyph: StickyNote,
     body: [
       ...(homeLabel ? [{ property: "Home", value: homeLabel }] : []),
-      lines.length > 0
-        ? { section: "Note", items: lines }
+      truncated.trim()
+        ? { section: "Note", text: truncated, breaks: true }
         : { fact: "Empty note", muted: true },
       { fact: `Updated ${formatDateTime(note.updated_at)}`, muted: true },
     ],
@@ -60,7 +59,6 @@ interface NoteHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  className?: string;
 }
 
 export function NoteHoverPreview({ noteId, children, side = "top", align = "start", onOpen }: NoteHoverPreviewProps) {

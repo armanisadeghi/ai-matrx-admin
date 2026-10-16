@@ -16,7 +16,7 @@ import {
 } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { selectInstance } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import { CircleDot, Settings, User, Wrench } from "lucide-react";
-import { formatDateTime, peekLines } from "./peek-lines";
+import { formatDateTime } from "./peek-lines";
 
 const MESSAGE_PREVIEW_CHARS = 600;
 
@@ -56,7 +56,6 @@ export function MessagePreviewContent({ conversationId, messageId, onOpen, frame
 
   const role = ROLE_STYLE[message.role as string] ?? ROLE_STYLE["assistant"]!;
   const truncated = text.length > MESSAGE_PREVIEW_CHARS ? text.slice(0, MESSAGE_PREVIEW_CHARS).trimEnd() + "…" : text;
-  const lines = peekLines(truncated);
   const conversationTitle = conversation?.title?.trim();
   const openHref = conversation ? `/agents/go/${conversation.agentId}/run?conversationId=${conversationId}` : null;
 
@@ -68,8 +67,8 @@ export function MessagePreviewContent({ conversationId, messageId, onOpen, frame
     ...(conversationTitle ? { subtitle: `in ${conversationTitle}` } : {}),
     body: [
       ...(toolCalls > 0 ? [{ fact: `${toolCalls} tool${toolCalls === 1 ? "" : "s"}`, glyph: Wrench }] : []),
-      lines.length > 0
-        ? { section: "Message", items: lines }
+      truncated.trim()
+        ? { section: "Message", text: truncated, breaks: true }
         : // read-gate-exempt: describes one message record already loaded in the store (non-text message), not a read's empty answer
           { fact: "No text content", muted: true },
       { fact: formatDateTime(message.createdAt), muted: true },
@@ -88,7 +87,6 @@ interface MessageHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  className?: string;
 }
 
 /**
