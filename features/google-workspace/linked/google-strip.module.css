@@ -3,9 +3,25 @@
  * wears Google's own Material 3 values (Google Workspace web, 2025–26), not our theme tokens:
  * surface #f8fafd, on-surface #1f1f1f, on-surface-variant #444746, outline #747775, divider
  * #e1e3e1, primary #0b57d0, secondary container #c2e7ff — and Google's dark equivalents. Product
- * marks render raw on this surface (never on a tinted disc). Type is Roboto (Apache 2.0, loaded by
- * next/font in GoogleHomeStrip) — Google Sans is not licensed for use outside Google.
+ * marks render raw on this surface (never on a tinted disc). Type is Roboto (OFL 1.1, self-hosted
+ * in public/fonts/roboto) — Google Sans is not licensed for use outside Google.
  */
+
+@font-face {
+  font-family: "Roboto Strip";
+  src: url("/fonts/roboto/roboto-latin-400-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Strip";
+  src: url("/fonts/roboto/roboto-latin-500-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
 
 .strip {
   --g-surface: #f8fafd;
@@ -27,6 +43,7 @@
   border: 1px solid var(--g-divider);
   background: var(--g-surface);
   color: var(--g-on-surface);
+  font-family: "Roboto Strip", Roboto, Arial, sans-serif;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.1px;

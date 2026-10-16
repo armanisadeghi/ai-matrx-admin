@@ -15,6 +15,7 @@
  */
 
 import { useState } from "react";
+import { RunValueGate } from "../RunValueGate";
 import { AlertTriangle, ChevronDown, Loader2 } from "lucide-react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -146,14 +147,18 @@ function DeliverableCard({
       </button>
       {!collapsed && ready.outputKind ? (
         <div className="border-t border-border p-3">
-          <KindInstanceRender
-            kind={ready.outputKind}
-            value={ready.output}
-            showRoutingNote={false}
-            // The card already draws the border + padding — a second frame
-            // here is the box-in-a-box (THE WRAPPER LAW).
-            variant="bare"
-          />
+          <RunValueGate runId={runId} value={ready.output}>
+            {(output) => (
+              <KindInstanceRender
+                kind={ready.outputKind ?? ""}
+                value={output}
+                showRoutingNote={false}
+                // The card already draws the border + padding — a second frame
+                // here is the box-in-a-box (THE WRAPPER LAW).
+                variant="bare"
+              />
+            )}
+          </RunValueGate>
         </div>
       ) : null}
     </section>

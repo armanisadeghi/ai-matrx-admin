@@ -17,6 +17,10 @@
  */
 
 import { useState } from "react";
+import type React from "react";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { useRunValue } from "../hooks/useRunValue";
+import { RunValueGate } from "./RunValueGate";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -280,11 +284,38 @@ export function InvocationBody(props: Parameters<typeof InvocationBodyContent>[0
     workflowLiveAudio,
     workflowLiveAudioKey(props.runId, props.invocation.invocationKey),
   );
-  if (!livePlayer) return <InvocationBodyContent {...props} />;
+  // MKT-167: a large output (or a large part of one) arrives BY REFERENCE; it is
+  // loaded here, when the step's body is on screen, never with the event log.
+  const output = useRunValue(props.runId, props.invocation.output);
+  const wrapper = useRunValue(props.runId, props.invocation.wrapper);
+  let body: React.ReactNode;
+  if (output.error || wrapper.error) {
+    body = <StoredValueError message={output.error ?? wrapper.error ?? ""} />;
+  } else if (output.pending || wrapper.pending) {
+    body = <RegionSkeleton shape="rows" count={3} />;
+  } else {
+    const invocation =
+      output.value === props.invocation.output && wrapper.value === props.invocation.wrapper
+        ? props.invocation
+        : { ...props.invocation, output: output.value, wrapper: wrapper.value };
+    body = <InvocationBodyContent {...props} invocation={invocation} />;
+  }
+  if (!livePlayer) return body;
   return (
     <div className="space-y-3">
       <LiveAudioPlayer player={livePlayer} />
-      <InvocationBodyContent {...props} />
+      {body}
+    </div>
+  );
+}
+
+function StoredValueError({ message }: { message: string }) {
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-destructive">
+      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+      <span className="truncate" title={message}>
+        This step&apos;s saved output could not be loaded
+      </span>
     </div>
   );
 }
@@ -677,12 +708,16 @@ export function RunResultCard({ runId }: { runId: string }) {
       <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Run result
       </h2>
-      <KindInstanceRender
-        kind={RUN_RESULT_KIND}
-        value={result}
-        showRoutingNote={false}
-        variant="bare"
-      />
+      <RunValueGate runId={runId} value={result}>
+        {(resolved) => (
+          <KindInstanceRender
+            kind={RUN_RESULT_KIND}
+            value={resolved}
+            showRoutingNote={false}
+            variant="bare"
+          />
+        )}
+      </RunValueGate>
     </section>
   );
 }
