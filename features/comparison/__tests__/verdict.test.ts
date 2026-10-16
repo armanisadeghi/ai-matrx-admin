@@ -24,7 +24,7 @@ describe("the verdict reads the result in plain words", () => {
   it("each field says who leads and by how much", () => {
     expect(whyLine(result.fields[0], result)).toBe("Beta leads · 0.5 ahead of Alpha");
     expect(whyLine(result.fields[1], result)).toBe("Alpha leads · 300 ahead of Beta");
-    expect(whyLine(result.fields[2], result)).toBe("Beta leads · 20 pts ahead of Alpha");
+    expect(whyLine(result.fields[2], result)).toBe("Beta leads · 90% to 70% for Alpha");
     expect(whyLine(result.fields[3], result)).toBe("Shown, not ranked");
   });
 

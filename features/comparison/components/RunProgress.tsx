@@ -71,7 +71,7 @@ export function RunProgress({ kind, kindLabel, items, identities, startedAt, rec
       <ul className="space-y-4">
         {Array.from({ length: count }, (_, i) => {
           const p = items[i];
-          const id = identities[i];
+          const id = identities[i] ?? (p ? { name: p.label, logoUrl: p.logoUrl, website: p.website } : undefined);
           const raw = id?.name || p?.label || `Item ${i + 1}`;
           const name = isLink(raw) ? nameFromLink(raw) : raw;
           const stage = p?.stage ?? "queued";

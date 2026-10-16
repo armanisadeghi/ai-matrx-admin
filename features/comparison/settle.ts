@@ -23,6 +23,8 @@ export interface RunWatch {
   onProgress?: (p: ComparisonProgress) => void;
   /** Every read of the run row (progress after a drop, per-item stages). */
   onRunState?: (s: ComparisonRunState) => void;
+  /** The live stream was cut after the run id arrived; the saved run carries on from here. */
+  onDropped?: () => void;
 }
 
 export interface SettleOptions extends RunWatch {
@@ -104,6 +106,7 @@ export async function settleComparison(opts: SettleOptions): Promise<ComparisonR
       if (err instanceof ComparisonRefusal) throw err;
       if (stop.signal.aborted || finished) return null;
       if (!runId) throw err;
+      opts.onDropped?.();
       return null; // dropped: the run answers
     }
     if (refusal) throw refusal;

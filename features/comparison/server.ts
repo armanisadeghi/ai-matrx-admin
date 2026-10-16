@@ -136,6 +136,7 @@ export async function runComparison(
     onRunId: opts.onRunId,
     onProgress: opts.onProgress,
     onRunState: opts.onRunState,
+    onDropped: opts.onDropped,
     signal: opts.signal,
     stopStream: () => reader.abort(),
     readRun: (runId, signal) => getRun(runId, { organizationId: opts.organizationId, signal }),

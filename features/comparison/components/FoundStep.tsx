@@ -86,7 +86,7 @@ export function FoundStep({
                   {m && (m.rating !== null || m.reviews_count !== null) ? (
                     <div className="type-meta mt-1 flex items-center gap-1 text-muted-foreground">
                       {m.rating !== null ? <><Star className="h-3 w-3 fill-current text-warning" aria-hidden /><span className="tabular-nums text-foreground">{m.rating.toFixed(1)}</span></> : null}
-                      {m.reviews_count !== null ? <span className="tabular-nums">· {m.reviews_count.toLocaleString()} reviews</span> : null}
+                      {m.reviews_count !== null ? <span className="tabular-nums">{m.rating !== null ? "· " : ""}{m.reviews_count.toLocaleString()} reviews</span> : null}
                     </div>
                   ) : null}
                 </div>

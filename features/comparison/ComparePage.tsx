@@ -27,6 +27,7 @@ import { followRun, lookupItems, runComparison } from "./server";
 import {
   applyProgress,
   ComparisonRefusal,
+  mergeRunProgress,
   type ComparedItem,
   type ComparisonItemInput,
   type ComparisonKindInfo,
@@ -48,7 +49,7 @@ export function ComparePage() {
       <RecordPageHeader backHref="/data" record={{ name: "Compare" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto bg-textured" data-matrx-page-scroll="">
-          <div className="mx-auto w-full max-w-5xl px-[var(--matrx-page-gutter,1rem)] py-8 sm:py-12">
+          <div className="mx-auto w-full max-w-5xl px-[var(--matrx-page-gutter,1rem)] pt-8 sm:pt-12">
             {!organizationId || kinds.isLoading ? (
               <RegionSkeleton shape="cards" count={4} aria-label="Loading" />
             ) : kinds.error || !kinds.data ? (
@@ -99,6 +100,9 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const [lookupError, setLookupError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
 
+  // Leaving the page stops this tab's reading (the run itself carries on on the server).
+  useEffect(() => () => abort.current?.abort(), []);
+
   const kind = kinds.find((k) => k.key === kindKey) ?? null;
   const runKindInfo = kinds.find((k) => k.key === runKind) ?? kind;
 
@@ -112,8 +116,8 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       signal: ctrl.signal,
       onRunState: (s) => {
         setRunKind(s.kind);
-        setProgress(s.items);
-        setIdentities((prev) => (prev.length ? prev : s.items.map((i) => ({ name: i.label }))));
+        setProgress((cur) => mergeRunProgress(cur, s.items));
+        setIdentities(s.items.map((i) => ({ name: i.label, logoUrl: i.logoUrl, website: i.website })));
         if (s.created_at) setStartedAt(new Date(s.created_at).getTime());
       },
     }).then((r) => { setResult(r); setPhase("result"); })
@@ -181,7 +185,8 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
         signal: ctrl.signal,
         onRunId: (runId) => setRunInAddress(runId),
         onProgress: (p) => setProgress((cur) => applyProgress(cur, p)),
-        onRunState: (s) => { setRecovering(true); setProgress(s.items); },
+        onRunState: (s) => setProgress((cur) => mergeRunProgress(cur, s.items)),
+        onDropped: () => setRecovering(true),
       });
       setResult(out);
       setPhase("result");
