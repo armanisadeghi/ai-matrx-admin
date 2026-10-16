@@ -10,7 +10,7 @@
  * Mirrors features/organizations/service.ts
  */
 
-import { isRecordsErr } from "@ai-matrx/records";
+import { isRecordsErr } from "@ai-matrx/records/results";
 import { supabase } from "@/utils/supabase/client";
 import type { Database, TablesUpdate } from "@/types/database.types";
 import { projectsDb } from "@/utils/supabase/projectsDb";

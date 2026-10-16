@@ -34,7 +34,7 @@ import {
   type KindComponentRow,
 } from "@ai-matrx/content-ir/react";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
-import { isTableKind } from "@ai-matrx/records";
+import { isTableKind } from "@ai-matrx/records/table-kind";
 import {
   INVALIDATION_KEYS,
   registerInvalidationCallback,

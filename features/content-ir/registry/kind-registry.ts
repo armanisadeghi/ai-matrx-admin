@@ -40,7 +40,7 @@ import { SYSTEM_KIND_DEFINITIONS } from "./system-kinds";
 import { expandKindAliases } from "./kind-aliases";
 import { getSurfaceForJsonRootKey } from "./surface-registry";
 import type { KindDefinition } from "@ai-matrx/content-ir";
-import { isTableKind, type TableKindFacts } from "@ai-matrx/records";
+import { isTableKind, type TableKindFacts } from "@ai-matrx/records/table-kind";
 
 /**
  * How long a table kind's facts are fresh before a sighting re-reads them (design §1.4, A3).

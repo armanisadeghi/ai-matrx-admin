@@ -25,7 +25,7 @@ import {
   invitationsService,
   type Invitation,
 } from "@/features/organizations/service/invitationsService";
-import { isRecordsErr } from "@ai-matrx/records";
+import { isRecordsErr } from "@ai-matrx/records/results";
 import type { Database } from "@/types/database.types";
 import { isJsonObject } from "@/types/json";
 import {

@@ -17,7 +17,7 @@
 
 "use client";
 
-import { mapThrownError } from "@ai-matrx/records/core";
+import { mapThrownError } from "@ai-matrx/records/results";
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { err, ok } from "@/features/scopes/service/rpcResult";

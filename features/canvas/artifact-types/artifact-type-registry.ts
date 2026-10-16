@@ -13,7 +13,7 @@
  * (the optional fields below) without restructuring callers.
  */
 
-import { isTableKind } from "@ai-matrx/records";
+import { isTableKind } from "@ai-matrx/records/table-kind";
 import type { CanvasContentType } from "@/features/canvas/canvasContent";
 
 export type ArtifactPersistenceStrategy = "custom" | "generic" | "none";

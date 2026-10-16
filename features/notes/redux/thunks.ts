@@ -15,7 +15,7 @@
  *   saveNoteField            — quick single-field save + optimistic update
  */
 
-import { isRecordsErr } from "@ai-matrx/records";
+import { isRecordsErr } from "@ai-matrx/records/results";
 import { writeOneRow } from "@/utils/supabase/writeOne";
 import { noteEditBaseFromRecord } from "../utils/saveVerification";
 import { readAllRows } from "@ai-matrx/data/db";

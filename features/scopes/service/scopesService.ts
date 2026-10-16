@@ -30,7 +30,7 @@
 
 "use client";
 
-import { mapThrownError } from "@ai-matrx/records/core";
+import { mapThrownError } from "@ai-matrx/records/results";
 import { getOrganization } from "@/features/organizations/service";
 import { adoptProjectOrganization, listProjectSummariesInOrganizations } from "@/features/projects/service";
 import { adoptTaskOrganization, listProjectTaskIds, listTaskSummaries } from "@/features/tasks/services/taskService";

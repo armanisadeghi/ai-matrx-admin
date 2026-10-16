@@ -10,7 +10,7 @@
 import { createAsyncThunk, createSelector, weakMapMemoize } from "@reduxjs/toolkit";
 import { joinFieldValues, type ContextValueWrite, type ScopeFieldValue } from "@ai-matrx/records/scopes";
 import { scopeDoors } from "@/features/scopes/service/scopeDoors";
-import { unwrapRecords } from "@ai-matrx/records";
+import { unwrapRecords } from "@ai-matrx/records/results";
 import { ensureScopeTypeItems } from "@/features/scopes/redux/thunks/ensureScopeTypeItems";
 import { ensureContextValues } from "@/features/scopes/redux/thunks/ensureContextValues";
 import { setContextValue } from "@/features/scopes/redux/thunks/setContextValue";

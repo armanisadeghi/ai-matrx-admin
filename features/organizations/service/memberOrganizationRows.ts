@@ -14,7 +14,7 @@ import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { membershipsService } from "@/features/organizations/service/membershipsService";
 import { readInChunks } from "@/features/scopes/service/inChunks";
-import { isRecordsErr } from "@ai-matrx/records";
+import { isRecordsErr } from "@ai-matrx/records/results";
 import type { Database } from "@/types/database.types";
 import { SEED_MAX_AGE_MS } from "@/lib/sharedReads";
 import { drainBootSeeds, dropUnreadBootSeeds } from "@/lib/boot/bootSeedSlot";
