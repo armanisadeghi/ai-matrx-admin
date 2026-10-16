@@ -71,7 +71,7 @@ async function setLogo(ctx: PersistContext, snapshot: BrandSnapshot, change: Enr
     source: "discovered",
   });
   const before = brand.logo_url;
-  if (primary) ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { logo_url: url } }));
+  if (primary) ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, base: brand, patch: { logo_url: url } }));
   return {
     homes: [`web.brand_asset:${asset.id}`, ...(primary ? [`web.brand.logo_url:${brand.id}`] : [])],
     retraction: null,
@@ -80,7 +80,7 @@ async function setLogo(ctx: PersistContext, snapshot: BrandSnapshot, change: Enr
       for (const a of demoted) await updateBrandAsset({ assetId: a.id, expectedVersion: a.version + 1, patch: { is_primary: true } });
       if (primary) {
         const latest = ctx.getBrand();
-        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { logo_url: before } }));
+        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, base: latest, patch: { logo_url: before } }));
       }
     },
   };
@@ -89,10 +89,10 @@ async function setLogo(ctx: PersistContext, snapshot: BrandSnapshot, change: Enr
 async function setBrandColumn(ctx: PersistContext, column: "description" | "industry" | "website_url", value: string) {
   const brand = ctx.getBrand();
   const before = brand[column];
-  ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { [column]: value } }));
+  ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, base: brand, patch: { [column]: value } }));
   return async () => {
     const latest = ctx.getBrand();
-    ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { [column]: before } }));
+    ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, base: latest, patch: { [column]: before } }));
   };
 }
 

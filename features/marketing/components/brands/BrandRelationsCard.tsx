@@ -22,7 +22,7 @@ import type { Json } from "@/types/database.types";
 import { Favicon } from "@/features/research/components/overview/live-pipeline/ui/Favicon";
 import { outboundHref } from "@/features/marketing/smart-add/SmartAddExtras";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
-import { listBrandRelationKinds, updateBrand, type BrandRelationKind } from "@/features/marketing/data/service";
+import { listBrandRelationKinds, mergeBrandProfile, type BrandRelationKind } from "@/features/marketing/data/service";
 import {
   addBrandExclusion,
   addBrandRelation,
@@ -36,7 +36,7 @@ import {
   type BrandRelationRow,
 } from "@/features/marketing/data/brand-relations";
 import { clearStashedRetraction, restoreRetraction, type RetractionSummary } from "@/features/marketing/data/retraction";
-import { isJsonRecord, type MarketingBrand } from "@/features/marketing/types";
+import type { MarketingBrand } from "@/features/marketing/types";
 import { linkPersonToBrand } from "@/features/marketing/smart-add/relations";
 
 type GroupKey = "names" | "people" | "related" | "competitors" | "about" | "not_us";
@@ -214,9 +214,9 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
     ]);
   };
 
+  // Edited against the profile the server holds now, never this card's copy (a background write is not a conflict, MKT-151).
   const patchProfile = async (edit: (profile: Record<string, Json>) => Record<string, Json>) => {
-    const current = (isJsonRecord(brand.profile) ? { ...brand.profile } : {}) as Record<string, Json>;
-    await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { profile: edit(current) as Json } });
+    await mergeBrandProfile(brand.id, edit);
     await refresh();
   };
 
