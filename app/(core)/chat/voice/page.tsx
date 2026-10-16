@@ -5,8 +5,10 @@ import { Suspense } from "react";
 // business users land on; the experience itself is the proof of what AI Matrx
 // can do.
 //
-// Server Component shell — resolves the `voice.intro` mandate before first
-// paint, then hands off to the client for the realtime voice experience.
+// Server Component shell — paints the `voice.intro` mandate's system Holder from
+// the GENERATED seed (`MANDATE_DISPLAY_SEEDS`, release-checked against the live
+// binding; Arman, 2026-10-16: zero lookups before first paint), then hands off
+// to the client for the realtime voice experience.
 //
 // 🚨 The agent is a normal `agent.definition` row and the MANDATE decides which
 // row. Nothing about this agent — its identity, its instructions, its voice —
@@ -16,16 +18,13 @@ import { Suspense } from "react";
 
 import { AlertTriangle } from "lucide-react";
 import { VoiceAgentSurface } from "@ai-matrx/chat/voice-agent/components/VoiceAgentSurface";
-import { resolveMandateSeed } from "@/features/mandates/seed.server";
-import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { MANDATE_KEYS, mandateDisplaySeed } from "@ai-matrx/agents/mandates";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
-async function VoiceIntroSeeded() {
-  // BOUNDED: `resolveMandateSeed` screams, never throws, and gives up at its
-  // deadline — an unbounded await here is what answered /staff with a 504 on
-  // 2026-09-21 (see seed.server.ts).
-  const seed = await resolveMandateSeed(MANDATE_KEYS.voice__intro);
-  if (!seed.agentId) {
+const SEED = mandateDisplaySeed(MANDATE_KEYS.voice__intro);
+
+function VoiceIntroSeeded() {
+  if (!SEED) {
     return (
       <div className="flex h-full items-center justify-center p-6">
         <div className="flex max-w-md items-start gap-3 rounded-lg border border-border bg-card p-4">
@@ -39,21 +38,19 @@ async function VoiceIntroSeeded() {
               session. Please try again shortly.
               <ErrorAlchemyMenu />
             </p>
-            <p className="text-xs text-muted-foreground">{seed.unavailable}</p>
+            <p className="text-xs text-muted-foreground">
+              No generated seed for &quot;{MANDATE_KEYS.voice__intro}&quot;.
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  return <VoiceAgentSurface preset="intro" agentId={seed.agentId} />;
+  return <VoiceAgentSurface preset="intro" agentId={SEED.agentId} />;
 }
 
-/**
- * 🚨 THE PAGE STREAMS: the seed reads above resolve inside a Suspense child, so
- * the shell goes out with the first byte instead of waiting for them
- * (same fix as /chat/new, 2026-10-09).
- */
+/** 🚨 THE PAGE STREAMS: nothing is read before first paint (same as /chat/new). */
 export default function VoiceIntroPage() {
   return (
     <Suspense fallback={null}>
