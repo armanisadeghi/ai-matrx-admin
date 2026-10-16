@@ -7,7 +7,9 @@
 // a test run on the cloud test machine → offered. Ambiguities stop with their code shown in words.
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, ScanSearch } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
+import { DiscoveryResultView, ModelDiscovery } from "@ai-matrx/agents/models/react";
+import type { LocalVariant } from "@ai-matrx/agents/models";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,8 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
-import { formatFileSize } from "@ai-matrx/kit/format";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAccessToken } from "@/lib/redux/slices/userSlice";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
@@ -31,13 +31,11 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { extractErrorMessage } from "@/utils/errors";
-import { cn } from "@/lib/utils";
 import {
   type Candidate,
   type CallAuth,
   type CompatRow,
   type PromotedVariant,
-  type SuggestedVariant,
   type VerificationRun,
   discoveryApi,
   listCandidates,
@@ -48,6 +46,7 @@ import {
   testedLabel,
 } from "./api";
 import { ImagePicker, PlacementFields, TagsField } from "./parts";
+import { createAdminDiscoveryPort, resultOfCandidate } from "./discovery-port";
 import { detailKey, listNotice, placementWords, samePlacement } from "./placement";
 import {
   compatLabel,
@@ -60,22 +59,7 @@ import {
 const TEST_POLL_SECONDS_KNOB = { feature: "ai.models", key: "test_poll_seconds" } as const;
 const TEST_POLL_COUNT_KNOB = { feature: "ai.models", key: "test_poll_count" } as const;
 
-const USE_LABEL: Record<string, string> = {
-  core: "Always",
-  vision: "Images",
-  audio_in: "Audio",
-  voices: "Voices",
-};
-
 const localTime = (iso: string) => new Date(iso).toLocaleString();
-
-function short(sha: string | null): string {
-  return sha ? `${sha.slice(0, 12)}…` : "none";
-}
-
-function bytes(n: number | null | undefined): string {
-  return n ? formatFileSize(n) : "—";
-}
 
 function useAuth(): CallAuth {
   return {
@@ -138,9 +122,6 @@ export default function DiscoveryContainer() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // The row the server just answered for Check: shown at once even before the list re-read has it.
   const [justChecked, setJustChecked] = useState<Candidate | null>(null);
-  const [link, setLink] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -166,22 +147,23 @@ export default function DiscoveryContainer() {
     };
   }, []);
 
-  const resolve = async () => {
-    if (!link.trim()) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const row = await discoveryApi.resolve(auth, link.trim());
-      setJustChecked(row);
-      setSelectedId(row.id);
-      await refresh();
-      setLink("");
-    } catch (err) {
-      setError(extractErrorMessage(err));
-    } finally {
-      setBusy(false);
-    }
-  };
+  // THE shared discovery view finds the model (search or link); the candidate the server wrote opens below.
+  const { baseUrl, accessToken, organizationId } = auth;
+  const port = useMemo(
+    () =>
+      createAdminDiscoveryPort(
+        { baseUrl, accessToken, organizationId },
+        {
+          onCandidate: (row) => {
+            setJustChecked(row);
+            setSelectedId(row.id);
+            void refresh();
+          },
+          onPromoted: () => void refresh(),
+        },
+      ),
+    [baseUrl, accessToken, organizationId, refresh],
+  );
 
   const selected =
     (candidates ?? []).find((c) => c.id === selectedId) ?? (justChecked?.id === selectedId ? justChecked : null);
@@ -189,23 +171,9 @@ export default function DiscoveryContainer() {
   const listWords = listNotice(candidates, loadError);
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <ScanSearch className="h-4 w-4 text-muted-foreground" />
-        <Input
-          aria-label="Hugging Face link"
-          placeholder="Paste a Hugging Face model link"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void resolve();
-          }}
-          className="max-w-xl"
-        />
-        <Button onClick={() => void resolve()} disabled={busy || !link.trim()}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {busy ? "Reading files…" : "Check"}
-        </Button>
-        {error ? <ErrorNotice message={error} size="inline" /> : null}
+      <div className="border-b border-border px-4 py-3">
+        {/* The result opens as the selected candidate below (with the admin panels), so the view shows none itself. */}
+        <ModelDiscovery port={port} result={null} initialTab="link" />
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-[18rem_1fr]">
         <div className="min-h-0 overflow-y-auto border-r border-border">
@@ -328,6 +296,27 @@ function CandidateDetail({
     }
   };
 
+  /** Choose on one version: promote just that version (the form's look and placement as set), and say so. */
+  const promoteOne = async (v: LocalVariant): Promise<string> => {
+    const result = await discoveryApi.promote(auth, candidate.id, {
+      variant_keys: [v.key],
+      default_variant_key: v.key,
+      provider_id: makerId || null,
+      summary,
+      tags: tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+      hero_file_id: hero,
+      thumbnail_file_id: hero,
+      gallery_file_ids: [...gallery].filter((id) => id !== hero),
+      offer: false,
+      ...(placement && choices.automatic && !samePlacement(placement, choices.automatic) ? placement : {}),
+    });
+    await onChanged();
+    return `Promoted ${result.model_name}: ${result.variants.map((x) => `${x.key} ${x.review_state}, files ${x.file_check}`).join("; ")}`;
+  };
+
   return (
     <div className="space-y-5 p-5">
       <header className="flex items-start gap-3">
@@ -378,28 +367,44 @@ function CandidateDetail({
       {candidate.model_id ? <PromotedPanel modelId={candidate.model_id} auth={auth} caps={s.capabilities ?? null} /> : null}
 
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Variants</h3>
-        {variants.length === 0 ? <p className="text-sm text-muted-foreground">None found</p> : null}
-        {variants.map((v) => (
-          <VariantCard
-            key={v.key}
-            v={v}
-            checked={chosen.has(v.key)}
-            isDefault={defaultKey === v.key}
-            onCheck={(on) =>
-              setChosen((prev) => {
-                const next = new Set(prev);
-                if (on) next.add(v.key);
-                else next.delete(v.key);
-                return next;
-              })
-            }
-            onDefault={() => setDefaultKey(v.key)}
-          />
-        ))}
+        <h3 className="text-sm font-semibold text-foreground">Versions</h3>
+        <DiscoveryResultView
+          result={resultOfCandidate(candidate)}
+          device={null}
+          runtimes={[]}
+          chooseLabel="Promote this version"
+          onChoose={(_model, v) => promoteOne(v)}
+          renderVariantActions={(v) => {
+            const sv = variants.find((x) => x.key === v.key);
+            const blocked = sv?.ambiguous ?? false;
+            return (
+              <>
+                <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Checkbox
+                    checked={chosen.has(v.key)}
+                    disabled={blocked}
+                    aria-label={`Include ${v.key}`}
+                    onCheckedChange={(on) =>
+                      setChosen((prev) => {
+                        const next = new Set(prev);
+                        if (on) next.add(v.key);
+                        else next.delete(v.key);
+                        return next;
+                      })
+                    }
+                  />
+                  Include
+                </label>
+                <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <input type="radio" checked={defaultKey === v.key} onChange={() => setDefaultKey(v.key)} disabled={blocked} /> Default
+                </label>
+              </>
+            );
+          }}
+        />
         {(s.ignored_files ?? []).length ? (
           <p className="text-xs text-muted-foreground">
-            Not part of any variant: {s.ignored_files.join(", ")}
+            Not part of any version: {s.ignored_files.join(", ")}
           </p>
         ) : null}
       </section>
@@ -523,73 +528,6 @@ function CandidateDetail({
           )
         ) : null}
       </footer>
-    </div>
-  );
-}
-
-function VariantCard({
-  v,
-  checked,
-  isDefault,
-  onCheck,
-  onDefault,
-}: {
-  v: SuggestedVariant;
-  checked: boolean;
-  isDefault: boolean;
-  onCheck: (on: boolean) => void;
-  onDefault: () => void;
-}) {
-  return (
-    <div className={cn("rounded-md border p-3", v.ambiguous ? "border-destructive" : "border-border")}>
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <label className="flex items-center gap-2 font-medium text-foreground">
-          <Checkbox checked={checked} disabled={v.ambiguous} onCheckedChange={(on) => onCheck(Boolean(on))} />
-          {v.key}
-        </label>
-        <label className="flex items-center gap-1 text-xs text-muted-foreground">
-          <input type="radio" checked={isDefault} onChange={onDefault} disabled={v.ambiguous} /> Default
-        </label>
-        <Badge variant="outline">{v.format}</Badge>
-        <Badge variant="outline">{v.quant || "quant ?"}</Badge>
-        <Badge variant="outline">{v.architecture || "architecture ?"}</Badge>
-        <Badge variant="outline" title={v.chat_template_kind || "no chat template"}>
-          {v.chat_template_kind ? `template ${v.chat_template_kind.slice(4, 12)}` : "no template"}
-        </Badge>
-        <span className="text-xs text-muted-foreground">
-          {bytes(v.total_bytes)} · needs about {bytes(v.memory_bytes_min)}–{bytes(v.memory_bytes_recommended)} memory
-          (estimate)
-        </span>
-      </div>
-      <table className="mt-2 w-full text-xs">
-        <thead className="text-left text-muted-foreground">
-          <tr>
-            <th className="py-1 pr-2 font-normal">File</th>
-            <th className="pr-2 font-normal">Role</th>
-            <th className="pr-2 font-normal">Needed</th>
-            <th className="pr-2 font-normal">Size</th>
-            <th className="font-normal">SHA-256</th>
-          </tr>
-        </thead>
-        <tbody>
-          {v.artifacts.map((a) => (
-            <tr key={a.path_in_repo} className="border-t border-border">
-              <td className="py-1 pr-2 font-mono text-foreground">{a.path_in_repo}</td>
-              <td className="pr-2">
-                {a.role}
-                {a.shard_index ? ` ${a.shard_index}/${a.shard_count}` : ""}
-              </td>
-              <td className="pr-2">
-                {a.required_for.length ? a.required_for.map((u) => USE_LABEL[u] ?? u).join(", ") : "Optional"}
-              </td>
-              <td className="pr-2">{bytes(a.size_bytes)}</td>
-              <td className="font-mono" title={a.sha256 ?? ""}>
-                {short(a.sha256)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }
