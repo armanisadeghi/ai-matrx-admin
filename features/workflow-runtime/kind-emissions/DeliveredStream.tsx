@@ -27,6 +27,7 @@
  */
 
 import React from "react";
+import { RunValueGate } from "../components/RunValueGate";
 import { AlertTriangle, Clock } from "lucide-react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -268,17 +269,21 @@ function DeliverableSlotCard({
                 variant="bare"
               />
             ) : produced && produced.outputKind ? (
-              <>
-                <KindInstanceRender
-                  kind={produced.outputKind}
-                  value={produced.output}
-                  showRoutingNote={false}
-                  variant="bare"
-                />
-                <WorkflowDocumentActions
-                  content={workflowDocumentText(produced.output)}
-                />
-              </>
+              <RunValueGate runId={runId} value={produced.output}>
+                {(output) => (
+                  <>
+                    <KindInstanceRender
+                      kind={produced.outputKind ?? ""}
+                      value={output}
+                      showRoutingNote={false}
+                      variant="bare"
+                    />
+                    <WorkflowDocumentActions
+                      content={workflowDocumentText(output)}
+                    />
+                  </>
+                )}
+              </RunValueGate>
             ) : null}
           </KindSlot>
         )}

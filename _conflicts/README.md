@@ -31,7 +31,6 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-15-163653/pnpm-lock.yaml.held — LOCAL latest 2026-10-15 16:32; GITHUB latest 2026-10-15 16:33; LOCAL lacks 0 of GITHUB's 43 new lines; GITHUB lacks 6 of LOCAL's 49 new lines; recover: git show 26885fc441:'pnpm-lock.yaml' / dfbb8d27fb:'pnpm-lock.yaml' — owner: ff122907-6e5a-40ce-882e-004620e2946a, notified 2026-10-15 16:40 PDT
 
 ## Resolution log
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
@@ -42,3 +41,4 @@ Its files stay as they are.
 - 2026-10-15 11:02 PDT — npm published rich-content 0.2.171 during the final recheck. Ran canonical direct and transitive Matrx updates; retained all existing upgrades. Reviewed its source diff: optional rawWithThinking callback added, with no required existing-caller change. Duplicate and lock-key checks pass.
 - 2026-10-15 PDT — Claude agent resolved `_conflicts/2026-10-15-111530/scripts/campaign-tests/atauto3_green.sql.held` by keeping LOCAL (eb6468429e): a superset of GITHUB plus section 3 (button runs a script); its 2j any-order check replaces GITHUB's `order by created_at desc limit 1`, which is nondeterministic because both orders share one transaction's now().
 - 2026-10-15 PDT — Claude agent resolved `_conflicts/2026-10-15-124519/pnpm-lock.yaml.held` by keeping the live lockfile: LOCAL (2427110285) was only @ai-matrx version bumps plus the new `@ai-matrx/office` importer, all already in live; live is newer on the only four differences (coding-sessions 0.3.221, media 0.15.101, records 0.99.29, records-ui 0.115.95). Verified: `check-matrx-packages.mjs` 34 packages at npm latest exactly once, `check-lockfile-keys.py` exit 0, `pnpm install --frozen-lockfile --lockfile-only` exit 0.
+- 2026-10-15 16:5x PDT — Claude ship-all (ff122907) resolved `_conflicts/2026-10-15-163653/pnpm-lock.yaml.held` by keeping the live lockfile: it already carries LOCAL's only addition (@ai-matrx/chat 0.8.114, the release-blocker fix) and GITHUB's removal of the direct realtime/content-ir-react/rich-editor importers; released as v0.4.3282.
