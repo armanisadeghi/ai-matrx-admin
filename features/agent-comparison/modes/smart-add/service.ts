@@ -6,6 +6,7 @@
  */
 
 import { createClient } from "@/utils/supabase/client";
+import { readAllRows } from "@ai-matrx/data/db";
 import type { AppDispatch } from "@/lib/redux/store";
 import { runKindSearch, type RunSearchArgs } from "@/features/search/service";
 import { labelConversations } from "@/features/agents/decision-review/service";
@@ -111,16 +112,21 @@ export async function resolveJudges(): Promise<{ holder: string | null; jev: str
 
 /** The shared relation vocabulary (what today's holder answers in), as production reads it. */
 export async function loadRelationKinds(): Promise<RelationKind[]> {
-  const { data, error } = await createClient()
-    .schema("web")
-    .from("brand_relation_kind")
-    .select("key, label, stance, has_sentiment, description, sort, is_known, status")
-    .is("deleted_at", null)
-    .eq("status", "active")
-    .eq("is_known", true)
-    .order("sort", { ascending: true });
-  if (error) throw new Error(`Could not read the relation kinds: ${error.message}`);
-  return (data ?? []).map((k) => ({
+  const data = await readAllRows(
+    ({ from, to }) =>
+      createClient()
+        .schema("web")
+        .from("brand_relation_kind")
+        .select("key, label, stance, has_sentiment, description, sort, is_known, status", { count: "exact" })
+        .is("deleted_at", null)
+        .eq("status", "active")
+        .eq("is_known", true)
+        .order("sort", { ascending: true })
+        .order("key", { ascending: true })
+        .range(from, to),
+    { label: "web.brand_relation_kind (shared vocabulary)" },
+  );
+  return data.map((k) => ({
     key: k.key,
     label: k.label,
     stance: k.stance,
@@ -168,14 +174,19 @@ export async function loadJevAnswers(conversationIds: string[]): Promise<Map<str
   const kinds = new Map<string, string>();
   for (let i = 0; i < conversationIds.length; i += 80) {
     const chunk = conversationIds.slice(i, i + 80);
-    const { data, error } = await createClient()
-      .schema("platform")
-      .from("judge_verdict")
-      .select("question, verdict, metadata")
-      .eq("subject_kind", "decision_answer")
-      .in("metadata->>conversation_id", chunk);
-    if (error) throw new Error(`Could not read Jev's answers: ${error.message}`);
-    for (const row of data ?? []) {
+    const data = await readAllRows(
+      ({ from, to }) =>
+        createClient()
+          .schema("platform")
+          .from("judge_verdict")
+          .select("id, question, verdict, metadata", { count: "exact" })
+          .eq("subject_kind", "decision_answer")
+          .in("metadata->>conversation_id", chunk)
+          .order("id", { ascending: true })
+          .range(from, to),
+      { label: "platform.judge_verdict (Jev answers by run)" },
+    );
+    for (const row of data) {
       const md = (row.metadata ?? {}) as Record<string, unknown>;
       const conv = String(md.conversation_id ?? "");
       if (!conv) continue;

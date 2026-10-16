@@ -10,7 +10,15 @@ import { useRouter } from "next/navigation";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { ExternalLink, ListChecks, Search } from "lucide-react";
-import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
+import {
+  Badge,
+  Button,
+  EmptyState,
+  Field,
+  RegionSkeleton,
+  SegmentedControl,
+  Switch,
+} from "@ai-matrx/design-system/controls";
 import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { ProInput } from "@/components/official/ProInput";
@@ -22,7 +30,10 @@ import { useBackendApi } from "@/hooks/useBackendApi";
 import { toast } from "@/lib/toast";
 import { BattleHeader } from "@/features/agent-comparison/shared/BattleHeader";
 import { SearchReviewBody } from "@/features/search-review/SearchReviewBody";
-import type { ReviewAnswer, SearchReviewSession } from "@/features/search-review/types";
+import type {
+  ReviewAnswer,
+  SearchReviewSession,
+} from "@/features/search-review/types";
 import { loadComparisonSet } from "../../../service/comparisonSetsService";
 import { listMatrixEntries } from "../../matrix/service";
 import { entryToCell, metadataToSetup } from "../../matrix/model";
@@ -41,7 +52,14 @@ import {
   type SystemKey,
   type Truth,
 } from "../model";
-import { castNet, createAndRun, loadJevAnswers, resolveJudges, saveTruth, type NetProgress } from "../service";
+import {
+  castNet,
+  createAndRun,
+  loadJevAnswers,
+  resolveJudges,
+  saveTruth,
+  type NetProgress,
+} from "../service";
 
 const POLL_MS = 2000;
 const SYSTEMS: SystemKey[] = ["holder", "jev", "reference"];
@@ -78,23 +96,35 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
       .then(({ set, entries }) => {
         if (!alive) return;
         const saved = readBench(set.metadata as Record<string, unknown> | null);
-        if (!saved) throw new Error("This saved battle is not a Smart Add bench.");
+        if (!saved)
+          throw new Error("This saved battle is not a Smart Add bench.");
         // Who judged is the battle's own columns (a bench saved before it recorded them carries only those).
-        const columns = metadataToSetup(set.metadata as Record<string, unknown> | null).columns.variants;
+        const columns = metadataToSetup(
+          set.metadata as Record<string, unknown> | null,
+        ).columns.variants;
         const agentOf = (id: string) => columns.find((c) => c.id === id)?.patch;
         setBench({
           ...saved,
           agents: {
             holder: agentOf("holder")?.agent_id ?? saved.agents.holder,
             jev: agentOf("jev")?.agent_id ?? saved.agents.jev,
-            referenceModel: agentOf("reference")?.model_id ?? saved.agents.referenceModel,
+            referenceModel:
+              agentOf("reference")?.model_id ?? saved.agents.referenceModel,
           },
         });
         setQueriesText(saved.queries.join("\n"));
         const now = Date.now();
-        setCells(entries.map((e) => entryToCell(e, now)).filter((c): c is MatrixCell => c !== null));
+        setCells(
+          entries
+            .map((e) => entryToCell(e, now))
+            .filter((c): c is MatrixCell => c !== null),
+        );
       })
-      .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)))
+      .catch(
+        (err: unknown) =>
+          alive &&
+          setLoadError(err instanceof Error ? err.message : String(err)),
+      )
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
@@ -106,15 +136,28 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     if (setId) return;
     let alive = true;
     resolveJudges()
-      .then((j) => alive && setBench((b) => ({ ...b, agents: { ...b.agents, holder: j.holder, jev: j.jev } })))
-      .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)));
+      .then(
+        (j) =>
+          alive &&
+          setBench((b) => ({
+            ...b,
+            agents: { ...b.agents, holder: j.holder, jev: j.jev },
+          })),
+      )
+      .catch(
+        (err: unknown) =>
+          alive &&
+          setLoadError(err instanceof Error ? err.message : String(err)),
+      );
     return () => {
       alive = false;
     };
   }, [setId]);
 
   // Live while any cell is queued or running; stops after five quiet minutes.
-  const live = cells.some((c) => (c.status === "queued" || c.status === "running") && !c.stalled);
+  const live = cells.some(
+    (c) => (c.status === "queued" || c.status === "running") && !c.stalled,
+  );
   const signature = cells.map((c) => `${c.entryId}:${c.status}`).join("|");
   useEffect(() => {
     lastChange.current = Date.now();
@@ -126,25 +169,45 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
       listMatrixEntries(setId)
         .then((rows) => {
           const now = Date.now();
-          setCells(rows.map((e) => entryToCell(e, now)).filter((c): c is MatrixCell => c !== null));
+          setCells(
+            rows
+              .map((e) => entryToCell(e, now))
+              .filter((c): c is MatrixCell => c !== null),
+          );
         })
-        .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : String(err)));
+        .catch((err: unknown) =>
+          setLoadError(err instanceof Error ? err.message : String(err)),
+        );
     }, POLL_MS);
     return () => clearInterval(t);
   }, [setId, live, busy]);
 
   // Jev's answers from the decision answer store, for finished cells that carry no answer text.
-  const [jevStore, setJevStore] = useState<Map<string, SystemAnswer>>(new Map());
+  const [jevStore, setJevStore] = useState<Map<string, SystemAnswer>>(
+    new Map(),
+  );
   const missingJev = cells
-    .filter((c) => c.columnId === "jev" && c.status === "completed" && !c.result?.answer && !jevStore.has(c.conversationId))
+    .filter(
+      (c) =>
+        c.columnId === "jev" &&
+        c.status === "completed" &&
+        !c.result?.answer &&
+        !jevStore.has(c.conversationId),
+    )
     .map((c) => c.conversationId);
   const missingKey = missingJev.join(",");
   useEffect(() => {
     if (!missingKey) return;
     let alive = true;
     loadJevAnswers(missingKey.split(","))
-      .then((found) => alive && setJevStore((prev) => new Map([...prev, ...found])))
-      .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)));
+      .then(
+        (found) => alive && setJevStore((prev) => new Map([...prev, ...found])),
+      )
+      .catch(
+        (err: unknown) =>
+          alive &&
+          setLoadError(err instanceof Error ? err.message : String(err)),
+      );
     return () => {
       alive = false;
     };
@@ -152,9 +215,14 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const runs = readRuns(cells, bench, jevStore);
   const ran = Boolean(setId);
   const brand = bench.brand;
-  const patchBrand = (p: Partial<BenchState["brand"]>) => setBench((b) => ({ ...b, brand: { ...b.brand, ...p } }));
-  const queries = queriesText.split("\n").map((q) => q.trim()).filter(Boolean);
-  const canSearch = !ran && !busy && Boolean(brand.name.trim() || brand.website.trim());
+  const patchBrand = (p: Partial<BenchState["brand"]>) =>
+    setBench((b) => ({ ...b, brand: { ...b.brand, ...p } }));
+  const queries = queriesText
+    .split("\n")
+    .map((q) => q.trim())
+    .filter(Boolean);
+  const canSearch =
+    !ran && !busy && Boolean(brand.name.trim() || brand.website.trim());
 
   const onPlan = () => setQueriesText(defaultQueries(brand).join("\n"));
 
@@ -164,9 +232,17 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     setBusy(true);
     setRunError(null);
     try {
-      const { results, failures } = await castNet(post, plan, bench.pages, setNet);
+      const { results, failures } = await castNet(
+        post,
+        plan,
+        bench.pages,
+        setNet,
+      );
       setBench((b) => ({ ...b, queries: plan, results }));
-      if (failures.length) setRunError(`${failures.length} searches failed: ${failures.slice(0, 3).join(" · ")}`);
+      if (failures.length)
+        setRunError(
+          `${failures.length} searches failed: ${failures.slice(0, 3).join(" · ")}`,
+        );
     } finally {
       setBusy(false);
     }
@@ -182,8 +258,15 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     try {
       // write-target: the bench is filed in the organization the person works in
       const organizationId = await ensureOrgId(null);
-      const { setId: id, finished } = await createAndRun(dispatch, { ...bench, queries }, userId, organizationId);
-      void finished.then((error) => error && toast.error(`The run stopped: ${error}`));
+      const { setId: id, finished } = await createAndRun(
+        dispatch,
+        { ...bench, queries },
+        userId,
+        organizationId,
+      );
+      void finished.then(
+        (error) => error && toast.error(`The run stopped: ${error}`),
+      );
       startTransition(() => router.replace(`/agents/battle/smart-add/${id}`));
     } catch (err) {
       setRunError(err instanceof Error ? err.message : String(err));
@@ -205,7 +288,12 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
       });
     apply(truth);
     try {
-      const { labelError } = await saveTruth(setId, key, truth, runs.jev.conversations.get(key) ?? null);
+      const { labelError } = await saveTruth(
+        setId,
+        key,
+        truth,
+        runs.jev.conversations.get(key) ?? null,
+      );
       if (labelError) toast.error(labelError);
     } catch (err) {
       apply(before);
@@ -218,18 +306,34 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     subject: { type: "brand", name: brand.name || brand.website },
     results: bench.results.map((r) => ({
       key: r.key,
-      result: { url: r.url, title: r.title, description: r.description, extra_snippets: r.extraSnippets },
-      hits: r.hits.map((h) => ({ engine: h.engine, rank: h.rank, query: h.query })),
+      result: {
+        url: r.url,
+        title: r.title,
+        description: r.description,
+        extra_snippets: r.extraSnippets,
+      },
+      hits: r.hits.map((h) => ({
+        engine: h.engine,
+        rank: h.rank,
+        query: h.query,
+      })),
     })),
     choices: (["ours", "about_us", "not_us"] as Truth[]).map((k) => ({
       key: k,
       label: TRUTH_LABEL[k],
       pinned: true,
       description:
-        k === "ours" ? "The brand runs it" : k === "about_us" ? "About or tied to the brand" : "Someone or something else",
+        k === "ours"
+          ? "The brand runs it"
+          : k === "about_us"
+            ? "About or tied to the brand"
+            : "Someone or something else",
     })),
     answers: Object.fromEntries(
-      Object.entries(bench.truth).map(([k, t]) => [k, { status: "answered", kind: t, sentiment: null } as ReviewAnswer]),
+      Object.entries(bench.truth).map(([k, t]) => [
+        k,
+        { status: "answered", kind: t, sentiment: null } as ReviewAnswer,
+      ]),
     ),
     onAnswer,
   };
@@ -237,15 +341,21 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const marked = Object.keys(bench.truth).length;
 
   return (
-    <div className="h-full flex flex-col overflow-hidden" style={{ paddingTop: "var(--shell-header-h)" }}>
+    <div
+      className="h-full flex flex-col overflow-hidden"
+      style={{ paddingTop: "var(--shell-header-h)" }}
+    >
       <BattleHeader
-        battleName={ran ? `Smart Add bench · ${brand.name || brand.website}` : null}
+        battleName={
+          ran ? `Smart Add bench · ${brand.name || brand.website}` : null
+        }
         fallbackTitle="Smart Add bench"
         actions={[
           {
             icon: "SquarePlus",
             label: "Start a new bench",
-            onPress: () => startTransition(() => router.push("/agents/battle/smart-add")),
+            onPress: () =>
+              startTransition(() => router.push("/agents/battle/smart-add")),
           },
         ]}
       />
@@ -274,7 +384,12 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
             />
           ) : (
             <>
-              <ProgressStrip runs={runs} systems={bench.systems} results={bench.results.length} marked={marked} />
+              <ProgressStrip
+                runs={runs}
+                systems={bench.systems}
+                results={bench.results.length}
+                marked={marked}
+              />
               <JudgedBy bench={bench} />
               <div className="flex flex-wrap items-center gap-3">
                 <SegmentedControl<View>
@@ -282,7 +397,11 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
                   value={view}
                   onValueChange={setView}
                   data={[
-                    { value: "truth", label: "Mark the truth", count: bench.results.length - marked },
+                    {
+                      value: "truth",
+                      label: "Mark the truth",
+                      count: bench.results.length - marked,
+                    },
                     { value: "score", label: "Scoreboard", count: marked },
                   ]}
                 />
@@ -332,8 +451,14 @@ function SetupPanel({
 }) {
   const brand = bench.brand;
   const toggle = (s: SystemKey, on: boolean) =>
-    setBench((b) => ({ ...b, systems: on ? [...new Set([...b.systems, s])] : b.systems.filter((x) => x !== s) }));
-  const calls = queriesText.split("\n").filter((q) => q.trim()).length * 2 * bench.pages;
+    setBench((b) => ({
+      ...b,
+      systems: on
+        ? [...new Set([...b.systems, s])]
+        : b.systems.filter((x) => x !== s),
+    }));
+  const calls =
+    queriesText.split("\n").filter((q) => q.trim()).length * 2 * bench.pages;
   return (
     <>
       <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
@@ -342,23 +467,45 @@ function SetupPanel({
           <label className="flex flex-col gap-1">
             <span className="type-label">Website</span>
             {/* ui-exception: a raw address, not prose */}
-            <Field value={brand.website} onChange={(e) => patchBrand({ website: e.target.value })} placeholder="ritualcoffee.com" aria-label="Website" />
+            <Field
+              value={brand.website}
+              onChange={(e) => patchBrand({ website: e.target.value })}
+              placeholder="ritualcoffee.com"
+              aria-label="Website"
+            />
           </label>
           <label className="flex flex-col gap-1">
             <span className="type-label">Name</span>
-            <ProInput value={brand.name} onChange={(e) => patchBrand({ name: e.target.value })} placeholder="Ritual Coffee Roasters" aria-label="Brand name" />
+            <ProInput
+              value={brand.name}
+              onChange={(e) => patchBrand({ name: e.target.value })}
+              placeholder="Ritual Coffee Roasters"
+              aria-label="Brand name"
+            />
           </label>
           <label className="flex flex-col gap-1">
             <span className="type-label">Place</span>
-            <ProInput value={brand.place} onChange={(e) => patchBrand({ place: e.target.value })} placeholder="San Francisco, CA" aria-label="Place" />
+            <ProInput
+              value={brand.place}
+              onChange={(e) => patchBrand({ place: e.target.value })}
+              placeholder="San Francisco, CA"
+              aria-label="Place"
+            />
           </label>
           <label className="flex flex-col gap-1">
             <span className="type-label">Accounts you know are theirs</span>
             {/* ui-exception: raw addresses, comma separated */}
-            <Field value={brand.accounts} onChange={(e) => patchBrand({ accounts: e.target.value })} placeholder="instagram.com/ritualcoffee" aria-label="Known accounts" />
+            <Field
+              value={brand.accounts}
+              onChange={(e) => patchBrand({ accounts: e.target.value })}
+              placeholder="instagram.com/ritualcoffee"
+              aria-label="Known accounts"
+            />
           </label>
         </div>
-        <p className="type-caption text-muted-foreground">Every system sees only these facts.</p>
+        <p className="type-caption text-muted-foreground">
+          Every system sees only these facts.
+        </p>
       </section>
 
       <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
@@ -371,7 +518,9 @@ function SetupPanel({
         <ProTextarea
           value={queriesText}
           onChange={(e) => setQueriesText(e.target.value)}
-          placeholder={'One search per line, e.g. "Ritual Coffee" San Francisco'}
+          placeholder={
+            'One search per line, e.g. "Ritual Coffee" San Francisco'
+          }
           aria-label="Searches, one per line"
           rows={5}
         />
@@ -384,10 +533,19 @@ function SetupPanel({
             data={["1", "2", "3", "5"].map((v) => ({ value: v, label: v }))}
           />
           <span className="type-caption text-muted-foreground">
-            {calls ? `${calls} searches across two engines` : "Two engines, every search"}
+            {calls
+              ? `${calls} searches across two engines`
+              : "Two engines, every search"}
           </span>
-          <Button className="ml-auto" onClick={onCast} disabled={!canSearch} icon={<Search className="w-4 h-4" />}>
-            {busy && net ? `Searching ${net.done}/${net.total}` : "Cast the net"}
+          <Button
+            className="ml-auto"
+            onClick={onCast}
+            disabled={!canSearch}
+            icon={<Search className="w-4 h-4" />}
+          >
+            {busy && net
+              ? `Searching ${net.done}/${net.total}`
+              : "Cast the net"}
           </Button>
         </div>
       </section>
@@ -396,7 +554,10 @@ function SetupPanel({
         <h2 className="type-section">Who judges</h2>
         <div className="flex flex-col gap-2">
           {SYSTEMS.map((s) => {
-            const missing = s === "reference" ? !bench.agents.referenceModel : !bench.agents[s];
+            const missing =
+              s === "reference"
+                ? !bench.agents.referenceModel
+                : !bench.agents[s];
             return (
               <div key={s} className="flex flex-wrap items-center gap-3">
                 <Switch
@@ -405,8 +566,12 @@ function SetupPanel({
                   onCheckedChange={(v) => toggle(s, v)}
                   aria-label={SYSTEM_LABEL[s]}
                 />
-                <span className="type-body font-medium w-28">{SYSTEM_LABEL[s]}</span>
-                <span className="type-caption text-muted-foreground">{SYSTEM_HINT[s]}</span>
+                <span className="type-body font-medium w-28">
+                  {SYSTEM_LABEL[s]}
+                </span>
+                <span className="type-caption text-muted-foreground">
+                  {SYSTEM_HINT[s]}
+                </span>
                 {s === "reference" ? (
                   <ModelListDropdown
                     value={bench.agents.referenceModel}
@@ -419,16 +584,29 @@ function SetupPanel({
                       setBench((b) => ({
                         ...b,
                         agents: { ...b.agents, referenceModel: modelId },
-                        systems: modelId ? [...new Set([...b.systems, "reference" as SystemKey])] : b.systems,
+                        systems: modelId
+                          ? [
+                              ...new Set([
+                                ...b.systems,
+                                "reference" as SystemKey,
+                              ]),
+                            ]
+                          : b.systems,
                       }))
                     }
                   />
                 ) : bench.agents[s] ? (
-                  <Link href={`/agents/${bench.agents[s]}`} target="_blank" className="type-caption inline-flex items-center gap-1 underline">
+                  <Link
+                    href={`/agents/${bench.agents[s]}`}
+                    target="_blank"
+                    className="type-caption inline-flex items-center gap-1 underline"
+                  >
                     Open agent <ExternalLink className="w-3 h-3" />
                   </Link>
                 ) : (
-                  <span className="type-caption text-destructive">No agent found</span>
+                  <span className="type-caption text-destructive">
+                    No agent found
+                  </span>
                 )}
               </div>
             );
@@ -439,8 +617,14 @@ function SetupPanel({
       {bench.results.length > 0 ? (
         <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <h2 className="type-section flex-1">{bench.results.length} unique results</h2>
-            <Button onClick={onJudge} disabled={busy || bench.systems.length === 0} icon={<ListChecks className="w-4 h-4" />}>
+            <h2 className="type-section flex-1">
+              {bench.results.length} unique results
+            </h2>
+            <Button
+              onClick={onJudge}
+              disabled={busy || bench.systems.length === 0}
+              icon={<ListChecks className="w-4 h-4" />}
+            >
               {busy ? "Starting…" : `Judge all ${bench.results.length}`}
             </Button>
           </div>
@@ -451,7 +635,11 @@ function SetupPanel({
           </ol>
         </section>
       ) : (
-        <EmptyState icon={<Search className="w-5 h-5" />} title="No results yet" line="Name a brand, then cast the net." />
+        <EmptyState
+          icon={<Search className="w-5 h-5" />}
+          title="No results yet"
+          line="Name a brand, then cast the net."
+        />
       )}
     </>
   );
@@ -463,16 +651,26 @@ function JudgedBy({ bench }: { bench: BenchState }) {
     <div className="flex flex-wrap items-center gap-3 type-caption text-muted-foreground">
       <span>Judged by</span>
       {holder && bench.systems.includes("holder") ? (
-        <Link href={`/agents/${holder}`} target="_blank" className="inline-flex items-center gap-1 underline">
+        <Link
+          href={`/agents/${holder}`}
+          target="_blank"
+          className="inline-flex items-center gap-1 underline"
+        >
           {SYSTEM_LABEL.holder} <ExternalLink className="w-3 h-3" />
         </Link>
       ) : null}
       {jev && bench.systems.includes("jev") ? (
-        <Link href={`/agents/${jev}`} target="_blank" className="inline-flex items-center gap-1 underline">
+        <Link
+          href={`/agents/${jev}`}
+          target="_blank"
+          className="inline-flex items-center gap-1 underline"
+        >
           {SYSTEM_LABEL.jev} <ExternalLink className="w-3 h-3" />
         </Link>
       ) : null}
-      {referenceModel && bench.systems.includes("reference") ? <span>{SYSTEM_LABEL.reference} on the picked model</span> : null}
+      {referenceModel && bench.systems.includes("reference") ? (
+        <span>{SYSTEM_LABEL.reference} on the picked model</span>
+      ) : null}
     </div>
   );
 }
@@ -480,11 +678,20 @@ function JudgedBy({ bench }: { bench: BenchState }) {
 function ResultLine({ r }: { r: BenchResult }) {
   return (
     <li className="flex items-baseline gap-2 min-w-0">
-      <span className="type-caption text-muted-foreground w-10 shrink-0 tabular-nums">{r.hits.length}×</span>
-      <a href={r.url} target="_blank" rel="noreferrer" className="type-body truncate hover:underline">
+      <span className="type-caption text-muted-foreground w-10 shrink-0 tabular-nums">
+        {r.hits.length}×
+      </span>
+      <a
+        href={r.url}
+        target="_blank"
+        rel="noreferrer"
+        className="type-body truncate hover:underline"
+      >
         {r.title || r.url}
       </a>
-      <span className="type-caption text-muted-foreground truncate">{r.url}</span>
+      <span className="type-caption text-muted-foreground truncate">
+        {r.url}
+      </span>
     </li>
   );
 }
@@ -508,7 +715,10 @@ function ProgressStrip({
         const r = runs[s];
         const left = r.calls - r.done - r.failed;
         return (
-          <Badge key={s} tone={r.failed ? "warning" : left > 0 ? "info" : "success"}>
+          <Badge
+            key={s}
+            tone={r.failed ? "warning" : left > 0 ? "info" : "success"}
+          >
             {SYSTEM_LABEL[s]} {r.done}/{r.calls}
             {r.failed ? ` · ${r.failed} failed` : ""}
           </Badge>
@@ -518,16 +728,35 @@ function ProgressStrip({
   );
 }
 
-function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeof readRuns> }) {
+function Scoreboard({
+  bench,
+  runs,
+}: {
+  bench: BenchState;
+  runs: ReturnType<typeof readRuns>;
+}) {
   const [onlySplit, setOnlySplit] = useState(true);
-  const scores = bench.systems.map((s) => ({ s, sc: score(runs[s], bench.truth) }));
+  const scores = bench.systems.map((s) => ({
+    s,
+    sc: score(runs[s], bench.truth),
+  }));
   const marked = Object.keys(bench.truth).length;
   const rows = bench.results.filter((r) => bench.truth[r.key]);
   const shown = onlySplit
-    ? rows.filter((r) => bench.systems.some((s) => runs[s].answers.get(r.key)?.stance !== bench.truth[r.key]))
+    ? rows.filter((r) =>
+        bench.systems.some(
+          (s) => runs[s].answers.get(r.key)?.stance !== bench.truth[r.key],
+        ),
+      )
     : rows;
   if (!marked) {
-    return <EmptyState icon={<ListChecks className="w-5 h-5" />} title="Nothing marked yet" line="Mark results first; the score counts only those." />;
+    return (
+      <EmptyState
+        icon={<ListChecks className="w-5 h-5" />}
+        title="Nothing marked yet"
+        line="Mark results first; the score counts only those."
+      />
+    );
   }
   return (
     <div className="flex flex-col gap-4">
@@ -553,68 +782,119 @@ function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeo
               <tr key={s} className="border-b border-border last:border-0">
                 <td className="p-2 font-medium">{SYSTEM_LABEL[s]}</td>
                 <td className="p-2 text-right">
-                  {sc.right}/{sc.marked} ({Math.round((100 * sc.right) / Math.max(1, sc.marked))}%)
+                  {sc.right}/{sc.marked} (
+                  {Math.round((100 * sc.right) / Math.max(1, sc.marked))}%)
                 </td>
                 <td className="p-2 text-right">{sc.wrong}</td>
                 <td className="p-2 text-right">{sc.cantTell}</td>
                 <td className="p-2 text-right">{sc.missing}</td>
                 <td className="p-2 text-right">{sc.falseOurs}</td>
                 <td className="p-2 text-right">{sc.missedUs}</td>
-                <td className="p-2 text-right">{formatDurationMs(sc.p50, { style: "compact" })}</td>
-                <td className="p-2 text-right">{formatDurationMs(sc.p90, { style: "compact" })}</td>
+                <td className="p-2 text-right">
+                  {formatDurationMs(sc.p50, { style: "compact" })}
+                </td>
+                <td className="p-2 text-right">
+                  {formatDurationMs(sc.p90, { style: "compact" })}
+                </td>
                 <td className="p-2 text-right">{sc.calls}</td>
-                <td className="p-2 text-right">{formatUsd(sc.cost, { digits: "adaptive" })}</td>
+                <td className="p-2 text-right">
+                  {formatUsd(sc.cost, { digits: "adaptive" })}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <div className="flex items-center gap-2">
-        <Switch checked={onlySplit} onCheckedChange={setOnlySplit} aria-label="Only results a system got wrong" />
+        <Switch
+          checked={onlySplit}
+          onCheckedChange={setOnlySplit}
+          aria-label="Only results a system got wrong"
+        />
         <span className="type-body">Only results a system got wrong</span>
-        <span className="type-caption text-muted-foreground ml-auto">{shown.length} shown</span>
+        <span className="type-caption text-muted-foreground ml-auto">
+          {shown.length} shown
+        </span>
       </div>
-      <ol className="rounded-lg border border-border bg-card divide-y divide-border">
-        {shown.map((r) => (
-          <li key={r.key} className="p-3 grid gap-2 md:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,1fr))] items-start">
-            <div className="min-w-0">
-              <a href={r.url} target="_blank" rel="noreferrer" className="type-body font-medium hover:underline break-words">
-                {r.title || r.url}
-              </a>
-              <div className="type-caption text-muted-foreground break-all">{r.url}</div>
-              {r.description ? <div className="type-caption text-muted-foreground line-clamp-2">{r.description}</div> : null}
-            </div>
-            <div>
-              <div className="type-label text-muted-foreground">Truth</div>
-              <div className="type-body font-medium">{TRUTH_LABEL[bench.truth[r.key]]}</div>
-            </div>
-            {bench.systems.map((s) => {
-              const a = runs[s].answers.get(r.key);
-              const ok = a?.stance === bench.truth[r.key];
-              const conv = s === "jev" ? runs.jev.conversations.get(r.key) : null;
-              return (
-                <div key={s} className="min-w-0">
-                  <div className="type-label text-muted-foreground">{SYSTEM_LABEL[s]}</div>
-                  <div className={ok ? "type-body" : "type-body text-destructive font-medium"}>
-                    {a ? TRUTH_LABEL[a.stance] : "No answer"}
-                  </div>
-                  <div className="type-caption text-muted-foreground break-words">
-                    {[a?.label, a?.probability != null ? `${Math.round(a.probability * 100)}%` : null].filter(Boolean).join(" · ")}
-                    {conv ? (
-                      <>
-                        {" · "}
-                        <Link href={`/work/conversations/${conv}`} target="_blank" className="underline">
-                          run
-                        </Link>
-                      </>
-                    ) : null}
-                  </div>
+      {shown.length > 0 ? (
+        <ol className="rounded-lg border border-border bg-card divide-y divide-border">
+          {shown.map((r) => (
+            <li
+              key={r.key}
+              className="p-3 grid gap-2 md:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,1fr))] items-start"
+            >
+              <div className="min-w-0">
+                <a
+                  href={r.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="type-body font-medium hover:underline break-words"
+                >
+                  {r.title || r.url}
+                </a>
+                <div className="type-caption text-muted-foreground break-all">
+                  {r.url}
                 </div>
-              );
-            })}
-          </li>
-        ))}
-      </ol>
+                {r.description ? (
+                  <div className="type-caption text-muted-foreground line-clamp-2">
+                    {r.description}
+                  </div>
+                ) : null}
+              </div>
+              <div>
+                <div className="type-label text-muted-foreground">Truth</div>
+                <div className="type-body font-medium">
+                  {TRUTH_LABEL[bench.truth[r.key]]}
+                </div>
+              </div>
+              {bench.systems.map((s) => {
+                const a = runs[s].answers.get(r.key);
+                const ok = a?.stance === bench.truth[r.key];
+                const conv =
+                  s === "jev" ? runs.jev.conversations.get(r.key) : null;
+                return (
+                  <div key={s} className="min-w-0">
+                    <div className="type-label text-muted-foreground">
+                      {SYSTEM_LABEL[s]}
+                    </div>
+                    <div
+                      className={
+                        ok
+                          ? "type-body"
+                          : "type-body text-destructive font-medium"
+                      }
+                    >
+                      {a ? TRUTH_LABEL[a.stance] : "No answer"}
+                    </div>
+                    <div className="type-caption text-muted-foreground break-words">
+                      {[
+                        a?.label,
+                        a?.probability != null
+                          ? `${Math.round(a.probability * 100)}%`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                      {conv ? (
+                        <>
+                          {" · "}
+                          <Link
+                            href={`/work/conversations/${conv}`}
+                            target="_blank"
+                            className="underline"
+                          >
+                            run
+                          </Link>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </li>
+          ))}
+        </ol>
+      ) : null}
     </div>
   );
 }

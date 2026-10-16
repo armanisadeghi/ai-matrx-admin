@@ -28,14 +28,22 @@ anyone's confidence.** Arman, 2026-10-16: "the key is not to look at confidence 
 | Truth | `smart_add_bench.truth` (guarded merge) AND a human label on Jev's `stance` answer (`labelConversations`) so it feeds `/agents/<id>/answers/calibration` |
 | Mapping | today's labels → ours / about us / not us by `web.brand_relation_kind.stance` (frozen at run time); `needs_person` / `maybe` = can't tell |
 
-Agents: today's holder `c64d840d-75b2-4404-ad70-404a7f5cf51e`; Jev `6d308d1b-ec78-468a-b551-df06ed03f7d9`
-(questions `kind` — the 35 relation keys + needs_person — and `stance`).
+Judges are resolved from data at run time and recorded on the bench (`smart_add_bench.agents`): today's
+holder = the default holder of mandate `brand_intake.web_result_classifier`; Jev = the agent tagged
+`smart-add, jev, decision, web-result` (questions `kind` — the 35 relation keys + needs_person — and
+`stance`); the reference = today's holder on a model the person picks in `ModelListDropdown`. A bench saved
+before this reads its judges from the battle's own columns.
 
 Fair-play notes: every system gets the same plain result (title, address, snippet, engine, rank) — the
 production fixed-rules hint is server-only and is not added. Today's AI sees 25 results per call as in
 production; Jev sees one.
 
 ## Change log
+
+- 2026-10-16 — review fixes: no agent ids in code (judges from the mandate and tags), reference model picked,
+  "Judged by" links after a run, durations in ms/s, a No answer column, phone-width table, a failed mark save
+  rolls back, complete-list reads through `readAllRows`. Open: clearing a mark leaves its calibration label on
+  Jev's answer; Later / Ignore are not kept.
 
 - 2026-10-16 — created: wide net, blind truth, scoreboard; Jev answers read from the answer store
   (the matrix runner's own `answer` was empty for decision agents — fixed server-side the same day).
