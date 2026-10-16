@@ -121,6 +121,16 @@ export function addressColumns<F extends { parity_type?: string | null; source?:
   return fields.filter((f) => !worked.has(String(f.parity_type ?? "")) && f.source !== "agent");
 }
 
+/** The column that most likely holds the page address (a link-like type or name), shown or hidden; null when nothing reads like one. */
+export function guessAddressColumn<F extends { key: string; label: string; parity_type?: string | null }>(columns: readonly F[]): F | null {
+  const named = /(^|[\s_-])(url|link|website|site|domain|address|page)([\s_-]|$)/i;
+  return (
+    columns.find((f) => String(f.parity_type ?? "") === "url") ??
+    columns.find((f) => named.test(f.key) || named.test(f.label)) ??
+    null
+  );
+}
+
 /** The run answer of `POST /v1/tables/{t}/ai-columns/{f}/run`, as the dialog reads it. */
 export interface LiveRun {
   rowsSeen: number;

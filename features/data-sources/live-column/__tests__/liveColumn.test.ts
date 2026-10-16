@@ -1,4 +1,4 @@
-import { existingColumn, isLiveColumnOf, addressColumns, companyLevelSources, columnLabelFor, columnTypeFor, declareSpec, fieldLabel, parseRun, totalPoints } from "../liveColumn";
+import { guessAddressColumn, existingColumn, isLiveColumnOf, addressColumns, companyLevelSources, columnLabelFor, columnTypeFor, declareSpec, fieldLabel, parseRun, totalPoints } from "../liveColumn";
 
 describe("a table column from live data", () => {
   it("declares a readable instruction, the one input column and the data source", () => {
@@ -64,5 +64,14 @@ describe("a column that already exists is refilled, never a dead end", () => {
     const run = parseRun({ quote: { rows: 1, max_records_per_row: 40 } });
     expect(run.quote?.maxRecordsPerRow).toBe(40);
     expect(parseRun({ quote: { rows: 1 } }).quote?.maxRecordsPerRow).toBe(0);
+  });
+});
+
+describe("guessAddressColumn: a hidden link column is still found", () => {
+  it("prefers a url-typed column, then a link-like name, else nothing", () => {
+    const a = [{ key: "name", label: "Name" }, { key: "site", label: "Website", parity_type: "text" }];
+    expect(guessAddressColumn(a)?.key).toBe("site");
+    expect(guessAddressColumn([...a, { key: "u", label: "Home", parity_type: "url" }])?.key).toBe("u");
+    expect(guessAddressColumn([{ key: "name", label: "Name" }])).toBeNull();
   });
 });

@@ -74,6 +74,19 @@ function outputFieldsOf(v: unknown): string[] {
   return out;
 }
 
+/** What a person reads for a known issue. The server's own note is internal wording (it names our account and test runs), so it never reaches the screen. */
+export function plainIssue(_serverNote: string): string {
+  return "May not return results right now";
+}
+
+/** The record field KEYS as the server names them (a live-data column keeps one by key). */
+function rawFieldKeys(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((f) => (typeof f === "string" ? f : str(obj(f).name)))
+    .filter((f): f is string => typeof f === "string" && f.length > 0);
+}
+
 function knownIssueOf(v: unknown): string | null {
   if (typeof v === "string") return str(v);
   const o = obj(v);
@@ -127,6 +140,8 @@ export function parseLibrary(raw: unknown): Library {
       usd_per_record: price.usd,
       points_per_record: price.points,
       outputFields: outputFieldsOf(s.output_fields),
+      output_fields: rawFieldKeys(s.output_fields),
+      records_are: s.records_are === "items" ? "items" : "entity",
       featured,
       confirmed: typeof s.verified_live === "boolean" ? s.verified_live : s.verified === true,
       knownIssue: knownIssueOf(s.known_issue),

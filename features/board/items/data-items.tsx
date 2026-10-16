@@ -294,13 +294,15 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     status: { none: "Its load state lives in the grid's own mount, which an idle tile does not run." },
     defaultSize: { w: 960, h: 620 },
     matches: (s) => s.kind === "entity" && s.entity === TABLE_ENTITY,
+    // The Get data tile is the source picker until its table exists: one click opens it.
+    opensOnClick: (s) => s.kind === "entity" && !tableIdOf(s) && Boolean(readDataFetchMeta(s.meta)),
     Body: TableItemBody,
     // Wakes with its grid, scroll, selection and open cell intact: the gates keep their answers
     // (lib/kept-answer), so a wake never drops to "Opening the table…" (lane REMOUNT-SAFETY).
     sleeps: true,
     startNew: [
       { label: "New table", create: () => ({ title: "New table", source: tableSource(null) }) },
-      { label: "Get data", icon: DownloadCloud, create: () => ({ title: "Get data", source: getDataSource() }) },
+      { label: "Get data", icon: DownloadCloud, create: () => ({ title: "Get data", source: getDataSource() }), openAtOnce: true },
     ],
     bringIn: { label: "Table", Picker: TablePicker },
     // Tables are not in the search projection: the table picker's own list, matched on the name.

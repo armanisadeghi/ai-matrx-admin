@@ -21,4 +21,9 @@ describe("previousPageUrl — Back returns where this tab came from", () => {
   it("never leaves the origin", () => {
     expect(previousPageUrl([{ url: "https://google.com/search" }, e("/crm/9")], 1, "/crm/9", O)).toBeNull();
   });
+
+  it("skips a dev-login or auth redirect hop", () => {
+    expect(previousPageUrl([e("/api/dev-login?next=/data/library"), e("/data/library")], 1, "/data/library", O)).toBeNull();
+    expect(previousPageUrl([e("/data"), e("/auth/callback?code=1"), e("/data/library")], 2, "/data/library", O)).toBe("/data");
+  });
 });

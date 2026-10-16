@@ -10,7 +10,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LockKeyhole } from "lucide-react";
+import { Copy, LockKeyhole, NotebookPen } from "lucide-react";
+import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { Badge, Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -18,6 +19,8 @@ import { formatCount } from "@ai-matrx/kit/format";
 import { ProInput } from "@/components/official/ProInput";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { supabase } from "@/utils/supabase/client";
+import { copyToClipboard } from "@/lib/clipboard/copy";
+import { useOpenQuickNoteSaveWindow } from "@/features/overlays/openers/quickNoteSaveWindow";
 
 import { useLibraryOrganizationId, usePriceText } from "../library/hooks";
 import {
@@ -66,6 +69,9 @@ export function UnlockPage() {
   const [tally, setTally] = useState<Tally>(EMPTY_TALLY);
   const [pasted, setPasted] = useState("");
   const price = usePriceText();
+  const [unit, setUnit] = useState<{ points: number; usd: number } | null>(null);
+  // The advanced reader's price is quoted before a try once one try has shown it (free when ours reads the page).
+  const unitCost = unit ? `Up to ${price({ pointsPerRecord: unit.points, usd_per_record: unit.usd }, 1)}` : null;
 
   const run = useCallback(
     async (url: string) => {
@@ -75,6 +81,7 @@ export function UnlockPage() {
         const result = await compareUrl({ organizationId, url });
         setTries((t) => ({ ...t, [url]: { state: "done", result } }));
         setTally((t) => addToTally(t, result));
+        if (result.unlocker?.points) setUnit({ points: result.unlocker.points, usd: result.unlocker.cost_usd ?? 0 });
       } catch (e) {
         setTries((t) => ({ ...t, [url]: { state: "failed", message: e instanceof Error ? e.message : "The try failed." } }));
       }
@@ -88,10 +95,14 @@ export function UnlockPage() {
 
   return (
     <>
-      <RecordPageHeader backHref="/data/library" record={{ name: "Unlock a page" }} />
+      <RecordPageHeader backHref="/data/library" record={{ name: "Blocked pages" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-unlock-page="">
           <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4">
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">Read blocked pages</h1>
+              <p className="text-sm text-muted-foreground">See what our reader and the advanced reader get from a page that blocks us</p>
+            </div>
             <div className="flex flex-wrap items-center gap-2" data-unlock-tally="">
               <Badge>Tried {formatCount(tally.tried)}</Badge>
               <Badge>Unlocked {formatCount(tally.unlocked)}</Badge>
@@ -108,7 +119,7 @@ export function UnlockPage() {
               <div className="min-w-64 flex-1">
                 <ProInput
                   value={pasted}
-                  placeholder="https://"
+                  placeholder="https://harborpinecoffee.com"
                   enableCleanup={false}
                   enableVoice={false}
                   onChange={(e) => setPasted(e.target.value)}
@@ -116,13 +127,13 @@ export function UnlockPage() {
                   data-field="unlock-url"
                 />
               </div>
-              <Button type="submit" disabled={!pastedUrl || !organizationId} data-action="unlock-try-pasted">
+              <Button type="submit" disabled={!pastedUrl || !organizationId} meta={unitCost ?? "Free if ours works"} data-action="unlock-try-pasted">
                 Try both
               </Button>
             </form>
 
             {extra.map((url) => (
-              <TryRow key={url} url={url} reason={null} attempt={tries[url]} onTry={run} />
+              <TryRow key={url} url={url} reason={null} attempt={tries[url]} onTry={run} cost={unitCost} />
             ))}
 
             {!organizationId || blocked.isLoading ? (
@@ -134,7 +145,7 @@ export function UnlockPage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {(blocked.data ?? []).map((b) => (
-                  <TryRow key={b.id} url={b.url} reason={b.reason} attempt={tries[b.url]} onTry={run} />
+                  <TryRow key={b.id} url={b.url} reason={b.reason} attempt={tries[b.url]} onTry={run} cost={unitCost} />
                 ))}
               </div>
             )}
@@ -145,7 +156,7 @@ export function UnlockPage() {
   );
 }
 
-function TryRow({ url, reason, attempt, onTry }: { url: string; reason: string | null; attempt?: Try; onTry: (url: string) => void }) {
+function TryRow({ url, reason, attempt, onTry, cost }: { url: string; reason: string | null; attempt?: Try; onTry: (url: string) => void; cost: string | null }) {
   const running = attempt?.state === "running";
   return (
     <div className="rounded-lg border border-border bg-card p-3" data-unlock-row={url}>
@@ -154,7 +165,7 @@ function TryRow({ url, reason, attempt, onTry }: { url: string; reason: string |
         <span className="min-w-0 flex-1 truncate text-sm" title={url}>
           {url}
         </span>
-        <Button type="button" onClick={() => onTry(url)} disabled={running} data-action="unlock-try">
+        <Button type="button" onClick={() => onTry(url)} disabled={running} meta={attempt ? undefined : (cost ?? "Free if ours works")} data-action="unlock-try">
           {running ? "Trying" : attempt ? "Try again" : "Try both"}
         </Button>
       </div>
@@ -174,28 +185,50 @@ function SideBySide({ result }: { result: Compare }) {
         {cost && result.unlocker?.points ? <span className="text-xs text-muted-foreground">{cost}</span> : null}
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <Cell title="Our scraper" side={result.ours} />
-        {result.unlocker ? <Cell title="Unlocker" side={result.unlocker} /> : <Cell title="Unlocker" side={null} />}
+        <Cell title="Our reader" side={result.ours} />
+        {result.unlocker ? <Cell title="Advanced reader" side={result.unlocker} /> : <Cell title="Advanced reader" side={null} />}
       </div>
     </div>
   );
 }
 
 function Cell({ title, side }: { title: string; side: Side | null }) {
+  const openNote = useOpenQuickNoteSaveWindow();
+  const body = side?.markdown ?? side?.preview ?? "";
+  const whole = Boolean(side?.markdown);
   return (
-    <div className="rounded-md border border-border p-2" data-unlock-cell={title}>
-      <div className="mb-1 text-xs font-medium text-muted-foreground">{title}</div>
+    <div className="flex min-w-0 flex-col gap-2 rounded-md border border-border p-2" data-unlock-cell={title}>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-foreground">{title}</span>
+        {side && body && !whole && <Badge>Preview</Badge>}
+        {side && body && (
+          <span className="ml-auto flex items-center gap-1">
+            <Button variant="quiet" icon={<Copy className="h-3.5 w-3.5" />} onClick={() => void copyToClipboard(body, "Copied")} aria-label={`Copy ${title}`}>
+              Copy
+            </Button>
+            <Button variant="quiet" icon={<NotebookPen className="h-3.5 w-3.5" />} onClick={() => openNote({ initialContent: body, defaultNoteName: side.title ?? title })}>
+              Save to note
+            </Button>
+          </span>
+        )}
+      </div>
       {!side ? (
         <p className="text-sm text-muted-foreground">Not run</p>
       ) : (
         <>
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          {body ? (
+            <div className="max-h-96 min-w-0 overflow-auto rounded-md bg-muted/40 p-2 text-sm" data-unlock-content="">
+              <MarkdownStream content={body} isStreamActive={false} hideCopyButton />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No text came back</p>
+          )}
+          <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
             <span>{side.status ? `Status ${side.status}` : "No status"}</span>
             <span>{formatCount(side.text_chars)} characters</span>
             <span>{side.elapsed_s.toFixed(1)} s</span>
             {!side.ok && (side.failure_reason || side.error_code) && <span>{side.failure_reason ?? side.error_code}</span>}
           </div>
-          {side.preview && <pre className="mt-1 whitespace-pre-wrap break-words text-sm">{firstLines(side.preview)}</pre>}
         </>
       )}
     </div>
