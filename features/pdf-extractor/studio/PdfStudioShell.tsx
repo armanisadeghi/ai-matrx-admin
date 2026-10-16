@@ -43,6 +43,8 @@ import {
   usePdfExtractor,
   type PdfDocument,
 } from "../hooks/usePdfExtractor";
+import { confirmRecleanIfCleaned } from "../service/confirmReclean";
+import { isDocCleaned } from "../service/cleanOutcome";
 import { usePdfDocRun, type PdfDocRunPhase } from "../hooks/usePdfDocRun";
 import { useProcessedDocumentPages } from "../hooks/useProcessedDocumentPages";
 import { useProcessedDocSync } from "../hooks/useProcessedDocSync";
@@ -542,8 +544,23 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
   // stream + cache invalidation + Supabase refetch in one place. The
   // shell just owns the live-status / streaming-preview UI state.
 
+  const cleanInFlight = useRef(false);
   const handleRunAiClean = useCallback(async (opts?: { force?: boolean }) => {
     if (!activeDoc) return;
+    // One run at a time: a second click while a clean (or its question) is
+    // open sends nothing.
+    if (cleanInFlight.current) return;
+    cleanInFlight.current = true;
+    // Manual re-clean of an already-cleaned doc asks first (spends AI credits).
+    if (
+      opts?.force !== false &&
+      !(await confirmRecleanIfCleaned(
+        isDocCleaned(pages, activeDoc.cleanContent, activeDoc.cleanMode),
+      ))
+    ) {
+      cleanInFlight.current = false;
+      return;
+    }
     setAiCleanRunning(true);
     setLiveStatus("Starting AI cleanup…");
     setStreamingCleanText("");
@@ -576,11 +593,12 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "AI cleanup failed");
     } finally {
+      cleanInFlight.current = false;
       setAiCleanRunning(false);
       setLiveStatus(null);
       setStreamingCleanText(null);
     }
-  }, [activeDoc, extractor, docsState, refreshPages, toast]);
+  }, [activeDoc, extractor, docsState, refreshPages, toast, pages]);
 
   // The open doc's server run, reconnected after a refresh / from another tab:
   // live progress resumes and the status comes from the run record.
