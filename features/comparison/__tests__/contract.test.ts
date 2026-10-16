@@ -1,7 +1,8 @@
 import {
   ComparisonRefusal,
-  consumeComparison,
   parseKinds,
+  parseLookup,
+  parseRunState,
   parseQuote,
   parseResult,
   readEvent,
@@ -42,10 +43,9 @@ describe("comparison contract parsing", () => {
       ],
       total_records_billed: 20, total_points: 600, notices: [],
     });
-    expect(res).not.toBeNull();
-    expect(res!.items[0].values.overall_rating.is_best).toBe(true);
-    expect(res!.items[1].values.overall_rating.is_best).toBe(false);
-    expect(res!.total_points).toBe(600);
+    expect(res?.items[0].values.overall_rating.is_best).toBe(true);
+    expect(res?.items[1].values.overall_rating.is_best).toBe(false);
+    expect(res?.total_points).toBe(600);
   });
 
   it("reads progress, result and refusal events", () => {
@@ -56,23 +56,21 @@ describe("comparison contract parsing", () => {
     expect((err as { refusal: ComparisonRefusal }).refusal.code).toBe("usage_limit");
   });
 
-  it("consumes a stream, surfacing progress then the result", async () => {
-    async function* events() {
-      yield { event: "data", data: { type: "comparison_stage", item_index: 0, item_count: 2, item_label: "A", stage: "fetching", label: "Reading A" } };
-      yield { event: "data", data: { type: "comparison_result", result: {
-        kind: "companies_reviews", kind_label: "X", status: "live", primary_field: "overall_rating",
-        fields: [], items: [], total_records_billed: 0, total_points: 0, notices: [] } } };
-    }
-    const seen: string[] = [];
-    const result = await consumeComparison(events(), (p) => seen.push(p.itemLabel));
-    expect(seen).toEqual(["A"]);
-    expect(result.kind).toBe("companies_reviews");
+  it("reads the run id that every stream opens with", () => {
+    const run = readEvent({ event: "data", data: { type: "comparison_run", run_id: "r1", item_count: 2, labels: ["A", "B"] } });
+    expect(run).toEqual({ kind: "run", runId: "r1", labels: ["A", "B"] });
   });
 
-  it("throws the refusal when the stream carries one", async () => {
-    async function* events() {
-      yield { event: "error", data: { code: "input_error", user_message: "Bad link." } };
-    }
-    await expect(consumeComparison(events())).rejects.toBeInstanceOf(ComparisonRefusal);
+  it("parses a lookup and a run state", () => {
+    const l = parseLookup({ kind: "companies_reviews", searches: 1, points: 100, items: [
+      { index: 0, query: "Acme", status: "choose", match: null, candidates: [
+        { item: { label: "Acme", url: "https://www.trustpilot.com/review/acme.com", website: "acme.com" }, name: "Acme", detail: "acme.com" }] },
+    ] });
+    expect(l.items[0].status).toBe("choose");
+    expect(l.items[0].candidates[0].item.url).toBe("https://www.trustpilot.com/review/acme.com");
+    const s = parseRunState({ run_id: "r1", kind: "local_business", status: "running", item_count: 2,
+      items: [{ index: 0, label: "A", stage: "waiting_for_provider", stage_label: "Reading", done: false }] });
+    expect(s?.items[0].stage).toBe("waiting_for_provider");
+    expect(s?.result).toBeNull();
   });
 });
