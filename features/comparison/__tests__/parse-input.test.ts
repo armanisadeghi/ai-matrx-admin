@@ -37,3 +37,33 @@ describe("the one box reads whatever a person types", () => {
     expect(parseInput("   ", "companies_reviews").items).toHaveLength(0);
   });
 });
+
+describe("a city typed on the last place applies to all of them", () => {
+  const near = (t: string, area = "") => parseInput(t, "local_business", area);
+  it("vs list: trailing city becomes the shared Near for every item", () => {
+    const out = near("Hattie B's Hot Chicken vs Prince's Hot Chicken Shack, Nashville TN");
+    expect(out.sharedArea).toBe("Nashville TN");
+    expect(out.items.map((i) => i.input)).toEqual([
+      { label: "Hattie B's Hot Chicken", inputs: { name: "Hattie B's Hot Chicken", city: "Nashville TN", country: "US" } },
+      { label: "Prince's Hot Chicken Shack", inputs: { name: "Prince's Hot Chicken Shack", city: "Nashville TN", country: "US" } },
+    ]);
+  });
+  it("'and … in City' and comma lists share it too", () => {
+    expect(near("Hattie B's and Bolton's in Nashville TN").items.map((i) => i.input.inputs?.city)).toEqual(["Nashville TN", "Nashville TN"]);
+    expect(near("Hattie B's, Bolton's, Pancho's in Nashville TN").items.map((i) => i.input.inputs?.city))
+      .toEqual(["Nashville TN", "Nashville TN", "Nashville TN"]);
+  });
+  it("cities on several items stay their own; no city means no shared area", () => {
+    const own = near("Sparrow Bakery, Bend OR vs Looney Bean, Portland OR");
+    expect(own.sharedArea).toBe("");
+    expect(own.items.map((i) => i.input.inputs?.city)).toEqual(["Bend OR", "Portland OR"]);
+    expect(near("A vs B").sharedArea).toBe("");
+  });
+  it("the Near box, once edited, wins over the typed city", () => {
+    const out = near("A vs B, Nashville TN", "Memphis TN");
+    expect(out.items.map((i) => i.input.inputs?.city)).toEqual(["Memphis TN", "Memphis TN"]);
+  });
+  it("companies never get a shared area", () => {
+    expect(parseInput("Yeti vs Stanley, Inc", "companies_reviews").sharedArea).toBe("");
+  });
+});

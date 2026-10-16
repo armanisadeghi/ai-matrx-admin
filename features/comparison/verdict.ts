@@ -54,6 +54,32 @@ export function verdictOf(result: ComparisonResult): Verdict {
   return { leader, leads, total: fields.length, tie };
 }
 
+/** How many of the rankable fields with numbers each compared item is best on. */
+export function leadCounts(result: ComparisonResult): Map<string, number> {
+  const fields = scoredFields(result);
+  return new Map(comparedItems(result).map((i) => [i.item_id, fields.filter((f) => i.values[f.key]?.is_best).length]));
+}
+
+/**
+ * The headline in two parts (bold name(s), then the rest). When another item leads on as many
+ * fields as the top-ranked one, it says so and names what the ranking rests on, instead of
+ * pretending one item stands alone. `null` = no single leader (nothing compared, or a tie on rank).
+ */
+export function headlineOf(result: ComparisonResult): { lead: string; rest: string } | null {
+  const v = verdictOf(result);
+  const top = v.leader;
+  if (!top || v.tie) return null;
+  const counts = leadCounts(result);
+  const level = comparedItems(result).filter((i) => counts.get(i.item_id) === v.leads);
+  if (level.length > 1) {
+    const primary = result.fields.find((f) => f.is_primary);
+    const ordered = [top, ...level.filter((i) => i.item_id !== top.item_id)];
+    const on = primary ? ` on ${primary.label.toLowerCase()}` : "";
+    return { lead: names(ordered), rest: `each lead ${v.leads} of ${v.total} — ${top.name} ranks first${on}` };
+  }
+  return { lead: top.name, rest: `leads on ${v.leads} of ${v.total}` };
+}
+
 function names(list: ComparedItem[]): string {
   const n = list.map((i) => i.name);
   if (n.length <= 1) return n[0] ?? "";

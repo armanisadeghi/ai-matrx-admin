@@ -20,7 +20,7 @@ import { formatPoints } from "@ai-matrx/kit/format";
 import { cn } from "@/lib/utils";
 
 import type { CompareField, ComparedItem, ComparisonResult } from "../contract";
-import { barFraction, comparedItems, isNumeric, verdictOf, whyLine } from "../verdict";
+import { barFraction, comparedItems, isNumeric, headlineOf, verdictOf, whyLine } from "../verdict";
 import { ItemLogo } from "./ItemLogo";
 
 export interface ComparisonViewProps {
@@ -44,6 +44,7 @@ export function ComparisonView({ result, seesDollars = false, factsHref, actions
   const numericFields = result.fields.filter(isNumeric);
   const textFields = result.fields.filter((f) => !isNumeric(f));
   const leader = verdict.leader;
+  const headline = headlineOf(result);
 
   return (
     <div className="space-y-8">
@@ -62,6 +63,7 @@ export function ComparisonView({ result, seesDollars = false, factsHref, actions
             <h1 className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
               {leader ? (
                 verdict.tie ? <>A tie at the top</>
+                  : headline ? <>{headline.lead} <span className="text-muted-foreground">{headline.rest}</span></>
                   : <>{leader.name} <span className="text-muted-foreground">leads on {verdict.leads} of {verdict.total}</span></>
               ) : (
                 <>Nothing to compare yet</>
@@ -233,7 +235,7 @@ function FieldCard({ field, result }: { field: CompareField; result: ComparisonR
           const v = it.values[field.key];
           const frac = barFraction(field, v?.value, result);
           return (
-            <li key={it.item_id} className="grid grid-cols-[1.25rem_minmax(0,7rem)_1fr_auto] items-center gap-2.5 sm:grid-cols-[1.25rem_minmax(0,9rem)_1fr_auto]">
+            <li key={it.item_id} className="grid grid-cols-[1.25rem_minmax(0,6rem)_minmax(2rem,1fr)_auto] items-center gap-2.5 sm:grid-cols-[1.25rem_minmax(0,9rem)_1fr_auto]">
               <ItemLogo name={it.name} logoUrl={it.logo_url} website={it.website} size={20} fill={isPhoto(result.kind)} />
               <span className="type-body truncate text-foreground" title={it.name}>{it.name}</span>
               <span className="h-2 overflow-hidden rounded-full bg-muted" title={v?.basis || undefined}>
@@ -242,7 +244,7 @@ function FieldCard({ field, result }: { field: CompareField; result: ComparisonR
                     v?.is_best ? "bg-primary" : "bg-primary/35")} style={{ width: `${Math.max(frac * 100, 2)}%` }} />
                 ) : null}
               </span>
-              <span className={cn("w-14 text-right tabular-nums", v?.is_best ? "font-semibold text-foreground" : "text-foreground",
+              <span className={cn("min-w-14 whitespace-nowrap text-right tabular-nums", v?.is_best ? "font-semibold text-foreground" : "text-foreground",
                 (!v || v.display === "—") && "text-muted-foreground")} title={v?.basis || undefined}>
                 {v?.display ?? "—"}
               </span>

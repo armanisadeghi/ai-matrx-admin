@@ -25,6 +25,11 @@ export interface ParsedInput {
   items: ParsedItem[];
   /** The kind the links point to, when every link agrees; `null` = no links (the tab decides). */
   suggestedKind: KindKey | null;
+  /**
+   * A city typed on the LAST item only ("A vs B, Nashville TN"), which applies to every item that
+   * names none of its own. The page shows it in the Near box so the person can edit it. "" = none.
+   */
+  sharedArea: string;
 }
 
 export const MAX_ITEMS = 20;
@@ -92,11 +97,18 @@ function segments(text: string, kind: KindKey): string[] {
     const parts = one.split(",").map((s) => s.trim()).filter(Boolean);
     if (kind !== "local_business" || parts.length >= 3) return parts;
   }
-  // "A and B" is a list only for names (never inside a link).
-  if (!isLink(one) && / and /i.test(one) && kind === "companies_reviews") {
+  // "A and B" is a list for names (never inside a link); for places only with a trailing
+  // "in/near/at City" ("A and B in Nashville TN").
+  if (!isLink(one) && / and /i.test(one) &&
+      (kind === "companies_reviews" || (kind === "local_business" && / (?:in|near|at) \S/i.test(one)))) {
     return one.split(/ and /i).map((s) => s.trim()).filter(Boolean);
   }
   return one ? [one] : [];
+}
+
+/** "Prince's Hot Chicken Shack, Nashville TN" → "Prince's Hot Chicken Shack". */
+function stripPlace(text: string): string {
+  return isLink(text) ? text : splitNameAndPlace(text).name;
 }
 
 function itemFor(text: string, kind: KindKey, area: string): ComparisonItemInput {
@@ -113,6 +125,17 @@ function itemFor(text: string, kind: KindKey, area: string): ComparisonItemInput
 }
 
 /**
+ * The shared city of a places list: the LAST item names one and no other item does. Only then does
+ * it read as "these are all there" rather than each item's own city.
+ */
+function sharedAreaOf(parts: string[], kind: KindKey): string {
+  if (kind !== "local_business" || parts.length < 2) return "";
+  const named = parts.map((p) => (isLink(p) ? "" : splitNameAndPlace(p).city));
+  const last = named[named.length - 1];
+  return last && named.slice(0, -1).every((c) => !c) ? last : "";
+}
+
+/**
  * Parse the box. `kind` is the chosen tab; `area` is the shared "near" box for local businesses
  * (used for any item that names no city of its own).
  */
@@ -121,14 +144,17 @@ export function parseInput(text: string, kind: KindKey, area = ""): ParsedInput 
   const linkKinds = new Set(parts.filter(isLink).map(kindOfLink).filter((k): k is KindKey => k !== null));
   const suggestedKind = linkKinds.size === 1 ? [...linkKinds][0] : null;
   const effective = suggestedKind ?? kind;
+  const sharedArea = sharedAreaOf(parts, effective);
+  // The Near box (visible, editable) wins; the typed trailing city fills in when it is empty.
+  const where = sharedArea ? (area.trim() || sharedArea) : area;
   const seen = new Set<string>();
   const items: ParsedItem[] = [];
   for (const p of parts) {
     const key = p.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    items.push({ text: p, input: itemFor(p, effective, area) });
+    items.push({ text: p, input: itemFor(sharedArea ? stripPlace(p) : p, effective, where) });
     if (items.length >= MAX_ITEMS) break;
   }
-  return { items, suggestedKind };
+  return { items, suggestedKind, sharedArea };
 }

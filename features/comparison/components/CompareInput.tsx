@@ -6,6 +6,7 @@
  * kind; otherwise the chosen kind does. Coming kinds stay visible, marked "Soon".
  */
 
+import { useEffect, useRef } from "react";
 import { Building2, Search, Share2, ShoppingBag, Store } from "lucide-react";
 import { Button, Chip } from "@ai-matrx/design-system/controls";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
@@ -44,6 +45,17 @@ export function CompareInput({ kinds, kindKey, onKind, text, onText, area, onAre
   const lookupCost = (kind?.lookup_points ?? 0) * names;
   const canFind = parsed.items.length >= 2 && !finding && !blockedByLinks && kind?.status === "live";
   const ui = KIND_UI[kindKey];
+
+  // A city typed on the last place ("A vs B, Nashville TN") shows up in the Near box, editable.
+  // Only the box's own earlier fill (or an empty box) is replaced — never what the person typed there.
+  const autoArea = useRef("");
+  useEffect(() => {
+    if (!parsed.sharedArea || parsed.sharedArea === autoArea.current) return;
+    if (area.trim() === "" || area === autoArea.current) {
+      autoArea.current = parsed.sharedArea;
+      onArea(parsed.sharedArea);
+    }
+  }, [parsed.sharedArea, area, onArea]);
 
   return (
     <section className="space-y-5">

@@ -28,6 +28,7 @@ const WORDS: Record<string, Record<ItemStage, string>> = {
   local_business: { queued: "Waiting", fetching: "Starting", reading: "Reading the listing", storing: "Saving the facts", done: "Done" },
 };
 const DEFAULT_WORDS: Record<ItemStage, string> = { queued: "Waiting", fetching: "Starting", reading: "Reading", storing: "Saving the facts", done: "Done" };
+export const RECONNECTED_MS = 4000;
 const SHARE: Record<ItemStage, number> = { queued: 0.04, fetching: 0.15, reading: 0.45, storing: 0.85, done: 1 };
 
 function useElapsed(startedAt: number): string {
@@ -50,6 +51,14 @@ export function RunProgress({ kind, kindLabel, items, identities, startedAt, rec
   recovering?: boolean;
 }) {
   const elapsed = useElapsed(startedAt);
+  // "Reconnected" is news for a few seconds, not a status for the rest of the run.
+  const [reconnectedOver, setReconnectedOver] = useState(false);
+  useEffect(() => {
+    if (!recovering) return;
+    const t = setTimeout(() => setReconnectedOver(true), RECONNECTED_MS);
+    return () => clearTimeout(t);
+  }, [recovering]);
+  const showReconnected = Boolean(recovering) && !reconnectedOver;
   const words = WORDS[kind] ?? DEFAULT_WORDS;
   const done = items.filter((i) => i.done).length;
   const count = Math.max(items.length, identities.length);
@@ -65,7 +74,7 @@ export function RunProgress({ kind, kindLabel, items, identities, startedAt, rec
         </div>
         <div className="text-right">
           <div className="type-meta w-12 tabular-nums text-muted-foreground">{elapsed}</div>
-          <div className="type-meta h-4 text-muted-foreground">{recovering ? "Reconnected" : ""}</div>
+          <div className="type-meta h-4 text-muted-foreground">{showReconnected ? "Reconnected" : ""}</div>
         </div>
       </div>
       <ul className="space-y-4">

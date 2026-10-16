@@ -2,8 +2,10 @@
 
 /**
  * An item's own mark, exactly as its source has it: the company's logo or the place's photo when the
- * source sent one, else the website's favicon, else the first letter. Never tinted, never wrapped in
- * a bubble; while the picture loads, the square shimmers so nothing shifts.
+ * source sent one, else the website's favicon, else the first letter. Never tinted or recoloured.
+ * In dark mode only, a logo sits RAW on a neutral light rounded chip so dark marks stay readable
+ * (light mode and place photos are untouched); while the picture loads, the square shimmers so
+ * nothing shifts.
  */
 
 import { useState } from "react";
@@ -30,11 +32,13 @@ export function ItemLogo({ name, logoUrl, website, size = 40, fill = false, clas
   const [failed, setFailed] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const src = sources[failed] ?? null;
+  const photo = fill && src === logoUrl;
   const letter = (name.trim()[0] ?? "?").toUpperCase();
 
   return (
     <span
-      className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden", fill ? "rounded-lg" : "rounded-md", className)}
+      className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden", fill ? "rounded-lg" : "rounded-md",
+        src && !photo && "dark:rounded-lg dark:bg-neutral-100 dark:p-[10%]", className)}
       style={{ width: size, height: size }}
       aria-hidden
     >
