@@ -40,7 +40,7 @@ import notesReducer, { updateNoteLabel, upsertNotesFromServer } from "../redux/s
 import { selectNoteHomeIds, selectAllNotesList, selectNoteOrganizationIds, selectSidebarNotesList } from "../redux/selectors";
 import { getReduxSyncDelay, type NoteRecord } from "../redux/notes.types";
 import { NoteSidebarRow } from "../components/NoteSidebarRow";
-import { createCoalescedCommit } from "@/lib/working-copy/coalescedCommit";
+import { createCoalescedCommit } from "@ai-matrx/kit/working-copy";
 import { NOTE_SAVE_MAX_WAIT_MS } from "../redux/notes.types";
 
 enableMapSet();

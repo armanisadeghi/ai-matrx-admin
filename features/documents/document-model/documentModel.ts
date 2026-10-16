@@ -9,7 +9,7 @@
  * with its own realtime channel and its own collab room.
  *
  * The document is a record on THE one working-copy primitive
- * (`lib/working-copy/workingCopyKind.ts`, kind `udt_document`,
+ * (`@ai-matrx/kit/working-copy`, kind `udt_document`,
  * `./documentModels.ts`): its save status, dirty and view count are Redux state
  * (`workingCopies["udt_document:<id>"]`), its one coalesced save is the kind's.
  * What Redux cannot hold — Univer's body — is this engine, registered on the
@@ -34,8 +34,7 @@
  */
 
 import type { ICommandInfo, IDocumentData } from "@univerjs/core";
-import type { CommitReason } from "@/lib/working-copy/coalescedCommit";
-import type { WorkingCopyHandle } from "@/lib/working-copy/workingCopyKind";
+import type { CommitReason, WorkingCopyHandle } from "@ai-matrx/kit/working-copy";
 import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 import { isSnapshotMutation } from "@ai-matrx/office/univer";
 import type {

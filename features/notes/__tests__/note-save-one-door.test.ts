@@ -39,7 +39,7 @@ import notesReducer, { upsertNoteFromServer } from "../redux/slice";
 import { saveNote } from "../redux/thunks";
 import { noteSaveRequestMiddleware } from "../redux/noteSaveRequests";
 import workingCopiesReducer, { getWorkingCopy } from "@/lib/working-copy/workingCopySlice";
-import { mergedConflictText } from "@/lib/working-copy/announce";
+import { mergedConflictText } from "@ai-matrx/kit/working-copy";
 import { noteWorkingCopy } from "../utils/noteLiveContent";
 import { NoteUpdateConflictError, type NoteSaveReceipt } from "../service/noteSaveErrors";
 import type { Note } from "../types";

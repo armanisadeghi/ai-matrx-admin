@@ -14,9 +14,9 @@
 // over a stored state it never compared, a reload draft adopted over a newer
 // version without a word, an engine's "changed elsewhere" that only logs.
 import { configureStore } from "@reduxjs/toolkit";
-import { defineWorkingCopyKind } from "../workingCopyKind";
+import { defineWorkingCopyKind } from "../reduxPort";
 import workingCopiesReducer, { getWorkingCopy } from "../workingCopySlice";
-import { mergeText } from "../mergeText";
+import { mergeText } from "@ai-matrx/kit/working-copy";
 
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => {

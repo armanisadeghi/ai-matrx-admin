@@ -34,12 +34,12 @@
 // `notesDrafts.ts`, the delete thunk) use `getNoteLiveContent`; components use
 // `selectWorkingCopyValue(state, noteWorkingCopy.key(id))`.
 
+import { WorkingCopySaveConflict } from "@ai-matrx/kit/working-copy";
 import {
   defineWorkingCopyKind,
-  WorkingCopySaveConflict,
   type WorkingCopyKind,
   type WorkingCopyStoreLike,
-} from "@/lib/working-copy/workingCopyKind";
+} from "@/lib/working-copy/reduxPort";
 import { announceWorkingCopyConflict, dismissWorkingCopyConflict } from "@/lib/working-copy/announce";
 import { getReduxSyncDelay, NOTE_SAVE_MAX_WAIT_MS, type NoteRecord, type NoteUndoableField } from "../redux/notes.types";
 import type { Note } from "../types";

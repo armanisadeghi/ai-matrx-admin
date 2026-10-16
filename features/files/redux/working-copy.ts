@@ -2,7 +2,7 @@
  * features/files/redux/working-copy.ts
  *
  * A text file being edited is a record on THE one working-copy primitive
- * (`lib/working-copy/workingCopyKind.ts`, kind `file`): its text, base text,
+ * (`@ai-matrx/kit/working-copy`, kind `file`): its text, base text,
  * version, dirty and save status live in Redux
  * (`workingCopies["file:<id>"]`), one entry per file, and every editor view of
  * the file — a board tile, the Files page, a canvas tab — is a view of it.
@@ -26,7 +26,7 @@
 import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import { toast } from "@/lib/toast";
 import { announceWorkingCopyConflict, dismissWorkingCopyConflict } from "@/lib/working-copy/announce";
-import { defineWorkingCopyKind, type WorkingCopyKind } from "@/lib/working-copy/workingCopyKind";
+import { defineWorkingCopyKind, type WorkingCopyKind } from "@/lib/working-copy/reduxPort";
 import { getWorkingCopy, type WithWorkingCopies } from "@/lib/working-copy/workingCopySlice";
 import type { CloudFilesState } from "@/features/files/types";
 import { saveFileNewVersion } from "./thunks";

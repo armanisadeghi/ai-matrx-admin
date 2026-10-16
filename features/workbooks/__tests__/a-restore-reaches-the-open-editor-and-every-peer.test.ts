@@ -24,7 +24,7 @@ import {
   type CommandServiceLike,
 } from "@ai-matrx/office/univer/collab";
 import { registerOpenEditorContent, showSavedSnapshot } from "@ai-matrx/office/univer";
-import { defineWorkingCopyKind } from "@/lib/working-copy/workingCopyKind";
+import { defineWorkingCopyKind } from "@/lib/working-copy/reduxPort";
 import workingCopiesReducer from "@/lib/working-copy/workingCopySlice";
 import {
   DocumentModel,

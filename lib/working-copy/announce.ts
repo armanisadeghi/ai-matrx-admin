@@ -6,17 +6,8 @@
  */
 
 import { toast } from "@/lib/toast";
-import { mergeText } from "./mergeText";
-import type { WorkingCopyKind } from "./workingCopyKind";
-import type { WorkingCopyConflict, WorkingCopyEntry } from "./workingCopySlice";
-
-/** The merged text for a text conflict, or null when the edits overlap (or it is not text). */
-export function mergedConflictText(entry: WorkingCopyEntry | undefined): string | null {
-  const conflict = entry?.conflict;
-  if (!entry || !conflict || entry.value === undefined) return null;
-  if (conflict.theirs === undefined || conflict.ancestor === undefined) return null;
-  return mergeText(conflict.ancestor, entry.value, conflict.theirs);
-}
+import { mergedConflictText, type WorkingCopyConflict } from "@ai-matrx/kit/working-copy";
+import type { WorkingCopyKind } from "./reduxPort";
 
 const conflictToastId = <E>(kind: WorkingCopyKind<E>, id: string) => `working-copy-conflict:${kind.key(id)}`;
 
