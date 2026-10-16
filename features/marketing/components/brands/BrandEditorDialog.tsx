@@ -335,7 +335,7 @@ function BrandEditorDialogBody({
     <Dialog open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
       {/* The card ends above what floats at the bottom (assists dock): it is
           centred, so twice the measured runway comes off its height. */}
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-h-[min(90dvh,calc(100dvh-2*var(--matrx-floating-clearance,0px)))] sm:max-w-2xl">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:flex sm:h-[min(46rem,90dvh)] sm:flex-col sm:max-h-[min(90dvh,calc(100dvh-2*var(--matrx-floating-clearance,0px)))] sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{brand ? `Edit ${brand.name}` : "Add brand"}</DialogTitle>
           <DialogDescription>
@@ -859,7 +859,8 @@ function BrandEditorDialogBody({
           <ErrorAlchemyMenu error={failure} /></p>
         ) : null}
 
-        <DialogFooter>
+        {/* One fixed-size card with the actions pinned to its bottom edge: the Create button is where the first paint put it, whatever mode or list arrives after. */}
+        <DialogFooter className="sm:mt-auto">
           <Button
             variant="quiet"
             disabled={busy}

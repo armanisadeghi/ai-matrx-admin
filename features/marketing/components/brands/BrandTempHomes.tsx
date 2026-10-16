@@ -164,7 +164,7 @@ export function BrandRecognitionSection({ brandId, canEdit }: { brandId: string;
     },
     { id: "name", label: "Name", header: "Name", width: 240, minWidth: 160, accessorFn: (r) => r.name, editable: edit ? "string" : false, filter: "text" },
     { id: "issuer_name", label: "Issuer", header: "Issuer", width: 180, accessorFn: (r) => r.issuer_name ?? "", editable: edit ? "string" : false, filter: "text" },
-    { id: "year", label: "Year", header: "Year", width: 80, accessorFn: (r) => r.year ?? "", editable: edit ? "number" : false },
+    { id: "year", label: "Year", header: "Year", width: 80, accessorFn: (r) => r.year ?? "", editable: edit ? "number" : false, cell: (r) => (r.year === null ? "—" : String(r.year)) },
     { id: "reference_number", label: "Reference", header: "Reference", width: 130, accessorFn: (r) => r.reference_number ?? "", editable: edit ? "string" : false },
     { id: "valid_from_text", label: "Valid from", header: "Valid from", width: 110, accessorFn: (r) => r.valid_from_text ?? "", editable: edit ? "string" : false },
     { id: "valid_until_text", label: "Valid until", header: "Valid until", width: 110, accessorFn: (r) => r.valid_until_text ?? "", editable: edit ? "string" : false },

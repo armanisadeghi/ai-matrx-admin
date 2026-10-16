@@ -229,7 +229,6 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
   // (shared cache), so the loading box can be the height of the table that replaces it.
   const knownSites = useBrandSites(brand.id);
   const knownProperties = useBrandProperties(brand.id);
-  console.log('DBGBG', knownSites.data?.length, knownProperties.data?.map((x) => x.kind + ':' + Boolean(x.url || x.handle)).join(','), sites.data?.length, accounts.data?.length);
   const expectedRows =
     knownSites.data && knownProperties.data
       ? Math.max(1, knownSites.data.length + knownProperties.data.filter((x) => x.kind !== "website" && (x.url || x.handle)).length)

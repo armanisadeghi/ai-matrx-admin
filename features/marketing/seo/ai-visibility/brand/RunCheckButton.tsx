@@ -56,13 +56,10 @@ export function RunCheckButton({
         <Sparkles className="h-3.5 w-3.5" />
       )}
       {run.isPending ? "Checking" : "Run check"}
-      {usd != null ? (
-        usd === 0 ? (
-          <span className="text-xs opacity-70">no new cost</span>
-        ) : (
-          <Cost usd={usd} prefix="≈ " className="text-xs opacity-70" />
-        )
-      ) : null}
+      {/* One fixed-width slot from the first paint: the cost arriving never resizes the button. */}
+      <span className="inline-block min-w-[4.5rem] text-left text-xs opacity-70">
+        {usd == null ? null : usd === 0 ? "no new cost" : <Cost usd={usd} prefix="≈ " />}
+      </span>
     </Button>
   );
 }

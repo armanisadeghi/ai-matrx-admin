@@ -323,13 +323,13 @@ export function BrandOfferingsSummary({ brand }: Props) {
       className="flex min-h-[74px] flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2"
       data-brand-offerings-summary={brand.id}
     >
-      <div className="min-w-0">
+      <div className="min-w-[7rem]">
         <PropertyRow
           label="Found"
           value={items ? formatCount(items.length) : "…"}
         />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-[8rem]">
         <PropertyRow
           label="Confirmed"
           value={
@@ -339,7 +339,7 @@ export function BrandOfferingsSummary({ brand }: Props) {
           }
         />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-[8rem]">
         <PropertyRow
           label="To review"
           value={
@@ -353,13 +353,11 @@ export function BrandOfferingsSummary({ brand }: Props) {
           }
         />
       </div>
-      {verdictText || !items ? (
-        <div className="min-w-0">
-          <PropertyRow label="Coverage" value={verdictText ?? "…"} />
-        </div>
-      ) : null}
-      {top.length || !items ? (
-        <div className="min-w-0">
+      {/* Both slots always render, at a fixed minimum width, so the answers arriving never move their neighbours. */}
+      <div className="min-w-[14rem]">
+        <PropertyRow label="Coverage" value={verdictText ?? (items ? "—" : "…")} />
+      </div>
+        <div className="min-w-[10rem]">
           <PropertyRow
             label="Top groups"
             value={
@@ -375,11 +373,11 @@ export function BrandOfferingsSummary({ brand }: Props) {
                     </span>
                   </span>
                 ))}
+                {top.length === 0 ? <span className="text-muted-foreground">{items ? "—" : "…"}</span> : null}
               </span>
             }
           />
         </div>
-      ) : null}
     </div>
   );
 }
