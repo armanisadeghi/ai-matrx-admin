@@ -1035,6 +1035,8 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
       // The session takes an opaque resource id — the documentId rides the
       // `workbookId` field; the session only forwards it to makeProvider.
       workbookId: documentId,
+      // A document's typed text IS its doc.mutation.* stream; without this the room drops it as cell-editor scratch.
+      forwardDocumentMutations: true,
       uid,
       clientId,
       commandService,
