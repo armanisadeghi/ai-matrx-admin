@@ -1,8 +1,9 @@
 /**
  * Sign-up welcome — the session's pure rules (SIGNUP-WELCOME.md steps 3–6). No React, no I/O.
  *
- * - One session per person: every round of the welcome has a stable subject, `signup_welcome:<user id>` for the
- *   first, `…:2`, `…:3` for the next, so a reload finds each round again (GET runs?subject=) and never pays twice.
+ * - One session per person: every round of the welcome has a stable key, `signup_welcome:<user id>` for the
+ *   first, `…:2`, `…:3` for the next, carried as a stable `smart_add:<uuid>` run subject (roundSubject), so a reload
+ *   finds each round again (GET runs?subject=) and never pays twice.
  * - An admin's test login (debug mode only) replaces the seed for that session; its subject is
  *   `signup_welcome:test:<hash of the values>`, so the same values resume the same test session.
  * - "None of these" narrows the next round with one typed value: a company when it reads like one, else a city.
@@ -21,9 +22,28 @@ export function welcomeSubject(userId: string): string {
   return `${WELCOME_SUBJECT_PREFIX}${userId}`;
 }
 
-/** Round n (0-based) of a session: the first keeps the bare subject. */
-export function roundSubject(base: string, n: number): string {
+/** Round n (0-based) of a session's logical key: the first keeps the bare key. */
+export function roundKey(base: string, n: number): string {
   return n === 0 ? base : `${base}:${n + 1}`;
+}
+
+/**
+ * A stable UUID for a text key (128 bits from four seeded FNV-1a passes, version 8, RFC variant). The same key always
+ * gives the same id; it is an identity, never a secret.
+ */
+export function stableUuid(key: string): string {
+  const hex = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b].map((seed) => fnv1a(key, seed)).join("");
+  const v = `${hex.slice(0, 12)}8${hex.slice(13, 16)}${((parseInt(hex[16], 16) & 0x3) | 0x8).toString(16)}${hex.slice(17, 32)}`;
+  return `${v.slice(0, 8)}-${v.slice(8, 12)}-${v.slice(12, 16)}-${v.slice(16, 20)}-${v.slice(20, 32)}`;
+}
+
+/**
+ * The run subject of round n. The identify workflow's lane accepts only `smart_add:<uuid>` (aidream
+ * system_workflows.py parse_subject), so the logical key (`signup_welcome:<user id>`, `…:2`) is carried as a stable
+ * UUID: the same person's same round always looks up and rejoins the same run.
+ */
+export function roundSubject(base: string, n: number): string {
+  return `smart_add:${stableUuid(roundKey(base, n))}`;
 }
 
 export type TestProvider = "google" | "github" | "apple" | "email";
@@ -39,8 +59,8 @@ export interface TestLogin {
 export const EMPTY_TEST_LOGIN: TestLogin = { email: "", name: "", provider: "google", workspaceDomain: "", githubLogin: "" };
 
 /** FNV-1a, 32-bit, hex: a short stable id for a set of test values (never a secret). */
-export function fnv1a(text: string): string {
-  let h = 0x811c9dc5;
+export function fnv1a(text: string, seed = 0x811c9dc5): string {
+  let h = seed;
   for (let i = 0; i < text.length; i++) {
     h ^= text.charCodeAt(i);
     h = Math.imul(h, 0x01000193);

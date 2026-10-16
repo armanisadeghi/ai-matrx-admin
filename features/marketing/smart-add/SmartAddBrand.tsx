@@ -603,7 +603,8 @@ export function SmartAddBrand({
 
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(
-    url && !enrich && !created ? (runIds[0] ?? null) : null,
+    // The welcome door has no address, but its rounds are stable (welcomeSession.roundSubject): answers ride them too.
+    (url || door === "welcome") && !enrich && !created ? (runIds[0] ?? null) : null,
     { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items), skipped: [...skipped], taglines, webMarks, separated: [...separated], later: [] },
     (saved) => {
       const moved = Object.values(saved.taglines);

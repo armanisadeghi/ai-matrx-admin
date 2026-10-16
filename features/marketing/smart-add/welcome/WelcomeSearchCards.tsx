@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import { categoriesFor, liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { KeyRound, Swords } from "lucide-react";
 import { useDomainSection } from "@/features/marketing/seo/domain-research/useDomainSection";
 import { seedKeywords } from "@/features/marketing/seo/domain-research/DomainResearchPage";
@@ -59,7 +60,10 @@ export function WelcomeSearchCards({ host }: { host: string }) {
   const top = seedKeywords(rows, 3);
   const rival =
     competitors.state.kind === "ready"
-      ? (competitors.state.data.rows.map((r) => r.domain).find((d) => d && d.replace(/^www\./, "") !== host.replace(/^www\./, "")) ?? null)
+      ? (competitors.state.data.rows
+          .map((r) => r.domain)
+          // A known kind of site (a reference, a social network, a marketplace…) ranks beside anyone: never a competitor.
+          .find((d) => d && d.replace(/^www\./, "") !== host.replace(/^www\./, "") && !categoriesFor(d, liveKnownDomainRules() ?? []).length) ?? null)
       : null;
   const noKeywords = keywords.state.kind === "ready" && rows.length === 0;
   return (
