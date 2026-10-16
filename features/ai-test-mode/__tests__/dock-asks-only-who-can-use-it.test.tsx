@@ -48,9 +48,20 @@ it("never asks for a person who is not an admin and has not switched modes", asy
   expect(mockFetch).not.toHaveBeenCalled();
 });
 
-it("asks for an admin", async () => {
+it("never asks for an admin in real mode, and still shows them the switch", async () => {
   mockIsAdmin = true;
   mockMode = "real";
+  const host = document.body.appendChild(document.createElement("div"));
+  const root = createRoot(host);
+  await act(async () => root.render(<AiTestModeSheetRow />));
+  expect(host.textContent ?? "").not.toBe("");
+  act(() => root.unmount());
+  expect(mockFetch).not.toHaveBeenCalled();
+});
+
+it("asks once a tab has switched off real", async () => {
+  mockIsAdmin = false;
+  mockMode = "replay";
   await mount();
   expect(mockFetch).toHaveBeenCalledTimes(1);
 });
