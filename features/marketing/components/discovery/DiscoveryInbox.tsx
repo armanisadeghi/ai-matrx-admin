@@ -11,6 +11,7 @@ import {
   ExternalLink,
   FileQuestion,
   Globe2,
+  Image as ImageIcon,
   Link2,
   ListChecks,
   MapPinned,
@@ -24,8 +25,11 @@ import {
   type MatrxColumnDef,
   type MatrxTableIconAction,
 } from "@ai-matrx/design-system/data-table";
-import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
-import { Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
+import type {
+  MatrxDataTableMobileCardControls,
+  MatrxDataTableQueryState,
+} from "@ai-matrx/design-system/data-table/types";
+import { Checkbox, Peek, PeekHoverCard, Skeleton, type PeekRecord } from "@ai-matrx/design-system";
 import { Button, Input, Select } from "@ai-matrx/design-system/controls";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { InfoHint } from "@/components/official/InfoHint";
@@ -89,6 +93,7 @@ import {
 // read the same lists. Never re-type a kind literal here.
 import {
   defaultKind,
+  kindWaitsOnRules,
   isKindInPool,
   isMediaCategory,
   isSocialCategory,
@@ -233,12 +238,20 @@ function confidenceTone(
 
 /** The fixed 24px leading glyph: a picture, the network's mark, or the category's icon. */
 function ItemGlyph({ item }: { item: DiscoveredItem }) {
+  // A picture that fails to load (dead link, blocked host) is an empty box: fall back to the icon.
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const preview = previewUrlOf(item);
-  if (preview) {
+  if (preview && failedUrl !== preview) {
     return (
       <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-muted">
         {/* Discovered candidates are external public URLs, not our media. */}
-        <img src={preview} alt="" className="h-full w-full object-contain" loading="lazy" />
+        <img
+          src={preview}
+          alt=""
+          className="h-full w-full object-contain"
+          loading="lazy"
+          onError={() => setFailedUrl(preview)}
+        />
       </span>
     );
   }
@@ -247,11 +260,13 @@ function ItemGlyph({ item }: { item: DiscoveredItem }) {
     : null;
   const Icon: LucideIcon = social
     ? (SOCIAL_ICONS[social.kind] ?? AtSign)
-    : item.category === "fact"
-      ? ListChecks
-      : item.category === "social"
-        ? AtSign
-        : Link2;
+    : isMediaCategory(item.category)
+      ? ImageIcon
+      : item.category === "fact"
+        ? ListChecks
+        : item.category === "social"
+          ? AtSign
+          : Link2;
   return (
     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-muted text-muted-foreground">
       <Icon className="h-3.5 w-3.5" aria-hidden />
@@ -366,6 +381,9 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
     staleTime: Infinity,
   });
   const fieldKind = factRules.data?.fieldKind;
+  // Until the server's rules answer, a row whose type depends on them shows a shimmer, never the
+  // fallback ("Other fact") that the rules would then replace. A failed read stops waiting.
+  const rulesPending = factRules.isPending;
   const total = items.data?.total ?? 0;
   if (items.data !== undefined && total !== knownTotal) setKnownTotal(total);
   const pageCount = Math.max(1, Math.ceil(total / query.pageSize));
@@ -384,14 +402,17 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
 
   const effectiveKind = (item: DiscoveredItem) =>
     kindOverrides[item.id] ?? defaultKind(item, fieldKind);
+  /** True while this row's type is still waiting on the server's rules (a person's own pick never waits). */
+  const kindPending = (item: DiscoveredItem) =>
+    kindOverrides[item.id] === undefined && kindWaitsOnRules(item, rulesPending);
   // A row filed under Other starts labelled by what the finder called it, so Confirm is never a dead button.
   const effectiveLabel = (item: DiscoveredItem) =>
     labelOverrides[item.id] ??
-    (effectiveKind(item) === LABEL_REQUIRED_KIND && item.guessed_kind
+    (!kindPending(item) && effectiveKind(item) === LABEL_REQUIRED_KIND && item.guessed_kind
       ? humanizeIdentifier(item.guessed_kind)
       : "");
   const needsLabel = (item: DiscoveredItem) =>
-    effectiveKind(item) === LABEL_REQUIRED_KIND && !effectiveLabel(item).trim();
+    !kindPending(item) && effectiveKind(item) === LABEL_REQUIRED_KIND && !effectiveLabel(item).trim();
 
   const withBusy = async (itemId: string, work: () => Promise<void>) => {
     setBusyIds((current) => new Set(current).add(itemId));
@@ -483,9 +504,11 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
             label: "Confirm",
             icon: Check,
             disabledReason: (_count, selection) =>
-              selection.rows.every(needsLabel)
-                ? "Add a label to each Other item first"
-                : null,
+              selection.rows.some(kindPending)
+                ? "Working out the types"
+                : selection.rows.every(needsLabel)
+                  ? "Add a label to each Other item first"
+                  : null,
             run: async (selection) => {
               // An "Other" row is confirmable in bulk exactly when it carries a
               // label — the same rule the per-row Confirm enforces.
@@ -881,6 +904,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
           {
             id: "type",
             accessorFn: (item) => {
+              if (kindPending(item)) return "";
               const kind = effectiveKind(item);
               return (
                 kindOptionsFor(kindPoolOf(item.category)).find((o) => o.value === kind)
@@ -891,7 +915,14 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
             label: "Type",
             width: 190,
             filter: "select",
-            cell: (item) => (
+            cell: (item) =>
+              kindPending(item) ? (
+                <Skeleton
+                  aria-label="Loading type"
+                  data-discovery-type-loading=""
+                  className="h-5 w-28 rounded"
+                />
+              ) : (
               <Select<string>
                 aria-label="Type"
                 variant="inline"
@@ -901,7 +932,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
                   setKindOverrides((current) => ({ ...current, [item.id]: kind }))
                 }
               />
-            ),
+              ),
           },
           {
             id: "label",
@@ -949,9 +980,11 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
       ? item.status === "confirmed"
         ? "Already confirmed"
         : "Restore it to pending first"
-      : needsLabel(item)
-        ? "Add a label for an Other item"
-        : null;
+      : kindPending(item)
+        ? "Working out the type"
+        : needsLabel(item)
+          ? "Add a label for an Other item"
+          : null;
     return [
       {
         id: "confirm",
@@ -998,6 +1031,42 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
         },
       },
     ];
+  };
+
+  // A phone gets one card per item: the value, the type picker, the label and every verb stacked, so
+  // nothing needs a sideways scroll. The cells are the table's own (same Select, same Input).
+  const renderInboxCard = (item: DiscoveredItem, controls: MatrxDataTableMobileCardControls) => {
+    const meta = [foundAs(item) || categoryLabel(item.category), percentOf(item.confidence)]
+      .filter(Boolean)
+      .join(" · ");
+    return (
+      <article
+        className="grid gap-2 rounded-lg border border-border bg-card p-3"
+        data-discovery-card={item.id}
+      >
+        <div className="flex items-start gap-2">
+          {controls.selectable ? (
+            <Checkbox
+              className="mt-1 h-4 w-4 shrink-0 touch-manipulation"
+              checked={controls.selected}
+              aria-label="Select this item"
+              onCheckedChange={(next) => controls.onSelectedChange(next === true)}
+            />
+          ) : null}
+          <div className="grid min-w-0 flex-1 gap-0.5">
+            {controls.renderCell("value")}
+            <span className="type-meta truncate text-muted-foreground">{meta}</span>
+          </div>
+        </div>
+        {status === "pending" ? (
+          <div className="grid gap-2">
+            {controls.renderCell("type")}
+            {controls.renderCell("label")}
+          </div>
+        ) : null}
+        <div className="flex justify-end">{controls.actions}</div>
+      </article>
+    );
   };
 
   const showNoWebsite =
@@ -1190,11 +1259,14 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
               }}
               selection={selection}
               rowActions={rowActions}
+              mobileCards={(item, _index, controls) => renderInboxCard(item, controls)}
+              mobileCardsBreakpoint="md"
               rowVersion={(item) => [
                 kindOverrides[item.id],
                 labelOverrides[item.id],
                 busyIds.has(item.id),
                 fieldKind,
+                kindPending(item),
               ]}
               detail={{ enabled: false }}
               emptyState={{
