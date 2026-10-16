@@ -33,6 +33,25 @@ export function profileLinkIn(...texts: (string | null | undefined)[]): string |
 }
 
 /**
+ * The person's own website typed in any Person box (MKT-186): the first address that is a plain website — not an
+ * email, not a link-in-bio page, not a social account. It lands in Websites as a kept finding the moment the search
+ * starts, instead of reaching only the facts agent as free text. Pure.
+ */
+export function websiteLinkIn(...texts: (string | null | undefined)[]): string | null {
+  for (const text of texts) {
+    for (const raw of (text ?? "").split(/[\s,;]+/)) {
+      const token = raw.replace(/^[(<"']+|[)>"'.]+$/g, "");
+      if (!token || token.includes("@") || !/^(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(:\d+)?(\/\S*)?$/i.test(token)) continue;
+      if (linkInBioService(token) || fediverseProfileShape(token)) continue;
+      const account = resolveAccountInput({ text: token });
+      if (account.status === "ok" && account.detected) continue;
+      return /^https?:\/\//i.test(token) ? token : `https://${token}`;
+    }
+  }
+  return null;
+}
+
+/**
  * Is a profile link typed anywhere? Includes a `host/@user` shape whose host is not yet checked (a Mastodon server),
  * so the "job or company" gate never stands in front of a link that already anchors the search (MKT-123).
  */

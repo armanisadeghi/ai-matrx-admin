@@ -17,6 +17,7 @@
  */
 
 import { promoteSmartAddFindings } from "./promote";
+import { websiteLinkIn } from "./personPrefill";
 import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
 import { PersonFoundStage } from "./found/PersonFoundStage";
@@ -818,6 +819,9 @@ export function SmartAddBrand({
     personTyped.current = { name, city };
     personMore.current = more;
     const answers = [customItem("name", name), ...(city ? [customItem("address", city)] : [])];
+    // MKT-186: a plain website typed in a Person box is the person's website: a Websites row, not only free text for the agent.
+    const ownSite = websiteLinkIn(more.extra, more.company, more.occupation);
+    if (ownSite) answers.push(customItem("website", ownSite));
     addCustom(answers);
     // The anchor round carries the woken name and city itself; the wake effect must not send them again.
     wokenSent.current.add(`name:${name}`);

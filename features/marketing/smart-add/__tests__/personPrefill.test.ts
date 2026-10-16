@@ -1,6 +1,6 @@
 import { parseSmartAddUrl } from "../smartAddUrl";
 import { forgetFediverseHosts } from "@/features/marketing/social/profile-sites";
-import { hasProfileLink, learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "../personPrefill";
+import { hasProfileLink, learnProfileLinkHosts, personExtraPrefill, profileLinkIn, websiteLinkIn } from "../personPrefill";
 
 describe("the Person start page reads social= like Company does (MKT-103)", () => {
   const a = parseSmartAddUrl("/marketing/brands/smart-add/person", "?name=Ben%20Werdmuller&social=https%3A%2F%2Fwerd.social%2F%40ben&platform=mastodon");
@@ -63,5 +63,17 @@ describe("a profile link already anchors the search, so the job-or-company gate 
   it("a name and a city alone do not", () => {
     expect(hasProfileLink("Jane Doe", "Austin", "")).toBe(false);
     expect(hasProfileLink("Jane Doe", "Austin", "UT Austin")).toBe(false);
+  });
+});
+
+describe("a plain website typed in a Person box is the person's website (MKT-186)", () => {
+  it("finds it among words, and adds the scheme", () => {
+    expect(websiteLinkIn("", "", "author of things, https://maryrobinettekowal.com")).toBe("https://maryrobinettekowal.com");
+    expect(websiteLinkIn("maryrobinettekowal.com")).toBe("https://maryrobinettekowal.com");
+  });
+  it("is not a profile link, a link-in-bio page, an email or plain words", () => {
+    expect(websiteLinkIn("https://www.instagram.com/melrobbins")).toBeNull();
+    expect(websiteLinkIn("https://linktr.ee/someone")).toBeNull();
+    expect(websiteLinkIn("me@example.com", "Smile Co", "school: MIT")).toBeNull();
   });
 });
