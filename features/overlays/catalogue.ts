@@ -138,6 +138,11 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  readAloudVoiceSettings: {
+    label: "Read-aloud voice",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
   siteCommandRunWindow: {
     label: "Site Command Run",
     instanceMode: "multi",

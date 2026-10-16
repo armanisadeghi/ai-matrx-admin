@@ -758,6 +758,16 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     mobilePresentation: "card",
   },
 
+  // ── Read-aloud voice settings (package window, CHAT_WINDOWS.readAloudVoiceSettings) ─
+  {
+    slug: "read-aloud-voice-settings",
+    overlayId: "readAloudVoiceSettings",
+    kind: "window",
+    label: "Read-aloud voice",
+    defaultData: {},
+    mobilePresentation: "card",
+  },
+
   // ── Marketing site command run (analyze / sitemaps / GSC / links / fetch) ─
   // Ephemeral: the live stream cannot be restored, and it must not be — the
   // durable record is the command's own `web.crawl_session` row, which the

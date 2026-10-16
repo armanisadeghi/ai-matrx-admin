@@ -943,6 +943,10 @@ const ListenSummaryWindow = lazyOverlay(
   () => import("@/features/window-panels/windows/listen/ListenSummaryWindow"),
   { ssr: false },
 );
+const ReadAloudVoiceSettingsWindow = lazyOverlay(
+  () => import("@ai-matrx/chat/window-panels/windows/listen/ReadAloudVoiceSettingsWindow"),
+  { ssr: false },
+);
 const SiteCommandRunWindow = lazyOverlay(
   () =>
     import("@/features/window-panels/windows/marketing/SiteCommandRunWindow"),
@@ -1375,6 +1379,9 @@ export default function OverlayController() {
     ),
     listenSummaryWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "listenSummaryWindow"),
+    ),
+    readAloudVoiceSettings: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "readAloudVoiceSettings"),
     ),
     agentSettingsWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "agentSettingsWindow"),
@@ -3503,6 +3510,16 @@ export default function OverlayController() {
           />
         );
       })()}
+
+      {/* readAloudVoiceSettings — the package's voice picker for read-aloud */}
+      {isOpenById.readAloudVoiceSettings ? (
+        <ReadAloudVoiceSettingsWindow
+          isOpen
+          onClose={() =>
+            dispatch(closeOverlay({ overlayId: "readAloudVoiceSettings" }))
+          }
+        />
+      ) : null}
 
       {/* listenSummaryWindow */}
       {(() => {
