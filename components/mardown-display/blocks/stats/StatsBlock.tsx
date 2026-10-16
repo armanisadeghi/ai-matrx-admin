@@ -11,7 +11,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, Check, Copy, TriangleAlert } from "lucide-react";
 
 import { Skeleton } from "@ai-matrx/design-system";
@@ -21,6 +21,8 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
+import { BlockControlsButton, InlineControlText, InlineRowPopover, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 interface StatItem {
   label: string;
@@ -97,6 +99,11 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
   const cols = spec ? Math.min(spec.stats.length, maxCols) : Math.min(3, maxCols);
 
   const host = useBlockHostSlot();
+  // Block Controls: shown wherever this block can be saved (Write, an editable answer).
+  const controls = useBlockControls("stats", content, useBlockEdit());
+  const [tileEdit, setTileEdit] = useState<{ index: number; x: number; y: number } | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const canEditTile = Boolean(controls?.inline(String(controls.model.valueKey)));
   const handleCopy = async () => {
     if (!(await copyText(content.trim()))) return;
     setCopied(true);
@@ -108,13 +115,16 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
       <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
         <div className="flex min-w-0 items-center gap-2">
           <BarChart3 className="h-3.5 w-3.5 shrink-0 text-primary" />
-          <span className="truncate text-sm font-medium text-foreground">{spec?.title ?? "Key metrics"}</span>
+          <InlineControlText controls={controls} fieldKey="title" value={spec?.title ?? ""} className="truncate text-sm font-medium text-foreground">
+            {spec?.title ?? "Key metrics"}
+          </InlineControlText>
           {isStreamActive && <span className="shrink-0 animate-pulse text-xs text-muted-foreground">…</span>}
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
           {!isStreamActive && spec && (
             <Button variant="quiet" icon={copied ? <Check /> : <Copy />} aria-label={copied ? "Copied" : "Copy source"} title={copied ? "Copied" : "Copy source"} onClick={handleCopy} />
           )}
+          {!isStreamActive && spec && <BlockControlsButton controls={controls} title={spec.title ?? "Key metrics"} />}
           {host.actions}
         </div>
       </div>
@@ -132,11 +142,23 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
             <ErrorAlchemyMenu error={error} />
           </div>
         ) : spec ? (
-          <div className="grid gap-3" data-canvas-fit={fit === "outside" ? undefined : fit} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+          <div ref={gridRef} className="relative grid gap-3" data-canvas-fit={fit === "outside" ? undefined : fit} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
             {spec.stats.map((s, i) => {
               const t = s.trend ? TREND[s.trend] : null;
               return (
-                <div key={i} className="rounded-xl border border-border bg-muted/30 p-4">
+                <div
+                  key={i}
+                  className={cn("rounded-xl border border-border bg-muted/30 p-4", canEditTile && "cursor-pointer hover:border-primary")}
+                  data-stat-tile={i}
+                  onClick={
+                    canEditTile
+                      ? (e) => {
+                          const box = gridRef.current?.getBoundingClientRect();
+                          if (box) setTileEdit({ index: i, x: e.clientX - box.left, y: e.clientY - box.top });
+                        }
+                      : undefined
+                  }
+                >
                   <div className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">{s.label}</div>
                   <div className="mt-1 text-2xl font-bold tabular-nums text-foreground">{s.value}</div>
                   {s.change && (
@@ -149,6 +171,7 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
                 </div>
               );
             })}
+            {controls && tileEdit && <InlineRowPopover controls={controls} rowsKey="rows" index={tileEdit.index} at={tileEdit} onClose={() => setTileEdit(null)} />}
           </div>
         ) : null}
       </div>

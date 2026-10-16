@@ -46,6 +46,8 @@ import { parseMarkdownChecklist } from "./tasklist-parser";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { cn } from "@/lib/utils";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
+import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 // Define TypeScript types for our components and data structures
 export type CheckboxStateType = Record<string, boolean>;
@@ -98,6 +100,8 @@ const TaskChecklist = ({
   // toolbar, the card drops its wide padding and subtasks indent less.
   // Outside the canvas nothing changes.
   const narrow = useCanvasFit() === "narrow";
+  // Block Controls (text, done, add, remove, reorder): only where this checklist is a saved block.
+  const blockControls = useBlockControls("tasks", content, useBlockEdit());
   const [saveSuccess, setSaveSuccess] = useState(false);
   const initialStateRef = useRef<CheckboxStateType>({});
   const initialChecklistRef = useRef<TaskItemType[]>([]);
@@ -599,6 +603,7 @@ const TaskChecklist = ({
                   narrow ? "ml-auto text-xs" : "text-sm",
                 )}
               >
+                <BlockControlsButton controls={blockControls} title="Tasks" />
                 <span>Hide completed</span>
                 <Switch
                   checked={hideCompleted}
