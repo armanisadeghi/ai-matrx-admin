@@ -33,7 +33,7 @@ export const googleConnectionKeys = {
   capabilities: ["marketing", "google-capabilities"] as const,
 };
 
-export function useGoogleCapabilities() {
+export function useGoogleCapabilities(options: { enabled?: boolean } = {}) {
   const authReady = useAppSelector(selectAuthReady);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const userId = useAppSelector(selectUserId);
@@ -42,12 +42,12 @@ export function useGoogleCapabilities() {
   return useQuery({
     queryKey: [...googleConnectionKeys.capabilities, userId],
     queryFn: ({ signal }) => listGoogleCapabilities(signal),
-    enabled: authReady && isAuthenticated && Boolean(userId),
+    enabled: (options.enabled ?? true) && authReady && isAuthenticated && Boolean(userId),
     staleTime: 30_000,
   });
 }
 
-export function useGoogleConnectionInventory() {
+export function useGoogleConnectionInventory(options: { enabled?: boolean } = {}) {
   const authReady = useAppSelector(selectAuthReady);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const userId = useAppSelector(selectUserId);
@@ -58,7 +58,7 @@ export function useGoogleConnectionInventory() {
     // `users.integration_connections` is deliberately unavailable to `anon`.
     // Core routes can mount before the Redux auth slice hydrates, so do not
     // issue the inventory read until the caller has an authenticated identity.
-    enabled: authReady && isAuthenticated && Boolean(userId),
+    enabled: (options.enabled ?? true) && authReady && isAuthenticated && Boolean(userId),
     select: (inventory) =>
       filterGoogleConnectionInventoryForUser(
         inventory,

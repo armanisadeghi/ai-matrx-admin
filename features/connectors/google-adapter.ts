@@ -304,9 +304,13 @@ export function effectiveGoogleRollout(
 }
 
 /** Live Google state for the connector surfaces, in provider-agnostic shapes. */
-export function useGoogleConnectorState(): ConnectorProviderState {
-  const inventory = useGoogleConnectionInventory();
-  const capabilities = useGoogleCapabilities();
+export function useGoogleConnectorState(
+  options: { enabled?: boolean } = {},
+): ConnectorProviderState {
+  // `enabled: false` holds BOTH reads (the connection inventory and the capability catalog) until a
+  // surface that is not part of first paint decides it is engaged (first-paint contract V6).
+  const inventory = useGoogleConnectionInventory(options);
+  const capabilities = useGoogleCapabilities(options);
 
   const accounts = (inventory.data?.connections ?? []).map(googleAccount);
 
