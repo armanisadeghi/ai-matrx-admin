@@ -9,7 +9,7 @@
  * The guard: for one content source, the ⋯ tree (AdvancedMenu / ProTextarea
  * list — `buildMenuTree(registryMenuActions)`; the bar's ⋯ and the standalone
  * ⋯/sheet are the Alchemy package's layouts over the same registry, ALC-15)
- * and the right-click model (context-menu v3 `buildMenuModel`, which the phone
+ * and the right-click model (context-menu v3 `buildContextMenuModel`, which the phone
  * sheet also renders) list the SAME registry ids in the SAME order and
  * grouping; the agent libraries live inside the AI submenu; nothing repeats.
  */
@@ -29,7 +29,7 @@ import {
 } from "@ai-matrx/rich-content/rich-document/variants/shared/menuStructure";
 import { chatContext } from "../test-utils/chatContext";
 import {
-  buildMenuModel,
+  buildContextMenuModel,
   type MenuNode,
 } from "@ai-matrx/context-menu/model";
 import type { ContextMenuActions } from "@ai-matrx/context-menu/model";
@@ -128,7 +128,7 @@ describe("one registry tree behind every menu", () => {
   // right-clickable answer opens that very menu): the AI submenu is present.
   const tree = buildMenuTree(menuActions, { aiSlot: true });
   const dotsIds = flattenMenuTreeIds({ ...tree, submenus: withAiSlot(tree.submenus, true) });
-  const model = buildMenuModel(engine(menuActions, ctx), {
+  const model = buildContextMenuModel(engine(menuActions, ctx), {
     selectedText: "",
     isEditable: false,
     canUndo: false,
@@ -188,7 +188,7 @@ describe("one registry tree behind every menu", () => {
       path.join(__dirname, "../../../../aidream/apps/shared/context-menu/src/engine/components/AlchemyMenuContent.tsx"),
       "utf8",
     );
-    expect(content).toMatch(/buildMenuModel\(/);
+    expect(content).toMatch(/buildContextMenuModel\(/);
     expect(content).toMatch(/@ai-matrx\/alchemy\/react\/sheet/);
     expect(content).not.toMatch(/copyVariantActions|placementSubmenu\(/);
   });
