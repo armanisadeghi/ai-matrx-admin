@@ -4,6 +4,7 @@
  */
 
 import { getJson, requestRaw } from "@/lib/python-client";
+import { readDataSourcesCatalog } from "./catalogRpc";
 import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
 import { settleDataFetch } from "./settle";
@@ -35,8 +36,7 @@ function org(organizationId: string): string {
 }
 
 export async function getDataSources(opts: { organizationId: string; signal?: AbortSignal }): Promise<DataSourceCatalog> {
-  const { data } = await getJson<unknown>(BASE, { organizationId: org(opts.organizationId), signal: opts.signal });
-  return parseCatalog(data);
+  return parseCatalog(await readDataSourcesCatalog(org(opts.organizationId)));
 }
 
 /** A refusal from a non-2xx answer: the server's `detail` `{code, user_message, limit}` when it sent one. */
