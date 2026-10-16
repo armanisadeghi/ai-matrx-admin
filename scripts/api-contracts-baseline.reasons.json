@@ -9,5 +9,10 @@
     "reason": "NDJSON stream from /ai/manual; typed-client is JSON-only (apiGet/apiPost) — same door as features/data-sources/server.ts",
     "accepted_by": "Armani Sadeghi",
     "date": "2026-10-12"
+  },
+  "features/cloud-computer/service.ts": {
+    "reason": "Route GET/POST /browser-manager/cloud-computer is not in the generated client until the server deploys; same raw-client pattern as features/cloud-browser/service.ts",
+    "accepted_by": "Armani Sadeghi",
+    "date": "2026-10-16"
   }
 }
