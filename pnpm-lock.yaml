@@ -497,6 +497,9 @@ importers:
       '@univerjs/docs-toc-ui':
         specifier: 1.0.4
         version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/engine-formula':
+        specifier: 1.0.4
+        version: 1.0.4(react@19.3.0)(rxjs@7.8.2)
       '@univerjs/find-replace':
         specifier: 1.0.4
         version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
