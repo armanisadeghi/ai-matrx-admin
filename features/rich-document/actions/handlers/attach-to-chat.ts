@@ -6,13 +6,13 @@
 // content by reference to the chat the person is looking at; never user_input.
 
 import { Paperclip } from "lucide-react";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { attachArtifactToChat } from "@/features/canvas/output/artifactAttach";
 import { focusedChatConversationId } from "@/features/canvas/output/attachOptions";
 import { getStore } from "@/lib/redux/store-singleton";
 import { toast } from "@/lib/toast";
 
-registerAction({
+registerActionIfAbsent({
   id: "attach-artifact-to-chat",
   label: "Attach to chat",
   icon: Paperclip,

@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { chatIds, chatStateOf, getErrorMessage } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import {
@@ -43,7 +43,7 @@ import { chartableTypes, parseDelimitedTable } from "@ai-matrx/rich-content/disp
 
 // ─── Pin ────────────────────────────────────────────────────────────────────
 
-registerAction({
+registerActionIfAbsent({
   id: "pin-message",
   writesSource: true,
   label: (ctx) => {
@@ -115,7 +115,7 @@ export async function confirmAndRegenerate(
   }
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "regenerate-response",
   writesSource: true,
   label: "Regenerate answer",
@@ -156,7 +156,7 @@ function extensionFor(language: string): string {
   return map[language.toLowerCase()] ?? "txt";
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "code-block-open-in-editor",
   label: "Open in code editor",
   icon: SquareArrowOutUpRight,
@@ -200,7 +200,7 @@ function activeEditableTab(ctx: RichDocumentActionContext) {
   return tab;
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "code-block-apply-to-file",
   label: (ctx) => `Apply to ${activeEditableTab(ctx)?.name ?? "open file"}`,
   icon: FileInput,
@@ -245,7 +245,7 @@ function sandboxFor(ctx: RichDocumentActionContext, facts: CodeBlockFacts): stri
   return runnableSandboxId(state.conversations?.byConversationId?.[facts.conversationId]?.sandboxBinding ?? null);
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "code-block-run",
   label: (ctx) => {
     const facts = codeFacts(ctx);
@@ -279,7 +279,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "code-block-chart",
   label: "Chart this data",
   icon: BarChart3,

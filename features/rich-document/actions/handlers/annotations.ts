@@ -6,7 +6,7 @@
 // never opens empty from here.
 
 import { MessageSquareText } from "lucide-react";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { annotationRecordOf, recordKeyOf } from "../../annotations/record-of-source";
 import { dockStateFor, subscribeDocks, toggleDockFor } from "../../annotations/record-annotations-store";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
@@ -19,7 +19,7 @@ function dockOf(ctx: RichDocumentActionContext) {
   return state ? { key, ...state } : null;
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "notes-and-comments",
   label: (ctx) => {
     const dock = dockOf(ctx);

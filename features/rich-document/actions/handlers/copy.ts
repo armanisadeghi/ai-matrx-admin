@@ -6,7 +6,7 @@
 
 import { Copy, Brain } from "lucide-react";
 import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { extractFlatText } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { chatStateOf, contentForDestination } from "../utils";
 import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-markdown";
@@ -15,7 +15,7 @@ import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-
 // knob's plain flavor (`copy.default_flavor`, default markdown) for a plain
 // field. The three ways to copy — Copy as Markdown, Copy content, Copy formatted
 // (transfer.ts, COPY_LABELS) — are the explicit choices beside it.
-registerAction({
+registerActionIfAbsent({
   id: "copy",
   label: "Copy",
   icon: Copy,
@@ -29,7 +29,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "copy-with-thinking",
   label: "Copy with thinking",
   icon: Brain,

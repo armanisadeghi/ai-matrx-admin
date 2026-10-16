@@ -20,7 +20,7 @@ import {
   ensureSurfaceConfig,
   selectSurfaceConfigEntry,
 } from "@ai-matrx/chat/surfaces/redux/surfaceConfigSlice";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { getErrorMessage, contentForDestination } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 
@@ -70,7 +70,7 @@ async function openListen(
   }
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "summarize-and-listen",
   label: "Summarize & listen",
   icon: AudioLines,
@@ -83,7 +83,7 @@ registerAction({
   run: (ctx) => openListen(ctx, true),
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "summarize-for-listening",
   label: "Summarize without playing",
   icon: Headphones,
@@ -157,7 +157,7 @@ function selectedText(ctx: RichDocumentActionContext): string | null {
   return mid && ctx.extensions.groupMessageIds.includes(mid) ? text : null;
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "tts-play",
   label: (ctx) => {
     const status = speechStatus(ctx);
@@ -254,7 +254,7 @@ registerAction({
 // overflow/Listen menu, never as a second icon. It opens the Voices screen at
 // the exact row that governs read-aloud.
 
-registerAction({
+registerActionIfAbsent({
   id: "tts-voice-settings",
   label: "Read-aloud voice settings",
   icon: Settings2,

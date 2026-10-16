@@ -27,7 +27,7 @@ import {
 } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { messageMayContainKindBlock } from "@/features/content-ir/studio/message-kind-gate";
 import { hasConvertibleContent } from "@ai-matrx/chat/agents/components/messages-display/message-options/convertibleContent";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import {
   chatIds,
   contentFileName,
@@ -69,7 +69,7 @@ async function resolveAnsweredQuestion(
   return precedingQuestion(thread, messageId);
 }
 
-registerAction({
+registerActionIfAbsent({
   // The Oracle tap (Masterwork Approach #10): an answer worth keeping lands in
   // one of the user's Rulebooks as a DRAFT rule. Same dialog + append path as
   // the thumbs follow-up nudge — ONE implementation (features/masterwork/oracle/).
@@ -110,7 +110,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "set-context-value",
   label: "Set Context Value",
   icon: Layers,
@@ -139,7 +139,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-as-message-template",
   label: "Save as Message Template",
   icon: LayoutTemplate,
@@ -171,7 +171,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-to-files",
   label: "Save to Files",
   // A glyph, never the route's letter badge (a stray "F" in every menu).
@@ -218,7 +218,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-as-pdf",
   label: "Save as PDF Document",
   icon: FileType,
@@ -275,7 +275,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   // "Save to my Shapes": persist a registered `__kind` block from this content
   // as a `content_ir.kind_instance` row. Hot-path gate is CHEAP by design (a
   // marker substring check); the heavy extraction lazy-loads on click.
@@ -370,7 +370,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   // The ratified click-to-convert pattern: content starts as generic markdown
   // and converts on EXPLICIT click into study artifacts through the ONE
   // convert-source dialog (features/education/convert). The dialog is owned by
@@ -402,7 +402,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   // The passage becomes the ANSWER side of one card; the host asks for the
   // question (the front is the reader's to write, never guessed) and files it
   // in their "Saved cards" deck.

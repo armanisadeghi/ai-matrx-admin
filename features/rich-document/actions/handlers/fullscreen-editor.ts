@@ -8,13 +8,13 @@ import { Maximize2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { chatExtensions, chatStateOf, chatWriteBackBlocked } from "../utils";
 import { updateMessageRecord } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.slice";
 import { getErrorMessage, serializeError } from "../utils";
 import { acknowledgedPreparedSource, prepareContentEdit, savePreparedContentEdit } from "./preparedEdit";
 
-registerAction({
+registerActionIfAbsent({
   id: "open-fullscreen-editor",
   label: "Open in full-screen editor",
   icon: Maximize2,

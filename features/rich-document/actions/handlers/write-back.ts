@@ -12,7 +12,7 @@ import { toast } from "@/lib/toast";
 import { selectWidgetHandleIdFor } from "@ai-matrx/chat/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { getSelectionWriteBack } from "@ai-matrx/chat/agents/utils/launch-widget-handles";
 import type { SelectionWriteBack } from "@ai-matrx/chat/agents/types/widget-handle.types";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { contentForDestination } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 
@@ -46,7 +46,7 @@ function apply(
   else toast.error("Original text changed — copy instead");
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "replace-selection",
   label: "Replace",
   icon: Replace,
@@ -58,7 +58,7 @@ registerAction({
   run: (ctx) => apply(ctx, "replace", "Replaced"),
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "insert-below",
   label: "Insert below",
   icon: ArrowDownToLine,

@@ -6,9 +6,9 @@
 
 import { BarChart3, Activity } from "lucide-react";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 
-registerAction({
+registerActionIfAbsent({
   id: "analyze-response",
   label: "Analyze response",
   icon: BarChart3,
@@ -39,7 +39,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "debug-stream",
   label: "Debug stream",
   icon: Activity,

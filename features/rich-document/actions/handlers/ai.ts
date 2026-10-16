@@ -10,7 +10,7 @@
 // its answers offer "Apply to source" (the same review).
 
 import { BookmarkPlus, FilePen, Link2, MessageCircle, Wand2 } from "lucide-react";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { customAgentWindowAction } from "@/features/overlays/openers/customAgentWindow";
 import { applyToSourceReviewAction } from "@/features/overlays/openers/applyToSourceReview";
@@ -35,7 +35,7 @@ import {
   requireAuth,
 } from "../utils";
 
-registerAction({
+registerActionIfAbsent({
   id: "text-cleanup",
   writesSource: true,
   label: "Clean up",
@@ -49,7 +49,7 @@ registerAction({
   run: (ctx) => ctx.callbacks?.onRequestTextAgentAction?.("cleanup", ctx),
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "text-help",
   writesSource: true,
   label: "Help with this…",
@@ -63,7 +63,7 @@ registerAction({
   run: (ctx) => ctx.callbacks?.onRequestTextAgentAction?.("help", ctx),
 });
 
-registerAction({
+registerActionIfAbsent({
   // "Custom agent…": THE agent picker window, then map the agent's inputs to
   // what the menu captured; the agent opens in its own window (one per open,
   // so several can work on the same text). When the text can be saved back,
@@ -114,7 +114,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   // An answer in an agent window launched by "Custom agent…" from text that
   // can be saved: review it against that text and apply (the one review —
   // diff, splice, save through the source's adapter).
@@ -163,7 +163,7 @@ function runMapping(ctx: RichDocumentActionContext) {
   return { agentId: conversation.agentId, ...conversation.launchMapping };
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "save-run-as-shortcut",
   label: "Save as shortcut",
   icon: BookmarkPlus,
@@ -188,7 +188,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "bind-run-to-page",
   label: "Bind to this page",
   icon: Link2,

@@ -10,7 +10,7 @@
 // thumb that writes nowhere is worse than no thumb.
 
 import { ThumbsUp, ThumbsDown } from "lucide-react";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { toast } from "@/lib/toast";
 import { outputFeedbackSubjectForSource } from "../../outputFeedbackSubject";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
@@ -76,7 +76,7 @@ function subscribeVerdict(
   return subscribeOutputFeedback(onChange);
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "thumbs-up",
   label: (ctx) => (currentVerdict(ctx) === "positive" ? "Helpful (undo)" : "Helpful"),
   icon: ThumbsUp,
@@ -91,7 +91,7 @@ registerAction({
   run: (ctx) => toggleVerdict(ctx, "positive"),
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "thumbs-down",
   label: (ctx) =>
     currentVerdict(ctx) === "negative" ? "Not helpful (undo)" : "Not helpful",

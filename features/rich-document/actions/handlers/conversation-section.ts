@@ -22,7 +22,7 @@
 // conversationId; absent everywhere else, never dead.
 
 import { Copy, Link as LinkIcon, Pencil, Pin, Search, Share2 } from "lucide-react";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { chatIds, chatStateOf } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import {
@@ -66,7 +66,7 @@ function pinnedCount(ctx: RichDocumentActionContext, conversationId: string): nu
   ).length;
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "conversation-find",
   label: "Find in conversation",
   icon: Search,
@@ -83,7 +83,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "conversation-pinned-only",
   label: (ctx) => {
     const id = conversationOf(ctx);
@@ -121,7 +121,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "conversation-share",
   label: "Share conversation",
   icon: Share2,
@@ -139,7 +139,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "conversation-copy-link",
   label: "Copy conversation link",
   icon: LinkIcon,
@@ -156,7 +156,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "conversation-rename",
   label: "Rename conversation",
   icon: Pencil,
@@ -174,7 +174,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "conversation-duplicate",
   label: "Duplicate conversation",
   icon: Copy,
@@ -199,7 +199,7 @@ registerAction({
 // runner loads on click.
 
 CONVERSATION_TRANSFER_ROWS.forEach((row, i) => {
-  registerAction({
+  registerActionIfAbsent({
     id: row.id,
     label: row.label,
     icon: row.icon,
