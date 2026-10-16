@@ -17,6 +17,7 @@ export async function readActiveAnnouncements(): Promise<{
   data?: SystemAnnouncement[];
 }> {
   try {
+    performance.mark("load:lazy:announcements read"); // LOAD MARKER (lazy) — page-load trace, no import
     const supabase = createClient();
     const {
       data: { user },

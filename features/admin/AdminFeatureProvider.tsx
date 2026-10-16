@@ -12,6 +12,7 @@
 // its effects. Each piece keeps its own narrower gate inside the core.
 
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectIsAdminDebugger,
@@ -34,6 +35,19 @@ export default function AdminFeatureProvider() {
   // preferences. Gated like the switch itself: `selectIsSuperAdmin` is false on user pages.
   const canDebug = useAppSelector(selectIsSuperAdminDebugger);
   useDebugModePersistence(Boolean(canDebug));
+  // The page-load trace (lib/diagnostics/loadTrace.ts) installs before Redux exists, so the debug
+  // switch leaves it a note for the next boot. Inline on purpose: no import edge from the shell.
+  // Key = LOAD_TRACE_ADMIN_KEY in lib/diagnostics/loadTraceFlag.ts.
+  const debugTrace = Boolean(canDebug && isDebugMode);
+  useEffect(() => {
+    if (!canDebug) return;
+    try {
+      if (debugTrace) window.localStorage.setItem("matrx:load-trace-admin", "1");
+      else window.localStorage.removeItem("matrx:load-trace-admin");
+    } catch {
+      /* storage blocked */
+    }
+  }, [canDebug, debugTrace]);
 
   if (!isAdminPerson) return null;
   return (

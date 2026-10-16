@@ -85,6 +85,9 @@ import { SlideRail } from "./SlideRail";
 import { DeckPresenter } from "./DeckPresenter";
 import { DeckHistoryPanel } from "./DeckHistoryPanel";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Slides editor", { detail: { home: ["/presentations"] } });
+
 const AUTOSAVE_MS = 900;
 const PRESETS = PRESET_LIST.map((p) => ({ key: p.key, name: p.name }));
 

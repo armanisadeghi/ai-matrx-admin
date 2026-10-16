@@ -13,6 +13,9 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useEffectsAttached } from "@/hooks/use-is-mounted";
 import { useMonacoTheme } from "./useMonacoTheme";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Monaco code editor", { detail: { home: ["/code"] } });
+
 /** Minimal shape of the Monaco editor instance we need. Keeping this loose
  *  avoids a hard type dep on the monaco-editor package itself. */
 type StandaloneCodeEditor = {

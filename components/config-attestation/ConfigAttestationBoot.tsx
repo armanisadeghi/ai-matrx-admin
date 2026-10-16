@@ -24,7 +24,10 @@ export function ConfigAttestationBoot() {
     };
     const controller = new AbortController();
     void whenLateIdle(undefined, controller.signal).then((ok) => {
-      if (ok && !stopped) attempt();
+      if (ok && !stopped) {
+        performance.mark("load:lazy:config attestation"); // LOAD MARKER (lazy) — page-load trace, no import
+        attempt();
+      }
     });
     return () => {
       stopped = true;

@@ -131,6 +131,7 @@ export function parseShellCounts(data: unknown): ShellCounts {
 }
 
 export async function fetchShellCounts(): Promise<ShellCounts> {
+  performance.mark("load:lazy:shell counts read"); // LOAD MARKER (lazy) — page-load trace, no import
   const { data, error } = await createClient()
     .schema("platform")
     .rpc("shell_counts" as never);

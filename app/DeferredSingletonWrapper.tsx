@@ -73,6 +73,9 @@ installGlobalErrorCapture();
 // deferred core loads, so its listeners go on here, at boot-bundle evaluation.
 installFirstEngagementListeners();
 
+// LOAD MARKER (core) — the signed-in boot bundle evaluated; page-load trace, no import.
+if (typeof window !== "undefined") performance.mark("load:core:app boot bundle");
+
 const DeferredSingletonCore = dynamic(
   () => import("./DeferredSingletonCore"),
   { ssr: false, loading: () => null },

@@ -88,6 +88,9 @@ import { useExtractionResults } from "@/features/page-extraction/hooks/useExtrac
 import { useExtractionResultsForFile } from "@/features/page-extraction/hooks/useExtractionResultsForFile";
 import { downloadFile } from "@ai-matrx/kit/download";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:PDF studio reader");
+
 // THE canonical cld_files PDF view (source auth, retry, missing-source panel,
 // renderer). PdfCldFileViewer below is a named host adapter, never a second
 // wrapper: it used to re-implement PdfPreview and dropped `withCredentials`.

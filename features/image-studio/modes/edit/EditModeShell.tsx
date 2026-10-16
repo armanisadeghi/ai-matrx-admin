@@ -79,6 +79,9 @@ import { EditorTabHint } from "./EditorTabHint";
 import { useMaskState } from "./use-mask-state";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Image editor", { detail: { home: ["/images"] } });
+
 // Filerobot 5.0.1 ships THREE files (HistoryButtons.js, TabsResponsive.js,
 // TabsNavbar/index.js) whose compiled output calls `React.createElement(...)`
 // without an `import React from "react"` at the top — almost certainly a

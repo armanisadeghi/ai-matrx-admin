@@ -30,6 +30,9 @@ import { CodeEditorContextMenu } from "../CodeEditorContextMenu";
 import { getFileExtension } from "@/features/code-editor/config/languages";
 import { resolveMonacoEditorTheme } from "@/features/code-editor/config/syntax-themes";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Monaco small editor");
+
 export interface CodeEditorProps {
   language?: string;
   initialCode?: string;

@@ -23,6 +23,9 @@ import type { MermaidEditorAction } from "../workbench/useMermaidEditor";
 import type { MermaidRenderOptions } from "@ai-matrx/rich-content/mermaid/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:CodeMirror (mermaid code)");
+
 const COMMIT_DEBOUNCE_MS = 400;
 
 interface CodeModePaneProps {
