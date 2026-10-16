@@ -228,7 +228,8 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
       ) : null}
       {canRunAgain ? (
         <Button variant="outline" icon={rerunning ? <Loader2 className="animate-spin" /> : <RotateCcw />} disabled={rerunning} onClick={() => void runAgain()}>
-          Run setup again
+          <span className="sm:hidden">Run again</span>
+          <span className="hidden sm:inline">Run setup again</span>
         </Button>
       ) : null}
       <OutboundLink href={runHref(r.runId)} className="inline-flex items-center gap-0.5 text-xs text-primary">
