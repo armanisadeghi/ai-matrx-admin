@@ -133,9 +133,9 @@ test("a HOLD (a test run) blocks every idle stop and recycle — only the hard c
   assert.match(sourcedReason(`preview_stop_reason ${50 * GB} 0 footprint 0 1`), /\(cap 48 GB\)/);
   assert.equal(held(44 * GB, 60 * 60), "");
   assert.equal(held(30 * GB, 60 * 60), "");
-  // A held run gets headroom to 64 GB; past it, the cap restart still fires.
-  assert.equal(held(50 * GB, 0), "");
-  assert.match(held(65 * GB, 0), /^preview restarted at 65\.0 GB real memory \(cap 64 GB, held\)/);
+  // MKT-176: a hold gives NO headroom; the 48 GB cap acts at once and says so.
+  assert.match(held(50 * GB, 0), /^preview restarted at 50\.0 GB real memory \(cap 48 GB, stopped even though a test run holds it\)/);
+  assert.match(held(Math.round(58.8 * GB), 0), /cap 48 GB/);
 });
 
 test("a server nobody used since its own start is never recycled for idleness (no restart loop)", () => {
