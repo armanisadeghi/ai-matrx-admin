@@ -6,11 +6,13 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree";
+import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { useWholeScopeTree } from "@/features/scopes/hooks/useWholeScopeTree";
-import { selectNoteHomeIds, selectNoteOrganizationIds } from "../redux/selectors";
+import { selectNoteHomeIds, selectNoteOrganizationIds, selectNotesListStatus } from "../redux/selectors";
 import { buildHomes, homeLabels, type ItemHome } from "@/features/scopes/homes/homeModel";
 
 export interface UseNoteHomesReturn {
@@ -137,10 +139,75 @@ export interface NoteHomeNames {
 
 const namedGeneralOrgs = new Set<string>();
 
+
+interface HomeNameRow {
+  scope_id: string;
+  name: string;
+  organization_id: string;
+  organization_name: string;
+  is_general: boolean;
+  scope_type_id: string;
+  scope_type_label: string;
+}
+
+const queuedHomeIds = new Set<string>();
+const queuedGeneralOrgs = new Set<string>();
+let homeNamesFlushScheduled = false;
+
+/** Coalesces every home-name ask of one tick into a single `platform.home_names` read. */
+function queueHomeNames(ids: readonly string[], generalOrganizationId: string | null): void {
+  for (const id of ids) queuedHomeIds.add(id);
+  if (generalOrganizationId) queuedGeneralOrgs.add(generalOrganizationId);
+  if (homeNamesFlushScheduled) return;
+  homeNamesFlushScheduled = true;
+  setTimeout(flushHomeNames, 0);
+}
+
+function flushHomeNames(): void {
+  homeNamesFlushScheduled = false;
+  const ids = [...queuedHomeIds];
+  const generals = [...queuedGeneralOrgs];
+  queuedHomeIds.clear();
+  queuedGeneralOrgs.clear();
+  if (ids.length === 0 && generals.length === 0) return;
+  // Not cancelled on cleanup: the answer fills the module cache for every mounted hook.
+  void supabase
+    .schema("platform")
+    .rpc("home_names" as never, { p_scope_ids: ids, p_general_orgs: generals } as never)
+    .then((result) => {
+      for (const id of ids) homeLabelsInFlight.delete(id);
+      const { data, error } = result as { data: HomeNameRow[] | null; error: { message: string } | null };
+      if (error) {
+        for (const org of generals) namedGeneralOrgs.delete(org);
+        console.error("[notes homes] could not name the homes the notes live in", error);
+        return;
+      }
+      const next: Record<string, ItemHome | null> = {};
+      for (const id of ids) next[id] = null;
+      for (const row of data ?? []) {
+        next[row.scope_id] = {
+          scopeId: row.scope_id,
+          name: row.is_general ? "General" : row.name,
+          organizationId: row.organization_id,
+          organizationName: row.organization_name,
+          scopeTypeId: row.scope_type_id,
+          scopeTypeLabel: row.is_general ? "General" : row.scope_type_label,
+          isGeneral: row.is_general,
+        };
+      }
+      Object.assign(outsideTreeCache, next);
+      for (const listener of homeLabelListeners) listener(next);
+    });
+}
+
 export function useNoteHomeNames(generalOfOrganizationId: string | null = null): NoteHomeNames {
   const noteOrganizationIds = useAppSelector(selectNoteOrganizationIds);
   const notesSpanManyOrganizations = noteOrganizationIds.length > 1;
   const noteHomeIds = useAppSelector(selectNoteHomeIds);
+  // Ask once the notes list has answered: the homes the notes live in and the active organization's
+  // General then go out as ONE read, not General first and the note homes after.
+  const listStatus = useAppSelector(selectNotesListStatus);
+  const listSettled = listStatus === "loaded" || listStatus === "error";
   const [named, setNamed] = useState<Record<string, ItemHome | null>>(() => ({ ...outsideTreeCache }));
   useEffect(() => {
     const listener = (next: Record<string, ItemHome | null>) => setNamed((prev) => ({ ...prev, ...next }));
@@ -150,6 +217,7 @@ export function useNoteHomeNames(generalOfOrganizationId: string | null = null):
     };
   }, []);
   useEffect(() => {
+    if (!listSettled) return;
     const missing = noteHomeIds.filter(
       (id) => !(id in named) && !(id in outsideTreeCache) && !homeLabelsInFlight.has(id),
     );
@@ -158,46 +226,10 @@ export function useNoteHomeNames(generalOfOrganizationId: string | null = null):
     if (missing.length === 0 && !askGeneral) return;
     for (const id of missing) homeLabelsInFlight.add(id);
     if (askGeneral) namedGeneralOrgs.add(generalOfOrganizationId);
-    // Not cancelled on cleanup: the answer fills the module cache for every mounted hook.
-    void supabase
-      .schema("platform")
-      .rpc("home_names" as never, { p_scope_ids: missing, p_general_orgs: askGeneral ? [generalOfOrganizationId] : [] } as never)
-      .then((result) => {
-        for (const id of missing) homeLabelsInFlight.delete(id);
-        const { data, error } = result as {
-          data: Array<{
-            scope_id: string;
-            name: string;
-            organization_id: string;
-            organization_name: string;
-            is_general: boolean;
-            scope_type_id: string;
-            scope_type_label: string;
-          }> | null;
-          error: { message: string } | null;
-        };
-        if (error) {
-          if (askGeneral) namedGeneralOrgs.delete(generalOfOrganizationId);
-          console.error("[notes homes] could not name the homes the notes live in", error);
-          return;
-        }
-        const next: Record<string, ItemHome | null> = {};
-        for (const id of missing) next[id] = null;
-        for (const row of data ?? []) {
-          next[row.scope_id] = {
-            scopeId: row.scope_id,
-            name: row.is_general ? "General" : row.name,
-            organizationId: row.organization_id,
-            organizationName: row.organization_name,
-            scopeTypeId: row.scope_type_id,
-            scopeTypeLabel: row.is_general ? "General" : row.scope_type_label,
-            isGeneral: row.is_general,
-          };
-        }
-        Object.assign(outsideTreeCache, next);
-        for (const listener of homeLabelListeners) listener(next);
-      });
-  }, [noteHomeIds, named, generalOfOrganizationId]);
+    // Every mount asking in this tick shares ONE read (the sidebar, the landing and the agent surface
+    // each mount this hook on /notes).
+    queueHomeNames(missing, askGeneral ? generalOfOrganizationId : null);
+  }, [noteHomeIds, named, generalOfOrganizationId, listSettled]);
 
   return useMemo(() => {
     const homes = Object.values(named).filter((home): home is ItemHome => home !== null);
@@ -217,4 +249,44 @@ export function useNoteHomeNames(generalOfOrganizationId: string | null = null):
     };
     return { homes, byId, generalByOrganization, labelOf, notesSpanManyOrganizations };
   }, [named, notesSpanManyOrganizations]);
+}
+
+// ── THE AGENT SURFACE'S HOMES ────────────────────────────────────────────────────────────────────
+// The notes surface (agent context + write handlers) is mounted on every /notes paint but used only
+// when an agent is. It NAMES homes from the same specific read as the sidebar (`useNoteHomeNames`)
+// and reads the whole scope tree only when something is actually asked: `homesNow()` (a write
+// resolving a home) and `engage()` (the agent was started) — both trigger-time, never render.
+
+export interface NoteSurfaceHomes extends NoteHomeNames {
+  /** Trigger-time: the surface is in use — start loading the whole tree. */
+  engage: () => void;
+  /** Trigger-time: every home known right now (the tree once it is in, else the named homes). */
+  homesNow: () => Pick<NoteHomeNames, "homes" | "labelOf">;
+  /** Trigger-time: wait for the whole tree, then answer every home. */
+  homesWhenLoaded: () => Promise<Pick<NoteHomeNames, "homes" | "labelOf">>;
+}
+
+export function useNoteHomesForSurface(generalOfOrganizationId: string | null = null): NoteSurfaceHomes {
+  const names = useNoteHomeNames(generalOfOrganizationId);
+  const store = useAppStore();
+  const dispatch = useAppDispatch();
+  const engage = useCallback(() => {
+    void dispatch(ensureScopeTree());
+  }, [dispatch]);
+  const homesNow = useCallback(() => {
+    // A trigger-time read of the tree: the surface is engaged, so this MAY start the tree load.
+    const byId = new Map<string, ItemHome>(buildHomes(selectOrganizationsList(store.getState())).map((h) => [h.scopeId, h]));
+    for (const home of names.homes) if (!byId.has(home.scopeId)) byId.set(home.scopeId, home);
+    const homes = [...byId.values()];
+    const labels = homeLabels(homes, { notesSpanManyOrganizations: names.notesSpanManyOrganizations });
+    return {
+      homes,
+      labelOf: (scopeId: string | null | undefined) => (scopeId ? (labels.get(scopeId) ?? names.labelOf(scopeId)) : null),
+    };
+  }, [store, names]);
+  const homesWhenLoaded = useCallback(async () => {
+    await dispatch(ensureScopeTree());
+    return homesNow();
+  }, [dispatch, homesNow]);
+  return { ...names, engage, homesNow, homesWhenLoaded };
 }

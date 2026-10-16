@@ -37,7 +37,7 @@ import { useNotesCollectionWriteHandlers } from "@/features/notes/agent-context/
 import { selectNoteById } from "@/features/notes/redux/selectors";
 import { updateNoteLabel, updateNoteTags } from "@/features/notes/redux/slice";
 import { moveNoteToHome } from "@/features/notes/homes/moveNoteToHome";
-import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
+import { useNoteHomesForSurface } from "@/features/notes/homes/useNoteHomes";
 
 export interface UseNotesSurfaceRuntimeParams {
   /** NotesView instance id — tabs / split / find state. Optional off-view. */
@@ -75,8 +75,9 @@ export function useNotesSurfaceRuntime({
 }: UseNotesSurfaceRuntimeParams) {
   const dispatch = useAppDispatch();
   const record = useAppSelector(selectNoteById(noteId));
-  const homes = useNoteHomes();
   const organizationId = record?.organization_id ?? null;
+  // Named homes only until the agent is actually used (`engage` / `homesWhenLoaded` load the tree).
+  const homes = useNoteHomesForSurface(organizationId);
 
   const buildSurfaceScope = useNotesSurfaceScope({
     instanceId,
@@ -94,6 +95,8 @@ export function useNotesSurfaceRuntime({
   );
 
   const getApplicationScope = useCallback(() => {
+    // An agent run is starting: the whole home list is about to be asked for.
+    homes.engage();
     const rich = richMode ? richEditorRef.current : null;
     if (rich) {
       return buildApplicationScopeFromMenuContext({
@@ -114,22 +117,27 @@ export function useNotesSurfaceRuntime({
       selectionRange: el ? { type: "editable", element: el, start, end } : null,
       contextData: buildSurfaceScope() as Record<string, unknown>,
     });
-  }, [buildSurfaceScope, richMode, richEditorRef, textareaRef]);
+  }, [buildSurfaceScope, homes, richMode, richEditorRef, textareaRef]);
 
   const getCollectionWriteHandlers = useNotesCollectionWriteHandlers({
     instanceId: instanceId ?? "",
-    homes: homes.homes.map((home) => ({
-      scopeId: home.scopeId,
-      organizationId: home.organizationId,
-      label: homes.labelOf(home.scopeId) ?? home.name,
-      isGeneral: home.isGeneral,
-    })),
+    homes: () => {
+      const known = homes.homesNow();
+      return known.homes.map((home) => ({
+        scopeId: home.scopeId,
+        organizationId: home.organizationId,
+        label: known.labelOf(home.scopeId) ?? home.name,
+        isGeneral: home.isGeneral,
+      }));
+    },
     activeNoteId: noteId,
     activeOrganizationId: organizationId,
     readOnly: accessLoading || readOnly,
   });
 
   const getWriteHandlers = (): SurfaceWriteHandlers => {
+    // An agent write is resolving: ask for the whole home list now.
+    homes.engage();
     if (accessLoading) return {};
     if (readOnly) return getCollectionWriteHandlers();
     return {
@@ -174,11 +182,12 @@ export function useNotesSurfaceRuntime({
           throw new Error("note_home expects a home name string from all_homes.");
         const name = value.trim();
         // Only an existing home: creating scopes is the person's decision.
-        const target = homes.homes.find((home) => (homes.labelOf(home.scopeId) ?? home.name) === name);
+        const known = await homes.homesWhenLoaded();
+        const target = known.homes.find((home) => (known.labelOf(home.scopeId) ?? home.name) === name);
         if (!target)
           throw new Error(
             // access-errors: ok — AI tool-call validation against the loaded home list; the name is verifiably absent from it
-            `note_home expects an existing home. "${name}" is not one — choose one of: ${homes.homes.map((home) => homes.labelOf(home.scopeId) ?? home.name).join(" | ")}.`,
+            `note_home expects an existing home. "${name}" is not one — choose one of: ${known.homes.map((home) => known.labelOf(home.scopeId) ?? home.name).join(" | ")}.`,
           );
         const result = await dispatch(
           moveNoteToHome({ noteId, scopeId: target.scopeId, homeLabel: name }),
