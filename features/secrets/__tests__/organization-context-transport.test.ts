@@ -277,6 +277,20 @@ describe("Vault and Authenticator organization transport", () => {
     );
   });
 
+  test("reveal recognizes the production recent-auth error envelope", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ...errorResponse(401),
+      json: async () => ({
+        code: "recent_auth_required",
+        error: "recent_auth_required",
+        message: "Authentication must be confirmed again",
+      }),
+    } as Response);
+    await expect(revealVaultField("item-1", "password")).rejects.toBeInstanceOf(
+      VaultRecentAuthRequiredError,
+    );
+  });
+
   test("reveal distinguishes expired recent auth from an unrelated 401", async () => {
     fetchMock.mockResolvedValueOnce({
       ...errorResponse(401),

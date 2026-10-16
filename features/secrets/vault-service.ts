@@ -703,7 +703,7 @@ async function vaultFetch<T>(
         body && typeof body === "object" && "detail" in body
           ? body.detail
           : null;
-      const recentAuthCode = detailErrorCode(body);
+      const recentAuthCode = rootErrorCode(body) ?? detailErrorCode(body);
       if (
         recentAuthCode === "recent_auth_required" ||
         (typeof detail === "string" &&
