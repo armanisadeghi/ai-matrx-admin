@@ -47,8 +47,12 @@ async function bounded<T>(ms: number, label: string, run: (signal: AbortSignal) 
   }
 }
 
-export async function readCoreBootSeedServer(supabase: ServerClient, userId: string): Promise<CoreBootSeed | null> {
-  const answer = await bounded(CORE_SEED_DEADLINE_MS, "iam.core_boot_seed", (signal) =>
+/** A late seed (past the first-byte deadline) still streams to the browser until this. */
+export const CORE_SEED_STREAM_DEADLINE_MS = 4_000;
+
+async function readSeed(supabase: ServerClient, userId: string, ms: number): Promise<CoreBootSeed | null> {
+  const started = Date.now();
+  const answer = await bounded(ms, "iam.core_boot_seed", (signal) =>
     (supabase.schema("iam") as unknown as UntypedRpc).rpc("core_boot_seed").abortSignal(signal),
   );
   if (!answer) return null;
@@ -56,9 +60,32 @@ export async function readCoreBootSeedServer(supabase: ServerClient, userId: str
     console.warn(`[core-boot-seed] iam.core_boot_seed failed: ${answer.error.message}`);
     return null;
   }
+  // Over 200 organizations the seed would be megabytes on the page: not seeded, by design.
+  if ((answer.data as { too_many?: unknown } | null)?.too_many) return null;
   const seed = parseCoreBootSeed(answer.data, userId);
   if (!seed) console.warn("[core-boot-seed] iam.core_boot_seed answered an unexpected shape; not seeding");
+  else if (Date.now() - started > CORE_SEED_DEADLINE_MS) {
+    console.warn(`[core-boot-seed] iam.core_boot_seed answered in ${Date.now() - started} ms; streamed instead of seeded`);
+  }
   return seed;
+}
+
+/**
+ * ONE read, two ways to land: `seed` answers by the first-byte deadline (null past it, so the first
+ * byte never waits longer), and `streamed` is the same read's answer whenever it lands (bounded at
+ * `CORE_SEED_STREAM_DEADLINE_MS`) — the layout streams it to `CoreSeedPrimer` when `seed` missed,
+ * because the browser's boot reads start seconds after the page arrives.
+ */
+export function readCoreBootSeedServer(
+  supabase: ServerClient,
+  userId: string,
+): { seed: Promise<CoreBootSeed | null>; streamed: Promise<CoreBootSeed | null> } {
+  const streamed = readSeed(supabase, userId, CORE_SEED_STREAM_DEADLINE_MS);
+  const seed = Promise.race([
+    streamed,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), CORE_SEED_DEADLINE_MS)),
+  ]);
+  return { seed, streamed };
 }
 
 /**
@@ -94,14 +121,30 @@ export function predictedOrganizationId(seed: CoreBootSeed, search: string | nul
   return resolved?.organization.id ?? null;
 }
 
+/**
+ * The two snapshots the boot asks for: the predicted organization's, and the no-organization one
+ * (readers that ask before the organization has landed — the chat package's model preference).
+ */
 export async function readKnobSeedServer(
   supabase: ServerClient,
   seed: CoreBootSeed | null,
   deviceId: string | null,
   search: string | null,
-): Promise<KnobSnapshotSeed | null> {
+): Promise<KnobSnapshotSeed[] | null> {
   if (!seed || !deviceId) return null; // no device cookie: the rung cannot be addressed the same way
-  const organizationId = predictedOrganizationId(seed, search);
+  const predicted = predictedOrganizationId(seed, search);
+  const addresses = predicted ? [predicted, null] : [null];
+  const answers = await Promise.all(addresses.map((organizationId) => readOneKnobSeed(supabase, seed, deviceId, organizationId)));
+  const seeds = answers.filter((a): a is KnobSnapshotSeed => a !== null);
+  return seeds.length > 0 ? seeds : null;
+}
+
+async function readOneKnobSeed(
+  supabase: ServerClient,
+  seed: CoreBootSeed,
+  deviceId: string,
+  organizationId: string | null,
+): Promise<KnobSnapshotSeed | null> {
   const answer = await bounded(KNOB_SEED_DEADLINE_MS, "platform.knob_snapshot_delta", (signal) =>
     (supabase.schema("platform") as unknown as UntypedRpc)
       .rpc("knob_snapshot_delta", {

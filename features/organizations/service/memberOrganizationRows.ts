@@ -17,6 +17,7 @@ import { readInChunks } from "@/features/scopes/service/inChunks";
 import { isRecordsErr } from "@ai-matrx/records";
 import type { Database } from "@/types/database.types";
 import { SEED_MAX_AGE_MS } from "@/lib/sharedReads";
+import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
 
 export type MemberOrganizationRow = Database["iam"]["Tables"]["organizations"]["Row"];
 
@@ -64,14 +65,10 @@ async function readOnce(): Promise<MemberOrganizationRows> {
 /** Her memberships and every organization row she is a member of — one read, shared. */
 export function readMemberOrganizationRows(): Promise<MemberOrganizationRows> {
   const userId = requireUserId();
+  drainBootSeeds(); // a streamed boot seed that has arrived answers first
   const held = shared;
   if (held?.seededAt !== undefined) {
-    const seededAt = held.seededAt;
-    delete held.seededAt;
-    if (held.userId === userId && Date.now() - seededAt < SEED_MAX_AGE_MS) {
-      held.at = Date.now(); // the ordinary share window starts at the first read
-      return held.read;
-    }
+    if (held.userId === userId && Date.now() - held.seededAt < SEED_MAX_AGE_MS) return held.read;
     shared = null;
   } else if (held && held.userId === userId && (held.at === 0 || Date.now() - held.at < SHARED_MS)) return held.read;
   const entry: { userId: string; at: number; read: Promise<MemberOrganizationRows> } = { userId, at: 0, read: Promise.resolve({ ok: true, roleByOrgId: new Map(), joinedAtByOrgId: new Map(), rows: [] }) };
@@ -92,8 +89,8 @@ export function readMemberOrganizationRows(): Promise<MemberOrganizationRows> {
 
 /**
  * The (core) layout already read her memberships and organization rows for this page load (the boot
- * seed): the first read is answered from them. Its share window starts at that first read; a seed
- * nobody read within `SEED_MAX_AGE_MS` is dropped, and `forget` drops it like any held read.
+ * seed): the boot's reads within `SEED_MAX_AGE_MS` are answered from them, and `forget` drops it
+ * like any held read.
  */
 export function primeMemberOrganizationRows(userId: string, answer: MemberOrganizationRows & { ok: true }): void {
   if (shared) return; // a read already flew or landed

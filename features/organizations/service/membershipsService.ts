@@ -26,6 +26,7 @@ import { err, ok } from "@/features/scopes/service/rpcResult";
 import type { RecordsResult } from "@ai-matrx/records";
 import type { Json } from "@/types/database.types";
 import { createSeedHold } from "@/lib/sharedReads";
+import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
 
 // ─── Module-scoped in-flight dedup + short TTL cache ──────────────────
 //
@@ -81,8 +82,8 @@ function countsKey(containerType: string, containerIds: string[]): string {
 
 // THE BOOT SEED (first-paint fetch contract G1): the (core) layout read the person's organization
 // memberships and their member counts for this page load; the first boot reads answer from them.
-const organizationMembershipsSeed = createSeedHold<MbrForUserRow[]>(READ_CACHE_TTL_MS);
-const organizationCountsSeed = createSeedHold<Map<string, number>>(READ_CACHE_TTL_MS);
+const organizationMembershipsSeed = createSeedHold<MbrForUserRow[]>();
+const organizationCountsSeed = createSeedHold<Map<string, number>>();
 
 /** Hold the server's organization memberships + member counts for this page load's first reads. */
 export function primeOrganizationMembershipReads(
@@ -347,6 +348,7 @@ export const membershipsService = {
     const cached = forUserCache.get(key);
     if (cached && cached.expiresAt > Date.now()) return cached.value;
 
+    if (containerType === "organization") drainBootSeeds();
     const seeded = containerType === "organization" ? organizationMembershipsSeed.take() : undefined;
     if (seeded) return ok({ memberships: seeded.map(toUserMembership) });
 
@@ -434,6 +436,7 @@ export const membershipsService = {
     if (cached && cached.expiresAt > Date.now()) return cached.value;
 
     // Every id in the boot seed (each membership has at least its holder): no request.
+    if (containerType === "organization") drainBootSeeds();
     const seededCounts = containerType === "organization" ? organizationCountsSeed.take() : undefined;
     if (seededCounts && ids.every((id) => seededCounts.has(id))) {
       return ok({ counts: ids.map((id) => ({ containerId: id, memberCount: seededCounts.get(id) ?? 0 })) });

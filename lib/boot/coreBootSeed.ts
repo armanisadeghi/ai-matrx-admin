@@ -16,7 +16,9 @@ import {
   membershipMaps,
   primeMemberOrganizationRows,
 } from "@/features/organizations/service/memberOrganizationRows";
-import type { CoreBootSeed } from "./coreBootSeedShape";
+import { primeKnobSnapshot } from "@/lib/scoped-config/effectiveKnobs";
+import { parseCoreBootSeed, type CoreBootSeed, type KnobSnapshotSeed } from "./coreBootSeedShape";
+import { registerBootSeedDrain, STREAMED_CORE_SEED_GLOBAL, STREAMED_KNOB_SEED_GLOBAL } from "./bootSeedSlot";
 
 export function primeCoreBootSeed(seed: CoreBootSeed | null | undefined): void {
   if (!seed || typeof window === "undefined") return;
@@ -36,4 +38,34 @@ export function primeCoreBootSeed(seed: CoreBootSeed | null | undefined): void {
     joinedAtByOrgId,
     rows: seed.organizations,
   });
+}
+
+/** Take a streamed global once (the script wrote it; nothing else reads it). */
+function takeGlobal(name: string): unknown {
+  const w = window as unknown as Record<string, unknown>;
+  const value = w[name];
+  if (value === undefined) return undefined;
+  delete w[name];
+  return value;
+}
+
+// The streamed seeds (`BootSeedScript`): installed by the first read that could use them.
+if (typeof window !== "undefined") {
+  registerBootSeedDrain(() => {
+    const core = takeGlobal(STREAMED_CORE_SEED_GLOBAL) as CoreBootSeed | undefined;
+    // Already parsed on the server; re-checked so a malformed global never seeds.
+    if (core) primeCoreBootSeed(parseCoreBootSeed(toRaw(core), core.userId));
+    const knobs = takeGlobal(STREAMED_KNOB_SEED_GLOBAL) as KnobSnapshotSeed[] | undefined;
+    if (Array.isArray(knobs)) for (const knob of knobs) primeKnobSnapshot(knob);
+  });
+}
+
+function toRaw(seed: CoreBootSeed): Record<string, unknown> {
+  return {
+    user_id: seed.userId,
+    memberships: seed.memberships,
+    organizations: seed.organizations,
+    counts: seed.counts,
+    preferences_row: seed.preferencesRow,
+  };
 }

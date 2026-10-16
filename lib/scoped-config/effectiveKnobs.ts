@@ -49,6 +49,7 @@ import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegis
 import { getWebDeviceId } from "./deviceId";
 import { defineClientKey } from "@/lib/sync/client-storage";
 import { noteKnobReadOnce } from "@/lib/config-attestation/readLedger";
+import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
 
 const TTL_MS = 60_000;
 
@@ -212,6 +213,7 @@ export function peekEffectiveKnob(
   ref: KnobRef,
   scopes?: readonly KnobScope[],
 ): unknown {
+  drainBootSeeds();
   const snapshot = snapshots.get(snapshotAddr(organizationId ?? null, userId ?? null, scopes));
   if (!snapshot) return undefined;
   const value = snapshot.resolved[fullKeyOf(ref)];
@@ -443,6 +445,7 @@ export function ensureKnobSnapshot(
   userId: string | null,
   scopes?: readonly KnobScope[],
 ): Promise<Snapshot> {
+  drainBootSeeds(); // a streamed boot snapshot that has arrived answers first
   const id = snapshotAddr(organizationId, userId, scopes);
   const hit = snapshots.get(id);
   if (hit && Date.now() - hit.at < TTL_MS) return Promise.resolve(hit);
@@ -553,7 +556,8 @@ export function primeKnobSnapshot(seed: KnobSnapshotSeed): void {
   if (warm && (want === null || warm.version === want)) {
     defaultsCache = warm;
     snapshots.set(id, build(warm));
-    notify();
+    // Deferred: a prime can run inside a read that a render started; readers re-render after it.
+    queueMicrotask(notify);
     return;
   }
   const mine: { promise?: Promise<Snapshot> } = {};

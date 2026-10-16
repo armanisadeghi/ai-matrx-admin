@@ -214,3 +214,13 @@ it("server: the knob seed's organization is the ladder's (link â†’ last active â
 async function bootReadsWithoutKnobs() {
   await Promise.all([getUserOrganizations(), readAccountOrganizationChoices(USER), readAccountPreferencesRow(USER)]);
 }
+
+it("streamed: a seed that missed the first byte arrives as a window global and answers the boot reads", async () => {
+  warmStoredDefaults();
+  // What BootSeedScript's inline scripts write.
+  (window as unknown as Record<string, unknown>).__matrxCoreBootSeed = seed();
+  (window as unknown as Record<string, unknown>).__matrxKnobBootSeed = [knobSeed];
+  await bootReads();
+  expect(calls).toEqual({});
+  expect((window as unknown as Record<string, unknown>).__matrxCoreBootSeed).toBeUndefined();
+});

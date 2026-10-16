@@ -11,8 +11,9 @@ import {
 import type { BaseReduxState } from "@/types/reduxTypes";
 import { readUsageSnapshotServer } from "@/features/entitlements/usage-gate/usageReadServer";
 import { readCoreBootSeedServer, readKnobSeedServer } from "@/lib/boot/coreBootSeed.server";
-import { KnobSeedPrimer } from "@/lib/boot/KnobSeedPrimer";
-import type { KnobSnapshotSeed } from "@/lib/boot/coreBootSeedShape";
+import { BootSeedScript } from "@/lib/boot/BootSeedScript";
+import { STREAMED_CORE_SEED_GLOBAL, STREAMED_KNOB_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
+import type { CoreBootSeed, KnobSnapshotSeed } from "@/lib/boot/coreBootSeedShape";
 import { WEB_DEVICE_ID_COOKIE, parseWebDeviceIdCookie } from "@/lib/scoped-config/deviceIdCookie";
 // Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
 // is deleted in this PR. The Redux preloaded state below carries the user data;
@@ -102,7 +103,9 @@ export default async function AppLayout({
   let initialReduxState: BaseReduxState;
   let userData: UserData;
   let enableInternalAnalytics = false;
-  let knobSeed: Promise<KnobSnapshotSeed | null> | null = null;
+  let knobSeed: Promise<KnobSnapshotSeed[] | null> | null = null;
+  let streamedCoreSeed: Promise<CoreBootSeed | null> | null = null;
+  let coreSeedLanded = false;
 
   if (user) {
     // 🚨 THE CORE SET, IN ONE PARALLEL ROUND (first-paint fetch contract, Arman
@@ -116,9 +119,13 @@ export default async function AppLayout({
     // (usage 400 ms, seed 400 ms): a slow one is simply absent and the browser
     // reads it as before.
     const coreBootSeedRead = readCoreBootSeedServer(supabase, user.id);
+    // Past its 400 ms the seed is not dropped: the same read STREAMS to the
+    // browser as an inline script (`BootSeedScript`), which runs before
+    // hydration — the boot reads start seconds later.
+    streamedCoreSeed = coreBootSeedRead.streamed;
     // The knob snapshot needs the memberships (to know the organization), so it
     // runs after the seed and STREAMS: it never holds the first byte.
-    knobSeed = coreBootSeedRead.then(async (seed) =>
+    knobSeed = coreBootSeedRead.streamed.then(async (seed) =>
       readKnobSeedServer(
         supabase,
         seed,
@@ -142,7 +149,7 @@ export default async function AppLayout({
       // THE USAGE GATE seed (USAGE-GATE.md rule 9): loaded WITH the reads this
       // layout already makes, never as a request on the path of an AI call.
       readUsageSnapshotServer(supabase),
-      coreBootSeedRead,
+      coreBootSeedRead.seed,
     ]);
 
     const { isAdmin, level: adminLevel } = adminStatus;
@@ -159,6 +166,7 @@ export default async function AppLayout({
       usageSnapshot,
       coreBootSeed,
     };
+    coreSeedLanded = coreBootSeed !== null;
   } else {
     const guestUserData = mapUserData(null, undefined, false);
     userData = guestUserData;
@@ -176,9 +184,14 @@ export default async function AppLayout({
       pathname={pathname}
       sidebarExpanded={sidebarExpanded}
     >
+      {streamedCoreSeed && !coreSeedLanded ? (
+        <Suspense fallback={null}>
+          <BootSeedScript name={STREAMED_CORE_SEED_GLOBAL} seed={streamedCoreSeed} />
+        </Suspense>
+      ) : null}
       {knobSeed ? (
         <Suspense fallback={null}>
-          <KnobSeedPrimer seed={knobSeed} />
+          <BootSeedScript name={STREAMED_KNOB_SEED_GLOBAL} seed={knobSeed} />
         </Suspense>
       ) : null}
       {children}

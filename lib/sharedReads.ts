@@ -8,6 +8,8 @@
 // callers that ask the same question for the same person share ONE promise. A read that failed is
 // never shared past its flight; a write that changes the answer calls `forget`.
 
+import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
+
 export interface SharedReads {
   /** The answer to (person, key): the held read when one is in flight or fresh, else `fetch()`. */
   read<T>(
@@ -20,15 +22,14 @@ export interface SharedReads {
   forget(key?: string): void;
   /**
    * Hold an answer the SERVER already read for this page load (the (core) layout's boot seed), so
-   * the first boot read of (person, key) is answered without a request. It is a boot answer, not a
-   * cache: its share window starts at its FIRST read (the boot reads land seconds after the page
-   * arrived), and an answer nobody read within `SEED_MAX_AGE_MS` is dropped unread. `forget`
+   * the boot's reads of (person, key) are answered without a request: every read within
+   * `SEED_MAX_AGE_MS` of the page load (the boot's late-idle readers land seconds after it). `forget`
    * drops it like any held read, so every write and refresh path still asks the database.
    */
   prime<T>(person: string | null | undefined, key: string, answer: T): void;
 }
 
-/** A seeded boot answer older than this at its first read is never served (the page sat open). */
+/** A seeded boot answer serves the boot's reads for this long after the page load, then expires. */
 export const SEED_MAX_AGE_MS = 60_000;
 
 interface Held {
@@ -46,15 +47,11 @@ export function createSharedReads(ttlMs: number): SharedReads {
     read(person, key, fetch, options) {
       // No person yet: nothing to key on, so nothing is shared (never one person's answer for another).
       if (!person) return Promise.resolve(fetch());
+      drainBootSeeds(); // a streamed boot seed that has arrived answers first
       const id = addr(person, key);
       const hit = held.get(id);
       if (hit?.seededAt !== undefined) {
-        const seededAt = hit.seededAt;
-        delete hit.seededAt;
-        if (Date.now() - seededAt < SEED_MAX_AGE_MS) {
-          hit.at = Date.now(); // the ordinary share window starts at the first read
-          return hit.read as Promise<never>;
-        }
+        if (Date.now() - hit.seededAt < SEED_MAX_AGE_MS) return hit.read as Promise<never>;
         held.delete(id);
       } else if (hit && (hit.at === 0 || Date.now() - hit.at < ttlMs)) return hit.read as Promise<never>;
       const entry: Held = { at: 0, read: Promise.resolve() };
@@ -88,8 +85,8 @@ export function createSharedReads(ttlMs: number): SharedReads {
 
 /**
  * ONE server-read boot answer held for a module cache that is not a `SharedReads` (same contract as
- * `prime`): `take()` answers while the answer is fresh — `SEED_MAX_AGE_MS` from `put` until the first
- * take, then `ttlMs` from that first take — and `drop()` forgets it (a write, a sign-out).
+ * `prime`): `take()` answers for `SEED_MAX_AGE_MS` after `put`, and `drop()` forgets it (a write, a
+ * sign-out).
  */
 export interface SeedHold<T> {
   put(answer: T): void;
@@ -97,22 +94,15 @@ export interface SeedHold<T> {
   drop(): void;
 }
 
-export function createSeedHold<T>(ttlMs: number): SeedHold<T> {
-  let held: { answer: T; seededAt: number; firstReadAt: number | null } | null = null;
+export function createSeedHold<T>(): SeedHold<T> {
+  let held: { answer: T; seededAt: number } | null = null;
   return {
     put(answer) {
-      held = { answer, seededAt: Date.now(), firstReadAt: null };
+      held = { answer, seededAt: Date.now() };
     },
     take() {
       if (!held) return undefined;
-      const now = Date.now();
-      if (held.firstReadAt === null) {
-        if (now - held.seededAt >= SEED_MAX_AGE_MS) {
-          held = null;
-          return undefined;
-        }
-        held.firstReadAt = now;
-      } else if (now - held.firstReadAt >= ttlMs) {
+      if (Date.now() - held.seededAt >= SEED_MAX_AGE_MS) {
         held = null;
         return undefined;
       }
