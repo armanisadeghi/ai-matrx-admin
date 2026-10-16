@@ -8,7 +8,6 @@
 import { durableRecordId } from "@ai-matrx/kit/ids";
 import { FileCode, CheckSquare } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { CodeFilesAPI } from "@/features/code-files/service/codeFilesApi";
 import { setPendingSource } from "@/features/tasks/redux/taskUiSlice";
 import { registerActionIfAbsent } from "./register-if-absent";
@@ -127,41 +126,6 @@ registerActionIfAbsent({
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to save code"));
     }
-  },
-});
-
-registerActionIfAbsent({
-  id: "save-to-code",
-  label: "Save to Code",
-  icon: FileCode,
-  iconColor: "text-rose-500 dark:text-rose-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 3,
-  run: (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "save-to-code",
-        "Save to Code",
-        "Sign in to save and organize your code snippets.",
-      )
-    )
-      return;
-    const { code, language, found } = extractFirstCodeBlock(ctx.content);
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "saveToCode",
-        instanceId: ctx.instanceKey("save-code"),
-        data: {
-          initialContent: found && code.trim() ? code : contentForDestination(ctx),
-          initialLanguage: language ?? "plaintext",
-          suggestedName: undefined,
-          defaultFolderId: null,
-        },
-      }),
-    );
   },
 });
 

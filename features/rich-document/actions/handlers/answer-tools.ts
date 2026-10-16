@@ -2,19 +2,18 @@
 //
 // RC-B9 — acting on AI answers, registered in the ONE action registry:
 //
-//   (pin-message and regenerate-response moved into @ai-matrx/chat, message-actions W1a)
+//   (pin-message and regenerate-response moved into @ai-matrx/chat, message-actions W1a;
+//    code-block-open-in-editor moved there in W3c)
 //
 //   code block (source "raw" + metadata.codeBlock — see ../../code-block/)
-//     code-block-open-in-editor   Floating Monaco window, no navigation, no save
 //     code-block-apply-to-file    Replace the open editor tab (only when one exists)
 //     code-block-run              Run in the conversation's bound sandbox (only when bound)
 //     code-block-chart            Chart a CSV / TSV block
 //
 // Every action is ABSENT where it cannot work (visible → false) — never dead.
 
-import { FileInput, Play, SquareArrowOutUpRight } from "lucide-react";
+import { FileInput, Play } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { registerActionIfAbsent } from "./register-if-absent";
 import { getErrorMessage } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
@@ -26,44 +25,6 @@ import { runCommandFor, runnableSandboxId } from "../../code-block/code-run";
 function codeFacts(ctx: RichDocumentActionContext): CodeBlockFacts | null {
   return readCodeBlockFacts(ctx.metadata);
 }
-
-function extensionFor(language: string): string {
-  const map: Record<string, string> = {
-    typescript: "ts", tsx: "tsx", javascript: "js", jsx: "jsx", python: "py", bash: "sh", shell: "sh",
-    json: "json", html: "html", css: "css", sql: "sql", markdown: "md", yaml: "yml", go: "go", rust: "rs",
-    java: "java", csharp: "cs", cpp: "cpp", c: "c", ruby: "rb", php: "php", swift: "swift", kotlin: "kt",
-  };
-  return map[language.toLowerCase()] ?? "txt";
-}
-
-registerActionIfAbsent({
-  id: "code-block-open-in-editor",
-  label: "Open in code editor",
-  icon: SquareArrowOutUpRight,
-  iconColor: "text-blue-600 dark:text-blue-400",
-  category: "edit",
-  supportedSources: ["raw"],
-  renderSlot: "overflow",
-  order: 0,
-  visible: (ctx) => Boolean(codeFacts(ctx)?.code.trim()),
-  run: (ctx) => {
-    const facts = codeFacts(ctx);
-    if (!facts) return;
-    const language = facts.language || "plaintext";
-    const name = `snippet.${extensionFor(language)}`;
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "codeEditorWindow",
-        instanceId: `code-block-editor-${Date.now().toString(36)}`,
-        data: {
-          windowInstanceId: `code-block-editor-${Date.now().toString(36)}`,
-          files: [{ name, path: name, language, content: facts.code }],
-          title: facts.title ?? "Code from answer",
-        },
-      }),
-    );
-  },
-});
 
 type CodeTabsShape = {
   codeTabs?: {

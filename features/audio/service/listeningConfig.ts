@@ -33,7 +33,7 @@ import {
   ensureSurfaceConfig,
   selectSurfaceConfigEntry,
 } from "@ai-matrx/chat/surfaces/redux/surfaceConfigSlice";
-import type { ListeningConfig } from "@ai-matrx/chat/surfaces/config/namespace-registry";
+import { LISTENING_HOME_SURFACE, type ListeningConfig } from "@ai-matrx/chat/surfaces/config/namespace-registry";
 import {
   resolveVoiceId,
   TTS_DEFAULT_SPEED,
@@ -41,12 +41,8 @@ import {
 } from "@/lib/cartesia/config";
 import { getSessionKnob, resolveSessionKnob, useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 
-/**
- * The surface that anchors the platform's listening stack: the
- * `spoken_summary` role every context menu falls back to, the
- * `ambient.spoken_summary` mandate, and the `listening` config namespace.
- */
-export const LISTENING_HOME_SURFACE = "matrx-user/assistant-message";
+/** THE listening home surface lives in @ai-matrx/chat (one constant for every host). */
+export { LISTENING_HOME_SURFACE };
 export const LISTENING_NAMESPACE = "listening";
 /** The knob that owns the voice: `platform.feature_knob` (media.listening, voice). */
 export const LISTENING_VOICE_KNOB = "media.listening.voice";

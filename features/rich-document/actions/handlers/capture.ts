@@ -1,6 +1,7 @@
 // features/rich-document/actions/handlers/capture.ts
 //
-// Capture actions that used to live ONLY in the chat message menu
+// Add to Rulebook, Set Context Value and Save as Message Template moved into @ai-matrx/chat
+// (message-actions W3c). Capture actions that used to live ONLY in the chat message menu
 // (messageActionRegistry.ts, deleted in RC-B6). Each is source-agnostic: the
 // content is whatever the reader sees (`ctx.content`), and chat provenance
 // (conversation / message ids, the "{conversation} Message {n}" title) rides
@@ -9,145 +10,13 @@
 // RichDocument surface).
 
 import { durableRecordId } from "@ai-matrx/kit/ids";
-import { BookOpen, Boxes, Layers, LayoutTemplate } from "lucide-react";
+import { Boxes } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { extractFlatText, selectMessageById, selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { messageMayContainKindBlock } from "@/features/content-ir/studio/message-kind-gate";
 import { registerActionIfAbsent } from "./register-if-absent";
-import { chatIds, deriveContentTitle, getErrorMessage, requireAuth, contentForDestination, chatStateOf } from "../utils";
-import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
+import { chatIds, getErrorMessage, contentForDestination } from "../utils";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { precedingQuestion } from "@/features/masterwork/oracle/precedingQuestion";
-
-/**
- * THE ORACLE TAP's question half: for an ASSISTANT message, the user turn it
- * answered. Null for a user message (the message IS the question), for an
- * opening turn, for non-chat sources, and whenever the thread is not loaded.
- */
-async function resolveAnsweredQuestion(
-  ctx: RichDocumentActionContext,
-): Promise<string | null> {
-  const { conversationId, messageId } = chatIds(ctx);
-  if (!conversationId || !messageId) return null;
-  const state = chatStateOf(ctx, ["messages"]);
-  if (!state) return null;
-  const self = selectMessageById(conversationId, messageId)(state);
-  if (!self || self.role === "user") return null;
-  const thread = selectOrderedMessageIds(conversationId)(state).map((id) => {
-    const record = selectMessageById(conversationId, id)(state);
-    const content = record?.content;
-    return {
-      id,
-      role: String(record?.role ?? ""),
-      content: typeof content === "string" ? content : extractFlatText(record),
-    };
-  });
-  return precedingQuestion(thread, messageId);
-}
-
-registerActionIfAbsent({
-  // The Oracle tap (Masterwork Approach #10): an answer worth keeping lands in
-  // one of the user's Rulebooks as a DRAFT rule. Same dialog + append path as
-  // the thumbs follow-up nudge — ONE implementation (features/masterwork/oracle/).
-  id: "add-to-rulebook",
-  label: "Add to Rulebook",
-  icon: BookOpen,
-  iconColor: "text-violet-500 dark:text-violet-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: -20,
-  run: async (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "add-to-rulebook",
-        "Add to Rulebook",
-        "Sign in to save answers into your Rulebooks.",
-      )
-    )
-      return;
-    const { conversationId, messageId } = chatIds(ctx);
-    const initialQuestion = await resolveAnsweredQuestion(ctx);
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "addToRulebookDialog",
-        data: {
-          initialContent: contentForDestination(ctx),
-          initialConversationId: conversationId,
-          // Provenance: the exact turn the draft came from.
-          initialMessageId: durableRecordId(messageId),
-          // And the QUESTION it answered — the Oracle tap's whole premise.
-          initialQuestion,
-        },
-      }),
-    );
-    ctx.onClose();
-  },
-});
-
-registerActionIfAbsent({
-  id: "set-context-value",
-  label: "Set Context Value",
-  icon: Layers,
-  iconColor: "text-emerald-500 dark:text-emerald-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 20,
-  run: (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "set-context-value",
-        "Set context value",
-        "Sign in to save this content into a scope's context item.",
-      )
-    )
-      return;
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "setContextValueWindow",
-        data: { initialContent: contentForDestination(ctx) },
-      }),
-    );
-    ctx.onClose();
-  },
-});
-
-registerActionIfAbsent({
-  id: "save-as-message-template",
-  label: "Save as Message Template",
-  icon: LayoutTemplate,
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 12,
-  run: (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "save-as-message-template",
-        "Save as Message Template",
-        "Sign in to save this content as a reusable message template.",
-      )
-    )
-      return;
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "quickMessageTemplateSaveWindow",
-        data: {
-          initialContent: contentForDestination(ctx),
-          defaultName: deriveContentTitle(ctx),
-          defaultRole: "assistant",
-        },
-      }),
-    );
-    ctx.onClose();
-  },
-});
 
 registerActionIfAbsent({
   // "Save to my Shapes": persist a registered `__kind` block from this content

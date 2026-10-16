@@ -9,13 +9,11 @@
 // the chosen agent in its own window on any text; when the text is writable
 // its answers offer "Apply to source" (the same review).
 
-import { FilePen, Link2 } from "lucide-react";
+import { FilePen } from "lucide-react";
 import { registerActionIfAbsent } from "./register-if-absent";
 import { applyToSourceReviewAction } from "@/features/overlays/openers/applyToSourceReview";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { applyTargetForConversation } from "@ai-matrx/rich-content/rich-document/review/applyTargets";
-import { chatIds, chatStateOf, contentForDestination } from "../utils";
+import { chatIds, contentForDestination } from "../utils";
 
 registerActionIfAbsent({
   // An answer in an agent window launched by "Custom agent…" from text that
@@ -46,51 +44,4 @@ registerActionIfAbsent({
   },
 });
 
-// ── A good "Custom agent…" run, kept ───────────────────────────────────────
-// The run's mapping (recorded on the conversation by the Custom Agent window)
-// becomes a shortcut — its own menu item, its own window, usually one-shot —
-// or a binding of the agent to this page (it joins the page's Agents menu
-// and reads this page's own values).
-
-function runMapping(ctx: RichDocumentActionContext) {
-  if (
-    ctx.extensions?.type !== "chat-message" ||
-    ctx.extensions.role !== "assistant"
-  ) {
-    return null;
-  }
-  const { conversationId } = chatIds(ctx);
-  if (!conversationId) return null;
-  const conversation = chatStateOf(ctx, ["conversations"])?.conversations.byConversationId[conversationId];
-  if (!conversation?.agentId || !conversation.launchMapping) return null;
-  return { agentId: conversation.agentId, ...conversation.launchMapping };
-}
-
-registerActionIfAbsent({
-  id: "bind-run-to-page",
-  label: "Bind to this page",
-  icon: Link2,
-  iconColor: "text-primary",
-  category: "ai",
-  supportedSources: ["chat-message"],
-  renderSlot: "overflow",
-  order: 5,
-  // Only a run captured on a registered page has a page to bind to.
-  visible: (ctx) => Boolean(runMapping(ctx)?.surfaceName),
-  run: (ctx) => {
-    const run = runMapping(ctx);
-    if (!run?.surfaceName) return;
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "surfaceAgentBindWindow",
-        instanceId: `surfaceAgentBindWindow-${Date.now()}`,
-        data: {
-          surfaceName: run.surfaceName,
-          initialAgentId: run.agentId,
-          initialValueMappings: run.valueMappings,
-        },
-      }),
-    );
-    ctx.onClose();
-  },
-});
+// "Bind to this page" (a kept Custom agent run) moved into @ai-matrx/chat (message-actions W3c).

@@ -7,24 +7,14 @@
     "code-block-apply-to-file"
   ],
   "awaitingMove": [
-    "add-to-rulebook",
-    "bind-run-to-page",
-    "code-block-open-in-editor",
     "code-block-run",
     "compare-with-base",
     "continue-in-chat",
     "email-to-me",
-    "save-as-message-template",
     "save-code-to-scratch",
     "save-shape-instance",
-    "save-to-code",
-    "save-to-contact",
     "save-to-task",
     "set-compare-base",
-    "set-context-value",
-    "submit-feedback",
-    "summarize-and-listen",
-    "summarize-for-listening",
     "tts-voice-settings"
   ]
 }

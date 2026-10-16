@@ -76,12 +76,13 @@ export async function packageIds() {
     );
   }
   // The register module lists its own rows and spreads the descriptor modules it imports
-  // (./descriptors/*): read each, in import order, the way the list is assembled.
+  // (./descriptors/* and the wave modules ./register-w2a, -w2b, -w3c …): read each, in import
+  // order, the way the list is assembled.
   const text = readFileSync(file, "utf8");
   const own = text.slice(text.indexOf("const DIALOG_ACTIONS") >= 0 ? text.indexOf("const DIALOG_ACTIONS") : text.indexOf("CHAT_MESSAGE_ACTIONS"));
   const ids = [...own.matchAll(/\bid:\s*"([^"]+)"/g)].map((m) => m[1]);
-  for (const m of text.matchAll(/from\s+"(\.\/descriptors\/[^"]+)"/g)) {
-    const base = join(dirname(file), m[1]);
+  for (const m of text.matchAll(/from\s+"(\.\/(?:descriptors\/|register-w\d)[^"]*)"/g)) {
+    const base = join(dirname(file), m[1].replace(/\.js$/, ""));
     const ext = [".js", ".ts", ""].find((e) => {
       try {
         readFileSync(base + e);

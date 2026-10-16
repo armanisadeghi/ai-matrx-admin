@@ -16,3 +16,18 @@ test("the web's chat right-click slot is the context-menu engine's component", (
   const el = (ChatSlotMenu as unknown as (p: object) => { props: { children: { type: unknown } } })({ children: null });
   expect(el.props.children.type).toBe(EngineMenu);
 });
+
+/**
+ * …and an ANSWER's right-click is the same component (chat parity W3c). The answer draws through
+ * rich-content's RegistryContextMenu, which asks rich-content's own `NonEditableContextMenu`
+ * binding; the web binds the engine there (features/rich-content-host/app-bindings.tsx), Matrx 2
+ * gets it from the chat package's bare-host defaults forwarding to the chat slot (guarded in
+ * @ai-matrx/chat an-answer-right-click-is-the-hosts-one-menu). Red if the web binds anything else.
+ */
+test("the web's answer right-click binding is the context-menu engine's component", () => {
+  require("@/features/rich-content-host/app-bindings");
+  const { NonEditableContextMenu: AnswerMenu } = require("@ai-matrx/rich-content/host/app-bindings") as {
+    NonEditableContextMenu: (p: object) => { type: unknown };
+  };
+  expect(AnswerMenu({ children: null }).type).toBe(EngineMenu);
+});
