@@ -33,7 +33,7 @@ import { accountHandleLine, CUSTOM_RELATION, CustomAdd, CustomRelation, OpenLink
 import { webCandidate } from "./relations";
 import { isStaffAccount } from "./staff";
 import { keyPeopleRows, personTitle, type KeyPerson } from "./keyPeople";
-import { brightnessOf, shadeForBrightness } from "./logo-shade";
+import { brightnessOf, LOGO_TILE_BG, shadeForBrightness } from "./logo-shade";
 import { LogoEnlarge, SourcesBadge, useLogoGroups, type LogoGroup, type SourceControls } from "./logoGroups";
 import { profileUrlFor } from "@/features/marketing/social/link";
 import { Shared } from "./stage/Shared";
@@ -681,7 +681,6 @@ function ReadMore({ text }: { text: string }) {
 }
 
 type Backdrop = "auto" | "light" | "dark";
-const CHECKER = "bg-[repeating-conic-gradient(#d4d4d8_0%_25%,#f4f4f5_0%_50%)] bg-[length:14px_14px]";
 
 function LogoChoice({
   item,
@@ -720,7 +719,7 @@ function LogoChoice({
   // Through our image proxy: same origin, so the canvas may read the pixels (a white logo needs the dark tile).
   const src = /^https?:\/\//i.test(raw) ? proxiedExternalImageUrl(raw) : raw;
   const shade = backdrop === "auto" ? auto : backdrop;
-  const bg = shade === "dark" ? "bg-zinc-800" : shade === "light" ? "bg-zinc-50" : CHECKER;
+  const bg = LOGO_TILE_BG[shade];
   const where = whereOf(item);
   const cycle = () => setBackdrop((b) => (b === "auto" ? (auto === "dark" ? "light" : "dark") : b === "dark" ? "light" : "dark"));
   const onLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {

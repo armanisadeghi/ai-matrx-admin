@@ -4,16 +4,19 @@
  */
 
 .panel {
-  background: hsl(var(--card) / 0.78);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  background: hsl(var(--card));
   box-shadow:
     0 1px 0 hsl(var(--foreground) / 0.04),
     0 24px 60px -28px hsl(var(--foreground) / 0.35);
 }
 
 .card {
-  background: hsl(var(--muted) / 0.72);
+  background: hsl(var(--muted));
+}
+
+/* A slot that settled without a certain value: the same box, only an outline, so nothing moves. */
+.quiet {
+  border: 1px dashed hsl(var(--border));
 }
 
 /* The one emphasized card: inverted in both themes. */
@@ -26,7 +29,7 @@
 .waiting {
   position: relative;
   overflow: hidden;
-  background: hsl(var(--muted) / 0.5);
+  background: hsl(var(--muted));
 }
 
 .waiting::after {
@@ -34,7 +37,7 @@
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(100deg, transparent 20%, hsl(var(--foreground) / 0.06) 50%, transparent 80%);
+  background: linear-gradient(100deg, transparent 20%, hsl(var(--card)) 50%, transparent 80%);
   animation: sweep 1.8s ease-in-out infinite;
 }
 

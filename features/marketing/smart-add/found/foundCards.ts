@@ -2,36 +2,44 @@
  * The "found first" door (smart-add VISION Part 23): which findings are sure enough to show as a card, and which
  * answers the one "Looks right" gives. Pure (no React, no I/O); the session's own state goes in, nothing is decided here.
  *
- * "Certain" = confirmed across sources. Every finding is backed by WITNESSES, the independent places that said it:
- *   - the brand's own website (every page and tag of it is ONE witness: `site`)
- *   - each looked-up profile (`profile:<url>`; Facebook and LinkedIn saying the same name are two)
- *   - a link-in-bio page (`bio:<url>`)
- *   - the web tier, only when its fixed rules call the result `certain` (`web`)
- *   - the facts agent: a fact it marks `confirmed` counts as two (it states it checked more than one source),
- *     `likely` counts as one, `possible` as none
- * A card needs two. What the person typed is their own word and is certain at once. A logo is the brand's own
- * declared picture (its site's structured-data logo, or the main certain account's photo), never a guess.
+ * "Certain" = two independent HOSTS agree. A witness is the host a finding was read from, counted once however it
+ * arrived: the brand's own site (every page, the web tier's copy of it, the facts agent citing it) is ONE witness;
+ * facebook.com is one; a link-in-bio service is one. The web tier only witnesses a result its fixed rules call
+ * `certain`. The facts agent never witnesses by itself: its fact adds the hosts it cites (when it is at least `likely`),
+ * so a fact citing only the brand's own site adds nothing the site read did not already say.
+ * What the person typed or confirmed is certain at once; Not us removes a card.
+ * A category that repeats a name the site gives itself (its title, og:site_name) is a title, never a category.
+ * A logo is the brand's own declared picture (its site's structured-data logo, or the lead certain account's photo).
  */
 
 import type { BrandFact } from "../validate/queue";
 import { websiteHost, type Decision, type EvidenceItem } from "../evidence";
 
-/** Witnesses per evidence key (see the file comment): built up from every raw item a round streams. */
+/** Witness hosts per evidence key (see the file comment), built up from every raw item a round streams. */
 export type Witnesses = ReadonlyMap<string, ReadonlySet<string>>;
 
-/** Two witnesses make a finding certain. */
+/** Two independent hosts make a finding certain. */
 export const CERTAIN_AT = 2;
 
-/** One raw evidence item → the witness it is (null when it is no witness: a guess or the typed address echoed). */
+/** Stands for the brand's own site when an item carries no page address; resolved to the site's host. */
+const OWN_SITE = "own-site";
+const TYPED = "typed";
+
+function hostOf(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const h = websiteHost(url);
+  return h ? h.toLowerCase() : null;
+}
+
+/** One raw evidence item → the host it witnesses from (null: no witness — a guess, the facts agent, the typed address echoed). */
 export function witnessOf(item: EvidenceItem): string | null {
-  if (item.source.kind === "typed") return "typed";
+  if (item.source.kind === "typed") return TYPED;
   if (item.source.where === "the address itself") return null;
-  if (item.source.node === "facts") return "facts";
-  if (item.source.kind === "website") return "site";
-  if (item.source.kind === "social_profile") return `profile:${(item.source.url ?? item.source.where ?? "").toLowerCase()}`;
-  if (item.source.kind === "link_in_bio") return `bio:${(item.source.url ?? "").toLowerCase()}`;
-  if (item.source.kind === "web_search") return item.certainty === "certain" ? "web" : null;
-  return null;
+  // The facts agent's rows count through the hosts its facts cite (factHosts), once.
+  if (item.source.node === "facts") return null;
+  if (item.source.kind === "web_search") return item.certainty === "certain" ? hostOf(item.url ?? item.value) : null;
+  if (item.source.kind === "website") return hostOf(item.source.url) ?? OWN_SITE;
+  return hostOf(item.source.url);
 }
 
 /** Add a batch of raw items to the tally. Returns the same map when nothing new was witnessed. */
@@ -48,27 +56,14 @@ export function addWitnesses(current: Map<string, Set<string>>, incoming: readon
   return next ?? current;
 }
 
-const FACT_WEIGHT: Record<string, number> = { confirmed: 2, likely: 1 };
-const factWeight = (f: BrandFact) => FACT_WEIGHT[f.certainty] ?? 0;
+const SURE = new Set(["confirmed", "likely"]);
 const norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-
-function score(item: EvidenceItem, witnesses: Witnesses, extra = 0): number {
-  const w = witnesses.get(item.key);
-  if (w?.has("typed") || item.source.kind === "typed") return CERTAIN_AT;
-  return (w?.size ?? 0) + extra;
-}
-
-/** The facts agent's word for a value: its weight when one of its facts in `fields` says the same thing. */
-function factSupport(facts: readonly BrandFact[], fields: readonly string[], value: string): number {
-  const v = norm(value);
-  if (!v) return 0;
-  return Math.max(0, ...facts.filter((f) => fields.includes(f.field) && norm(f.value) === v).map(factWeight));
-}
 
 const NAME_FIELDS = ["official_name", "brand_legal_name", "legal_entity_name", "dba_name"];
 const CITY_FIELDS = ["headquarters_location", "city"];
 const CATEGORY_FIELDS = ["industry", "business_category", "business_type", "category", "specialty"];
 const TOOL_FIELDS = ["technology_used", "website_built_by"];
+const ADDRESS_FIELDS = ["street_address", "headquarters_location"];
 
 export interface FoundAccount {
   item: EvidenceItem;
@@ -77,21 +72,26 @@ export interface FoundAccount {
   followers: number | null;
 }
 
+/** A card's text and everything behind it that "Looks right" answers: its evidence item and/or facts. */
+export interface FoundFact {
+  text: string;
+  item: EvidenceItem | null;
+  facts: BrandFact[];
+}
+
 /** What the grid shows. Every part is absent until it is certain. */
 export interface FoundCards {
   name: EvidenceItem | null;
-  /** The brand's own words about itself (its site, or two sources agreeing). Shown under the name. */
+  /** The brand's own words about itself (its site, or two hosts agreeing). Shown under the name. */
   description: EvidenceItem | null;
-  /** The brand's own declared picture: an evidence item (logo or the main account) or null (the initial shows). */
   logo: { url: string; item: EvidenceItem } | null;
   website: EvidenceItem | null;
-  /** "Based in": the place text, and the evidence item to confirm when it came from one. */
-  location: { text: string; item: EvidenceItem | null } | null;
+  location: FoundFact | null;
   /** The main certain accounts, largest audience first (at most four). */
   accounts: FoundAccount[];
-  category: { text: string; item: EvidenceItem | null } | null;
-  tools: string[];
-  competitor: string | null;
+  category: FoundFact | null;
+  tools: FoundFact | null;
+  competitor: FoundFact | null;
 }
 
 export interface FoundInput {
@@ -105,39 +105,48 @@ export interface FoundInput {
 
 const isOurs = (d: Decision | undefined) => d === "preferred" || d === "yes" || d === "alias";
 
-function best(items: EvidenceItem[], s: (i: EvidenceItem) => number): EvidenceItem | null {
-  return (
-    items
-      .map((i) => ({ i, s: s(i) }))
-      .filter((x) => x.s >= CERTAIN_AT)
-      .sort((a, b) => b.s - a.s || b.i.confidence - a.i.confidence)[0]?.i ?? null
-  );
-}
-
 export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey }: FoundInput): FoundCards {
-  // A finding the person said Not us to never shows; one they confirmed always does.
+  const ownHost = typedWebsiteKey?.startsWith("website:") ? typedWebsiteKey.slice(8) : null;
+  const resolve = (h: string) => (h === OWN_SITE ? (ownHost ?? OWN_SITE) : h);
+  const sure = facts.filter((f) => SURE.has(f.certainty) && decisions[f.key] !== "no");
+  /** The hosts the facts agent cites for this value in these fields (each host once; no citation = no witness). */
+  const factHosts = (fields: readonly string[], value: string): { hosts: string[]; facts: BrandFact[] } => {
+    const v = norm(value);
+    const hit = v ? sure.filter((f) => fields.includes(f.field) && norm(f.value) === v) : [];
+    return { hosts: hit.flatMap((f) => f.evidence_urls.map(hostOf).filter((h): h is string => Boolean(h))), facts: hit };
+  };
+  const hostsOf = (i: EvidenceItem) => [...(witnesses.get(i.key) ?? [])].map(resolve);
+  const certain = (hosts: Iterable<string>, decision?: Decision) => {
+    const set = new Set(hosts);
+    return isOurs(decision) || set.has(TYPED) || set.size >= CERTAIN_AT;
+  };
+
   const open = items.filter((i) => decisions[i.key] !== "no");
-  const s = (i: EvidenceItem, extra = 0) => (isOurs(decisions[i.key]) ? CERTAIN_AT : score(i, witnesses, extra));
   const of = (field: EvidenceItem["field"]) => open.filter((i) => i.field === field);
+  const pick = (candidates: EvidenceItem[], fields: readonly string[] = []) =>
+    candidates
+      .map((i) => ({ i, hosts: new Set([...hostsOf(i), ...factHosts(fields, i.value).hosts]) }))
+      .filter((x) => certain(x.hosts, decisions[x.i.key]))
+      .sort((a, b) => b.hosts.size - a.hosts.size || b.i.confidence - a.i.confidence)[0]?.i ?? null;
 
-  const name = best(of("name"), (i) => s(i, factSupport(facts, NAME_FIELDS, i.value)));
+  const name = pick(of("name"), NAME_FIELDS);
+  // The brand's own words about itself ride under a certain name: read off its site, or two hosts agreeing.
   const description = name
-    ? (best(of("description"), (i) => (i.source.kind === "website" && i.source.where !== "the address itself" ? CERTAIN_AT : s(i))) ?? null)
+    ? (of("description")
+        .filter((i) => i.source.kind === "website" && i.source.where !== "the address itself")
+        .sort((a, b) => b.confidence - a.confidence)[0] ?? pick(of("description")))
     : null;
-
-  const website =
-    of("website").find((i) => i.key === typedWebsiteKey) ?? best(of("website"), (i) => s(i, factSupport(facts, ["website"], i.value)));
+  const website = of("website").find((i) => i.key === typedWebsiteKey) ?? pick(of("website"), ["website"]);
 
   const accounts: FoundAccount[] = of("social")
-    .filter((i) => s(i) >= CERTAIN_AT && i.platform)
+    .filter((i) => i.platform && certain(hostsOf(i), decisions[i.key]))
     .sort((a, b) => (b.followers ?? -1) - (a.followers ?? -1) || b.confidence - a.confidence)
-    // One per platform: the largest.
     .filter((i, idx, all) => all.findIndex((x) => x.platform === i.platform) === idx)
     .slice(0, 4)
     .map((i) => ({ item: i, platform: i.platform as string, handle: i.handle, followers: i.followers }));
 
   const declaredLogo = of("logo")
-    .filter((i) => s(i) >= CERTAIN_AT || (i.source.kind === "website" && i.confidence >= 0.95))
+    .filter((i) => certain(hostsOf(i), decisions[i.key]) || (i.source.kind === "website" && i.confidence >= 0.95))
     .sort((a, b) => b.confidence - a.confidence)[0];
   const logo = declaredLogo
     ? { url: declaredLogo.image_url ?? declaredLogo.value, item: declaredLogo }
@@ -145,46 +154,82 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
       ? { url: accounts[0].item.image_url, item: accounts[0].item }
       : null;
 
+  // A name the site gives itself (title, og:site_name, schema name) never doubles as "what you do".
+  const titles = new Set(of("name").map((i) => norm(i.value)));
+  const notTitle = (text: string) => !titles.has(norm(text));
+
   return {
     name,
     description,
     logo,
     website,
-    location: findLocation(of("address"), facts, s),
+    location: findLocation(of("address"), sure, hostsOf, factHosts, decisions),
     accounts,
-    category: findCategory(of("category"), facts, s),
-    tools: [...new Set(facts.filter((f) => TOOL_FIELDS.includes(f.field) && factWeight(f) >= CERTAIN_AT).map((f) => f.value))].slice(0, 3),
-    competitor: facts.find((f) => f.field === "competitor" && factWeight(f) >= CERTAIN_AT)?.value ?? null,
+    category: findCategory(of("category").filter((i) => notTitle(i.value)), sure.filter((f) => notTitle(f.value)), hostsOf, factHosts, decisions),
+    tools: factCard(sure, TOOL_FIELDS, factHosts, decisions, 3),
+    competitor: factCard(sure, ["competitor"], factHosts, decisions, 1),
   };
 }
 
-/** "Based in": a city the facts agent gave (with its state when it gave one), or an address two sources agree on. */
+type HostsOf = (i: EvidenceItem) => string[];
+type FactHosts = (fields: readonly string[], value: string) => { hosts: string[]; facts: BrandFact[] };
+
+const confirmedFact = (f: BrandFact, decisions: Record<string, Decision>) => isOurs(decisions[f.key]);
+
+/** "Based in": a city (with its state) or an address that two hosts agree on, counting the site's address row. */
 function findLocation(
   addresses: EvidenceItem[],
-  facts: readonly BrandFact[],
-  s: (i: EvidenceItem, extra?: number) => number,
-): FoundCards["location"] {
-  const inAddress = (text: string) => addresses.some((a) => norm(a.value).includes(norm(text)));
-  for (const f of facts.filter((x) => CITY_FIELDS.includes(x.field))) {
-    if (factWeight(f) + (inAddress(f.value) ? 1 : 0) < CERTAIN_AT) continue;
-    const state = f.field === "city" ? facts.find((x) => x.field === "state" && factWeight(x) >= 1)?.value : null;
-    const text = state && !norm(f.value).includes(norm(state)) ? `${f.value}, ${state}` : f.value;
-    return { text, item: addresses.find((a) => norm(a.value).includes(norm(f.value))) ?? null };
+  sure: BrandFact[],
+  hostsOf: HostsOf,
+  factHosts: FactHosts,
+  decisions: Record<string, Decision>,
+): FoundFact | null {
+  for (const city of sure.filter((f) => CITY_FIELDS.includes(f.field))) {
+    const item = addresses.find((a) => norm(a.value).includes(norm(city.value))) ?? null;
+    const own = factHosts(CITY_FIELDS, city.value);
+    const hosts = new Set([...own.hosts, ...(item ? hostsOf(item) : [])]);
+    if (hosts.size < CERTAIN_AT && !confirmedFact(city, decisions) && !(item && isOurs(decisions[item.key]))) continue;
+    const state = city.field === "city" ? sure.find((x) => x.field === "state") : undefined;
+    const text = state && !norm(city.value).includes(norm(state.value)) ? `${city.value}, ${state.value}` : city.value;
+    return { text, item, facts: [...own.facts, ...(state ? [state] : [])] };
   }
-  const item = best(addresses, (i) => s(i, factSupport(facts, ["street_address", "headquarters_location"], i.value)));
-  return item ? { text: item.value, item } : null;
+  for (const item of addresses) {
+    const own = factHosts(ADDRESS_FIELDS, item.value);
+    if (new Set([...hostsOf(item), ...own.hosts]).size >= CERTAIN_AT || isOurs(decisions[item.key]))
+      return { text: item.value, item, facts: own.facts };
+  }
+  return null;
 }
 
-/** What the business is: a category two sources agree on, or the facts agent's confirmed one. */
+/** What the business is: a category two hosts agree on (its own row and the facts that cite it). */
 function findCategory(
   categories: EvidenceItem[],
-  facts: readonly BrandFact[],
-  s: (i: EvidenceItem, extra?: number) => number,
-): FoundCards["category"] {
-  const item = best(categories, (i) => s(i, factSupport(facts, CATEGORY_FIELDS, i.value)));
-  if (item) return { text: item.value, item };
-  const fact = facts.find((f) => CATEGORY_FIELDS.includes(f.field) && factWeight(f) >= CERTAIN_AT);
-  return fact ? { text: fact.value, item: null } : null;
+  sure: BrandFact[],
+  hostsOf: HostsOf,
+  factHosts: FactHosts,
+  decisions: Record<string, Decision>,
+): FoundFact | null {
+  for (const item of categories) {
+    const own = factHosts(CATEGORY_FIELDS, item.value);
+    if (new Set([...hostsOf(item), ...own.hosts]).size >= CERTAIN_AT || isOurs(decisions[item.key]))
+      return { text: item.value, item, facts: own.facts };
+  }
+  return factCard(sure, CATEGORY_FIELDS, factHosts, decisions, 1);
+}
+
+/** Facts alone (tools, a competitor, a category with no row): shown when their cited hosts reach two. */
+function factCard(sure: BrandFact[], fields: readonly string[], factHosts: FactHosts, decisions: Record<string, Decision>, max: number): FoundFact | null {
+  const shown: BrandFact[] = [];
+  const values: string[] = [];
+  for (const f of sure.filter((x) => fields.includes(x.field))) {
+    if (values.some((v) => norm(v) === norm(f.value))) continue;
+    const own = factHosts(fields, f.value);
+    if (new Set(own.hosts).size < CERTAIN_AT && !confirmedFact(f, decisions)) continue;
+    values.push(f.value);
+    shown.push(...own.facts);
+    if (values.length >= max) break;
+  }
+  return values.length ? { text: values.join(" · "), item: null, facts: shown } : null;
 }
 
 /** The core that moves the run forward: a certain name and a certain website (the brand's own site). */
@@ -193,21 +238,30 @@ export function foundCoreReady(cards: FoundCards): boolean {
 }
 
 /**
- * "Looks right": every evidence item behind a shown card, with the answer the full review would take from a
- * person who confirmed it there (the slot's one value = preferred; accounts = ours). Already answered keys are left.
+ * "Looks right": an answer for EVERY card shown, through the full review's own decision path. An evidence row gets
+ * the answer its slot takes there (the one value = preferred; accounts = ours); a fact behind a card is recorded as
+ * the person's Yes under its own key (Create keeps it confirmed; the validation page treats it as answered).
+ * Keys already answered are left alone.
  */
 export function foundAnswers(cards: FoundCards, decisions: Record<string, Decision>): { key: string; decision: Decision }[] {
   const out: { key: string; decision: Decision }[] = [];
-  const add = (item: EvidenceItem | null | undefined, decision: Decision) => {
-    if (item && !decisions[item.key] && !out.some((o) => o.key === item.key)) out.push({ key: item.key, decision });
+  const add = (key: string | null | undefined, decision: Decision) => {
+    if (key && !decisions[key] && !out.some((o) => o.key === key)) out.push({ key, decision });
   };
-  add(cards.name, "preferred");
-  add(cards.description, "preferred");
-  add(cards.website, "preferred");
-  if (cards.logo?.item.field === "logo") add(cards.logo.item, "preferred");
-  add(cards.location?.item, "preferred");
-  add(cards.category?.item, "preferred");
-  for (const a of cards.accounts) add(a.item, "yes");
+  const card = (c: FoundFact | null) => {
+    if (!c) return;
+    add(c.item?.key, "preferred");
+    for (const f of c.facts) add(f.key, "yes");
+  };
+  add(cards.name?.key, "preferred");
+  add(cards.description?.key, "preferred");
+  add(cards.website?.key, "preferred");
+  if (cards.logo?.item.field === "logo") add(cards.logo.item.key, "preferred");
+  for (const a of cards.accounts) add(a.item.key, "yes");
+  card(cards.location);
+  card(cards.category);
+  card(cards.tools);
+  card(cards.competitor);
   return out;
 }
 

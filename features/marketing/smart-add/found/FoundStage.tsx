@@ -6,7 +6,7 @@
  * hands the SAME session to the full review. What counts as certain: foundCards.ts.
  */
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Globe, Layers, MapPin, Store, Swords, Wrench } from "lucide-react";
 import { withReferral } from "@ai-matrx/kit/outbound";
@@ -16,6 +16,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { avatarInitial } from "../avatarInitial";
+import { brightnessOf, LOGO_TILE_BG, shadeForBrightness } from "../logo-shade";
 import { Shared } from "../stage/Shared";
 import { shownHost, type FoundAccount, type FoundCards } from "./foundCards";
 import styles from "./found.module.css";
@@ -24,35 +25,71 @@ const href = (url: string) => withReferral(/^https?:\/\//i.test(url) ? url : `ht
 const compact = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
 const RISE = { duration: 0.45, ease: [0.4, 0, 0.2, 1] as const };
 
-/** One card slot: reserved (a sweep) while the run works, the card once certain, gone once settled without it. */
+/**
+ * One card slot. The grid's shape is fixed from the first frame (every slot is always there): a slot waits with a
+ * sweep while the run works, shows its card once certain, or settles into a quiet "Not sure" in the same box, so
+ * nothing already shown ever moves.
+ */
 function Slot({
   id,
   filled,
   working,
+  label,
+  icon,
   className,
   children,
 }: {
   id: string;
   filled: boolean;
   working: boolean;
+  label: string;
+  icon?: ReactNode;
   className: string;
   children: ReactNode;
 }) {
-  if (!filled && !working) return null;
+  const state = filled ? "filled" : working ? "waiting" : "retired";
   return (
-    <motion.div
-      layout="position"
-      key={id}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={RISE}
-      className={className}
-      data-found-card={id}
-      data-filled={filled ? "true" : "false"}
-    >
-      {filled ? children : <div aria-hidden className={`${styles.waiting} h-full min-h-[8.5rem] rounded-3xl`} />}
-    </motion.div>
+    <div className={`relative min-h-[8.5rem] ${className}`} data-found-card={id} data-state={state} data-filled={filled ? "true" : "false"}>
+      <AnimatePresence initial={false} mode="popLayout">
+        <motion.div
+          key={state}
+          initial={{ opacity: 0, y: state === "filled" ? 8 : 0 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={RISE}
+          className="h-full"
+        >
+          {state === "filled" ? (
+            children
+          ) : state === "waiting" ? (
+            <div aria-hidden className={`${styles.waiting} h-full min-h-[8.5rem] rounded-3xl`} />
+          ) : (
+            <div className={`${styles.quiet} flex h-full min-h-[8.5rem] flex-col justify-end gap-1 rounded-3xl p-5 sm:p-6`}>
+              <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                {icon}
+                {label}
+              </span>
+              <span className="text-lg text-disabled-foreground">Not sure</span>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/** A logo, raw, on the tile its own brightness asks for (the same light / dark / checker tiles as Smart Add's logo choices). */
+function LogoTile({ url }: { url: string }) {
+  const [shade, setShade] = useState<"light" | "dark" | "checker">("checker");
+  return (
+    <span className={`flex size-14 items-center justify-center overflow-hidden rounded-2xl p-1.5 ${LOGO_TILE_BG[shade]}`}>
+      <img
+        src={browserImageUrl(url)}
+        alt=""
+        className="max-h-full max-w-full object-contain"
+        onLoad={(e) => setShade(shadeForBrightness(brightnessOf(e.currentTarget)))}
+      />
+    </span>
   );
 }
 
@@ -117,14 +154,13 @@ export function FoundStage({
             Here&apos;s what we found
           </h1>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-6 sm:gap-4">
-            <AnimatePresence initial={false}>
-              <Slot key="identity" id="identity" filled={Boolean(name)} working={working} className="sm:col-span-4">
+              <Slot key="identity" id="identity" label="Name" filled={Boolean(name)} working={working} className="sm:col-span-4">
                 {name ? (
                   <div className={`${styles.card} flex h-full min-h-[8.5rem] flex-col gap-4 rounded-3xl p-5 sm:p-6`}>
                     {cards.logo ? (
                       <Shared id={cards.logo.item.key} className="block size-14 shrink-0">
                         {/* A logo renders raw: never tinted, never cropped. */}
-                        <img src={browserImageUrl(cards.logo.url)} alt="" className="size-14 rounded-2xl bg-background object-contain" />
+                        <LogoTile url={cards.logo.url} />
                       </Shared>
                     ) : (
                       <span className="flex size-14 items-center justify-center rounded-2xl bg-foreground text-2xl font-semibold text-background">
@@ -144,7 +180,7 @@ export function FoundStage({
                   </div>
                 ) : null}
               </Slot>
-              <Slot key="lead" id="lead" filled={Boolean(lead)} working={working} className="sm:col-span-2">
+              <Slot key="lead" id="lead" label="Social" icon={<Layers className="size-4" />} filled={Boolean(lead)} working={working} className="sm:col-span-2">
                 {lead ? (
                   <a href={href(lead.item.url ?? lead.item.value)} target="_blank" rel="noopener noreferrer" data-clickable className="block h-full">
                     <CardBody
@@ -157,17 +193,17 @@ export function FoundStage({
                   </a>
                 ) : null}
               </Slot>
-              <Slot key="website" id="website" filled={Boolean(cards.website)} working={working} className="sm:col-span-3">
+              <Slot key="website" id="website" label="Your site" icon={<Globe className="size-4" />} filled={Boolean(cards.website)} working={working} className="sm:col-span-3">
                 {cards.website ? (
                   <a href={href(cards.website.url ?? cards.website.value)} target="_blank" rel="noopener noreferrer" data-clickable className="block h-full">
                     <CardBody icon={<Globe className="size-4" />} label="Your site" value={shownHost(cards.website)} />
                   </a>
                 ) : null}
               </Slot>
-              <Slot key="location" id="location" filled={Boolean(cards.location)} working={working} className="sm:col-span-3">
+              <Slot key="location" id="location" label="Based in" icon={<MapPin className="size-4" />} filled={Boolean(cards.location)} working={working} className="sm:col-span-3">
                 {cards.location ? <CardBody icon={<MapPin className="size-4" />} label="Based in" value={cards.location.text} /> : null}
               </Slot>
-              <Slot key="category" id="category" filled={Boolean(cards.category)} working={working} className={more.length || working ? "sm:col-span-3" : "sm:col-span-6"}>
+              <Slot key="category" id="category" label="What you do" icon={<Store className="size-4" />} filled={Boolean(cards.category)} working={working} className="sm:col-span-3">
                 {cards.category ? (
                   <CardBody
                     icon={<Store className="size-4" />}
@@ -176,7 +212,7 @@ export function FoundStage({
                   />
                 ) : null}
               </Slot>
-              <Slot key="more" id="more" filled={more.length > 0} working={working} className={cards.category || working ? "sm:col-span-3" : "sm:col-span-6"}>
+              <Slot key="more" id="more" label="Also on" icon={<Layers className="size-4" />} filled={more.length > 0} working={working} className="sm:col-span-3">
                 {more.length ? (
                   <div className={`${styles.card} flex h-full min-h-[8.5rem] flex-col justify-end gap-3 rounded-3xl p-5 sm:p-6`}>
                     <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
@@ -204,17 +240,12 @@ export function FoundStage({
                   </div>
                 ) : null}
               </Slot>
-              {cards.tools.length ? (
-                <Slot key="tools" id="tools" filled working={working} className="sm:col-span-3">
-                  <CardBody icon={<Wrench className="size-4" />} label="Tools on your site" value={cards.tools.join(" · ")} />
-                </Slot>
-              ) : null}
-              {cards.competitor ? (
-                <Slot key="competitor" id="competitor" filled working={working} className={cards.tools.length ? "sm:col-span-3" : "sm:col-span-6"}>
-                  <CardBody icon={<Swords className="size-4" />} label="A competitor" value={cards.competitor} />
-                </Slot>
-              ) : null}
-            </AnimatePresence>
+              <Slot key="tools" id="tools" label="Tools on your site" icon={<Wrench className="size-4" />} filled={Boolean(cards.tools)} working={working} className="sm:col-span-3">
+                {cards.tools ? <CardBody icon={<Wrench className="size-4" />} label="Tools on your site" value={cards.tools.text} /> : null}
+              </Slot>
+              <Slot key="competitor" id="competitor" label="A competitor" icon={<Swords className="size-4" />} filled={Boolean(cards.competitor)} working={working} className="sm:col-span-3">
+                {cards.competitor ? <CardBody icon={<Swords className="size-4" />} label="A competitor" value={cards.competitor.text} /> : null}
+              </Slot>
           </div>
 
           {/* The one decision: a fixed-height row, so nothing above moves when it appears. */}

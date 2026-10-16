@@ -91,7 +91,7 @@ under the Name slot only when `full_name_asked`, and sends the typed value as `c
 
 ## Found first: what "certain" means (`found/foundCards.ts`)
 
-A card needs two witnesses: the brand's own site (all its pages are one), each looked-up profile, a link-in-bio page, a web result the fixed rules call `certain`; a facts-agent fact counts two when `confirmed`, one when `likely`. The typed website and anything the person confirmed are certain at once; Not us removes a card. The logo is the site's structured-data logo or the lead account's photo. The tally rides `onEvidence` (`addWitnesses`) because the merged item map keeps one copy per key. Guard: `__tests__/foundCards.test.ts` (the stored fullspecstaff round).
+A card needs two independent HOSTS. Each finding's witness is the host it was read from, once however it arrived: the brand's own site (every page, a web result on it, a fact citing it) is one; facebook.com is one; the web tier counts only results its rules call `certain`. The facts agent is never a witness itself: a `confirmed`/`likely` fact adds the hosts it cites. Typed or confirmed = certain; Not us removes a card; a category equal to a name the site gives itself (title, og:site_name) is never shown. The tally rides `onEvidence` (`addWitnesses`, found door only). "Looks right" answers every card: evidence rows through their slot, facts behind a card (a city, tools, a competitor) as Yes under the fact's own key, which Create reads (`decisions[fact.key]`) and the validation queue treats as answered. The grid's shape is fixed from the first frame; a slot that settles without a certain value stays as a quiet "Not sure" box. Guard: `__tests__/foundCards.test.ts` (fullspecstaff round; nlpkak title-as-category case).
 
 ## Change Log
 

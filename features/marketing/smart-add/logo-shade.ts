@@ -27,3 +27,10 @@ export function shadeForBrightness(b: number | null): "light" | "dark" | "checke
   if (b === null) return "checker";
   return b === -1 || b > 0.8 ? "dark" : b < 0.2 ? "light" : "checker";
 }
+
+/** The tile behind a logo for each shade (Smart Add's logo choices and the found grid): fixed, theme-independent. */
+export const LOGO_TILE_BG: Record<"light" | "dark" | "checker", string> = {
+  light: "bg-zinc-50",
+  dark: "bg-zinc-800",
+  checker: "bg-[repeating-conic-gradient(#d4d4d8_0%_25%,#f4f4f5_0%_50%)] bg-[length:14px_14px]",
+};

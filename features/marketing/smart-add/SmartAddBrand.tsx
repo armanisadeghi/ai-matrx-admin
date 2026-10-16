@@ -643,7 +643,7 @@ export function SmartAddBrand({
   // What the person typed is their own word: its findings are confirmed on arrival.
   const onEvidence = (incoming: EvidenceItem[]) => {
     setItems((prev) => mergeEvidence(prev, incoming));
-    setWitnesses((prev) => addWitnesses(prev, incoming));
+    if (door === "found") setWitnesses((prev) => addWitnesses(prev, incoming));
     const own = incoming.filter(
       (i) =>
         (i.field === "website" && i.source.kind === "website" && typedKeys.current.website === `website:${websiteHost(i.value)}`) ||
@@ -1225,8 +1225,9 @@ export function SmartAddBrand({
         return NO_FACT_RULES;
       });
       const factPlan = planKeptFacts(facts, (f) => {
+        // A fact with a slot is answered there; one without (a city, a tool) by its own key (the found door, validation).
         const k = factSlotKey(f);
-        return k ? decisions[k] : undefined;
+        return (k ? decisions[k] : undefined) ?? decisions[f.key];
       }, factRules, { description: basics.description, industry: basics.category, tagline: basics.tagline, brandName: basics.name });
       const brand = await createBrand({
         organizationId,
