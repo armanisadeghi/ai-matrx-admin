@@ -2,22 +2,19 @@
 "use client";
 
 /**
- * OrganizationPeek — quick read-only preview of an organization.
+ * OrganizationPeek — quick read-only preview of an organization, on THE peek.
  *
- * Same pattern as FilePeek / NotePeek: fetch the row, fill <PeekDialog>.
- * The door comes from the entity registry (`/organizations/<id>`) — never
- * hard-code the route here.
- *
- * Orgs are named constantly in the admin consoles (exposure audit, accounts,
- * activity log, sharing), where the reader's question is "wait, which org is
- * that?" — exactly what a peek answers without losing their place.
+ * The door comes from the entity registry (`/organizations/<id>`) — never hard-code the route here.
+ * Orgs are named constantly in the admin consoles (exposure audit, accounts, activity log, sharing),
+ * where the reader's question is "wait, which org is that?" — exactly what a peek answers.
+ * The description is drawn as markdown (`markdown: true`).
  */
 
 import React from "react";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { Building2 } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 
 interface OrganizationRow {
@@ -30,6 +27,7 @@ interface OrganizationRow {
 export default function OrganizationPeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<OrganizationRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "organization", id, onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -51,48 +49,26 @@ export default function OrganizationPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id]);
 
+  const body: PeekBlock[] = [];
+  if (row) {
+    if (row.slug) body.push({ property: "Slug", value: row.slug });
+    body.push(
+      row.description
+        ? { section: "Description", text: row.description, markdown: true }
+        : { section: "Description", text: "—" },
+    );
+    if (row.created_at) body.push({ property: "Created", value: new Date(row.created_at).toLocaleString() });
+  } else if (!loading) {
+    body.push({
+      fact: "This organization isn't available — it may have been deleted, or you may not have access to it.",
+      wrap: true,
+    });
+  }
+
+  const title = row?.name || "Organization";
   return (
-    <PeekDialog
-      open={open}
-      onClose={onClose}
-      title={row?.name || "Organization"}
-      icon={
-        <Building2 className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-      }
-      token="organization"
-      id={id}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          {row.slug ? (
-            <PeekField label="Slug">
-              <code className="font-mono text-xs text-muted-foreground">
-                {row.slug}
-              </code>
-            </PeekField>
-          ) : null}
-          <PeekField label="Description">
-            {row.description ? (
-              <div className="max-h-72 overflow-y-auto break-words rounded-md border border-border bg-muted/20 p-3 text-sm text-muted-foreground"><RichContent source={row.description ?? ""} level="standard" /></div>
-            ) : (
-              <span className="text-sm text-muted-foreground">—</span>
-            )}
-          </PeekField>
-          {row.created_at ? (
-            <PeekField label="Created">
-              <span className="text-sm text-muted-foreground">
-                {new Date(row.created_at).toLocaleString()}
-              </span>
-            </PeekField>
-          ) : null}
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          This organization isn&apos;t available — it may have been deleted, or
-          you may not have access to it.
-        </p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "Organization", id, title, glyph: Building2, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }

@@ -1,20 +1,18 @@
 "use client";
 
 /**
- * ProjectPeek — quick read-only preview for a ctx_projects row.
- *
- * Same pattern as FilePeek / NotePeek: fetch the row, fill <PeekDialog>.
- * href is omitted because a project's full route is org-scoped and cannot
- * be constructed from the project id alone — the footer hides automatically.
+ * ProjectPeek — quick read-only preview for a ctx_projects row, on THE peek.
+ * The description is drawn as markdown (`markdown: true`, RichContent "standard"). A project's full
+ * route is org-scoped; `peekHref` / the registry answer, and no destination means no doors.
  */
 
 import React from "react";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { FolderKanban } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 
 interface ProjectRow {
@@ -26,6 +24,7 @@ interface ProjectRow {
 export default function ProjectPeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<ProjectRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "project", id, href: peekHref("project", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -47,32 +46,23 @@ export default function ProjectPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id]);
 
+  const body: PeekBlock[] = [];
+  if (row) {
+    body.push(
+      row.description
+        ? { section: "Description", text: row.description, markdown: true }
+        : { section: "Description", text: "—" },
+    );
+    body.push({ property: "Created", value: row.created_at ? new Date(row.created_at).toLocaleString() : "—" });
+    body.push({ part: "custom-fields", token: "project", id });
+  } else if (!loading) {
+    body.push({ fact: "Project not found." });
+  }
+
+  const title = row?.name || "Project";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "project", id }}
-      onClose={onClose}
-      title={row?.name || "Project"}
-      icon={<FolderKanban className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
-      href={peekHref("project", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          <PeekField label="Description">
-            {row.description ? (
-              <div className="text-sm break-words text-muted-foreground rounded-md border border-border bg-muted/20 p-3 max-h-72 overflow-y-auto"><RichContent source={row.description ?? ""} level="standard" /></div>
-            ) : (
-              <span className="text-muted-foreground italic">—</span>
-            )}
-          </PeekField>
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Project not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "Project", id, title, glyph: FolderKanban, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }

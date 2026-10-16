@@ -1,24 +1,17 @@
 "use client";
 
 /**
- * SandboxPeek — read-only preview of a sandbox_instances row.
- *
- * Columns used: sandbox_id (title), status, tier, created_at.
- * No name/title/label column exists in sandbox_instances; sandbox_id is the
+ * SandboxPeek — read-only preview of a sandbox_instances row, on THE peek.
+ * Columns used: sandbox_id (title), status, tier, created_at. No name column exists; sandbox_id is the
  * nearest human-readable identifier.
- *
- * Follow FilePeek's pattern exactly:
- *   1. fetch the one row by id
- *   2. drop fields into <PeekDialog> + <PeekField>
- *   3. cancelled-flag cleanup in useEffect
  */
 
 import React from "react";
 import { Terminal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 
 interface SandboxRow {
@@ -31,6 +24,7 @@ interface SandboxRow {
 export default function SandboxPeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<SandboxRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "sandbox_instance", id, href: peekHref("sandbox_instance", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -52,31 +46,20 @@ export default function SandboxPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id]);
 
+  const body: PeekBlock[] = [];
+  if (row) {
+    body.push({ property: "Status", value: row.status ?? "—" });
+    body.push({ property: "Tier", value: row.tier ?? "—" });
+    body.push({ property: "Created", value: row.created_at ? new Date(row.created_at).toLocaleString() : "—" });
+    body.push({ part: "custom-fields", token: "sandbox_instance", id });
+  } else if (!loading) {
+    body.push({ fact: "Sandbox not found." });
+  }
+
+  const title = row?.sandbox_id ?? "Sandbox";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "sandbox_instance", id }}
-      onClose={onClose}
-      title={row?.sandbox_id ?? "Sandbox"}
-      icon={<Terminal className="h-4 w-4 text-violet-600 dark:text-violet-400" />}
-      href={peekHref("sandbox_instance", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          <PeekField label="Status">
-            <Badge variant="secondary" className="text-xs font-mono">
-              {row.status ?? "—"}
-            </Badge>
-          </PeekField>
-          <PeekField label="Tier">{row.tier ?? "—"}</PeekField>
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Sandbox not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "Sandbox", id, title, glyph: Terminal, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }

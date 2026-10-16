@@ -2,14 +2,15 @@
 "use client";
 
 /**
- * ListPeek — peek preview of a list, read through the list door (`custom.pick_list_get`).
+ * ListPeek — peek preview of a list, read through the list door (`custom.pick_list_get`), on THE peek.
  */
 
 import React from "react";
 import { List } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 import { readPickList } from "@/features/data-tables/pick-lists/doors";
 
@@ -21,6 +22,7 @@ interface ListRow {
 export default function ListPeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<ListRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ id, href: peekHref("pick_list", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -43,24 +45,17 @@ export default function ListPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id]);
 
+  const body: PeekBlock[] = [];
+  if (row) {
+    body.push({ property: "Created", value: row.created_at ? new Date(row.created_at).toLocaleString() : "—" });
+  } else if (!loading) {
+    body.push({ fact: "List not found." });
+  }
+
+  const title = row?.description || "List";
   return (
-    <PeekDialog
-      open={open}
-      onClose={onClose}
-      title={row?.description || "List"}
-      icon={<List className="h-4 w-4 text-sky-600 dark:text-sky-400" />}
-      href={peekHref("pick_list", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">List not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "List", id, title, glyph: List, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }
