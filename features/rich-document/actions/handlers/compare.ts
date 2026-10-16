@@ -18,13 +18,8 @@
 // (per-version "Compare" buttons), not a separate menu item.
 
 import { Clipboard, Pin, GitCompareArrows } from "lucide-react";
-import { readText } from "@ai-matrx/kit/clipboard";
 import { toast } from "@/lib/toast";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import {
-  setCompareBase,
-  openCompareWithBase,
-} from "@/lib/redux/slices/diffCompareSlice";
+import { setCompareBase, openCompareWithBase } from "@/lib/redux/slices/diffCompareSlice";
 import { registerActionIfAbsent } from "./register-if-absent";
 import { contentForDestination } from "../utils";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
@@ -45,46 +40,6 @@ function sourceLabel(source: ContentSource): string {
       return "Current";
   }
 }
-
-registerActionIfAbsent({
-  id: "compare-with-clipboard",
-  label: "Compare with clipboard",
-  icon: Clipboard,
-  iconColor: "text-sky-500 dark:text-sky-400",
-  category: "edit",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 10,
-  run: async (ctx) => {
-    const clipboardText = await readText();
-    if (clipboardText === null) {
-      toast.error("Couldn't read the clipboard");
-      return;
-    }
-    if (!clipboardText) {
-      toast.info("Clipboard is empty");
-      return;
-    }
-    const instanceId = ctx.instanceKey("diff-clipboard");
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "diffViewerWindow",
-        instanceId,
-        data: {
-          windowInstanceId: instanceId,
-          original: contentForDestination(ctx),
-          modified: clipboardText,
-          originalLabel: sourceLabel(ctx.source),
-          modifiedLabel: "Clipboard",
-          title: "Compare with clipboard",
-          engine: "auto",
-          language: null,
-          defaultView: "split",
-        },
-      }),
-    );
-  },
-});
 
 registerActionIfAbsent({
   id: "set-compare-base",

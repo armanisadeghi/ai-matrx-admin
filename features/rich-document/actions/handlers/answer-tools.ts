@@ -12,7 +12,7 @@
 //
 // Every action is ABSENT where it cannot work (visible → false) — never dead.
 
-import { FileInput, Play, BarChart3, SquareArrowOutUpRight } from "lucide-react";
+import { FileInput, Play, SquareArrowOutUpRight } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { registerActionIfAbsent } from "./register-if-absent";
@@ -20,7 +20,6 @@ import { getErrorMessage } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { readCodeBlockFacts, type CodeBlockFacts } from "../../code-block/code-block-context";
 import { runCommandFor, runnableSandboxId } from "../../code-block/code-run";
-import { chartableTypes, parseDelimitedTable } from "@ai-matrx/rich-content/display/blocks/chart/table-chart";
 
 // ─── Code block actions ─────────────────────────────────────────────────────
 
@@ -160,21 +159,3 @@ registerActionIfAbsent({
   },
 });
 
-registerActionIfAbsent({
-  id: "code-block-chart",
-  label: "Chart this data",
-  icon: BarChart3,
-  iconColor: "text-indigo-500 dark:text-indigo-400",
-  category: "edit",
-  supportedSources: ["raw"],
-  renderSlot: "overflow",
-  order: 3,
-  visible: (ctx) => {
-    const facts = codeFacts(ctx);
-    if (!facts?.onToggleChart) return false;
-    if (!/^(csv|tsv)$/i.test(facts.language)) return false;
-    const table = parseDelimitedTable(facts.code);
-    return Boolean(table && chartableTypes(table).length > 0);
-  },
-  run: (ctx) => codeFacts(ctx)?.onToggleChart?.(),
-});

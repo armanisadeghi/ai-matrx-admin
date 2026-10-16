@@ -9,12 +9,11 @@
 // RichDocument surface).
 
 import { durableRecordId } from "@ai-matrx/kit/ids";
-import { BookOpen, Boxes, GraduationCap, Layers, LayoutTemplate } from "lucide-react";
+import { BookOpen, Boxes, Layers, LayoutTemplate } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { extractFlatText, selectMessageById, selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { messageMayContainKindBlock } from "@/features/content-ir/studio/message-kind-gate";
-import { hasConvertibleContent } from "@ai-matrx/chat/agents/components/messages-display/message-options/convertibleContent";
 import { registerActionIfAbsent } from "./register-if-absent";
 import { chatIds, deriveContentTitle, getErrorMessage, requireAuth, contentForDestination, chatStateOf } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
@@ -246,56 +245,3 @@ registerActionIfAbsent({
   },
 });
 
-registerActionIfAbsent({
-  // The ratified click-to-convert pattern: content starts as generic markdown
-  // and converts on EXPLICIT click into study artifacts through the ONE
-  // convert-source dialog (features/education/convert). The dialog is owned by
-  // the host (RichDocument's convert host, or the chat bar) so it survives the
-  // menu closing — no host, no row (absent, never dead).
-  id: "convert-to-study",
-  label: "Convert to flashcards / quiz…",
-  icon: GraduationCap,
-  iconColor: "text-primary",
-  category: "study",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 0,
-  visible: (ctx) =>
-    Boolean(ctx.callbacks?.onRequestConvert) &&
-    hasConvertibleContent(ctx.content),
-  run: (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "convert-to-study",
-        "Convert content",
-        "Sign in to convert this content into flashcards, a quiz, and more.",
-      )
-    )
-      return;
-    ctx.onClose();
-    ctx.callbacks?.onRequestConvert?.();
-  },
-});
-
-registerActionIfAbsent({
-  // The passage becomes the ANSWER side of one card; the host asks for the
-  // question (the front is the reader's to write, never guessed) and files it
-  // in their "Saved cards" deck.
-  id: "save-as-flashcard",
-  label: "Save as flashcard",
-  icon: GraduationCap,
-  iconColor: "text-primary",
-  category: "study",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 1,
-  requiresAuth: true,
-  visible: (ctx) =>
-    Boolean(ctx.callbacks?.onRequestFlashcard) && ctx.content.trim().length > 0,
-  run: (ctx) => {
-    ctx.onClose();
-    // The answer is what the reader SEES — never the storage envelope.
-    ctx.callbacks?.onRequestFlashcard?.(contentForDestination(ctx).trim());
-  },
-});

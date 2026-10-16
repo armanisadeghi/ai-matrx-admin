@@ -9,50 +9,13 @@
 // the chosen agent in its own window on any text; when the text is writable
 // its answers offer "Apply to source" (the same review).
 
-import { BookmarkPlus, FilePen, Link2, MessageCircle, Wand2 } from "lucide-react";
+import { FilePen, Link2 } from "lucide-react";
 import { registerActionIfAbsent } from "./register-if-absent";
 import { applyToSourceReviewAction } from "@/features/overlays/openers/applyToSourceReview";
-import { shortcutEditorWindowAction } from "@/features/overlays/openers/shortcutEditorWindow";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import {
-  putShortcutDraftSeed,
-  shortcutSeedForMapping,
-} from "@/features/agent-shortcuts/draft-seed";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { applyTargetForConversation } from "@ai-matrx/rich-content/rich-document/review/applyTargets";
-import {
-  chatIds,
-  chatStateOf,
-  contentForDestination,
-} from "../utils";
-
-registerActionIfAbsent({
-  id: "text-cleanup",
-  writesSource: true,
-  label: "Clean up",
-  icon: Wand2,
-  iconColor: "text-primary",
-  category: "ai",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 0,
-  visible: (ctx) => Boolean(ctx.callbacks?.onRequestTextAgentAction),
-  run: (ctx) => ctx.callbacks?.onRequestTextAgentAction?.("cleanup", ctx),
-});
-
-registerActionIfAbsent({
-  id: "text-help",
-  writesSource: true,
-  label: "Help with this…",
-  icon: MessageCircle,
-  iconColor: "text-primary",
-  category: "ai",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 1,
-  visible: (ctx) => Boolean(ctx.callbacks?.onRequestTextAgentAction),
-  run: (ctx) => ctx.callbacks?.onRequestTextAgentAction?.("help", ctx),
-});
+import { chatIds, chatStateOf, contentForDestination } from "../utils";
 
 registerActionIfAbsent({
   // An answer in an agent window launched by "Custom agent…" from text that
@@ -102,31 +65,6 @@ function runMapping(ctx: RichDocumentActionContext) {
   if (!conversation?.agentId || !conversation.launchMapping) return null;
   return { agentId: conversation.agentId, ...conversation.launchMapping };
 }
-
-registerActionIfAbsent({
-  id: "save-run-as-shortcut",
-  label: "Save as shortcut",
-  icon: BookmarkPlus,
-  iconColor: "text-primary",
-  category: "ai",
-  supportedSources: ["chat-message"],
-  renderSlot: "overflow",
-  order: 4,
-  visible: (ctx) => runMapping(ctx) !== null,
-  run: (ctx) => {
-    const run = runMapping(ctx);
-    if (!run) return;
-    ctx.dispatch(
-      shortcutEditorWindowAction({
-        agentId: run.agentId,
-        seedId: putShortcutDraftSeed(
-          shortcutSeedForMapping(run.valueMappings, run.surfaceName),
-        ),
-      }),
-    );
-    ctx.onClose();
-  },
-});
 
 registerActionIfAbsent({
   id: "bind-run-to-page",

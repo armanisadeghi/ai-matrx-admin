@@ -17,11 +17,9 @@ import "./chat";
 import "./contact";
 import "./export";
 import "./print";
-import "./edit";
 import "./compare";
 import "./feedback";
 import "./app";
-import "./server-api";
 import "./answer-tools";
 import "./annotations";
 // The non-chat half of the package's `edit` / `open-fullscreen-editor` (message-actions W1a).

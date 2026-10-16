@@ -1,100 +1,13 @@
 // features/rich-document/actions/handlers/export.ts
 //
-// HTML preview, HTML page copy, email-to-me. All source-agnostic.
-// The html-preview action's "save" path routes through ctx.sourceAdapter.edit
-// so it works on any source that supports editing.
+// Email-to-me (source-agnostic). Publish HTML is @ai-matrx/chat's row; this app's half of it
+// (the htmlPreview overlay and its save through the source adapters) is ./host-edit-bodies.
 
-import { durableRecordId } from "@ai-matrx/kit/ids";
-import { Eye, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
 import { registerActionIfAbsent } from "./register-if-absent";
-import { getErrorMessage, serializeError, contentForDestination } from "../utils";
-import { acknowledgedPreparedSource, prepareContentEdit, savePreparedContentEdit } from "./preparedEdit";
-
-registerActionIfAbsent({
-  id: "html-preview",
-  label: "Publish HTML",
-  icon: Eye,
-  iconColor: "text-indigo-500 dark:text-indigo-400",
-  category: "export",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 0,
-  run: async (ctx) => {
-    const instanceId = ctx.instanceKey("html-preview");
-    // A structured chat payload's JSON view must never be saved back as text.
-    const canSave =
-      Boolean(ctx.sourceAdapter.edit) &&
-      !ctx.source.readOnly &&
-      !(ctx.extensions?.type === "chat-message" && ctx.extensions.contentIsStructuredRaw);
-    // Read-only: nothing is edited in place, so the page is purely outbound
-    // and carries the envelope-free projection like every other destination.
-    const prepared = canSave
-      ? await prepareContentEdit(ctx)
-      : { source: ctx.source, content: contentForDestination(ctx) };
-    let preparedSource = prepared.source;
-    // What the editor opened on — a display projection for chat — so the
-    // adapter splices only the changed span into the stored text.
-    let openedOn = prepared.content;
-
-    // Save is source-agnostic via the source adapter (chat → editMessage,
-    // note → NotesAPI.update, …). Route it through the callback registry so
-    // it reaches the caller — htmlPreview is now callback-aware. A function
-    // can't survive Redux; only the `callbackGroupId` string travels.
-    const callbackGroupId = canSave
-      ? createFullScreenEditorCallbackGroup({
-          retainAfterSuccess: true,
-          onSave: async (newContent: string) => {
-            try {
-              preparedSource = await savePreparedContentEdit({
-                ctx,
-                source: preparedSource,
-                newContent,
-                previousContent: openedOn,
-              });
-              openedOn = newContent;
-            } catch (err) {
-              preparedSource = acknowledgedPreparedSource(preparedSource, err, newContent) ?? preparedSource;
-              console.error(
-                "[html-preview] save failed",
-                serializeError(err),
-              );
-              toast.error(getErrorMessage(err, "Failed to save"));
-              throw err;
-            }
-          },
-        }).callbackGroupId
-      : null;
-
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "htmlPreview",
-        instanceId,
-        data: {
-          content: prepared.content,
-          // Publishing stores `source_message_id` (uuid): only a durable answer has one.
-          messageId:
-            preparedSource.type === "chat-message"
-              ? (durableRecordId(preparedSource.messageId) ?? undefined)
-              : undefined,
-          conversationId:
-            preparedSource.type === "chat-message"
-              ? preparedSource.conversationId
-              : undefined,
-          callbackGroupId,
-          title: "HTML Preview & Publishing",
-          description:
-            "Edit markdown, preview HTML, and publish your content",
-          showSaveButton: canSave,
-          isAgentSystem: preparedSource.type === "chat-message",
-        },
-      }),
-    );
-    ctx.onClose();
-  },
-});
+import { getErrorMessage, contentForDestination } from "../utils";
 
 registerActionIfAbsent({
   id: "email-to-me",
