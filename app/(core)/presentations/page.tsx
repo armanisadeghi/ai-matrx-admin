@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { FileScope } from "@/features/file-actions/FileScopeBar";
@@ -12,6 +12,7 @@ import { useHomeTemplates } from "@/features/templates/files/components/HomeTemp
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { toast } from "@/lib/toast";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { useHomeRows } from "@/features/file-actions/home/useHomeRows";
 import { isServiceFailure } from "@/features/data-tables/types";
 import {
   createPresentation,
@@ -40,33 +41,16 @@ const SOURCE_LABEL: Record<string, string> = {
  */
 export default function PresentationsHomePage() {
   const router = useRouter();
-  const [rows, setRows] = useState<PresentationRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [scope, setScope] = useState<FileScope>("all");
   const homeTemplates = useHomeTemplates("presentation");
   const userId = useAppSelector(selectUserId);
   // The Google row and the list land in ONE frame: the list waits for the connection answer too.
   const google = useGoogleWorkspaceConnection();
+  const { rows, loading, error, reload } = useHomeRows<PresentationRow>(scope, listAccessiblePresentations, listTrashedPresentations);
   const homeLoading = loading || (scope !== "trash" && google.state.status === "loading");
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    const res = scope === "trash" ? await listTrashedPresentations() : await listAccessiblePresentations();
-    if (isServiceFailure(res)) {
-      setError(res.error);
-      setLoading(false);
-      return;
-    }
-    setRows(res.data);
-    setError(null);
-    setLoading(false);
-  }, [scope]);
 
-  useEffect(() => {
-    void reload();
-  }, [reload]);
 
   const handleCreate = async () => {
     setCreating(true);

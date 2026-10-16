@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Ellipsis, Loader2, Table2, Upload } from "lucide-react";
@@ -29,6 +29,7 @@ import { BlankTile, StartBand, StartTile } from "@/features/file-actions/home/St
 import { useHomeTemplates } from "@/features/templates/files/components/HomeTemplates";
 import { FromTableTile } from "@/features/workbooks/components/FromTableTile";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { useHomeRows } from "@/features/file-actions/home/useHomeRows";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type Workbook } from "@ai-matrx/office/core";
 // xlsx-to-univer (xlsx + @univerjs/*) and smart-importer (xlsx) are heavy —
@@ -59,13 +60,11 @@ export default function WorkbooksLandingPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const organizationId = useAppSelector(selectOrganizationId);
-  const [workbooks, setWorkbooks] = useState<Workbook[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [scope, setScope] = useState<FileScope>("all");
   // The Google row and the list land in ONE frame: the list waits for the connection answer too.
   const google = useGoogleWorkspaceConnection();
+  const { rows: workbooks, loading, error, reload } = useHomeRows<Workbook>(scope, listAccessibleWorkbooks, listTrashedWorkbooks);
   const homeLoading = loading || (scope !== "trash" && google.state.status === "loading");
   const userId = useAppSelector(selectUserId);
   const [importing, setImporting] = useState(false);
@@ -83,25 +82,7 @@ export default function WorkbooksLandingPage() {
   // collides with the shell avatar below `sm`, see core-route-headers skill.
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    const res =
-      scope === "trash"
-        ? await listTrashedWorkbooks()
-        : await listAccessibleWorkbooks();
-    if (isServiceFailure(res)) {
-      setError(res.error);
-      setLoading(false);
-      return;
-    }
-    setWorkbooks(res.data);
-    setError(null);
-    setLoading(false);
-  }, [scope]);
 
-  useEffect(() => {
-    void reload();
-  }, [reload]);
 
 
   const handleCreate = useCallback(async () => {

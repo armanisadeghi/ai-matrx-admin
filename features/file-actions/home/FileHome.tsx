@@ -198,6 +198,15 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
   const visibleRows = sorted.map((d) => d.item.row);
 
   const bulk = useFileHomeBulk({ kind, adapter, rows: sorted, userId, trashed, reload });
+  // The sticky header row sits under the app header: tell every menu to open clear of both (the design system's
+  // DropdownMenuContent reads this when it opens), so a first-row menu never hides its top items under the row.
+  useEffect(() => {
+    const root = document.documentElement.style;
+    root.setProperty("--matrx-floating-top-clearance", "calc(var(--shell-header-h) + 3.5rem)");
+    return () => {
+      root.removeProperty("--matrx-floating-top-clearance");
+    };
+  }, []);
   // A selection belongs to the list it was ticked in: a new scope or search starts clean.
   const clearBulk = bulk.clear;
   useEffect(() => {

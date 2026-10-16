@@ -9,7 +9,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { MatrxTableMenuSection } from "@ai-matrx/design-system/data-table";
-import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
+import { promptRename } from "./FileMenuItems";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
 
@@ -67,15 +67,9 @@ export function useFileItemActions<Row extends { id: string; user_id: string }>(
         id: "rename",
         label: "Rename",
         icon: "pencil",
-        onSelect: () =>
-          void promptForValues({
-            title: "Rename",
-            submitLabel: "Rename",
-            fields: [{ name: "name", prompt: "Name", defaultValue: name, required: true }],
-          }).then(async (answers) => {
-            const next = answers?.name?.trim();
-            if (next && next !== name && (await renameRecord(base, row.id, next))) void reload();
-          }),
+        onSelect: () => void promptRename(name, async (next) => {
+          if (await renameRecord(base, row.id, next)) void reload();
+        }),
       });
     items.push({
       id: "copy",
