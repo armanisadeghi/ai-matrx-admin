@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useEffectEvent, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { FlaskConical, Play } from "lucide-react";
 import {
   Button,
@@ -59,16 +60,16 @@ function useRead<T>(
 ): [Read<T>, () => void] {
   const [read, setRead] = useState<Read<T>>({ state: "loading" });
   const [nonce, setNonce] = useState(0);
+  // `load` is rebuilt each render; `key` names what it reads.
+  const runLoad = useEffectEvent(() => load());
   useEffect(() => {
     let live = true;
-    load()
+    runLoad()
       .then((data) => live && setRead({ state: "ready", data }))
       .catch((error: unknown) => live && setRead({ state: "failed", error }));
     return () => {
       live = false;
     };
-    // `load` is rebuilt each render; `key` names what it reads.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, nonce]);
   return [read, () => setNonce((n) => n + 1)];
 }
@@ -204,14 +205,14 @@ function SelectedRun({
   const status =
     runRead.state === "ready" ? (runRead.data?.status ?? null) : null;
   const live = status !== null && runStatusMeta(status).live;
+  const reread = useEffectEvent(() => {
+    rereadRun();
+    rereadResults();
+  });
   useEffect(() => {
     if (!live) return;
-    const timer = window.setInterval(() => {
-      rereadRun();
-      rereadResults();
-    }, LIVE_REREAD_MS);
+    const timer = window.setInterval(() => reread(), LIVE_REREAD_MS);
     return () => window.clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [live]);
 
   if (runRead.state === "loading" || resultsRead.state === "loading") {
@@ -278,7 +279,6 @@ export function AgentTestPage({
   basePath: string;
   backHref: string;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const runId = searchParams?.get("run") ?? null;
@@ -311,9 +311,7 @@ export function AgentTestPage({
     if (id) params.set("run", id);
     else params.delete("run");
     const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
+    replaceAddressWithoutNavigating(query ? `${pathname}?${query}` : pathname);
   };
 
   return (
