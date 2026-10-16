@@ -1861,18 +1861,19 @@ export function SmartAddBrand({
   useEffect(() => {
     if (welcomeCreateKick) runWelcomeCreate();
   }, [welcomeCreateKick]);
-  // Created through "Looks right": the profile write has landed (or is retried once), then the welcome page takes over.
+  // Created through "Looks right": the welcome page takes over at once; the profile write (started with Create) finishes
+  // behind it and is retried once when it failed. A slow write never holds the page (it left a blank door for 50 s).
   const finishWelcome = useEffectEvent(async (brand: MarketingBrand) => {
-    const failed = await welcomeProfileWrite.current;
-    if (failed && loginSeed && welcomeProfileFound.current) {
-      try {
-        await writeWelcomeProfile(loginSeed.subject, welcomeProfileFound.current);
-      } catch (error) {
-        toast.error(`Your profile was not updated: ${extractErrorMessage(error)}`);
-      }
-    }
     const host = basics.websiteUrl ? websiteHost(basics.websiteUrl) : null;
     onWelcomeDone?.({ brand, paidHost: paidCardsHost(host, liveKnownDomainRules()), test: Boolean(loginSeed?.test) });
+    const subject = loginSeed?.subject;
+    const found = welcomeProfileFound.current;
+    if (!(await welcomeProfileWrite.current) || !subject || !found) return;
+    try {
+      await writeWelcomeProfile(subject, found);
+    } catch (error) {
+      toast.error(`Your profile was not updated: ${extractErrorMessage(error)}`);
+    }
   });
   useEffect(() => {
     if (!welcomeConfirming || !created || welcomeDoneSent.current) return;
