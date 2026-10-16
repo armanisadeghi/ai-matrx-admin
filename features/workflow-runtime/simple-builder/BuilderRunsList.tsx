@@ -43,8 +43,9 @@ function runLook(run: BuilderRun): { tone: StatusTone; icon: LucideIcon } {
   switch (run.status) {
     case "completed":
       return STEP_LOOK.done;
-    case "failed":
     case "errored":
+      return STEP_LOOK.stopped_loop_cap;
+    case "failed":
       return STEP_LOOK.failed;
     case "running":
     case "queued":
