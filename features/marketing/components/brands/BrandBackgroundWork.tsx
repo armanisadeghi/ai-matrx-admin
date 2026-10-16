@@ -529,6 +529,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
             </>
           ) : (
             <>
+              <span aria-hidden="true" className="size-3.5 shrink-0" />
               <span className="font-medium">Brand setup</span>
               <span className={setup.isLoading ? "h-3.5 w-24 animate-pulse rounded bg-muted" : "text-muted-foreground"}>{setup.isLoading ? "" : "No setup run"}</span>
             </>
@@ -545,36 +546,44 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
             <ErrorAlchemyMenu error={extractErrorMessage(sites.error ?? accounts.error)} />
           </p>
         ) : null}
-        <MatrxDataTable<WorkRow>
-          tableId="marketing-brand-background-work"
-          data={rows}
-          columns={columns}
-          getRowId={(r) => r.id}
-          appearance="embedded"
-          density="condensed"
-          viewTabs={false}
-          pageSize={0}
-          {...NO_RAW_ROW_WINDOW}
-          onRowOpen={(r) => {
-            if (r.href) router.push(r.href);
-          }}
-          mobileCardsBreakpoint="md"
-          mobileCards={(r, _i, controls) => <WorkCard row={r} controls={controls} />}
-          isLoading={sites.isLoading || accounts.isLoading}
-          isFetching={sites.isFetching || accounts.isFetching}
-          read={{
-            // One read failing never hides the other's rows: the failed half says so above the table.
-            status: sites.isError && accounts.isError ? "error" : sites.isLoading || accounts.isLoading ? "loading" : "ready",
-            error: sites.error ?? accounts.error ?? undefined,
-            onRetry: () => {
-              void sites.refetch();
-              void accounts.refetch();
-            },
-          }}
-          toolbar={{ searchPlaceholder: "Search work…", singleRow: true }}
-          rowActions={rowActions}
-          emptyState={{ title: "No websites or accounts yet" }}
-        />
+        {sites.isLoading || accounts.isLoading ? (
+          // A table of typical height (toolbar, header, two rows) holds the place while both reads land, so the
+          // cards below do not drop when the table's own taller loading state is replaced by the rows.
+          <div aria-busy="true" aria-label="Loading background work" className="h-[170px] p-3">
+            <div className="h-full w-full animate-pulse rounded bg-muted/60" />
+          </div>
+        ) : (
+          <MatrxDataTable<WorkRow>
+            tableId="marketing-brand-background-work"
+            data={rows}
+            columns={columns}
+            getRowId={(r) => r.id}
+            appearance="embedded"
+            density="condensed"
+            viewTabs={false}
+            pageSize={0}
+            {...NO_RAW_ROW_WINDOW}
+            onRowOpen={(r) => {
+              if (r.href) router.push(r.href);
+            }}
+            mobileCardsBreakpoint="md"
+            mobileCards={(r, _i, controls) => <WorkCard row={r} controls={controls} />}
+            isLoading={sites.isLoading || accounts.isLoading}
+            isFetching={sites.isFetching || accounts.isFetching}
+            read={{
+              // One read failing never hides the other's rows: the failed half says so above the table.
+              status: sites.isError && accounts.isError ? "error" : sites.isLoading || accounts.isLoading ? "loading" : "ready",
+              error: sites.error ?? accounts.error ?? undefined,
+              onRetry: () => {
+                void sites.refetch();
+                void accounts.refetch();
+              },
+            }}
+            toolbar={{ searchPlaceholder: "Search work…", singleRow: true }}
+            rowActions={rowActions}
+            emptyState={{ title: "No websites or accounts yet" }}
+          />
+        )}
       </div>
     </SectionCard>
   );

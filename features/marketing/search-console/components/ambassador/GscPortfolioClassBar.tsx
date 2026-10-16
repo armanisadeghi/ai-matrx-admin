@@ -58,10 +58,10 @@ export function GscPortfolioClassBar({
   if (isLoading) {
     return (
       <div
-        className={cn("rounded-lg border border-border bg-card p-3", className)}
+        className={cn("flex h-[42px] items-center rounded-lg border border-border bg-card p-3", className)}
       >
+        {/* Same height as the "no data" state it most often becomes, so the page below does not move. */}
         <div className="h-3 w-44 animate-pulse rounded bg-muted" />
-        <div className="mt-3 h-2 w-full animate-pulse rounded bg-muted" />
       </div>
     );
   }

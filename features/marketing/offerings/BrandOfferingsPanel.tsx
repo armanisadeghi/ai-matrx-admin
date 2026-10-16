@@ -353,17 +353,17 @@ export function BrandOfferingsSummary({ brand }: Props) {
           }
         />
       </div>
-      {verdictText ? (
+      {verdictText || !items ? (
         <div className="min-w-0">
-          <PropertyRow label="Coverage" value={verdictText} />
+          <PropertyRow label="Coverage" value={verdictText ?? "…"} />
         </div>
       ) : null}
-      {top.length ? (
+      {top.length || !items ? (
         <div className="min-w-0">
           <PropertyRow
             label="Top groups"
             value={
-              <span className="flex flex-wrap gap-1">
+              <span className="flex min-h-6 flex-wrap gap-1">
                 {top.map(([g, n]) => (
                   <span
                     key={g}

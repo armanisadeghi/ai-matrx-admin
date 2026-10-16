@@ -51,13 +51,13 @@ export function BrandTopicalMapCard({
       }}
     >
       {maps.isPending ? (
-        <div className="p-4">
-          <RegionSkeleton shape="rows" count={2} aria-label={`Loading ${title.toLowerCase()}s`} />
+        <div className="flex min-h-[2.75rem] items-center px-4 py-2.5">
+          <RegionSkeleton shape="rows" count={1} aria-label={`Loading ${title.toLowerCase()}s`} />
         </div>
       ) : maps.isError ? (
         <ErrorNotice size="inline" className="p-4 text-xs" message={topicalMapErrorText(maps.error)} />
       ) : maps.data.length === 0 ? (
-        <div className="flex flex-wrap items-center gap-3 px-4 py-2.5">
+        <div className="flex min-h-[2.75rem] flex-wrap items-center gap-3 px-4 py-2.5">
           <p className="text-xs text-muted-foreground">No {title.toLowerCase()} yet.</p>
           {/* Placement §7 #4 — "Generate map" when there is none. */}
           {canEdit ? (
