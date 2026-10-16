@@ -18,7 +18,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { DecisionQuestionEditor } from "./DecisionQuestionEditor";
 import {
   decisionQuestionPayload,
-  parseDecisionValue,
+  looksLikeJson,
+  readTypedValue,
   questionErrors,
   type DecisionQuestion,
 } from "./decision-form";
@@ -27,7 +28,7 @@ import type { DecisionResultView } from "./decision-result";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { ALL_DECISIONS_REVIEW_HREF } from "@/features/agents/decision-review/service";
-import { SegmentedControl, PropertyRow } from "@ai-matrx/design-system/controls";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { ListTapButton, ShareTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 
@@ -37,7 +38,6 @@ export function DecisionPlayground() {
   const params = useSearchParams();
   const [model, setModel] = useState<string | null>(null);
   const [offeringId, setOfferingId] = useState<string | undefined>();
-  const [stateMode, setStateMode] = useState<"text" | "json">("text");
   const [state, setState] = useState("");
   const [questions, setQuestions] = useState<DecisionQuestion[]>([]);
   // What is missing shows only after someone presses Run — never on load,
@@ -112,7 +112,8 @@ export function DecisionPlayground() {
     };
   }, [dispatch, executionId, organizationState, recoverAttempt]);
 
-  const parsedState = parseDecisionValue(state, stateMode, "State");
+  // JSON is detected, never switched: typed JSON is sent as JSON.
+  const stateValue = readTypedValue(state);
   // A Set: two blank options must not list the same message twice.
   const validationErrors = Array.from(new Set([
     ...(organizationState === "ready"
@@ -125,10 +126,7 @@ export function DecisionPlayground() {
             ? "Choose a decision model. No default is set and the catalog has no decision model to fall back on."
             : "Choose a decision model.",
         ]),
-    ...(parsedState.error ? [parsedState.error] : []),
-    ...(stateMode === "text" && !state.trim()
-      ? ["Describe the situation to evaluate."]
-      : []),
+    ...(state.trim() ? [] : ["Describe the situation."]),
     ...questionErrors(questions),
   ]));
 
@@ -136,7 +134,6 @@ export function DecisionPlayground() {
     if (busy) return;
     if (
       organizationState !== "ready" ||
-      parsedState.value === undefined ||
       validationErrors.length > 0 ||
       !model
     ) {
@@ -159,7 +156,7 @@ export function DecisionPlayground() {
     void runDecision(dispatch, {
       model,
       offeringId,
-      state: parsedState.value,
+      state: stateValue,
       questions: payloadQuestions,
     })
       .then(setResult)
@@ -211,23 +208,16 @@ export function DecisionPlayground() {
         <div className="mx-auto grid w-full max-w-6xl gap-5 px-4 pb-10 pt-[calc(var(--shell-header-h)+1rem)] xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.75fr)]">
           <main className="min-w-0 space-y-6">
             <section className="space-y-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <StepLabel step={1}>The situation</StepLabel>
-                <ModeSwitch value={stateMode} onChange={setStateMode} />
-              </div>
+              <StepLabel step={1}>The situation</StepLabel>
               <ProTextarea
                 value={state}
                 onChange={(event) => setState(event.target.value)}
-                placeholder={
-                  stateMode === "text"
-                    ? "Describe the situation to evaluate"
-                    : '{\n  "customer": "…"\n}'
-                }
+                placeholder="Describe the situation, as text or JSON"
                 aria-label="Decision state"
                 autoGrow
                 minHeight={140}
                 maxHeight={360}
-                className={stateMode === "json" ? "font-mono text-sm" : "text-sm"}
+                className={looksLikeJson(state) ? "font-mono text-sm" : "text-sm"}
               />
             </section>
             <section className="space-y-2.5">
@@ -315,18 +305,6 @@ function StepLabel({ step, children }: { step: number; children: React.ReactNode
       </span>
       {children}
     </h2>
-  );
-}
-
-function ModeSwitch({
-  value,
-  onChange,
-}: {
-  value: "text" | "json";
-  onChange: (value: "text" | "json") => void;
-}) {
-  return (
-    <SegmentedControl aria-label="Format" value={value} onValueChange={onChange} data={[{ value: "text", label: "Text" }, { value: "json", label: "JSON" }]} />
   );
 }
 
@@ -425,7 +403,7 @@ function AnswerCard({
       ? `Choice: ${answer.choice} · confidence ${(answer.confidence * 100).toFixed(0)}%`
       : answer.type === "score"
         ? `Score: ${answer.score} · confidence ${(answer.confidence * 100).toFixed(0)}%`
-        : `Noul degree: ${(answer.noul * 100).toFixed(0)}% true`;
+        : `How true: ${(answer.noul * 100).toFixed(0)}%`;
   const detail = answer.type === "noul" ? null : answer.probabilities;
   return (
     <article className="rounded-lg border border-border bg-muted/30 p-3">
@@ -472,8 +450,7 @@ function AnswerCard({
       )}
       {answer.type === "noul" && (
         <p className="mt-2 text-xs text-muted-foreground">
-          Degree of the true criterion; the false degree is{" "}
-          {((1 - answer.noul) * 100).toFixed(0)}%.
+          {((1 - answer.noul) * 100).toFixed(0)}% false
         </p>
       )}
       <details className="mt-2 text-xs text-muted-foreground">

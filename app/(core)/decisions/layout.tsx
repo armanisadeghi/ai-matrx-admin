@@ -6,7 +6,7 @@ import { createRouteMetadata } from "@/utils/route-metadata";
 export const metadata = createRouteMetadata("/decisions", {
   title: "Decisions",
   description:
-    "Ask a typed decision model named Choice, Score, and Noul questions about a state and use each answer directly.",
+    "Ask yes-or-no, pick-one, score and how-true questions about a situation and use each answer directly.",
   letter: "Dn",
 });
 

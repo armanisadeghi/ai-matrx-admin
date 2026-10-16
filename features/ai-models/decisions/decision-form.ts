@@ -7,48 +7,37 @@ export interface DecisionRunInput {
   questions: Record<string, Record<string, unknown>>;
 }
 
-export type DecisionQuestion =
-  | {
-      id: string;
-      name: string;
-      type: "choice";
-      instructions: string;
-      instructionsMode: "text" | "json";
-      instructionsJson: string;
-      criteriaMode: "rows" | "json";
-      criteriaJson: string;
-      criteria: Array<{ key: string; description: string }>;
-    }
-  | {
-      id: string;
-      name: string;
-      type: "score";
-      instructions: string;
-      instructionsMode: "text" | "json";
-      instructionsJson: string;
-      criteriaMode: "rows" | "json";
-      criteriaJson: string;
-      criteria: string[];
-    }
-  | {
-      id: string;
-      name: string;
-      type: "noul";
-      instructions: string;
-      instructionsMode: "text" | "json";
-      instructionsJson: string;
-      criteriaMode: "rows" | "json";
-      criteriaJson: string;
-      criteria: { true: string; false: string };
-    };
+/**
+ * What a person picks. Two of them are the server's `choice` type: "Yes or no"
+ * is a choice whose two options are fixed; "Pick one" is a choice whose options
+ * the person names. "How true" is the server's `noul` type (a 0–1 degree of truth).
+ */
+export type QuestionKind = "yes_no" | "pick_one" | "score" | "how_true";
 
-// The answer name each type starts with; a second question of the same type
-// gets `_2`, `_3`… so adding a question never creates a duplicate name.
-const DEFAULT_NAMES: Record<DecisionQuestion["type"], string> = {
-  choice: "decision",
+interface QuestionBase {
+  id: string;
+  /** The answer's key in the result — what a workflow reads. Lives under Advanced. */
+  name: string;
+  kind: QuestionKind;
+  instructions: string;
+  /** Advanced: the options written as JSON instead of rows. */
+  criteriaMode: "rows" | "json";
+  criteriaJson: string;
+}
+
+export type DecisionQuestion =
+  | (QuestionBase & { type: "choice"; criteria: Array<{ key: string; description: string }> })
+  | (QuestionBase & { type: "score"; criteria: string[] })
+  | (QuestionBase & { type: "noul"; criteria: { true: string; false: string } });
+
+const DEFAULT_NAMES: Record<QuestionKind, string> = {
+  yes_no: "decision",
+  pick_one: "choice",
   score: "score",
-  noul: "truth",
+  how_true: "truth",
 };
+
+export const YES_NO_KEYS = ["yes", "no"] as const;
 
 function uniqueName(base: string, taken: ReadonlySet<string>): string {
   if (!taken.has(base)) return base;
@@ -57,32 +46,32 @@ function uniqueName(base: string, taken: ReadonlySet<string>): string {
   return `${base}_${n}`;
 }
 
+/**
+ * A new question of `kind`. Its answer name never repeats one in `existing`
+ * (a second question used to reuse "decision" and lock Run). `carry` keeps
+ * what was typed when a question changes kind.
+ */
 export function newQuestion(
-  type: DecisionQuestion["type"],
+  kind: QuestionKind,
   existing: readonly DecisionQuestion[] = [],
+  carry?: { id: string; instructions: string },
 ): DecisionQuestion {
   const taken = new Set(existing.map((question) => question.name.trim()));
   const base = {
-    id: crypto.randomUUID(),
-    name: uniqueName(DEFAULT_NAMES[type], taken),
-    instructions: "",
-    instructionsMode: "text" as const,
-    instructionsJson: "{}",
+    id: carry?.id ?? crypto.randomUUID(),
+    name: uniqueName(DEFAULT_NAMES[kind], taken),
+    kind,
+    instructions: carry?.instructions ?? "",
     criteriaMode: "rows" as const,
+    criteriaJson: "",
   };
-  if (type === "score")
-    return { ...base, type, criteriaJson: "[]", criteria: ["", ""] };
-  if (type === "noul")
-    return {
-      ...base,
-      type,
-      criteriaJson: "{}",
-      criteria: { true: "", false: "" },
-    };
+  if (kind === "score") return { ...base, type: "score", criteria: ["", ""] };
+  if (kind === "how_true") return { ...base, type: "noul", criteria: { true: "", false: "" } };
+  if (kind === "yes_no")
+    return { ...base, type: "choice", criteria: YES_NO_KEYS.map((key) => ({ key, description: "" })) };
   return {
     ...base,
-    type,
-    criteriaJson: "{}",
+    type: "choice",
     criteria: [
       { key: "", description: "" },
       { key: "", description: "" },
@@ -90,182 +79,115 @@ export function newQuestion(
   };
 }
 
-export function parseDecisionValue(
-  source: string,
-  mode: "text" | "json",
-  field: string,
-): { value?: DecisionValue; error?: string } {
-  if (mode === "text") return { value: source };
+/** Change a question's kind, keeping what was typed into it. */
+export function changeKind(
+  question: DecisionQuestion,
+  kind: QuestionKind,
+  others: readonly DecisionQuestion[],
+): DecisionQuestion {
+  return newQuestion(kind, others, { id: question.id, instructions: question.instructions });
+}
+
+/**
+ * Text the person typed, as the value to send: JSON when it IS JSON (an object
+ * or array), otherwise the text itself. There is no Text/JSON switch.
+ */
+export function readTypedValue(source: string): DecisionValue {
+  const trimmed = source.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return source;
   try {
-    const value: unknown = JSON.parse(source);
-    if (value === null || typeof value !== "object") {
-      return { error: `${field} JSON must be an object or array.` };
-    }
-    return { value };
+    const value: unknown = JSON.parse(trimmed);
+    return value !== null && typeof value === "object" ? value : source;
   } catch {
-    return { error: `${field} must be valid JSON.` };
+    return source;
+  }
+}
+
+export function looksLikeJson(source: string): boolean {
+  return readTypedValue(source) !== source;
+}
+
+function parseCriteriaJson(source: string): { value?: unknown; error?: boolean } {
+  try {
+    return { value: JSON.parse(source) };
+  } catch {
+    return { error: true };
   }
 }
 
 export function questionErrors(questions: DecisionQuestion[]): string[] {
   const errors: string[] = [];
-  if (questions.length === 0) errors.push("Add at least one question.");
+  if (questions.length === 0) errors.push("Add a question.");
   const names = new Set<string>();
-  for (const question of questions) {
+  questions.forEach((question, index) => {
+    const label = `Question ${index + 1}`;
+    if (!question.instructions.trim()) errors.push(`${label}: write what you want to know.`);
     const name = question.name.trim();
-    if (!name) errors.push("Every question needs a name.");
-    else if (names.has(name))
-      errors.push(`Question name “${name}” is repeated.`);
+    if (!name) errors.push(`${label}: give it an answer name (Advanced).`);
+    else if (names.has(name)) errors.push(`${label}: its answer name “${name}” is already used (Advanced).`);
     else names.add(name);
-    const parsedInstructions = parseDecisionValue(
-      question.instructionsMode === "text"
-        ? question.instructions
-        : question.instructionsJson,
-      question.instructionsMode,
-      `“${name || "Unnamed question"}” instructions`,
-    );
-    if (
-      parsedInstructions.error ||
-      (question.instructionsMode === "text" && !question.instructions.trim())
-    ) {
-      errors.push(`“${name || "Unnamed question"}” needs instructions.`);
-    }
+
     if (question.criteriaMode === "json") {
-      const parsedCriteria = parseDecisionValue(
-        question.criteriaJson,
-        "json",
-        `“${name || "Unnamed question"}” criteria`,
-      );
-      if (parsedCriteria.error) errors.push(parsedCriteria.error);
-      else if (question.type === "score") {
-        if (!Array.isArray(parsedCriteria.value))
-          errors.push(
-            `“${name || "Unnamed question"}” score criteria JSON must be an array.`,
-          );
-        else if (parsedCriteria.value.length < 2)
-          errors.push(
-            `“${name || "Unnamed question"}” needs at least two score levels.`,
-          );
-      } else if (
-        Array.isArray(parsedCriteria.value) ||
-        typeof parsedCriteria.value !== "object" ||
-        parsedCriteria.value === null
-      ) {
-        errors.push(
-          `“${name || "Unnamed question"}” criteria JSON must be an object.`,
-        );
+      const parsed = parseCriteriaJson(question.criteriaJson);
+      if (parsed.error) {
+        errors.push(`${label}: the options JSON is not valid.`);
+        return;
+      }
+      const value = parsed.value;
+      if (question.type === "score") {
+        if (!Array.isArray(value) || value.length < 2)
+          errors.push(`${label}: the levels JSON needs a list of at least two levels.`);
+      } else if (value === null || typeof value !== "object" || Array.isArray(value)) {
+        errors.push(`${label}: the options JSON must be an object.`);
       } else {
-        const keys = Object.keys(parsedCriteria.value);
-        if (
-          question.type === "choice" &&
-          (keys.length < 2 || keys.some((key) => !key.trim()))
-        ) {
-          errors.push(
-            `“${name || "Unnamed question"}” needs at least two named choices.`,
-          );
-        }
-        if (
-          question.type === "noul" &&
-          (keys.length !== 2 ||
-            !keys.includes("true") ||
-            !keys.includes("false"))
-        ) {
-          errors.push(
-            `“${name || "Unnamed question"}” Noul criteria must contain exactly “true” and “false”.`,
-          );
-        }
+        const keys = Object.keys(value);
+        if (question.type === "choice" && (keys.length < 2 || keys.some((key) => !key.trim())))
+          errors.push(`${label}: the options JSON needs at least two named options.`);
+        if (question.type === "noul" && (keys.length !== 2 || !keys.includes("true") || !keys.includes("false")))
+          errors.push(`${label}: the JSON must have exactly “true” and “false”.`);
       }
-      continue;
+      return;
     }
+
     if (question.type === "choice") {
-      const keys = new Set<string>();
-      for (const criterion of question.criteria) {
-        const key = criterion.key.trim();
-        if (!key)
-          errors.push(`“${name || "Unnamed question"}” has an option with no name.`);
-        else if (keys.has(key))
-          errors.push(
-            `“${name || "Unnamed question"}” repeats choice “${key}”.`,
-          );
-        else keys.add(key);
-      }
-      if (question.criteria.length < 2)
-        errors.push(
-          `“${name || "Unnamed question"}” needs at least two choices.`,
-        );
+      const keys = question.criteria.map((criterion) => criterion.key.trim());
+      if (keys.some((key) => !key)) errors.push(`${label}: give every option a name.`);
+      const filled = keys.filter(Boolean);
+      if (new Set(filled).size !== filled.length) errors.push(`${label}: two options have the same name.`);
+      if (question.criteria.length < 2) errors.push(`${label}: add at least two options.`);
     }
     if (question.type === "score") {
-      const unique = new Set(
-        question.criteria.map((criterion) => criterion.trim()).filter(Boolean),
-      );
-      if (unique.size < 2)
-        errors.push(
-          `“${name || "Unnamed question"}” needs two distinct score levels.`,
-        );
+      const levels = new Set(question.criteria.map((level) => level.trim()).filter(Boolean));
+      if (levels.size < 2) errors.push(`${label}: name at least two different levels.`);
     }
-  }
+  });
   return errors;
 }
 
-export function decisionQuestionPayload(
-  question: DecisionQuestion,
-): Record<string, unknown> | null {
-  const instructionSource =
-    question.instructionsMode === "text"
-      ? question.instructions
-      : question.instructionsJson;
-  const instructions = parseDecisionValue(
-    instructionSource,
-    question.instructionsMode,
-    "Instructions",
-  ).value;
-  if (instructions === undefined) return null;
-  if (question.criteriaMode === "json") {
-    const criteria = parseDecisionValue(
-      question.criteriaJson,
-      "json",
-      "Criteria",
-    ).value;
-    return criteria === undefined
-      ? null
-      : { type: question.type, instructions, criteria };
-  }
-  if (question.type === "choice") {
+function rowsCriteria(question: DecisionQuestion): unknown {
+  if (question.type === "choice")
+    return Object.fromEntries(
+      question.criteria.map((criterion) => [criterion.key.trim(), criterion.description.trim() || null]),
+    );
+  if (question.type === "noul")
     return {
-      type: "choice",
-      instructions,
-      criteria: Object.fromEntries(
-        question.criteria.map((criterion) => [
-          criterion.key.trim(),
-          criterion.description.trim() || null,
-        ]),
-      ),
+      true: question.criteria.true.trim() || null,
+      false: question.criteria.false.trim() || null,
     };
-  }
-  if (question.type === "noul") {
-    return {
-      type: "noul",
-      instructions,
-      criteria: {
-        true: question.criteria.true.trim() || null,
-        false: question.criteria.false.trim() || null,
-      },
-    };
-  }
-  return {
-    type: question.type,
-    instructions,
-    // A blank level from "Add level" is dropped, never sent as "".
-    criteria: question.criteria.map((level) => level.trim()).filter(Boolean),
-  };
+  // A blank level from "Add level" is dropped, never sent as "".
+  return question.criteria.map((level) => level.trim()).filter(Boolean);
 }
 
-/** The rows as criteria JSON, so switching Rows → JSON shows what was typed. */
+export function decisionQuestionPayload(question: DecisionQuestion): Record<string, unknown> | null {
+  const instructions = readTypedValue(question.instructions);
+  if (question.criteriaMode === "json") {
+    const parsed = parseCriteriaJson(question.criteriaJson);
+    return parsed.error ? null : { type: question.type, instructions, criteria: parsed.value };
+  }
+  return { type: question.type, instructions, criteria: rowsCriteria(question) };
+}
+
+/** The rows as JSON, so opening the JSON editor shows what was typed. */
 export function criteriaRowsAsJson(question: DecisionQuestion): string {
-  const payload = decisionQuestionPayload({
-    ...question,
-    instructionsMode: "text",
-    criteriaMode: "rows",
-  });
-  return JSON.stringify(payload?.criteria ?? {}, null, 2);
+  return JSON.stringify(rowsCriteria(question), null, 2);
 }

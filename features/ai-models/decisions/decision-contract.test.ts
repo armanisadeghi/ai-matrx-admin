@@ -2,6 +2,8 @@ import {
   decisionQuestionPayload,
   newQuestion,
   criteriaRowsAsJson,
+  changeKind,
+  readTypedValue,
   questionErrors,
   type DecisionQuestion,
 } from "./decision-form";
@@ -12,9 +14,8 @@ const choiceQuestion: DecisionQuestion = {
   id: "choice-id",
   name: "route",
   type: "choice",
+  kind: "pick_one",
   instructions: "Choose the best route.",
-  instructionsMode: "text",
-  instructionsJson: "{}",
   criteriaMode: "rows",
   criteriaJson: "{}",
   criteria: [
@@ -33,16 +34,17 @@ describe("native decision request contract", () => {
     const invalidNoul: DecisionQuestion = {
       ...choiceQuestion,
       type: "noul",
+      kind: "how_true",
       criteriaMode: "json",
       criteriaJson: '{"true": "yes", "maybe": "no"}',
       criteria: { true: "yes", false: "no" },
     };
 
     expect(questionErrors([invalidChoice])).toContain(
-      "“route” needs at least two named choices.",
+      "Question 1: the options JSON needs at least two named options.",
     );
     expect(questionErrors([invalidNoul])).toContain(
-      "“route” Noul criteria must contain exactly “true” and “false”.",
+      "Question 1: the JSON must have exactly “true” and “false”.",
     );
   });
 
@@ -109,14 +111,14 @@ describe("adding questions", () => {
   // A second question used to reuse the first one's name ("decision"), which
   // the duplicate-name check then refused with no way out.
   it("gives every new question a name no other question has", () => {
-    const first = newQuestion("choice");
-    const second = newQuestion("choice", [first]);
-    const third = newQuestion("choice", [first, second]);
+    const first = newQuestion("pick_one");
+    const second = newQuestion("pick_one", [first]);
+    const third = newQuestion("pick_one", [first, second]);
     expect(new Set([first.name, second.name, third.name]).size).toBe(3);
-    expect(questionErrors([first, second, third]).some((message) => message.includes("repeated"))).toBe(false);
+    expect(questionErrors([first, second, third]).some((message) => message.includes("already used"))).toBe(false);
   });
   it("says a question is needed when there are none", () => {
-    expect(questionErrors([])).toContain("Add at least one question.");
+    expect(questionErrors([])).toContain("Add a question.");
   });
 });
 
@@ -128,9 +130,34 @@ describe("score levels and the JSON view", () => {
     expect(decisionQuestionPayload(score)?.criteria).toEqual(["low", "high"]);
   });
   it("shows the typed options when switching rows to JSON", () => {
-    const base = newQuestion("choice");
+    const base = newQuestion("pick_one");
     if (base.type !== "choice") throw new Error("expected a choice question");
     const choice: DecisionQuestion = { ...base, criteria: [{ key: "approve", description: "" }, { key: "deny", description: "Not eligible" }] };
     expect(JSON.parse(criteriaRowsAsJson(choice))).toEqual({ approve: null, deny: "Not eligible" });
+  });
+});
+
+describe("typed text is read as JSON only when it is JSON", () => {
+  it("sends JSON objects as objects and everything else as text", () => {
+    expect(readTypedValue('{"customer": "A"}')).toEqual({ customer: "A" });
+    expect(readTypedValue("[1, 2]")).toEqual([1, 2]);
+    expect(readTypedValue("The customer is upset")).toBe("The customer is upset");
+    expect(readTypedValue("{not json")).toBe("{not json");
+  });
+});
+
+describe("question kinds", () => {
+  it("yes or no sends a choice with yes and no", () => {
+    const question = { ...newQuestion("yes_no"), instructions: "Refund?" };
+    expect(decisionQuestionPayload(question)).toEqual({
+      type: "choice",
+      instructions: "Refund?",
+      criteria: { yes: null, no: null },
+    });
+  });
+  it("changing kind keeps the typed question and the card", () => {
+    const original = { ...newQuestion("yes_no"), instructions: "How upset are they?" };
+    const changed = changeKind(original, "how_true", []);
+    expect(changed).toMatchObject({ id: original.id, instructions: "How upset are they?", type: "noul", kind: "how_true" });
   });
 });
