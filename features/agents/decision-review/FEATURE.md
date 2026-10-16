@@ -18,23 +18,31 @@ question on the same judged state as a saved answer; the result is a second opin
 
 - Controls: question, version (sampled by `agent_version_id`), item count (default 10, capped by the
   server's `reference_batch_max`), Only unlabeled, Skip checked → **Estimate** (`quote_only`: count,
-  model, estimated cost, already-checked count) → **Run · $x** (the button states the cost; the run
-  sends the quote's exact `item_ids`). Server: `POST /decision-review/agents/{id}/reference-runs`,
+  model, estimated cost and its retry-bounded max, already-checked, in another run, unreadable input
+  with reasons in the tooltip; the stepper's max is the quote's `max_items`, the organization's cap)
+  → **Run · $x** (the button states the cost; the run sends the quote's exact `item_ids`, with
+  `rerun` when it came from a re-check). Server: `POST /decision-review/agents/{id}/reference-runs`,
   called through `serverApi` with a hand-declared `OperationDescriptor` until `@ai-matrx/api`
   generates it (`service.ts`); the stream is `openStream` NDJSON of typed `data` payloads
   `decision_reference_run_started | _item | _item_failed | _run_done` (`applyRunEvent`).
 - Durable: rows fill in live; the stream's request id is kept per tab (sessionStorage) and a reload
   mid-run rejoins through `/runtime/operations/{id}/rejoin` (`rejoinOperationThunk`); without it, the
-  finished rows show from the table.
+  finished rows show from the table. A followed run is active from the first render
+  (`useSyncExternalStore` over the stored id), so Estimate/Run stay off and a refresh never starts a
+  second run; the server also claims every answer before paying, so another tab's run skips them.
 - Rows: `platform.judge_verdict` `subject_kind = 'decision_reference'` (`subject_ref_id` = the item,
-  `metadata.agent_id` = the agent, `verdict` in the item's label vocabulary), read complete with
-  `readAllRows`, newest per item, joined to their items. Order: disagreements, failures, pending,
+  `metadata.agent_id` = the agent, `metadata.status` pending | answered | unanswerable | failed with
+  `metadata.reason`, `verdict` in the item's label vocabulary), read complete with `readAllRows`,
+  newest per item, joined to their items. A stored refusal or failure shows with its reason after a
+  reload (`storedFailure`), a stored claim as Checking; only answered rows agree or disagree. Order: disagreements, failures, pending,
   agreements; lowest decision-model confidence first (`orderReferenceRows`).
 - Drill-in: the table's side panel (`detail.render`) — judged state (`JudgedState.tsx`, shared with
   the queue), both answers side by side through `DecisionAnswers`, label buttons and **Use reference
   answer** (`platform.label_decision_item`, as the person); `j`/`k` move, `1–9`/`y`/`n` label, `r`
-  takes the reference's answer. A failed item shows its error and **Re-check** (a new estimate).
-- Reliability vs reference: each calibration group's `reference` block (n, agreement rate, bins of
+  takes the reference's answer. A failed or unanswerable item shows its reason and **Re-check** (a new
+  estimate with `rerun`, since a stored failure counts as checked).
+- Reliability vs reference: each calibration group's `reference` block (n, agreement rate,
+  unanswerable count, bins of
   the item's probability against "the reference agreed") — its own table + curve, titled AI.
 - Every call carries the viewer's active organization (`ensureOrgId(null)`) — never the agent's.
 
@@ -63,3 +71,4 @@ question on the same judged state as a saved answer; the result is a second opin
 - 2026-09-26 — labels moved off the Python server onto the gated RPCs (aidream migration 1195).
 - 2026-09-26 — combined review queue `/decisions/review` (Claude Opus 5.5, standard lane).
 - 2026-10-16 — reference check on the calibration page; calibration no longer sends the agent's organization (a non-member super admin was refused) (Claude Opus 5.5, standard lane).
+- 2026-10-16 — reference check: stored statuses (refusals/failures survive a reload), live rows carry both distributions and the answering model, a followed run blocks Estimate from the first render, re-check sends `rerun`, quote shows in-flight / unreadable / max cost (Claude Opus 5.5, standard lane).

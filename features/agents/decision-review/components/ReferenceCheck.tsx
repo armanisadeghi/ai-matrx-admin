@@ -16,7 +16,7 @@
  * cannot be rejoined still shows from the rows.
  */
 
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import {
   AlertTriangle,
   Calculator,
@@ -68,6 +68,7 @@ import {
   referenceView,
   rowAgrees,
   runEventName,
+  storedFailure,
   type ReferenceGroup,
   type ReferenceQuote,
   type ReferenceResultRow,
@@ -90,6 +91,11 @@ function readRunKey(agentId: string): string | null {
     return null;
   }
 }
+/** The stored key never changes under us within a tab; every render re-reads it. */
+function subscribeRunKey(): () => void {
+  return () => {};
+}
+
 function writeRunKey(agentId: string, requestId: string | null): void {
   try {
     if (requestId) window.sessionStorage.setItem(runKey(agentId), requestId);
@@ -109,15 +115,26 @@ function pct(v: number | null | undefined): string {
 
 // ── Table ────────────────────────────────────────────────────────────────────
 
+function failureText(row: ReferenceResultRow): string {
+  switch (row.failure?.status) {
+    case "unanswerable":
+      return "Unanswerable";
+    case "in_flight":
+      return "Checking elsewhere";
+    default:
+      return "Failed";
+  }
+}
+
 function agreeText(row: ReferenceResultRow): string {
-  if (row.failure) return "Failed";
+  if (row.failure) return failureText(row);
   if (row.pending) return "Checking";
   const agrees = rowAgrees(row);
   return agrees == null ? "—" : agrees ? "Agrees" : "Disagrees";
 }
 
 function referenceText(row: ReferenceResultRow): string {
-  if (row.failure) return "Failed";
+  if (row.failure) return failureText(row);
   if (row.pending || !row.reference) return "—";
   return answerWithPercent(referenceView(row.item, row.reference), row.reference.pAnswer);
 }
@@ -187,6 +204,7 @@ function resultColumns(): MatrxColumnDef<ReferenceResultRow>[] {
         if (text === "Agrees") return <Check className="h-4 w-4 text-success" aria-label="Agrees" />;
         if (text === "Disagrees") return <X className="h-4 w-4 text-destructive" aria-label="Disagrees" />;
         if (text === "Failed") return <AlertTriangle className="h-4 w-4 text-warning" aria-label="Failed" />;
+        if (text === "Unanswerable") return <span className="text-muted-foreground">Unanswerable</span>;
         return <span className="text-muted-foreground">{text}</span>;
       },
     },
@@ -342,9 +360,11 @@ function ItemDrill({
                 <span className="flex-1">{row.failure.error}</span>
                 <ErrorAlchemyMenu error={row.failure.error} />
               </span>
-              <Button icon={<RotateCcw />} onClick={() => onRecheck([item.id])}>
-                Re-check
-              </Button>
+              {row.failure.status !== "in_flight" && (
+                <Button icon={<RotateCcw />} onClick={() => onRecheck([item.id])}>
+                  Re-check
+                </Button>
+              )}
             </div>
           ) : row.pending ? (
             <span className="inline-flex items-center gap-1.5 type-secondary text-muted-foreground">
@@ -427,6 +447,7 @@ export function ReferenceReliability({ groups }: { groups: ReferenceGroup[] }) {
     { id: "question", header: "Question", accessorFn: (g) => g.question, filter: "text", width: 160, cell: (g) => <span className="font-mono">{g.question}</span> },
     { id: "checked", header: "Checked", accessorFn: (g) => g.n, filter: "number", width: 100, align: "right", cell: (g) => <span className="font-mono">{g.n}</span> },
     { id: "agreement", header: "Agreement", accessorFn: (g) => g.agreementRate, filter: "number", width: 110, align: "right", cell: (g) => <span className="font-mono">{pct(g.agreementRate)}</span> },
+    { id: "unanswerable", header: "Unanswerable", accessorFn: (g) => g.unanswerable, filter: "number", width: 120, align: "right", cell: (g) => <span className="font-mono">{g.unanswerable}</span> },
     { id: "reference", header: "Reference model", accessorFn: (g) => g.referenceModel ?? "", filter: "select", width: 180, cell: (g) => <span className="font-mono">{g.referenceModel ?? "—"}</span> },
   ];
   // Nothing checked yet: the results' own empty state already says so.
@@ -532,7 +553,12 @@ export function ReferenceCheck({
   const [reloadKey, setReloadKey] = useState(0);
 
   const [run, setRun] = useState<ReferenceRunState>(EMPTY_RUN);
-  const [running, setRunning] = useState(false);
+  const [streaming, setRunning] = useState(false);
+  // A run this tab is following (started here, or rejoined after a refresh) is active
+  // from the first render: Estimate and Run stay off until it settles, so a refresh can
+  // never start a second run over the same answers. Server snapshot: none.
+  const followedRunId = useSyncExternalStore(subscribeRunKey, () => readRunKey(agentId), () => null);
+  const running = streaming || followedRunId != null;
   const [pendingIds, setPendingIds] = useState<string[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   /** Item ids already loaded or loading — read and written in handlers only. */
@@ -694,10 +720,8 @@ export function ReferenceCheck({
     setActionError(null);
     setQuote(null);
     try {
-      const next = await quoteReferenceRun(
-        agentId,
-        ids ? { item_ids: ids } : request(),
-      );
+      // A re-check asks again on purpose: a failure or refusal is a stored check.
+      const next = await quoteReferenceRun(agentId, ids ? { item_ids: ids, rerun: true } : request());
       if (next.maxItems) setMaxItems(next.maxItems);
       setQuote(next);
     } catch (err) {
@@ -716,6 +740,7 @@ export function ReferenceCheck({
   const start = async () => {
     if (!quote || running) return;
     const ids = quote.items.map((i) => i.itemId);
+    const rerun = recheckIds != null;
     const controller = new AbortController();
     abortRef.current = controller;
     setRunning(true);
@@ -725,7 +750,7 @@ export function ReferenceCheck({
     void ensureItems(ids).catch((err: unknown) => console.error("[decision-review] item load failed", err));
     let requestId: string | null = null;
     try {
-      const stream = await openReferenceRun(agentId, { item_ids: ids }, controller.signal);
+      const stream = await openReferenceRun(agentId, { item_ids: ids, rerun }, controller.signal);
       requestId = stream.requestId;
       writeRunKey(agentId, requestId);
       setQuote(null);
@@ -760,13 +785,15 @@ export function ReferenceCheck({
       const item = items[id];
       if (!item) return [];
       const live = run.verdicts[id] ?? null;
-      const failure = live ? null : (run.failures[id] ?? null);
-      const pending = running && pendingIds.includes(id) && !live && !failure;
+      const saved = stored[id] ?? null;
+      const failure = live ? null : (run.failures[id] ?? (saved ? storedFailure(saved) : null));
+      const pending =
+        !live && !failure && ((running && pendingIds.includes(id)) || saved?.status === "pending");
       return [
         {
           id,
           item,
-          reference: live ?? (pending ? null : (stored[id] ?? null)),
+          reference: live ?? (pending || saved?.status !== "answered" ? null : saved),
           failure,
           pending,
           snippet: snippets[id] ?? null,
@@ -774,7 +801,7 @@ export function ReferenceCheck({
       ];
     }),
   );
-  const failedIds = rows.filter((r) => r.failure).map((r) => r.id);
+  const failedIds = rows.filter((r) => r.failure && r.failure.status !== "in_flight").map((r) => r.id);
   const finishedCount = Object.keys(run.verdicts).length + Object.keys(run.failures).length;
   const sampleChanged = () => {
     setQuote(null);
@@ -855,16 +882,32 @@ export function ReferenceCheck({
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
           {quote.itemCount === 0 ? (
             <span className="type-secondary text-muted-foreground">
-              {quote.skippedExisting > 0
-                ? `All ${quote.skippedExisting} already checked.`
-                : "No answers match these settings."}
+              {quote.inFlight > 0
+                ? `${quote.inFlight} being checked by another run.`
+                : quote.unbuildable.length > 0
+                  ? `${quote.unbuildable.length} with input the reference cannot read.`
+                  : quote.skippedExisting > 0
+                    ? `All ${quote.skippedExisting} already checked.`
+                    : "No answers match these settings."}
             </span>
           ) : (
             <>
-              <span className="type-secondary">
+              <span
+                className="type-secondary"
+                title={
+                  quote.unbuildable.length > 0
+                    ? quote.unbuildable.map((u) => `${u.question ?? u.itemId}: ${u.reason}`).join("\n")
+                    : undefined
+                }
+              >
                 {quote.itemCount} {quote.itemCount === 1 ? "answer" : "answers"} · {quote.referenceModel.name} · est.{" "}
                 {formatUsd(quote.estimatedCostUsd)}
+                {quote.maxCostUsd != null && quote.maxCostUsd > (quote.estimatedCostUsd ?? 0)
+                  ? ` (max ${formatUsd(quote.maxCostUsd)})`
+                  : ""}
                 {quote.skippedExisting > 0 ? ` · ${quote.skippedExisting} already checked` : ""}
+                {quote.inFlight > 0 ? ` · ${quote.inFlight} in another run` : ""}
+                {quote.unbuildable.length > 0 ? ` · ${quote.unbuildable.length} unreadable` : ""}
               </span>
               <Button variant="primary" icon={<Play />} disabled={running} onClick={() => void start()}>
                 {`Run · ${formatUsd(quote.estimatedCostUsd)}`}
@@ -882,8 +925,10 @@ export function ReferenceCheck({
         <div className="flex items-center gap-2 type-secondary text-muted-foreground">
           {running && <Spinner size="xs" label="Running" />}
           {run.finished && run.summary
-            ? `Done · ${run.summary.done} checked · ${run.summary.failed} failed · ${pct(run.summary.agreementRate)} agree · ${formatUsd(run.summary.costUsd)}`
-            : `${finishedCount} of ${run.itemCount ?? pendingIds.length} checked${run.referenceModel ? ` · ${run.referenceModel}` : ""}`}
+            ? `Done · ${run.summary.done} checked · ${run.summary.failed} failed${run.summary.unanswerable > 0 ? ` · ${run.summary.unanswerable} unanswerable` : ""} · ${pct(run.summary.agreementRate)} agree · ${formatUsd(run.summary.costUsd)}`
+            : run.itemCount == null && pendingIds.length === 0
+              ? "Rejoining the active run"
+              : `${finishedCount} of ${run.itemCount ?? pendingIds.length} checked${run.referenceModel ? ` · ${run.referenceModel}` : ""}`}
         </div>
       )}
 
