@@ -25,7 +25,7 @@
  * no Dialog, no tabs that try to fit side-by-side).
  */
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   ArrowLeft,
   ChevronLeft,
