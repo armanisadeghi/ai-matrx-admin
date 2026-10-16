@@ -617,9 +617,8 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
       activeTabForDoc?.status === "cleaning" ||
       Boolean(activeTabForDoc?.error),
     pagesSettled: !pagesLoading && !pagesError,
-    pagesHaveCleanText: pages.some((p) => p.cleanedText.trim().length > 0),
+    pages,
     pageCount: pages.length,
-    pagesHaveSectionKind: pages.some((p) => Boolean(p.sectionKind)),
     runAnswered: docRun.answered,
     run: () => void handleRunAiClean({ force: false }),
   });

@@ -37,7 +37,7 @@ export function PdfStudioPagesMeta({
   const pageTotal = doc.totalPages ?? pageRowCount;
   const statuses: string[] = [];
   if (!hasPageRows) statuses.push("No per-page rows");
-  if (isDocCleaned(pages, doc.cleanContent)) statuses.push("Cleaned");
+  if (isDocCleaned(pages, doc.cleanContent, doc.cleanMode)) statuses.push("Cleaned");
 
   return (
     <div className="shrink-0 border-b border-border/60 px-3 py-2.5 space-y-2">

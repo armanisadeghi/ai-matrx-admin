@@ -20,7 +20,9 @@ const doc = (over: Partial<PdfDocument> = {}): PdfDocument =>
     ...over,
   }) as PdfDocument;
 
-const ok = { busy: false, pagesSettled: true, pagesHaveCleanText: false, runAnswered: true };
+const ok = { busy: false, pagesSettled: true, runAnswered: true };
+
+const pg = (cleanedText: string, sectionKind: string | null = null) => ({ cleanedText, sectionKind });
 
 beforeEach(() => resetAutoCleanHandled());
 
@@ -42,8 +44,8 @@ describe("needsAutoClean", () => {
   it("falls back to the loaded page count", () => {
     expect(needsAutoClean(doc({ totalPages: null }), { ...ok, pageCount: 500 })).toBe(false);
   });
-  it("skips when any page has a section_kind", () => {
-    expect(needsAutoClean(doc(), { ...ok, pagesHaveSectionKind: true })).toBe(false);
+  it("skips when every page is settled by a section_kind (all-illegible doc)", () => {
+    expect(needsAutoClean(doc(), { ...ok, pages: [pg("", "illegible_scan"), pg("", "illegible_scan")] })).toBe(false);
   });
   it("waits for the run lookup to answer — an unanswered lookup never auto-runs", () => {
     expect(needsAutoClean(doc(), { ...ok, runAnswered: false })).toBe(false);
@@ -59,21 +61,29 @@ describe("needsAutoClean", () => {
   it("skips when busy, unsettled, already cleaned, handled, or has clean content", () => {
     expect(needsAutoClean(doc(), { ...ok, busy: true })).toBe(false);
     expect(needsAutoClean(doc(), { ...ok, pagesSettled: false })).toBe(false);
-    expect(needsAutoClean(doc(), { ...ok, pagesHaveCleanText: true })).toBe(false);
+    expect(needsAutoClean(doc(), { ...ok, pages: [pg("done")] })).toBe(false);
     expect(needsAutoClean(doc({ cleanContent: "x" }), ok)).toBe(false);
     expect(needsAutoClean(doc({ content: "  " }), ok)).toBe(false);
     markAutoCleanHandled("d1");
     expect(needsAutoClean(doc(), ok)).toBe(false);
   });
-  it("treats clean_content beside never-cleaned page rows as NOT cleaned (page verdict)", () => {
-    const withRows = { ...ok, pageCount: 48, pagesHaveSectionKind: false };
-    expect(needsAutoClean(doc({ cleanContent: "raw text from an old bug" }), withRows)).toBe(true);
-    // ...but once a page is cleaned, it is cleaned.
-    expect(
-      needsAutoClean(doc({ cleanContent: "x" }), { ...withRows, pagesHaveCleanText: true }),
-    ).toBe(false);
-    expect(
-      needsAutoClean(doc({ cleanContent: "x" }), { ...withRows, pagesHaveSectionKind: true }),
-    ).toBe(false);
+  it("treats clean_content beside never-cleaned, unmarked page rows as NOT cleaned", () => {
+    const rows = { ...ok, pageCount: 2, pages: [pg(""), pg("")] };
+    expect(needsAutoClean(doc({ cleanContent: "legacy raw text" }), rows)).toBe(true);
+  });
+  it("a partially cleaned doc is not cleaned and auto-cleans (resume)", () => {
+    expect(needsAutoClean(doc(), { ...ok, pageCount: 2, pages: [pg("x"), pg("")] })).toBe(true);
+  });
+  it("every page cleaned, or settled by a section_kind, is cleaned", () => {
+    expect(needsAutoClean(doc(), { ...ok, pages: [pg("x"), pg("y")] })).toBe(false);
+    expect(needsAutoClean(doc(), { ...ok, pages: [pg("x"), pg("", "illegible_scan")] })).toBe(false);
+  });
+  it("whole_document marker + clean_content is cleaned even with uncleaned pages", () => {
+    const rows = { ...ok, pageCount: 2, pages: [pg(""), pg("")] };
+    expect(needsAutoClean(doc({ cleanContent: "x", cleanMode: "whole_document" }), rows)).toBe(false);
+    expect(needsAutoClean(doc({ cleanContent: "", cleanMode: "whole_document" }), rows)).toBe(true);
+  });
+  it("no page rows + clean_content is cleaned", () => {
+    expect(needsAutoClean(doc({ cleanContent: "x" }), ok)).toBe(false);
   });
 });
