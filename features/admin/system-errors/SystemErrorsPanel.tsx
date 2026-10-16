@@ -44,6 +44,7 @@ const SOURCE_PAGE_SIZE = 500;
 
 type SystemErrorPageCursor = {
   snapshotAt?: string;
+  total?: number;
   occurredAt?: string;
   id?: string;
 };
@@ -179,6 +180,7 @@ function SystemErrorsList() {
           since_hours: hours,
           limit: SOURCE_PAGE_SIZE,
           snapshot_at: pageParam.snapshotAt,
+          total: pageParam.total,
           cursor_occurred_at: pageParam.occurredAt,
           cursor_id: pageParam.id,
           kind: trimmedKind || undefined,
@@ -191,6 +193,7 @@ function SystemErrorsList() {
       lastPage.next_cursor_occurred_at && lastPage.next_cursor_id
         ? {
             snapshotAt: lastPage.snapshot_at,
+            total: lastPage.total,
             occurredAt: lastPage.next_cursor_occurred_at,
             id: lastPage.next_cursor_id,
           }

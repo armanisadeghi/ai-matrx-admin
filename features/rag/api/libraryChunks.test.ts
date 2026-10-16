@@ -1,4 +1,5 @@
 /** Seam test: the chunk list goes to Supabase (rag.fn_list_library_chunks), never the Python server. */
+const abortSignal = jest.fn();
 const rpc = jest.fn();
 const schema = jest.fn(() => ({ rpc }));
 jest.mock("@/utils/supabase/client", () => ({
@@ -14,6 +15,7 @@ import { fetchDerivativeChunks } from "./derivations";
 
 beforeEach(() => {
   rpc.mockReset();
+  abortSignal.mockReset();
   schema.mockClear();
   serverCall.mockReset();
 });
@@ -49,6 +51,15 @@ describe("library chunks read", () => {
     await fetchDerivativeChunks("d1", { limit: 50, offset: 10 });
     expect(rpc).toHaveBeenCalledTimes(1);
     expect(serverCall).not.toHaveBeenCalled();
+  });
+
+  it("fetchDerivativeChunks honours its abort signal (supabase-js .abortSignal)", async () => {
+    const ctl = new AbortController();
+    const result = { data: { total: 0, limit: 50, offset: 0, chunks: [] }, error: null };
+    abortSignal.mockResolvedValue(result);
+    rpc.mockReturnValue({ abortSignal, then: (res: (v: unknown) => unknown) => Promise.resolve(result).then(res) });
+    await fetchDerivativeChunks("d1", { limit: 50, signal: ctl.signal });
+    expect(abortSignal).toHaveBeenCalledWith(ctl.signal);
   });
 
   it("surfaces an RPC error", async () => {

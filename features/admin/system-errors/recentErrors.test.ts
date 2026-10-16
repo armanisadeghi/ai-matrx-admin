@@ -3,6 +3,7 @@ import { join } from "path";
 
 type Call = [string, ...unknown[]];
 const calls: Call[][] = [];
+const rpcCalls: string[] = [];
 let rowsFor: (n: number) => unknown[] = () => [];
 
 function builder() {
@@ -15,6 +16,10 @@ function builder() {
       return b;
     };
   }
+  b.rpc = (fn: string) => {
+    rpcCalls.push(fn);
+    return Promise.resolve({ data: "2026-10-16T12:00:07.123+00:00", error: null });
+  };
   b.then = (res: (v: unknown) => unknown) => {
     const limited = log.find((c) => c[0] === "limit")?.[1] as number;
     return Promise.resolve(
@@ -34,6 +39,7 @@ const row = (i: number) => ({ id: `id-${i}`, occurred_at: `2026-10-16T00:00:${St
 
 beforeEach(() => {
   calls.length = 0;
+  rpcCalls.length = 0;
 });
 
 describe("system errors are read from ops.system_error, not the server", () => {
@@ -79,6 +85,43 @@ describe("system errors are read from ops.system_error, not the server", () => {
     ]);
     expect(calls[0].some((c) => c[0] === "or")).toBe(false);
     expect(out.next_cursor_id).toBeNull();
+  });
+
+  it("the first page freezes the snapshot on the DATABASE clock, not the browser's", async () => {
+    rowsFor = () => [row(0)];
+    jest.useFakeTimers().setSystemTime(new Date("2031-01-01T00:00:00Z")); // a skewed browser clock
+    try {
+      const out = await fetchRecentSystemErrors({ since_hours: 1, limit: 5 });
+      expect(rpcCalls).toEqual(["server_now"]);
+      expect(out.snapshot_at).toBe("2026-10-16T12:00:07.123Z");
+      expect(calls.some((l) => l.some((c) => c[0] === "lte" && c[2] === "2026-10-16T12:00:07.123Z"))).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("counts the window once: the first page counts, later pages carry the total", async () => {
+    rowsFor = () => [row(0)];
+    const first = await fetchRecentSystemErrors({ since_hours: 1, limit: 5 });
+    expect(first.total).toBe(1234);
+    const selects = calls.map((l) => l.find((c) => c[0] === "select")).filter(Boolean);
+    expect(selects).toHaveLength(2);
+    expect(selects[0]?.[2]).toEqual({ count: "exact" }); // the first page counts...
+    expect(selects[1]?.[2]).toBeUndefined(); // ...the page query does not.
+
+    calls.length = 0;
+    rpcCalls.length = 0;
+    const next = await fetchRecentSystemErrors({
+      since_hours: 1,
+      limit: 5,
+      snapshot_at: first.snapshot_at,
+      total: first.total,
+      cursor_occurred_at: "2026-10-16T00:00:30+00:00",
+      cursor_id: "abc",
+    });
+    expect(calls).toHaveLength(1); // the page query only, no count query
+    expect(rpcCalls).toEqual([]); // and no new snapshot
+    expect(next.total).toBe(1234);
   });
 
   it("the panel no longer calls the server for this list", () => {

@@ -256,6 +256,7 @@ export async function fetchDerivativeChunks(
     limit: opts.limit ?? 50,
     offset: opts.offset,
     pageNumber: opts.pageNumber,
+    signal: opts.signal,
   });
 }
 

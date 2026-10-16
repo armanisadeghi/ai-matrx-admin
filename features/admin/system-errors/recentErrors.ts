@@ -19,7 +19,10 @@ export type RecentSystemErrorsResponse =
 export interface RecentSystemErrorsQuery {
   since_hours: number;
   limit: number;
+  /** Frozen by the first page (the database's clock); every later page carries it. */
   snapshot_at?: string;
+  /** The first page's count of the frozen window; later pages carry it instead of recounting. */
+  total?: number;
   cursor_occurred_at?: string;
   cursor_id?: string;
   kind?: string;
@@ -30,18 +33,29 @@ export interface RecentSystemErrorsQuery {
 const COLUMNS =
   "id,kind,request_id,user_id,conversation_id,agent_id,source_app,source_feature,route,error_type,error_text,traceback,payload,context,occurred_at,resolved_at,resolution_note";
 
+/** The database's own clock (`ops.server_now()`): a skewed browser clock cannot drop new rows. */
+async function databaseNow(): Promise<Date> {
+  // `ops.server_now` is newer than the generated types; the call shape is fixed.
+  const ops = createClient().schema("ops") as unknown as {
+    rpc: (fn: string) => PromiseLike<{ data: string | null; error: { message: string } | null }>;
+  };
+  const { data, error } = await ops.rpc("server_now");
+  if (error || !data) throw new Error(error?.message ?? "The database clock did not answer.");
+  return new Date(data);
+}
+
 export async function fetchRecentSystemErrors(
   q: RecentSystemErrorsQuery,
 ): Promise<RecentSystemErrorsResponse> {
-  const snapshot = q.snapshot_at ? new Date(q.snapshot_at) : new Date();
+  const snapshot = q.snapshot_at ? new Date(q.snapshot_at) : await databaseNow();
   const snapshotIso = snapshot.toISOString();
   const cutoffIso = new Date(snapshot.getTime() - q.since_hours * 3_600_000).toISOString();
 
-  const filtered = () => {
+  const filtered = (count = false) => {
     let query = createClient()
       .schema("ops")
       .from("system_error")
-      .select(COLUMNS, { count: "exact" })
+      .select(COLUMNS, count ? { count: "exact" } : undefined)
       .gt("occurred_at", cutoffIso)
       .lte("created_at", snapshotIso);
     if (q.kind) query = query.eq("kind", q.kind);
@@ -51,10 +65,14 @@ export async function fetchRecentSystemErrors(
     return query;
   };
 
-  // The total counts the whole frozen window, before the cursor narrows it.
-  const counted = await filtered().limit(0);
-  if (counted.error) throw new Error(counted.error.message);
-  const total = counted.count ?? 0;
+  // The total counts the whole frozen window, before the cursor narrows it. It is counted
+  // ONCE (the first page); every following page carries it.
+  let total = q.total ?? 0;
+  if (q.total === undefined) {
+    const counted = await filtered(true).limit(0);
+    if (counted.error) throw new Error(counted.error.message);
+    total = counted.count ?? 0;
+  }
 
   let page = filtered();
   if (q.cursor_occurred_at && q.cursor_id) {

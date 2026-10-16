@@ -17,7 +17,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useServerJob } from "@ai-matrx/agents/react";
-import { getRuntimeOperationsByLink } from "@ai-matrx/api";
 import type {
   MatrxRuntimeOperationView,
   ServerJobStatus,
@@ -26,6 +25,7 @@ import type {
 import type { MatrxStreamEnvelope } from "@ai-matrx/api/stream";
 import { describeRunError } from "../service/cleanOutcome";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
+import { fetchOperationsByLink } from "@/lib/runtime-operations/operationsByLink";
 import { useAppStore } from "@/lib/redux/hooks";
 import {
   clearPdfRunRequest,
@@ -267,14 +267,13 @@ export function usePdfDocRun(args: {
   const readLinkOperations = (id: string, fresh = false): Promise<LinkOps> =>
     lookupLinkOperations(
       async () =>
+        // Read from Supabase (runtime.global_execution) through RLS; the follow resumes from
+        // each operation's event cursor, so ask for it.
         (
-          await getRuntimeOperationsByLink(
-            createMatrxTransport(store.getState, { source: "pdf-run-reconnect" }),
-            "processed_document",
-            id,
-            { limit: 5 },
-          )
-        )?.operations ?? [],
+          await fetchOperationsByLink("processed_document", id, 5, { eventCursor: true })
+        ).operations.map(
+          (op) => ({ ...op, last_event_seq: op.last_event_seq ?? 0 }) as unknown as MatrxRuntimeOperationView,
+        ),
       id,
       fresh,
     );
