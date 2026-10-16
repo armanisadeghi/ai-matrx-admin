@@ -30,6 +30,7 @@ import { useChannel } from "@ai-matrx/data/realtime/react";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { invalidateFeatureKnobs } from "@/lib/knobs/featureKnobs";
+import { catchUpKnobsSinceBoot } from "@/lib/scoped-config/effectiveKnobs";
 import { notifyRefreshRequired } from "@/components/errors/refresh-directive";
 import { serverBusChannelSpec } from "@/lib/client-directives/serverBusChannel";
 import { PLATFORM_AUDIENCE } from "@/lib/client-directives/directiveEnvelope";
@@ -80,10 +81,31 @@ export function PlatformDirectiveSubscriber() {
   // Two rooms, one sink. `useChannel(null)` is the package's documented
   // "not yet" — a signed-out tab joins nothing, and no tab joins before the
   // page has settled (the load law: nothing first paint does not need leaves
-  // before it). A directive sent in that window is not lost in effect: every
-  // handler invalidates a cache the page has only just read fresh.
+  // before it). A directive sent in that window is caught up below, per kind, and
+  // only where the page's own boot read holds a version to compare against.
   const settled = useLateIdleReady();
   const join = Boolean(userId) && settled;
+
+  // CATCH-UP, once per join. Broadcast has no replay, so what the rooms missed is found by asking:
+  //  - settings_changed: the boot knob read holds the defaults' content version and a snapshot etag;
+  //    `catchUpKnobsSinceBoot` asks both conditionally and drops the caches only if one moved.
+  //  - refresh_required: NewVersionWatcher's own settled-page deployment-id check IS that compare.
+  //  - app_config_changed: this client consumes no app_config row; nothing to refresh.
+  //  - usage_state_changed: no server version is held at boot (the gate re-reads before each AI
+  //    call); no marker, so no read is added.
+  useEffect(() => {
+    if (!join) return;
+    void catchUpKnobsSinceBoot()
+      .then((moved) => {
+        if (moved) {
+          invalidateFeatureKnobs();
+          console.info("[client-directives] catch-up: settings moved before the rooms joined; caches dropped.");
+        }
+      })
+      .catch((error: unknown) => {
+        console.warn("[client-directives] settings catch-up could not ask:", error);
+      });
+  }, [join]);
   const userSpec = join && userId
     ? serverBusChannelSpec(userId, dispatchDirective)
     : null;

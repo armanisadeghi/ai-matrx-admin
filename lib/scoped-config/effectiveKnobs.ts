@@ -298,6 +298,12 @@ let defaultsInFlight: Promise<DefaultsEntry> | null = null;
 /** What the last answer for an address was, kept ACROSS invalidations: the etag is a content hash, so a stale one is merely a miss. */
 const lastAnswers = new Map<string, { etag: string; resolved: Record<string, unknown> }>();
 
+/** What each held etag was asked with, so the catch-up below can ask the same question again. */
+const heldAsks = new Map<
+  string,
+  { organizationId: string | null; userId: string | null; scopes: readonly KnobScope[] | undefined; deviceId: string | null }
+>();
+
 function readStoredDefaults(): DefaultsEntry | null {
   const parsed = storedDefaultsKey.getJSON<DefaultsEntry>();
   return parsed && typeof parsed.version === "string" && parsed.values ? parsed : null;
@@ -420,7 +426,10 @@ async function fetchKnobSnapshot(
   }
   const defaults = await (defaultsEarly ?? ensureDefaults(rpc, payload.defaults_version ?? null));
   const resolved = { ...defaults.values, ...(payload.overrides ?? {}) };
-  if (payload.etag) lastAnswers.set(addr, { etag: payload.etag, resolved });
+  if (payload.etag) {
+    lastAnswers.set(addr, { etag: payload.etag, resolved });
+    heldAsks.set(addr, { organizationId, userId, scopes, deviceId });
+  }
   return { resolved, stamp: payload.etag ?? null, at: Date.now() };
 }
 
@@ -533,7 +542,10 @@ export function primeKnobSnapshot(seed: KnobSnapshotSeed): void {
   const askedAt = generation;
   const build = (defaults: DefaultsEntry): Snapshot => {
     const resolved = { ...defaults.values, ...(seed.payload.overrides ?? {}) };
-    if (seed.payload.etag) lastAnswers.set(id, { etag: seed.payload.etag, resolved });
+    if (seed.payload.etag) {
+      lastAnswers.set(id, { etag: seed.payload.etag, resolved });
+      heldAsks.set(id, { organizationId: seed.organizationId, userId: seed.userId, scopes: undefined, deviceId: seed.deviceId });
+    }
     return { resolved, stamp: seed.payload.etag ?? null, at: Date.now() };
   };
   const want = seed.payload.defaults_version ?? null;
@@ -574,6 +586,41 @@ if (typeof window !== "undefined") {
   registerDirectiveHandler("settings_changed", (payload) => {
     invalidateEffectiveKnob(`${payload.feature}.${payload.key}`);
   });
+}
+
+/**
+ * CATCH-UP FOR A DIRECTIVE THAT FIRED BEFORE THE ROOMS JOINED. The server-bus rooms join after late
+ * idle, so a `settings_changed` sent in the first seconds is lost. The page's own boot read holds two
+ * versions — the platform defaults' content version and each snapshot's etag — and both questions are
+ * conditional: "unchanged" answers carry no payload. Returns true (after dropping the held snapshots)
+ * only when one of them moved. No held version = nothing to compare = no read at all.
+ */
+export async function catchUpKnobsSinceBoot(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const defaults = defaultsCache ?? readStoredDefaults();
+  if (!defaults && heldAsks.size === 0) return false;
+  const rpc = platformRpc(createClient());
+  let moved = false;
+  if (defaults?.version) {
+    const { data, error } = await rpc("knob_defaults", { p_known_version: defaults.version });
+    if (!error && (data as { unchanged?: boolean } | null)?.unchanged !== true) moved = true;
+  }
+  for (const [addr, ask] of heldAsks) {
+    if (moved) break;
+    const prior = lastAnswers.get(addr);
+    if (!prior) continue;
+    const { data, error } = await rpc("knob_snapshot_delta", {
+      p_organization_id: ask.organizationId ?? null,
+      p_user_id: ask.userId ?? undefined,
+      p_scopes: buildScopes(ask.deviceId, ask.scopes),
+      p_etag: prior.etag,
+    });
+    if (error) continue;
+    const answer = (data ?? {}) as { unchanged?: boolean; etag?: string };
+    if (answer.unchanged !== true || answer.etag !== prior.etag) moved = true;
+  }
+  if (moved) invalidateEffectiveKnob();
+  return moved;
 }
 
 /**
