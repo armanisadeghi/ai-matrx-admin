@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1566 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1578 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "fd3420a3a470";
+export const KIND_REGISTRY_FINGERPRINT = "c4a86dc58f4f";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -40,6 +40,67 @@ export interface AccessoryComponent {
   description: string;
   part_number?: string | null;
   serial_number?: string | null;
+}
+
+/**
+ * * Shared by 2 kinds (social_data_post, social_data_posts).
+ */
+export interface Account {
+  bio?: string | null;
+  url?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  extras?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  handle?: string | null;
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  verified?: boolean | null;
+  followers?: number | null;
+  following?: number | null;
+  avatar_url?: string | null;
+  post_count?: number | null;
+  total_likes?: number | null;
+  display_name?: string | null;
+  platform_user_id?: string | null;
+}
+
+/**
+ * * From kind `social_data_ads`.
+ */
+export interface AdItem {
+  cta?: string | null;
+  url?: string | null;
+  body?: string | null;
+  media?: MediaItem[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  extras?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  format?: string | null;
+  library: "meta" | "tiktok" | "google" | "linkedin";
+  ended_at?: string | null;
+  headline?: string | null;
+  is_active?: boolean | null;
+  started_at?: string | null;
+  impressions?: number | null;
+  landing_url?: string | null;
+  advertiser_id?: string | null;
+  platform_ad_id: string;
+  advertiser_name?: string | null;
 }
 
 /**
@@ -2295,6 +2356,31 @@ export interface ColorItem {
 }
 
 /**
+ * * From kind `social_data_comments`.
+ */
+export interface CommentItem {
+  text?: string | null;
+  likes?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  extras?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  posted_at?: string | null;
+  author_name?: string | null;
+  reply_count?: number | null;
+  author_handle?: string | null;
+  platform_comment_id: string;
+}
+
+/**
  * * From kind `competitor_opportunity_autopsy_v1`.
  */
 export interface CompetitorAssessment {
@@ -3152,6 +3238,27 @@ export interface ElevatorPitchItem {
   ten_second?: string | null;
   sixty_second?: string | null;
   thirty_second?: string | null;
+}
+
+/**
+ * One address a source says belongs to someone at the company.
+ *  *
+ *  * From kind `email_candidates`.
+ */
+export interface EmailCandidate {
+  type?: string | null;
+  email: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  position?: string | null;
+  full_name?: string | null;
+  last_name?: string | null;
+  confidence?: number | null;
+  department?: string | null;
+  first_name?: string | null;
+  verification?: string | null;
 }
 
 /**
@@ -4611,7 +4718,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 120 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 125 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
 
@@ -5811,6 +5918,21 @@ export interface MediaAnchor {
 }
 
 /**
+ * * Shared by 3 kinds (social_data_ads, social_data_post, social_data_posts).
+ */
+export interface MediaItem {
+  url: string;
+  kind: "video" | "image" | "audio" | "thumbnail";
+  width?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  height?: number | null;
+  variant?: string | null;
+}
+
+/**
  * The run summary: how many were asked for, researched, resolved and sent first.
  *  *
  *  * From kind `media_list_ranking_result`.
@@ -5882,6 +6004,29 @@ export interface MessagingSection {
   vocabulary?: VocabularyItem | null;
   elevator_pitch?: ElevatorPitchItem | null;
   messaging_pillars?: MessagingPillarItem[];
+}
+
+/**
+ * * Shared by 2 kinds (social_data_post, social_data_posts).
+ */
+export interface Metrics {
+  likes?: number | null;
+  saves?: number | null;
+  views?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  extras?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  shares?: number | null;
+  comments?: number | null;
+  downloads?: number | null;
 }
 
 /**
@@ -7171,6 +7316,36 @@ export interface PositiveFlag {
 }
 
 /**
+ * * From kind `social_data_posts`.
+ */
+export interface Post {
+  url?: string | null;
+  is_ad?: boolean | null;
+  media?: MediaItem[];
+  music?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  author?: Account | null;
+  extras?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  format?: string | null;
+  caption?: string | null;
+  metrics?: Metrics;
+  hashtags?: string[];
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  posted_at?: string | null;
+  duration_seconds?: number | null;
+  platform_post_id: string;
+}
+
+/**
  * * Shared by 3 kinds (post_transcript, social_post, social_search_results).
  */
 export interface PostTranscriptSegment {
@@ -8279,6 +8454,19 @@ export interface SearchResultRow {
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+}
+
+/**
+ * * From kind `social_data_transcript`.
+ */
+export interface Segment {
+  text: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  end_ms?: number | null;
+  start_ms?: number | null;
 }
 
 /**
@@ -15508,6 +15696,26 @@ export interface AuthorityNewsjackingArticle {
     used_in_sections?: string[];
   })[];
   reading_time_minutes?: number;
+}
+
+/**
+ * How many links point at one website and from how many different websites.
+ *  *
+ *  * Kind `backlinks_summary` (registry v1).
+ */
+export interface BacklinksSummary {
+  rank?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "backlinks_summary";
+  domain: string;
+  backlinks?: number | null;
+  referring_ips?: number | null;
+  referring_domains?: number | null;
+  referring_subnets?: number | null;
+  dofollow_backlinks?: number | null;
+  nofollow_backlinks?: number | null;
 }
 
 /**
@@ -25144,6 +25352,25 @@ export interface DocumentQuadDetection {
 }
 
 /**
+ * How strong one website's links are, scored 0 to 100, with the counts behind it.
+ *  *
+ *  * Kind `domain_authority` (registry v1).
+ */
+export interface DomainAuthority {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "domain_authority";
+  domain: string;
+  spam_score?: number | null;
+  last_crawled?: string | null;
+  linking_pages?: number | null;
+  page_authority?: number | null;
+  domain_authority?: number | null;
+  linking_root_domains?: number | null;
+}
+
+/**
  * Output of the four ``seo.crm.*.fold`` nodes — referring domains, reputation
  * outlets, approved link-gap domains, and approved SERP prospects each resolved
  * into CRM organizations. ``source`` distinguishes which producer ran.
@@ -26160,6 +26387,38 @@ export interface ElectronicsIntakeAnalysis {
   })[];
   status_notes?: string;
   image_count_received?: number;
+}
+
+/**
+ * Addresses found for a company (or one person at it) — unverified until a person confirms one.
+ *  *
+ *  * Kind `email_candidates` (registry v2).
+ */
+export interface EmailCandidates {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "email_candidates";
+  domain?: string | null;
+  emails?: EmailCandidate[];
+}
+
+/**
+ * Whether one address can receive mail, as one check saw it.
+ *  *
+ *  * Kind `email_verdict` (registry v1).
+ */
+export interface EmailVerdict {
+  free?: boolean | null;
+  role?: boolean | null;
+  email: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "email_verdict";
+  result?: string | null;
+  quality?: string | null;
+  subresult?: string | null;
 }
 
 /**
@@ -44069,6 +44328,30 @@ export interface ReadingListBook {
 }
 
 /**
+ * The two separately used pieces of copy for a home for sale: the MLS remarks text and the
+ * one-line social teaser. Proposed by Agent Factory build dbe34045 ("write_a_real_estate_listing_description",
+ * user-feedback 5159740a, needs_new_kind path). ``listing_draft`` is a resale-marketplace product
+ * listing (item specifics, condition, HTML description, review flags) with no teaser slot, so it
+ * does not fit; ``text`` would merge the two pieces into one blob.
+ *  *
+ *  * Kind `real_estate_listing_copy` (registry v2).
+ */
+export interface RealEstateListingCopy {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "real_estate_listing_copy";
+  /**
+   * One-line social media teaser for the listing, also free of fair-housing red flags.
+   */
+  social_teaser: string;
+  /**
+   * Warm, specific 120-180 word MLS property description. It opens with a strong first line and contains no fair-housing red flags, meaning no language about who should live there.
+   */
+  mls_description: string;
+}
+
+/**
  * Kind `recipe_ingredient` (registry v6).
  */
 export interface RecipeIngredient {
@@ -47614,7 +47897,7 @@ export interface SeoCompetitorClassificationOffer {
 }
 
 /**
- * Kind `seo.competitor_opportunity_autopsy.offer` (registry v21).
+ * Kind `seo.competitor_opportunity_autopsy.offer` (registry v22).
  */
 export interface SeoCompetitorOpportunityAutopsyOffer {
   /**
@@ -47734,7 +48017,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   owned_page_analyses: unknown;
   /**
-   * The questions people asked on each competitor's Google Business profile and the answers. Fetchable via our SEO data business_data.google.questions_and_answers. Surfaces demand the competitor is or is not meeting.
+   * The questions people asked on each competitor's Google Business profile and the answers. Fetchable from our local-business data (questions and answers). Surfaces demand the competitor is or is not meeting.
    */
   competitor_google_qa?: unknown;
   /**
@@ -47746,7 +48029,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   competitor_job_openings?: unknown;
   /**
-   * Each competitor's actual Google reviews — star distribution and the most recent review bodies with dates and any owner replies. Fetchable via our SEO data business_data.google.reviews / extended_reviews. The raw material for a reputation read (what customers praise and complain about).
+   * Each competitor's actual Google reviews — star distribution and the most recent review bodies with dates and any owner replies. Fetchable from our local-business data (reviews / extended reviews). The raw material for a reputation read (what customers praise and complain about).
    */
   competitor_google_reviews?: unknown;
   /**
@@ -47758,7 +48041,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   provider_backlink_metrics: unknown;
   /**
-   * Each competitor's Google Business / Maps profile — overall star rating, total review count, primary category, address, hours and price level. Fetchable via our SEO data business_data.google.my_business_info keyed by competitor domain/name.
+   * Each competitor's Google Business / Maps profile — overall star rating, total review count, primary category, address, hours and price level. Fetchable from our local-business data (my_business_info) keyed by competitor domain/name.
    */
   competitor_google_business?: unknown;
   /**
@@ -51604,6 +51887,131 @@ export interface SocialPostBreakdownOffer {
    * The shared transcript text of the post's audio, when one exists.
    */
   transcript: string;
+}
+
+/**
+ * One page of ads from an ad library.
+ *  *
+ *  * Kind `social_data_ads` (registry v1).
+ */
+export interface SocialDataAds {
+  items?: AdItem[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_data_ads";
+  cursor?: string | null;
+  has_more?: boolean;
+}
+
+/**
+ * One page of comments on a post.
+ *  *
+ *  * Kind `social_data_comments` (registry v1).
+ */
+export interface SocialDataComments {
+  items?: CommentItem[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_data_comments";
+  cursor?: string | null;
+  has_more?: boolean;
+}
+
+/**
+ * One post as a source read it.
+ *  *
+ *  * Kind `social_data_post` (registry v1).
+ */
+export interface SocialDataPost {
+  url?: string | null;
+  is_ad?: boolean | null;
+  media?: MediaItem[];
+  music?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_data_post";
+  author?: Account | null;
+  extras?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  format?: string | null;
+  caption?: string | null;
+  metrics?: Metrics;
+  hashtags?: string[];
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  posted_at?: string | null;
+  duration_seconds?: number | null;
+  platform_post_id: string;
+}
+
+/**
+ * One page of posts (an account's posts, a search, trending).
+ *  *
+ *  * Kind `social_data_posts` (registry v1).
+ */
+export interface SocialDataPosts {
+  items?: Post[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_data_posts";
+  cursor?: string | null;
+  has_more?: boolean;
+}
+
+/**
+ * One social account as a source read it.
+ *  *
+ *  * Kind `social_data_profile` (registry v1).
+ */
+export interface SocialDataProfile {
+  bio?: string | null;
+  url?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_data_profile";
+  extras?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  handle?: string | null;
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  verified?: boolean | null;
+  followers?: number | null;
+  following?: number | null;
+  avatar_url?: string | null;
+  post_count?: number | null;
+  total_likes?: number | null;
+  display_name?: string | null;
+  platform_user_id?: string | null;
+}
+
+/**
+ * What is said in one video.
+ *  *
+ *  * Kind `social_data_transcript` (registry v1).
+ */
+export interface SocialDataTranscript {
+  text?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_data_transcript";
+  language?: string | null;
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  segments?: Segment[];
+  platform_post_id?: string | null;
 }
 
 /**
@@ -60544,6 +60952,25 @@ export interface WorkClaim {
 }
 
 /**
+ * One person's work address as a source found it — unverified until a person confirms it.
+ *  *
+ *  * Kind `work_email` (registry v1).
+ */
+export interface WorkEmail {
+  email: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "work_email";
+  position?: string | null;
+  full_name?: string | null;
+  last_name?: string | null;
+  confidence?: number | null;
+  first_name?: string | null;
+  verification?: string | null;
+}
+
+/**
  * Kind `work_queue_wave_result` (registry v10).
  */
 export interface WorkQueueWaveResult {
@@ -61328,6 +61755,7 @@ export type GeneratedKindSlug =
   | "asset_variant"
   | "audio.speech.offer"
   | "authority_newsjacking_article"
+  | "backlinks_summary"
   | "basic_card"
   | "batch_review"
   | "batched_list_result"
@@ -61551,6 +61979,7 @@ export type GeneratedKindSlug =
   | "distillation.timeline_window.offer"
   | "docproc.content_structure.offer"
   | "document_quad_detection"
+  | "domain_authority"
   | "domain_fold_report"
   | "draft_critique"
   | "education.analytics_narrate.offer"
@@ -61572,6 +62001,8 @@ export type GeneratedKindSlug =
   | "education.tutor_message.offer"
   | "education.voice_tutor.offer"
   | "electronics_intake_analysis"
+  | "email_candidates"
+  | "email_verdict"
   | "employee_card"
   | "employee_of_the_week"
   | "employee_roster"
@@ -62186,6 +62617,7 @@ export type GeneratedKindSlug =
   | "random_string_result"
   | "rating"
   | "reading_list_book"
+  | "real_estate_listing_copy"
   | "recipe_ingredient"
   | "recipe_step"
   | "recipient_shortlist_result"
@@ -62418,6 +62850,12 @@ export type GeneratedKindSlug =
   | "skill_tool_result"
   | "slug_result"
   | "social.post_breakdown.offer"
+  | "social_data_ads"
+  | "social_data_comments"
+  | "social_data_post"
+  | "social_data_posts"
+  | "social_data_profile"
+  | "social_data_transcript"
   | "social_post"
   | "social_profile"
   | "social_profile_answer_list"
@@ -62737,6 +63175,7 @@ export type GeneratedKindSlug =
   | "word_count_result"
   | "word_frequency"
   | "work_claim"
+  | "work_email"
   | "work_queue_wave_result"
   | "work_receipt"
   | "work_seed_result"
@@ -62897,6 +63336,7 @@ export interface KindPayloadBySlug {
   "asset_variant": AssetVariant;
   "audio.speech.offer": AudioSpeechOffer;
   "authority_newsjacking_article": AuthorityNewsjackingArticle;
+  "backlinks_summary": BacklinksSummary;
   "basic_card": BasicCard;
   "batch_review": BatchReview;
   "batched_list_result": BatchedListResult;
@@ -63120,6 +63560,7 @@ export interface KindPayloadBySlug {
   "distillation.timeline_window.offer": DistillationTimelineWindowOffer;
   "docproc.content_structure.offer": DocprocContentStructureOffer;
   "document_quad_detection": DocumentQuadDetection;
+  "domain_authority": DomainAuthority;
   "domain_fold_report": DomainFoldReport;
   "draft_critique": DraftCritique;
   "education.analytics_narrate.offer": EducationAnalyticsNarrateOffer;
@@ -63141,6 +63582,8 @@ export interface KindPayloadBySlug {
   "education.tutor_message.offer": EducationTutorMessageOffer;
   "education.voice_tutor.offer": EducationVoiceTutorOffer;
   "electronics_intake_analysis": ElectronicsIntakeAnalysis;
+  "email_candidates": EmailCandidates;
+  "email_verdict": EmailVerdict;
   "employee_card": EmployeeCard;
   "employee_of_the_week": EmployeeOfTheWeek;
   "employee_roster": EmployeeRoster;
@@ -63755,6 +64198,7 @@ export interface KindPayloadBySlug {
   "random_string_result": RandomStringResult;
   "rating": Rating;
   "reading_list_book": ReadingListBook;
+  "real_estate_listing_copy": RealEstateListingCopy;
   "recipe_ingredient": RecipeIngredient;
   "recipe_step": RecipeStep;
   "recipient_shortlist_result": RecipientShortlistResult;
@@ -63987,6 +64431,12 @@ export interface KindPayloadBySlug {
   "skill_tool_result": SkillToolResult;
   "slug_result": SlugResult;
   "social.post_breakdown.offer": SocialPostBreakdownOffer;
+  "social_data_ads": SocialDataAds;
+  "social_data_comments": SocialDataComments;
+  "social_data_post": SocialDataPost;
+  "social_data_posts": SocialDataPosts;
+  "social_data_profile": SocialDataProfile;
+  "social_data_transcript": SocialDataTranscript;
   "social_post": SocialPost;
   "social_profile": SocialProfile;
   "social_profile_answer_list": SocialProfileAnswerList;
@@ -64306,6 +64756,7 @@ export interface KindPayloadBySlug {
   "word_count_result": WordCountResult;
   "word_frequency": WordFrequency;
   "work_claim": WorkClaim;
+  "work_email": WorkEmail;
   "work_queue_wave_result": WorkQueueWaveResult;
   "work_receipt": WorkReceipt;
   "work_seed_result": WorkSeedResult;
@@ -64470,6 +64921,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "asset_variant",
   "audio.speech.offer",
   "authority_newsjacking_article",
+  "backlinks_summary",
   "basic_card",
   "batch_review",
   "batched_list_result",
@@ -64693,6 +65145,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "distillation.timeline_window.offer",
   "docproc.content_structure.offer",
   "document_quad_detection",
+  "domain_authority",
   "domain_fold_report",
   "draft_critique",
   "education.analytics_narrate.offer",
@@ -64714,6 +65167,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "education.tutor_message.offer",
   "education.voice_tutor.offer",
   "electronics_intake_analysis",
+  "email_candidates",
+  "email_verdict",
   "employee_card",
   "employee_of_the_week",
   "employee_roster",
@@ -65328,6 +65783,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "random_string_result",
   "rating",
   "reading_list_book",
+  "real_estate_listing_copy",
   "recipe_ingredient",
   "recipe_step",
   "recipient_shortlist_result",
@@ -65560,6 +66016,12 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "skill_tool_result",
   "slug_result",
   "social.post_breakdown.offer",
+  "social_data_ads",
+  "social_data_comments",
+  "social_data_post",
+  "social_data_posts",
+  "social_data_profile",
+  "social_data_transcript",
   "social_post",
   "social_profile",
   "social_profile_answer_list",
@@ -65879,6 +66341,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "word_count_result",
   "word_frequency",
   "work_claim",
+  "work_email",
   "work_queue_wave_result",
   "work_receipt",
   "work_seed_result",
