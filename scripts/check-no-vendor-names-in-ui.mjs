@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // GUARD: no data-vendor name on any customer-facing screen.
 // Our vendors (ScrapeCreators, Bright Data, EnsembleData, Apify, DataForSEO, SerpAPI,
-// Brave Search, Twilio, Firecrawl; Grok/xAI is a model choice, not a data vendor) are our business, never the customer's.
+// Brave Search, Twilio, Firecrawl, treg, TikHub, JustOneAPI, Adyntel, Cloro, crawl4ai, LiteScrape; Grok/xAI is a model choice, not a data vendor) are our business, never the customer's.
 // Flags vendor words inside string literals / JSX text in customer code. Admin, dev,
 // tests, generated files, API routes, and legal disclosure pages are allowlisted.
 // Usage: node scripts/check-no-vendor-names-in-ui.mjs [--self-test] [paths...]
@@ -9,7 +9,8 @@ import { readFileSync, readdirSync, statSync, mkdtempSync, writeFileSync } from 
 import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 
-const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s?for\s?seo|serp\s?api|firecrawl|twilio/i;
+// Keep in step with aidream/services/client_text.py AGGREGATORS (the one registry).
+const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s?for\s?seo|serp\s?api|firecrawl|twilio|\btreg(\.to)?\b|tik\s?hub|just\s?one\s?api|\badyntel\b|\bcloro\b|\bcrawl4ai\b|lite\s?scrape/i;
 // case-sensitive: the English word "brave" is fine. A search / model provider named as the engine doing OUR search
 // ("Google deep search", "Grok on X", "searched with Google") is a vendor name too (2026-10-14, Smart Add helpers
 // menu). "Google" / "Grok" alone stay allowed: a platform people connect, a chat app they export, a model they pick.
@@ -82,12 +83,12 @@ function main() {
 function selfTest() {
   const dir = mkdtempSync(join(tmpdir(), "vendor-guard-"));
   const bad = join(dir, "Bad.tsx");
-  writeFileSync(bad, 'export const A = () => <span>Posts via ScrapeCreators</span>;\nconst t = "Estimate from DataForSEO Labs";\nconst g = "Google deep search";\nconst x = "Grok on X";\n');
+  writeFileSync(bad, 'export const A = () => <span>Posts via ScrapeCreators</span>;\nconst t = "Estimate from DataForSEO Labs";\nconst g = "Google deep search";\nconst x = "Grok on X";\nconst t = "Data via treg and TikHub";\n');
   const good = join(dir, "Good.tsx");
   writeFileSync(good, '// ScrapeCreators note\nconst k = "scrapecreators";\nexport const B = () => <span>Social data</span>;\n');
   const nBad = scanSource(readFileSync(bad, "utf8")).length;
   const nGood = scanSource(readFileSync(good, "utf8")).length;
-  if (nBad !== 4 || nGood !== 0) { console.error(`self-test FAILED bad=${nBad} (want 4) good=${nGood} (want 0)`); process.exit(1); }
-  console.log("self-test ok: planted vendor strings caught (4), clean file passes (0)");
+  if (nBad !== 5 || nGood !== 0) { console.error(`self-test FAILED bad=${nBad} (want 5) good=${nGood} (want 0)`); process.exit(1); }
+  console.log("self-test ok: planted vendor strings caught (5), clean file passes (0)");
 }
 main();

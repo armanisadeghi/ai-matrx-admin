@@ -9,7 +9,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s?for\s?seo|serp\s?api|firecrawl|twilio/i;
+const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s?for\s?seo|serp\s?api|firecrawl|twilio|\btreg(\.to)?\b|tik\s?hub|just\s?one\s?api|\badyntel\b|\bcloro\b|\bcrawl4ai\b|lite\s?scrape/i;
 const VENDOR_CS = /\bBrave\b/;
 const EXEMPT_PATH = /^\/(administration|demos|dev|admin|privacy-policy|terms|sms)(\/|$)/;
 
