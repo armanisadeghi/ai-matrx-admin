@@ -132,7 +132,7 @@ export interface ComparisonItemInput {
   logo_url?: string | null;
 }
 
-export type ItemStage = "queued" | "fetching" | "waiting_for_provider" | "storing" | "done";
+export type ItemStage = "queued" | "fetching" | "reading" | "storing" | "done";
 
 /** One item's progress — from a stream stage event or the run row. */
 export interface ItemProgress {
@@ -147,6 +147,8 @@ export interface ItemProgress {
   total: number | null;
   done: boolean;
   error: string | null;
+  /** Why it failed — `empty` is a lookup miss ("Not found"); anything else is a read failure. */
+  errorCode?: string | null;
 }
 
 export interface ComparisonProgress {
@@ -233,8 +235,12 @@ function list<T>(v: unknown, f: (x: unknown) => T): T[] {
   return Array.isArray(v) ? v.map((x) => f(x)) : [];
 }
 
-const STAGES: readonly ItemStage[] = ["queued", "fetching", "waiting_for_provider", "storing", "done"];
-const stageOf = (v: unknown): ItemStage => (STAGES.includes(v as ItemStage) ? (v as ItemStage) : "queued");
+const STAGES: readonly ItemStage[] = ["queued", "fetching", "reading", "storing", "done"];
+/** `waiting_for_provider` is the key older servers (and runs saved before 2026-10-16) still send. */
+export const stageOf = (v: unknown): ItemStage => {
+  const key = v === "waiting_for_provider" ? "reading" : v;
+  return STAGES.includes(key as ItemStage) ? (key as ItemStage) : "queued";
+};
 
 function parseField(v: unknown): CompareField {
   const o = obj(v);
@@ -421,6 +427,7 @@ function parseItemProgress(v: unknown): ItemProgress {
     total: numOrNull(o.total),
     done: bool(o.done),
     error: strOrNull(o.error),
+    errorCode: strOrNull(o.error_code),
   };
 }
 
@@ -496,7 +503,7 @@ export function readEvent(evt: unknown): Read {
   return null;
 }
 
-const STAGE_ORDER: Record<ItemStage, number> = { queued: 0, fetching: 1, waiting_for_provider: 2, storing: 3, done: 4 };
+const STAGE_ORDER: Record<ItemStage, number> = { queued: 0, fetching: 1, reading: 2, storing: 3, done: 4 };
 
 /** Fold a read of the run row into what is shown: an item never moves backwards (the row is
  * written on stage changes, a live stream can be a moment ahead of it). */

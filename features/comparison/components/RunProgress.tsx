@@ -24,11 +24,11 @@ export interface ProgressRowIdentity {
 }
 
 const WORDS: Record<string, Record<ItemStage, string>> = {
-  companies_reviews: { queued: "Waiting", fetching: "Starting", waiting_for_provider: "Reading reviews", storing: "Saving the facts", done: "Done" },
-  local_business: { queued: "Waiting", fetching: "Starting", waiting_for_provider: "Reading the listing", storing: "Saving the facts", done: "Done" },
+  companies_reviews: { queued: "Waiting", fetching: "Starting", reading: "Reading reviews", storing: "Saving the facts", done: "Done" },
+  local_business: { queued: "Waiting", fetching: "Starting", reading: "Reading the listing", storing: "Saving the facts", done: "Done" },
 };
-const DEFAULT_WORDS: Record<ItemStage, string> = { queued: "Waiting", fetching: "Starting", waiting_for_provider: "Reading", storing: "Saving the facts", done: "Done" };
-const SHARE: Record<ItemStage, number> = { queued: 0.04, fetching: 0.15, waiting_for_provider: 0.45, storing: 0.85, done: 1 };
+const DEFAULT_WORDS: Record<ItemStage, string> = { queued: "Waiting", fetching: "Starting", reading: "Reading", storing: "Saving the facts", done: "Done" };
+const SHARE: Record<ItemStage, number> = { queued: 0.04, fetching: 0.15, reading: 0.45, storing: 0.85, done: 1 };
 
 function useElapsed(startedAt: number): string {
   const [now, setNow] = useState(() => Date.now());
@@ -87,7 +87,7 @@ export function RunProgress({ kind, kindLabel, items, identities, startedAt, rec
                     p?.error ? "text-destructive" : "text-muted-foreground")}>
                     {p?.error ? <CircleAlert className="h-3.5 w-3.5" aria-hidden />
                       : p?.done ? <CheckCircle2 className="h-3.5 w-3.5 text-success" aria-hidden /> : null}
-                    {p?.error ? "Not found" : words[p?.done ? "done" : stage]}
+                    {p?.error ? (p.errorCode === "empty" ? "Not found" : "Couldn't read") : words[p?.done ? "done" : stage]}
                   </span>
                 </div>
                 <div className="relative h-1.5 overflow-hidden rounded-full bg-muted">

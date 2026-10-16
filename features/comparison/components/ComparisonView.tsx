@@ -11,9 +11,9 @@
  */
 
 import type { ReactNode } from "react";
-import { ExternalLink, Table2, Trophy } from "lucide-react";
+import { ExternalLink, Info, Table2, Trophy } from "lucide-react";
 import { Badge, Tile } from "@ai-matrx/design-system/controls";
-import { ErrorNotice } from "@ai-matrx/design-system";
+import { ErrorNotice, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatPoints } from "@ai-matrx/kit/format";
 
@@ -104,8 +104,11 @@ export function ComparisonView({ result, seesDollars = false, factsHref, actions
                   return (
                     <div key={it.item_id} className="min-w-0">
                       <div className="type-meta truncate text-muted-foreground">{it.name}</div>
-                      <div className="type-body line-clamp-3 text-foreground" title={v?.basis || undefined}>
-                        {v && v.display !== "—" ? v.display : <span className="text-muted-foreground">—</span>}
+                      <div className="flex items-start gap-1">
+                        <div className="type-body line-clamp-3 min-w-0 text-foreground" title={v?.basis || undefined}>
+                          {v && v.display !== "—" ? v.display : <span className="text-muted-foreground">—</span>}
+                        </div>
+                        <SourceMarker basis={v?.basis} what={`${f.label} for ${it.name}`} />
                       </div>
                     </div>
                   );
@@ -127,6 +130,22 @@ export function ComparisonView({ result, seesDollars = false, factsHref, actions
         ) : null}
       </section>
     </div>
+  );
+}
+
+/** Where a number came from, reachable by tap or click (a `title` alone never shows on touch). */
+function SourceMarker({ basis, what }: { basis?: string | null; what: string }) {
+  if (!basis) return null;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button" aria-label={`Where ${what} comes from`}
+          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
+          <Info className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="type-secondary max-w-xs text-foreground">{basis}</PopoverContent>
+    </Popover>
   );
 }
 
@@ -180,6 +199,7 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
         <div className="flex items-baseline gap-1.5" title={pv?.basis || undefined}>
           <span className="text-3xl font-semibold tabular-nums tracking-tight text-foreground">{pv?.display ?? "—"}</span>
           {primary ? <span className="type-secondary text-muted-foreground">{primary.label.toLowerCase()}</span> : null}
+          <SourceMarker basis={pv?.basis} what={`${primary?.label ?? "Value"} for ${item.name}`} />
         </div>
       )}
 
