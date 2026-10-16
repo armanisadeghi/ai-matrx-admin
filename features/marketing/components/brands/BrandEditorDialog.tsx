@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, ChevronDown, Link2, Loader2 } from "lucide-react";
+import { ArrowRight, ChevronDown, LayoutGrid, Link2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { toast } from "@/lib/toast";
@@ -356,6 +356,23 @@ function BrandEditorDialogBody({
             <span className="flex min-w-0 flex-col">
               <span className="text-sm font-medium">Smart Add</span>
               <span className="truncate text-xs text-muted-foreground">Paste a website or social link — we find the rest</span>
+            </span>
+            <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
+          </Link>
+        ) : null}
+        {!brand ? (
+          // The found-first door (smart-add VISION Part 23): the same Smart Add, opening on what it found.
+          <Link
+            href={marketingRoutes.smartAddFound()}
+            onClick={() => onOpenChange(false)}
+            data-clickable
+            className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5"
+            data-testid="smart-add-found-entry"
+          >
+            <LayoutGrid className="size-4 shrink-0 text-primary" />
+            <span className="flex min-w-0 flex-col">
+              <span className="text-sm font-medium">Smart Add — found first</span>
+              <span className="truncate text-xs text-muted-foreground">See what we found, then fine-tune</span>
             </span>
             <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
           </Link>

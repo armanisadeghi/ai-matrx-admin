@@ -1,0 +1,59 @@
+/*
+ * "Found first" door — the calm card grid (smart-add VISION Part 23; flagship stage, so bespoke
+ * styling lives here). Theme tokens only; motion is transform/opacity and stops under reduced motion.
+ */
+
+.panel {
+  background: hsl(var(--card) / 0.78);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  box-shadow:
+    0 1px 0 hsl(var(--foreground) / 0.04),
+    0 24px 60px -28px hsl(var(--foreground) / 0.35);
+}
+
+.card {
+  background: hsl(var(--muted) / 0.72);
+}
+
+/* The one emphasized card: inverted in both themes. */
+.lead {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+/* A reserved slot still waiting: a soft sweep, never a spinner. */
+.waiting {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted) / 0.5);
+}
+
+.waiting::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(100deg, transparent 20%, hsl(var(--foreground) / 0.06) 50%, transparent 80%);
+  animation: sweep 1.8s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  100% { transform: translateX(100%); }
+}
+
+.confirm {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.86));
+  box-shadow: 0 10px 26px -10px hsl(var(--primary) / 0.85);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px -10px hsl(var(--primary));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting::after { animation: none; }
+  .confirm, .confirm:hover { transition: none; transform: none; }
+}

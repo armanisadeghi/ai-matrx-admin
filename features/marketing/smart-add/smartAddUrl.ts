@@ -4,6 +4,8 @@
  *
  *   /marketing/brands/smart-add                 → redirects to /company (query kept)
  *   /marketing/brands/smart-add/company         → a business (the default)
+ *   /marketing/brands/smart-add/found           → a business through the found-first door (VISION Part 23):
+ *                                                 the same session, the certain facts as a card grid first
  *   /marketing/brands/smart-add/person          → a person
  *   /marketing/brands/smart-add/enrich/<brand>  → enrich one existing brand
  *   /marketing/brands/smart-add/validate/<brand> → the validation page, opened from the brand's saved findings
@@ -85,6 +87,8 @@ export function parseSmartAddPath(pathname: string): Pick<SmartAddAddress, "mode
   const parts = rest.split("/").filter(Boolean);
   const head = parts[0]?.toLowerCase();
   if (head === "company" || head === "person") return { mode: head, enrichBrandId: null };
+  // The found-first door is the company session with a different first screen.
+  if (head === "found") return { mode: "company", enrichBrandId: null };
   if (head === "enrich" && parts[1] && BRAND_SEGMENT.test(parts[1])) return { mode: null, enrichBrandId: parts[1] };
   return { mode: null, enrichBrandId: null };
 }
@@ -210,6 +214,20 @@ export function smartAddHref(link: SmartAddLink = {}): string {
 export function smartAddEnrichHref(brandId: string, carry: Pick<SmartAddPrefill, "website" | "social" | "platform"> = {}): string {
   const q = patchSmartAddSearch(new URLSearchParams(), { website: carry.website, social: carry.social, platform: carry.platform });
   return withQuery(`${SMART_ADD_BASE}/enrich/${encodeURIComponent(brandId)}`, q);
+}
+
+/** The found-first door: the company session that opens on the found grid (VISION Part 23). */
+export type SmartAddDoor = "found";
+
+/** `/found` (with or without the base) → "found"; every other address is the standard door (null). */
+export function parseSmartAddDoor(pathname: string): SmartAddDoor | null {
+  const rest = pathname.startsWith(SMART_ADD_BASE) ? pathname.slice(SMART_ADD_BASE.length) : pathname;
+  return rest.split("/").filter(Boolean)[0]?.toLowerCase() === "found" ? "found" : null;
+}
+
+/** THE link to the found-first door; a prefill starts searching on open, like `smartAddHref`. */
+export function smartAddFoundHref(link: Omit<SmartAddLink, "mode"> = {}): string {
+  return withQuery(`${SMART_ADD_BASE}/found`, patchSmartAddSearch(new URLSearchParams(), link));
 }
 
 /** The validation page for one brand, opened from its saved findings (validate/SmartAddValidatePage). */
