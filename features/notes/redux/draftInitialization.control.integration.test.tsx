@@ -106,7 +106,7 @@ import type { UserAuthState } from "@/lib/redux/slices/userAuthSlice";
 import agentShortcutReducer from "@ai-matrx/chat/agents/redux/agent-shortcuts/slice";
 import agentShortcutCategoryReducer from "@ai-matrx/chat/agents/redux/agent-shortcut-categories/slice";
 import { sklReducer } from "@/features/agent-connections/redux/skl/slice";
-import diffCompareReducer from "@/lib/redux/slices/diffCompareSlice";
+import { diffCompareReducer } from "@ai-matrx/chat/agents/redux/diff-compare/diff-compare.slice";
 import adminDebugReducer from "@/lib/redux/preferences/adminDebugSlice";
 import overlaysReducer from "@/lib/redux/slices/overlaySlice";
 

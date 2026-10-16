@@ -12,13 +12,11 @@
 //
 // Every action is ABSENT where it cannot work (visible → false) — never dead.
 
-import { FileInput, Play } from "lucide-react";
+import { FileInput } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { registerActionIfAbsent } from "./register-if-absent";
-import { getErrorMessage } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { readCodeBlockFacts, type CodeBlockFacts } from "../../code-block/code-block-context";
-import { runCommandFor, runnableSandboxId } from "../../code-block/code-run";
 
 // ─── Code block actions ─────────────────────────────────────────────────────
 
@@ -75,48 +73,6 @@ registerActionIfAbsent({
         onClick: () => ctx.dispatch(updateTabContent({ id: tab.id, content: before, source: "ai-undo" })),
       },
     });
-  },
-});
-
-function sandboxFor(ctx: RichDocumentActionContext, facts: CodeBlockFacts): string | null {
-  if (!facts.conversationId) return null;
-  const state = ctx.getState() as unknown as {
-    conversations?: { byConversationId?: Record<string, { sandboxBinding?: Parameters<typeof runnableSandboxId>[0] }> };
-  };
-  return runnableSandboxId(state.conversations?.byConversationId?.[facts.conversationId]?.sandboxBinding ?? null);
-}
-
-registerActionIfAbsent({
-  id: "code-block-run",
-  label: (ctx) => {
-    const facts = codeFacts(ctx);
-    return facts ? `Run in sandbox (${runCommandFor(facts.language)?.split(" ")[0] ?? ""})` : "Run";
-  },
-  icon: Play,
-  iconColor: "text-green-600 dark:text-green-400",
-  category: "edit",
-  supportedSources: ["raw"],
-  renderSlot: "overflow",
-  order: 2,
-  // Present only where the platform can really execute: the conversation is
-  // bound to a sandbox AND the language has an interpreter there.
-  visible: (ctx) => {
-    const facts = codeFacts(ctx);
-    return Boolean(facts && facts.onRunResult && runCommandFor(facts.language) && sandboxFor(ctx, facts));
-  },
-  run: async (ctx) => {
-    const facts = codeFacts(ctx);
-    if (!facts?.onRunResult) return;
-    const sandboxId = sandboxFor(ctx, facts);
-    if (!sandboxId) return;
-    facts.onRunResult({ status: "running" });
-    try {
-      const { runCodeInSandbox } = await import("../../code-block/code-run");
-      const result = await runCodeInSandbox({ sandboxId, language: facts.language, code: facts.code });
-      facts.onRunResult({ status: "done", result });
-    } catch (err) {
-      facts.onRunResult({ status: "error", message: getErrorMessage(err, "The sandbox did not run the code") });
-    }
   },
 });
 

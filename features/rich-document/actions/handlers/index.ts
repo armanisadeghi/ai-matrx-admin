@@ -8,15 +8,9 @@
 // RichDocument.tsx imports this at the top of the file; consumers don't
 // need to touch it directly.
 
-import "./save";
-import "./capture";
-import "./listen";
 import "./attach-to-chat";
 import "./ai";
-import "./chat";
-import "./export";
 import "./print";
-import "./compare";
 import "./feedback";
 import "./answer-tools";
 import "./annotations";

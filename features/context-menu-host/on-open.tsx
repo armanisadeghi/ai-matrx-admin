@@ -19,7 +19,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode, toggleDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectIsSuperAdmin, selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 import { selectIsOverlayOpen, toggleOverlay } from "@/lib/redux/slices/overlaySlice";
-import { openCompareWithBase, selectHasCompareBase, setCompareBase } from "@/lib/redux/slices/diffCompareSlice";
+import { openCompareWithBase, selectHasCompareBase, setCompareBase } from "@ai-matrx/chat/agents/redux/diff-compare/diff-compare.slice";
 import { selectActiveScopeIds } from "@/features/scopes/redux/selectors/active-context";
 import { useOpenListenSummaryWindow } from "@/features/overlays/openers/listenSummaryWindow";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";

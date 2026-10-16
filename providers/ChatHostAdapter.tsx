@@ -290,8 +290,16 @@ function AppSettingDoor({ setting, ...rest }: ChatSettingDoorProps) {
   switch (setting) {
     case "live-conversation-voice":
       return <SettingDoor target={VOICE_SETTING_DOORS.liveConversation} {...rest} />;
+    case "read-aloud":
+      return <SettingDoor target={VOICE_SETTING_DOORS.readAloud} {...rest} />;
   }
 }
+
+/** The settings control each package setting door lands on. */
+const SETTING_DOOR_TARGET = {
+  "live-conversation-voice": VOICE_SETTING_DOORS.liveConversation,
+  "read-aloud": VOICE_SETTING_DOORS.readAloud,
+} as const satisfies Record<ChatSettingDoorProps["setting"], unknown>;
 
 /**
  * Strings: the package's own localStorage store (as before P8). Preferences:
@@ -313,6 +321,16 @@ function reduxPrefs(store: AppStore): ChatPrefsPort {
     subscribePreferences: (listener) => store.subscribe(listener),
     knobs: appKnobs,
     SettingDoor: AppSettingDoor,
+    // A menu row's "... settings": the preferences window at the exact control.
+    openSettingDoor(setting) {
+      const door = SETTING_DOOR_TARGET[setting];
+      store.dispatch(
+        openOverlay({
+          overlayId: "userPreferencesWindow",
+          data: { initialTabId: door.tabId, initialControlId: door.controlId },
+        }),
+      );
+    },
   };
 }
 

@@ -6,15 +6,5 @@
     "attach-artifact-to-chat",
     "code-block-apply-to-file"
   ],
-  "awaitingMove": [
-    "code-block-run",
-    "compare-with-base",
-    "continue-in-chat",
-    "email-to-me",
-    "save-code-to-scratch",
-    "save-shape-instance",
-    "save-to-task",
-    "set-compare-base",
-    "tts-voice-settings"
-  ]
+  "awaitingMove": []
 }
