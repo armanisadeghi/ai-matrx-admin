@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { safeRelativePath } from "@/utils/auth/safe-redirect";
 import {
   OrganizationContextError,
   requireOrganizationContext,
@@ -9,7 +10,6 @@ import {
 import {
   GITHUB_OAUTH_COOKIE,
   requestBaseUrl,
-  safeReturnUrl,
   type GitHubOAuthSession,
 } from "../session";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
@@ -70,8 +70,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const flow = request.nextUrl.searchParams.get("flow") === "install" ? "install" : "authorize";
   const browserProof = randomBytes(32).toString("base64url");
-  const returnUrl = safeReturnUrl(
+  const returnUrl = safeRelativePath(
     request.nextUrl.searchParams.get("return_url"),
+    "/code",
   );
   let backend: Response;
   let started: unknown;

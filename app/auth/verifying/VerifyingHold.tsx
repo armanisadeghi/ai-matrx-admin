@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, RotateCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { safeRelativePath } from "@/utils/auth/safe-redirect";
+import { safeReturnUrl } from "@/utils/auth/safe-redirect";
 
 /** How long to wait before the one automatic retry. */
 const RETRY_AFTER_MS = 1500;
@@ -34,8 +34,13 @@ function writeAttempt(next: string, value: number | null): void {
   }
 }
 
+/** Where the hold sends the visitor: an allowed absolute Office URL is kept, anything else falls to a safe relative path. */
+export function verifyingTarget(next: string | undefined): string {
+  return safeReturnUrl(next ?? "", "/");
+}
+
 export function VerifyingHold({ next }: { next?: string }) {
-  const target = safeRelativePath(next ?? "", "/");
+  const target = verifyingTarget(next);
   const [phase, setPhase] = useState<"waiting" | "still-failing">("waiting");
 
   useEffect(() => {
