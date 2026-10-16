@@ -18,7 +18,7 @@ import {
   Type, Wand2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { COPY_LABELS, copyRichContent, copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { contentFileName, deriveContentTitle, getErrorMessage, contentForDestination } from "../utils";
 import { hasTableShape } from "@ai-matrx/records-ui/table-shape";
 import { liveSelectionShapeText } from "@ai-matrx/rich-content/selection-toolbar/selection-shape";
@@ -50,7 +50,7 @@ const hasTable = (ctx: RichDocumentActionContext) =>
 
 // THE three ways to copy beside the one-click Copy (copy.ts), named by COPY_LABELS (Arman, 2026-10-11).
 // With a selection, `ctx.content` IS the selection's markdown (the menu reads it from its source).
-registerAction({
+registerActionIfAbsent({
   id: "copy-markdown",
   label: COPY_LABELS.markdown,
   icon: FileCode2,
@@ -64,7 +64,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "copy-plain-text",
   label: COPY_LABELS.text,
   icon: Type,
@@ -78,7 +78,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "copy-formatted",
   label: COPY_LABELS.formatted,
   icon: Wand2,
@@ -92,7 +92,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "copy-html-source",
   label: "Copy HTML source",
   icon: Code2,
@@ -111,7 +111,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "copy-table-csv",
   label: "Copy table as CSV",
   icon: Table2,
@@ -128,7 +128,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   // TSV pastes straight into Excel / Sheets / Numbers as cells.
   id: "copy-table-tsv",
   label: "Copy table for a spreadsheet (TSV)",
@@ -177,7 +177,7 @@ const tableSource = (
   return hasTableShape(ctx.content) ? { text: ctx.content } : null;
 };
 
-registerAction({
+registerActionIfAbsent({
   id: "save-table-as-data",
   label: "Save to a table…",
   icon: Database,
@@ -211,7 +211,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "download-html",
   label: "Download as HTML page",
   icon: FileText,
@@ -236,7 +236,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "download-pdf",
   label: "Download as PDF",
   icon: FileDown,
@@ -267,7 +267,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   // A real .docx (Word) from the ONE print-grade document tree
   // (@ai-matrx/print/document, RC-B10) — the same tree the PDF/EPUB/HTML
   // exports render from, so headings, tables, captions and frontmatter page

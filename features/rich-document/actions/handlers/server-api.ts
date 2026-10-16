@@ -18,7 +18,7 @@ import {
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { getErrorMessage } from "../utils";
 
 /**
@@ -41,7 +41,7 @@ function getCompactionAnchor(
   return { compactionGroupId: groupId ?? undefined };
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-fork-at",
   label: "Fork at this message (server)",
   icon: GitFork,
@@ -83,7 +83,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-fork-before",
   label: "Fork BEFORE this message (server)",
   icon: GitFork,
@@ -125,7 +125,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-hide-from-model",
   label: "Hide this from model (server)",
   icon: EyeOff,
@@ -158,7 +158,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-delete-this",
   label: "Move this message to Trash (server)",
   icon: Trash2,
@@ -202,7 +202,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-delete-from-here",
   label: "Move this + everything after to Trash (server)",
   icon: Trash2,
@@ -246,7 +246,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-delete-dryrun",
   label: "Dry-run: move this + after to Trash (server)",
   icon: ListFilter,
@@ -295,7 +295,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-replace-with-summary",
   label: "Replace this with a summary… (server)",
   icon: Scissors,
@@ -362,7 +362,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "server-api-admin-restore-compaction",
   label: "Restore compaction (server)",
   icon: Undo2,

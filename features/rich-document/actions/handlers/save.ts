@@ -19,7 +19,7 @@ import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 import { CodeFilesAPI } from "@/features/code-files/service/codeFilesApi";
 import { setPendingSource } from "@/features/tasks/redux/taskUiSlice";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import {
   extractFirstCodeBlock,
   getErrorMessage,
@@ -96,7 +96,7 @@ function sourceToEntityType(source: ContentSource): {
   }
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "save-to-scratch",
   label: "Save to Scratch",
   icon: FileText,
@@ -132,7 +132,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-to-notes",
   label: "Save to Notes",
   icon: Save,
@@ -169,7 +169,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-code-to-scratch",
   label: "Save code to Scratch",
   icon: FileCode,
@@ -224,7 +224,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-to-code",
   label: "Save to Code",
   icon: FileCode,
@@ -259,7 +259,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-as-file",
   label: "Download as Markdown",
   icon: FileDown,
@@ -285,7 +285,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "add-to-docs",
   label: "Save to Document",
   icon: BookText,
@@ -332,7 +332,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "save-to-task",
   label: "Create Task",
   icon: CheckSquare,

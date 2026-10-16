@@ -25,7 +25,7 @@ import {
   setCompareBase,
   openCompareWithBase,
 } from "@/lib/redux/slices/diffCompareSlice";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { contentForDestination } from "../utils";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 
@@ -46,7 +46,7 @@ function sourceLabel(source: ContentSource): string {
   }
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "compare-with-clipboard",
   label: "Compare with clipboard",
   icon: Clipboard,
@@ -86,7 +86,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "set-compare-base",
   label: "Set as compare base",
   icon: Pin,
@@ -109,7 +109,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "compare-with-base",
   label: "Compare with base",
   icon: GitCompareArrows,

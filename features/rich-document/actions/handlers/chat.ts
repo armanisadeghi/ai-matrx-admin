@@ -14,7 +14,8 @@ import {
 } from "@ai-matrx/chat/agents/components/messages-display/assistant/continue-in-chat";
 import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { chatStateOf } from "../utils";
-import { getAction, registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
@@ -30,7 +31,7 @@ function continueHref(ctx: RichDocumentActionContext): string | null {
   return getEntityInfo("conversation").hrefFor?.(id) ?? null;
 }
 
-registerAction({
+registerActionIfAbsent({
   id: "continue-in-chat",
   label: "Continue in chat mode",
   icon: MessageSquareShare,
@@ -50,7 +51,7 @@ registerAction({
 
 // The latest answer's one-tap Regenerate (older answers use Fork) — an inline
 // door onto the SAME registry action the ⋯ menu carries (answer-tools.ts).
-registerAction({
+registerActionIfAbsent({
   id: "regenerate-latest",
   writesSource: true,
   label: "Regenerate answer",

@@ -11,12 +11,12 @@ import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { getMarkdownStylesheet } from "@ai-matrx/print/markdown";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { getErrorMessage, serializeError, contentForDestination } from "../utils";
 import { acknowledgedPreparedSource, prepareContentEdit, savePreparedContentEdit } from "./preparedEdit";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 
-registerAction({
+registerActionIfAbsent({
   id: "html-preview",
   label: "Publish HTML",
   icon: Eye,
@@ -99,7 +99,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "copy-html-page",
   label: "Copy HTML page",
   icon: Globe,
@@ -132,7 +132,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "email-to-me",
   label: "Email to me",
   icon: Mail,

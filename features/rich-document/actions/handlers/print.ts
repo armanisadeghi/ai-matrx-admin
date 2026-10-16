@@ -6,12 +6,12 @@
 
 import { Printer, ScanLine } from "lucide-react";
 import { printMarkdownContent } from "@ai-matrx/chat/conversation/utils/markdown-print";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { contentForPrint } from "../utils";
 // Each embedded block prints through its type's adapter (the one block-printer registry).
 import "@/features/canvas/artifact-types/artifact-printers";
 
-registerAction({
+registerActionIfAbsent({
   id: "print",
   label: "Print / Save PDF",
   icon: Printer,
@@ -38,7 +38,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "full-print",
   label: (ctx) => {
     const ext =

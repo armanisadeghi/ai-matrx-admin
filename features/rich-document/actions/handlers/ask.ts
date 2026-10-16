@@ -13,7 +13,7 @@ import { MessageSquareQuote, MessagesSquare } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { setContextEntries } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
 import { selectInstanceContextEntry } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.selectors";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import { chatIds, chatStateOf, deriveContentTitle } from "../utils";
 import { unwrapKindEnvelopes } from "@/lib/markdown/plain-text";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
@@ -65,7 +65,7 @@ function focusComposer(): void {
 const hasConversation = (ctx: RichDocumentActionContext) =>
   Boolean(chatIds(ctx).conversationId) && ctx.content.trim().length > 0;
 
-registerAction({
+registerActionIfAbsent({
   id: "ask-followup",
   label: "Ask a follow-up about this",
   icon: MessagesSquare,
@@ -84,7 +84,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "quote-into-chat",
   label: "Quote into chat",
   icon: MessageSquareQuote,

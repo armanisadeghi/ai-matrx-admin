@@ -9,14 +9,14 @@
 
 import { Forward } from "lucide-react";
 import { sendToAgentWindowAction } from "@/features/overlays/openers/sendToAgentWindow";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import {
   contentForDestination,
   deriveContentTitle,
   requireAuth,
 } from "../utils";
 
-registerAction({
+registerActionIfAbsent({
   id: "send-to-agent",
   label: "Send to another agent…",
   icon: Forward,

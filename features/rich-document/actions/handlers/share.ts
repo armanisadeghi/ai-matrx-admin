@@ -8,7 +8,7 @@
 import { durableRecordId } from "@ai-matrx/kit/ids";
 import { FileText, Globe } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import {
   chatIds,
   deriveContentTitle,
@@ -19,7 +19,7 @@ import {
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
-registerAction({
+registerActionIfAbsent({
   id: "share-webpage",
   label: "Share as webpage",
   icon: Globe,
@@ -73,7 +73,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   /**
    * A REAL Google Doc, not a clipboard payload. Same one path every other
    * surface uses — `features/google-workspace/export/sendToGoogle.ts` — so the

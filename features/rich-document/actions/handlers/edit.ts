@@ -20,7 +20,7 @@ import { Edit, History, GitBranch, Trash2, Send } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 import {
   chatExtensions,
   chatStateOf,
@@ -33,7 +33,7 @@ import { acknowledgedPreparedSource, prepareContentEdit, savePreparedContentEdit
 import { updateMessageRecord } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.slice";
 import { openEditInPlaceFromLastInteraction } from "@ai-matrx/rich-content/editor/in-place/EditInPlace";
 
-registerAction({
+registerActionIfAbsent({
   id: "edit",
   writesSource: true,
   label: (ctx) =>
@@ -178,7 +178,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "edit-history",
   writesSource: true,
   label: (ctx) => {
@@ -205,7 +205,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "fork-at-message",
   writesSource: true,
   label: "Fork at this message",
@@ -280,7 +280,7 @@ registerAction({
   },
 });
 
-registerAction({
+registerActionIfAbsent({
   id: "delete-message",
   writesSource: true,
   label: "Delete message",
@@ -304,7 +304,7 @@ registerAction({
  * (`USER_EDIT_ACTIONS` + `routeUserEditAction`). `onAction` rides the callback
  * group (a function can't travel through overlay data).
  */
-registerAction({
+registerActionIfAbsent({
   id: "edit-and-resubmit",
   writesSource: true,
   label: (ctx) =>
@@ -377,7 +377,7 @@ registerAction({
  * branch (no edit). The shared `forkAndResubmitFromMessage` thunk means the
  * branch never dead-ends on an unanswered question.
  */
-registerAction({
+registerActionIfAbsent({
   id: "fork-and-regenerate",
   writesSource: true,
   label: "Fork & regenerate from here",

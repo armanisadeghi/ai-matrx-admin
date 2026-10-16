@@ -4,9 +4,9 @@
 
 import { Bug } from "lucide-react";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
 
-registerAction({
+registerActionIfAbsent({
   id: "submit-feedback",
   label: "Submit feedback",
   icon: Bug,
