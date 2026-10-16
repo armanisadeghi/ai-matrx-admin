@@ -40,6 +40,7 @@ import {
   isGenericFlashcardTitle,
 } from "@/features/flashcards/utils/deckName";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
+import type { BlockControlsHandle } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 export type LayoutMode = "grid" | "list";
 
@@ -276,6 +277,8 @@ interface FlashcardsSetBodyProps {
   hasStreamingCard: boolean;
   /** Window panel: edge-to-edge grid, no outer padding. */
   compact?: boolean;
+  /** Block Controls for the set (null/absent = this surface cannot save). */
+  controls?: BlockControlsHandle | null;
 }
 
 export function FlashcardsSetBody({
@@ -284,7 +287,11 @@ export function FlashcardsSetBody({
   layoutMode,
   hasStreamingCard,
   compact = false,
+  controls = null,
 }: FlashcardsSetBodyProps) {
+  // A card gets its edit button only when the controls' row at that place is this card (a card the
+  // parser dropped, such as one with no answer in the middle of the set, would shift the places).
+  const controlRows = (controls?.model.rows as { front?: string }[] | undefined) ?? [];
   return (
     <div
       className={cn(
@@ -303,6 +310,7 @@ export function FlashcardsSetBody({
           layoutMode={layoutMode}
           additionalDetails={card.additionalDetails}
           subcards={card.subcards}
+          controls={controlRows[index]?.front === (card.front ?? "") ? controls : null}
         />
       ))}
 

@@ -7,6 +7,8 @@ import { resolveJsonPayload, artifactDedupKey } from "../artifact-renderers";
 import MultipleChoiceQuiz from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
 import { normalizeRawQuizJSON } from "@/components/mardown-display/blocks/quiz/quiz-parser";
 import type { ArtifactRendererProps } from "../types";
+import { useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 // Default export at components/mardown-display/blocks/quiz/MultipleChoiceQuiz.tsx
 // Props: quizData, taskId?, conversationId?, messageId?, blockIndex?, sessionId?,
 //        enableAutoSave?, autoSaveInterval?, showCanvasButton?, className?
@@ -34,6 +36,8 @@ export default function QuizArtifact(props: ArtifactRendererProps) {
     blockIndex,
   } = props;
 
+  // Block Controls: present only where this surface can save the quiz (never on a read-only render).
+  const controls = useBlockControls("quiz", typeof raw === "string" ? raw : "", useBlockEdit());
   const payload = useMemo(() => {
     const candidate = resolveJsonPayload<unknown>({
         serverData,
@@ -58,6 +62,7 @@ export default function QuizArtifact(props: ArtifactRendererProps) {
         conversationId={conversationId}
         messageId={messageId}
         blockIndex={blockIndex}
+        controls={controls}
       />
     </Suspense>
   );

@@ -8,6 +8,8 @@ import { durableRecordId } from "@ai-matrx/kit/ids";
 import { useBlockState } from "@/features/block-state/useBlockState";
 import QuestionnaireRenderer from "@/components/mardown-display/blocks/questionnaire/QuestionnaireRenderer";
 import type { ArtifactRendererProps } from "../types";
+import { useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 interface QuestionnaireState extends Record<string, unknown> {
   formState?: Record<string, unknown>;
   /** What the person submitted (the answers chip is derived from it). */
@@ -49,6 +51,8 @@ export default function QuestionnaireArtifact({
     },
   });
 
+  // Block Controls: present only where this surface can save the questionnaire (never on a read-only render).
+  const controls = useBlockControls("questionnaire", typeof raw === "string" ? raw : "", useBlockEdit());
   const parsed = useMemo(
     () =>
       resolveMarkdownPayload<unknown>({
@@ -78,6 +82,7 @@ export default function QuestionnaireArtifact({
         blockIndex={blockIndex}
         initialState={state ?? undefined}
         onStateChange={save as (s: QuestionnaireState) => void}
+        controls={controls}
       />
     </Suspense>
   );

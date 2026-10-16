@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { BookOpen, Database, Printer } from "lucide-react";
 import MathProblem from "@/features/math/components/MathProblem";
 import { MathProblemProps } from "@/features/math/types";
@@ -10,17 +10,27 @@ import ContentBlockWrapper from "@ai-matrx/rich-content/display/blocks/common/Co
 import { mathPrinter } from "./math-printer";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { PrintOptionsDialog, usePrintOptions } from "@ai-matrx/print/react";
+import {
+    BlockControlsButton,
+    type BlockControlsHandle,
+} from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 interface MathProblemBlockProps {
     problemData: {
         math_problem: Omit<MathProblemProps, "id">;
     };
     artifactId?: string;
+    /** Block Controls for the problem (null/absent = this surface cannot save: no controls). */
+    controls?: BlockControlsHandle | null;
 }
 
-const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initialProblemData, artifactId }) => {
+const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initialProblemData, artifactId, controls = null }) => {
     // State to handle uploaded problems
     const [problemData, setProblemData] = useState(initialProblemData);
+    // The problem's source changed (an edit through the controls, or a new version): show it.
+    useEffect(() => {
+        setProblemData(initialProblemData);
+    }, [initialProblemData]);
     
     // Normalize LaTeX content to fix common AI mistakes (memoized to avoid re-processing)
     const normalizedProblemData = useMemo(
@@ -82,6 +92,7 @@ const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initia
             onUpload={handleUpload}
             customActions={customActions}
             allowFullscreen={true}
+            headerContent={<BlockControlsButton controls={controls} title="Math problem controls" />}
             className="my-4"
             contentClassName="max-w-4xl mx-auto"
         >

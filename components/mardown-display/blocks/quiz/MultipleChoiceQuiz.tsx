@@ -62,9 +62,23 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import {
+  BlockControlsButton,
+  InlineRowPopover,
+  type BlockControlsHandle,
+} from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 // Legacy type for backwards compatibility
 export type Question = OriginalQuestion;
+
+/** True when `next` is not the same quiz as `prev` plus growth (it differs in a question the player already holds). */
+function quizWasEdited(prev: OriginalQuestion[], next: OriginalQuestion[]): boolean {
+  if (next.length < prev.length) return true;
+  return prev.some((q, i) => {
+    const n = next[i];
+    return !n || n.id !== q.id || n.question !== q.question || n.explanation !== q.explanation || n.correctAnswer !== q.correctAnswer || n.options.length !== q.options.length || n.options.some((o, k) => o !== q.options[k]);
+  });
+}
 
 interface MultipleChoiceQuizProps {
   quizData: RawQuizJSON;
@@ -80,12 +94,20 @@ interface MultipleChoiceQuizProps {
   messageId?: string;
   /** Position of this block within the message content array (hint for location). */
   blockIndex?: number;
+  /** Block Controls for this quiz (null/absent = the surface cannot save: no controls). */
+  controls?: BlockControlsHandle | null;
 }
 
 // Component for expandable question text
-const QuestionText: React.FC<{ question: string; isFullScreen: boolean }> = ({
+const QuestionText: React.FC<{
+  question: string;
+  isFullScreen: boolean;
+  /** Set when the surface can save: a click on the question opens its inline editor at the click. */
+  onEdit?: (at: { x: number; y: number }) => void;
+}> = ({
   question,
   isFullScreen,
+  onEdit,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -108,9 +130,19 @@ const QuestionText: React.FC<{ question: string; isFullScreen: boolean }> = ({
     return () => window.removeEventListener("resize", checkOverflow);
   }, [question, isExpanded, isFullScreen]);
 
+  const editProps = onEdit
+    ? {
+        title: "Edit question",
+        "data-control-field": "question",
+        onClick: (e: React.MouseEvent<HTMLHeadingElement>) => {
+          const box = e.currentTarget.closest("[data-quiz-edit-anchor]")?.getBoundingClientRect();
+          onEdit({ x: e.clientX - (box?.left ?? 0), y: e.clientY - (box?.top ?? 0) });
+        },
+      }
+    : {};
   if (isFullScreen) {
     return (
-      <h2 className="text-lg font-bold mb-3 leading-tight">
+      <h2 className={`text-lg font-bold mb-3 leading-tight ${onEdit ? "cursor-text rounded hover:bg-muted" : ""}`} {...editProps}>
         <InlineLatexRenderer content={question} />
       </h2>
     );
@@ -122,7 +154,8 @@ const QuestionText: React.FC<{ question: string; isFullScreen: boolean }> = ({
         ref={textRef}
         className={`text-base font-bold leading-tight transition-all duration-200 ${
           isExpanded ? "" : "line-clamp-2"
-        }`}
+        } ${onEdit ? "cursor-text rounded hover:bg-muted" : ""}`}
+        {...editProps}
       >
         <InlineLatexRenderer content={question} />
       </h2>
@@ -209,6 +242,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   conversationId,
   messageId,
   blockIndex,
+  controls = null,
 }) => {
   // Canvas integration
   const { open: openCanvas } = useCanvas();
@@ -224,6 +258,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     triggerPrint,
   } = usePrintOptions(quizPrinter, quizData);
 
+  const editable = controls !== null;
   // Parse quiz data and extract metadata
   const [parsedQuiz, setParsedQuiz] = useState<{
     questions: Question[];
@@ -259,6 +294,8 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     Date.now(),
   );
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // The question being edited on the render (Block Controls inline edit): which row and where it opened.
+  const [questionEdit, setQuestionEdit] = useState<{ x: number; y: number } | null>(null);
 
   // Initialize state when quiz is parsed — and GROW it as more questions
   // stream in (streaming partial kinds: the value only ever grows, so new
@@ -266,12 +303,15 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   // anything already dealt; see appendNewQuestions).
   useEffect(() => {
     if (!parsedQuiz) return;
-    setQuizState((prev) =>
-      prev
-        ? appendNewQuestions(prev, parsedQuiz.questions)
-        : initializeQuizState(parsedQuiz.questions),
-    );
-  }, [parsedQuiz]);
+    setQuizState((prev) => {
+      if (!prev) return initializeQuizState(parsedQuiz.questions);
+      // On a surface that can edit, a change that is not growth (an explanation, the right answer,
+      // a removed or moved question) is the person editing the quiz itself: it starts a fresh session
+      // on the edited quiz, since the old session answered different questions.
+      if (editable && quizWasEdited(prev.originalQuestions, parsedQuiz.questions)) return initializeQuizState(parsedQuiz.questions);
+      return appendNewQuestions(prev, parsedQuiz.questions);
+    });
+  }, [parsedQuiz, editable]);
 
   // The quiz session is the block's saved state (platform.block_states through the
   // ONE block-state hook) — held by the answer it is in, not by a content hash.
@@ -296,11 +336,13 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     if (restored || !savedLoaded || !parsedQuiz || !quizState) return;
     setRestored(true);
     const saved = savedBlock?.quizState;
-    if (saved && Array.isArray(saved.randomizedQuestions) && saved.progress) {
+    // An edited quiz does not take back the session saved for its earlier text.
+    const savedIsThisQuiz = !editable || !saved || !Array.isArray(saved.originalQuestions) || !quizWasEdited(saved.originalQuestions, parsedQuiz.questions);
+    if (savedIsThisQuiz && saved && Array.isArray(saved.randomizedQuestions) && saved.progress) {
       setQuizState(saved);
       if (saved.results) setShowResults(true);
     }
-  }, [restored, savedLoaded, savedBlock, parsedQuiz, quizState]);
+  }, [restored, savedLoaded, savedBlock, parsedQuiz, quizState, editable]);
 
   // ESC key handler to exit fullscreen
   useEffect(() => {
@@ -348,6 +390,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
 
   const currentQuestionIndex = quizState.progress.currentQuestionIndex;
   const currentQuestion = quizState.randomizedQuestions[currentQuestionIndex];
+  // The controls' question row for the one on screen (rows carry the quiz's own ids).
+  const questionRowIndex = controls
+    ? ((controls.model.questions as { id?: number }[] | undefined) ?? []).findIndex((row) => row.id === currentQuestion?.id)
+    : -1;
   const selectedAnswer = quizState.progress.answers[currentQuestionIndex];
   const isAnswered = selectedAnswer !== undefined;
   const isCorrect = selectedAnswer?.isCorrect ?? false;
@@ -722,10 +768,22 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               )}
             </div>
           </div>
-          <QuestionText
-            question={currentQuestion.question}
-            isFullScreen={isFullScreen}
-          />
+          <div data-quiz-edit-anchor="" className="relative">
+            <QuestionText
+              question={currentQuestion.question}
+              isFullScreen={isFullScreen}
+              onEdit={controls ? setQuestionEdit : undefined}
+            />
+            {controls && questionEdit && questionRowIndex >= 0 && (
+              <InlineRowPopover
+                controls={controls}
+                rowsKey="questions"
+                index={questionRowIndex}
+                at={questionEdit}
+                onClose={() => setQuestionEdit(null)}
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -973,6 +1031,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           )}
         </div>
       )}
+      <BlockControlsButton controls={controls} title="Quiz controls" />
       <Button
         variant="quiet"
         icon={<Printer />}

@@ -39,6 +39,10 @@ import {
 } from "./QuestionnaireContext";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { questionnaireAnswers } from "./questionnaire-answers";
+import {
+  BlockControlsButton,
+  type BlockControlsHandle,
+} from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 export type QuestionOption = { name: string };
 
@@ -79,6 +83,8 @@ interface QuestionnaireRendererProps {
   blockIndex?: number;
   initialState?: { formState?: Record<string, unknown>; submittedAnswers?: unknown };
   onStateChange?: (state: QuestionnaireStatePayload) => void;
+  /** Block Controls for the questionnaire (null/absent = this surface cannot save: no controls). */
+  controls?: BlockControlsHandle | null;
 }
 
 // Helper function to check if an option is an "Other" option
@@ -998,6 +1004,7 @@ const QuestionnaireRendererBody = ({
   // Absent when rendered standalone (demos/playground) → no persistence.
   initialState = undefined,
   onStateChange = undefined,
+  controls = null,
 }: QuestionnaireRendererProps) => {
   // Generate a unique ID for this questionnaire if not provided
   const uniqueId =
@@ -1149,6 +1156,11 @@ const QuestionnaireRendererBody = ({
             active={debugMode}
             onClick={() => setDebugMode((prev) => !prev)}
           />
+        ) : null}
+        {controls ? (
+          <div className="flex justify-end">
+            <BlockControlsButton controls={controls} title="Questionnaire controls" />
+          </div>
         ) : null}
         {/* Questionnaire Header with Title and Intro */}
         <QuestionnaireHeader
