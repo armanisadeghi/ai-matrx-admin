@@ -142,6 +142,8 @@ const DELETED = [
   "features/window-panels/components/WindowSidebar.tsx",
   "features/window-panels/components/LayoutIcon.tsx",
   "components/matrx/resizable/MatrxFloatingFrame.tsx",
+  // Superseded by the unified Audio window (audioControlWindow, Devices tab) — lead ruling 2026-10-16.
+  "features/window-panels/windows/AudioDevicesWindow.tsx",
   "utils/callbackManager.ts",
   "hooks/useCallbackManager.ts",
   "hooks/useOrchestrateSave.ts",
@@ -461,7 +463,44 @@ function emitDefinitions(): void {
     const from = `features/overlays/boundary/${f}`;
     if (exists(from) && !exists(`${HOST}/${f}`)) write(`${HOST}/${f}`, read(from));
   }
+  removeSupersededOverlays();
   fs.rmSync(tmp, { recursive: true, force: true });
+}
+
+/**
+ * Overlays superseded before the switch: no definition is emitted. Their opener code stays (as a
+ * plain module under the same old names) when it opens another overlay. audioDevices: the
+ * standalone devices window is superseded by the unified Audio window; its opener already opens
+ * audioControlWindow on the Devices tab, so callers keep `useOpenAudioDevices` unchanged.
+ */
+const SUPERSEDED: Record<string, { keepOpenerAs?: string }> = { audioDevices: { keepOpenerAs: "audioDevices" } };
+function removeSupersededOverlays(): void {
+  for (const [id, plan] of Object.entries(SUPERSEDED)) {
+    const defFile = [`${DEFS}/${id}.overlay.tsx`, `${DEFS}/${id}.overlay.ts`].find(exists);
+    if (!defFile) throw new Error(`[switch] superseded overlay ${id}: no definition emitted`);
+    if (plan.keepOpenerAs) {
+      const t = read(defFile);
+      const cut = t.indexOf("\n// ── definition (@ai-matrx/overlays)");
+      if (cut < 0) throw new Error(`[switch] superseded overlay ${id}: definition marker not found`);
+      if (/overlayId:\s*["']${id}["']|OVERLAY_ID = "${id}"/.test(t.slice(0, cut))) throw new Error(`[switch] ${id}: the kept opener still opens ${id}`);
+      const opener =
+        t
+          .slice(0, cut)
+          .replace(/^import \{ defineOverlay \} from "@ai-matrx\/overlays\/react";\n/m, "")
+          .replace(/^import type \{ OverlayWire \} from "\.\/overlay-types";\n/m, "")
+          .replace(/\s*$/, "\n");
+      write(`${DEFS}/${plan.keepOpenerAs}${path.extname(defFile)}`, opener);
+      openerHome.set(id, plan.keepOpenerAs);
+    }
+    for (const f of [defFile, `${DEFS}/${id}.render.tsx`, `${DEFS}/${id}.link.ts`]) if (exists(f)) fs.rmSync(abs(f));
+    patch(`${DEFS}/registry.ts`, (t) => t.replace(`import { ${id}Overlay } from "./${id}.overlay";\n`, "").replace(`  ${id}Overlay,\n`, ""));
+    patch(`${DEFS}/overlay-ids.ts`, (t) => t.replace(`  ${id}: true,\n`, ""));
+    resolve(`${id}: superseded overlay removed (no definition, render module or registry row; its window component deleted)${plan.keepOpenerAs ? `; opener kept as ${DEFS}/${plan.keepOpenerAs} (it opens the replacement)` : ""}`);
+  }
+  // generated record-page census rows for the deleted window component
+  const row = "window:features/window-panels/windows/AudioDevicesWindow.tsx";
+  patch("lib/record-pages/record-pages.generated.json", (t) => t.replace(new RegExp(`\\n  "${row.replace(/[/.]/g, "\\$&")}": \\{[^}]*\\},`), ""));
+  patch("lib/record-pages/pending.json", (t) => t.replace(`\n  "${row}",`, ""));
 }
 
 // ── C. host wiring ───────────────────────────────────────────────────────────────────────────
