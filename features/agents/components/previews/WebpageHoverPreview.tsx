@@ -62,7 +62,6 @@ interface WebpageHoverPreviewProps {
   children: React.ReactElement;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  className?: string;
 }
 
 export function WebpageHoverPreview({ url, title, snippet, children, side = "top", align = "start" }: WebpageHoverPreviewProps) {

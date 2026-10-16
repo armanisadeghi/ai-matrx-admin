@@ -81,7 +81,6 @@ interface DataRefHoverPreviewProps {
   children: React.ReactElement;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  className?: string;
 }
 
 export function DataRefHoverPreview({ dataRef, children, side = "top", align = "start" }: DataRefHoverPreviewProps) {

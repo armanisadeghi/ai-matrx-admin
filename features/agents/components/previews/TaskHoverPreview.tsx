@@ -61,7 +61,6 @@ interface TaskHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  className?: string;
 }
 
 export function TaskHoverPreview({ taskId, children, side = "top", align = "start", onOpen }: TaskHoverPreviewProps) {

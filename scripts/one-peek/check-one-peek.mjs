@@ -24,6 +24,9 @@
  * that exception is itself an item (`peek-exception|<file>`) on the same shrink-only ratchet, so a
  * new one is NEW and gets looked at; it is never a free pass.
  *
+ * A file that renders one of THE peek's hosts (`<PeekHoverCard`, `<PeekPopover`, `<PeekWindow`) is using the one
+ * peek too (a router that wraps preview adapters), like a file rendering `<Peek`.
+ *
  * An adapter that renders `<Peek …>` is the intended pattern (`function AgentPeek() { return
  * <PeekHoverCard …><Peek record={…} /></PeekHoverCard> }`) and is never reported.
  *
@@ -84,7 +87,7 @@ const PEEK_NAME = /(Peek|HoverPreview|HoverCard|DetailCard|QuickLook)(Card|Body|
 const DECLARE_RE =
   /(?:export\s+)?(?:default\s+)?(?:function\s+([A-Z]\w*)|class\s+([A-Z]\w*)|const\s+([A-Z]\w*)\s*(?::[^=]+)?=\s*(?:React\.)?(?:forwardRef|memo|\(|function|\w+\s*=>))/g;
 /** The file renders the one peek: its peek-named components are adapters, the intended pattern. */
-const RENDERS_PEEK = /<Peek[\s/>]/;
+const RENDERS_PEEK = /<Peek(?:HoverCard|Popover|Window)?[\s/>]/;
 
 function hoverContentNames(text) {
   const names = new Set();
@@ -260,6 +263,9 @@ function selfTest() {
       // The intended adapter: a peek-named component that renders <Peek>.
       "features/agents/AgentPeek.tsx":
         'import { Peek, PeekHoverCard } from "@ai-matrx/design-system";\nexport function AgentPeek() { return (<PeekHoverCard trigger={<b />}><Peek record={{ kind: "Agent", id: "1", title: "t" }} /></PeekHoverCard>); }\n',
+      // A router: puts the host around adapters that render <Peek>, never renders <Peek> itself.
+      "features/agents/BlockHoverPreview.tsx":
+        'import { PeekHoverCard } from "@ai-matrx/design-system";\nimport { AgentPreview } from "./AgentPreview";\nexport function BlockHoverPreview() { return (<PeekHoverCard trigger={<b />}><AgentPreview /></PeekHoverCard>); }\n',
       // The ways around: Radix directly, a ui index, a name with the word inside, a bare arrow, a class.
       "features/sneaky/Around.tsx":
         'import * as HoverCardPrimitive from "@radix-ui/react-hover-card";\nimport { HoverCardContent } from "@/components/ui";\nexport const x = (<><HoverCardPrimitive.Content /><HoverCardContent /></>);\nexport const AgentPeekCard = props => <div />;\nexport class NotePeekPanel {}\nexport function AgentPeekButton() { return null; }\n',

@@ -59,7 +59,6 @@ interface NoteHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  className?: string;
 }
 
 export function NoteHoverPreview({ noteId, children, side = "top", align = "start", onOpen }: NoteHoverPreviewProps) {

@@ -82,7 +82,6 @@ interface ConversationHoverPreviewProps {
   align?: "start" | "center" | "end";
   /** When provided, the "Open" button calls this instead of navigating. */
   onOpen?: () => void;
-  className?: string;
 }
 
 /**

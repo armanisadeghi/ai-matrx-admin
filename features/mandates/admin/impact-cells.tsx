@@ -33,7 +33,6 @@ import {
   PopoverTrigger,
   type PeekBlock,
   type PeekRecord,
-  type PeekTone,
 } from "@ai-matrx/design-system";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
 import {
@@ -61,6 +60,7 @@ import {
   type StandingImpact,
 } from "./impact";
 import type { ImpactWriteBusy } from "./impact-advance";
+import { verdictPeekBlocks } from "./verdict-peek";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
@@ -156,67 +156,6 @@ export function VerdictDetail({ verdict }: { verdict: ImpactVerdict }) {
       ) : null}
     </div>
   );
-}
-
-const GRADE_TONE: Record<ImpactVerdict["grade"], PeekTone> = {
-  identical: "neutral",
-  green: "success",
-  orange: "warning",
-  red: "danger",
-};
-
-/** One verdict as Peek blocks — the hover's twin of VerdictDetail (same words, same order). */
-function verdictPeekBlocks(verdict: ImpactVerdict, heading: string): PeekBlock[] {
-  const settings = settingsSignalOf(verdict);
-  const reason = setAsideReasonOf(verdict);
-  const eligibility = batchEligibilityOf(verdict);
-  const tooYoung = tooYoungReasonOf(verdict);
-  const findings = changeFindingsOf(verdict);
-  const blocks: PeekBlock[] = [
-    {
-      section: heading,
-      tone: GRADE_TONE[verdict.grade],
-      text: `${GRADE_META[verdict.grade].label} · ${verdict.holder_kind === "binding" ? `${verdict.principal.kind} binding` : "mandate default"}`,
-    },
-    { property: "Versions", value: `${pinnedLabelOf(verdict)} → ${newestLabelOf(verdict)}` },
-  ];
-  blocks.push(
-    findings.length > 0
-      ? {
-          section: "Findings",
-          rows: findings.map((finding) => ({
-            text: finding.message,
-            tone: finding.grade === "red" ? "danger" : finding.grade === "orange" ? "warning" : "success",
-          })),
-        }
-      : {
-          fact:
-            verdict.grade === "identical"
-              ? "No change between these versions affects a run."
-              : "The server graded this row but listed no finding.",
-          muted: true,
-          wrap: true,
-        },
-  );
-  if (settings.state !== "clean") {
-    blocks.push({
-      section: "Settings",
-      tone: "warning",
-      text: `${settings.state === "unmeasured" ? "UNMEASURED — " : ""}${settings.sentence}`,
-    });
-  }
-  if (tooYoung) blocks.push({ fact: `Not automatic — ${tooYoung}.`, muted: true, wrap: true });
-  if (verdict.blocker) {
-    blocks.push({
-      fact: `${BLOCKER_META[verdict.blocker].label}: ${BLOCKER_META[verdict.blocker].meaning}${reason ? ` “${reason}”` : ""}`,
-      muted: true,
-      wrap: true,
-    });
-  }
-  if (!eligibility.batchable) {
-    blocks.push({ fact: `Not in a batch — ${eligibility.why}`, muted: true, wrap: true });
-  }
-  return blocks;
 }
 
 export function ImpactGradeCell({
