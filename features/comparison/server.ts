@@ -92,6 +92,9 @@ export async function getRun(runId: string, opts: Ctx): Promise<ComparisonRunSta
     ({ data } = await getJson<unknown>(`${BASE}/runs/${encodeURIComponent(runId)}`, {
       organizationId: org(opts.organizationId),
       signal: opts.signal,
+      // a run not open to this person, or a busy moment while following one, is answered on the
+      // page (asRefusal) — never reported as an app failure
+      captureErrors: false,
     }));
   } catch (err) {
     throw asRefusal(err);

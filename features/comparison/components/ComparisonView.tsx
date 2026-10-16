@@ -219,7 +219,7 @@ function FieldCard({ field, result }: { field: CompareField; result: ComparisonR
               <span className="h-2 overflow-hidden rounded-full bg-muted" title={v?.basis || undefined}>
                 {frac !== null ? (
                   <span className={cn("block h-full rounded-full transition-[width] duration-700 ease-out",
-                    v?.is_best ? "bg-primary" : "bg-muted-foreground")} style={{ width: `${Math.max(frac * 100, 2)}%` }} />
+                    v?.is_best ? "bg-primary" : "bg-primary/35")} style={{ width: `${Math.max(frac * 100, 2)}%` }} />
                 ) : null}
               </span>
               <span className={cn("w-14 text-right tabular-nums", v?.is_best ? "font-semibold text-foreground" : "text-foreground",
