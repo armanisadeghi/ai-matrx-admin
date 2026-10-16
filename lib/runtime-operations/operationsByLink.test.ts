@@ -12,12 +12,17 @@ jest.mock("@/utils/supabase/client", () => ({
         const q: any = {
           select: () => q,
           eq: (k: string, v: unknown) => ((call.eq[k] = v), q),
-          in: (_k: string, ids: string[]) => ((q._ids = ids), q),
+          in: (k: string, ids: string[]) => ((q._in = { k, ids }), (q._ids = k === "id" ? ids : undefined), q),
+          is: (k: string, v: unknown) => ((q._is = { k, v }), q),
           order: () => q,
           limit: () => q,
           then: (res: (v: unknown) => unknown) =>
             res({
-              data: q._ids ? rows.filter((r) => q._ids.includes(r.id)) : rows.filter((r) => r.link_id === call.eq.link_id),
+              data: q._in
+                ? rows.filter(
+                    (r) => q._in.ids.includes(r[q._in.k]) && (!q._is || (r[q._is.k] ?? null) === q._is.v),
+                  )
+                : rows.filter((r) => r.link_id === call.eq.link_id),
               error: null,
             }),
         };
@@ -64,4 +69,24 @@ it("conversation: collapses a child link to its root", async () => {
 it("nothing linked answers an empty list", async () => {
   rows = [];
   expect((await fetchOperationsByLink("rs_topic", "none")).operation_count).toBe(0);
+});
+
+it("a superseded auto run is hidden when the work opened its own root for that request", async () => {
+  rows = [
+    { ...base, id: "auto", request_id: "R1", root_execution_id: "auto", status: "completed", link_kind: "doc", link_id: "D", created_at: "2026-01-02", stream_mode: "auto" },
+    { ...base, id: "real", request_id: "R1", root_execution_id: "real", status: "completed", link_kind: "doc", link_id: "D", created_at: "2026-01-01", stream_mode: null },
+    // an auto run with no root of its own for its request stays visible
+    { ...base, id: "lone", request_id: "R2", root_execution_id: "lone", status: "running", link_kind: "doc", link_id: "D", created_at: "2026-01-03", stream_mode: "auto" },
+  ];
+  const out = await fetchOperationsByLink("doc", "D");
+  expect(out.operations.map((o) => o.execution_id).sort()).toEqual(["lone", "real"]);
+});
+
+it("a superseded auto run still shows under a conversation link (server rule: non-conversation only)", async () => {
+  rows = [
+    { ...base, id: "auto", request_id: "R1", root_execution_id: "auto", status: "completed", link_kind: "conversation", link_id: "C2", created_at: "2026-01-02", stream_mode: "auto" },
+    { ...base, id: "real", request_id: "R1", root_execution_id: "real", status: "completed", link_kind: "x", link_id: "o", created_at: "2026-01-01", stream_mode: null },
+  ];
+  const out = await fetchOperationsByLink("conversation", "C2");
+  expect(out.operations.map((o) => o.execution_id)).toEqual(["auto"]);
 });

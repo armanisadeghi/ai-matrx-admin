@@ -13,7 +13,7 @@ const TERMINAL = new Set(["completed", "failed", "cancelled"]);
 const COLLAPSES_TO_ROOT = new Set(["conversation"]);
 
 const COLUMNS =
-  "id, request_id, root_execution_id, parent_execution_id, type, status, cost, meters, link_kind, link_id, error, created_at, started_at, ended_at";
+  "id, request_id, root_execution_id, parent_execution_id, type, status, cost, meters, link_kind, link_id, error, created_at, started_at, ended_at, stream_mode:context->stream_run->>mode";
 
 interface ExecutionRow {
   id: string;
@@ -30,6 +30,8 @@ interface ExecutionRow {
   created_at: string | null;
   started_at: string | null;
   ended_at: string | null;
+  /** `context.stream_run.mode`: "auto" marks a stream's auto run. */
+  stream_mode?: string | null;
 }
 
 export interface LinkedOperation {
@@ -92,6 +94,33 @@ function activeFirst<T extends { status: string }>(rows: T[]): T[] {
   );
 }
 
+const isAutoRoot = (r: ExecutionRow) => r.parent_execution_id == null && r.stream_mode === "auto";
+
+/**
+ * Same rule as the server's `_without_superseded_auto_runs`: a stream's AUTO run
+ * is hidden once the work opened its own (non-auto) root for the same request.
+ * If the request has no other root, the auto run stays.
+ */
+async function withoutSupersededAutoRuns(
+  runtime: ReturnType<ReturnType<typeof createClient>["schema"]>,
+  rows: ExecutionRow[],
+): Promise<ExecutionRow[]> {
+  const autos = rows.filter((r) => isAutoRoot(r) && r.request_id);
+  if (!autos.length) return rows;
+  const requestIds = [...new Set(autos.map((r) => r.request_id as string))];
+  const res = await runtime
+    .from("global_execution")
+    .select("id, request_id, parent_execution_id, stream_mode:context->stream_run->>mode")
+    .in("request_id", requestIds)
+    .is("parent_execution_id", null);
+  if (res.error) throw operationFailed("look up this record's running work", res.error);
+  const withOwnRoot = new Set<string>();
+  for (const r of (res.data ?? []) as unknown as ExecutionRow[]) {
+    if (r.request_id && r.stream_mode !== "auto") withOwnRoot.add(r.request_id);
+  }
+  return rows.filter((r) => !(isAutoRoot(r) && r.request_id && withOwnRoot.has(r.request_id)));
+}
+
 export async function fetchOperationsByLink(
   linkKind: string,
   linkId: string,
@@ -106,10 +135,11 @@ export async function fetchOperationsByLink(
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) throw operationFailed("look up this record's running work", error);
-  const linked = (data ?? []) as unknown as ExecutionRow[];
+  const fetched = (data ?? []) as unknown as ExecutionRow[];
   const cap = Math.max(1, limit);
 
   if (!COLLAPSES_TO_ROOT.has(linkKind)) {
+    const linked = await withoutSupersededAutoRuns(runtime, fetched);
     const ordered = activeFirst(linked).slice(0, cap);
     const rootIds = [
       ...new Set(ordered.map((r) => r.root_execution_id ?? r.id).filter((id) => !ordered.some((o) => o.id === id))),
@@ -124,6 +154,7 @@ export async function fetchOperationsByLink(
     return { link_kind: linkKind, link_id: linkId, operation_count: operations.length, operations };
   }
 
+  const linked = fetched;
   const rootIds = [...new Set(linked.map((r) => r.root_execution_id ?? r.id))];
   let roots: ExecutionRow[] = linked.filter((r) => r.parent_execution_id == null);
   const missing = rootIds.filter((id) => !roots.some((r) => r.id === id));
