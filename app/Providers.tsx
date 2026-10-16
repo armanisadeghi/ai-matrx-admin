@@ -25,8 +25,6 @@ import React from "react";
 import { ComingSoonClient } from "@/lib/coming-soon/ComingSoonClient";
 // The formatted-text engine's host (@ai-matrx/rich-content): a client wrapper configures it before any child renders.
 import { RichContentHostProvider } from "@/providers/RichContentHostProvider";
-// The Sheets service's host ports (@ai-matrx/office/sheets), stated once before any child renders.
-import "@/lib/sheets-host";
 // disaster
 import StoreProvider from "@/providers/StoreProvider";
 import { CanvasHostProvider } from "@/features/canvas/host/CanvasHostProvider";

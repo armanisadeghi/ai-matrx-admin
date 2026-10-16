@@ -22,6 +22,8 @@
 
 "use client";
 
+// The Sheets service's host ports (@ai-matrx/office/sheets), stated once on the client before any child renders.
+import "@/lib/sheets-host";
 import {
   makeStore as makeSlimStore,
   type AppStore as SlimAppStore,
