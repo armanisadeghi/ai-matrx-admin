@@ -48,6 +48,13 @@ describe("requestModelView sends the run's own definition", () => {
     expect(body.prompt_blocks).toBeUndefined();
   });
 
+  it("carries the run's template_message_count, 0 included, so the server fills the same messages", async () => {
+    const two = await run({ ai_model_id: "m", template_message_count: 2 }, []);
+    expect(two.template_message_count).toBe(2);
+    const none = await run({ ai_model_id: "m", template_message_count: 0 }, []);
+    expect(none.template_message_count).toBe(0);
+  });
+
   it("says the server is behind when a 200 carries no captured request", async () => {
     await expect(run({ ai_model_id: "m" }, [], { ok: true })).rejects.toThrow(SERVER_BEHIND_MESSAGE);
   });
