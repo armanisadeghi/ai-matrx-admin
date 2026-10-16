@@ -34,8 +34,8 @@ jest.mock("@/lib/list-scope", () => ({
 import {
   appendDraftRuleFromMessage,
   deriveRuleNameFromContent,
-  precedingQuestion,
 } from "../service";
+import { precedingQuestion } from "../precedingQuestion";
 import { ruleState } from "../../types";
 import type { Rulebook } from "../../types";
 
