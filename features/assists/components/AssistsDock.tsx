@@ -56,7 +56,7 @@ import {
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useShellCounts } from "@/lib/boot/shellCounts";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAccessToken,
@@ -84,9 +84,6 @@ import {
   QUIET_WINDOWS,
   type QuietWindowKey,
 } from "../quiet";
-
-/** A window-focus re-read of the person's assists happens at most this often. */
-const ASSISTS_FOCUS_REFETCH_MS = 5 * 60_000;
 
 export default function AssistsDock() {
   const dispatch = useAppDispatch();
@@ -116,24 +113,25 @@ export default function AssistsDock() {
     !isMobile,
   );
 
-  // Assists are informational: the first read waits for the late tier (well after paint), and a
-  // window-focus re-read happens at most once per ASSISTS_FOCUS_REFETCH_MS.
-  const lateReady = useLateIdleReady();
-  const lastReadAt = useRef(0);
+  // Assists are informational. The shell's ONE count read (`lib/boot/shellCounts`, after the page
+  // settles) says whether any exist; the list loads only then. A later count read (window focus,
+  // the 5-minute visible refresh) re-reads the list when it can have changed.
+  const shell = useShellCounts();
+  const shellAssists = shell.data?.assists ?? null;
+  const shellAt = shell.dataUpdatedAt;
+  const lastShellAt = useRef<number | null>(null);
   useEffect(() => {
-    if (!authReady || !userId || !accessToken || !lateReady) return;
+    if (!authReady || !userId || !accessToken || shellAssists === null) return;
+    const firstCount = lastShellAt.current === null;
+    if (lastShellAt.current === shellAt) return;
+    lastShellAt.current = shellAt;
     if (!loaded) {
-      lastReadAt.current = Date.now();
-      void dispatch(fetchMyAssists({ userId }));
+      if (shellAssists > 0) void dispatch(fetchMyAssists({ userId }));
+      return;
     }
-    const onFocus = () => {
-      if (Date.now() - lastReadAt.current < ASSISTS_FOCUS_REFETCH_MS) return;
-      lastReadAt.current = Date.now();
-      void dispatch(fetchMyAssists({ userId, force: true }));
-    };
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, [dispatch, authReady, userId, accessToken, loaded, lateReady]);
+    if (firstCount) return;
+    if (shellAssists > 0 || pending.length > 0) void dispatch(fetchMyAssists({ userId, force: true }));
+  }, [dispatch, authReady, userId, accessToken, loaded, shellAssists, shellAt, pending.length]);
 
   useEffect(() => {
     if (!loaded || !preferencesReady) return;

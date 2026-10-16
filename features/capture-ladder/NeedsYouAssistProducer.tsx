@@ -20,7 +20,7 @@
  * replaced was global too.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import {
@@ -28,7 +28,7 @@ import {
   selectOrganizationName,
 } from "@/lib/redux/slices/appContextSlice";
 import { useNeedsYou } from "@/features/capture-ladder/useNeedsYou";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useShellCounts } from "@/lib/boot/shellCounts";
 import {
   NEEDS_YOU_SOURCE_KEY,
   produceNeedsYouAssist,
@@ -43,20 +43,26 @@ export function NeedsYouAssistProducer(): null {
   const userId = useAppSelector(selectUserId);
   const organizationId = useAppSelector(selectOrganizationId);
   const organizationName = useAppSelector(selectOrganizationName);
-  // An assist nobody is waiting for: the queue is read in the late tier, never at startup.
-  const late = useLateIdleReady();
-  const { state, handoffs } = useNeedsYou({ enabled: late });
+  // An assist nobody is waiting for. The shell's ONE count read (after the page settles) says how
+  // many handoffs wait; the queue (rows, poll floor, channel) opens only when some do, or when a
+  // needs-you assist is already on screen to retire. A later count read (focus, 5-minute refresh)
+  // opens it when a handoff arrives mid-session.
+  const shell = useShellCounts();
+  const pendingAssists = useAppSelector(selectPendingAssists);
+  const hasRowToRetire = pendingAssists.some((a) => a.sourceKey === NEEDS_YOU_SOURCE_KEY);
+  const waiting = (shell.data?.needsYou ?? 0) > 0;
+  const [opened, setOpened] = useState(false);
+  if (!opened && (waiting || hasRowToRetire)) setOpened(true);
+  const { state, handoffs } = useNeedsYou({ enabled: opened });
 
   // One sweep in flight at a time, and only when the queue actually changed.
   // Without this the poll floor would re-emit the same row every minute,
   // bumping `occurrences` forever and making "you have had this for three
   // weeks" unreadable.
-  const pendingAssists = useAppSelector(selectPendingAssists);
   const assistsLoaded = useAppSelector(selectAssistsLoaded);
   // Whether this producer has a row to retire: it emitted one this session, or the person's
   // pending assists (already loaded by the dock/strip) hold one. An empty queue with nothing to
   // retire writes nothing — `act_on_my_assists` is a WRITE and must not run on every page load.
-  const hasRowToRetire = pendingAssists.some((a) => a.sourceKey === NEEDS_YOU_SOURCE_KEY);
   const running = useRef(false);
   const lastSignature = useRef<string | null>(null);
 

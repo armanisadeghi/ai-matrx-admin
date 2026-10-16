@@ -33,6 +33,7 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { SHELL_COUNTS_QUERY_KEY, useShellCounts, type ShellCounts } from "@/lib/boot/shellCounts";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -44,7 +45,6 @@ import {
   fetchInbox,
   fetchInboxKinds,
   fetchInboxOrganizations,
-  fetchInboxSummary,
   fetchMyWorkWaiting,
   markAllMyNotificationsRead,
   markInboxSeen,
@@ -80,7 +80,6 @@ export function badgeRefetchInterval(): number | false {
 export const INBOX_PAGE_SIZE = 50;
 
 export const INBOX_QUERY_KEY = ["inbox"] as const;
-const summaryKey = (userId: string | null) => [...INBOX_QUERY_KEY, "summary", userId] as const;
 const feedPrefix = (userId: string | null) => [...INBOX_QUERY_KEY, "feed", userId] as const;
 const workKey = (userId: string | null) => [...INBOX_QUERY_KEY, "work-waiting", userId] as const;
 
@@ -134,28 +133,20 @@ export function useInboxCounts(): InboxCounts {
   const approvals = usePendingApprovalCount({ includeStore: false, ready: idleReady });
   const memory = useInboxMemory();
 
-  const workWaiting = useWorkWaiting(idleReady);
-  const summary = useQuery({
-    queryKey: summaryKey(userId),
-    queryFn: fetchInboxSummary,
-    enabled: userId !== null && idleReady,
-    // Focus re-reads at most once a minute; a still-focused tab re-reads every 5 minutes.
-    refetchInterval: badgeRefetchInterval,
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: true,
-    staleTime: INBOX_BADGE_STALE_MS,
-  });
+  // ONE read for the header's counts (first-paint contract V9-V12): the inbox summary and the
+  // record store's waiting work come out of `platform.shell_counts`, which opens after the page settles.
+  const shell = useShellCounts();
 
   // The record store's waiting changes are in BOTH numbers — `/approvals` lists them and
   // `custom.inbox_counts` counts them — so the approvals share leaves them out here and each
   // waiting change adds one to the bell, not two.
   const approvalCount = approvals.unknown ? null : approvals.count - approvals.storeCount;
   const work =
-    workWaiting.isError || workWaiting.data === undefined
+    shell.isError || shell.data === undefined
       ? null
-      : workWaiting.data.reduce((sum, o) => sum + o.waiting, 0);
-  const workSnoozed = (workWaiting.data ?? []).reduce((sum, o) => sum + o.snoozed, 0);
-  const s = summary.data?.summary ?? null;
+      : shell.data.work.reduce((sum, o) => sum + o.waiting, 0);
+  const workSnoozed = (shell.data?.work ?? []).reduce((sum, o) => sum + o.snoozed, 0);
+  const s = shell.data?.inbox ?? null;
   // Until the person's saved marks load, no place counts (empty marks would read all as new).
   // Marks move only when the person opens the bell — never on a refetch (badge.ts).
   const places: Record<string, PlaceReading> = memory.ready
@@ -175,14 +166,11 @@ export function useInboxCounts(): InboxCounts {
       const next = markPlaces(memory.seen, places);
       if (!sameMarks(next, memory.seen)) memory.saveSeen(next);
     }
-    if (!s || !summary.data?.triage || s.unseenNeedsYou + s.unseenDirect + s.unseenUpdates === 0) return;
+    if (!s || s.unseenNeedsYou + s.unseenDirect + s.unseenUpdates === 0) return;
     // Optimistic: the badge clears the moment the bell opens.
-    queryClient.setQueryData(summaryKey(userId), (prev: typeof summary.data) =>
+    queryClient.setQueryData([...SHELL_COUNTS_QUERY_KEY, userId], (prev: ShellCounts | undefined) =>
       prev
-        ? {
-            ...prev,
-            summary: { ...prev.summary, unseenNeedsYou: 0, unseenDirect: 0, unseenUpdates: 0 },
-          }
+        ? { ...prev, inbox: { ...prev.inbox, unseenNeedsYou: 0, unseenDirect: 0, unseenUpdates: 0 } }
         : prev,
     );
     void markInboxSeen()
@@ -190,20 +178,20 @@ export function useInboxCounts(): InboxCounts {
         console.error("[Inbox] Could not clear the badge:", error);
       })
       .finally(() => {
-        void queryClient.invalidateQueries({ queryKey: summaryKey(userId) });
+        void queryClient.invalidateQueries({ queryKey: SHELL_COUNTS_QUERY_KEY });
       });
   };
 
   return {
     summary: s,
-    triage: summary.data?.triage ?? true,
+    triage: true,
     approvals: approvalCount,
     work,
     workSnoozed,
     badge,
     updatesDot: (s?.unseenUpdates ?? 0) > 0,
     // Only a failed read is "unavailable" — still loading is not (RESEARCH.md T5).
-    partial: summary.isError || workWaiting.isError,
+    partial: shell.isError,
     markSeen,
   };
 }
@@ -417,7 +405,10 @@ export function useInboxActions(triage = true): InboxActions {
     );
   };
 
-  const refresh = () => queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: SHELL_COUNTS_QUERY_KEY });
+    return queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
+  };
 
   const run = async (
     ids: string[],
