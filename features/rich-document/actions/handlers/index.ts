@@ -8,14 +8,12 @@
 // RichDocument.tsx imports this at the top of the file; consumers don't
 // need to touch it directly.
 
-import "./copy";
 import "./save";
 import "./capture";
 import "./share";
 import "./listen";
 import "./transfer";
 import "./attach-to-chat";
-import "./ask";
 import "./ai";
 import "./send-to-agent";
 import "./chat";
@@ -26,10 +24,10 @@ import "./edit";
 import "./compare";
 import "./creator";
 import "./feedback";
-import "./fullscreen-editor";
 import "./app";
 import "./server-api";
 import "./answer-tools";
 import "./conversation-section";
 import "./annotations";
-import "./write-back";
+// The non-chat half of the package's `edit` / `open-fullscreen-editor` (message-actions W1a).
+import "./host-edit-bodies";

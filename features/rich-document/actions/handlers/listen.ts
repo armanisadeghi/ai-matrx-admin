@@ -11,15 +11,12 @@
 // lookup until someone listens — and a click that finds no bound agent says
 // so instead of doing nothing.
 
-import { AudioLines, Headphones, Loader2, Pause, Play, Settings2, Volume2 } from "lucide-react";
+import { AudioLines, Headphones, Settings2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { primeAudioOutput } from "@ai-matrx/media/speech";
 import { openListenSummaryWindowAction } from "@/features/overlays/openers/listenSummaryWindow";
 import { LISTENING_HOME_SURFACE } from "@/features/audio/service/listeningConfig";
-import {
-  ensureSurfaceConfig,
-  selectSurfaceConfigEntry,
-} from "@ai-matrx/chat/surfaces/redux/surfaceConfigSlice";
+import { ensureSurfaceConfig, selectSurfaceConfigEntry } from "@ai-matrx/chat/surfaces/redux/surfaceConfigSlice";
 import { registerActionIfAbsent } from "./register-if-absent";
 import { getErrorMessage, contentForDestination } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
@@ -96,158 +93,7 @@ registerActionIfAbsent({
   run: (ctx) => openListen(ctx, false),
 });
 
-// ── Read aloud — the speaker, as a registry toggle ──────────────────────────
-// Plays the content (or the reader's selection inside this chat turn) through
-// the ONE playback queue; while this content's utterance is the current item,
-// the same button pauses and resumes it. State comes from the queue itself.
-
-type SpeechStatus = "playing" | "paused" | "queued" | "starting" | null;
-
-async function playbackModule() {
-  return import("@ai-matrx/media/speech");
-}
-
-// Filled when a renderer first subscribes (the bar mounting) — the queue
-// module is never loaded by a page that shows no read-aloud button.
-let playbackApi: Awaited<ReturnType<typeof playbackModule>> | null = null;
-/** Queue items whose failure was already announced (one toast per failure). */
-const announcedSpeechErrors = new Set<string>();
-/**
- * The utterance each button last started, keyed by the button's content — so
- * a SELECTION read (whose text is not the whole reply) still drives this
- * button's spinner / Pause / Play and its error toast. Module scope, so a bar
- * that remounts re-finds audio still playing in the persistent queue.
- */
-const itemForContent = new Map<string, string>();
-
-function speechItem(ctx: RichDocumentActionContext) {
-  if (!playbackApi) return null;
-  const snap = playbackApi.getPlaybackSnapshot();
-  const text = contentForDestination(ctx);
-  const ownId = itemForContent.get(text);
-  const own = ownId ? snap.items.find((i) => i.id === ownId) : undefined;
-  if (own) return own;
-  // Audio of this same content started elsewhere (the right-click menu).
-  return (
-    snap.items.find((i) => i.id === snap.currentId && i.text === text) ?? null
-  );
-}
-
-function speechStatus(ctx: RichDocumentActionContext): SpeechStatus {
-  const item = speechItem(ctx);
-  if (!item) return null;
-  if (item.status === "playing") return "playing";
-  if (item.status === "paused") return "paused";
-  if (item.status === "queued") return "queued";
-  if (item.status === "loading") return "starting";
-  return null;
-}
-
-/** A selection inside THIS chat turn reads just the selection. */
-function selectedText(ctx: RichDocumentActionContext): string | null {
-  if (typeof window === "undefined" || ctx.extensions?.type !== "chat-message") {
-    return null;
-  }
-  const sel = window.getSelection();
-  const text = sel && !sel.isCollapsed ? sel.toString().trim() : "";
-  if (!text) return null;
-  const node = sel?.anchorNode ?? null;
-  const el = node instanceof Element ? node : (node?.parentElement ?? null);
-  const mid = el?.closest?.("[data-message-id]")?.getAttribute("data-message-id");
-  return mid && ctx.extensions.groupMessageIds.includes(mid) ? text : null;
-}
-
-registerActionIfAbsent({
-  id: "tts-play",
-  label: (ctx) => {
-    const status = speechStatus(ctx);
-    return status === "playing"
-      ? "Pause reading"
-      : status === "paused"
-        ? "Resume reading"
-        : status === "queued"
-          ? "Waiting for other audio — click to cancel"
-          : status === "starting"
-            ? "Starting… click to cancel"
-            : ctx.extensions?.type === "chat-message"
-              ? "Read aloud (reads your selection when text is selected)"
-              : // A text field's or document's menu reads the whole text.
-                "Read aloud";
-  },
-  icon: Volume2,
-  // No colour of its own: a bar icon matches its siblings (Arman, 2026-10-08).
-  category: "listen",
-  supportedSources: "*",
-  renderSlot: "primary",
-  order: -1,
-  preserveSelection: true,
-  visible: (ctx) => ctx.content.trim().length > 0,
-  stateIcon: (ctx) => {
-    const status = speechStatus(ctx);
-    if (status === "playing") return { icon: Pause };
-    if (status === "paused") return { icon: Play };
-    if (status === "queued" || status === "starting") {
-      return { icon: Loader2, spin: true };
-    }
-    return null;
-  },
-  active: (ctx) => {
-    const status = speechStatus(ctx);
-    return status === "playing" || status === "paused";
-  },
-  subscribe: (onChange, ctx) => {
-    let unsubscribe: (() => void) | null = null;
-    let cancelled = false;
-    void playbackModule().then((m) => {
-      playbackApi = m;
-      if (cancelled) return;
-      unsubscribe = m.subscribePlayback((snap) => {
-        // A failed utterance of THIS content is said, once, with its reason
-        // (no organization selected, no voice access…) — never a button that
-        // silently does nothing.
-        for (const item of snap.items) {
-          if (
-            item.status === "error" &&
-            (item.id === itemForContent.get(contentForDestination(ctx)) ||
-              item.text === contentForDestination(ctx)) &&
-            !announcedSpeechErrors.has(item.id)
-          ) {
-            announcedSpeechErrors.add(item.id);
-            toast.error("Could not read this aloud", {
-              description: item.error ?? "The audio could not start.",
-            });
-          }
-        }
-        onChange();
-      });
-    });
-    return () => {
-      cancelled = true;
-      unsubscribe?.();
-    };
-  },
-  run: async (ctx) => {
-    // The click is the gesture iOS needs — unlock output before any await.
-    primeAudioOutput();
-    const api = await playbackModule();
-    playbackApi = api;
-    const status = speechStatus(ctx);
-    if (status === "playing") return api.pausePlayback();
-    if (status === "paused") return api.resumePlayback();
-    if (status === "queued" || status === "starting") {
-      const item = speechItem(ctx);
-      if (item) return api.removePlaybackItem(item.id);
-      return;
-    }
-    const { speak } = await import("@ai-matrx/media/speech");
-    // A selection plays as its own utterance; either way this button owns it.
-    const { id } = speak({
-      text: selectedText(ctx) ?? contentForDestination(ctx),
-      label: "Read aloud",
-    });
-    itemForContent.set(contentForDestination(ctx), id);
-  },
-});
+// Read aloud (tts-play) is @ai-matrx/chat's own (registerChatMessageActions, message-actions W1a).
 
 // ── Voice settings — the door to the voice this button speaks in ─────────────
 // Read-aloud has one icon on the bar, so its settings door lives here in the

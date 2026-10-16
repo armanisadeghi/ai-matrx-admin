@@ -6,36 +6,19 @@
 // a source → entity_type map so any source can produce a task.
 
 import { durableRecordId } from "@ai-matrx/kit/ids";
-import {
-  FileText,
-  Save,
-  FileCode,
-  FileDown,
-  CheckSquare,
-  BookText,
-} from "lucide-react";
+import { FileText, Save, FileCode, CheckSquare, BookText } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 import { CodeFilesAPI } from "@/features/code-files/service/codeFilesApi";
 import { setPendingSource } from "@/features/tasks/redux/taskUiSlice";
 import { registerActionIfAbsent } from "./register-if-absent";
-import {
-  extractFirstCodeBlock,
-  getErrorMessage,
-  requireAuth,
-  buildTaskTitle,
-  contentFileName,
-  deriveContentTitle,
-  contentForDestination,
-  chatStateOf,
-} from "../utils";
+import { extractFirstCodeBlock, getErrorMessage, requireAuth, buildTaskTitle, deriveContentTitle, contentForDestination, chatStateOf } from "../utils";
 import { NOTE_BUCKET_TAGS } from "@/features/notes/homes/bucketTags";
 import { selectConversationTitle } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import { selectMessagePosition } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { buildTaskSeedFromMessage } from "@ai-matrx/chat/agents/components/messages-display/message-options/buildTaskSeedFromMessage";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
-import { downloadFile } from "@ai-matrx/kit/download";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
@@ -256,32 +239,6 @@ registerActionIfAbsent({
         },
       }),
     );
-  },
-});
-
-registerActionIfAbsent({
-  id: "save-as-file",
-  label: "Download as Markdown",
-  icon: FileDown,
-  iconColor: "text-rose-500 dark:text-rose-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 4,
-  run: (ctx) => {
-    try {
-      const name = contentFileName(
-        ctx,
-        ctx.source.type === "chat-message" ? "message" : ctx.source.type,
-      );
-      const blob = new Blob([contentForDestination(ctx)], {
-        type: "text/markdown;charset=utf-8",
-      });
-      downloadFile(`${name}.md`, blob, blob.type);
-      toast.success("Downloaded as Markdown");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to download file"));
-    }
   },
 });
 

@@ -5,16 +5,13 @@
 // so it works on any source that supports editing.
 
 import { durableRecordId } from "@ai-matrx/kit/ids";
-import { Eye, Globe, Mail } from "lucide-react";
+import { Eye, Mail } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
-import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
-import { getMarkdownStylesheet } from "@ai-matrx/print/markdown";
 import { registerActionIfAbsent } from "./register-if-absent";
 import { getErrorMessage, serializeError, contentForDestination } from "../utils";
 import { acknowledgedPreparedSource, prepareContentEdit, savePreparedContentEdit } from "./preparedEdit";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 
 registerActionIfAbsent({
   id: "html-preview",
@@ -96,39 +93,6 @@ registerActionIfAbsent({
       }),
     );
     ctx.onClose();
-  },
-});
-
-registerActionIfAbsent({
-  id: "copy-html-page",
-  label: "Copy HTML page",
-  icon: Globe,
-  iconColor: "text-orange-500 dark:text-orange-400",
-  category: "export",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 1,
-  run: async (ctx) => {
-    try {
-      await copyContent(contentForDestination(ctx), {
-        isMarkdown: true,
-        formatForWordPress: true,
-        showHtmlPreview: true,
-        onShowHtmlPreview: async (filteredHtml) => {
-          const cssContent = getMarkdownStylesheet();
-          const html = `<!DOCTYPE html>\n<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>Content</title><style>${cssContent}</style></head><body>${filteredHtml}</body></html>`;
-          await copyContent(html, {
-            onSuccess: () => {},
-            onError: () => {},
-          });
-        },
-        onSuccess: () => copyNotify("HTML page copied", "success"),
-        onError: (error) =>
-          toast.error(getErrorMessage(error, "Failed to copy HTML")),
-      });
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to copy HTML"));
-    }
   },
 });
 

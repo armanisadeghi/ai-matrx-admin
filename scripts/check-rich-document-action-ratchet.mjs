@@ -75,9 +75,25 @@ export async function packageIds() {
         "Run `pnpm sync:matrx-packages`.",
     );
   }
+  // The register module lists its own rows and spreads the descriptor modules it imports
+  // (./descriptors/*): read each, in import order, the way the list is assembled.
   const text = readFileSync(file, "utf8");
-  const list = text.slice(text.indexOf("CHAT_MESSAGE_ACTIONS"));
-  return [...list.matchAll(/\bid:\s*"([^"]+)"/g)].map((m) => m[1]);
+  const own = text.slice(text.indexOf("const DIALOG_ACTIONS") >= 0 ? text.indexOf("const DIALOG_ACTIONS") : text.indexOf("CHAT_MESSAGE_ACTIONS"));
+  const ids = [...own.matchAll(/\bid:\s*"([^"]+)"/g)].map((m) => m[1]);
+  for (const m of text.matchAll(/from\s+"(\.\/descriptors\/[^"]+)"/g)) {
+    const base = join(dirname(file), m[1]);
+    const ext = [".js", ".ts", ""].find((e) => {
+      try {
+        readFileSync(base + e);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (ext === undefined) continue;
+    ids.push(...[...readFileSync(base + ext, "utf8").matchAll(/\bid:\s*"([^"]+)"/g)].map((x) => x[1]));
+  }
+  return [...new Set(ids)];
 }
 
 /** Every breach of the four rules, as sentences. */

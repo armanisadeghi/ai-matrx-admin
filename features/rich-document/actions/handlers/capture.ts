@@ -9,34 +9,14 @@
 // RichDocument surface).
 
 import { durableRecordId } from "@ai-matrx/kit/ids";
-import {
-  BookOpen,
-  Boxes,
-  FileType,
-  GraduationCap,
-  Layers,
-  LayoutTemplate,
-  FolderOpen,
-} from "lucide-react";
+import { BookOpen, Boxes, GraduationCap, Layers, LayoutTemplate } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import {
-  extractFlatText,
-  selectMessageById,
-  selectOrderedMessageIds,
-} from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
+import { extractFlatText, selectMessageById, selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { messageMayContainKindBlock } from "@/features/content-ir/studio/message-kind-gate";
 import { hasConvertibleContent } from "@ai-matrx/chat/agents/components/messages-display/message-options/convertibleContent";
 import { registerActionIfAbsent } from "./register-if-absent";
-import {
-  chatIds,
-  contentFileName,
-  deriveContentTitle,
-  getErrorMessage,
-  requireAuth,
-  contentForDestination,
-  chatStateOf,
-} from "../utils";
+import { chatIds, deriveContentTitle, getErrorMessage, requireAuth, contentForDestination, chatStateOf } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { openOutbound } from "@ai-matrx/kit/outbound";
@@ -168,110 +148,6 @@ registerActionIfAbsent({
       }),
     );
     ctx.onClose();
-  },
-});
-
-registerActionIfAbsent({
-  id: "save-to-files",
-  label: "Save to Files",
-  // A glyph, never the route's letter badge (a stray "F" in every menu).
-  icon: FolderOpen,
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 8,
-  run: async (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "save-to-files",
-        "Save as File",
-        "Sign in to save this content into your files.",
-      )
-    )
-      return;
-    const name = contentFileName(ctx, ctx.source.type === "chat-message" ? "message" : ctx.source.type);
-    try {
-      const { fileHandler } = await import("@/features/files/handler/handler");
-      const file = new File([contentForDestination(ctx)], `${name}.md`, {
-        type: "text/markdown",
-      });
-      const uploaded = await fileHandler.upload(
-        { kind: "file", file },
-        { folderPath: "Chat Saves" },
-      );
-      const fileId = uploaded.fileId;
-      toast.success("Saved to Files", {
-        description: `${name}.md in Chat Saves`,
-        action: fileId
-          ? {
-              label: "Open",
-              onClick: () =>
-                openOutbound(`/files/f/${fileId}`, "_blank", "noopener"),
-            }
-          : undefined,
-      });
-      ctx.onClose();
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to save file"));
-    }
-  },
-});
-
-registerActionIfAbsent({
-  id: "save-as-pdf",
-  label: "Save as PDF Document",
-  icon: FileType,
-  iconColor: "text-red-500 dark:text-red-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 9,
-  run: async (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "save-as-pdf",
-        "Save as PDF Document",
-        "Sign in to save this content as a PDF in your files.",
-      )
-    )
-      return;
-    ctx.onClose();
-    const toastId = toast.loading("Generating PDF…");
-    try {
-      // The print-grade VECTOR PDF — real text, a few KB (the old raster
-      // screenshot path made a 5-row answer 6.4 MB).
-      const [{ exportDocument }, { fileHandler }] = await Promise.all([
-        import("@ai-matrx/print/document"),
-        import("@/features/files/handler/handler"),
-      ]);
-      const exp = await exportDocument(contentForDestination(ctx), "pdf");
-      const blob = new Blob([exp.bytes as Uint8Array<ArrayBuffer>], { type: "application/pdf" });
-      const name = contentFileName(ctx, ctx.source.type === "chat-message" ? "message" : ctx.source.type);
-      const file = new File([blob], `${name}.pdf`, { type: "application/pdf" });
-      const uploaded = await fileHandler.upload(
-        { kind: "file", file },
-        { folderPath: "Chat Saves" },
-      );
-      const fileId = uploaded.fileId;
-      toast.success("PDF saved to Files", {
-        id: toastId,
-        description: `${name}.pdf in Chat Saves`,
-        action: fileId
-          ? {
-              label: "Open",
-              onClick: () =>
-                openOutbound(`/files/f/${fileId}`, "_blank", "noopener"),
-            }
-          : undefined,
-      });
-    } catch (err) {
-      toast.error("Failed to create PDF", {
-        id: toastId,
-        description: getErrorMessage(err, "Unknown error"),
-      });
-    }
   },
 });
 

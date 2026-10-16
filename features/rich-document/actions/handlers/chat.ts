@@ -4,17 +4,11 @@
 // bar: "Continue in chat mode" (open this conversation in the full chat page
 // from any embedded surface). Absent on the chat page itself.
 
-import { MessageSquareShare, RefreshCw } from "lucide-react";
-import { selectIsLatestAssistantMessage } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
-import { selectRegenerateAnchor } from "@ai-matrx/chat/agents/redux/execution-system/message-crud/regenerate-anchor";
+import { MessageSquareShare } from "lucide-react";
 import { selectReservedConversationId } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
-import {
-  isChatRoutePath,
-  resolveContinueInChatConversationId,
-} from "@ai-matrx/chat/agents/components/messages-display/assistant/continue-in-chat";
+import { isChatRoutePath, resolveContinueInChatConversationId } from "@ai-matrx/chat/agents/components/messages-display/assistant/continue-in-chat";
 import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { chatStateOf } from "../utils";
-import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { registerActionIfAbsent } from "./register-if-absent";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { openOutbound } from "@ai-matrx/kit/outbound";
@@ -49,30 +43,3 @@ registerActionIfAbsent({
   },
 });
 
-// The latest answer's one-tap Regenerate (older answers use Fork) — an inline
-// door onto the SAME registry action the ⋯ menu carries (answer-tools.ts).
-registerActionIfAbsent({
-  id: "regenerate-latest",
-  writesSource: true,
-  label: "Regenerate answer",
-  icon: RefreshCw,
-  category: "edit",
-  supportedSources: ["chat-message"],
-  renderSlot: "primary",
-  order: 5,
-  requiresAuth: true,
-  visible: (ctx) => {
-    if (ctx.source.type !== "chat-message") return false;
-    if (ctx.extensions?.type !== "chat-message" || ctx.extensions.role !== "assistant") {
-      return false;
-    }
-    const { conversationId, messageId } = ctx.source;
-    const state = chatStateOf(ctx, ["messages"]);
-    if (!state) return false;
-    return (
-      selectIsLatestAssistantMessage(conversationId, messageId)(state) &&
-      selectRegenerateAnchor(state, conversationId, messageId) !== null
-    );
-  },
-  run: (ctx) => getAction("regenerate-response")?.run(ctx),
-});

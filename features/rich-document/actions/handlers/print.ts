@@ -1,42 +1,14 @@
 // features/rich-document/actions/handlers/print.ts
 //
-// Print / PDF actions. `print` is source-agnostic; `full-print` requires
-// the host to wire an `onFullPrint` callback (full-page render that
-// includes all blocks, currently a chat-specific renderer feature).
+// `full-print` requires the host to wire an `onFullPrint` callback (full-page render that
+// includes all blocks, currently a chat-specific renderer feature). Plain `print` is
+// @ai-matrx/chat's own (message-actions W1a); this app's block printers stay registered here,
+// so the package's print still prints every embedded artifact.
 
-import { Printer, ScanLine } from "lucide-react";
-import { printMarkdownContent } from "@ai-matrx/chat/conversation/utils/markdown-print";
+import { ScanLine } from "lucide-react";
 import { registerActionIfAbsent } from "./register-if-absent";
-import { contentForPrint } from "../utils";
 // Each embedded block prints through its type's adapter (the one block-printer registry).
 import "@/features/canvas/artifact-types/artifact-printers";
-
-registerActionIfAbsent({
-  id: "print",
-  label: "Print / Save PDF",
-  icon: Printer,
-  iconColor: "text-slate-500 dark:text-slate-400",
-  category: "export",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  // The ContentActions set in this item's bar already shows it — once per surface.
-  order: 10,
-  run: async (ctx) => {
-    const title =
-      ctx.source.type === "note"
-        ? "Note"
-        : ctx.source.type === "chat-message"
-          ? "Message"
-          : ctx.source.type === "prompt-result"
-            ? "Prompt result"
-            : ctx.source.type === "artifact"
-              ? "Artifact"
-              : ctx.source.type === "scraper-result"
-                ? "Scraper result"
-                : "Content";
-    await printMarkdownContent(contentForPrint(ctx), title);
-  },
-});
 
 registerActionIfAbsent({
   id: "full-print",

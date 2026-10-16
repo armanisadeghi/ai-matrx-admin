@@ -5,73 +5,11 @@
 // what the reader sees; chat provenance rides along when the source is a chat
 // message (the per-message idempotency key on the public page).
 
-import { durableRecordId } from "@ai-matrx/kit/ids";
-import { FileText, Globe } from "lucide-react";
+import { FileText } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { registerActionIfAbsent } from "./register-if-absent";
-import {
-  chatIds,
-  deriveContentTitle,
-  getErrorMessage,
-  requireAuth,
-  contentForDestination,
-} from "../utils";
-import { copyText } from "@ai-matrx/kit/clipboard";
+import { deriveContentTitle, getErrorMessage, contentForDestination } from "../utils";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-
-registerActionIfAbsent({
-  id: "share-webpage",
-  label: "Share as webpage",
-  icon: Globe,
-  iconColor: "text-teal-500 dark:text-teal-400",
-  category: "share",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 0,
-  run: async (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "share-webpage",
-        "Share as webpage",
-        "Sign in to publish this content as a public webpage.",
-      )
-    )
-      return;
-    ctx.onClose();
-    const toastId = toast.loading("Publishing webpage…");
-    try {
-      const { shareMessageAsWebpage } = await import(
-        "@ai-matrx/chat/agents/components/messages-display/message-options/shareMessageAsWebpage"
-      );
-      const { conversationId, messageId } = chatIds(ctx);
-      const { url } = await shareMessageAsWebpage({
-        content: contentForDestination(ctx),
-        title: deriveContentTitle(ctx) ?? "Shared AI response",
-        messageId: durableRecordId(messageId),
-        conversationId,
-      });
-      // A refused copy is reported by the toast below, which still links the page.
-      const copied = await copyText(url);
-      toast.success(
-        copied ? "Published to the web — link copied" : "Published to the web",
-        {
-          id: toastId,
-          description: url,
-          action: {
-            label: "Open",
-            onClick: () => openOutbound(url, "_blank", "noopener"),
-          },
-        },
-      );
-    } catch (err) {
-      toast.error("Failed to publish webpage", {
-        id: toastId,
-        description: getErrorMessage(err, "Unknown error"),
-      });
-    }
-  },
-});
 
 registerActionIfAbsent({
   /**
