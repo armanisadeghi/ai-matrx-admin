@@ -90,6 +90,7 @@ export const HEAVY: ReadonlyArray<HeavyEntry> = [
   { match: /^@ai-matrx\/records-ui\/dist\/index\.js$/, why: "records-ui root (the whole records grid/forms cluster) — import a pure subpath, or load it at the point of use" },
   { match: /^recharts\//, why: "recharts — charts load with the surface that draws them" },
   { match: /^features\/content-ir\/registry\/component-registry\.ts$/, why: "content-ir component registry (the kind stack, ~130 modules) — loads when a kind is shown; shell surfaces draw answers through AnswerTextView / AnswerValueSlot" },
+  { match: /^@ai-matrx\/messaging\/dist\/react\.js$/, why: "messaging screens (inbox, thread, composer, react-markdown) — the shell mounts the provider and hooks through @ai-matrx/messaging/react/host" },
   { match: /^@ai-matrx\/design-system\/dist\/data-table\/index\.js$/, why: "design-system data-table index (MatrxDataTable and every grid feature)" },
 ];
 

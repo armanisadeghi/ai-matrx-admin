@@ -59,8 +59,8 @@ import {
   toMessagingKindFilter,
   useMessagingHost,
   usePassiveMessagingSnapshot,
-} from "@ai-matrx/messaging/react";
-import type { MessagingArchiveFilter, MessagingKindFilter } from "@ai-matrx/messaging/react";
+} from "@ai-matrx/messaging/react/host";
+import type { MessagingArchiveFilter, MessagingKindFilter } from "@ai-matrx/messaging/react/host";
 import type { ActionHandler } from "@ai-matrx/messaging";
 // The Meet host CONTEXT comes from the tiny `host-slot` entry and the two invitation
 // handler factories are loaded with `import("@ai-matrx/meet/react")` after the page is idle
@@ -71,7 +71,7 @@ import type {
   EngineDiagnostic,
   IncomingMessageContext,
   Message,
-} from "@ai-matrx/messaging/react";
+} from "@ai-matrx/messaging/react/host";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
