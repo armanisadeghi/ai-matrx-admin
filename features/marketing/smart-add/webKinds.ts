@@ -14,6 +14,7 @@ import type { BrandRelationKind, RelationStance } from "@/features/marketing/dat
 import { USAGE_GROUP_LABEL } from "@/features/marketing/data/relation-usage";
 import { websiteHost, type EvidenceItem } from "./evidence";
 import { isSocialPlatformPage } from "./validate/fold";
+import { BACKLINK_KIND, backlinkReason, type BacklinkCheck } from "./backlinks";
 
 /** Kinds that say "a listing site's page about us" — never a social platform's page. */
 const LISTING_KINDS = new Set(["review_site", "claimable_listing"]);
@@ -24,6 +25,27 @@ export type Sentiment = "positive" | "neutral" | "negative";
 export interface WebChoice {
   kind: string;
   sentiment: Sentiment | null;
+}
+
+/** The kind whose categories name what the server recognized the page as (a credential, membership, press, award, registry…), if any. */
+export function recognizedKind(item: EvidenceItem, kinds: BrandRelationKind[]): BrandRelationKind | undefined {
+  if (!item.siteKind || isSocialPlatformPage(item.url ?? item.value)) return undefined;
+  return kinds.find((k) => k.match.categories.includes(item.siteKind?.category ?? ""));
+}
+
+/**
+ * A page that links to the brand defaults to Backlink, unless the page was recognized as something MORE specific
+ * (a credential, membership, press mention, award, registry record): then that kind stays the suggestion and the
+ * link remains a badge and a matching signal. THE one place the two are ranked. Null = no backlink suggestion.
+ */
+export function backlinkSuggestion(
+  item: EvidenceItem,
+  kinds: BrandRelationKind[],
+  check: BacklinkCheck | undefined,
+): { kind: string; reason: string; evidence: string[]; by: string } | null {
+  if (check?.status !== "found" || !kinds.some((k) => k.key === BACKLINK_KIND)) return null;
+  if (recognizedKind(item, kinds)) return null;
+  return { kind: BACKLINK_KIND, reason: backlinkReason(check), evidence: check.backlinks.map((b) => b.matchedUrl), by: "Links to you" };
 }
 
 /** A rule-based suggestion and why. */
@@ -275,7 +297,7 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   }
   // The server recognized what kind of place it is (a certification body, a chamber, industry media…): the kind
   // whose categories name it — a credential, a membership, press coverage (VISION Part 22).
-  const recognized = item.siteKind && !social ? kinds.find((k) => k.match.categories.includes(item.siteKind?.category ?? "")) : undefined;
+  const recognized = recognizedKind(item, kinds);
   if (recognized && item.siteKind) return { kind: recognized.key, reason: `${item.siteKind.label}: ${item.siteKind.reason}` };
   if (item.field === "listing" && !social) {
     const key = has("review_site") ? "review_site" : "claimable_listing";

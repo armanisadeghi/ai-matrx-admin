@@ -101,7 +101,7 @@ export interface SiteKind {
   fields: Record<string, string>;
 }
 
-function parseSiteKind(raw: unknown): SiteKind | null {
+export function parseSiteKind(raw: unknown): SiteKind | null {
   if (typeof raw !== "object" || raw === null) return null;
   const r = raw as Record<string, unknown>;
   const category = asString(r.category);

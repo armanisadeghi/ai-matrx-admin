@@ -7,6 +7,7 @@
  */
 
 import type { ReviewLinkCheck } from "@/features/search-review/types";
+import { parseSiteKind, type EvidenceItem, type SiteKind } from "./evidence";
 
 export interface Backlink {
   targetKind: "website" | "social";
@@ -24,6 +25,8 @@ export interface BacklinkCheck {
   backlinks: Backlink[];
   reason: string | null;
   checkedAt: string | null;
+  /** What kind of place the page is, recognized server-side from the very html the link check read (schema.org markup included). */
+  siteKind: SiteKind | null;
 }
 
 /** The step's id in the identify run. */
@@ -60,6 +63,7 @@ export function parseBacklinkCheck(raw: unknown): BacklinkCheck | null {
     backlinks: Array.isArray(r.backlinks) ? r.backlinks.map(parseBacklink).filter((b): b is Backlink => b !== null) : [],
     reason: str(r.reason),
     checkedAt: str(r.checked_at),
+    siteKind: parseSiteKind(r.site_kind),
   };
 }
 
@@ -99,4 +103,9 @@ export function reviewLinkCheck(check: BacklinkCheck | undefined, checking: bool
 export function backlinkReason(check: BacklinkCheck): string {
   const names = [...new Set(check.backlinks.map((b) => (b.targetKind === "website" ? b.label : `${b.label} on ${b.platform ?? "social"}`)))];
   return `This page links to ${names.slice(0, 3).join(", ")}${names.length > 3 ? ` and ${names.length - 3} more` : ""}`;
+}
+
+/** The row's page kind: the backlinks step read the page itself (markup and all), so its answer wins over the search-result-only one. */
+export function withPageKind(item: EvidenceItem, check: BacklinkCheck | undefined): EvidenceItem {
+  return check?.siteKind ? { ...item, siteKind: check.siteKind } : item;
 }

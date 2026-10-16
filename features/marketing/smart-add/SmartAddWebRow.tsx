@@ -23,8 +23,8 @@ import type { EvidenceItem } from "./evidence";
 import { useState } from "react";
 import { webRow } from "./evidence";
 import type { WebMark } from "./runMemory";
-import { BACKLINK_KIND, backlinkReason, reviewLinkCheck, type BacklinkCheck } from "./backlinks";
-import { compareRelationKinds, relationGroupLabel, ruleFillIn, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
+import { reviewLinkCheck, withPageKind, type BacklinkCheck } from "./backlinks";
+import { backlinkSuggestion, compareRelationKinds, relationGroupLabel, ruleFillIn, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
 
 /** The one-click answers; every other kind is under "More". */
 const PINNED = new Set(["ours", "mention", "review_site", "competitor", "not_us", "irrelevant"]);
@@ -102,7 +102,8 @@ export function SmartAddWebRow({
   const marks = savedMarks ?? localMarks;
   const onMark = (key: string, mark: WebMark | null) =>
     saveMark ? saveMark(key, mark) : setLocalMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest));
-  const row = webRow(items);
+  // The backlinks step reads each page itself, so its recognition (schema.org markup included) completes the row's.
+  const row = webRow(items).map((i) => withPageKind(i, backlinks[i.key]));
   const byKey = new Map(row.map((i) => [i.key, i]));
   const answers: Record<string, ReviewAnswer> = {};
   for (const i of row) {
@@ -111,7 +112,6 @@ export function SmartAddWebRow({
     else if (marks[i.key]) answers[i.key] = { status: marks[i.key] };
   }
   const suggestions: Record<string, ReviewSuggestion | null> = {};
-  const hasBacklinkKind = kinds.some((k) => k.key === BACKLINK_KIND);
   for (const i of row) {
     // The web-result classifier's suggestion (weThink.withSuggestions) wins over the rules'.
     const agent = i.suggestion as { by?: string; choice?: string; relation_key?: string | null; sentiment?: ReviewSuggestion["sentiment"]; probability?: number | null; reason?: string; evidence?: string[] } | null | undefined;
@@ -124,16 +124,9 @@ export function SmartAddWebRow({
       : s
         ? { kind: s.kind, reason: s.reason, by: "Rules" }
         : null;
-    // A page that links to the brand defaults to Backlink: the strongest fact we hold about it (a suggestion, never set).
-    const linked = backlinks[i.key];
-    if (linked?.status === "found" && hasBacklinkKind) {
-      suggestions[i.key] = {
-        kind: BACKLINK_KIND,
-        reason: backlinkReason(linked),
-        evidence: linked.backlinks.map((b) => b.matchedUrl),
-        by: "Links to you",
-      };
-    }
+    // A page that links to the brand defaults to Backlink unless it was recognized as something more specific (a suggestion, never set).
+    const linkSuggestion = backlinkSuggestion(i, kinds, backlinks[i.key]);
+    if (linkSuggestion) suggestions[i.key] = linkSuggestion;
   }
   const sessionId = usePublishSearchReviewSession(
     row.length

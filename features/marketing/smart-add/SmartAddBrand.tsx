@@ -154,7 +154,7 @@ import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { SmartAddWebRow } from "./SmartAddWebRow";
-import type { BacklinkCheck } from "./backlinks";
+import { withPageKind, type BacklinkCheck } from "./backlinks";
 import { captureProvision } from "@/features/provision-window/data";
 import { autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
 import { DEFAULT_INSTANCE_ID } from "@/lib/redux/slices/overlaySlice";
@@ -1073,7 +1073,11 @@ export function SmartAddBrand({
       handles: [...basics.accounts.map((a) => a.handle ?? null), ...visible.filter((i) => i.field === "social").map((i) => i.handle)],
     },
   );
-  const webItems = visible.filter((i) => i.field === "listing" || i.field === "mention" || i.field === "web_page");
+  const allBacklinks = Object.assign({}, ...Object.values(backlinksByRun).map((b) => b.checks)) as Record<string, BacklinkCheck>;
+  // Confirmed rows keep the page kind the server recognized, including what it read off the page itself (schema.org markup).
+  const webItems = visible
+    .filter((i) => i.field === "listing" || i.field === "mention" || i.field === "web_page")
+    .map((i) => withPageKind(i, allBacklinks[i.key]));
   const webPersonRows = webItems.flatMap((item) => {
     const k = relationKinds.find((x) => x.key === webChoices[item.key]?.kind);
     return k && (k.routesTo === "owns" || k.routesTo === "key_person")
@@ -1970,7 +1974,7 @@ export function SmartAddBrand({
         }
         marks={webMarks}
         onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}
-        backlinks={Object.assign({}, ...Object.values(backlinksByRun).map((b) => b.checks)) as Record<string, BacklinkCheck>}
+        backlinks={allBacklinks}
         backlinksChecking={Object.values(backlinksByRun).some((b) => b.checking)}
       />
       <WebPersonAsk rows={webPersonRows} names={Object.fromEntries(webPersonRows.map((r) => [r.item.key, webPersonNames[r.item.key] ?? r.guess ?? ""]))} onName={(key, name) => setWebPersonNames((cur) => ({ ...cur, [key]: name }))} />
