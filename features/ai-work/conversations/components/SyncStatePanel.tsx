@@ -25,7 +25,7 @@
 // So the button says that and opens the desktop app's own page. A button that
 // looks live and does nothing is the "fake Resume" this product forbids.
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
+import { Fact } from "@/features/ai-work/components/connections/Fact";
 import { StatusDot } from "@ai-matrx/design-system";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { useEffect, useState } from "react";
@@ -173,7 +173,7 @@ export function SyncStatePanel() {
       accessorFn: (a) => freshnessLabel(a.freshness),
       sortValue: (a) => FRESHNESS_ORDER[a.freshness],
       filter: "select",
-      width: 130,
+      width: 190,
       cell: (a) => (
         <span className="flex min-w-0 items-center gap-1.5">
           <StatusDot tone={FRESHNESS_TONE[a.freshness]} label={freshnessLabel(a.freshness)} />
@@ -182,7 +182,7 @@ export function SyncStatePanel() {
       ),
     },
     { id: "sessions", header: "Sessions", accessorFn: (a) => a.sessionCount, filter: "number", width: 100, align: "right" },
-    { id: "last_delivery", header: "Last delivery", accessorFn: (a) => a.lastSeenAt, filter: "date", width: 150, cell: (a) => <span className="text-muted-foreground">{a.lastSeenAt ? formatSessionTimestamp(a.lastSeenAt) : "Never"}</span> },
+    { id: "last_delivery", header: "Last delivery", accessorFn: (a) => a.lastSeenAt, filter: "date", width: 190, cell: (a) => <span className="text-muted-foreground">{a.lastSeenAt ? formatSessionTimestamp(a.lastSeenAt) : "Never"}</span> },
     { id: "inactive", header: "Not active", accessorFn: (a) => a.inactiveCount, filter: "number", width: 100, align: "right", helpText: "Sessions whose delivery binding is no longer active" },
     { id: "workspaces", header: "Workspaces", accessorFn: (a) => a.workspaces.length, filter: "number", width: 110, align: "right" },
   ];
@@ -204,15 +204,15 @@ export function SyncStatePanel() {
         description: (a) => providerLabel(a.provider) ?? humanizeIdentifier(a.provider),
         render: (a) => (
           <div className="space-y-3 p-1">
-            <PropertyRow label="App" value={providerLabel(a.provider) ?? humanizeIdentifier(a.provider)} />
-            <PropertyRow label="Account" value={a.accountReported ? a.accountLabel : null} missing="No identity reported" />
-            <PropertyRow label="Status" value={freshnessLabel(a.freshness)} />
-            <PropertyRow label="Sessions delivered" value={a.sessionCount.toLocaleString()} />
-            <PropertyRow label="Last delivery" value={a.lastSeenAt ? formatSessionTimestamp(a.lastSeenAt) : "Never"} />
-            <PropertyRow label="Fidelity" value={a.fidelity.map((f) => `${humanizeIdentifier(f.value)} (${f.count})`).join(", ") || null} missing="None recorded" />
-            <PropertyRow label="Arrived by" value={a.origin.map((o) => `${arrivedByLabel(o.value, humanizeIdentifier)} (${o.count})`).join(", ") || null} missing="None recorded" />
-            <PropertyRow label="Bindings not active" value={a.inactiveCount > 0 ? String(a.inactiveCount) : "None"} />
-            <PropertyRow label="Workspaces" value={a.workspaces.length ? a.workspaces.join(", ") : null} missing="None reported" />
+            <Fact label="App" value={providerLabel(a.provider) ?? humanizeIdentifier(a.provider)} />
+            <Fact label="Account" value={a.accountReported ? a.accountLabel : null} empty="No identity reported" />
+            <Fact label="Status" value={freshnessLabel(a.freshness)} />
+            <Fact label="Sessions delivered" value={a.sessionCount.toLocaleString()} />
+            <Fact label="Last delivery" value={a.lastSeenAt ? formatSessionTimestamp(a.lastSeenAt) : "Never"} />
+            <Fact label="Fidelity" value={a.fidelity.map((f) => `${humanizeIdentifier(f.value)} (${f.count})`).join(", ") || null} empty="None recorded" />
+            <Fact label="Arrived by" value={a.origin.map((o) => `${arrivedByLabel(o.value, humanizeIdentifier)} (${o.count})`).join(", ") || null} empty="None recorded" />
+            <Fact label="Bindings not active" value={a.inactiveCount > 0 ? String(a.inactiveCount) : "None"} />
+            <Fact label="Workspaces" value={a.workspaces.length ? a.workspaces.join(", ") : null} empty="None reported" />
           </div>
         ),
       }}

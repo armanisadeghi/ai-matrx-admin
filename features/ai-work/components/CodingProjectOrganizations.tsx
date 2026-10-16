@@ -9,6 +9,7 @@
  * contract-typed calls and the table.
  */
 
+import { Fact } from "@/features/ai-work/components/connections/Fact";
 import { useMemo, useState } from "react";
 import { Building2, Info } from "lucide-react";
 
@@ -21,7 +22,7 @@ import type {
 import { useProjectOrganizations, type ProjectOrganizationsState } from "@ai-matrx/coding-sessions/projects/react";
 import type { components } from "@ai-matrx/api/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, ErrorNotice, StatusDot } from "@ai-matrx/design-system";
-import { PropertyRow, Select } from "@ai-matrx/design-system/controls";
+import { Select } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 
 import { putJson } from "@/lib/python-client";
@@ -136,7 +137,7 @@ function ProjectsTable({ state }: { state: ProjectOrganizationsState }) {
     { id: "saves_to", header: "Saves to", accessorFn: (r) => (r.effective ? state.organizationName(r.effective) : ""), filter: "select", width: 220, cell: (r) => <span className={`truncate ${r.effective ? "" : "text-muted-foreground"}`}>{r.effective ? state.organizationName(r.effective) : "—"}</span> },
     { id: "organizations", header: "Organizations", accessorFn: (r) => r.livesIn.length, filter: "number", width: 120, align: "right", helpText: "How many organizations its saved sessions are in now; more than one means it is split" },
     { id: "sessions", header: "Sessions", accessorFn: (r) => r.sessions, filter: "number", width: 100, align: "right" },
-    { id: "last_active", header: "Last active", accessorFn: (r) => r.lastActiveAt, filter: "date", width: 150, cell: (r) => <span className="text-muted-foreground">{r.lastActiveAt ? formatSessionTimestamp(r.lastActiveAt) : "—"}</span> },
+    { id: "last_active", header: "Last active", accessorFn: (r) => r.lastActiveAt, filter: "date", width: 190, cell: (r) => <span className="text-muted-foreground">{r.lastActiveAt ? formatSessionTimestamp(r.lastActiveAt) : "—"}</span> },
   ];
 
   return (
@@ -182,14 +183,14 @@ function ProjectsTable({ state }: { state: ProjectOrganizationsState }) {
           description: (r) => statusOf(r, allProjects).word,
           render: (r) => (
             <div className="space-y-3 p-1">
-              <PropertyRow label="Project" value={r.name} />
-              <PropertyRow label="Key" value={r.key} mono />
-              <PropertyRow label="Status" value={statusOf(r, allProjects).word} />
-              <PropertyRow label="Its own choice" value={r.chosen ? state.organizationName(r.chosen) : null} missing="None" />
-              <PropertyRow label="Next session saves to" value={r.effective ? state.organizationName(r.effective) : null} missing="Held until you choose" />
-              <PropertyRow label="Saved sessions are in" value={r.livesIn.length ? orgNames(r.livesIn) : null} missing="None yet" />
-              <PropertyRow label="Sessions" value={String(r.sessions)} />
-              <PropertyRow label="Last active" value={r.lastActiveAt ? formatSessionTimestamp(r.lastActiveAt) : null} missing="—" />
+              <Fact label="Project" value={r.name} />
+              <Fact label="Key" value={r.key} mono />
+              <Fact label="Status" value={statusOf(r, allProjects).word} />
+              <Fact label="Its own choice" value={r.chosen ? state.organizationName(r.chosen) : null} empty="None" />
+              <Fact label="Next session saves to" value={r.effective ? state.organizationName(r.effective) : null} empty="Held until you choose" />
+              <Fact label="Saved sessions are in" value={r.livesIn.length ? orgNames(r.livesIn) : null} empty="None yet" />
+              <Fact label="Sessions" value={String(r.sessions)} />
+              <Fact label="Last active" value={r.lastActiveAt ? formatSessionTimestamp(r.lastActiveAt) : null} empty="—" />
             </div>
           ),
         }}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Fact } from "@/features/ai-work/components/connections/Fact";
 import { ProInput } from "@/components/official/ProInput";
 
 /**
@@ -18,7 +19,7 @@ import { useEffect, useState } from "react";
 import { ExternalLink, Info, KeyRound, Loader2, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { CloudSetupDialog } from "@/features/ai-work/components/connections/CloudSetupDialog";
 import { toast } from "@/lib/toast";
@@ -204,10 +205,10 @@ export function CursorAccountsPanel() {
           description: () => "Cursor cloud account",
           render: (row) => (
             <div className="space-y-3 p-1">
-              <PropertyRow label="Account" value={row.label} />
-              <PropertyRow label="Status" value={STATUS_LABEL[row.status] ?? row.status} />
-              <PropertyRow label="Connection id" value={row.id} mono />
-              <PropertyRow label="Used for" value="Delivering messages to your Cursor cloud agents" />
+              <Fact label="Account" value={row.label} />
+              <Fact label="Status" value={STATUS_LABEL[row.status] ?? row.status} />
+              <Fact label="Connection id" value={row.id} mono />
+              <Fact label="Used for" value="Delivering messages to your Cursor cloud agents" />
             </div>
           ),
         }}

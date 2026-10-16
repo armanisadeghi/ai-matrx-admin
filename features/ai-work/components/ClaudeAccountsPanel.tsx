@@ -18,11 +18,12 @@
  * send and read mail.
  */
 
+import { Fact } from "@/features/ai-work/components/connections/Fact";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ExternalLink, Info, KeyRound, Loader2, LogOut, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { CloudSetupDialog } from "@/features/ai-work/components/connections/CloudSetupDialog";
 import { toast } from "@/lib/toast";
@@ -517,11 +518,11 @@ export function ClaudeAccountsPanel() {
           description: () => "Claude cloud account",
           render: (row) => (
             <div className="space-y-3 p-1">
-              <PropertyRow label="Account" value={row.label} />
-              <PropertyRow label="Status" value={row.status === "connected" ? "Connected" : "Signed out"} />
-              <PropertyRow label="Sandbox sign-in" value={row.slot} mono missing="None" />
-              <PropertyRow label="Connection id" value={row.id} mono />
-              <PropertyRow label="Used for" value="Delivering messages to your Claude cloud sessions" />
+              <Fact label="Account" value={row.label} />
+              <Fact label="Status" value={row.status === "connected" ? "Connected" : "Signed out"} />
+              <Fact label="Sandbox sign-in" value={row.slot} mono empty="None" />
+              <Fact label="Connection id" value={row.id} mono />
+              <Fact label="Used for" value="Delivering messages to your Claude cloud sessions" />
             </div>
           ),
         }}

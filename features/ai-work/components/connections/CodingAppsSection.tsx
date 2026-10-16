@@ -13,15 +13,17 @@
  * about a row is in its details panel.
  */
 
+import { Fact } from "@/features/ai-work/components/connections/Fact";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Gauge, Info, Monitor, RotateCw } from "lucide-react";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { isDesktopProtocolError, type AppAccount, type AppInstance } from "@ai-matrx/desktop-protocol";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
-import { useDesktopAction, useDesktopRequest } from "@ai-matrx/desktop-protocol/react";
+import { useDesktopAction, useDesktopRequest, type DesktopActionState } from "@ai-matrx/desktop-protocol/react";
 import { ErrorNotice, Progress, StatusDot } from "@ai-matrx/design-system";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Button, PropertyRow, Select, Tabs } from "@ai-matrx/design-system/controls";
+import { Button, Select, Tabs } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxTableIconAction } from "@ai-matrx/design-system/data-table";
 
 import { supabase } from "@/utils/supabase/client";
@@ -120,7 +122,9 @@ export function CodingAppsSection() {
         ? list.reason
         : computers.length === 0
           ? "No Matrx 2 computer is linked to your account"
-          : `${computers.map((c) => `${c.name}: ${c.reason ?? "not reachable"}`).join(" · ")}`;
+          : computers.length === 1
+            ? `${computers[0]!.name}: ${computers[0]!.reason ?? "not reachable"}`
+            : `None of your ${computers.length} computers is online`;
   return (
     <AppsTables
       computerName={null}
@@ -129,13 +133,21 @@ export function CodingAppsSection() {
       chats={new Map()}
       reading={list.state === "loading"}
       readError={null}
-      problem={why}
+      where={why}
+      problem={null}
       asOfMs={null}
       refreshing={false}
       client={null}
+      action={null}
       onRefresh={null}
       onDone={() => undefined}
-      picker={null}
+      picker={
+        computers.length ? (
+          <Button asChild variant="quiet">
+            <Link href="/devices">Your computers</Link>
+          </Button>
+        ) : null
+      }
     />
   );
 }
@@ -170,6 +182,7 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
   const readsDone = reads.every((r) => r.instances.data !== undefined || r.instances.error !== undefined);
   const problems = [...new Set(reads.flatMap((r) => [r.instances.data?.problem, r.accounts.data?.problem]).filter((p): p is string => Boolean(p)))];
 
+  const action = useDesktopAction({ client, onDone: () => refetch() });
   const refetch = () => {
     for (const r of reads) {
       void r.instances.refetch();
@@ -185,10 +198,9 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
       ]),
     ).then(refetch);
 
+  const where = live || status.pill === "live" ? null : `${computer.name}: ${status.detail ?? status.label}`;
   const problem = !live
-    ? status.pill === "live"
-      ? null
-      : `${computer.name}: ${status.detail ?? status.label}`
+    ? null
     : firstError && !instances.length
       ? `${computer.name} answered: ${firstError.message}`
       : problems.length
@@ -203,10 +215,12 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
       chats={chats}
       reading={!live ? status.pill === "reconnecting" : !readsDone}
       readError={live && firstError && !instances.length ? firstError.message : null}
+      where={where}
       problem={problem}
       asOfMs={asOfMs}
       refreshing={refreshing}
       client={live ? client : null}
+      action={action}
       onRefresh={refreshAll}
       onDone={refetch}
       picker={picker}
@@ -222,11 +236,15 @@ interface AppsTablesProps {
   reading: boolean;
   /** The instances read itself failed (the tables say so instead of "nothing found"). */
   readError: string | null;
+  /** Why no computer answers, said plainly (not an error: the computer is off or asleep). */
+  where: string | null;
   problem: string | null;
   asOfMs: number | null;
   refreshing: boolean;
   /** The open connection; null when no computer answers (every action is dimmed). */
   client: DesktopClient | null;
+  /** The connection's one action runner (busy flag and last error); null with no connection. */
+  action: DesktopActionState | null;
   onRefresh: (() => Promise<unknown>) | null;
   onDone: () => void;
   picker: React.ReactNode;
@@ -260,11 +278,11 @@ function AppsTables(p: AppsTablesProps) {
   const [app, setApp] = useState<AppFilter>("all");
   const [note, setNote] = useState<string | null>(null);
   const [restarting, setRestarting] = useState<AppInstance | null>(null);
-  const action = useDesktopAction({ ...(p.client ? { client: p.client } : {}), onDone: p.onDone });
+  const action = p.action;
   const [refreshBusy, setRefreshBusy] = useState(false);
   const now = useNow();
-  const busy = action.busy || refreshBusy;
-  const off = p.client === null;
+  const busy = (action?.busy ?? false) || refreshBusy;
+  const off = p.client === null || action === null;
 
   const byId = new Map(p.accounts.map((a) => [acctKey(a), a]));
   const accountOf = (i: AppInstance) => (i.account_id ? byId.get(`${i.app_key}:${i.account_id}`) : undefined);
@@ -276,9 +294,9 @@ function AppsTables(p: AppsTablesProps) {
   const openOf = (i: AppInstance) => (READS_CHATS.has(i.app_key) ? i.open_chats : -1);
 
   const say = (r: Promise<{ message: string }>) => r.then((x) => setNote(x.message));
-  const open = (i: AppInstance) => void action.run((c) => say(c.request("apps.windows.open", { app_key: i.app_key, window: i.key })));
+  const open = (i: AppInstance) => void action?.run((c) => say(c.request("apps.windows.open", { app_key: i.app_key, window: i.key })));
   const restart = (i: AppInstance, force: boolean) =>
-    void action.run(async (c) => {
+    void action?.run(async (c) => {
       try {
         await say(c.request("apps.windows.restart", { app_key: i.app_key, window: i.key, force }));
       } catch (error) {
@@ -287,7 +305,7 @@ function AppsTables(p: AppsTablesProps) {
       }
     });
   const askRestart = (i: AppInstance) => (i.open_chats ? setRestarting(i) : restart(i, false));
-  const refreshUsage = (i: AppInstance) => void action.run((c) => say(c.request("apps.windows.refresh_usage", { app_key: i.app_key, window: i.key })));
+  const refreshUsage = (i: AppInstance) => void action?.run((c) => say(c.request("apps.windows.refresh_usage", { app_key: i.app_key, window: i.key })));
 
   const readerOf = (a: AppAccount): AppInstance | null => {
     const mine = p.instances.filter((i) => i.app_key === a.app_key && i.account_id === a.account_id && i.folder_exists);
@@ -437,8 +455,9 @@ function AppsTables(p: AppsTablesProps) {
         data={[{ value: "all" as AppFilter, label: "All apps", count: p.instances.length }, ...APP_KEYS.map((k) => ({ value: k as AppFilter, label: appLabel(k), count: tabCount(k) }))]}
       />
 
+      {p.where ? <p className="text-xs text-muted-foreground" role="status" data-coding-apps-offline>{p.where}</p> : null}
       {p.problem ? <ErrorNotice message={p.problem} size="inline" /> : null}
-      {action.error ? <ErrorNotice message={action.error.message} size="inline" /> : null}
+      {action?.error ? <ErrorNotice message={action.error.message} size="inline" /> : null}
       {note ? <p className="text-xs text-muted-foreground" role="status">{note}</p> : null}
 
       <MatrxDataTable<AppInstance>
@@ -500,24 +519,24 @@ function InstanceDetail({ i, account, chats, away, now }: { i: AppInstance; acco
   const at = (ms: number | null) => (ms ? `${time(ms)} (${ago(ms, now)})` : null);
   return (
     <div className="space-y-3 p-1">
-      <PropertyRow label="Status" value={statusWords(i).word} />
-      <PropertyRow label="Signed in as" value={instanceAccount(i)} missing="Not recorded" />
-      <PropertyRow label="Account id" value={i.account_id} mono missing="—" />
-      <PropertyRow label="Kept for" value={i.meant_for ?? (i.main ? "Any account" : null)} missing="—" />
-      <PropertyRow label="Weekly (its account)" value={account?.weekly === null || account?.weekly === undefined ? null : pct(account.weekly)} missing="—" />
-      <PropertyRow label="Version running" value={i.version} missing="Not recorded by this app" />
-      <PropertyRow label="Version installed" value={i.installed_version} missing="—" />
-      <PropertyRow label="Process" value={i.pid ? String(i.pid) : "Not running"} />
-      <PropertyRow label="Launched" value={at(i.launched_ms)} missing="—" />
-      <PropertyRow label="Last quit" value={at(i.quit_ms)} missing="—" />
-      <PropertyRow label="First launched" value={at(i.first_launch_ms)} missing="—" />
-      <PropertyRow label="Folder" value={i.folder} mono missing="—" />
-      <PropertyRow label="Folder exists" value={i.folder_exists ? "Yes" : "No"} />
+      <Fact label="Status" value={statusWords(i).word} />
+      <Fact label="Signed in as" value={instanceAccount(i)} empty="Not recorded" />
+      <Fact label="Account id" value={i.account_id} mono empty="—" />
+      <Fact label="Kept for" value={i.meant_for ?? (i.main ? "Any account" : null)} empty="—" />
+      <Fact label="Weekly (its account)" value={account?.weekly === null || account?.weekly === undefined ? null : pct(account.weekly)} empty="—" />
+      <Fact label="Version running" value={i.version} empty="Not recorded by this app" />
+      <Fact label="Version installed" value={i.installed_version} empty="—" />
+      <Fact label="Process" value={i.pid ? String(i.pid) : "Not running"} />
+      <Fact label="Launched" value={at(i.launched_ms)} empty="—" />
+      <Fact label="Last quit" value={at(i.quit_ms)} empty="—" />
+      <Fact label="First launched" value={at(i.first_launch_ms)} empty="—" />
+      <Fact label="Folder" value={i.folder} mono empty="—" />
+      <Fact label="Folder exists" value={i.folder_exists ? "Yes" : "No"} />
       {READS_CHATS.has(i.app_key) ? (
         <>
-          <PropertyRow label="Chats" value={chats < 0 ? "Still being read" : String(chats)} />
-          <PropertyRow label="Open now" value={String(i.open_chats)} />
-          <PropertyRow label="Moved away" value={away < 0 ? null : String(away)} missing="—" />
+          <Fact label="Chats" value={chats < 0 ? "Still being read" : String(chats)} />
+          <Fact label="Open now" value={String(i.open_chats)} />
+          <Fact label="Moved away" value={away < 0 ? null : String(away)} empty="—" />
         </>
       ) : null}
     </div>
@@ -530,22 +549,22 @@ function AccountDetail({ a, stale, now }: { a: AppAccount; stale: boolean; now: 
   const source = a.weekly_reset_source === "app" ? "the app itself" : a.weekly_reset_source === "usage_history" ? "a reset seen in its usage history" : a.weekly_reset_source ? "your list (not confirmed yet)" : null;
   return (
     <div className="space-y-3 p-1">
-      <PropertyRow label="Email" value={a.email} missing="Not known yet: fills in at its next sign-in" />
-      <PropertyRow label="Account id" value={a.account_id} mono />
-      <PropertyRow label="Plan" value={a.plan} missing="Not recorded" />
-      <PropertyRow label="Organizations" value={a.orgs.length ? a.orgs.join(", ") : null} missing="—" />
-      <PropertyRow label="Signed in at" value={a.instances.length ? a.instances.join(", ") : "No instance now"} />
-      <PropertyRow label="Weekly" value={a.weekly === null ? null : `${pct(a.weekly)}${a.weekly_reset_since ? " (the week has reset since this reading)" : ""}`} missing="—" />
-      <PropertyRow label="Week resets" value={a.weekly_resets_at_ms ? `${at(a.weekly_resets_at_ms)}${source ? `, from ${source}` : ""}` : null} missing="—" />
-      <PropertyRow label="5-hour" value={a.five_hour === null ? null : `${pct(a.five_hour)}${a.five_hour_reset_since ? " (the 5-hour window has passed since this reading)" : ""}`} missing="—" />
-      <PropertyRow label="5-hour resets by" value={at(a.five_hour_resets_at_ms)} missing="—" />
-      <PropertyRow label="Extra usage" value={a.extra_usage === null ? null : `${Math.round(a.extra_usage)}% of its cap`} missing="—" />
-      <PropertyRow label="Credits" value={a.credits === null ? null : a.credits.toFixed(2)} missing="—" />
-      <PropertyRow label="Newest reading" value={at(a.read_at_ms)} missing="Never read" help={stale ? `Older than ${STALE_MIN} minutes: the app reads usage only while an instance signed into it is open` : undefined} />
-      <PropertyRow label="Read in" value={a.read_in} missing="—" />
-      <PropertyRow label="First seen" value={at(a.first_seen_ms)} missing="—" />
-      <PropertyRow label="Last seen" value={at(a.last_seen_ms)} missing="—" />
-      <PropertyRow label="Still missing" value={a.missing.length ? a.missing.join(", ") : "Nothing"} />
+      <Fact label="Email" value={a.email} empty="Not known yet: fills in at its next sign-in" />
+      <Fact label="Account id" value={a.account_id} mono />
+      <Fact label="Plan" value={a.plan} empty="Not recorded" />
+      <Fact label="Organizations" value={a.orgs.length ? a.orgs.join(", ") : null} empty="—" />
+      <Fact label="Signed in at" value={a.instances.length ? a.instances.join(", ") : "No instance now"} />
+      <Fact label="Weekly" value={a.weekly === null ? null : `${pct(a.weekly)}${a.weekly_reset_since ? " (the week has reset since this reading)" : ""}`} empty="—" />
+      <Fact label="Week resets" value={a.weekly_resets_at_ms ? `${at(a.weekly_resets_at_ms)}${source ? `, from ${source}` : ""}` : null} empty="—" />
+      <Fact label="5-hour" value={a.five_hour === null ? null : `${pct(a.five_hour)}${a.five_hour_reset_since ? " (the 5-hour window has passed since this reading)" : ""}`} empty="—" />
+      <Fact label="5-hour resets by" value={at(a.five_hour_resets_at_ms)} empty="—" />
+      <Fact label="Extra usage" value={a.extra_usage === null ? null : `${Math.round(a.extra_usage)}% of its cap`} empty="—" />
+      <Fact label="Credits" value={a.credits === null ? null : a.credits.toFixed(2)} empty="—" />
+      <Fact label="Newest reading" value={at(a.read_at_ms)} empty="Never read" help={stale ? `Older than ${STALE_MIN} minutes: the app reads usage only while an instance signed into it is open` : undefined} />
+      <Fact label="Read in" value={a.read_in} empty="—" />
+      <Fact label="First seen" value={at(a.first_seen_ms)} empty="—" />
+      <Fact label="Last seen" value={at(a.last_seen_ms)} empty="—" />
+      <Fact label="Still missing" value={a.missing.length ? a.missing.join(", ") : "Nothing"} />
     </div>
   );
 }
