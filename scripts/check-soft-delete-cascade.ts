@@ -107,6 +107,22 @@ const EXPECTED_CHECKS = [
   "edges_name_existing_tables",
 ] as const;
 
+/**
+ * The move-and-archive engine's own liveness (platform.change_engine_conformance, service role,
+ * migration 20261016101000). Asked beside the cascade because the engine is the walker that
+ * replaces it: every relationship has a rule, the one door is declared, the row cascade steps
+ * aside under the engine's marker, and org-pinned references can follow their row in one move.
+ * PROVEN FAILING 2026-10-16: before the engine migration was applied the RPC answered 404 and
+ * all four keys reported NOT RETURNED; after it, all four green.
+ */
+const ENGINE_RPC = "change_engine_conformance";
+const ENGINE_CHECKS = [
+  "relationships_all_ruled",
+  "change_engine_door_declared",
+  "row_cascade_steps_aside_for_engine",
+  "org_pinned_references_deferrable",
+] as const;
+
 const C = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",
@@ -165,13 +181,14 @@ function isRow(value: unknown): value is ConformanceRow {
   return typeof r.check_key === "string" && typeof r.ok === "boolean";
 }
 
-async function fetchConformance(): Promise<
-  { rows: ConformanceRow[]; failure: null } | { rows: null; failure: string }
-> {
+async function fetchConformance(
+  rpc: string = RPC,
+  profile: string = "public",
+): Promise<{ rows: ConformanceRow[]; failure: null } | { rows: null; failure: string }> {
   const env = loadSupabaseEnv();
   if (!env) return { rows: null, failure: "no Supabase URL/secret key in env or .env* files" };
 
-  const endpoint = `${env.url.replace(/\/$/, "")}/rest/v1/rpc/${RPC}`;
+  const endpoint = `${env.url.replace(/\/$/, "")}/rest/v1/rpc/${rpc}`;
   try {
     const res = await fetch(endpoint, {
       method: "POST",
@@ -180,8 +197,8 @@ async function fetchConformance(): Promise<
         Authorization: `Bearer ${env.key}`,
         "Content-Type": "application/json",
         Accept: "application/json",
-        "Content-Profile": "public",
-        "Accept-Profile": "public",
+        "Content-Profile": profile,
+        "Accept-Profile": profile,
       },
       body: "{}",
       signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -189,14 +206,14 @@ async function fetchConformance(): Promise<
     if (!res.ok) {
       return {
         rows: null,
-        failure: `rpc/${RPC} returned ${res.status}: ${(await res.text()).slice(0, 300)}`,
+        failure: `rpc/${rpc} returned ${res.status}: ${(await res.text()).slice(0, 300)}`,
       };
     }
     const parsed: unknown = JSON.parse(await res.text());
-    if (!Array.isArray(parsed)) return { rows: null, failure: `rpc/${RPC} did not return an array` };
+    if (!Array.isArray(parsed)) return { rows: null, failure: `rpc/${rpc} did not return an array` };
     const rows = parsed.filter(isRow);
     if (rows.length !== parsed.length) {
-      return { rows: null, failure: `rpc/${RPC} returned rows that are not {check_key, ok, ...}` };
+      return { rows: null, failure: `rpc/${rpc} returned rows that are not {check_key, ok, ...}` };
     }
     return { rows, failure: null };
   } catch (err) {
@@ -246,16 +263,25 @@ async function main(): Promise<number> {
     unmeasured(`rpc/${RPC} returned zero rows — it measured nothing`);
   }
 
-  const byKey = new Map(rows.map((r) => [r.check_key, r]));
-  const missing = EXPECTED_CHECKS.filter((k) => !byKey.has(k));
-  const failed = rows.filter((r) => !r.ok);
+  // The engine's checks: a missing function is a FAILURE of those four keys (the engine is absent),
+  // never an unmeasured run of the cascade checks above.
+  const engine = await fetchConformance(ENGINE_RPC, "platform");
+  const engineRows = engine.rows ?? [];
+  const allRows = [...rows, ...engineRows];
+  const byKey = new Map(allRows.map((r) => [r.check_key, r]));
+  const expected: readonly string[] = [...EXPECTED_CHECKS, ...ENGINE_CHECKS];
+  const missing = expected.filter((k) => !byKey.has(k));
+  const failed = allRows.filter((r) => !r.ok);
 
   console.log("");
   console.log(
     `${C.bold}Soft-delete cascade liveness${C.reset} ${C.dim}(public.${RPC})${C.reset}`,
   );
 
-  for (const key of EXPECTED_CHECKS) {
+  if (engine.failure) {
+    console.log(`  ${TAG.fail}platform.${ENGINE_RPC} ${C.dim}— ${engine.failure}${C.reset}`);
+  }
+  for (const key of expected) {
     const row = byKey.get(key);
     if (!row) {
       console.log(`  ${TAG.fail}${key} ${C.dim}— NOT RETURNED by the function${C.reset}`);
@@ -278,8 +304,8 @@ async function main(): Promise<number> {
 
   // A key the function returns that this file does not know about is not a
   // failure — it is a new check whose key belongs in EXPECTED_CHECKS.
-  for (const r of rows) {
-    if (!EXPECTED_CHECKS.includes(r.check_key as (typeof EXPECTED_CHECKS)[number])) {
+  for (const r of allRows) {
+    if (!expected.includes(r.check_key)) {
       console.log(
         `  ${TAG.info}unlisted  ${r.check_key} ${C.dim}— add it to EXPECTED_CHECKS in scripts/check-migration-slot-guard.ts${C.reset}`,
       );

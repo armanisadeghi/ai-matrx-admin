@@ -52,6 +52,7 @@ import {
   Youtube,
 } from "@/components/icons/brand-icons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
+import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -860,6 +861,23 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
           ? describeDiscoveredSocialProfile(item)
           : null;
         const text = social?.identity || itemDisplayValue(item);
+        // A way to reach someone (email, phone, address, site, profile) is THE contact value; the
+        // finding's own peek moves to its glyph.
+        const contact = social
+          ? item.url
+            ? contactFactValue({ kind: "social_profile", value: item.url, platform: social.kind })
+            : null
+          : contactFactValue({ kind: item.guessed_kind, value: itemDisplayValue(item) });
+        if (contact) {
+          return (
+            <span className="flex min-w-0 items-center gap-2" data-discovery-item={item.id}>
+              <PeekHoverCard trigger={<span className="inline-flex shrink-0"><ItemGlyph item={item} /></span>}>
+                <Peek record={peekOf(item)} />
+              </PeekHoverCard>
+              {contact}
+            </span>
+          );
+        }
         return (
           <span className="flex min-w-0 items-center gap-2">
             <ItemGlyph item={item} />

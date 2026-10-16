@@ -1,3 +1,4 @@
+import { EmailValue } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { createRouteMetadata } from "@/utils/route-metadata";
@@ -188,7 +189,7 @@ export default function TermsOfServicePage() {
           AI Matrx product
           <br />
           Questions about these terms can be sent to{" "}
-          <a href="mailto:info@aimatrx.com">info@aimatrx.com</a>.
+          <EmailValue email="info@aimatrx.com" owner="AI Matrx" />.
         </p>
         <p>
           The separate{" "}

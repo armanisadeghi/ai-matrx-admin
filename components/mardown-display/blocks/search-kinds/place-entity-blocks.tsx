@@ -9,9 +9,9 @@
 
 import React, { useState } from "react";
 import { ChevronDown, Clock, Globe, Navigation, Phone } from "lucide-react";
+import { parsePhone, PhoneValue, telHref } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { PlaceReviewsLoader } from "@/features/search/components/PlaceReviewsLoader";
-import { formatPhoneNumber } from "@/lib/sms/phoneUtils";
 import {
   isRecord,
   num,
@@ -183,14 +183,9 @@ export function LocalPlaceBlock({
               </OutboundLink>
             )}
             {phone && (
-              <a
-                href={`tel:${phone}`}
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 tabular-nums text-muted-foreground hover:text-primary"
-              >
-                <Phone className="h-3.5 w-3.5" />
-                {formatPhoneNumber(phone)}
-              </a>
+              <span className="inline-flex min-w-0" onClick={(e) => e.stopPropagation()}>
+                <PhoneValue phone={phone} />
+              </span>
             )}
           </div>
         )}
@@ -411,7 +406,7 @@ export function EntityCardBlock({
           )}
           {phone && (
             <PanelAction
-              href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+              href={telHref(parsePhone(phone))}
               icon={Phone}
               label="Call"
               external={false}
@@ -462,13 +457,9 @@ export function EntityCardBlock({
           {placeAddress && <PropertyRow label="Address" value={placeAddress} />}
           {phone && (
             <PropertyRow label="Phone">
-              <a
-                href={`tel:${phone.replace(/[^\d+]/g, "")}`}
-                onClick={(e) => e.stopPropagation()}
-                className="tabular-nums text-primary underline-offset-2 hover:underline"
-              >
-                {formatPhoneNumber(phone)}
-              </a>
+              <span className="inline-flex min-w-0" onClick={(e) => e.stopPropagation()}>
+                <PhoneValue phone={phone} />
+              </span>
             </PropertyRow>
           )}
           {(hours || hoursText) && (

@@ -153,6 +153,17 @@ const FIRST_VISIT_ACTION_PX: Record<string, Record<string, number>> = {
     ".0/.8/.$menu": 39,
   },
 };
+/**
+ * THE REMEMBERED WIDTHS BELONG TO THE ACTION SET, NOT JUST THE SCREEN SHAPE (lane ZERO-4). A member's
+ * /data/<table> header draws a different set of actions than an admin's, so one record per screen
+ * shape made each role reserve the other's widths. The record is keyed by screen shape plus a hash of
+ * the action keys, so every role keeps its own.
+ */
+export const actionSetId = (surface: string, actionKeys: readonly string[]): string => {
+  let h = 5381;
+  for (const ch of [...actionKeys].sort().join("|")) h = ((h << 5) + h + ch.charCodeAt(0)) | 0;
+  return `${surface}#${(h >>> 0).toString(36)}`;
+};
 export const reservedActionWidth = (
   stored: Record<string, number> | null,
   surface: string,
@@ -338,9 +349,10 @@ export default function RouteHeader({
     setReservedCluster(stored > 0 ? stored : (FIRST_VISIT_CLUSTER_PX[surface] ?? null));
   }, [surface]);
   const [reservedActions, setReservedActions] = useState<Record<string, number> | null>(null);
+  const setId = actionSetId(surface, actions.map((a) => a.key));
   useLayoutEffect(() => {
-    setReservedActions(actionWidths.getJSON<Record<string, number>>(surface) ?? null);
-  }, [surface]);
+    setReservedActions(actionWidths.getJSON<Record<string, number>>(setId) ?? null);
+  }, [setId]);
   const { host: phoneHost } = usePhonePageActions();
   const yielded = useYieldedFallback(fallback);
   // The section nav folds too (page-pass shared defects, 2026-09-27): on a
@@ -441,7 +453,7 @@ export default function RouteHeader({
         if (!key || el.dataset.routeHeaderTwin != null || el.dataset.routeHeaderCompact != null) return;
         if (el.offsetWidth > 0) settled[key] = Math.round(el.offsetWidth);
       });
-      if (Object.keys(settled).length > 0) actionWidths.setJSON(surface, settled);
+      if (Object.keys(settled).length > 0) actionWidths.setJSON(setId, settled);
     }, 4000);
     // A nav can mount after this effect (a center that waits for data): watch
     // the center's content so its smallest trigger still gets its room.
@@ -468,7 +480,7 @@ export default function RouteHeader({
     };
     // Re-measure when the row mounts and whenever the set of actions, the
     // fold point, or the presence of a center changes.
-  }, [root, actionKeys, fold, compact, hasCenter, surface]);
+  }, [root, actionKeys, fold, compact, hasCenter, surface, setId]);
 
   // 🚨 ON A PHONE THE SECONDARY ACTIONS LIVE IN THE SHELL'S ⋮ (page-pass
   // shared defects, 2026-09-27): one overflow button per phone header, and the

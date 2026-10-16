@@ -182,6 +182,12 @@ export function agentResultMarkdown(value: Record<string, unknown>): string {
   if (produced.structured) {
     return `\`\`\`json\n${JSON.stringify(produced.structured, null, 2)}\n\`\`\``;
   }
+  // The server sends the answer once (aidream value_store `ANSWER_REPEAT_KEYS`): with debug off, a
+  // run whose `content` is non-empty arrives with `final_text: ""` and no `structured_output`, so the
+  // content channel is what copy/export has.
+  if (produced.content.length > 0) {
+    return `\`\`\`json\n${JSON.stringify(produced.content, null, 2)}\n\`\`\``;
+  }
   return "";
 }
 

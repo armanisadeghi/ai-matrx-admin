@@ -37,6 +37,7 @@ import { brightnessOf, LOGO_TILE_BG, shadeForBrightness } from "./logo-shade";
 import { LogoEnlarge, SourcesBadge, useLogoGroups, type LogoGroup, type SourceControls } from "./logoGroups";
 import { profileUrlFor } from "@/features/marketing/social/link";
 import { Shared } from "./stage/Shared";
+import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 
 /** How Yes lands: a name (main, then aliases), a primary-able value (main, then kept), or plain kept. */
 type RowMode = "name" | "primary" | "plain";
@@ -464,7 +465,7 @@ export function SmartAddSlots({
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} below={below(i)} actions={choices(i, "primary", relatedWayOut())} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">{CONTACT_LABEL[i.field]}</span>
-              <span className="truncate">{i.value}</span>
+              {contactFactValue({ kind: i.field, value: i.value }) ?? <span className="truncate">{i.value}</span>}
             </span>
           </Row>
         ))}

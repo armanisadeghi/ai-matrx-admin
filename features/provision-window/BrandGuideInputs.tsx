@@ -83,7 +83,7 @@ export function BrandGuideInputs({
   );
   if (!canSee) return null;
   return (
-    <div className="flex flex-col gap-0.5 text-xs" data-testid="brand-guide-inputs">
+    <div className="flex flex-row items-center gap-x-4 text-xs" data-testid="brand-guide-inputs">
       {points.map((p) => (
         <PointRow key={p} point={p} brandId={brandId} brandName={brandName} organizationId={organizationId} />
       ))}

@@ -15,7 +15,8 @@
  */
 
 import type { ReactNode } from "react";
-import { Ban, Mail, Phone, ExternalLink } from "lucide-react";
+import { Ban, ExternalLink } from "lucide-react";
+import { EmailValue, PhoneValue } from "@ai-matrx/design-system";
 import MatrxEnvelopeBlock from "@/features/matrx-envelope/MatrxEnvelopeBlock";
 import {
   buildDirectiveSlug,
@@ -84,13 +85,9 @@ function renderTyped(
     case "email":
       if (!text) return undefined;
       return (
-        <a
-          href={`mailto:${text}`}
-          className={cn("inline-flex items-center gap-1 text-primary hover:underline", className)}
-        >
-          <Mail className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{text}</span>
-        </a>
+        <span className={cn("inline-flex min-w-0 max-w-full", className)}>
+          <EmailValue email={text} />
+        </span>
       );
     case "url":
       if (!text) return undefined;
@@ -106,13 +103,9 @@ function renderTyped(
     case "phone":
       if (!text) return undefined;
       return (
-        <a
-          href={`tel:${text.replace(/[^\d+]/g, "")}`}
-          className={cn("inline-flex items-center gap-1 text-primary hover:underline", className)}
-        >
-          <Phone className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{text}</span>
-        </a>
+        <span className={cn("inline-flex min-w-0 max-w-full", className)}>
+          <PhoneValue phone={text} />
+        </span>
       );
     case "color": {
       if (!text) return undefined;

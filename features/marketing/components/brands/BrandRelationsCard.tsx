@@ -23,6 +23,7 @@ import type { Json } from "@/types/database.types";
 import { Favicon } from "@/features/research/components/overview/live-pipeline/ui/Favicon";
 import { outboundHref } from "@/features/marketing/smart-add/SmartAddExtras";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import {
   deleteProperty,
   listBrandPropertiesForMatching,
@@ -174,6 +175,11 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
   const [busy, setBusy] = useState(false);
   const h = host(row.url);
   const chip = chipLabel(row.label, row.url);
+  // A row whose name IS its address is that address, drawn as THE contact value (never for a match-only row).
+  const contact =
+    chip && !row.matchOnly
+      ? contactFactValue({ kind: chip.platform ? "social_profile" : "website", value: row.label, className: "inline-flex min-w-0 text-sm text-foreground" })
+      : null;
   const g = row.grounding;
   const hasGrounding = Boolean(g && (g.where || g.reason || g.confidence != null));
   if (row.pending) {
@@ -191,11 +197,11 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
       {row.thumb ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={proxiedExternalImageUrl(row.thumb)} alt="" className="size-5 shrink-0 rounded object-contain" data-testid="brand-relation-thumb" />
-      ) : row.url ? (
+      ) : row.url && !contact ? (
         <Favicon hostname={h} size={16} />
       ) : null}
-      <span className="truncate text-sm text-foreground" title={row.label}>{chip ? chip.text : row.label}</span>
-      {chip?.platform ? <span className="shrink-0 text-xs text-muted-foreground">{chip.platform}</span> : null}
+      {contact ?? <span className="truncate text-sm text-foreground" title={row.label}>{chip ? chip.text : row.label}</span>}
+      {chip?.platform && !contact ? <span className="shrink-0 text-xs text-muted-foreground">{chip.platform}</span> : null}
       {row.matchOnly ? (
         <span className="min-w-0 shrink truncate text-xs text-muted-foreground" data-testid="brand-relation-address">
           {row.url}
@@ -239,7 +245,7 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
       ) : (
         body
       )}
-      {row.url && !row.matchOnly ? (
+      {row.url && !row.matchOnly && !contact ? (
         <OutboundLink
           href={outboundHref(row.url)}
           className="matrx-tap-area inline-flex shrink-0 items-center text-muted-foreground hover:text-primary"

@@ -12,6 +12,13 @@
  * opens, at most ONE request per organization (the shared roster read joins the second mount).
  *
  * RED without the fix: the closed mounts sweep every organization (count = organizations).
+ *
+ * THE CLASS, NOT THE INSTANCE (2026-10-16). The same shape lived in the task assignee picker
+ * (a closed popover in every task editor and directive form) and the meeting guest picker (a
+ * field whose suggestions appear only after typing). Every people picker that can sit on a page
+ * unused is rendered here unused and must read ZERO rosters; and every `useUserConnections`
+ * caller in the app must either pass `enabled` or be named below with why its list is on screen
+ * the moment it mounts — so the next closed picker fails here before it ships.
  */
 
 import React, { act } from "react";
@@ -90,7 +97,11 @@ jest.mock("@/features/organizations/service/invitationsService", () => ({
   invitationsService: { listForTarget: async () => ({ ok: true, data: { invitations: [] } }) },
 }));
 
+import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { NewConversationDialog } from "@/features/messaging/components/NewConversationDialog";
+import TaskAssigneePicker from "@/features/tasks/components/TaskAssigneePicker";
+import { GuestPicker } from "@/features/meet/components/manage/GuestPicker";
 import { forgetOrganizationMemberRows } from "@/features/organizations/service/orgMemberRows";
 
 const rosterRequests = () =>
@@ -142,5 +153,92 @@ describe("/messages roster request budget", () => {
     await drain();
     expect(rosterRequests()).toBeGreaterThan(0);
     expect(rosterRequests()).toBeLessThanOrEqual(ORGANIZATION_COUNT);
+  });
+});
+
+describe("every people picker that sits on a page unused reads no roster", () => {
+  it("an unassigned task assignee picker reads nothing until it opens", async () => {
+    // The directive form mounts it with no organization: unguarded, that is every roster.
+    await act(async () =>
+      root.render(
+        <>
+          <TaskAssigneePicker assigneeId={null} onChange={() => undefined} />
+          <TaskAssigneePicker assigneeId={null} onChange={() => undefined} organizationId={ORGS[1].id} />
+        </>,
+      ),
+    );
+    await drain();
+    expect(rosterRequests()).toBe(0);
+
+    const trigger = container.querySelector("button")!;
+    await act(async () => trigger.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    await drain();
+    expect(rosterRequests()).toBeGreaterThan(0);
+    expect(rosterRequests()).toBeLessThanOrEqual(ORGANIZATION_COUNT);
+  });
+
+  it("an untouched meeting guest field reads nothing until it is focused", async () => {
+    await act(async () =>
+      root.render(
+        <GuestPicker guests={[]} onChange={() => undefined} organizationId={ORGS[2].id} hostUserId="u-me" />,
+      ),
+    );
+    await drain();
+    expect(rosterRequests()).toBe(0);
+
+    const input = container.querySelector("input")!;
+    await act(async () => input.focus());
+    await drain();
+    expect(rosterRequests()).toBe(1);
+  });
+});
+
+/**
+ * Callers whose people list IS the visible content the moment they mount — never a closed
+ * picker. Anything not named here must pass `enabled` (its open / engaged state).
+ */
+const SHOWN_ON_MOUNT: Record<string, string> = {
+  // Rendered only inside an OPEN share dialog / share panel (Radix unmounts closed content).
+  "features/sharing/components/tabs/ShareWithUserTab.tsx": "inside an open share surface",
+  // The organization's invitations page: the list is the page.
+  "features/organizations/components/InvitationManager.tsx": "the invitations page itself",
+  // The e-sign editor page: recipients are picked from it while composing.
+  "features/esign/editor/components/EditorHost.tsx": "the open envelope editor",
+  // Inside an OPEN permissions dialog, or the file's Share tab mounted on first visit.
+  "features/files/components/core/PermissionsDialog/PermissionsDialog.tsx": "inside an open dialog or visited tab",
+};
+
+describe("every useUserConnections caller is gated or named as on-screen", () => {
+  const files = execFileSync(
+    "git",
+    ["grep", "-l", "useUserConnections(", "--", "*.ts", "*.tsx", ":!**/__tests__/**", ":!**/*.test.*"],
+    { encoding: "utf8" },
+  )
+    .split("\n")
+    .filter(Boolean)
+    .filter((f) => f !== "features/messaging/hooks/useUserConnections.ts");
+
+  it("finds the callers (the census is not empty)", () => {
+    expect(files.length).toBeGreaterThan(3);
+  });
+
+  it.each(files)("%s passes `enabled` or is a surface shown on mount", (file) => {
+    if (SHOWN_ON_MOUNT[file]) return;
+    const source = readFileSync(file, "utf8");
+    const calls = source.split("useUserConnections(").slice(1);
+    for (const call of calls) {
+      // The argument list of this call, up to its closing paren at depth zero.
+      let depth = 1;
+      let end = 0;
+      while (end < call.length && depth > 0) {
+        if (call[end] === "(") depth += 1;
+        if (call[end] === ")") depth -= 1;
+        end += 1;
+      }
+      expect({ file, args: call.slice(0, end) }).toEqual({
+        file,
+        args: expect.stringMatching(/\benabled\s*:/),
+      });
+    }
   });
 });

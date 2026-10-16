@@ -320,7 +320,7 @@ export function BrandOfferingsSummary({ brand }: Props) {
   const verdictText = verdictLabel(verdict);
   return (
     <div
-      className="flex min-h-12 flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2"
+      className="flex min-h-[74px] flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2"
       data-brand-offerings-summary={brand.id}
     >
       <div className="min-w-0">

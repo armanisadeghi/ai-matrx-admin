@@ -12,7 +12,8 @@
  */
 
 import React, { useMemo } from "react";
-import { CalendarPlus, Clock, ExternalLink, Globe, Mail, MapPin, Phone, UserPlus } from "lucide-react";
+import { CalendarPlus, Clock, ExternalLink, Globe, MapPin, UserPlus } from "lucide-react";
+import { EmailValue, PhoneValue } from "@ai-matrx/design-system";
 
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -110,15 +111,13 @@ export function ContactBlock({ serverData, className }: AnswerKindBlockProps) {
       </div>
       <ul className="mt-2 space-y-1 text-xs text-foreground">
         {email ? (
-          <li className="flex items-start gap-1.5">
-            <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <a className={LINK} href={`mailto:${email}`}>{email}</a>
+          <li className="flex min-w-0 items-start">
+            <EmailValue email={email} />
           </li>
         ) : null}
         {phone ? (
-          <li className="flex items-start gap-1.5">
-            <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <a className={LINK} href={`tel:${phone.replace(/[^\d+]/g, "")}`}>{phone}</a>
+          <li className="flex min-w-0 items-start">
+            <PhoneValue phone={phone} />
           </li>
         ) : null}
         {website ? (

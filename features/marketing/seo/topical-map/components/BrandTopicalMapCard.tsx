@@ -50,14 +50,14 @@ export function BrandTopicalMapCard({
       }}
     >
       {maps.isPending ? (
-        // Same box as one loaded map row (py-2.5 + a 20px text-sm line), so the card never changes height.
-        <div aria-busy="true" aria-label={`Loading ${title.toLowerCase()}s`} className="flex h-10 items-center px-4">
+        // Every state (loading, empty with its button, a map row) is one 50px line, so the card never changes height.
+        <div aria-busy="true" aria-label={`Loading ${title.toLowerCase()}s`} className="flex h-[50px] items-center px-4">
           <div className="h-4 w-48 animate-pulse rounded bg-muted" />
         </div>
       ) : maps.isError ? (
         <ErrorNotice size="inline" className="p-4 text-xs" message={topicalMapErrorText(maps.error)} />
       ) : maps.data.length === 0 ? (
-        <div className="flex min-h-[2.75rem] flex-wrap items-center gap-3 px-4 py-2.5">
+        <div className="flex min-h-[50px] flex-wrap items-center gap-3 px-4 py-2.5">
           <p className="text-xs text-muted-foreground">No {title.toLowerCase()} yet.</p>
           {/* Placement §7 #4 — "Generate map" when there is none. */}
           {canEdit ? (
@@ -76,7 +76,7 @@ export function BrandTopicalMapCard({
             <li key={map.id}>
               <Link
                 href={marketingRoutes.brandTopicalMap(brandSeg, map.id)}
-                className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-muted/50"
+                className="flex min-h-[50px] items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-muted/50"
               >
                 <span className="min-w-0 truncate">{map.name}</span>
                 <span className="shrink-0 text-xs text-muted-foreground">

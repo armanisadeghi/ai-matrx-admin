@@ -72,6 +72,7 @@ Rules that keep this honest:
 | `seo.finding_rollup.*` critical                                              | urgent   | The site is actually broken (5xx / 4xx / https / robots).                                         |
 | `workflow.run_recovery`, `tasks.overdue_pileup`, backlinks damage, GSC decay | elevated | Real and worth soon; nothing is blocked.                                                          |
 | competitor confirm, notes pileup, review backlogs, `hindsight_finding`       | normal   | Queues and proposals.                                                                             |
+| `brand.assist.*` (brand home, `features/marketing/brand-assists`)            | normal   | Priced, pre-filled 30-second jobs; at most 3 pending across all brands; a decline is final; the click is the only trigger. |
 
 ## The pieces (all in this feature unless noted)
 

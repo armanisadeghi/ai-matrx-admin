@@ -59,10 +59,13 @@ export default function TaskAssigneePicker({
   emptyLabel = "Unassigned",
   labelClassName = "text-xs",
 }: TaskAssigneePickerProps) {
-  const { connections, isLoading, error: connectionsError, partialFailures, refresh } = useUserConnections(
-    organizationId ? { organizationId } : {},
-  );
   const [open, setOpen] = useState(false);
+  // A CLOSED PICKER READS NOTHING: the roster is read when the list opens, or when the trigger
+  // has an assignee to name. An unassigned picker in a form reads no roster until it is used.
+  const { connections, isLoading, error: connectionsError, partialFailures, refresh } = useUserConnections({
+    ...(organizationId ? { organizationId } : {}),
+    enabled: open || !!assigneeId,
+  });
   const [search, setSearch] = useState("");
 
   const current = useMemo(

@@ -154,7 +154,7 @@ export function useAssistRunner(): AssistRunnerApi {
       // (lib/notice-open/openFromNotice.ts).
       navigate: (href: string) => openFromNotice(href),
       handToOwnBrowser: (request) => handToOwnBrowser(request),
-      callServer: async (endpoint, body) => {
+      callServer: async (endpoint, body, options) => {
         const result = await dispatch(
           callApi({
             // The endpoint is allow-listed by the server_action handler before
@@ -164,6 +164,9 @@ export function useAssistRunner(): AssistRunnerApi {
             path: endpoint as never,
             method: "POST",
             body: (body ?? {}) as never,
+            ...(options?.timeoutMs
+              ? { connectTimeoutMs: options.timeoutMs, totalTimeoutMs: options.timeoutMs }
+              : {}),
           }),
         );
         if (result.error) {

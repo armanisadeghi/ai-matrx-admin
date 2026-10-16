@@ -1,3 +1,4 @@
+import { EmailValue } from "@ai-matrx/design-system";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -422,9 +423,7 @@ export default function ExtensionPrivacyPolicyPage() {
                 or clearing its local storage, discards the identifier on your
                 device. To delete the anonymous account data held on our
                 servers, email{" "}
-                <a href="mailto:support@aimatrx.com" className="underline">
-                  support@aimatrx.com
-                </a>
+                <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />
                 . Because guest accounts are anonymous, please send the request
                 from the extension while the identifier is still installed, or
                 include it, so we can find the right records.
@@ -465,9 +464,7 @@ export default function ExtensionPrivacyPolicyPage() {
               <li>
                 <strong>Account deletion</strong> requests — for a full account
                 or for an anonymous guest account — can be sent to{" "}
-                <a href="mailto:support@aimatrx.com" className="underline">
-                  support@aimatrx.com
-                </a>
+                <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />
                 .
               </li>
             </ul>
@@ -494,9 +491,7 @@ export default function ExtensionPrivacyPolicyPage() {
             <h2 className="text-2xl font-semibold">Contact</h2>
             <p>
               Questions about this policy or a request related to your data:{" "}
-              <a href="mailto:support@aimatrx.com" className="underline">
-                support@aimatrx.com
-              </a>{" "}
+              <EmailValue email="support@aimatrx.com" owner="AI Matrx support" />{" "}
               or via our{" "}
               <Link href="/contact" className="underline">
                 contact form

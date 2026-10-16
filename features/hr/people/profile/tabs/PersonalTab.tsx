@@ -21,6 +21,7 @@
 // audited DOOR with a required justification, returned once, never cached —
 // never a toggle, never a reveal-on-hover, never in component state.
 
+import { mailtoHref, parsePhone, telHref } from "@ai-matrx/design-system";
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 
@@ -82,12 +83,12 @@ const CONTACT_FIELDS: readonly HrFieldSpec<HrProfilePersonal>[] = [
   {
     name: "work_email",
     label: "Work email",
-    href: (value) => (typeof value === "string" ? `mailto:${value}` : null),
+    href: (value) => (typeof value === "string" ? mailtoHref(value) : null),
   },
   {
     name: "work_phone",
     label: "Work phone",
-    href: (value) => (typeof value === "string" ? `tel:${value}` : null),
+    href: (value) => (typeof value === "string" ? telHref(parsePhone(value)) : null),
   },
 ];
 

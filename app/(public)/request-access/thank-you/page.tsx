@@ -1,3 +1,4 @@
+import { EmailValue } from "@ai-matrx/design-system";
 import { CircleDot, CheckCircle, Mail, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -103,12 +104,7 @@ export default function ThankYouPage() {
       <div className="text-center py-6 px-6 border-t border-border">
         <p className="text-xs text-muted-foreground">
           Didn&apos;t receive a confirmation email?{" "}
-          <a
-            href="mailto:admin@aimatrx.com"
-            className="text-primary hover:underline"
-          >
-            Contact us
-          </a>
+          <EmailValue email="admin@aimatrx.com" owner="AI Matrx" />
         </p>
       </div>
     </div>

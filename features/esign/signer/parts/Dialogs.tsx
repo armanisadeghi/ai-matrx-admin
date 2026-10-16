@@ -5,6 +5,7 @@
 // reason, Assign to someone else, History, Help. Each is a plain Dialog — on a phone it becomes a
 // bottom sheet by itself.
 
+import { mailtoHref } from "@ai-matrx/design-system";
 import { useState } from "react";
 import { CheckCircle2, Mail } from "lucide-react";
 
@@ -290,7 +291,7 @@ export function HelpDialog({
         {senderEmail ? (
           <DialogFooter>
             <Button variant="outline" icon={<Mail />} asChild>
-              <a href={`mailto:${senderEmail}`}>Ask {senderName}</a>
+              <a href={mailtoHref(senderEmail)}>Ask {senderName}</a>
             </Button>
           </DialogFooter>
         ) : null}

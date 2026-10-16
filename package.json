@@ -615,6 +615,7 @@
     "check:back-link-kinds": "tsx scripts/check-back-link-kinds.ts",
     "check:back-link-kinds:strict": "tsx scripts/check-back-link-kinds.ts --strict",
     "check:soft-delete-cascade": "tsx scripts/check-soft-delete-cascade.ts",
+    "check:change-engine-live": "tsx scripts/check-change-engine-live.ts",
     "check:brand-archive-cascade": "tsx scripts/check-brand-archive-cascade.ts",
     "check:decision-retraction": "tsx scripts/check-decision-retraction.ts",
     "check:annotation-trash": "tsx scripts/check-annotation-trash.ts",

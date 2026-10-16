@@ -262,6 +262,46 @@ export async function listBrandCompetitors(
     });
   }
 
+  // 7. Competitors kept in the CRM: an organization linked to this brand with the role `competitor`
+  // (the party -> brand association Smart Add and the brand page write). Listed once, by name or domain.
+  const { data: partyLinks, error: partyLinkError } = await supabase
+    .schema("platform")
+    .from("associations")
+    .select("source_id")
+    .eq("source_type", "party")
+    .eq("target_type", "web_brand")
+    .eq("target_id", brandId)
+    .eq("role", "competitor")
+    .is("deleted_at", null)
+    .abortSignal(sig);
+  if (partyLinkError) throw partyLinkError;
+  const partyIds = [...new Set((partyLinks ?? []).map((l) => l.source_id))];
+  if (partyIds.length > 0) {
+    const { data: parties, error: partyError } = await supabase
+      .schema("crm")
+      .from("party")
+      .select("id,display_name,primary_domain")
+      .in("id", partyIds)
+      .is("deleted_at", null)
+      .abortSignal(sig);
+    if (partyError) throw partyError;
+    for (const party of parties ?? []) {
+      const name = party.display_name.trim();
+      const domain = party.primary_domain ? normalizeCompetitorDomain(party.primary_domain) : null;
+      if ((domain && byDomain.has(domain)) || names.has(name.toLowerCase())) continue;
+      names.add(name.toLowerCase());
+      byKey.set(`party:${party.id}`, {
+        key: `party:${party.id}`,
+        name,
+        domain,
+        seoCompetitorId: null,
+        siteId: null,
+        websiteTracking: null,
+        accounts: [],
+      });
+    }
+  }
+
   return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 

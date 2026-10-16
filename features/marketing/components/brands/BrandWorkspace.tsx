@@ -59,6 +59,7 @@ import { brandAccountHref } from "@/features/marketing/social/property-account-h
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { businessFactValueText } from "@/features/marketing/lib/business-fact-value";
+import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { BrandAiVisibilityCard } from "@/features/marketing/seo/ai-visibility/brand/BrandAiVisibilityCard";
 import { BrandTopicalMapCard } from "@/features/marketing/seo/topical-map/components/BrandTopicalMapCard";
@@ -113,6 +114,7 @@ import { useAccess } from "@/utils/permissions/access";
 import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
 import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
+import { BrandFirmographicSection, BrandPresenceSection, BrandRecognitionSection } from "./BrandTempHomes";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
 import { factDisplayLabel } from "@/features/marketing/lib/factLabel";
 import { BrandOfferingsSummary } from "@/features/marketing/offerings/BrandOfferingsPanel";
@@ -378,6 +380,9 @@ const BRAND_SECTIONS: ReadonlyArray<{ id: string; label: string }> = [
   { id: "social-profiles", label: "Social profiles" },
   { id: "business-facts", label: "Business facts" },
   { id: "relationships", label: "Relationships" },
+  { id: "temp-brand-recognition", label: "Recognition" },
+  { id: "temp-brand-firmographic", label: "Company profile" },
+  { id: "temp-brand-presence", label: "Online presence" },
   { id: "brand-assets", label: "Brand assets" },
 ];
 
@@ -478,9 +483,11 @@ function BusinessFactRow({
           {subLabel}
         </span>
       ) : null}
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={value}>
-        {value}
-      </span>
+      {contactFactValue({ kind: fact.kind, value, className: "flex min-w-0 flex-1 text-sm text-foreground" }) ?? (
+        <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={value}>
+          {value}
+        </span>
+      )}
       {copies > 1 ? (
         <span
           className="shrink-0 type-meta tabular-nums text-muted-foreground"
@@ -1030,9 +1037,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
           {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
 
-          {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
-          {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
-
           {/* Section jumps: the home is long, so every area is one click away; sub-pages sit at the end. */}
           <nav
             aria-label="Brand sections"
@@ -1292,6 +1296,11 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
 
           {/* Names, people, related companies, competitors, listings, mentions, "Not us". */}
           <BrandRelationsCard brand={current} canEdit={canEdit} />
+
+          {/* Temporary homes: what Smart Add promoted that has no permanent table yet. */}
+          <BrandRecognitionSection brandId={current.id} canEdit={canEdit} />
+          <BrandFirmographicSection brandId={current.id} canEdit={canEdit} />
+          <BrandPresenceSection brandId={current.id} canEdit={canEdit} />
 
           <SectionCard
             title="Brand assets"

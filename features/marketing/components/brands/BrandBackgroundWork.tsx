@@ -36,6 +36,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { lookupSystemRun } from "@/features/education/kits/systemRuns";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
+import { useBrandProperties, useBrandSites } from "@/features/marketing/data/hooks";
 import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
 import { refreshProfile, socialErrorMessage, trackAccount } from "@/features/marketing/social/server";
 import { rememberedMaxPostsPlain } from "@/features/marketing/social/post-count";
@@ -53,6 +54,9 @@ import { accountKey, loadPostHistoryNotes } from "./postHistoryOutcomes";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const ACTIVE = new Set(["queued", "running"]);
+/** The loaded table: toolbar + header, then one row each (measured: 1 row 112px, 3 rows 170px). */
+const BG_TABLE_BASE_PX = 83;
+const BG_ROW_PX = 29;
 
 interface SiteJob {
   id: string;
@@ -221,6 +225,15 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
     refetchInterval: (q) => ((q.state.data ?? []).some((s) => s.crawl && ACTIVE.has(s.crawl.status)) ? 10_000 : false),
   });
   const accounts = useQuery({ queryKey: ["marketing", "brand-work-accounts", brand.id], queryFn: () => loadAccounts(brand.id) });
+  // The rows to come are the brand's sites plus its accounts: both lists are already loading for the page
+  // (shared cache), so the loading box can be the height of the table that replaces it.
+  const knownSites = useBrandSites(brand.id);
+  const knownProperties = useBrandProperties(brand.id);
+  console.log('DBGBG', knownSites.data?.length, knownProperties.data?.map((x) => x.kind + ':' + Boolean(x.url || x.handle)).join(','), sites.data?.length, accounts.data?.length);
+  const expectedRows =
+    knownSites.data && knownProperties.data
+      ? Math.max(1, knownSites.data.length + knownProperties.data.filter((x) => x.kind !== "website" && (x.url || x.handle)).length)
+      : 2;
   // What the server's post-history step said per account (setup + ingest runs): a refused walk shows here.
   const historyNotes = useQuery({
     queryKey: ["marketing", "brand-work-history", brand.id, (accounts.data ?? []).map((a) => a.propertyId).join(",")],
@@ -549,7 +562,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
         {sites.isLoading || accounts.isLoading ? (
           // A table of typical height (toolbar, header, two rows) holds the place while both reads land, so the
           // cards below do not drop when the table's own taller loading state is replaced by the rows.
-          <div aria-busy="true" aria-label="Loading background work" className="h-[170px] p-3">
+          <div aria-busy="true" aria-label="Loading background work" className="p-3" style={{ height: BG_TABLE_BASE_PX + BG_ROW_PX * expectedRows }}>
             <div className="h-full w-full animate-pulse rounded bg-muted/60" />
           </div>
         ) : (

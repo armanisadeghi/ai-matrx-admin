@@ -125,7 +125,8 @@ export default async function BrandIdentityPage({
   return (
     <div className="h-full overflow-y-auto bg-textured">
       <div className="mx-auto w-full max-w-5xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
-        <header className="mb-4 flex flex-wrap items-center gap-x-4">
+        {/* One fixed line: the admin input chips arriving later sit beside the title and never grow the header. */}
+        <header className="mb-4 flex h-9 flex-nowrap items-center gap-x-4 overflow-x-auto">
           <h1
             className="text-base font-semibold text-foreground"
             title="What every website, campaign and agent draws on"

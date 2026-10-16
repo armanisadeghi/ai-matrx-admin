@@ -151,16 +151,23 @@ export function BrandVisualSuggestions({ brandId, organizationId }: { brandId: s
       <div className="mb-2 flex items-center gap-2">
         <h2 className="text-sm font-semibold text-foreground">Colours and fonts</h2>
         {open.length > 0 ? <span className="text-xs text-muted-foreground">{open.length} to check</span> : null}
-        <Button variant="outline" className="ml-auto" onClick={read} disabled={reading}>
-          {reading ? "Reading site" : "Read from site"}
-        </Button>
+        {/* The wrapper owns the right edge: the button's own margin class is not applied, which left it riding the "N to check" text. */}
+        <span className="ml-auto flex">
+          <Button variant="outline" onClick={read} disabled={reading}>
+            {reading ? "Reading site" : "Read from site"}
+          </Button>
+        </span>
       </div>
       {error ? <div className="mb-2 text-xs text-destructive">{error}</div> : null}
+      {/* Question card + kept swatches (54 + 8 + 24) reserved for every state, so the section never changes height. */}
+      <div className="min-h-[86px]">
       {assets.isLoading ? (
-        <div className="h-16 animate-pulse rounded bg-muted" />
+        // The question card's exact height (p-2 + a 36px label/value stack + borders), so it never changes when the row arrives.
+        <div key="loading" className="h-[54px] animate-pulse rounded-lg bg-muted" />
       ) : current ? (
         <div
-          className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-2"
+          key="question"
+          className="flex min-h-[54px] flex-wrap items-center gap-3 rounded-lg border border-border p-2"
           data-testid={`brand-visual-${current.kind}`}
         >
           <div className="w-40 shrink-0">
@@ -187,6 +194,7 @@ export function BrandVisualSuggestions({ brandId, organizationId }: { brandId: s
           ))}
         </div>
       ) : null}
+      </div>
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { EmailValue } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { siteConfig } from "@/config/extras/site";
@@ -116,7 +117,7 @@ export default function PersonalStaffSmsPage() {
           </li>
           <li>
             <strong>Help:</strong> reply <strong>HELP</strong>, or email{" "}
-            <a href={`mailto:${SMS_SUPPORT_EMAIL}`}>{SMS_SUPPORT_EMAIL}</a>.
+            <EmailValue email={SMS_SUPPORT_EMAIL} owner="AI Matrx support" />.
           </li>
           <li>
             Carriers are not liable for delayed or undelivered messages.

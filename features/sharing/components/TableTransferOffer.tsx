@@ -43,7 +43,8 @@ export function TableTransferOffer({
 
   const orgId = ctx?.status === "denied" ? (ctx.organization?.id ?? undefined) : undefined;
   const { isAdmin, loading } = useUserRole(orgId);
-  const { members } = useOrganizationMembers(isAdmin ? orgId : undefined);
+  // The roster feeds only the transfer dialog's person picker: read it when that dialog opens.
+  const { members } = useOrganizationMembers(isAdmin && open ? orgId : undefined);
 
   if (!ctx || !orgId || loading || !isAdmin || !viewerId || !ctx.owner) return null;
   if (ctx.owner.userId === viewerId) return null;

@@ -117,9 +117,15 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
     };
   }, [brandId, organizationId, userId, dispatch]);
 
-  const results = history.filter(
-    (row) => row.entityId === brandId && row.status === "accepted" && isRunResult(row.result),
-  );
+  // One card per job: a job run twice shows its latest receipt only (history arrives newest first).
+  const seenJobs = new Set<string>();
+  const results = history.filter((row) => {
+    if (row.entityId !== brandId || row.status !== "accepted" || !isRunResult(row.result)) return false;
+    const job = (row.result as BrandAssistRunResult).assist_id ?? row.id;
+    if (seenJobs.has(job)) return false;
+    seenJobs.add(job);
+    return true;
+  });
 
   return (
     <div className="flex flex-col gap-2" data-testid="brand-assists">

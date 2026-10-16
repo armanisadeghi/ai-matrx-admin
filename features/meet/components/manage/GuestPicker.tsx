@@ -55,9 +55,13 @@ export function GuestPicker({
 }: GuestPickerProps) {
   const [query, setQuery] = useState("");
   const [resolving, setResolving] = useState(false);
-  const { connections } = useUserConnections(
-    organizationId ? { organizationId } : {},
-  );
+  // Suggestions appear only once something is typed, so the roster is read when the field is
+  // first focused or typed in — never on mount (a meeting page opens without reading a roster).
+  const [engaged, setEngaged] = useState(false);
+  const { connections } = useUserConnections({
+    ...(organizationId ? { organizationId } : {}),
+    enabled: engaged || query !== "",
+  });
 
   const taken = new Set(
     guests.flatMap((g) =>
@@ -131,6 +135,7 @@ export function GuestPicker({
         <Input adornment="start"
           value={query}
           autoFocus={autoFocus}
+          onFocus={() => setEngaged(true)}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === ",") {

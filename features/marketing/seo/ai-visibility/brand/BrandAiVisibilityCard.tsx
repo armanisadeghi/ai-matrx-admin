@@ -42,7 +42,8 @@ export function BrandAiVisibilityCard({
       }
     >
       {checks.isPending ? (
-        <div className="m-3 h-16 animate-pulse rounded-md bg-muted/50" />
+        // One text line (the card's empty state, its most common answer): px-3 py-2.5 + 20px.
+        <div className="px-3 py-2.5"><div className="h-5 animate-pulse rounded bg-muted/50" /></div>
       ) : checks.isError ? (
         <ErrorNotice className="m-3" error={checks.error} operation="Load AI checks" />
       ) : estimate.isError && canEdit && !latest ? (
