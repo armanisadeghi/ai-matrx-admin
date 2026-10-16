@@ -66,8 +66,6 @@ export interface PdfDocument {
   /** null until the document detail has been fetched. List rows always carry null. */
   content: string | null;
   cleanContent: string | null;
-  /** `processed_documents.metadata.clean_mode` — `"pages"` | `"whole_document"` | null. Part of the server clean verdict. */
-  cleanMode?: string | null;
   createdAt: string;
   updatedAt: string;
   charCount: number;
@@ -153,9 +151,6 @@ function docFromApi(raw: Record<string, unknown>): PdfDocument {
     name: (raw.name as string) ?? "Untitled",
     content,
     cleanContent,
-    cleanMode: hasContent
-      ? (((raw.metadata as Record<string, unknown> | null)?.clean_mode as string | undefined) ?? null)
-      : null,
     createdAt: (raw.created_at as string) ?? new Date().toISOString(),
     updatedAt: (raw.updated_at as string) ?? new Date().toISOString(),
     charCount: text.length,

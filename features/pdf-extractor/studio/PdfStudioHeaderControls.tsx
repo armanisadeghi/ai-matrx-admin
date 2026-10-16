@@ -53,6 +53,7 @@ import { useDownloadBlob } from "@/features/pdf/hooks/useDownloadBlob";
 import { PdfStudioDocTitle } from "./PdfStudioDocTitle";
 import type { StudioDocSummary } from "./hooks/usePdfStudioDocs";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
+import { NO_PAGES_TO_CLEAN_REASON } from "../service/cleanOutcome";
 import { HeaderActionsSlot } from "@/features/shell/components/header/HeaderActionsSlot";
 
 export interface PdfStudioHeaderControlsProps {
@@ -70,6 +71,8 @@ export interface PdfStudioHeaderControlsProps {
   pipelineRunning: boolean;
   onRunAiClean: () => void;
   aiCleanRunning: boolean;
+  /** False when the doc has no page rows — the server answers /pdf/clean-content with 422. */
+  canRunAiClean: boolean;
   onOpenKnowledgeAssets: () => void;
   onOpenCopyPages: () => void;
   /** Reload the active document + per-page rows from Supabase. */
@@ -104,6 +107,7 @@ export function PdfStudioHeaderControls({
   pipelineRunning,
   onRunAiClean,
   aiCleanRunning,
+  canRunAiClean,
   onOpenKnowledgeAssets,
   onOpenCopyPages,
   onRefresh,
@@ -202,7 +206,7 @@ export function PdfStudioHeaderControls({
         {doc && (
           <IntelligenceIndicator
             feature="pdf"
-            mandateKeys={[MANDATE_KEYS.pdf__content_cleaner, MANDATE_KEYS.rag__pdf_page_cleaner]}
+            mandateKeys={[MANDATE_KEYS.rag__pdf_page_cleaner]}
             label="AI clean"
           />
         )}
@@ -220,7 +224,11 @@ export function PdfStudioHeaderControls({
                 )}
                 Run pipeline
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRunAiClean()} disabled={actionsBusy}>
+              <DropdownMenuItem
+                onClick={() => onRunAiClean()}
+                disabled={actionsBusy || !canRunAiClean}
+                title={canRunAiClean ? undefined : NO_PAGES_TO_CLEAN_REASON}
+              >
                 {aiCleanRunning ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

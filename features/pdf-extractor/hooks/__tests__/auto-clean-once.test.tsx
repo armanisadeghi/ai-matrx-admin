@@ -23,6 +23,7 @@ it("two hook instances on one doc (desktop + mobile shell) fire exactly one auto
     pagesSettled: true,
     pagesHaveCleanText: false,
     runAnswered: true,
+    pages: [{ cleanedText: "", sectionKind: null }],
     run,
   };
   function Probe() {

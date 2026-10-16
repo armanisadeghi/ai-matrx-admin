@@ -271,7 +271,7 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
     if (
       opts?.force !== false &&
       !(await confirmRecleanIfCleaned(
-        isDocCleaned(pages, activeDoc.cleanContent, activeDoc.cleanMode),
+        isDocCleaned(pages, activeDoc.cleanContent),
       ))
     ) {
       cleanInFlight.current = false;

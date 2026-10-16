@@ -116,7 +116,6 @@ export function describeRunError(
  * (aidream documents FEATURE.md § "Clean verdict", `clean_claim.clean_verdict`):
  *   - page rows exist AND EVERY page has non-empty `cleaned_text` or a
  *     `section_kind` (an `illegible_scan` page cleaned to "" counts), OR
- *   - `metadata.clean_mode === "whole_document"` AND `clean_content` non-empty, OR
  *   - no page rows AND `clean_content` non-empty.
  * Anything else — including a partially cleaned doc, or `clean_content` beside
  * unmarked, never-cleaned pages (legacy raw text) — is NOT cleaned.
@@ -124,12 +123,14 @@ export function describeRunError(
 export function isDocCleaned(
   pages: ReadonlyArray<{ cleanedText: string; sectionKind: string | null }>,
   docCleanContent: string | null | undefined,
-  cleanMode?: string | null,
 ): boolean {
-  const hasClean = Boolean(docCleanContent && docCleanContent.trim());
-  if (pages.length === 0) return hasClean;
-  if (pages.every((p) => p.cleanedText.trim().length > 0 || Boolean(p.sectionKind))) {
-    return true;
-  }
-  return cleanMode === "whole_document" && hasClean;
+  if (pages.length === 0) return Boolean(docCleanContent && docCleanContent.trim());
+  return pages.every((p) => p.cleanedText.trim().length > 0 || Boolean(p.sectionKind));
 }
+
+/** The server cleans per page; a doc with no page rows gets a 422 from `/pdf/clean-content`. */
+export function canAiClean(pageCount: number): boolean {
+  return pageCount > 0;
+}
+
+export const NO_PAGES_TO_CLEAN_REASON = "No pages yet — run the pipeline first";

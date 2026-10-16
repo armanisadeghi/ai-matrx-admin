@@ -30,7 +30,12 @@ import { CopySplitButton } from "@ai-matrx/rich-content/copy/CopySplitButton";
 import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { isDocCleaned, preferAggregateClean } from "../service/cleanOutcome";
+import {
+  NO_PAGES_TO_CLEAN_REASON,
+  canAiClean,
+  isDocCleaned,
+  preferAggregateClean,
+} from "../service/cleanOutcome";
 import { useRouter } from "next/navigation";
 import {
   editSource,
@@ -1364,9 +1369,15 @@ function TextPane({
               type="button"
               data-testid="pdf-pane-ai-clean"
               onClick={() => void onRunAiClean()}
-              disabled={aiCleanRunning}
+              disabled={aiCleanRunning || !canAiClean(pages.length)}
               className="p-0.5 text-muted-foreground/60 hover:text-foreground rounded transition-colors disabled:opacity-50"
-              title={aiCleanRunning ? "AI clean running" : "Run AI clean on this document"}
+              title={
+                !canAiClean(pages.length)
+                  ? NO_PAGES_TO_CLEAN_REASON
+                  : aiCleanRunning
+                    ? "AI clean running"
+                    : "Run AI clean on this document"
+              }
               aria-label="Run AI clean on this document"
             >
               {aiCleanRunning ? (
@@ -1383,7 +1394,7 @@ function TextPane({
           the user is mid-action and shouldn't be told "run pipeline".
           The streaming preview below takes over the pane. */}
       {(field === "cleaned"
-        ? !isDocCleaned(pages, doc.cleanContent, doc.cleanMode)
+        ? !isDocCleaned(pages, doc.cleanContent)
         : allPagesEmpty) &&
         !streaming && (
         <BlankPagesBanner
@@ -1394,6 +1405,7 @@ function TextPane({
           pipelineRunning={pipelineRunning}
           onRunAiClean={onRunAiClean}
           aiCleanRunning={aiCleanRunning}
+          canRunAiClean={canAiClean(pages.length)}
         />
       )}
 
@@ -1530,6 +1542,7 @@ function BlankPagesBanner({
   pipelineRunning,
   onRunAiClean,
   aiCleanRunning,
+  canRunAiClean,
 }: {
   docHasAggregate: boolean;
   allPagesEmpty: boolean;
@@ -1538,6 +1551,7 @@ function BlankPagesBanner({
   pipelineRunning: boolean;
   onRunAiClean: () => void | Promise<unknown>;
   aiCleanRunning: boolean;
+  canRunAiClean: boolean;
 }) {
   const isCleanPane = field === "cleaned";
 
@@ -1565,7 +1579,8 @@ function BlankPagesBanner({
               <Button
                 variant="primary"
                 onClick={() => void onRunAiClean()}
-                disabled={aiCleanRunning}
+                disabled={aiCleanRunning || !canRunAiClean}
+                title={canRunAiClean ? undefined : NO_PAGES_TO_CLEAN_REASON}
               >
                 {aiCleanRunning ? (
                   <>

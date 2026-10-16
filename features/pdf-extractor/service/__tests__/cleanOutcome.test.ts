@@ -49,7 +49,7 @@ describe("preferAggregateClean", () => {
   });
 });
 
-import { describeRunError, isDocCleaned, USAGE_LIMIT_MESSAGE } from "../cleanOutcome";
+import { canAiClean, describeRunError, isDocCleaned, USAGE_LIMIT_MESSAGE } from "../cleanOutcome";
 
 describe("describeRunError", () => {
   it("never leaves a trailing colon or a bare machine code", () => {
@@ -76,17 +76,19 @@ describe("isDocCleaned (server clean verdict)", () => {
     expect(isDocCleaned([page("x"), page("", "illegible_scan")], null)).toBe(true);
     expect(isDocCleaned([page("", "body")], null)).toBe(true);
   });
-  it("whole_document marker + clean_content is cleaned", () => {
-    expect(isDocCleaned([page(""), page("")], "text", "whole_document")).toBe(true);
-    expect(isDocCleaned([page("")], "", "whole_document")).toBe(false);
-  });
   it("clean_content without the marker beside unmarked pages is not cleaned", () => {
     expect(isDocCleaned([page(""), page("")], "raw copy")).toBe(false);
-    expect(isDocCleaned([page("")], "raw copy", "pages")).toBe(false);
   });
   it("no pages: cleaned iff clean_content is non-empty", () => {
     expect(isDocCleaned([], "text")).toBe(true);
     expect(isDocCleaned([], "  ")).toBe(false);
     expect(isDocCleaned([], null)).toBe(false);
+  });
+});
+
+describe("canAiClean", () => {
+  it("needs at least one page row (the server answers 422 otherwise)", () => {
+    expect(canAiClean(0)).toBe(false);
+    expect(canAiClean(1)).toBe(true);
   });
 });
