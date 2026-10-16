@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1562 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1566 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "7bd2fd2d7057";
+export const KIND_REGISTRY_FINGERPRINT = "fd3420a3a470";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1467,6 +1467,78 @@ export interface BiasRiskSignals {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Bindings {
+  run?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  turns?: TurnBinding[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  markers?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  };
+  defaults?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | string | undefined;
+  };
+  variables?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  pick_lists?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: PickListValue[] | string | undefined;
+  } | string | undefined;
+  };
+  prompt_blocks?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  } | string | undefined;
+  };
+  declared_variables?: string[] | null;
+}
+
+/**
  * * From kind `brand_intake_facts`.
  */
 export interface BrandFact {
@@ -1999,6 +2071,59 @@ export interface CarouselSlide {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface CaseRun {
+  error?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  outcome?: Outcome;
+  blocked_by?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  ai_model_id?: string | null;
+  duration_ms?: number | null;
+  origin_class?: string | null;
+  identity_mode?: "personal_key" | "service_path" | null;
+  run_cost_cents?: number | string | null;
+  conversation_id?: string | null;
+  agent_version_id?: string | null;
+  user_request_ids?: string[];
+  precondition_failed?: boolean;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface CaseSpec {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  checks?: Check[];
+  case_id: string;
+  fixtures?: FixtureSpec[];
+  judge_facts?: JudgeFact[];
+  case_version?: number | null;
+  judge_policy?: "off" | "on_fail_or_undecided";
+  fixture_group?: string | null;
+  preconditions?: Check[];
+  expect_refusal?: boolean;
+}
+
+/**
  * * From kind `enrichment_verification`.
  */
 export interface ChangedConclusion {
@@ -2052,6 +2177,74 @@ export interface ChartSpec {
    */
   __kind?: string;
   group_by: string | null;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Check {
+  id: string;
+  op: "eq" | "ne" | "contains" | "not_contains" | "matches" | "not_matches" | "in" | "routes_in" | "not_leaks" | "exists" | "empty" | "matches_schema" | "conforms" | "gte" | "lte" | "count" | "same_across_doors";
+  read?: ReadSpec;
+  sink: "reply" | "output" | "request" | "preview" | "stored" | "conversation" | "tool_calls" | "rows" | "usage" | "outcome" | "door";
+  turn?: number | "each" | null;
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  ignore?: string[];
+  proves?: string;
+  count_op?: "eq" | "gte" | "lte" | null;
+  expected?: Expected | null;
+  required?: boolean;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface CheckResult {
+  id: string;
+  side?: "reply" | "request" | "other";
+  sink?: string;
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  proves?: string;
+  reason?: string;
+  locator?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  outcome: "pass" | "fail" | "undecided" | "not_applicable";
+  can_fail?: boolean | null;
+  expected?: JsonValue;
+  mutation?: string | null;
+  observed?: JsonValue;
+  redacted?: boolean;
+  required?: boolean;
+  sensitive?: boolean;
+  truncated?: boolean;
+  expected_source?: string;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Checked {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  results?: CheckResult[];
+  verdict: VerdictResult;
+  judge_feed?: CheckResult[];
+  needs_judge?: boolean;
 }
 
 /**
@@ -2910,6 +3103,21 @@ export interface DomainItem {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface DoorPick {
+  door: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity";
+  seed?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  door_reason: string;
+  door_pick_fn?: string | null;
+  eligible_doors?: string[];
+}
+
+/**
  * `patch` only: one edit that did not apply (the rest did).
  *  *
  *  * From kind `topical_map_result`.
@@ -3086,6 +3294,40 @@ export interface EstimatedValue {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Evidence {
+  door?: string | null;
+  rows?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[] | string | undefined;
+  };
+  turns?: TurnEvidence[];
+  usage?: Usage | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  outcome?: Outcome | null;
+  conversation_variables?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+}
+
+/**
  * * From kind `competitor_opportunity_autopsy_v1`.
  */
 export interface EvidenceCoverage_CompetitorOpportunityAutopsyV1 {
@@ -3177,6 +3419,31 @@ export interface ExcludeTerm {
    * 0.0-1.0: how sure the agent is that this is true of THIS brand.
    */
   confidence: number;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Expected {
+  at?: "seeded" | "edited";
+  var?: string | null;
+  from: "literal" | "input" | "marker" | "pick_list" | "prompt_block" | "default" | "observed" | "run";
+  name?: string | null;
+  part?: string | null;
+  path?: string | null;
+  read?: ReadSpec | null;
+  sink?: "reply" | "output" | "request" | "preview" | "stored" | "conversation" | "tool_calls" | "rows" | "usage" | "outcome" | "door" | null;
+  trim?: boolean;
+  turn?: number | null;
+  field?: string | null;
+  lower?: boolean;
+  match?: string | null;
+  split?: Split | null;
+  value?: JsonValue;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
 }
 
 /**
@@ -3431,6 +3698,53 @@ export interface FixSiteContext {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface FixtureEdit {
+  id: string;
+  field: "label" | "description" | "default" | "content" | "value";
+  value: JsonValue;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  target: FixtureTarget;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface FixtureSpec {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  target: FixtureTarget;
+  values?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface FixtureTarget {
+  var?: string | null;
+  kind: "pick_list_item" | "agent_default" | "prompt_block" | "context_value";
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  item_id?: string | null;
+  list_id?: string | null;
+}
+
+/**
  * Mirrors ``aidream.services.crm.seo_domains.FoldedDomain``.
  *  *
  *  * From kind `domain_fold_report`.
@@ -3607,7 +3921,7 @@ export interface GeneratedVideo {
 
 /**
  * Mirrors ``GoogleImageResult`` — closed post-validation (the node's own
- * schema is ``extra="ignore"``, so unknown SerpAPI keys never survive).
+ * schema is ``extra="ignore"``, so unknown the search provider keys never survive).
  *  *
  *  * From kind `google_image_search_results`.
  */
@@ -3755,6 +4069,18 @@ export interface HiringSignal {
   interpretation: string;
   notable_titles?: string[];
   hiring_intensity: string;
+}
+
+/**
+ * * Shared by 2 kinds (agent_test_case_ref, agent_test_case_state).
+ */
+export interface Holder {
+  id: string;
+  kind: "agent" | "agent_version" | "workflow";
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
 }
 
 /**
@@ -4285,9 +4611,51 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 118 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 120 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface JudgeDecision {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  fed_ok?: boolean;
+  verdict: "holds" | "violated" | "format_only" | "unanswerable" | "judge_unfed";
+  advisory?: boolean;
+  verdict_id?: string | null;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface JudgeFact {
+  id: string;
+  turn?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  expected?: Expected | null;
+  statement: string;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Judged {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  verdict: VerdictResult;
+  decision?: JudgeDecision | null;
+  judge_cost_cents?: number | string | null;
+  judge_verdict_id?: string | null;
+}
 
 /**
  * `set_facet`: a higher source (human > agent > mapper) already holds this facet.
@@ -6221,6 +6589,20 @@ export interface OtherIdentifier {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Outcome {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  status?: "completed" | "refused_by_agent" | "refused_by_platform" | "refused_by_validation" | "error";
+  message?: string | null;
+  error_code?: string | null;
+  http_status?: number | null;
+}
+
+/**
  * * From kind `review_verdict`.
  */
 export interface OverruledFinding {
@@ -6368,6 +6750,41 @@ export interface ParagraphStats {
    */
   mean_sentences?: number;
   one_sentence_paragraph_frequency?: number;
+}
+
+/**
+ * A partial run configuration. Every key optional; PRESENT keys override.
+ *  *
+ *  * Shared by 2 kinds (agent_test_case_ref, agent_test_case_state).
+ */
+export interface Patch {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  surface?: string | null;
+  agent_id?: string | null;
+  model_id?: string | null;
+  settings?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  tools_add?: string[] | null;
+  variables?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  auto_tools?: boolean | null;
+  user_input?: string | null;
+  tools_remove?: string[] | null;
+  agent_version_id?: string | null;
+  agent_version_number?: number | null;
 }
 
 /**
@@ -6582,6 +6999,18 @@ export interface PickListChoice {
    * One short line under the label.
    */
   description?: string | null;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface PickListValue {
+  label?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  hidden_text?: string;
 }
 
 /**
@@ -7337,6 +7766,34 @@ export interface ReActStep {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface ReadSpec {
+  line?: number | null;
+  path?: string;
+  tool?: string | null;
+  trim?: boolean;
+  field?: string | null;
+  final?: number | null;
+  limit?: number;
+  lower?: boolean;
+  match?: string | null;
+  split?: Split | null;
+  table?: string | null;
+  where?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: Expected | JsonValue | string | undefined;
+  } | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * A node the geography rule refused: its name is a place, not a topic.
  *  *
  *  * From kind `topical_map_result`.
@@ -7481,6 +7938,27 @@ export interface ReputationSignal {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface RequestView {
+  user?: string[];
+  model?: string | null;
+  tools?: string[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  system?: string;
+  messages?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  })[];
+}
+
+/**
  * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
  */
 export interface ResolvedIdentity {
@@ -7493,6 +7971,43 @@ export interface ResolvedIdentity {
   part_number?: string | null;
   manufacturer?: string | null;
   product_name?: string | null;
+}
+
+/**
+ * Exactly what is sent: markers minted, the setup's patch applied.
+ *  *
+ *  * From kind `agent_test_case_state`.
+ */
+export interface ResolvedInputs {
+  turns?: TurnSpec[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  context?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  markers?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  };
+  user_text?: string;
+  variables?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  ai_model_id?: string | null;
+  prompt_blocks?: string[];
 }
 
 /**
@@ -7536,7 +8051,11 @@ export interface ReverseImageMatchItem {
   image?: string | null;
   title?: string | null;
   /**
-   * SerpAPI engine that returned this match.
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * the search provider engine that returned this match.
    */
   engine: string;
   source?: string | null;
@@ -7630,6 +8149,21 @@ export interface RowRecord {
    * Stable id of the user-table row.
    */
   row_id: string;
+}
+
+/**
+ * * Shared by 2 kinds (agent_test_case_ref, agent_test_case_state).
+ */
+export interface RunSetup {
+  key: string;
+  label?: string;
+  patch?: Patch;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  holder: Holder;
+  entry_id?: string | null;
 }
 
 /**
@@ -9473,6 +10007,30 @@ export interface SpeechTurn {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Split {
+  sep: string;
+  index: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface StoredRef {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  verdict: string;
+  result_id: string;
+}
+
+/**
  * * From kind `news_story_size_result`.
  */
 export interface StoryOutlet {
@@ -9833,6 +10391,24 @@ export interface TimelineStep_SerialObservationTimeline {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface ToolCall {
+  args?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * How to resume a failed call without paying twice.
  *
  * A billed failure (a provider run started, a spend approval parked, a crawl
@@ -10014,6 +10590,87 @@ export interface TrendQuery {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface TurnBinding {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  context?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  user_text?: string;
+  fixture_edits?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  variable_edits?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface TurnEvidence {
+  reply?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  output?: JsonValue;
+  preview?: RequestView | null;
+  request?: RequestView | null;
+  tool_calls?: ToolCall[] | null;
+  stored_messages?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  })[] | null;
+  stored_user_message?: string | null;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface TurnSpec {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  context?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  user_text?: string;
+  fixture_edits?: FixtureEdit[];
+  variable_edits?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+}
+
+/**
  * * Shared by 2 kinds (brand_intake.identity_match.offer, typed_account_list).
  */
 export interface TypedAccount {
@@ -10085,6 +10742,21 @@ export interface UrlVerificationSummary {
 }
 
 /**
+ * * From kind `agent_test_case_state`.
+ */
+export interface Usage {
+  turns?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  tokens?: number | null;
+  ttft_ms?: number | null;
+  cost_cents?: number | string | null;
+  duration_ms?: number | null;
+}
+
+/**
  * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, enrichment_verification, value_assessment).
  */
 export interface ValueUnknown {
@@ -10096,6 +10768,19 @@ export interface ValueUnknown {
   field_key?: string | null;
   value_impact: string;
   resolution_method: string;
+}
+
+/**
+ * * From kind `agent_test_case_state`.
+ */
+export interface VerdictResult {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  reason?: string;
+  counted?: boolean;
+  verdict: "pass" | "pass_judged" | "fail" | "fail_format" | "inconclusive" | "blocked" | "error";
 }
 
 /**
@@ -10651,7 +11336,7 @@ export interface ActionItem {
  * One ad from an ad library (Meta, TikTok, Google, LinkedIn): copy, call to action, landing page,
  * how long it ran, and its media. ``library`` is the source.
  *  *
- *  * Kind `ad_creative` (registry v2).
+ *  * Kind `ad_creative` (registry v3).
  */
 export interface AdCreative {
   cta?: string | null;
@@ -10829,7 +11514,7 @@ export interface AgentAppsMetadataRequestOffer {
 /**
  * Output of ``ai.agent.assignment_batch`` — the durable session + item results.
  *  *
- *  * Kind `agent_assignment_batch_result` (registry v9).
+ *  * Kind `agent_assignment_batch_result` (registry v10).
  */
 export interface AgentAssignmentBatchResult {
   items?: AssignmentItemResult[];
@@ -10841,7 +11526,7 @@ export interface AgentAssignmentBatchResult {
 }
 
 /**
- * Kind `agent_build_result` (registry v3).
+ * Kind `agent_build_result` (registry v4).
  */
 export interface AgentBuildResult {
   /**
@@ -10863,7 +11548,7 @@ export interface AgentBuildResult {
  * live ``agent.definition`` row (with its v1 snapshot); rendered, it is the
  * agent a person is watching being built.
  *  *
- *  * Kind `agent_definition` (registry v9).
+ *  * Kind `agent_definition` (registry v10).
  */
 export interface AgentDefinition {
   name: string;
@@ -12074,7 +12759,7 @@ export interface AgentFactoryToolStepOffer {
  * code saves it through the one guarded writer, so a build creates exactly one
  * agent row.
  *  *
- *  * Kind `agent_factory_build` (registry v4).
+ *  * Kind `agent_factory_build` (registry v5).
  */
 export interface AgentFactoryBuild {
   /**
@@ -12118,7 +12803,7 @@ export interface AgentFactoryBuild {
  * A Mandate-backed build skips this step: its Provision and output kind ARE
  * the contract, and the factory never re-decides them.
  *  *
- *  * Kind `agent_factory_contract` (registry v4).
+ *  * Kind `agent_factory_contract` (registry v5).
  */
 export interface AgentFactoryContract {
   fit: AgentFactoryFit;
@@ -12137,7 +12822,7 @@ export interface AgentFactoryContract {
 /**
  * The new agent's two messages.
  *  *
- *  * Kind `agent_factory_instructions` (registry v2).
+ *  * Kind `agent_factory_instructions` (registry v3).
  */
 export interface AgentFactoryInstructions {
   /**
@@ -12163,7 +12848,7 @@ export interface AgentFactoryInstructions {
  * the goal spec's gated criteria and the blind pairwise comparison. Code
  * un-blinds A/B afterwards.
  *  *
- *  * Kind `agent_factory_proof_review` (registry v4).
+ *  * Kind `agent_factory_proof_review` (registry v5).
  */
 export interface AgentFactoryProofReview {
   cases: AgentFactoryCaseVerdict[];
@@ -12183,7 +12868,7 @@ export interface AgentFactoryProofReview {
 /**
  * The tools the new agent gets, and the profile class its model is chosen by.
  *  *
- *  * Kind `agent_factory_tool_choice` (registry v4).
+ *  * Kind `agent_factory_tool_choice` (registry v5).
  */
 export interface AgentFactoryToolChoice {
   tools?: AgentFactoryToolPick[];
@@ -12199,7 +12884,7 @@ export interface AgentFactoryToolChoice {
 }
 
 /**
- * Kind `agent_foundry_report` (registry v3).
+ * Kind `agent_foundry_report` (registry v4).
  */
 export interface AgentFoundryReport {
   kind?: string;
@@ -12300,7 +12985,7 @@ export interface AgentGoal {
 }
 
 /**
- * Kind `agent_input_agent_config_41eec0` (registry v5).
+ * Kind `agent_input_agent_config_41eec0` (registry v6).
  */
 export interface AgentInputAgentConfig41eec0 {
   /**
@@ -12314,7 +12999,7 @@ export interface AgentInputAgentConfig41eec0 {
 }
 
 /**
- * Kind `agent_input_audio_style_content_speaker_1_profile_speaker_2_profile` (registry v5).
+ * Kind `agent_input_audio_style_content_speaker_1_profile_speaker_2_profile` (registry v6).
  */
 export interface AgentInputAudioStyleContentSpeaker1ProfileSpeaker2Profile {
   scene?: string;
@@ -12340,7 +13025,7 @@ export interface AgentInputAudioStyleContentSpeaker1ProfileSpeaker2Profile {
 }
 
 /**
- * Kind `agent_input_brief` (registry v5).
+ * Kind `agent_input_brief` (registry v6).
  */
 export interface AgentInputBrief {
   /**
@@ -12354,7 +13039,7 @@ export interface AgentInputBrief {
 }
 
 /**
- * Kind `agent_input_cleaned_window_prior_tasks_session_title` (registry v5).
+ * Kind `agent_input_cleaned_window_prior_tasks_session_title` (registry v6).
  */
 export interface AgentInputCleanedWindowPriorTasksSessionTitle {
   /**
@@ -12376,7 +13061,7 @@ export interface AgentInputCleanedWindowPriorTasksSessionTitle {
 }
 
 /**
- * Kind `agent_input_company_name_employee_info` (registry v5).
+ * Kind `agent_input_company_name_employee_info` (registry v6).
  */
 export interface AgentInputCompanyNameEmployeeInfo {
   /**
@@ -12399,7 +13084,7 @@ export interface AgentInputCompanyNameEmployeeInfo {
 }
 
 /**
- * Kind `agent_input_concept_content_format_idea_count` (registry v5).
+ * Kind `agent_input_concept_content_format_idea_count` (registry v6).
  */
 export interface AgentInputConceptContentFormatIdeaCount {
   /**
@@ -12421,7 +13106,7 @@ export interface AgentInputConceptContentFormatIdeaCount {
 }
 
 /**
- * Kind `agent_input_content_goal_existing_content` (registry v5).
+ * Kind `agent_input_content_goal_existing_content` (registry v6).
  */
 export interface AgentInputContentGoalExistingContent {
   /**
@@ -12439,7 +13124,7 @@ export interface AgentInputContentGoalExistingContent {
 }
 
 /**
- * Kind `agent_input_context_a58621` (registry v5).
+ * Kind `agent_input_context_a58621` (registry v6).
  */
 export interface AgentInputContextA58621 {
   /**
@@ -12453,7 +13138,7 @@ export interface AgentInputContextA58621 {
 }
 
 /**
- * Kind `agent_input_context_transcribed_text` (registry v5).
+ * Kind `agent_input_context_transcribed_text` (registry v6).
  */
 export interface AgentInputContextTranscribedText {
   /**
@@ -12471,7 +13156,7 @@ export interface AgentInputContextTranscribedText {
 }
 
 /**
- * Kind `agent_input_conversation_id_fa282d` (registry v5).
+ * Kind `agent_input_conversation_id_fa282d` (registry v6).
  */
 export interface AgentInputConversationIdFa282d {
   /**
@@ -12485,7 +13170,7 @@ export interface AgentInputConversationIdFa282d {
 }
 
 /**
- * Kind `agent_input_current_code_161b4f` (registry v5).
+ * Kind `agent_input_current_code_161b4f` (registry v6).
  */
 export interface AgentInputCurrentCode161b4f {
   /**
@@ -12496,7 +13181,7 @@ export interface AgentInputCurrentCode161b4f {
 }
 
 /**
- * Kind `agent_input_current_code_d03087` (registry v5).
+ * Kind `agent_input_current_code_d03087` (registry v6).
  */
 export interface AgentInputCurrentCodeD03087 {
   /**
@@ -12507,7 +13192,7 @@ export interface AgentInputCurrentCodeD03087 {
 }
 
 /**
- * Kind `agent_input_current_system_message_additional_guidance` (registry v5).
+ * Kind `agent_input_current_system_message_additional_guidance` (registry v6).
  */
 export interface AgentInputCurrentSystemMessageAdditionalGuidance {
   /**
@@ -12522,7 +13207,7 @@ export interface AgentInputCurrentSystemMessageAdditionalGuidance {
 }
 
 /**
- * Kind `agent_input_document_audits_c_audits_u_audits_w_440610` (registry v5).
+ * Kind `agent_input_document_audits_c_audits_u_audits_w_440610` (registry v6).
  */
 export interface AgentInputDocumentAuditsCAuditsUAuditsW440610 {
   /**
@@ -12548,7 +13233,7 @@ export interface AgentInputDocumentAuditsCAuditsUAuditsW440610 {
 }
 
 /**
- * Kind `agent_input_document_audits_c_audits_u_audits_w_954fce` (registry v6).
+ * Kind `agent_input_document_audits_c_audits_u_audits_w_954fce` (registry v7).
  */
 export interface AgentInputDocumentAuditsCAuditsUAuditsW954fce {
   /**
@@ -12578,7 +13263,7 @@ export interface AgentInputDocumentAuditsCAuditsUAuditsW954fce {
 }
 
 /**
- * Kind `agent_input_document_name_page_content` (registry v5).
+ * Kind `agent_input_document_name_page_content` (registry v6).
  */
 export interface AgentInputDocumentNamePageContent {
   /**
@@ -12596,7 +13281,7 @@ export interface AgentInputDocumentNamePageContent {
 }
 
 /**
- * Kind `agent_input_dynamic_context` (registry v5).
+ * Kind `agent_input_dynamic_context` (registry v6).
  */
 export interface AgentInputDynamicContext {
   /**
@@ -12607,7 +13292,7 @@ export interface AgentInputDynamicContext {
 }
 
 /**
- * Kind `agent_input_extraction_unit` (registry v5).
+ * Kind `agent_input_extraction_unit` (registry v6).
  */
 export interface AgentInputExtractionUnit {
   /**
@@ -12621,7 +13306,7 @@ export interface AgentInputExtractionUnit {
 }
 
 /**
- * Kind `agent_input_front_back_card_history_learner_context` (registry v5).
+ * Kind `agent_input_front_back_card_history_learner_context` (registry v6).
  */
 export interface AgentInputFrontBackCardHistoryLearnerContext {
   /**
@@ -12651,7 +13336,7 @@ export interface AgentInputFrontBackCardHistoryLearnerContext {
 }
 
 /**
- * Kind `agent_input_front_back_rubric_seconds_allowed_22f70d` (registry v5).
+ * Kind `agent_input_front_back_rubric_seconds_allowed_22f70d` (registry v6).
  */
 export interface AgentInputFrontBackRubricSecondsAllowed22f70d {
   /**
@@ -12677,7 +13362,7 @@ export interface AgentInputFrontBackRubricSecondsAllowed22f70d {
 }
 
 /**
- * Kind `agent_input_front_back_topic_difficulty_56526b` (registry v5).
+ * Kind `agent_input_front_back_topic_difficulty_56526b` (registry v6).
  */
 export interface AgentInputFrontBackTopicDifficulty56526b {
   /**
@@ -12711,7 +13396,7 @@ export interface AgentInputFrontBackTopicDifficulty56526b {
 }
 
 /**
- * Kind `agent_input_image_description_1497da` (registry v5).
+ * Kind `agent_input_image_description_1497da` (registry v6).
  */
 export interface AgentInputImageDescription1497da {
   /**
@@ -12725,7 +13410,7 @@ export interface AgentInputImageDescription1497da {
 }
 
 /**
- * Kind `agent_input_instructions_scraped_content_queries_search_results` (registry v6).
+ * Kind `agent_input_instructions_scraped_content_queries_search_results` (registry v7).
  */
 export interface AgentInputInstructionsScrapedContentQueriesSearchResults {
   /**
@@ -12751,7 +13436,7 @@ export interface AgentInputInstructionsScrapedContentQueriesSearchResults {
 }
 
 /**
- * Kind `agent_input_intent_or_content_style` (registry v5).
+ * Kind `agent_input_intent_or_content_style` (registry v6).
  */
 export interface AgentInputIntentOrContentStyle {
   /**
@@ -12769,7 +13454,7 @@ export interface AgentInputIntentOrContentStyle {
 }
 
 /**
- * Kind `agent_input_intent_or_content_style_count` (registry v5).
+ * Kind `agent_input_intent_or_content_style_count` (registry v6).
  */
 export interface AgentInputIntentOrContentStyleCount {
   /**
@@ -12791,7 +13476,7 @@ export interface AgentInputIntentOrContentStyleCount {
 }
 
 /**
- * Kind `agent_input_job_brief_ground_truth_584bd5` (registry v6).
+ * Kind `agent_input_job_brief_ground_truth_584bd5` (registry v7).
  */
 export interface AgentInputJobBriefGroundTruth584bd5 {
   /**
@@ -12809,7 +13494,7 @@ export interface AgentInputJobBriefGroundTruth584bd5 {
 }
 
 /**
- * Kind `agent_input_json_data_fields_data_data_description_current_schema` (registry v5).
+ * Kind `agent_input_json_data_fields_data_data_description_current_schema` (registry v6).
  */
 export interface AgentInputJsonDataFieldsDataDataDescriptionCurrentSchema {
   /**
@@ -12839,7 +13524,7 @@ export interface AgentInputJsonDataFieldsDataDataDescriptionCurrentSchema {
 }
 
 /**
- * Kind `agent_input_keywords_search_results` (registry v5).
+ * Kind `agent_input_keywords_search_results` (registry v6).
  */
 export interface AgentInputKeywordsSearchResults {
   /**
@@ -12857,7 +13542,7 @@ export interface AgentInputKeywordsSearchResults {
 }
 
 /**
- * Kind `agent_input_legal_area_transcript` (registry v5).
+ * Kind `agent_input_legal_area_transcript` (registry v6).
  */
 export interface AgentInputLegalAreaTranscript {
   /**
@@ -12875,7 +13560,7 @@ export interface AgentInputLegalAreaTranscript {
 }
 
 /**
- * Kind `agent_input_overall_agent_goal_tone_and_tyle_response_format_constra_63058a` (registry v5).
+ * Kind `agent_input_overall_agent_goal_tone_and_tyle_response_format_constra_63058a` (registry v6).
  */
 export interface AgentInputOverallAgentGoalToneAndTyleResponseFormatConstra63058a {
   /**
@@ -12892,7 +13577,7 @@ export interface AgentInputOverallAgentGoalToneAndTyleResponseFormatConstra63058
 }
 
 /**
- * Kind `agent_input_page_content_45ae23` (registry v5).
+ * Kind `agent_input_page_content_45ae23` (registry v6).
  */
 export interface AgentInputPageContent45ae23 {
   /**
@@ -12906,7 +13591,7 @@ export interface AgentInputPageContent45ae23 {
 }
 
 /**
- * Kind `agent_input_page_content_800869` (registry v5).
+ * Kind `agent_input_page_content_800869` (registry v6).
  */
 export interface AgentInputPageContent800869 {
   /**
@@ -12917,7 +13602,7 @@ export interface AgentInputPageContent800869 {
 }
 
 /**
- * Kind `agent_input_page_context` (registry v5).
+ * Kind `agent_input_page_context` (registry v6).
  */
 export interface AgentInputPageContext {
   /**
@@ -12931,7 +13616,7 @@ export interface AgentInputPageContext {
 }
 
 /**
- * Kind `agent_input_podcast_content` (registry v5).
+ * Kind `agent_input_podcast_content` (registry v6).
  */
 export interface AgentInputPodcastContent {
   /**
@@ -12942,7 +13627,7 @@ export interface AgentInputPodcastContent {
 }
 
 /**
- * Kind `agent_input_podcast_topic_or_content_17ec37` (registry v5).
+ * Kind `agent_input_podcast_topic_or_content_17ec37` (registry v6).
  */
 export interface AgentInputPodcastTopicOrContent17ec37 {
   /**
@@ -12956,7 +13641,7 @@ export interface AgentInputPodcastTopicOrContent17ec37 {
 }
 
 /**
- * Kind `agent_input_prior_cleaned_suffix_raw_window_session_title_module_id` (registry v5).
+ * Kind `agent_input_prior_cleaned_suffix_raw_window_session_title_module_id` (registry v6).
  */
 export interface AgentInputPriorCleanedSuffixRawWindowSessionTitleModuleId {
   /**
@@ -12982,7 +13667,7 @@ export interface AgentInputPriorCleanedSuffixRawWindowSessionTitleModuleId {
 }
 
 /**
- * Kind `agent_input_project_overview_victory_condition_first_step` (registry v5).
+ * Kind `agent_input_project_overview_victory_condition_first_step` (registry v6).
  */
 export interface AgentInputProjectOverviewVictoryConditionFirstStep {
   /**
@@ -13004,7 +13689,7 @@ export interface AgentInputProjectOverviewVictoryConditionFirstStep {
 }
 
 /**
- * Kind `agent_input_prompt_config` (registry v5).
+ * Kind `agent_input_prompt_config` (registry v6).
  */
 export interface AgentInputPromptConfig {
   /**
@@ -13015,7 +13700,7 @@ export interface AgentInputPromptConfig {
 }
 
 /**
- * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_3f4ca3` (registry v5).
+ * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_3f4ca3` (registry v6).
  */
 export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePa3f4ca3 {
   /**
@@ -13032,7 +13717,7 @@ export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePa3f4ca
 }
 
 /**
- * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_f4ceb8` (registry v5).
+ * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_f4ceb8` (registry v6).
  */
 export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePaF4ceb8 {
   /**
@@ -13049,7 +13734,7 @@ export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePaF4ceb
 }
 
 /**
- * Kind `agent_input_prompt_purpose` (registry v5).
+ * Kind `agent_input_prompt_purpose` (registry v6).
  */
 export interface AgentInputPromptPurpose {
   /**
@@ -13060,7 +13745,7 @@ export interface AgentInputPromptPurpose {
 }
 
 /**
- * Kind `agent_input_qme_report` (registry v7).
+ * Kind `agent_input_qme_report` (registry v8).
  */
 export interface AgentInputQmeReport {
   /**
@@ -13074,7 +13759,7 @@ export interface AgentInputQmeReport {
 }
 
 /**
- * Kind `agent_input_query` (registry v5).
+ * Kind `agent_input_query` (registry v6).
  */
 export interface AgentInputQuery {
   /**
@@ -13088,7 +13773,7 @@ export interface AgentInputQuery {
 }
 
 /**
- * Kind `agent_input_raw_window_module_id_prior_concepts_session_title` (registry v5).
+ * Kind `agent_input_raw_window_module_id_prior_concepts_session_title` (registry v6).
  */
 export interface AgentInputRawWindowModuleIdPriorConceptsSessionTitle {
   /**
@@ -13114,7 +13799,7 @@ export interface AgentInputRawWindowModuleIdPriorConceptsSessionTitle {
 }
 
 /**
- * Kind `agent_input_rulebook_document_brief` (registry v5).
+ * Kind `agent_input_rulebook_document_brief` (registry v6).
  */
 export interface AgentInputRulebookDocumentBrief {
   /**
@@ -13132,7 +13817,7 @@ export interface AgentInputRulebookDocumentBrief {
 }
 
 /**
- * Kind `agent_input_scraped_content_focus_area` (registry v5).
+ * Kind `agent_input_scraped_content_focus_area` (registry v6).
  */
 export interface AgentInputScrapedContentFocusArea {
   /**
@@ -13144,7 +13829,7 @@ export interface AgentInputScrapedContentFocusArea {
 }
 
 /**
- * Kind `agent_input_selection_content_current_message_role_context` (registry v5).
+ * Kind `agent_input_selection_content_current_message_role_context` (registry v6).
  */
 export interface AgentInputSelectionContentCurrentMessageRoleContext {
   /**
@@ -13159,7 +13844,7 @@ export interface AgentInputSelectionContentCurrentMessageRoleContext {
 }
 
 /**
- * Kind `agent_input_service_name_region_name_state_name_intro_section_data` (registry v5).
+ * Kind `agent_input_service_name_region_name_state_name_intro_section_data` (registry v6).
  */
 export interface AgentInputServiceNameRegionNameStateNameIntroSectionData {
   /**
@@ -13197,7 +13882,7 @@ export interface AgentInputServiceNameRegionNameStateNameIntroSectionData {
 }
 
 /**
- * Kind `agent_input_since_iso_environment_label` (registry v5).
+ * Kind `agent_input_since_iso_environment_label` (registry v6).
  */
 export interface AgentInputSinceIsoEnvironmentLabel {
   /**
@@ -13215,7 +13900,7 @@ export interface AgentInputSinceIsoEnvironmentLabel {
 }
 
 /**
- * Kind `agent_input_site_name_site_domain_site_brand_site_vertical_cb3911` (registry v5).
+ * Kind `agent_input_site_name_site_domain_site_brand_site_vertical_cb3911` (registry v6).
  */
 export interface AgentInputSiteNameSiteDomainSiteBrandSiteVerticalCb3911 {
   /**
@@ -13293,7 +13978,7 @@ export interface AgentInputSiteNameSiteDomainSiteBrandSiteVerticalCb3911 {
 }
 
 /**
- * Kind `agent_input_task_additional_context` (registry v7).
+ * Kind `agent_input_task_additional_context` (registry v8).
  */
 export interface AgentInputTaskAdditionalContext {
   /**
@@ -13311,7 +13996,7 @@ export interface AgentInputTaskAdditionalContext {
 }
 
 /**
- * Kind `agent_input_text` (registry v5).
+ * Kind `agent_input_text` (registry v6).
  */
 export interface AgentInputText {
   text?: string;
@@ -13322,7 +14007,7 @@ export interface AgentInputText {
 }
 
 /**
- * Kind `agent_input_topic_1e50f4` (registry v5).
+ * Kind `agent_input_topic_1e50f4` (registry v6).
  */
 export interface AgentInputTopic1e50f4 {
   topic?: string;
@@ -13333,7 +14018,7 @@ export interface AgentInputTopic1e50f4 {
 }
 
 /**
- * Kind `agent_input_topic_count_difficulty_grade_level_8dffc3` (registry v5).
+ * Kind `agent_input_topic_count_difficulty_grade_level_8dffc3` (registry v6).
  */
 export interface AgentInputTopicCountDifficultyGradeLevel8dffc3 {
   /**
@@ -13363,7 +14048,7 @@ export interface AgentInputTopicCountDifficultyGradeLevel8dffc3 {
 }
 
 /**
- * Kind `agent_input_topic_front_back_struggle_signal_9481fb` (registry v5).
+ * Kind `agent_input_topic_front_back_struggle_signal_9481fb` (registry v6).
  */
 export interface AgentInputTopicFrontBackStruggleSignal9481fb {
   /**
@@ -13389,7 +14074,7 @@ export interface AgentInputTopicFrontBackStruggleSignal9481fb {
 }
 
 /**
- * Kind `agent_input_topic_grade_level_difficulty` (registry v5).
+ * Kind `agent_input_topic_grade_level_difficulty` (registry v6).
  */
 export interface AgentInputTopicGradeLevelDifficulty {
   /**
@@ -13411,7 +14096,7 @@ export interface AgentInputTopicGradeLevelDifficulty {
 }
 
 /**
- * Kind `agent_input_topic_page_content_page_url_page_title_0c274b` (registry v5).
+ * Kind `agent_input_topic_page_content_page_url_page_title_0c274b` (registry v6).
  */
 export interface AgentInputTopicPageContentPageUrlPageTitle0c274b {
   topic?: string;
@@ -13425,7 +14110,7 @@ export interface AgentInputTopicPageContentPageUrlPageTitle0c274b {
 }
 
 /**
- * Kind `agent_input_topic_sources` (registry v5).
+ * Kind `agent_input_topic_sources` (registry v6).
  */
 export interface AgentInputTopicSources {
   /**
@@ -13443,7 +14128,7 @@ export interface AgentInputTopicSources {
 }
 
 /**
- * Kind `agent_input_transcript_087e8c` (registry v5).
+ * Kind `agent_input_transcript_087e8c` (registry v6).
  */
 export interface AgentInputTranscript087e8c {
   /**
@@ -13454,7 +14139,7 @@ export interface AgentInputTranscript087e8c {
 }
 
 /**
- * Kind `agent_input_transcript_attempts_aggregate_remaining_cards_8ab902` (registry v5).
+ * Kind `agent_input_transcript_attempts_aggregate_remaining_cards_8ab902` (registry v6).
  */
 export interface AgentInputTranscriptAttemptsAggregateRemainingCards8ab902 {
   /**
@@ -13480,7 +14165,7 @@ export interface AgentInputTranscriptAttemptsAggregateRemainingCards8ab902 {
 }
 
 /**
- * Kind `agent_input_transcript_delta_round_directive_stage_goal_held_note_2c4562` (registry v5).
+ * Kind `agent_input_transcript_delta_round_directive_stage_goal_held_note_2c4562` (registry v6).
  */
 export interface AgentInputTranscriptDeltaRoundDirectiveStageGoalHeldNote2c4562 {
   /**
@@ -13518,7 +14203,7 @@ export interface AgentInputTranscriptDeltaRoundDirectiveStageGoalHeldNote2c4562 
 }
 
 /**
- * Kind `agent_input_user_input_page_url_page_metadata_list_root_hint` (registry v5).
+ * Kind `agent_input_user_input_page_url_page_metadata_list_root_hint` (registry v6).
  */
 export interface AgentInputUserInputPageUrlPageMetadataListRootHint {
   /**
@@ -13552,7 +14237,7 @@ export interface AgentInputUserInputPageUrlPageMetadataListRootHint {
 }
 
 /**
- * Kind `agent_input_user_input_page_url_page_text_page_metadata` (registry v5).
+ * Kind `agent_input_user_input_page_url_page_text_page_metadata` (registry v6).
  */
 export interface AgentInputUserInputPageUrlPageTextPageMetadata {
   /**
@@ -13582,7 +14267,7 @@ export interface AgentInputUserInputPageUrlPageTextPageMetadata {
 }
 
 /**
- * Kind `agent_input_video_description` (registry v6).
+ * Kind `agent_input_video_description` (registry v7).
  */
 export interface AgentInputVideoDescription {
   /**
@@ -13596,7 +14281,7 @@ export interface AgentInputVideoDescription {
 }
 
 /**
- * Kind `agent_input_who_is_going_on_the_trip_event_or_purpose_age_ranges_of` (registry v5).
+ * Kind `agent_input_who_is_going_on_the_trip_event_or_purpose_age_ranges_of` (registry v6).
  */
 export interface AgentInputWhoIsGoingOnTheTripEventOrPurposeAgeRangesOf {
   /**
@@ -13612,7 +14297,7 @@ export interface AgentInputWhoIsGoingOnTheTripEventOrPurposeAgeRangesOf {
 /**
  * What went wrong with an agent, why, and the configuration that should replace it.
  *  *
- *  * Kind `agent_iteration_plan` (registry v2).
+ *  * Kind `agent_iteration_plan` (registry v3).
  */
 export interface AgentIterationPlan {
   /**
@@ -13658,7 +14343,7 @@ export interface AgentMandateSpecification {
 /**
  * Output of ``ai.agent.react`` — final answer plus the step-by-step trace.
  *  *
- *  * Kind `agent_react_result` (registry v9).
+ *  * Kind `agent_react_result` (registry v10).
  */
 export interface AgentReactResult {
   /**
@@ -13744,7 +14429,7 @@ export interface AgentStudioChatBriefOffer {
 }
 
 /**
- * Kind `agent_task_list` (registry v3).
+ * Kind `agent_task_list` (registry v4).
  */
 export interface AgentTaskList {
   ok?: boolean;
@@ -13760,6 +14445,77 @@ export interface AgentTaskList {
 }
 
 /**
+ * One test case under one setup and repeat, ready to run.
+ *  *
+ *  * Kind `agent_test_case_ref` (registry v1).
+ */
+export interface AgentTestCaseRef {
+  door?: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity" | null;
+  setup: RunSetup;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_test_case_ref";
+  repeat?: number;
+  run_id: string;
+  case_id: string;
+  result_id?: string | null;
+}
+
+/**
+ * Everything a test case accumulates as it moves through the agent_test Steps.
+ *  *
+ *  * Kind `agent_test_case_state` (registry v1).
+ */
+export interface AgentTestCaseState {
+  ref: AgentTestCaseRef;
+  run?: CaseRun | null;
+  case?: CaseSpec | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_test_case_state";
+  inputs?: ResolvedInputs | null;
+  judged?: Judged | null;
+  stored?: StoredRef | null;
+  checked?: Checked | null;
+  bindings?: Bindings | null;
+  evidence?: Evidence | null;
+  door_pick?: DoorPick | null;
+}
+
+/**
+ * Kind `agent_test_notice` (registry v1).
+ */
+export interface AgentTestNotice {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_test_notice";
+  counts?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: number | string | undefined;
+  };
+  run_id: string;
+  channel?: string;
+  notified: boolean;
+}
+
+/**
+ * Kind `agent_test_run_ref` (registry v1).
+ */
+export interface AgentTestRunRef {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_test_run_ref";
+  run_id: string;
+}
+
+/**
  * One group's aggregate — a kind of its own, NESTED (the §4.4 law).
  *
  * ``data.aggregate`` can return many of these, and a repeated nested
@@ -13767,7 +14523,7 @@ export interface AgentTaskList {
  * a renderer lays out a self-describing row without knowing what produced
  * it, and an edge can carry a single group as a value in its own right.
  *  *
- *  * Kind `aggregate_group` (registry v6).
+ *  * Kind `aggregate_group` (registry v7).
  */
 export interface AggregateGroup {
   /**
@@ -13789,7 +14545,7 @@ export interface AggregateGroup {
 }
 
 /**
- * Kind `aggregate_result` (registry v8).
+ * Kind `aggregate_result` (registry v9).
  */
 export interface AggregateResult {
   /**
@@ -13861,7 +14617,7 @@ export interface AiTranslationCellDraftOffer {
 }
 
 /**
- * Kind `ai_answer` (registry v17).
+ * Kind `ai_answer` (registry v18).
  */
 export interface AiAnswer {
   /**
@@ -13893,7 +14649,7 @@ export interface AiAnswer {
  * rename to the DB sweep; this kind mirrors the node's live shape rather
  * than the canonical one so nothing drifts between the two.
  *  *
- *  * Kind `ai_cost_summary` (registry v8).
+ *  * Kind `ai_cost_summary` (registry v9).
  */
 export interface AiCostSummary {
   /**
@@ -13915,7 +14671,7 @@ export interface AiCostSummary {
 /**
  * Output of ``ai.extract`` — model-extracted structured data + raw text.
  *  *
- *  * Kind `ai_extract_result` (registry v9).
+ *  * Kind `ai_extract_result` (registry v10).
  */
 export interface AiExtractResult {
   /**
@@ -13935,7 +14691,7 @@ export interface AiExtractResult {
 /**
  * Output of ``seo.ai_visibility.panel.declare`` — the saved/updated panel.
  *  *
- *  * Kind `ai_visibility_panel` (registry v7).
+ *  * Kind `ai_visibility_panel` (registry v8).
  */
 export interface AiVisibilityPanel {
   id?: string;
@@ -13966,7 +14722,7 @@ export interface AiVisibilityPanel {
  * Output of ``seo.ai_visibility.panel.list`` — saved panels for one site
  * or the current workspace.
  *  *
- *  * Kind `ai_visibility_panel_list` (registry v8).
+ *  * Kind `ai_visibility_panel_list` (registry v9).
  */
 export interface AiVisibilityPanelList {
   /**
@@ -13980,7 +14736,7 @@ export interface AiVisibilityPanelList {
  * Output of ``seo.ai_visibility.panel.preview`` — what running this panel
  * now would do, and cost, before any spend.
  *  *
- *  * Kind `ai_visibility_panel_preview` (registry v7).
+ *  * Kind `ai_visibility_panel_preview` (registry v8).
  */
 export interface AiVisibilityPanelPreview {
   name?: string;
@@ -14000,7 +14756,7 @@ export interface AiVisibilityPanelPreview {
  * Output of ``seo.ai_visibility.panel.run`` — the next bounded pass of a
  * saved AI-answer panel, with responses, coverage, and measured cost.
  *  *
- *  * Kind `ai_visibility_panel_run_result` (registry v6).
+ *  * Kind `ai_visibility_panel_run_result` (registry v7).
  */
 export interface AiVisibilityPanelRunResult {
   name?: string;
@@ -14026,7 +14782,7 @@ export interface AiVisibilityPanelRunResult {
  * Output of ``seo.ai_visibility.brand.analyze`` — one buyer question asked
  * across AI answer engines, with brand mentions, claims, and citations.
  *  *
- *  * Kind `ai_visibility_result` (registry v7).
+ *  * Kind `ai_visibility_result` (registry v8).
  */
 export interface AiVisibilityResult {
   query?: string;
@@ -14236,7 +14992,7 @@ export interface AmbientPageGuidanceOffer {
 }
 
 /**
- * Kind `analogy` (registry v5).
+ * Kind `analogy` (registry v6).
  */
 export interface Analogy {
   /**
@@ -14258,7 +15014,7 @@ export interface Analogy {
 }
 
 /**
- * Kind `analytics_insight` (registry v4).
+ * Kind `analytics_insight` (registry v5).
  */
 export interface AnalyticsInsight {
   /**
@@ -14280,7 +15036,7 @@ export interface AnalyticsInsight {
  * The accounts and pages the name searches found that could be this person, in rank order, each with the
  * rules' score and reasons and, when it was looked up, its privacy-safe profile basics.
  *  *
- *  * Kind `anchor_candidate_list` (registry v2).
+ *  * Kind `anchor_candidate_list` (registry v3).
  */
 export interface AnchorCandidateList {
   items?: AnchorCandidate[];
@@ -14291,7 +15047,7 @@ export interface AnchorCandidateList {
 }
 
 /**
- * Kind `answer_grade` (registry v5).
+ * Kind `answer_grade` (registry v6).
  */
 export interface AnswerGrade {
   /**
@@ -14338,7 +15094,7 @@ export interface AnswerGrade {
 }
 
 /**
- * Kind `applet_build_result` (registry v4).
+ * Kind `applet_build_result` (registry v5).
  */
 export interface AppletBuildResult {
   note: string;
@@ -14548,7 +15304,7 @@ export interface ArtisanDemoReadingList {
 }
 
 /**
- * Kind `assertion_result` (registry v13).
+ * Kind `assertion_result` (registry v14).
  */
 export interface AssertionResult {
   /**
@@ -14578,7 +15334,7 @@ export interface AssertionResult {
  * ``fulfillment_source`` is ``human`` or ``external_system``, never
  * ``agent``.
  *  *
- *  * Kind `asset_grading` (registry v4).
+ *  * Kind `asset_grading` (registry v5).
  */
 export interface AssetGrading {
   /**
@@ -14601,7 +15357,7 @@ export interface AssetGrading {
 /**
  * One rendered flavour of an asset — its file, its dimensions, its URLs.
  *  *
- *  * Kind `asset_variant` (registry v6).
+ *  * Kind `asset_variant` (registry v7).
  */
 export interface AssetVariant {
   key: string;
@@ -14769,7 +15525,7 @@ export interface BasicCard {
 }
 
 /**
- * Kind `batch_review` (registry v5).
+ * Kind `batch_review` (registry v6).
  */
 export interface BatchReview {
   __kind: "batch_review";
@@ -14800,7 +15556,7 @@ export interface BatchReview {
 }
 
 /**
- * Kind `batched_list_result` (registry v8).
+ * Kind `batched_list_result` (registry v9).
  */
 export interface BatchedListResult {
   /**
@@ -14932,7 +15688,7 @@ export interface BrandVoiceRewriteOffer {
 /**
  * Per standard asset slot: filled by which image group, or missing.
  *  *
- *  * Kind `brand_asset_gaps` (registry v2).
+ *  * Kind `brand_asset_gaps` (registry v3).
  */
 export interface BrandAssetGaps {
   slots?: AssetGap[];
@@ -14946,7 +15702,7 @@ export interface BrandAssetGaps {
  * The standard brand asset set: favicons, touch and app icons, social avatar, share image, square and wide
  * logos, dark and light versions.
  *  *
- *  * Kind `brand_asset_slots` (registry v2).
+ *  * Kind `brand_asset_slots` (registry v3).
  */
 export interface BrandAssetSlots {
   items?: AssetSlot[];
@@ -14957,7 +15713,7 @@ export interface BrandAssetSlots {
 }
 
 /**
- * Kind `brand_basics` (registry v4).
+ * Kind `brand_basics` (registry v5).
  */
 export interface BrandBasics {
   /**
@@ -14979,7 +15735,7 @@ export interface BrandBasics {
 }
 
 /**
- * Kind `brand_basics_fact` (registry v4).
+ * Kind `brand_basics_fact` (registry v5).
  */
 export interface BrandBasicsFact {
   /**
@@ -15020,7 +15776,7 @@ export interface BrandBasicsFact {
  * One card for a researched brand, person or creator (mandate ``research_client.output_brand_card``;
  * no performer built yet): role, offers, audience, speaking style, signature phrases, tone, do/don't, proof.
  *  *
- *  * Kind `brand_card` (registry v2).
+ *  * Kind `brand_card` (registry v3).
  */
 export interface BrandCard {
   do?: string[];
@@ -15042,7 +15798,7 @@ export interface BrandCard {
 /**
  * What the person has confirmed about the brand so far in Smart Add (empty until they confirm).
  *  *
- *  * Kind `brand_confirmed_facts` (registry v2).
+ *  * Kind `brand_confirmed_facts` (registry v3).
  */
 export interface BrandConfirmedFacts {
   name?: string | null;
@@ -15179,7 +15935,7 @@ export interface BrandEvidenceItem {
 /**
  * One brand fact that is a single structured record (the measured voice, the competitive landscape brief…).
  *  *
- *  * Kind `brand_fact_object` (registry v2).
+ *  * Kind `brand_fact_object` (registry v3).
  */
 export interface BrandFactObject {
   /**
@@ -15192,7 +15948,7 @@ export interface BrandFactObject {
  * One brand fact that is a list of records (offerings, personas, locations, competitors, people, assets…),
  * each row as its canonical home stores it.
  *  *
- *  * Kind `brand_fact_rows` (registry v2).
+ *  * Kind `brand_fact_rows` (registry v3).
  */
 export interface BrandFactRows {
   items?: BrandFactRow[];
@@ -15205,7 +15961,7 @@ export interface BrandFactRows {
 /**
  * The findings one source of a Smart Add identify round produced (site, accounts or web).
  *  *
- *  * Kind `brand_identify_findings` (registry v2).
+ *  * Kind `brand_identify_findings` (registry v3).
  */
 export interface BrandIdentifyFindings {
   items?: BrandFinding[];
@@ -15218,7 +15974,7 @@ export interface BrandIdentifyFindings {
 /**
  * Every raw web result an identify round read, from every search engine, in rank order.
  *  *
- *  * Kind `brand_identify_web_results` (registry v2).
+ *  * Kind `brand_identify_web_results` (registry v3).
  */
 export interface BrandIdentifyWebResults {
   items?: WebSearchResultRow[];
@@ -15232,7 +15988,7 @@ export interface BrandIdentifyWebResults {
  * The cheap fingerprint of each image (sha256, format, size, transparency, dHash, pHash, shape), keyed by
  * the image's evidence key (``image_groups.fingerprint_bytes``).
  *  *
- *  * Kind `brand_image_fingerprint_list` (registry v2).
+ *  * Kind `brand_image_fingerprint_list` (registry v3).
  */
 export interface BrandImageFingerprintList {
   items?: BrandImageFingerprint[];
@@ -15246,7 +16002,7 @@ export interface BrandImageFingerprintList {
  * Near-identical images grouped (every source kept): group id, representative, every key, distances
  * (``image_groups.group_fingerprints``).
  *  *
- *  * Kind `brand_image_group_list` (registry v2).
+ *  * Kind `brand_image_group_list` (registry v3).
  */
 export interface BrandImageGroupList {
   items?: BrandImageGroup[];
@@ -15260,7 +16016,7 @@ export interface BrandImageGroupList {
  * Images collected for a brand (logos, profile photos, site icons, og images): key, file reference or
  * address, source, page, platform and where on the page it was found.
  *  *
- *  * Kind `brand_image_list` (registry v2).
+ *  * Kind `brand_image_list` (registry v3).
  */
 export interface BrandImageList {
   items?: BrandImageRow[];
@@ -15274,7 +16030,7 @@ export interface BrandImageList {
  * Per image: ok, or one flag (low res, blurry, cropped, a screenshot, not ours, stock, not a logo), with
  * how sure.
  *  *
- *  * Kind `brand_image_quality` (registry v2).
+ *  * Kind `brand_image_quality` (registry v3).
  */
 export interface BrandImageQuality {
   /**
@@ -15375,7 +16131,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v16).
+ * Kind `brand_intake.identity_match.offer` (registry v17).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -16262,7 +17018,7 @@ export interface BrandIntakeIdentityMatchOffer {
     __kind?: "web_page_list";
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_search_faq?: {
@@ -16316,7 +17072,7 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_local_search_faq?: {
@@ -16348,7 +17104,7 @@ export interface BrandIntakeIdentityMatchOffer {
   };
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_search_news?: {
@@ -16437,7 +17193,7 @@ export interface BrandIntakeIdentityMatchOffer {
     __kind?: "social_profile_answer_list";
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_domain_search_faq?: {
@@ -16451,7 +17207,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_local_search_news?: {
@@ -16507,7 +17263,7 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_domain_search_news?: {
@@ -16575,7 +17331,7 @@ export interface BrandIntakeIdentityMatchOffer {
   };
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_search_videos?: {
@@ -16643,7 +17399,7 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_local_search_videos?: {
@@ -16675,7 +17431,7 @@ export interface BrandIntakeIdentityMatchOffer {
   };
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_search_infobox?: {
@@ -16767,7 +17523,7 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   site_homepage_footer_text?: string;
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_domain_search_videos?: {
@@ -16781,7 +17537,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_local_search_infobox?: {
@@ -16900,7 +17656,7 @@ export interface BrandIntakeIdentityMatchOffer {
     __kind?: "social_profile_answer_list";
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_domain_search_infobox?: {
@@ -16928,7 +17684,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_search_locations?: {
@@ -16968,7 +17724,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_local_search_locations?: {
@@ -17020,7 +17776,7 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_domain_search_locations?: {
@@ -17034,7 +17790,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_reviews_search_faq?: {
@@ -17048,7 +17804,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_search_discussions?: {
@@ -17076,7 +17832,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_search_answer_box?: {
@@ -17090,7 +17846,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_local_search_discussions?: {
@@ -17132,7 +17888,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_reviews_search_news?: {
@@ -17146,7 +17902,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_local_search_answer_box?: {
@@ -17160,7 +17916,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_search_ai_overview?: {
@@ -17188,7 +17944,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_search_top_stories?: {
@@ -17214,7 +17970,7 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_domain_search_discussions?: {
@@ -17242,7 +17998,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_domain_search_answer_box?: {
@@ -17256,7 +18012,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_local_search_ai_overview?: {
@@ -17284,7 +18040,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_local_search_top_stories?: {
@@ -17326,7 +18082,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_reviews_search_videos?: {
@@ -17354,7 +18110,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_domain_search_ai_overview?: {
@@ -17382,7 +18138,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_domain_search_top_stories?: {
@@ -17396,7 +18152,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_search_local_results?: {
@@ -17410,7 +18166,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_reviews_search_infobox?: {
@@ -17438,7 +18194,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_local_search_local_results?: {
@@ -17494,7 +18250,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_domain_search_local_results?: {
@@ -17522,7 +18278,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_search_knowledge_graph?: {
@@ -17536,7 +18292,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_reviews_search_locations?: {
@@ -17550,7 +18306,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_local_search_knowledge_graph?: {
@@ -17606,7 +18362,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_domain_search_knowledge_graph?: {
@@ -17620,7 +18376,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_search_related_questions?: {
@@ -17634,7 +18390,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   brave_name_reviews_search_discussions?: {
@@ -17662,7 +18418,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_local_search_related_questions?: {
@@ -17690,7 +18446,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_reviews_search_answer_box?: {
@@ -17718,7 +18474,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_domain_search_related_questions?: {
@@ -17732,7 +18488,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_reviews_search_ai_overview?: {
@@ -17760,7 +18516,7 @@ export interface BrandIntakeIdentityMatchOffer {
     endpoint?: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_reviews_search_top_stories?: {
@@ -17774,7 +18530,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_reviews_search_local_results?: {
@@ -17788,7 +18544,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_reviews_search_knowledge_graph?: {
@@ -17802,7 +18558,7 @@ export interface BrandIntakeIdentityMatchOffer {
     engine: string;
   };
   /**
-   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
   google_name_reviews_search_related_questions?: {
@@ -17891,7 +18647,7 @@ export interface BrandIntakeKeyPeopleFinderOffer {
  * The early facts investigator's answer: the brand's basics, each with certainty and evidence.
  * A proposal: nothing is saved until a person confirms it; unsupported facts are omitted.
  *  *
- *  * Kind `brand_intake_facts` (registry v2).
+ *  * Kind `brand_intake_facts` (registry v3).
  */
 export interface BrandIntakeFacts {
   facts?: BrandFact[];
@@ -17908,7 +18664,7 @@ export interface BrandIntakeFacts {
  * The output kind of mandate ``brand_intake.key_people_finder``. Its own slug on purpose: the slug
  * ``brand_key_people`` is Arman's hand-made kind (his organization, his schema), never this model.
  *  *
- *  * Kind `brand_intake_key_people` (registry v1).
+ *  * Kind `brand_intake_key_people` (registry v2).
  */
 export interface BrandIntakeKeyPeople {
   /**
@@ -17922,7 +18678,7 @@ export interface BrandIntakeKeyPeople {
  * The brand-intake agent's answer: search keywords plus a draft Brand Profile (Foundations 1-16),
  * every item with its sources, confidence and basis. A proposal: nothing is stored until confirmed.
  *  *
- *  * Kind `brand_intake_profile` (registry v2).
+ *  * Kind `brand_intake_profile` (registry v3).
  */
 export interface BrandIntakeProfile {
   notes?: TextItem[];
@@ -18000,7 +18756,7 @@ export interface BrandKeyPerson {
 /**
  * The best logo group per variant (wordmark, icon, square, wide), best first.
  *  *
- *  * Kind `brand_logo_ranking` (registry v2).
+ *  * Kind `brand_logo_ranking` (registry v3).
  */
 export interface BrandLogoRanking {
   /**
@@ -18054,7 +18810,7 @@ export interface BrandOfferingTree {
  * Every account, website, name and logo a Smart Add round found that nobody has decided yet, each once,
  * with what is known of it (profile basics when it was looked up, where it was found, the fixed rules' read).
  *  *
- *  * Kind `brand_open_candidates` (registry v2).
+ *  * Kind `brand_open_candidates` (registry v3).
  */
 export interface BrandOpenCandidates {
   items?: OpenCandidate[];
@@ -18068,7 +18824,7 @@ export interface BrandOpenCandidates {
  * The ways a found page or account can relate to a brand (``web.brand_relation_kind``): the shared list plus
  * the organization's own.
  *  *
- *  * Kind `brand_relation_kinds` (registry v2).
+ *  * Kind `brand_relation_kinds` (registry v3).
  */
 export interface BrandRelationKinds {
   items?: RelationKind[];
@@ -18083,7 +18839,7 @@ export interface BrandRelationKinds {
  * to the brand, with a probability and hover-only grounding. Shown as a glow on that option; it is never
  * chosen for the person.
  *  *
- *  * Kind `brand_we_think` (registry v1).
+ *  * Kind `brand_we_think` (registry v2).
  */
 export interface BrandWeThink {
   /**
@@ -18094,7 +18850,7 @@ export interface BrandWeThink {
 }
 
 /**
- * Kind `brand_we_think_suggestion` (registry v2).
+ * Kind `brand_we_think_suggestion` (registry v3).
  */
 export interface BrandWeThinkSuggestion {
   /**
@@ -18132,7 +18888,7 @@ export interface BrandWeThinkSuggestion {
  * relation to the brand with a probability and grounding. A proposal shown as the 'we think' glow in the
  * Review search results window; it never answers for the person.
  *  *
- *  * Kind `brand_web_result_classification` (registry v2).
+ *  * Kind `brand_web_result_classification` (registry v3).
  */
 export interface BrandWebResultClassification {
   /**
@@ -18150,7 +18906,7 @@ export interface BrandWebResultClassification {
  * The what's-new agent's answer (mandate ``brand_intake.whats_new``): from one new clean source, ONLY the facts
  * not already known, plus values that contradict a known fact. A proposal for the validation queue.
  *  *
- *  * Kind `brand_whats_new` (registry v2).
+ *  * Kind `brand_whats_new` (registry v3).
  */
 export interface BrandWhatsNew {
   facts?: BrandWhatsNewFact_BrandWhatsNew[];
@@ -18162,7 +18918,7 @@ export interface BrandWhatsNew {
 }
 
 /**
- * Kind `brand_whats_new_fact` (registry v2).
+ * Kind `brand_whats_new_fact` (registry v3).
  */
 export interface BrandWhatsNewFact {
   /**
@@ -18202,7 +18958,7 @@ export interface BrandWhatsNewFact {
 /**
  * Output of ``seo.prospecting.broken_links.preview`` — mirrors ``BrokenLinkProspectingPreview``.
  *  *
- *  * Kind `broken_link_prospecting_preview` (registry v6).
+ *  * Kind `broken_link_prospecting_preview` (registry v7).
  */
 export interface BrokenLinkProspectingPreview {
   /**
@@ -18223,7 +18979,7 @@ export interface BrokenLinkProspectingPreview {
 /**
  * Output of ``seo.prospecting.broken_links.run`` — mirrors ``BrokenLinkProspectingReport``.
  *  *
- *  * Kind `broken_link_prospecting_report` (registry v7).
+ *  * Kind `broken_link_prospecting_report` (registry v8).
  */
 export interface BrokenLinkProspectingReport {
   pages?: SeoCheckedPage[];
@@ -18245,7 +19001,7 @@ export interface BrokenLinkProspectingReport {
 }
 
 /**
- * Kind `browser_provision_result` (registry v3).
+ * Kind `browser_provision_result` (registry v4).
  */
 export interface BrowserProvisionResult {
   state: string;
@@ -18388,7 +19144,7 @@ export interface BuyerJobsResult {
  * tool has always returned the string form; declaring it wider would invent
  * structure the implementation does not produce.
  *  *
- *  * Kind `calculation_result` (registry v3).
+ *  * Kind `calculation_result` (registry v4).
  */
 export interface CalculationResult {
   /**
@@ -18402,7 +19158,7 @@ export interface CalculationResult {
 /**
  * Captions for one piece of content, per platform.
  *  *
- *  * Kind `caption_set` (registry v2).
+ *  * Kind `caption_set` (registry v3).
  */
 export interface CaptionSet {
   /**
@@ -18416,7 +19172,7 @@ export interface CaptionSet {
 /**
  * One media file captured against a product item — by durable id, never URL.
  *  *
- *  * Kind `capture_file_ref` (registry v3).
+ *  * Kind `capture_file_ref` (registry v4).
  */
 export interface CaptureFileRef {
   /**
@@ -18436,7 +19192,7 @@ export interface CaptureFileRef {
 /**
  * One ``workbench.product_capture_item`` row as a run sees it.
  *  *
- *  * Kind `captured_product_item` (registry v3).
+ *  * Kind `captured_product_item` (registry v4).
  */
 export interface CapturedProductItem {
   /**
@@ -18472,7 +19228,7 @@ export interface CapturedProductItem {
 /**
  * A fired capture item and its media, as the opening step of a run resolved them.
  *  *
- *  * Kind `captured_product_load_result` (registry v4).
+ *  * Kind `captured_product_load_result` (registry v5).
  */
 export interface CapturedProductLoadResult {
   item?: CapturedProductItem | null;
@@ -18501,7 +19257,7 @@ export interface CapturedProductLoadResult {
 /**
  * What settling a capture item produced — did THIS run flip it, and to what.
  *  *
- *  * Kind `captured_product_settle_result` (registry v3).
+ *  * Kind `captured_product_settle_result` (registry v4).
  */
 export interface CapturedProductSettleResult {
   /**
@@ -18522,7 +19278,7 @@ export interface CapturedProductSettleResult {
 /**
  * One supplementary learning layer attached to a flashcard.
  *  *
- *  * Kind `card_detail` (registry v9).
+ *  * Kind `card_detail` (registry v10).
  */
 export interface CardDetail {
   /**
@@ -18542,7 +19298,7 @@ export interface CardDetail {
 /**
  * Supplementary learning layers for one flashcard.
  *  *
- *  * Kind `card_enrichment` (registry v9).
+ *  * Kind `card_enrichment` (registry v10).
  */
 export interface CardEnrichment {
   /**
@@ -18569,7 +19325,7 @@ export interface CardEnrichment {
 }
 
 /**
- * Kind `card_expansion` (registry v6).
+ * Kind `card_expansion` (registry v7).
  */
 export interface CardExpansion {
   /**
@@ -18590,7 +19346,7 @@ export interface CardExpansion {
 /**
  * Vision-agent judgment selecting a web image candidate for a flashcard face.
  *  *
- *  * Kind `card_image_judgment` (registry v3).
+ *  * Kind `card_image_judgment` (registry v4).
  */
 export interface CardImageJudgment {
   __kind: "card_image_judgment";
@@ -18621,7 +19377,7 @@ export interface CardImageJudgment {
 }
 
 /**
- * Kind `card_verification` (registry v5).
+ * Kind `card_verification` (registry v6).
  */
 export interface CardVerification {
   __kind: "card_verification";
@@ -18642,7 +19398,7 @@ export interface CardVerification {
 /**
  * A slide-by-slide carousel; also what the shared carousel component renders.
  *  *
- *  * Kind `carousel` (registry v2).
+ *  * Kind `carousel` (registry v3).
  */
 export interface Carousel {
   title?: string | null;
@@ -18658,7 +19414,7 @@ export interface Carousel {
 /**
  * What the desk is allowed to know right now, and what it cost to know it.
  *  *
- *  * Kind `case_disclosure` (registry v3).
+ *  * Kind `case_disclosure` (registry v4).
  */
 export interface CaseDisclosure {
   /**
@@ -18691,7 +19447,7 @@ export interface CaseDisclosure {
 /**
  * The running cost of finding out. This is what the Audition scores.
  *  *
- *  * Kind `case_disclosure_ledger` (registry v3).
+ *  * Kind `case_disclosure_ledger` (registry v4).
  */
 export interface CaseDisclosureLedger {
   /**
@@ -18716,7 +19472,7 @@ export interface CaseDisclosureLedger {
 /**
  * One line of the ledger: what was asked, and who answered it.
  *  *
- *  * Kind `case_disclosure_request` (registry v3).
+ *  * Kind `case_disclosure_request` (registry v4).
  */
 export interface CaseDisclosureRequest {
   /**
@@ -19106,7 +19862,7 @@ export interface ChecksFindingDispositionReviewOffer {
  * ``load_chrome_tools`` receipt — what was loaded for the category, and
  * exactly why each filtered candidate was skipped.
  *  *
- *  * Kind `chrome_tools_load_result` (registry v3).
+ *  * Kind `chrome_tools_load_result` (registry v4).
  */
 export interface ChromeToolsLoadResult {
   count?: number;
@@ -19127,7 +19883,7 @@ export interface ChromeToolsLoadResult {
 /**
  * A single grounding reference to source material.
  *  *
- *  * Kind `citation` (registry v7).
+ *  * Kind `citation` (registry v8).
  */
 export interface Citation {
   /**
@@ -19157,7 +19913,7 @@ export interface Citation {
 }
 
 /**
- * Kind `claim_evidence` (registry v4).
+ * Kind `claim_evidence` (registry v5).
  */
 export interface ClaimEvidence {
   claim: string;
@@ -19191,7 +19947,7 @@ export interface ClientSiteAudit {
 }
 
 /**
- * Kind `cms_align_item` (registry v7).
+ * Kind `cms_align_item` (registry v8).
  */
 export interface CmsAlignItem {
   ok?: boolean;
@@ -19211,7 +19967,7 @@ export interface CmsAlignItem {
 }
 
 /**
- * Kind `cms_align_result` (registry v8).
+ * Kind `cms_align_result` (registry v9).
  */
 export interface CmsAlignResult {
   items?: CmsAlignItem[];
@@ -19231,7 +19987,7 @@ export interface CmsAlignResult {
 }
 
 /**
- * Kind `cms_asset_result` (registry v4).
+ * Kind `cms_asset_result` (registry v5).
  */
 export interface CmsAssetResult {
   note?: string | null;
@@ -19313,7 +20069,7 @@ export interface CmsAssetResult {
 }
 
 /**
- * Kind `cms_collection_result` (registry v3).
+ * Kind `cms_collection_result` (registry v4).
  */
 export interface CmsCollectionResult {
   site?: Record<string, unknown> | null;
@@ -19351,7 +20107,7 @@ export interface CmsCollectionResult {
 }
 
 /**
- * Kind `cms_component_result` (registry v4).
+ * Kind `cms_component_result` (registry v5).
  */
 export interface CmsComponentResult {
   name?: string | null;
@@ -19432,7 +20188,7 @@ export interface CmsComponentResult {
 }
 
 /**
- * Kind `cms_data_result` (registry v3).
+ * Kind `cms_data_result` (registry v4).
  */
 export interface CmsDataResult {
   item?: Record<string, unknown> | null;
@@ -19470,7 +20226,7 @@ export interface CmsDataResult {
 }
 
 /**
- * Kind `cms_html_page_result` (registry v6).
+ * Kind `cms_html_page_result` (registry v7).
  */
 export interface CmsHtmlPageResult {
   page?: {
@@ -19551,7 +20307,7 @@ export interface CmsHtmlPageResult {
 }
 
 /**
- * Kind `cms_inspect_report` (registry v3).
+ * Kind `cms_inspect_report` (registry v4).
  */
 export interface CmsInspectReport {
   site?: Record<string, unknown> | null;
@@ -19567,7 +20323,7 @@ export interface CmsInspectReport {
 }
 
 /**
- * Kind `cms_nav_link` (registry v7).
+ * Kind `cms_nav_link` (registry v8).
  */
 export interface CmsNavLink {
   href: string;
@@ -19617,7 +20373,7 @@ export interface CmsPageBuild {
 }
 
 /**
- * Kind `cms_page_candidates` (registry v3).
+ * Kind `cms_page_candidates` (registry v4).
  */
 export interface CmsPageCandidates {
   count?: number;
@@ -19629,7 +20385,7 @@ export interface CmsPageCandidates {
 }
 
 /**
- * Kind `cms_page_result` (registry v4).
+ * Kind `cms_page_result` (registry v5).
  */
 export interface CmsPageResult {
   note?: string | null;
@@ -19742,7 +20498,7 @@ export interface CmsPageResult {
 }
 
 /**
- * Kind `cms_publish_batch_item` (registry v7).
+ * Kind `cms_publish_batch_item` (registry v8).
  */
 export interface CmsPublishBatchItem {
   slug: string;
@@ -19762,7 +20518,7 @@ export interface CmsPublishBatchItem {
 }
 
 /**
- * Kind `cms_publish_result` (registry v10).
+ * Kind `cms_publish_result` (registry v11).
  */
 export interface CmsPublishResult {
   /**
@@ -19786,7 +20542,7 @@ export interface CmsPublishResult {
 }
 
 /**
- * Kind `cms_reconcile_conflict` (registry v7).
+ * Kind `cms_reconcile_conflict` (registry v8).
  */
 export interface CmsReconcileConflict {
   /**
@@ -19804,7 +20560,7 @@ export interface CmsReconcileConflict {
 }
 
 /**
- * Kind `cms_reconcile_ghost` (registry v7).
+ * Kind `cms_reconcile_ghost` (registry v8).
  */
 export interface CmsReconcileGhost {
   label: string;
@@ -19820,7 +20576,7 @@ export interface CmsReconcileGhost {
 }
 
 /**
- * Kind `cms_reconcile_match` (registry v7).
+ * Kind `cms_reconcile_match` (registry v8).
  */
 export interface CmsReconcileMatch {
   route: string;
@@ -19837,7 +20593,7 @@ export interface CmsReconcileMatch {
 }
 
 /**
- * Kind `cms_reconcile_orphan` (registry v7).
+ * Kind `cms_reconcile_orphan` (registry v8).
  */
 export interface CmsReconcileOrphan {
   slug: string;
@@ -19855,7 +20611,7 @@ export interface CmsReconcileOrphan {
 }
 
 /**
- * Kind `cms_reconcile_report` (registry v8).
+ * Kind `cms_reconcile_report` (registry v9).
  */
 export interface CmsReconcileReport {
   /**
@@ -19875,7 +20631,7 @@ export interface CmsReconcileReport {
 }
 
 /**
- * Kind `cms_reconcile_retired` (registry v7).
+ * Kind `cms_reconcile_retired` (registry v8).
  */
 export interface CmsReconcileRetired {
   route: string;
@@ -19889,7 +20645,7 @@ export interface CmsReconcileRetired {
 }
 
 /**
- * Kind `cms_site_result` (registry v4).
+ * Kind `cms_site_result` (registry v5).
  */
 export interface CmsSiteResult {
   site?: {
@@ -20003,7 +20759,7 @@ export interface CmsSiteResult {
 }
 
 /**
- * Kind `cms_starter_kit_component` (registry v7).
+ * Kind `cms_starter_kit_component` (registry v8).
  */
 export interface CmsStarterKitComponent {
   id: string;
@@ -20027,7 +20783,7 @@ export interface CmsStarterKitComponent {
 }
 
 /**
- * Kind `cms_starter_kit_result` (registry v8).
+ * Kind `cms_starter_kit_result` (registry v9).
  */
 export interface CmsStarterKitResult {
   notes?: string[];
@@ -20058,7 +20814,7 @@ export interface CmsStarterKitResult {
  * declared because the datum exists on the page (``class="language-python"``)
  * and is a capability gap, not an absent concept.
  *  *
- *  * Kind `code_block` (registry v4).
+ *  * Kind `code_block` (registry v5).
  */
 export interface CodeBlock {
   code: string;
@@ -20132,7 +20888,7 @@ export interface CodeEditorSessionOffer {
  * pre-rendered display artifact (never parse it; the structured census is
  * the sibling fields).
  *  *
- *  * Kind `code_tree_result` (registry v3).
+ *  * Kind `code_tree_result` (registry v4).
  */
 export interface CodeTreeResult {
   tree?: string;
@@ -20176,7 +20932,7 @@ export interface CodingSessionReplyTurnOffer {
 /**
  * Output of ``ai.util.format_scraped_content`` — scraped pages joined into one block.
  *  *
- *  * Kind `combined_page_text` (registry v8).
+ *  * Kind `combined_page_text` (registry v9).
  */
 export interface CombinedPageText {
   /**
@@ -20677,7 +21433,7 @@ export interface CommunicationsSmsAssistantTurnOffer {
 /**
  * What a business is strong in, and the ranked portfolio of artifacts and platforms that follows.
  *  *
- *  * Kind `company_endowment_portfolio` (registry v2).
+ *  * Kind `company_endowment_portfolio` (registry v3).
  */
 export interface CompanyEndowmentPortfolio {
   /**
@@ -20730,7 +21486,7 @@ export interface ComparisonSet {
 /**
  * Live-data competitive intelligence for one owned site across its competitor set.
  *  *
- *  * Kind `competitor_live_intelligence_v1` (registry v2).
+ *  * Kind `competitor_live_intelligence_v1` (registry v3).
  */
 export interface CompetitorLiveIntelligenceV1 {
   error?: string | null;
@@ -20751,7 +21507,7 @@ export interface CompetitorLiveIntelligenceV1 {
 /**
  * Output of ``seo.competitors.name_lookup`` — likely official websites for a company name.
  *  *
- *  * Kind `competitor_lookup_result` (registry v8).
+ *  * Kind `competitor_lookup_result` (registry v9).
  */
 export interface CompetitorLookupResult {
   reuse?: string | null;
@@ -20766,7 +21522,7 @@ export interface CompetitorLookupResult {
 /**
  * Output of ``seo.competitors.opportunity_autopsy`` — ranked content-gap opportunities.
  *  *
- *  * Kind `competitor_opportunity_autopsy_result` (registry v7).
+ *  * Kind `competitor_opportunity_autopsy_result` (registry v8).
  */
 export interface CompetitorOpportunityAutopsyResult {
   /**
@@ -20784,7 +21540,7 @@ export interface CompetitorOpportunityAutopsyResult {
 }
 
 /**
- * Kind `competitor_opportunity_autopsy_v1` (registry v7).
+ * Kind `competitor_opportunity_autopsy_v1` (registry v8).
  */
 export interface CompetitorOpportunityAutopsyV1 {
   error: string | null;
@@ -20805,7 +21561,7 @@ export interface CompetitorOpportunityAutopsyV1 {
 }
 
 /**
- * Kind `competitor_page_autopsy_v1` (registry v7).
+ * Kind `competitor_page_autopsy_v1` (registry v8).
  */
 export interface CompetitorPageAutopsyV1 {
   error: string | null;
@@ -20883,7 +21639,7 @@ export interface ComplianceRiskItem {
 }
 
 /**
- * Kind `component_design_brief` (registry v3).
+ * Kind `component_design_brief` (registry v4).
  */
 export interface ComponentDesignBrief {
   kind?: string;
@@ -20896,7 +21652,7 @@ export interface ComponentDesignBrief {
 }
 
 /**
- * Kind `component_design_brief_pair` (registry v3).
+ * Kind `component_design_brief_pair` (registry v4).
  */
 export interface ComponentDesignBriefPair {
   kind?: string;
@@ -20932,7 +21688,7 @@ export interface ConditionAssessment {
 }
 
 /**
- * Kind `contact` (registry v2).
+ * Kind `contact` (registry v3).
  */
 export interface Contact {
   name: string;
@@ -21006,7 +21762,7 @@ export interface ContaminationRegisterTerms {
  * As a JSON number every JavaScript consumer silently rounds it, and two
  * different pages start comparing equal.
  *  *
- *  * Kind `content_fingerprint` (registry v4).
+ *  * Kind `content_fingerprint` (registry v5).
  */
 export interface ContentFingerprint {
   /**
@@ -22152,7 +22908,7 @@ export interface ContentPlanResearchWaveOffer {
  * declares per family — they differ on purpose, because a count-only family
  * contributes to ``counts`` without producing pages.
  *  *
- *  * Kind `content_plan_archetype` (registry v6).
+ *  * Kind `content_plan_archetype` (registry v7).
  */
 export interface ContentPlanArchetype {
   key: string;
@@ -22186,7 +22942,7 @@ export interface ContentPlanArchetype {
  * concept kept its own naming and its own top level — so null is meaningful
  * here, not missing data.
  *  *
- *  * Kind `content_plan_archetype_concept` (registry v5).
+ *  * Kind `content_plan_archetype_concept` (registry v6).
  */
 export interface ContentPlanArchetypeConcept {
   name?: string | null;
@@ -22211,7 +22967,7 @@ export interface ContentPlanArchetypeConcept {
  * ``materialize`` is whether they become real pages or stay a count-only
  * intention (a 120-title blog family is planned, not templated).
  *  *
- *  * Kind `content_plan_archetype_family` (registry v5).
+ *  * Kind `content_plan_archetype_family` (registry v6).
  */
 export interface ContentPlanArchetypeFamily {
   key: string;
@@ -22231,7 +22987,7 @@ export interface ContentPlanArchetypeFamily {
  * Output of ``content_plan.archetype.preview`` / ``.apply`` — the routes, page
  * counts, concepts, and foundation work an archetype creates (or would create).
  *  *
- *  * Kind `content_plan_archetype_instantiation` (registry v9).
+ *  * Kind `content_plan_archetype_instantiation` (registry v10).
  */
 export interface ContentPlanArchetypeInstantiation {
   label?: string;
@@ -22266,7 +23022,7 @@ export interface ContentPlanArchetypeInstantiation {
 /**
  * Output of ``content_plan.archetypes.list`` — the available site-plan archetypes.
  *  *
- *  * Kind `content_plan_archetype_list` (registry v9).
+ *  * Kind `content_plan_archetype_list` (registry v10).
  */
 export interface ContentPlanArchetypeList {
   count?: number;
@@ -22281,7 +23037,7 @@ export interface ContentPlanArchetypeList {
  * Output of ``content_plan.foundation.check`` — declared vs live counts
  * for an archetype's tokens, components, navigation, assets, and pages.
  *  *
- *  * Kind `content_plan_foundation_checklist` (registry v7).
+ *  * Kind `content_plan_foundation_checklist` (registry v8).
  */
 export interface ContentPlanFoundationChecklist {
   met?: number;
@@ -22316,7 +23072,7 @@ export interface ContentPlanFoundationChecklist {
  * ``required`` is a COUNT, not a boolean: an archetype can require several of
  * the same kind (nav entries, assets).
  *  *
- *  * Kind `content_plan_foundation_requirement` (registry v5).
+ *  * Kind `content_plan_foundation_requirement` (registry v6).
  */
 export interface ContentPlanFoundationRequirement {
   key: string;
@@ -22333,7 +23089,7 @@ export interface ContentPlanFoundationRequirement {
 /**
  * One ``plan.node`` row, projected for tool/API output.
  *  *
- *  * Kind `content_plan_node` (registry v6).
+ *  * Kind `content_plan_node` (registry v7).
  */
 export interface ContentPlanNode {
   id: string;
@@ -22371,7 +23127,7 @@ export interface ContentPlanNode {
 /**
  * Output of ``content_plan.sites.list`` — the sites available to the current user.
  *  *
- *  * Kind `content_plan_site_list` (registry v7).
+ *  * Kind `content_plan_site_list` (registry v8).
  */
 export interface ContentPlanSiteList {
   count?: number;
@@ -22389,7 +23145,7 @@ export interface ContentPlanSiteList {
 }
 
 /**
- * Kind `content_plan_tool_result` (registry v3).
+ * Kind `content_plan_tool_result` (registry v4).
  */
 export interface ContentPlanToolResult {
   node?: Record<string, unknown> | null;
@@ -22424,7 +23180,7 @@ export interface ContentPlanToolResult {
 /**
  * Output of ``content_plan.tree.read`` — a site's planned page tree, parent-first.
  *  *
- *  * Kind `content_plan_tree` (registry v7).
+ *  * Kind `content_plan_tree` (registry v8).
  */
 export interface ContentPlanTree {
   count?: number;
@@ -22449,7 +23205,7 @@ export interface ContentPlanTree {
  * dispatcher re-wraps the receipt into THIS kind so all three of its actions
  * speak one declared shape.
  *  *
- *  * Kind `context_tool_result` (registry v4).
+ *  * Kind `context_tool_result` (registry v5).
  */
 export interface ContextToolResult {
   key?: string | null;
@@ -22492,7 +23248,7 @@ export interface ContextToolResult {
 /**
  * Receipt for one write to a request context object (patch or create).
  *  *
- *  * Kind `context_write_result` (registry v5).
+ *  * Kind `context_write_result` (registry v6).
  */
 export interface ContextWriteResult {
   key?: string;
@@ -22639,7 +23395,7 @@ export interface CookingRecipe {
  * from the sealed profile and what this node actually released — never from
  * the persona agent's own account of how it went.
  *  *
- *  * Kind `counterparty_ledger` (registry v3).
+ *  * Kind `counterparty_ledger` (registry v4).
  */
 export interface CounterpartyLedger {
   moves?: CounterpartyMove[];
@@ -22674,7 +23430,7 @@ export interface CounterpartyLedger {
 /**
  * One line of the turn ledger: what the desk did, and what it cost.
  *  *
- *  * Kind `counterparty_move` (registry v3).
+ *  * Kind `counterparty_move` (registry v4).
  */
 export interface CounterpartyMove {
   /**
@@ -22720,7 +23476,7 @@ export interface CounterpartyMove {
  * counterparty node (which filters everything it emits against this list) and
  * the Audition's judge.
  *  *
- *  * Kind `counterparty_profile` (registry v3).
+ *  * Kind `counterparty_profile` (registry v4).
  */
 export interface CounterpartyProfile {
   facts?: CounterpartyFact_CounterpartyProfile[];
@@ -22740,7 +23496,7 @@ export interface CounterpartyProfile {
 /**
  * What the counterparty says back, and what the desk's move cost it.
  *  *
- *  * Kind `counterparty_turn` (registry v3).
+ *  * Kind `counterparty_turn` (registry v4).
  */
 export interface CounterpartyTurn {
   /**
@@ -22774,7 +23530,7 @@ export interface CounterpartyTurn {
 /**
  * One specific gap in a research evidence base.
  *  *
- *  * Kind `coverage_gap` (registry v5).
+ *  * Kind `coverage_gap` (registry v6).
  */
 export interface CoverageGap {
   __kind: "coverage_gap";
@@ -22799,7 +23555,7 @@ export interface CoverageGap {
 /**
  * Kind ``coverage_tracker_run_result`` — derived field-for-field from ``TrackerRunResult``.
  *  *
- *  * Kind `coverage_tracker_run_result` (registry v3).
+ *  * Kind `coverage_tracker_run_result` (registry v4).
  */
 export interface CoverageTrackerRunResult {
   error?: string | null;
@@ -22825,7 +23581,7 @@ export interface CoverageTrackerRunResult {
 }
 
 /**
- * Kind `crisis_holding` (registry v5).
+ * Kind `crisis_holding` (registry v6).
  */
 export interface CrisisHolding {
   qa: ({
@@ -22897,7 +23653,7 @@ export interface CrisisHolding {
 }
 
 /**
- * Kind `criteria_gate_result` (registry v6).
+ * Kind `criteria_gate_result` (registry v7).
  */
 export interface CriteriaGateResult {
   /**
@@ -22938,7 +23694,7 @@ export interface CriteriaGateResult {
  * a self-describing row without knowing what produced it, and a single
  * criterion can travel an edge as a value in its own right.
  *  *
- *  * Kind `criterion_coverage` (registry v4).
+ *  * Kind `criterion_coverage` (registry v5).
  */
 export interface CriterionCoverage {
   /**
@@ -23388,7 +24144,7 @@ export interface CrmSaveContactSelectionOffer {
 }
 
 /**
- * Kind `crm_contact_save_result` (registry v3).
+ * Kind `crm_contact_save_result` (registry v4).
  */
 export interface CrmContactSaveResult {
   __kind: "crm_contact_save_result";
@@ -23417,7 +24173,7 @@ export interface CrmContactSaveResult {
 /**
  * Output of ``seo.crm.fold_settings.read`` and ``seo.crm.fold_settings.update``.
  *  *
- *  * Kind `crm_fold_settings` (registry v7).
+ *  * Kind `crm_fold_settings` (registry v8).
  */
 export interface CrmFoldSettings {
   /**
@@ -23436,7 +24192,7 @@ export interface CrmFoldSettings {
  * (ExecutionError → the scheduler's failure ladder); the old vestigial
  * ok/error payload fields are gone.
  *  *
- *  * Kind `custom_script_result` (registry v7).
+ *  * Kind `custom_script_result` (registry v8).
  */
 export interface CustomScriptResult {
   /**
@@ -23664,7 +24420,7 @@ export interface DataTableRowActionOffer {
 }
 
 /**
- * Kind `data_action_result` (registry v3).
+ * Kind `data_action_result` (registry v4).
  */
 export interface DataActionResult {
   usage?: string | null;
@@ -23690,7 +24446,7 @@ export interface DataActionResult {
  * forced to the column count. A renderer pads; it must never silently drop a
  * cell it cannot place.
  *  *
- *  * Kind `data_table` (registry v6).
+ *  * Kind `data_table` (registry v7).
  */
 export interface DataTable {
   /**
@@ -23736,7 +24492,7 @@ export interface DataTable {
 }
 
 /**
- * Kind `data_tool_result` (registry v3).
+ * Kind `data_tool_result` (registry v4).
  */
 export interface DataToolResult {
   id?: string | null;
@@ -23761,7 +24517,7 @@ export interface DataToolResult {
 /**
  * A designed database: its columns, saved views and sample rows.
  *  *
- *  * Kind `database_design` (registry v2).
+ *  * Kind `database_design` (registry v3).
  */
 export interface DatabaseDesign {
   name: string;
@@ -23777,7 +24533,7 @@ export interface DatabaseDesign {
 }
 
 /**
- * Kind `datetime_snapshot` (registry v9).
+ * Kind `datetime_snapshot` (registry v10).
  */
 export interface DatetimeSnapshot {
   /**
@@ -23827,7 +24583,7 @@ export interface DatetimeSnapshot {
 }
 
 /**
- * Kind `db_scoped_result` (registry v3).
+ * Kind `db_scoped_result` (registry v4).
  */
 export interface DbScopedResult {
   id?: string | null;
@@ -23851,7 +24607,7 @@ export interface DbScopedResult {
 /**
  * One answer, with the holder's own uncertainty attached.
  *  *
- *  * Kind `decision_answer` (registry v4).
+ *  * Kind `decision_answer` (registry v5).
  */
 export interface DecisionAnswer {
   type: "noul" | "choice" | "score";
@@ -23881,7 +24637,7 @@ export interface DecisionAnswer {
 /**
  * The assistant turn a decision request produces.
  *  *
- *  * Kind `decision_answers` (registry v4).
+ *  * Kind `decision_answers` (registry v5).
  */
 export interface DecisionAnswers {
   model: string;
@@ -23929,7 +24685,7 @@ export interface DecisionNode {
 /**
  * A batch of questions asked of whatever state shares their message.
  *  *
- *  * Kind `decision_questions` (registry v4).
+ *  * Kind `decision_questions` (registry v5).
  */
 export interface DecisionQuestions {
   /**
@@ -23959,7 +24715,7 @@ export interface DecisionTree {
 }
 
 /**
- * Kind `deferred_work_result` (registry v3).
+ * Kind `deferred_work_result` (registry v4).
  */
 export interface DeferredWorkResult {
   tool: string;
@@ -23976,7 +24732,7 @@ export interface DeferredWorkResult {
 /**
  * Search results that are sources, each beside the facts research stores for it.
  *  *
- *  * Kind `described_links` (registry v2).
+ *  * Kind `described_links` (registry v3).
  */
 export interface DescribedLinks {
   /**
@@ -24013,7 +24769,7 @@ export interface DescribedLinks {
  * ``load_desktop_tools`` receipt — queued INTENT for the turn-boundary
  * drain (the drain's RESOURCE_CHANGED event reports the applied delta).
  *  *
- *  * Kind `desktop_tools_load_result` (registry v3).
+ *  * Kind `desktop_tools_load_result` (registry v4).
  */
 export interface DesktopToolsLoadResult {
   /**
@@ -24163,7 +24919,7 @@ export interface Diff {
 }
 
 /**
- * Kind `digital_pr_reputation_brief_v1` (registry v8).
+ * Kind `digital_pr_reputation_brief_v1` (registry v9).
  */
 export interface DigitalPrReputationBriefV1 {
   cases: ReputationCase[];
@@ -24180,7 +24936,7 @@ export interface DigitalPrReputationBriefV1 {
 }
 
 /**
- * Kind `directory_create_result` (registry v8).
+ * Kind `directory_create_result` (registry v9).
  */
 export interface DirectoryCreateResult {
   path?: string | null;
@@ -24192,7 +24948,7 @@ export interface DirectoryCreateResult {
 }
 
 /**
- * Kind `directory_entry` (registry v8).
+ * Kind `directory_entry` (registry v9).
  */
 export interface DirectoryEntry {
   name?: string;
@@ -24207,7 +24963,7 @@ export interface DirectoryEntry {
 }
 
 /**
- * Kind `directory_listing` (registry v8).
+ * Kind `directory_listing` (registry v9).
  */
 export interface DirectoryListing {
   path?: string;
@@ -24224,7 +24980,7 @@ export interface DirectoryListing {
 }
 
 /**
- * Kind `discussion_result` (registry v16).
+ * Kind `discussion_result` (registry v17).
  */
 export interface DiscussionResult {
   url: string;
@@ -24250,7 +25006,7 @@ export interface DiscussionResult {
 }
 
 /**
- * Kind `dispatch_result` (registry v9).
+ * Kind `dispatch_result` (registry v10).
  */
 export interface DispatchResult {
   /**
@@ -24370,7 +25126,7 @@ export interface DocprocContentStructureOffer {
 }
 
 /**
- * Kind `document_quad_detection` (registry v8).
+ * Kind `document_quad_detection` (registry v9).
  */
 export interface DocumentQuadDetection {
   found?: boolean;
@@ -24392,7 +25148,7 @@ export interface DocumentQuadDetection {
  * outlets, approved link-gap domains, and approved SERP prospects each resolved
  * into CRM organizations. ``source`` distinguishes which producer ran.
  *  *
- *  * Kind `domain_fold_report` (registry v7).
+ *  * Kind `domain_fold_report` (registry v8).
  */
 export interface DomainFoldReport {
   /**
@@ -24412,7 +25168,7 @@ export interface DomainFoldReport {
 }
 
 /**
- * Kind `draft_critique` (registry v4).
+ * Kind `draft_critique` (registry v5).
  */
 export interface DraftCritique {
   /**
@@ -25471,7 +26227,7 @@ export interface EmployeeRoster {
 /**
  * The Endpoint Family Judge's verdicts, one per family it was shown.
  *  *
- *  * Kind `endpoint_family_verdicts` (registry v2).
+ *  * Kind `endpoint_family_verdicts` (registry v3).
  */
 export interface EndpointFamilyVerdicts {
   /**
@@ -25506,7 +26262,7 @@ export interface EnhancedFlashcard {
  * ``updated_value_assessment`` is a nested ``value_assessment`` kind, present
  * only when an answer changed the valuation.
  *  *
- *  * Kind `enrichment_verification` (registry v4).
+ *  * Kind `enrichment_verification` (registry v5).
  */
 export interface EnrichmentVerification {
   /**
@@ -25522,7 +26278,7 @@ export interface EnrichmentVerification {
 }
 
 /**
- * Kind `entity_card` (registry v19).
+ * Kind `entity_card` (registry v20).
  */
 export interface EntityCard {
   name: string;
@@ -25551,7 +26307,7 @@ export interface EntityCard {
 }
 
 /**
- * Kind `entity_mention` (registry v4).
+ * Kind `entity_mention` (registry v5).
  */
 export interface EntityMention {
   name: string;
@@ -25562,7 +26318,7 @@ export interface EntityMention {
 }
 
 /**
- * Kind `episode_title_option` (registry v5).
+ * Kind `episode_title_option` (registry v6).
  */
 export interface EpisodeTitleOption {
   /**
@@ -25584,7 +26340,7 @@ export interface EpisodeTitleOption {
 }
 
 /**
- * Kind `episode_title_options` (registry v7).
+ * Kind `episode_title_options` (registry v8).
  */
 export interface EpisodeTitleOptions {
   /**
@@ -25753,7 +26509,7 @@ export interface EvaluatorsRubricJudgeOffer {
 }
 
 /**
- * Kind `event` (registry v2).
+ * Kind `event` (registry v3).
  */
 export interface Event {
   end?: string;
@@ -25767,7 +26523,7 @@ export interface Event {
 }
 
 /**
- * Kind `evidence_source` (registry v4).
+ * Kind `evidence_source` (registry v5).
  */
 export interface EvidenceSource {
   __kind: "evidence_source";
@@ -25941,7 +26697,7 @@ export interface ExtendPageCaptureOffer {
 }
 
 /**
- * Kind `fact_check_report` (registry v4).
+ * Kind `fact_check_report` (registry v5).
  */
 export interface FactCheckReport {
   __kind: "fact_check_report";
@@ -25976,7 +26732,7 @@ export interface FactCheckReport {
 /**
  * Every published fact-check the ClaimReview corpus holds for one claim.
  *  *
- *  * Kind `fact_check_review_set` (registry v3).
+ *  * Kind `fact_check_review_set` (registry v4).
  */
 export interface FactCheckReviewSet {
   /**
@@ -26019,7 +26775,7 @@ export interface FailureMode {
  * `source`/`position` are OPTIONAL here because authored FAQs have neither —
  * the search adapters always fill both.
  *  *
- *  * Kind `faq_item` (registry v15).
+ *  * Kind `faq_item` (registry v17).
  */
 export interface FaqItem {
   /**
@@ -26027,7 +26783,7 @@ export interface FaqItem {
    */
   __kind?: "faq_item";
   /**
-   * Inline answer when the provider ships one (Brave does; Google PAA does not).
+   * Inline answer when the provider ships one (web search does; Google PAA does not).
    */
   answer?: string | null;
   source?: string | null;
@@ -26192,7 +26948,7 @@ export interface FetchResults {
  * is ``str | None`` here rather than ``JsonValue`` — see
  * ``ExtractFieldOutput`` in ``aidream.graph_actions.text.transform``.
  *  *
- *  * Kind `field_lookup_result` (registry v7).
+ *  * Kind `field_lookup_result` (registry v8).
  */
 export interface FieldLookupResult {
   found: boolean;
@@ -26216,7 +26972,7 @@ export interface FieldLookupResult {
  * is the RUN-level failure's version of the same fact, and the two shapes
  * must stay identical so one component renders both.
  *  *
- *  * Kind `field_problem` (registry v6).
+ *  * Kind `field_problem` (registry v7).
  */
 export interface FieldProblem {
   got?: string | null;
@@ -26230,7 +26986,7 @@ export interface FieldProblem {
 }
 
 /**
- * Kind `file_binary_content` (registry v10).
+ * Kind `file_binary_content` (registry v11).
  */
 export interface FileBinaryContent {
   /**
@@ -26245,7 +27001,7 @@ export interface FileBinaryContent {
 }
 
 /**
- * Kind `file_discovery_result` (registry v9).
+ * Kind `file_discovery_result` (registry v10).
  */
 export interface FileDiscoveryResult {
   count?: number;
@@ -26257,7 +27013,7 @@ export interface FileDiscoveryResult {
 }
 
 /**
- * Kind `file_download_result` (registry v9).
+ * Kind `file_download_result` (registry v10).
  */
 export interface FileDownloadResult {
   /**
@@ -26271,7 +27027,7 @@ export interface FileDownloadResult {
 }
 
 /**
- * Kind `file_edit_applied` (registry v8).
+ * Kind `file_edit_applied` (registry v9).
  */
 export interface FileEditApplied {
   mode?: string;
@@ -26286,7 +27042,7 @@ export interface FileEditApplied {
 }
 
 /**
- * Kind `file_edit_failure` (registry v7).
+ * Kind `file_edit_failure` (registry v8).
  */
 export interface FileEditFailure {
   /**
@@ -26299,7 +27055,7 @@ export interface FileEditFailure {
 }
 
 /**
- * Kind `file_edit_result` (registry v8).
+ * Kind `file_edit_result` (registry v9).
  */
 export interface FileEditResult {
   path?: string;
@@ -26314,7 +27070,7 @@ export interface FileEditResult {
 }
 
 /**
- * Kind `file_extraction_result` (registry v3).
+ * Kind `file_extraction_result` (registry v4).
  */
 export interface FileExtractionResult {
   mode?: string | null;
@@ -26336,7 +27092,7 @@ export interface FileExtractionResult {
 }
 
 /**
- * Kind `file_patch_result` (registry v9).
+ * Kind `file_patch_result` (registry v10).
  */
 export interface FilePatchResult {
   path?: string;
@@ -26352,7 +27108,7 @@ export interface FilePatchResult {
 }
 
 /**
- * Kind `file_read_result` (registry v8).
+ * Kind `file_read_result` (registry v9).
  */
 export interface FileReadResult {
   path?: string;
@@ -26371,7 +27127,7 @@ export interface FileReadResult {
 /**
  * Stored files by reference (file id + published address), each with a label and its size when known.
  *  *
- *  * Kind `file_ref_list` (registry v2).
+ *  * Kind `file_ref_list` (registry v3).
  */
 export interface FileRefList {
   items?: FileRef[];
@@ -26382,7 +27138,7 @@ export interface FileRefList {
 }
 
 /**
- * Kind `file_search_match` (registry v10).
+ * Kind `file_search_match` (registry v11).
  */
 export interface FileSearchMatch {
   path?: string;
@@ -26395,7 +27151,7 @@ export interface FileSearchMatch {
 }
 
 /**
- * Kind `file_search_results` (registry v10).
+ * Kind `file_search_results` (registry v11).
  */
 export interface FileSearchResults {
   path?: string | null;
@@ -26410,7 +27166,7 @@ export interface FileSearchResults {
 }
 
 /**
- * Kind `file_text_content` (registry v10).
+ * Kind `file_text_content` (registry v11).
  */
 export interface FileTextContent {
   text?: string;
@@ -26424,7 +27180,7 @@ export interface FileTextContent {
 }
 
 /**
- * Kind `file_tree_result` (registry v9).
+ * Kind `file_tree_result` (registry v10).
  */
 export interface FileTreeResult {
   tree?: string;
@@ -26436,7 +27192,7 @@ export interface FileTreeResult {
 }
 
 /**
- * Kind `file_upload_result` (registry v11).
+ * Kind `file_upload_result` (registry v12).
  */
 export interface FileUploadResult {
   /**
@@ -26456,7 +27212,7 @@ export interface FileUploadResult {
 }
 
 /**
- * Kind `file_write_result` (registry v9).
+ * Kind `file_write_result` (registry v10).
  */
 export interface FileWriteResult {
   mode?: string | null;
@@ -26478,7 +27234,7 @@ export interface FileWriteResult {
  * registered contract, so a per-node wording would either lie about the
  * other producers or push each of them into minting a near-duplicate kind.
  *  *
- *  * Kind `filter_result` (registry v10).
+ *  * Kind `filter_result` (registry v11).
  */
 export interface FilterResult {
   /**
@@ -27038,7 +27794,7 @@ export interface FlashcardsVerifyAgainstSourceOffer {
 }
 
 /**
- * Kind `flattened_list_result` (registry v6).
+ * Kind `flattened_list_result` (registry v7).
  */
 export interface FlattenedListResult {
   /**
@@ -27073,7 +27829,7 @@ export interface FollowUpQuestion {
  * string are node Failures (``parse_failed`` / ``format_failed``). The old
  * ``ok``/``error`` payload fields are gone.
  *  *
- *  * Kind `formatted_datetime` (registry v9).
+ *  * Kind `formatted_datetime` (registry v10).
  */
 export interface FormattedDatetime {
   /**
@@ -27399,7 +28155,7 @@ export interface GeneratedVideoSet {
 }
 
 /**
- * Kind `geo_coordinates` (registry v16).
+ * Kind `geo_coordinates` (registry v17).
  */
 export interface GeoCoordinates {
   /**
@@ -27527,9 +28283,9 @@ export interface GoogleSitePerformanceContextOffer {
 }
 
 /**
- * Output of ``web.google.image_search`` — the SerpAPI Google Images response.
+ * Output of ``web.google.image_search`` — the the search provider Google Images response.
  *  *
- *  * Kind `google_image_search_results` (registry v7).
+ *  * Kind `google_image_search_results` (registry v9).
  */
 export interface GoogleImageSearchResults {
   query: string;
@@ -27544,7 +28300,7 @@ export interface GoogleImageSearchResults {
 /**
  * Every argument the google_marketing tool accepts, derived from its own wire models. Each action uses the subset it declares; the node's input model is the one that enforces which.
  *  *
- *  * Kind `google_marketing_request` (registry v4).
+ *  * Kind `google_marketing_request` (registry v5).
  */
 export interface GoogleMarketingRequest {
   /**
@@ -27610,7 +28366,7 @@ export interface GoogleMarketingRequest {
 }
 
 /**
- * Kind `google_marketing_result` (registry v4).
+ * Kind `google_marketing_result` (registry v5).
  */
 export interface GoogleMarketingResult {
   data?: JsonValue | null;
@@ -27641,9 +28397,9 @@ export interface GoogleMarketingResult {
 }
 
 /**
- * Output of ``web.google.search`` — the SerpAPI Google search response.
+ * Output of ``web.google.search`` — the the search provider Google search response.
  *  *
- *  * Kind `google_search_results` (registry v8).
+ *  * Kind `google_search_results` (registry v10).
  */
 export interface GoogleSearchResults {
   ads?: ({
@@ -27728,7 +28484,7 @@ export interface GoogleSearchResults {
 /**
  * Every argument the google_workspace tool accepts, derived from its own wire models. Each action uses the subset it declares; the node's input model is the one that enforces which.
  *  *
- *  * Kind `google_workspace_request` (registry v3).
+ *  * Kind `google_workspace_request` (registry v4).
  */
 export interface GoogleWorkspaceRequest {
   /**
@@ -27822,7 +28578,7 @@ export interface GoogleWorkspaceRequest {
 }
 
 /**
- * Kind `google_workspace_result` (registry v5).
+ * Kind `google_workspace_result` (registry v6).
  */
 export interface GoogleWorkspaceResult {
   tab?: string | null;
@@ -27886,7 +28642,7 @@ export interface GoogleWorkspaceResult {
 }
 
 /**
- * Kind `grade_rubric` (registry v5).
+ * Kind `grade_rubric` (registry v6).
  */
 export interface GradeRubric {
   /**
@@ -27914,7 +28670,7 @@ export interface GradeRubric {
  * drift check fired on EVERY ``http.graphql`` run — and the fix is a real
  * kind for a real shape, not a laxer ``http_response``.
  *  *
- *  * Kind `graphql_response` (registry v4).
+ *  * Kind `graphql_response` (registry v5).
  */
 export interface GraphqlResponse {
   /**
@@ -28022,7 +28778,7 @@ export interface GrowthLoopStageQualityOffer {
 /**
  * Output of ``growth_loop.stage.dispatch`` — one CODE-selected stage's outcome.
  *  *
- *  * Kind `growth_loop_stage_decision` (registry v6).
+ *  * Kind `growth_loop_stage_decision` (registry v7).
  */
 export interface GrowthLoopStageDecision {
   /**
@@ -28064,7 +28820,7 @@ export interface GscOpportunities {
 /**
  * The intake agent's input — four period slices + site-level headlines.
  *  *
- *  * Kind `gsc_site_intake_bundle` (registry v11).
+ *  * Kind `gsc_site_intake_bundle` (registry v12).
  */
 export interface GscSiteIntakeBundle {
   /**
@@ -28087,7 +28843,7 @@ export interface GscSiteIntakeBundle {
  * The intake agent's structured output — the ``gsc_site_intake_proposal``
  * content-ir kind. Confirmable-card material, never chat-only.
  *  *
- *  * Kind `gsc_site_intake_proposal` (registry v8).
+ *  * Kind `gsc_site_intake_proposal` (registry v9).
  */
 export interface GscSiteIntakeProposal {
   gaps?: string[];
@@ -28103,7 +28859,7 @@ export interface GscSiteIntakeProposal {
 }
 
 /**
- * Kind `hash_result` (registry v11).
+ * Kind `hash_result` (registry v12).
  */
 export interface HashResult {
   /**
@@ -28125,7 +28881,7 @@ export interface HashResult {
 }
 
 /**
- * Kind `headline_set` (registry v4).
+ * Kind `headline_set` (registry v5).
  */
 export interface HeadlineSet {
   __kind: "headline_set";
@@ -28308,7 +29064,7 @@ export interface HindsightReviewerOffer {
 /**
  * The Hindsight Replay Judge's verdict on one replay against its original.
  *  *
- *  * Kind `hindsight_replay_verdict` (registry v2).
+ *  * Kind `hindsight_replay_verdict` (registry v3).
  */
 export interface HindsightReplayVerdict {
   /**
@@ -28324,7 +29080,7 @@ export interface HindsightReplayVerdict {
 /**
  * Alternative opening lines for one idea.
  *  *
- *  * Kind `hook_set` (registry v2).
+ *  * Kind `hook_set` (registry v3).
  */
 export interface HookSet {
   hooks?: HookOption[];
@@ -28384,7 +29140,7 @@ export interface HttpResponse {
  * node's output. On resume, the scheduler populates this model from the
  * resume payload.
  *  *
- *  * Kind `human_answer` (registry v8).
+ *  * Kind `human_answer` (registry v9).
  */
 export interface HumanAnswer {
   /**
@@ -28448,7 +29204,7 @@ export interface HumanDecisionsAbsentHumanDecisionOffer {
 /**
  * Output of ``human.input`` — the text a person typed.
  *  *
- *  * Kind `human_text_answer` (registry v8).
+ *  * Kind `human_text_answer` (registry v9).
  */
 export interface HumanTextAnswer {
   text?: string;
@@ -28606,7 +29362,7 @@ export interface IcpRole {
 /**
  * The requested slice of the caller's live IDE snapshot.
  *  *
- *  * Kind `ide_state_fields` (registry v3).
+ *  * Kind `ide_state_fields` (registry v4).
  */
 export interface IdeStateFields {
   /**
@@ -28676,7 +29432,7 @@ export interface ImageGenerateOffer {
 /**
  * One visual idea from ``ai.image.concept_generate``.
  *  *
- *  * Kind `image_concept` (registry v7).
+ *  * Kind `image_concept` (registry v8).
  */
 export interface ImageConcept {
   name: string;
@@ -28691,7 +29447,7 @@ export interface ImageConcept {
 /**
  * Output of ``ai.image.concept_generate``.
  *  *
- *  * Kind `image_concepts_result` (registry v8).
+ *  * Kind `image_concepts_result` (registry v9).
  */
 export interface ImageConceptsResult {
   /**
@@ -28702,7 +29458,7 @@ export interface ImageConceptsResult {
 }
 
 /**
- * Kind `image_edit_result` (registry v9).
+ * Kind `image_edit_result` (registry v10).
  */
 export interface ImageEditResult {
   op?: string;
@@ -28753,7 +29509,7 @@ export interface ImageMetadata {
  * normal on every social network, so a verdict here would be a guess wearing
  * a data field's clothes.
  *  *
- *  * Kind `image_metadata_report` (registry v4).
+ *  * Kind `image_metadata_report` (registry v5).
  */
 export interface ImageMetadataReport {
   width: number;
@@ -28956,7 +29712,7 @@ export interface ImagePipelineQcJudgeOffer {
 /**
  * One ready-to-execute image prompt from ``ai.image.prompt_write``.
  *  *
- *  * Kind `image_prompt_spec` (registry v7).
+ *  * Kind `image_prompt_spec` (registry v8).
  */
 export interface ImagePromptSpec {
   style?: string;
@@ -28972,7 +29728,7 @@ export interface ImagePromptSpec {
 /**
  * Output of ``ai.image.prompt_write``.
  *  *
- *  * Kind `image_prompts_result` (registry v8).
+ *  * Kind `image_prompts_result` (registry v9).
  */
 export interface ImagePromptsResult {
   /**
@@ -28986,7 +29742,7 @@ export interface ImagePromptsResult {
 /**
  * Output of ``ai.image.qc_judge``.
  *  *
- *  * Kind `image_qc_result` (registry v8).
+ *  * Kind `image_qc_result` (registry v9).
  */
 export interface ImageQcResult {
   /**
@@ -29000,7 +29756,7 @@ export interface ImageQcResult {
 /**
  * Vision-model verdict, nested inside ``ai.image.qc_judge``'s output.
  *  *
- *  * Kind `image_qc_verdict` (registry v9).
+ *  * Kind `image_qc_verdict` (registry v10).
  */
 export interface ImageQcVerdict {
   /**
@@ -29015,12 +29771,12 @@ export interface ImageQcVerdict {
 }
 
 /**
- * One hit from an image search — provider-neutral (Brave images, Google
+ * One hit from an image search — provider-neutral (web search images, Google
  * Images). ADDITIVE 2026-10-13 (Search Lab): the family had no image item, so
  * image verticals had nowhere to land but the provider-named
  * `google_image_search_results` a workflow node still emits.
  *  *
- *  * Kind `image_result` (registry v2).
+ *  * Kind `image_result` (registry v4).
  */
 export interface ImageResult {
   title: string;
@@ -29050,7 +29806,7 @@ export interface ImageResult {
 }
 
 /**
- * Kind `ingest_source` (registry v3).
+ * Kind `ingest_source` (registry v4).
  */
 export interface IngestSource {
   url?: string | null;
@@ -29064,7 +29820,7 @@ export interface IngestSource {
 }
 
 /**
- * Kind `ingest_source_request` (registry v4).
+ * Kind `ingest_source_request` (registry v5).
  */
 export interface IngestSourceRequest {
   /**
@@ -29209,7 +29965,7 @@ export interface InstagramConceptRemix {
  * ``unassignable_photo_ids`` — a silently dropped photo is the mandate's
  * named failure. Over-merge beats over-split by design.
  *  *
- *  * Kind `intake_photo_grouping` (registry v4).
+ *  * Kind `intake_photo_grouping` (registry v5).
  */
 export interface IntakePhotoGrouping {
   /**
@@ -29226,7 +29982,7 @@ export interface IntakePhotoGrouping {
 /**
  * Output of ``interview.finalize`` — the closed session and its deliverables.
  *  *
- *  * Kind `interview_finalize_result` (registry v8).
+ *  * Kind `interview_finalize_result` (registry v9).
  */
 export interface InterviewFinalizeResult {
   /**
@@ -29242,7 +29998,7 @@ export interface InterviewFinalizeResult {
 /**
  * Output of ``interview.gate`` — converge, or loop back.
  *  *
- *  * Kind `interview_gate_decision` (registry v8).
+ *  * Kind `interview_gate_decision` (registry v9).
  */
 export interface InterviewGateDecision {
   note?: string;
@@ -29258,7 +30014,7 @@ export interface InterviewGateDecision {
 }
 
 /**
- * Kind `interview_hole_set` (registry v4).
+ * Kind `interview_hole_set` (registry v5).
  */
 export interface InterviewHoleSet {
   holes: ({
@@ -29293,7 +30049,7 @@ export interface InterviewHoleSet {
 /**
  * Output of ``interview.route`` — which node the hub dispatched to.
  *  *
- *  * Kind `interview_routing_decision` (registry v8).
+ *  * Kind `interview_routing_decision` (registry v9).
  */
 export interface InterviewRoutingDecision {
   note?: string;
@@ -29308,7 +30064,7 @@ export interface InterviewRoutingDecision {
 /**
  * Output of ``interview.scribe_apply`` — the Scribe's structured output applied.
  *  *
- *  * Kind `interview_scribe_apply_result` (registry v9).
+ *  * Kind `interview_scribe_apply_result` (registry v10).
  */
 export interface InterviewScribeApplyResult {
   /**
@@ -29323,7 +30079,7 @@ export interface InterviewScribeApplyResult {
 /**
  * Output of ``interview.hydrate`` — the session this run animates.
  *  *
- *  * Kind `interview_session_hydration` (registry v8).
+ *  * Kind `interview_session_hydration` (registry v9).
  */
 export interface InterviewSessionHydration {
   phase?: string;
@@ -29339,7 +30095,7 @@ export interface InterviewSessionHydration {
 /**
  * Output of ``interview.tracker_apply`` — verdicts applied to Open Questions.
  *  *
- *  * Kind `interview_tracker_apply_result` (registry v10).
+ *  * Kind `interview_tracker_apply_result` (registry v11).
  */
 export interface InterviewTrackerApplyResult {
   /**
@@ -29376,7 +30132,7 @@ export interface ItemPresentation {
  * reopens the images. ``products`` normally holds exactly one entry; it is an
  * array only so a mid-extraction discovery of a second product is expressible.
  *  *
- *  * Kind `item_vision_extraction` (registry v4).
+ *  * Kind `item_vision_extraction` (registry v5).
  */
 export interface ItemVisionExtraction {
   /**
@@ -29596,7 +30352,7 @@ export interface IterationThinkingDisplayNarrationOffer {
 }
 
 /**
- * Kind `job_result` (registry v2).
+ * Kind `job_result` (registry v3).
  */
 export interface JobResult {
   /**
@@ -29647,7 +30403,7 @@ export interface JobResult {
 }
 
 /**
- * Kind `job_search_results` (registry v2).
+ * Kind `job_search_results` (registry v3).
  */
 export interface JobSearchResults {
   jobs?: JobResult[];
@@ -29665,7 +30421,7 @@ export interface JobSearchResults {
 }
 
 /**
- * Kind `journalist_fit` (registry v5).
+ * Kind `journalist_fit` (registry v6).
  */
 export interface JournalistFit {
   axes: {
@@ -29766,7 +30522,7 @@ export interface JournalistFit {
 export type Json = unknown;
 
 /**
- * Kind `json_path_result` (registry v11).
+ * Kind `json_path_result` (registry v12).
  */
 export interface JsonPathResult {
   /**
@@ -29784,7 +30540,7 @@ export interface JsonPathResult {
 }
 
 /**
- * Kind `keyword_classification_batch_v1` (registry v12).
+ * Kind `keyword_classification_batch_v1` (registry v13).
  */
 export interface KeywordClassificationBatchV1 {
   /**
@@ -29919,7 +30675,7 @@ export interface KeywordClassificationBatchV1 {
 }
 
 /**
- * Kind `keyword_list` (registry v5).
+ * Kind `keyword_list` (registry v6).
  */
 export interface KeywordList {
   /**
@@ -30159,7 +30915,7 @@ export interface KgEntityClusterOffer {
 /**
  * Output of ``kg.entity.mentions`` — a paginated mention drill-down.
  *  *
- *  * Kind `kg_entity_mentions_page` (registry v9).
+ *  * Kind `kg_entity_mentions_page` (registry v10).
  */
 export interface KgEntityMentionsPage {
   items?: KgMentionRow[];
@@ -30175,7 +30931,7 @@ export interface KgEntityMentionsPage {
 /**
  * Output of ``kg.graph.neighborhood`` — the entity/relationship subgraph.
  *  *
- *  * Kind `kg_graph_neighborhood` (registry v9).
+ *  * Kind `kg_graph_neighborhood` (registry v10).
  */
 export interface KgGraphNeighborhood {
   edges?: KgGraphEdge[];
@@ -30190,7 +30946,7 @@ export interface KgGraphNeighborhood {
 /**
  * Receipt of ``kind_activate`` — the dual-gate verdict and the flip.
  *  *
- *  * Kind `kind_activation_result` (registry v3).
+ *  * Kind `kind_activation_result` (registry v4).
  */
 export interface KindActivationResult {
   kind?: string;
@@ -30208,7 +30964,7 @@ export interface KindActivationResult {
 }
 
 /**
- * Kind `kind_authoring_brief` (registry v3).
+ * Kind `kind_authoring_brief` (registry v4).
  */
 export interface KindAuthoringBrief {
   /**
@@ -30222,7 +30978,7 @@ export interface KindAuthoringBrief {
 /**
  * ``kindcomp_get_code`` — a component's metadata and code sections.
  *  *
- *  * Kind `kind_component_code` (registry v3).
+ *  * Kind `kind_component_code` (registry v4).
  */
 export interface KindComponentCode {
   role?: string | null;
@@ -30249,7 +31005,7 @@ export interface KindComponentCode {
 /**
  * ``kindcomp_get_context`` — the full component-authoring bundle.
  *  *
- *  * Kind `kind_component_context` (registry v8).
+ *  * Kind `kind_component_context` (registry v9).
  */
 export interface KindComponentContext {
   kind: KindDefinitionSummary;
@@ -30280,7 +31036,7 @@ export interface KindComponentContext {
 /**
  * Receipt of ``kindcomp_create_component``.
  *  *
- *  * Kind `kind_component_create_result` (registry v4).
+ *  * Kind `kind_component_create_result` (registry v5).
  */
 export interface KindComponentCreateResult {
   kind?: string;
@@ -30300,7 +31056,7 @@ export interface KindComponentCreateResult {
 }
 
 /**
- * Kind `kind_component_fact` (registry v3).
+ * Kind `kind_component_fact` (registry v4).
  */
 export interface KindComponentFact {
   role: string;
@@ -30317,7 +31073,7 @@ export interface KindComponentFact {
 /**
  * Receipt of ``kindcomp_resolve_incident``.
  *  *
- *  * Kind `kind_component_incident_resolution` (registry v3).
+ *  * Kind `kind_component_incident_resolution` (registry v4).
  */
 export interface KindComponentIncidentResolution {
   /**
@@ -30333,7 +31089,7 @@ export interface KindComponentIncidentResolution {
 /**
  * Receipt of ``kindcomp_patch_code`` — all-or-nothing patch application.
  *  *
- *  * Kind `kind_component_patch_result` (registry v4).
+ *  * Kind `kind_component_patch_result` (registry v5).
  */
 export interface KindComponentPatchResult {
   /**
@@ -30354,7 +31110,7 @@ export interface KindComponentPatchResult {
  * ``kindcomp_update_settings`` (the ``tool_component_update_result``
  * precedent — branch-only fields optional).
  *  *
- *  * Kind `kind_component_update_result` (registry v4).
+ *  * Kind `kind_component_update_result` (registry v5).
  */
 export interface KindComponentUpdateResult {
   /**
@@ -30373,7 +31129,7 @@ export interface KindComponentUpdateResult {
 /**
  * Receipt of ``kind_create_content_block`` — the palette render block.
  *  *
- *  * Kind `kind_content_block_result` (registry v6).
+ *  * Kind `kind_content_block_result` (registry v7).
  */
 export interface KindContentBlockResult {
   kind?: string;
@@ -30390,7 +31146,7 @@ export interface KindContentBlockResult {
 /**
  * Receipt of ``kind_create`` — the authored (inactive) kind and its assets.
  *  *
- *  * Kind `kind_create_result` (registry v6).
+ *  * Kind `kind_create_result` (registry v7).
  */
 export interface KindCreateResult {
   kind?: string;
@@ -30435,7 +31191,7 @@ export interface KindCreateResult {
 /**
  * ``kind_get`` — one kind's full definition view.
  *  *
- *  * Kind `kind_definition_detail` (registry v5).
+ *  * Kind `kind_definition_detail` (registry v6).
  */
 export interface KindDefinitionDetail {
   kind: KindDefinitionSummary;
@@ -30460,7 +31216,7 @@ export interface KindDefinitionDetail {
 /**
  * Receipt of ``kind_add_example`` — the DB trigger's verdict read back.
  *  *
- *  * Kind `kind_example_result` (registry v3).
+ *  * Kind `kind_example_result` (registry v4).
  */
 export interface KindExampleResult {
   kind?: string;
@@ -30477,7 +31233,7 @@ export interface KindExampleResult {
 /**
  * One saved instance in full, with the version-pin verdict beside it.
  *  *
- *  * Kind `kind_instance_detail` (registry v4).
+ *  * Kind `kind_instance_detail` (registry v5).
  */
 export interface KindInstanceDetail {
   /**
@@ -30492,7 +31248,7 @@ export interface KindInstanceDetail {
 /**
  * One page of the caller's saved instances (``instance_list``).
  *  *
- *  * Kind `kind_instance_page` (registry v3).
+ *  * Kind `kind_instance_page` (registry v4).
  */
 export interface KindInstancePage {
   limit?: number;
@@ -30508,7 +31264,7 @@ export interface KindInstancePage {
 /**
  * Receipt for one write to a saved kind instance (create/update/delete).
  *  *
- *  * Kind `kind_instance_write_result` (registry v4).
+ *  * Kind `kind_instance_write_result` (registry v5).
  */
 export interface KindInstanceWriteResult {
   kind?: string | null;
@@ -30527,7 +31283,7 @@ export interface KindInstanceWriteResult {
 }
 
 /**
- * Kind `kind_lookup_result` (registry v3).
+ * Kind `kind_lookup_result` (registry v4).
  */
 export interface KindLookupResult {
   kind?: string;
@@ -30550,7 +31306,7 @@ export interface KindLookupResult {
 /**
  * Receipt of ``kind_update_schema`` — the new version and its casualties.
  *  *
- *  * Kind `kind_schema_update_result` (registry v4).
+ *  * Kind `kind_schema_update_result` (registry v5).
  */
 export interface KindSchemaUpdateResult {
   kind?: string;
@@ -30569,7 +31325,7 @@ export interface KindSchemaUpdateResult {
 /**
  * Receipt of ``kind_create_skill`` — the teach-agents-to-emit-it skill.
  *  *
- *  * Kind `kind_skill_result` (registry v4).
+ *  * Kind `kind_skill_result` (registry v5).
  */
 export interface KindSkillResult {
   kind?: string;
@@ -30584,7 +31340,7 @@ export interface KindSkillResult {
 }
 
 /**
- * Kind `kind_validation_result` (registry v3).
+ * Kind `kind_validation_result` (registry v4).
  */
 export interface KindValidationResult {
   kind?: string;
@@ -30605,7 +31361,7 @@ export interface KindValidationResult {
 /**
  * How a kit's material is split for structuring, and its sources fingerprint.
  *  *
- *  * Kind `kit_outline_plan` (registry v2).
+ *  * Kind `kit_outline_plan` (registry v3).
  */
 export interface KitOutlinePlan {
   parts: KitOutlinePart[];
@@ -30628,7 +31384,7 @@ export interface KitOutlinePlan {
 /**
  * The kit's outline after one build: ordered section ids and what changed.
  *  *
- *  * Kind `kit_outline_save_result` (registry v2).
+ *  * Kind `kit_outline_save_result` (registry v3).
  */
 export interface KitOutlineSaveResult {
   /**
@@ -30660,7 +31416,7 @@ export interface KitOutlineSaveResult {
 }
 
 /**
- * Kind `kit_title` (registry v3).
+ * Kind `kit_title` (registry v4).
  */
 export interface KitTitle {
   /**
@@ -30839,7 +31595,7 @@ export interface KnowledgeSectionQaOffer {
 }
 
 /**
- * Kind `knowledge_search_empty_result` (registry v3).
+ * Kind `knowledge_search_empty_result` (registry v4).
  */
 export interface KnowledgeSearchEmptyResult {
   hits?: JsonValue[];
@@ -30864,7 +31620,7 @@ export interface KnowledgeSearchEmptyResult {
  * One day of a tracked account's numbers (``social.account_insight_daily``) with its goals' progress.
  * No producer yet (SI-08); both tables are empty, so nothing has been studied.
  *  *
- *  * Kind `kpi_snapshot` (registry v2).
+ *  * Kind `kpi_snapshot` (registry v3).
  */
 export interface KpiSnapshot {
   date: string;
@@ -30952,7 +31708,7 @@ export interface LessonScriptSet {
  * link records** (mostly ``others``, ``external`` and ``images``). Deriving
  * one of these from the other would have silently lost them.
  *  *
- *  * Kind `link_buckets` (registry v4).
+ *  * Kind `link_buckets` (registry v5).
  */
 export interface LinkBuckets {
   audio?: string[];
@@ -31085,7 +31841,7 @@ export interface ListChangeTargetV1 {
  * and factual claim carries a source; a missing sourced value is emitted as
  * ``needs_human``, never invented; every known flaw is stated plainly.
  *  *
- *  * Kind `listing_draft` (registry v4).
+ *  * Kind `listing_draft` (registry v5).
  */
 export interface ListingDraft {
   title: string;
@@ -31105,7 +31861,7 @@ export interface ListingDraft {
 /**
  * In-study answer to a learner's 'I'm confused' on the current flashcard: the answer text, how much it gives away, optional followup questions, and an embedded trust_envelope.
  *  *
- *  * Kind `live_help_answer` (registry v7).
+ *  * Kind `live_help_answer` (registry v8).
  */
 export interface LiveHelpAnswer {
   /**
@@ -31177,7 +31933,7 @@ export interface LiveHelpAnswer {
  * plus its parsed outline. ``note`` appears only when the body was capped
  * (the cap keys are part of the shape).
  *  *
- *  * Kind `llms_txt_document` (registry v3).
+ *  * Kind `llms_txt_document` (registry v4).
  */
 export interface LlmsTxtDocument {
   url?: string;
@@ -31196,7 +31952,7 @@ export interface LlmsTxtDocument {
 /**
  * One markdown link inside an ``llms.txt`` section.
  *  *
- *  * Kind `llms_txt_link` (registry v3).
+ *  * Kind `llms_txt_link` (registry v4).
  */
 export interface LlmsTxtLink {
   url?: string;
@@ -31212,7 +31968,7 @@ export interface LlmsTxtLink {
  * The light parse of an ``llms.txt``: H1 title, blockquote summary,
  * ``##`` sections with their link lists.
  *  *
- *  * Kind `llms_txt_outline` (registry v3).
+ *  * Kind `llms_txt_outline` (registry v4).
  */
 export interface LlmsTxtOutline {
   title?: string | null;
@@ -31227,7 +31983,7 @@ export interface LlmsTxtOutline {
 /**
  * One ``## Section`` block of an ``llms.txt`` file.
  *  *
- *  * Kind `llms_txt_section` (registry v3).
+ *  * Kind `llms_txt_section` (registry v4).
  */
 export interface LlmsTxtSection {
   name?: string;
@@ -31381,7 +32137,7 @@ export interface LocalTranscriptPolishCustomStyleOffer {
 }
 
 /**
- * Kind `local_place` (registry v19).
+ * Kind `local_place` (registry v20).
  */
 export interface LocalPlace {
   name: string;
@@ -31429,7 +32185,7 @@ export interface LocalPlace {
 }
 
 /**
- * Kind `locus` (registry v5).
+ * Kind `locus` (registry v6).
  */
 export interface Locus {
   /**
@@ -31451,7 +32207,7 @@ export interface Locus {
 }
 
 /**
- * Kind `loop_iteration_result` (registry v9).
+ * Kind `loop_iteration_result` (registry v10).
  */
 export interface LoopIterationResult {
   /**
@@ -31486,7 +32242,7 @@ export interface LoopIterationResult {
  * required ``reasoning``. If a standalone M3 mandate is ever revived, those
  * fields return as optional-with-default (additive supersede).
  *  *
- *  * Kind `lot_detection` (registry v4).
+ *  * Kind `lot_detection` (registry v5).
  */
 export interface LotDetection {
   notes?: string | null;
@@ -31510,7 +32266,7 @@ export interface LotDetection {
  * 0.285 (spine) + 0.25 (bleed) = 17.535 inch``. A consumer that needs a spine
  * number derives it from two calls, never from a field that does not exist.
  *  *
- *  * Kind `lulu_cover_dimensions` (registry v4).
+ *  * Kind `lulu_cover_dimensions` (registry v5).
  */
 export interface LuluCoverDimensions {
   /**
@@ -31543,7 +32299,7 @@ export interface LuluCoverDimensions {
  * ``line_item_costs`` is ``null`` until Lulu has priced the basket, which is a
  * real state and not an error.
  *  *
- *  * Kind `lulu_print_cost_calculation` (registry v4).
+ *  * Kind `lulu_print_cost_calculation` (registry v5).
  */
 export interface LuluPrintCostCalculation {
   /**
@@ -31603,7 +32359,7 @@ export interface LuluPrintCostCalculation {
  * The stateless lane writes no row, so ``id`` is the ONLY handle to the
  * order — a workflow that drops it has lost the order.
  *  *
- *  * Kind `lulu_print_job` (registry v4).
+ *  * Kind `lulu_print_job` (registry v5).
  */
 export interface LuluPrintJob {
   /**
@@ -31682,7 +32438,7 @@ export interface LuluPrintJob {
  * The authority is always ``lulu.price_quote``, which is what applies bulk
  * tiers, tax, shipping and fees.
  *  *
- *  * Kind `lulu_print_product_matches` (registry v4).
+ *  * Kind `lulu_print_product_matches` (registry v5).
  */
 export interface LuluPrintProductMatches {
   /**
@@ -31726,7 +32482,7 @@ export interface LuluPrintProductMatches {
  * the answer is always destination-AND-product specific — never a generic
  * rate card.
  *  *
- *  * Kind `lulu_shipping_options` (registry v4).
+ *  * Kind `lulu_shipping_options` (registry v5).
  */
 export interface LuluShippingOptions {
   /**
@@ -32104,7 +32860,7 @@ export interface MapTopicProposalV1 {
 }
 
 /**
- * Kind `mapped_list_result` (registry v12).
+ * Kind `mapped_list_result` (registry v13).
  */
 export interface MappedListResult {
   /**
@@ -32128,7 +32884,7 @@ export interface MappedListResult {
 /**
  * A block of markdown prose. Rendered by the streaming markdown renderer.
  *  *
- *  * Kind `markdown` (registry v10).
+ *  * Kind `markdown` (registry v11).
  */
 export interface Markdown {
   text: string;
@@ -33987,7 +34743,7 @@ export interface MasterworkUnfoldingVerdictOffer {
 /**
  * A Masterwork's Rulebook as it stands RIGHT NOW, for one run.
  *  *
- *  * Kind `masterwork_canon` (registry v7).
+ *  * Kind `masterwork_canon` (registry v8).
  */
 export interface MasterworkCanon {
   /**
@@ -34136,7 +34892,7 @@ export interface MasterworkCheckupRule {
 }
 
 /**
- * Kind `masterwork_result` (registry v4).
+ * Kind `masterwork_result` (registry v5).
  */
 export interface MasterworkResult {
   /**
@@ -34227,7 +34983,7 @@ export interface MasterworkRuleDraft {
  * to skip human review, so an unreadable receipt fails the node instead of
  * settling this shape with a guessed `false`.
  *  *
- *  * Kind `masterwork_sealed_case_commit_status` (registry v3).
+ *  * Kind `masterwork_sealed_case_commit_status` (registry v4).
  */
 export interface MasterworkSealedCaseCommitStatus {
   /**
@@ -34505,7 +35261,7 @@ export interface MediaYoutubeTranscriptionOffer {
  * minimum honest instance is a bare handle, so the degraded path
  * (``media_asset_from_handle``) always produces something that VALIDATES.
  *  *
- *  * Kind `media_asset` (registry v4).
+ *  * Kind `media_asset` (registry v5).
  */
 export interface MediaAsset {
   url?: string | null;
@@ -34535,7 +35291,7 @@ export interface MediaAsset {
 /**
  * One researched candidate judged for one angle.
  *  *
- *  * Kind `media_candidate_verdict` (registry v6).
+ *  * Kind `media_candidate_verdict` (registry v7).
  */
 export interface MediaCandidateVerdict {
   /**
@@ -34685,7 +35441,7 @@ export interface MediaChapters {
 /**
  * Every researched candidate for one angle, judged and ranked, with the run summary.
  *  *
- *  * Kind `media_list_ranking_result` (registry v7).
+ *  * Kind `media_list_ranking_result` (registry v8).
  */
 export interface MediaListRankingResult {
   /**
@@ -34918,7 +35674,7 @@ export interface MeetTranscriptionOffer {
 /**
  * What one Meet minuting pass — a live window, or the wrap-up — did.
  *  *
- *  * Kind `meet_intelligence_result` (registry v5).
+ *  * Kind `meet_intelligence_result` (registry v6).
  */
 export interface MeetIntelligenceResult {
   /**
@@ -34950,7 +35706,7 @@ export interface MeetIntelligenceResult {
 /**
  * What one attempt to land a finished meeting recording actually did.
  *  *
- *  * Kind `meet_recording_landing_result` (registry v4).
+ *  * Kind `meet_recording_landing_result` (registry v5).
  */
 export interface MeetRecordingLandingResult {
   /**
@@ -34978,7 +35734,7 @@ export interface MeetRecordingLandingResult {
 /**
  * Durable transcription outcome for one landed recording.
  *  *
- *  * Kind `meet_recording_transcription_result` (registry v4).
+ *  * Kind `meet_recording_transcription_result` (registry v5).
  */
 export interface MeetRecordingTranscriptionResult {
   /**
@@ -35060,7 +35816,7 @@ export interface MemoryReflectorOffer {
 }
 
 /**
- * Kind `memory_aid` (registry v6).
+ * Kind `memory_aid` (registry v7).
  */
 export interface MemoryAid {
   /**
@@ -35090,7 +35846,7 @@ export interface MemoryAid {
 }
 
 /**
- * Kind `memory_hint` (registry v6).
+ * Kind `memory_hint` (registry v7).
  */
 export interface MemoryHint {
   /**
@@ -35112,7 +35868,7 @@ export interface MemoryHint {
 }
 
 /**
- * Kind `memory_palace` (registry v5).
+ * Kind `memory_palace` (registry v6).
  */
 export interface MemoryPalace {
   /**
@@ -35134,7 +35890,7 @@ export interface MemoryPalace {
 }
 
 /**
- * Kind `memory_tool_result` (registry v3).
+ * Kind `memory_tool_result` (registry v4).
  */
 export interface MemoryToolResult {
   key?: string | null;
@@ -35296,7 +36052,7 @@ export interface MetaTagOptions {
 }
 
 /**
- * Kind `mnemonic` (registry v5).
+ * Kind `mnemonic` (registry v6).
  */
 export interface Mnemonic {
   /**
@@ -35960,7 +36716,7 @@ export interface NerSweepValueMiningOffer {
 }
 
 /**
- * Kind `ner_canonicalization_result` (registry v6).
+ * Kind `ner_canonicalization_result` (registry v7).
  */
 export interface NerCanonicalizationResult {
   __kind: "ner_canonicalization_result";
@@ -35993,7 +36749,7 @@ export interface NerCanonicalizationResult {
 }
 
 /**
- * Kind `ner_deep_read_slot_list` (registry v3).
+ * Kind `ner_deep_read_slot_list` (registry v4).
  */
 export interface NerDeepReadSlotList {
   items?: NerDeepReadSlot[];
@@ -36004,7 +36760,7 @@ export interface NerDeepReadSlotList {
 }
 
 /**
- * Kind `ner_entity_cooccurrence_list` (registry v3).
+ * Kind `ner_entity_cooccurrence_list` (registry v4).
  */
 export interface NerEntityCooccurrenceList {
   items?: NerEntityCooccurrence[];
@@ -36015,7 +36771,7 @@ export interface NerEntityCooccurrenceList {
 }
 
 /**
- * Kind `ner_entity_pair_group` (registry v4).
+ * Kind `ner_entity_pair_group` (registry v5).
  */
 export interface NerEntityPairGroup {
   __kind: "ner_entity_pair_group";
@@ -36042,7 +36798,7 @@ export interface NerEntityPairGroup {
 }
 
 /**
- * Kind `ner_entity_ref` (registry v3).
+ * Kind `ner_entity_ref` (registry v4).
  */
 export interface NerEntityRef {
   /**
@@ -36057,7 +36813,7 @@ export interface NerEntityRef {
 }
 
 /**
- * Kind `ner_entity_ref_list` (registry v3).
+ * Kind `ner_entity_ref_list` (registry v4).
  */
 export interface NerEntityRefList {
   items?: NerRankedEntity[];
@@ -36068,7 +36824,7 @@ export interface NerEntityRefList {
 }
 
 /**
- * Kind `ner_entity_tree` (registry v3).
+ * Kind `ner_entity_tree` (registry v4).
  */
 export interface NerEntityTree {
   items?: NerEntityTreeGroup[];
@@ -36079,7 +36835,7 @@ export interface NerEntityTree {
 }
 
 /**
- * Kind `ner_pending_suggestion_batch` (registry v3).
+ * Kind `ner_pending_suggestion_batch` (registry v4).
  */
 export interface NerPendingSuggestionBatch {
   items?: NerPendingSuggestion[];
@@ -36090,7 +36846,7 @@ export interface NerPendingSuggestionBatch {
 }
 
 /**
- * Kind `ner_scope_slot_definitions` (registry v3).
+ * Kind `ner_scope_slot_definitions` (registry v4).
  */
 export interface NerScopeSlotDefinitions {
   items?: NerScopeSlotDefinition[];
@@ -36101,7 +36857,7 @@ export interface NerScopeSlotDefinitions {
 }
 
 /**
- * Kind `ner_scope_slot_snapshot` (registry v3).
+ * Kind `ner_scope_slot_snapshot` (registry v4).
  */
 export interface NerScopeSlotSnapshot {
   slots?: NerScopeSlotValue[];
@@ -36115,7 +36871,7 @@ export interface NerScopeSlotSnapshot {
 }
 
 /**
- * Kind `ner_scope_slot_snapshot_list` (registry v3).
+ * Kind `ner_scope_slot_snapshot_list` (registry v4).
  */
 export interface NerScopeSlotSnapshotList {
   items?: NerScopeSlotSnapshot[];
@@ -36126,7 +36882,7 @@ export interface NerScopeSlotSnapshotList {
 }
 
 /**
- * Kind `ner_scope_type_catalog` (registry v3).
+ * Kind `ner_scope_type_catalog` (registry v4).
  */
 export interface NerScopeTypeCatalog {
   items?: NerScopeTypeEntry[];
@@ -36137,7 +36893,7 @@ export interface NerScopeTypeCatalog {
 }
 
 /**
- * Kind `ner_scope_type_item_context` (registry v3).
+ * Kind `ner_scope_type_item_context` (registry v4).
  */
 export interface NerScopeTypeItemContext {
   /**
@@ -36151,7 +36907,7 @@ export interface NerScopeTypeItemContext {
 }
 
 /**
- * Kind `ner_user_scope_tree` (registry v3).
+ * Kind `ner_user_scope_tree` (registry v4).
  */
 export interface NerUserScopeTree {
   items?: NerScopeTreeEntry[];
@@ -36444,7 +37200,7 @@ export interface NewsTriageOffer {
 /**
  * Kind ``news_angle`` — derived field-for-field from engine ``NewsAngle``.
  *  *
- *  * Kind `news_angle` (registry v3).
+ *  * Kind `news_angle` (registry v4).
  */
 export interface NewsAngle {
   lens?: string;
@@ -36467,7 +37223,7 @@ export interface NewsAngle {
 /**
  * Kind ``news_angle_set`` — derived field-for-field from engine ``NewsAngleSet``.
  *  *
- *  * Kind `news_angle_set` (registry v4).
+ *  * Kind `news_angle_set` (registry v5).
  */
 export interface NewsAngleSet {
   /**
@@ -36484,7 +37240,7 @@ export interface NewsAngleSet {
 /**
  * Kind ``news_client_brief`` — derived field-for-field from engine ``ClientBrief``.
  *  *
- *  * Kind `news_client_brief` (registry v3).
+ *  * Kind `news_client_brief` (registry v4).
  */
 export interface NewsClientBrief {
   text?: string;
@@ -36499,7 +37255,7 @@ export interface NewsClientBrief {
 /**
  * Kind ``news_client_company`` — derived field-for-field from engine ``ClientCompany``.
  *  *
- *  * Kind `news_client_company` (registry v3).
+ *  * Kind `news_client_company` (registry v4).
  */
 export interface NewsClientCompany {
   name?: string;
@@ -36514,7 +37270,7 @@ export interface NewsClientCompany {
 /**
  * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
  *  *
- *  * Kind `news_client_context` (registry v4).
+ *  * Kind `news_client_context` (registry v5).
  */
 export interface NewsClientContext {
   brief?: NewsClientBrief | null;
@@ -36539,7 +37295,7 @@ export interface NewsClientContext {
 /**
  * Kind ``news_client_facts`` — derived field-for-field from engine ``ClientFacts``.
  *  *
- *  * Kind `news_client_facts` (registry v3).
+ *  * Kind `news_client_facts` (registry v4).
  */
 export interface NewsClientFacts {
   other?: string[];
@@ -36554,7 +37310,7 @@ export interface NewsClientFacts {
 /**
  * Kind ``news_digest`` — derived field-for-field from engine ``NewsDigest``.
  *  *
- *  * Kind `news_digest` (registry v5).
+ *  * Kind `news_digest` (registry v6).
  */
 export interface NewsDigest {
   cost?: NewsDigestCost;
@@ -36590,7 +37346,7 @@ export interface NewsDigest {
 /**
  * Kind ``news_digest_cost`` — derived field-for-field from engine ``DigestCost``.
  *  *
- *  * Kind `news_digest_cost` (registry v3).
+ *  * Kind `news_digest_cost` (registry v4).
  */
 export interface NewsDigestCost {
   /**
@@ -36605,7 +37361,7 @@ export interface NewsDigestCost {
 /**
  * Kind ``news_digest_headline`` — derived field-for-field from engine ``DigestHeadline``.
  *  *
- *  * Kind `news_digest_headline` (registry v3).
+ *  * Kind `news_digest_headline` (registry v4).
  */
 export interface NewsDigestHeadline {
   stale?: number;
@@ -36629,7 +37385,7 @@ export interface NewsDigestHeadline {
 /**
  * Kind ``news_digest_links`` — derived field-for-field from engine ``DigestLinks``.
  *  *
- *  * Kind `news_digest_links` (registry v3).
+ *  * Kind `news_digest_links` (registry v4).
  */
 export interface NewsDigestLinks {
   /**
@@ -36643,7 +37399,7 @@ export interface NewsDigestLinks {
 /**
  * Kind ``news_digest_source_health`` — derived field-for-field from engine ``DigestSourceHealth``.
  *  *
- *  * Kind `news_digest_source_health` (registry v3).
+ *  * Kind `news_digest_source_health` (registry v4).
  */
 export interface NewsDigestSourceHealth {
   error?: string | null;
@@ -36659,7 +37415,7 @@ export interface NewsDigestSourceHealth {
 /**
  * Kind ``news_digest_surfaced`` — derived field-for-field from engine ``DigestSurfaced``.
  *  *
- *  * Kind `news_digest_surfaced` (registry v3).
+ *  * Kind `news_digest_surfaced` (registry v4).
  */
 export interface NewsDigestSurfaced {
   title: string;
@@ -36678,7 +37434,7 @@ export interface NewsDigestSurfaced {
 /**
  * Kind ``news_digest_watch`` — derived field-for-field from engine ``DigestWatch``.
  *  *
- *  * Kind `news_digest_watch` (registry v3).
+ *  * Kind `news_digest_watch` (registry v4).
  */
 export interface NewsDigestWatch {
   basis?: "origin_finding" | "detector_estimate" | null;
@@ -36702,7 +37458,7 @@ export interface NewsDigestWatch {
 /**
  * Kind ``news_digest_watch_group`` — derived field-for-field from engine ``DigestWatchGroup``.
  *  *
- *  * Kind `news_digest_watch_group` (registry v3).
+ *  * Kind `news_digest_watch_group` (registry v4).
  */
 export interface NewsDigestWatchGroup {
   count?: number;
@@ -36726,7 +37482,7 @@ export interface NewsDigestWatchGroup {
 /**
  * Kind ``news_digest_window`` — derived field-for-field from engine ``DigestWindow``.
  *  *
- *  * Kind `news_digest_window` (registry v3).
+ *  * Kind `news_digest_window` (registry v4).
  */
 export interface NewsDigestWindow {
   hours: number;
@@ -36740,7 +37496,7 @@ export interface NewsDigestWindow {
 /**
  * Kind ``news_digest_withheld`` — derived field-for-field from engine ``DigestWithheld``.
  *  *
- *  * Kind `news_digest_withheld` (registry v3).
+ *  * Kind `news_digest_withheld` (registry v4).
  */
 export interface NewsDigestWithheld {
   /**
@@ -36753,7 +37509,7 @@ export interface NewsDigestWithheld {
 }
 
 /**
- * Kind `news_freshness_check_result` (registry v3).
+ * Kind `news_freshness_check_result` (registry v4).
  */
 export interface NewsFreshnessCheckResult {
   __kind?: "news_freshness_check_result";
@@ -36764,7 +37520,7 @@ export interface NewsFreshnessCheckResult {
 /**
  * Kind ``news_journalist_shape`` — derived field-for-field from engine ``JournalistShape``.
  *  *
- *  * Kind `news_journalist_shape` (registry v3).
+ *  * Kind `news_journalist_shape` (registry v4).
  */
 export interface NewsJournalistShape {
   /**
@@ -36778,7 +37534,7 @@ export interface NewsJournalistShape {
 }
 
 /**
- * Kind `news_monitor_run_result` (registry v3).
+ * Kind `news_monitor_run_result` (registry v4).
  */
 export interface NewsMonitorRunResult {
   /**
@@ -36797,7 +37553,7 @@ export interface NewsMonitorRunResult {
 }
 
 /**
- * Kind `news_monitor_setup_proposal` (registry v3).
+ * Kind `news_monitor_setup_proposal` (registry v4).
  */
 export interface NewsMonitorSetupProposal {
   /**
@@ -36817,7 +37573,7 @@ export interface NewsMonitorSetupProposal {
 /**
  * Kind ``news_notice`` — derived field-for-field from engine ``Notice``.
  *  *
- *  * Kind `news_notice` (registry v3).
+ *  * Kind `news_notice` (registry v4).
  */
 export interface NewsNotice {
   code: string;
@@ -36832,7 +37588,7 @@ export interface NewsNotice {
 /**
  * Kind ``news_opportunity_report`` — derived field-for-field from engine ``NewsOpportunityReport``.
  *  *
- *  * Kind `news_opportunity_report` (registry v5).
+ *  * Kind `news_opportunity_report` (registry v6).
  */
 export interface NewsOpportunityReport {
   __kind?: "news_opportunity_report";
@@ -36849,7 +37605,7 @@ export interface NewsOpportunityReport {
 /**
  * Kind ``news_proof_asset`` — derived field-for-field from engine ``ProofAsset``.
  *  *
- *  * Kind `news_proof_asset` (registry v3).
+ *  * Kind `news_proof_asset` (registry v4).
  */
 export interface NewsProofAsset {
   url?: string | null;
@@ -36864,7 +37620,7 @@ export interface NewsProofAsset {
 /**
  * Kind ``news_refused_angle`` — derived field-for-field from engine ``RefusedAngle``.
  *  *
- *  * Kind `news_refused_angle` (registry v3).
+ *  * Kind `news_refused_angle` (registry v4).
  */
 export interface NewsRefusedAngle {
   idea: string;
@@ -36878,7 +37634,7 @@ export interface NewsRefusedAngle {
 /**
  * Kind ``news_report_angle`` — derived field-for-field from engine ``ReportAngle``.
  *  *
- *  * Kind `news_report_angle` (registry v3).
+ *  * Kind `news_report_angle` (registry v4).
  */
 export interface NewsReportAngle {
   needs?: string;
@@ -36891,7 +37647,7 @@ export interface NewsReportAngle {
 /**
  * Kind ``news_report_funnel_stage`` — derived field-for-field from engine ``ReportFunnelStage``.
  *  *
- *  * Kind `news_report_funnel_stage` (registry v3).
+ *  * Kind `news_report_funnel_stage` (registry v4).
  */
 export interface NewsReportFunnelStage {
   count?: number;
@@ -36902,7 +37658,7 @@ export interface NewsReportFunnelStage {
 /**
  * Kind ``news_report_gated_out`` — derived field-for-field from engine ``ReportGatedOut``.
  *  *
- *  * Kind `news_report_gated_out` (registry v3).
+ *  * Kind `news_report_gated_out` (registry v4).
  */
 export interface NewsReportGatedOut {
   stale?: string[];
@@ -36919,7 +37675,7 @@ export interface NewsReportGatedOut {
 /**
  * Kind ``news_report_link`` — derived field-for-field from engine ``ReportLink``.
  *  *
- *  * Kind `news_report_link` (registry v3).
+ *  * Kind `news_report_link` (registry v4).
  */
 export interface NewsReportLink {
   tag?: string;
@@ -36934,7 +37690,7 @@ export interface NewsReportLink {
 /**
  * Kind ``news_report_sections`` — derived field-for-field from engine ``ReportSections``.
  *  *
- *  * Kind `news_report_sections` (registry v4).
+ *  * Kind `news_report_sections` (registry v5).
  */
 export interface NewsReportSections {
   watch?: NewsReportStory[];
@@ -36947,7 +37703,7 @@ export interface NewsReportSections {
 /**
  * Kind ``news_report_story`` — derived field-for-field from engine ``ReportStory``.
  *  *
- *  * Kind `news_report_story` (registry v3).
+ *  * Kind `news_report_story` (registry v4).
  */
 export interface NewsReportStory {
   tier?: string;
@@ -36979,7 +37735,7 @@ export interface NewsReportStory {
 /**
  * Kind ``news_report_todays_read`` — derived field-for-field from engine ``ReportTodaysRead``.
  *  *
- *  * Kind `news_report_todays_read` (registry v3).
+ *  * Kind `news_report_todays_read` (registry v4).
  */
 export interface NewsReportTodaysRead {
   __kind?: "news_report_todays_read";
@@ -36989,7 +37745,7 @@ export interface NewsReportTodaysRead {
 }
 
 /**
- * Kind `news_result` (registry v16).
+ * Kind `news_result` (registry v17).
  */
 export interface NewsResult {
   url: string;
@@ -37013,7 +37769,7 @@ export interface NewsResult {
 }
 
 /**
- * Kind `news_search_result` (registry v3).
+ * Kind `news_search_result` (registry v4).
  */
 export interface NewsSearchResult {
   hits?: NewsSearchHit[];
@@ -37039,7 +37795,7 @@ export interface NewsSearchResult {
  * both NewsAPI-backed nodes share this exact field set (see module
  * docstring).
  *  *
- *  * Kind `news_search_results` (registry v8).
+ *  * Kind `news_search_results` (registry v9).
  */
 export interface NewsSearchResults {
   /**
@@ -37059,7 +37815,7 @@ export interface NewsSearchResults {
 }
 
 /**
- * Kind `news_setup_basis` (registry v3).
+ * Kind `news_setup_basis` (registry v4).
  */
 export interface NewsSetupBasis {
   ref: string;
@@ -37071,7 +37827,7 @@ export interface NewsSetupBasis {
 }
 
 /**
- * Kind `news_setup_coverage_keyword` (registry v3).
+ * Kind `news_setup_coverage_keyword` (registry v4).
  */
 export interface NewsSetupCoverageKeyword {
   side?: "brand" | "competitor";
@@ -37086,7 +37842,7 @@ export interface NewsSetupCoverageKeyword {
 }
 
 /**
- * Kind `news_setup_feed_pick` (registry v3).
+ * Kind `news_setup_feed_pick` (registry v4).
  */
 export interface NewsSetupFeedPick {
   why: string;
@@ -37098,7 +37854,7 @@ export interface NewsSetupFeedPick {
 }
 
 /**
- * Kind `news_setup_item` (registry v3).
+ * Kind `news_setup_item` (registry v4).
  */
 export interface NewsSetupItem {
   text: string;
@@ -37112,7 +37868,7 @@ export interface NewsSetupItem {
 /**
  * Kind ``news_spokesperson`` — derived field-for-field from engine ``Spokesperson``.
  *  *
- *  * Kind `news_spokesperson` (registry v3).
+ *  * Kind `news_spokesperson` (registry v4).
  */
 export interface NewsSpokesperson {
   name: string;
@@ -37127,7 +37883,7 @@ export interface NewsSpokesperson {
 /**
  * Kind ``news_standing_counts`` — derived field-for-field from engine ``StandingCounts``.
  *  *
- *  * Kind `news_standing_counts` (registry v3).
+ *  * Kind `news_standing_counts` (registry v4).
  */
 export interface NewsStandingCounts {
   none?: number;
@@ -37137,7 +37893,7 @@ export interface NewsStandingCounts {
 }
 
 /**
- * Kind `news_story_size_result` (registry v3).
+ * Kind `news_story_size_result` (registry v4).
  */
 export interface NewsStorySizeResult {
   __kind?: "news_story_size_result";
@@ -37149,7 +37905,7 @@ export interface NewsStorySizeResult {
 /**
  * Kind ``news_triage`` — derived field-for-field from engine ``NewsTriage``.
  *  *
- *  * Kind `news_triage` (registry v5).
+ *  * Kind `news_triage` (registry v6).
  */
 export interface NewsTriage {
   __kind?: "news_triage";
@@ -37160,7 +37916,7 @@ export interface NewsTriage {
 /**
  * Kind ``news_triage_summary`` — derived field-for-field from engine ``TriageSummary``.
  *  *
- *  * Kind `news_triage_summary` (registry v4).
+ *  * Kind `news_triage_summary` (registry v5).
  */
 export interface NewsTriageSummary {
   __kind?: "news_triage_summary";
@@ -37174,7 +37930,7 @@ export interface NewsTriageSummary {
 /**
  * Kind ``news_triaged_signal`` — derived field-for-field from engine ``TriagedSignal``.
  *  *
- *  * Kind `news_triaged_signal` (registry v3).
+ *  * Kind `news_triaged_signal` (registry v4).
  */
 export interface NewsTriagedSignal {
   tier: "pitch_ready" | "big_story" | "watch";
@@ -37241,7 +37997,7 @@ export interface NewsjackingExpertArticle {
 /**
  * Kind ``newsworthiness_anchor`` — derived field-for-field from engine ``NewsworthinessAnchor``.
  *  *
- *  * Kind `newsworthiness_anchor` (registry v3).
+ *  * Kind `newsworthiness_anchor` (registry v4).
  */
 export interface NewsworthinessAnchor {
   /**
@@ -37256,7 +38012,7 @@ export interface NewsworthinessAnchor {
 /**
  * Kind ``newsworthiness_cap`` — derived field-for-field from engine ``NewsworthinessCap``.
  *  *
- *  * Kind `newsworthiness_cap` (registry v3).
+ *  * Kind `newsworthiness_cap` (registry v4).
  */
 export interface NewsworthinessCap {
   cap: number;
@@ -37271,7 +38027,7 @@ export interface NewsworthinessCap {
 /**
  * Kind ``newsworthiness_dimension`` — derived field-for-field from engine ``NewsworthinessDimension``.
  *  *
- *  * Kind `newsworthiness_dimension` (registry v3).
+ *  * Kind `newsworthiness_dimension` (registry v4).
  */
 export interface NewsworthinessDimension {
   name: string;
@@ -37287,7 +38043,7 @@ export interface NewsworthinessDimension {
 /**
  * Kind ``newsworthiness_evidence`` — derived field-for-field from engine ``NewsworthinessEvidence``.
  *  *
- *  * Kind `newsworthiness_evidence` (registry v3).
+ *  * Kind `newsworthiness_evidence` (registry v4).
  */
 export interface NewsworthinessEvidence {
   url?: string;
@@ -37302,7 +38058,7 @@ export interface NewsworthinessEvidence {
 /**
  * Kind ``newsworthiness_verdict`` — derived field-for-field from engine ``NewsworthinessVerdict``.
  *  *
- *  * Kind `newsworthiness_verdict` (registry v4).
+ *  * Kind `newsworthiness_verdict` (registry v5).
  */
 export interface NewsworthinessVerdict {
   fixes?: string[];
@@ -37352,7 +38108,7 @@ export interface NewsworthinessVerdict {
  * shape, so the column, the event, and the edge payload cannot drift into
  * three dialects of the same failure.
  *  *
- *  * Kind `node_error` (registry v7).
+ *  * Kind `node_error` (registry v8).
  */
 export interface NodeError {
   got?: string | null;
@@ -37381,7 +38137,7 @@ export interface NodeError {
  * workflow, which node, and then — nested inside ``output`` — exactly what
  * the data is, all the way down.
  *  *
- *  * Kind `node_outcome` (registry v9).
+ *  * Kind `node_outcome` (registry v10).
  */
 export interface NodeOutcome {
   step?: number | null;
@@ -37406,7 +38162,7 @@ export interface NodeOutcome {
 }
 
 /**
- * Kind `notable_timestamp` (registry v4).
+ * Kind `notable_timestamp` (registry v5).
  */
 export interface NotableTimestamp {
   type: string;
@@ -37417,7 +38173,7 @@ export interface NotableTimestamp {
 }
 
 /**
- * Kind `note_tool_result` (registry v4).
+ * Kind `note_tool_result` (registry v5).
  */
 export interface NoteToolResult {
   id?: string | null;
@@ -37488,7 +38244,7 @@ export interface NotesUnorganizedPileOffer {
 /**
  * A move-in page: intro markdown, embedded databases and notes.
  *  *
- *  * Kind `notion_move_in_page` (registry v2).
+ *  * Kind `notion_move_in_page` (registry v3).
  */
 export interface NotionMoveInPage {
   icon: string;
@@ -37627,7 +38383,7 @@ export interface OfficeSpreadsheet {
 }
 
 /**
- * Kind `office_tool_result` (registry v4).
+ * Kind `office_tool_result` (registry v5).
  */
 export interface OfficeToolResult {
   url?: string | null;
@@ -37652,7 +38408,7 @@ export interface OfficeToolResult {
 }
 
 /**
- * Kind `opening_hours` (registry v17).
+ * Kind `opening_hours` (registry v18).
  */
 export interface OpeningHours {
   /**
@@ -37857,7 +38613,7 @@ export interface OrgChartSeatJobSuggestionOffer {
 /**
  * One post of a tracked account that beat that account's own baseline (the outlier feed row).
  *  *
- *  * Kind `outlier_row` (registry v4).
+ *  * Kind `outlier_row` (registry v5).
  */
 export interface OutlierRow {
   url?: string | null;
@@ -37910,7 +38666,7 @@ export interface OutlineSection {
 }
 
 /**
- * Kind `outreach_reply_draft` (registry v4).
+ * Kind `outreach_reply_draft` (registry v5).
  */
 export interface OutreachReplyDraft {
   __kind: "outreach_reply_draft";
@@ -37948,7 +38704,7 @@ export interface Page {
 /**
  * An ``<audio>`` element. Shape from ``parser.data_types.Audio.to_data``.
  *  *
- *  * Kind `page_audio` (registry v4).
+ *  * Kind `page_audio` (registry v5).
  */
 export interface PageAudio {
   src: string;
@@ -37970,7 +38726,7 @@ export interface PageAudio {
  * unrecoverable later, which is why this ships on every page rather than on
  * request (Arman's call, 2026-08-23).
  *  *
- *  * Kind `page_block` (registry v4).
+ *  * Kind `page_block` (registry v5).
  */
 export interface PageBlock {
   /**
@@ -38061,7 +38817,7 @@ export interface PageBrief {
  * filtering. Measured: a page with 12 code blocks in its DOM handed us 4.
  * The gap is not a discrepancy to reconcile; it IS the finding.
  *  *
- *  * Kind `page_cleaning_report` (registry v5).
+ *  * Kind `page_cleaning_report` (registry v6).
  */
 export interface PageCleaningReport {
   /**
@@ -38092,7 +38848,7 @@ export interface PageCleaningReport {
 /**
  * Output of ``page_extraction.run`` — an agent fanned across a document's pages.
  *  *
- *  * Kind `page_extraction_run_result` (registry v6).
+ *  * Kind `page_extraction_run_result` (registry v7).
  */
 export interface PageExtractionRunResult {
   /**
@@ -38111,7 +38867,7 @@ export interface PageExtractionRunResult {
 /**
  * Output of ``page_extraction.validate`` — an agent judging previously extracted rows.
  *  *
- *  * Kind `page_extraction_validate_result` (registry v6).
+ *  * Kind `page_extraction_validate_result` (registry v7).
  */
 export interface PageExtractionValidateResult {
   /**
@@ -38130,7 +38886,7 @@ export interface PageExtractionValidateResult {
 /**
  * One entry in the document outline.
  *  *
- *  * Kind `page_heading` (registry v4).
+ *  * Kind `page_heading` (registry v5).
  */
 export interface PageHeading {
   text: string;
@@ -38145,7 +38901,7 @@ export interface PageHeading {
 }
 
 /**
- * Kind `page_image` (registry v4).
+ * Kind `page_image` (registry v5).
  */
 export interface PageImage {
   /**
@@ -38275,7 +39031,7 @@ export interface PageKeywordMapV1 {
  * refetching, which is why the same parse that fills the URL buckets fills
  * these records.
  *  *
- *  * Kind `page_link` (registry v4).
+ *  * Kind `page_link` (registry v5).
  */
 export interface PageLink {
   /**
@@ -38313,7 +39069,7 @@ export interface PageLink {
 }
 
 /**
- * Kind `page_list` (registry v4).
+ * Kind `page_list` (registry v5).
  */
 export interface PageList {
   /**
@@ -38384,7 +39140,7 @@ export interface PageMappingV1 {
 /**
  * What the page declares about itself in its head.
  *  *
- *  * Kind `page_metadata` (registry v4).
+ *  * Kind `page_metadata` (registry v5).
  */
 export interface PageMetadata {
   /**
@@ -38418,7 +39174,7 @@ export interface PageMetadata {
  * hides or considers noise are the things YOU MUST see because they're your
  * call to action and other highly useful things."*
  *  *
- *  * Kind `page_removal` (registry v4).
+ *  * Kind `page_removal` (registry v5).
  */
 export interface PageRemoval {
   /**
@@ -38458,7 +39214,7 @@ export interface PageRemoval {
  * document order, and order is unrecoverable afterwards, so the adapter
  * converts it to this ordered list.
  *  *
- *  * Kind `page_section` (registry v4).
+ *  * Kind `page_section` (registry v5).
  */
 export interface PageSection {
   /**
@@ -38498,7 +39254,7 @@ export interface PageTopicPickV1 {
  * parser's own contract — because no capture in the distillation set produced
  * one. Nothing here is invented; see the ledger's measured findings.
  *  *
- *  * Kind `page_video` (registry v4).
+ *  * Kind `page_video` (registry v5).
  */
 export interface PageVideo {
   src: string;
@@ -38528,7 +39284,7 @@ export interface PageVideo {
  * Failure (``code='parse_failed'``), never an ok=false payload. The old
  * ``ok``/``error`` payload fields are gone.
  *  *
- *  * Kind `parsed_datetime` (registry v9).
+ *  * Kind `parsed_datetime` (registry v10).
  */
 export interface ParsedDatetime {
   /**
@@ -38572,7 +39328,7 @@ export interface ParsedJson {
 }
 
 /**
- * Kind `parsed_table` (registry v9).
+ * Kind `parsed_table` (registry v10).
  */
 export interface ParsedTable {
   /**
@@ -38606,7 +39362,7 @@ export interface ParsedTable {
  * (``platform.part_anchor_problem``) and, for a board, that the tile exists
  * (``platform.part_anchor_target_problem``). Null anchor = the whole record.
  *  *
- *  * Kind `part_anchor` (registry v2).
+ *  * Kind `part_anchor` (registry v3).
  */
 export interface PartAnchor {
   /**
@@ -38624,7 +39380,7 @@ export interface PartAnchor {
 }
 
 /**
- * Kind `party_kind_verdict` (registry v4).
+ * Kind `party_kind_verdict` (registry v5).
  */
 export interface PartyKindVerdict {
   __kind: "party_kind_verdict";
@@ -38699,7 +39455,7 @@ export interface PdfContentCleaningOffer {
 }
 
 /**
- * Kind `pdf_table_extraction` (registry v10).
+ * Kind `pdf_table_extraction` (registry v11).
  */
 export interface PdfTableExtraction {
   pages?: number;
@@ -38730,7 +39486,7 @@ export interface PdfTableExtraction {
 }
 
 /**
- * Kind `pdf_text_extraction` (registry v8).
+ * Kind `pdf_text_extraction` (registry v9).
  */
 export interface PdfTextExtraction {
   text?: string;
@@ -38765,7 +39521,7 @@ export interface PerimeterEntry {
  * The person anchor finder's answer (mandate ``brand_intake.person_anchor_finder``): per candidate, is it this
  * person, plus the namesakes. A proposal shown as the 'we think' glow; it never selects for the person.
  *  *
- *  * Kind `person_anchor_candidates` (registry v2).
+ *  * Kind `person_anchor_candidates` (registry v3).
  */
 export interface PersonAnchorCandidates {
   /**
@@ -38777,7 +39533,7 @@ export interface PersonAnchorCandidates {
 }
 
 /**
- * Kind `person_basics` (registry v2).
+ * Kind `person_basics` (registry v3).
  */
 export interface PersonBasics {
   /**
@@ -38803,7 +39559,7 @@ export interface PersonBasics {
 }
 
 /**
- * Kind `person_basics_fact` (registry v2).
+ * Kind `person_basics_fact` (registry v3).
  */
 export interface PersonBasicsFact {
   /**
@@ -38847,7 +39603,7 @@ export interface PersonBasicsFact {
 /**
  * Accounts or pages that could be this person, from one search bucket, each with score, reasons and clues.
  *  *
- *  * Kind `person_candidate_list` (registry v2).
+ *  * Kind `person_candidate_list` (registry v3).
  */
 export interface PersonCandidateList {
   items?: Row[];
@@ -38860,7 +39616,7 @@ export interface PersonCandidateList {
 /**
  * Clues extracted while finding a person (employer, title, city, handle, site), each with the page it came from.
  *  *
- *  * Kind `person_clue_list` (registry v2).
+ *  * Kind `person_clue_list` (registry v3).
  */
 export interface PersonClueList {
   items?: Row[];
@@ -38873,7 +39629,7 @@ export interface PersonClueList {
 /**
  * Per platform, whether the focused search for this person is open or done, and whether it found them.
  *  *
- *  * Kind `person_find_focus` (registry v2).
+ *  * Kind `person_find_focus` (registry v3).
  */
 export interface PersonFindFocus {
   /**
@@ -38885,7 +39641,7 @@ export interface PersonFindFocus {
 /**
  * Every question put to the person while finding them, their answer, and whether it became a firm anchor.
  *  *
- *  * Kind `person_find_history` (registry v2).
+ *  * Kind `person_find_history` (registry v3).
  */
 export interface PersonFindHistory {
   items?: Row[];
@@ -38898,7 +39654,7 @@ export interface PersonFindHistory {
 /**
  * The deterministic read of whether a Smart Add subject is a person or a business, with the signals behind it.
  *  *
- *  * Kind `person_or_business_signals` (registry v2).
+ *  * Kind `person_or_business_signals` (registry v3).
  */
 export interface PersonOrBusinessSignals {
   /**
@@ -38911,7 +39667,7 @@ export interface PersonOrBusinessSignals {
 /**
  * What the person sweep filtered out and why.
  *  *
- *  * Kind `person_search_filters` (registry v2).
+ *  * Kind `person_search_filters` (registry v3).
  */
 export interface PersonSearchFilters {
   items?: Row[];
@@ -38925,7 +39681,7 @@ export interface PersonSearchFilters {
  * One tier of a person sweep: each row with its provider object (raw form) or its fact fields (clean form),
  * every hit, the tier and why, score, reasons and clues.
  *  *
- *  * Kind `person_sweep_rows` (registry v2).
+ *  * Kind `person_sweep_rows` (registry v3).
  */
 export interface PersonSweepRows {
   items?: Row[];
@@ -39020,7 +39776,7 @@ export interface PersonalStaffFrontLineOffer {
 }
 
 /**
- * Kind `personalization_target_result` (registry v3).
+ * Kind `personalization_target_result` (registry v4).
  */
 export interface PersonalizationTargetResult {
   id: string;
@@ -39037,7 +39793,7 @@ export interface PersonalizationTargetResult {
 }
 
 /**
- * Kind `personalization_write_result` (registry v6).
+ * Kind `personalization_write_result` (registry v7).
  */
 export interface PersonalizationWriteResult {
   __kind: "personalization_write_result";
@@ -39059,7 +39815,7 @@ export interface PersonalizationWriteResult {
 /**
  * An offer to choose one or several records of a Pick list.
  *  *
- *  * Kind `pick_list` (registry v3).
+ *  * Kind `pick_list` (registry v4).
  */
 export interface PickList {
   /**
@@ -39093,7 +39849,7 @@ export interface PickList {
 }
 
 /**
- * Kind `pick_list_approval_result` (registry v4).
+ * Kind `pick_list_approval_result` (registry v5).
  */
 export interface PickListApprovalResult {
   /**
@@ -39106,7 +39862,7 @@ export interface PickListApprovalResult {
 }
 
 /**
- * Kind `pick_list_item_update_result` (registry v4).
+ * Kind `pick_list_item_update_result` (registry v5).
  */
 export interface PickListItemUpdateResult {
   /**
@@ -39118,7 +39874,7 @@ export interface PickListItemUpdateResult {
 }
 
 /**
- * Kind `pick_list_tool_result` (registry v4).
+ * Kind `pick_list_tool_result` (registry v5).
  */
 export interface PickListToolResult {
   list?: JsonValue | null;
@@ -39144,7 +39900,7 @@ export interface PickListToolResult {
 }
 
 /**
- * Kind `place_review` (registry v2).
+ * Kind `place_review` (registry v3).
  */
 export interface PlaceReview {
   /**
@@ -39210,7 +39966,7 @@ export interface PlaceReview {
 }
 
 /**
- * Kind `place_reviews` (registry v2).
+ * Kind `place_reviews` (registry v3).
  */
 export interface PlaceReviews {
   /**
@@ -39232,7 +39988,7 @@ export interface PlaceReviews {
 }
 
 /**
- * Kind `plan_concept_name` (registry v5).
+ * Kind `plan_concept_name` (registry v6).
  */
 export interface PlanConceptName {
   name?: string;
@@ -39292,7 +40048,7 @@ export interface PlanDraftSection {
 }
 
 /**
- * Kind `plan_entity` (registry v5).
+ * Kind `plan_entity` (registry v6).
  */
 export interface PlanEntity {
   label?: string;
@@ -39306,7 +40062,7 @@ export interface PlanEntity {
 }
 
 /**
- * Kind `plan_entity_attachment` (registry v5).
+ * Kind `plan_entity_attachment` (registry v6).
  */
 export interface PlanEntityAttachment {
   role?: string;
@@ -39320,7 +40076,7 @@ export interface PlanEntityAttachment {
 }
 
 /**
- * Kind `plan_entity_attachment_set` (registry v7).
+ * Kind `plan_entity_attachment_set` (registry v8).
  */
 export interface PlanEntityAttachmentSet {
   /**
@@ -39380,7 +40136,7 @@ export interface PlanEntityAttachmentSet {
 }
 
 /**
- * Kind `plan_entity_roster` (registry v7).
+ * Kind `plan_entity_roster` (registry v8).
  */
 export interface PlanEntityRoster {
   /**
@@ -39419,7 +40175,7 @@ export interface PlanEntityRoster {
 }
 
 /**
- * Kind `plan_family_count` (registry v5).
+ * Kind `plan_family_count` (registry v6).
  */
 export interface PlanFamilyCount {
   count?: number;
@@ -39432,7 +40188,7 @@ export interface PlanFamilyCount {
 }
 
 /**
- * Kind `plan_family_names` (registry v6).
+ * Kind `plan_family_names` (registry v7).
  */
 export interface PlanFamilyNames {
   names: ({
@@ -39451,7 +40207,7 @@ export interface PlanFamilyNames {
 }
 
 /**
- * Kind `plan_keyword_assignment` (registry v7).
+ * Kind `plan_keyword_assignment` (registry v8).
  */
 export interface PlanKeywordAssignment {
   /**
@@ -39518,7 +40274,7 @@ export interface PlanKeywordAssignment {
 }
 
 /**
- * Kind `plan_keyword_strategy` (registry v7).
+ * Kind `plan_keyword_strategy` (registry v8).
  */
 export interface PlanKeywordStrategy {
   /**
@@ -39602,7 +40358,7 @@ export interface PlanKeywordStrategy {
 }
 
 /**
- * Kind `plan_missing_entity` (registry v5).
+ * Kind `plan_missing_entity` (registry v6).
  */
 export interface PlanMissingEntity {
   /**
@@ -39649,7 +40405,7 @@ export interface PlanPageDraft {
 }
 
 /**
- * Kind `plan_page_name` (registry v5).
+ * Kind `plan_page_name` (registry v6).
  */
 export interface PlanPageName {
   label?: string;
@@ -39743,7 +40499,7 @@ export interface PlanPageReview {
 }
 
 /**
- * Kind `plan_page_route_choice` (registry v5).
+ * Kind `plan_page_route_choice` (registry v6).
  */
 export interface PlanPageRouteChoice {
   /**
@@ -39806,7 +40562,7 @@ export interface PlanResearchSource {
 }
 
 /**
- * Kind `plan_review_finding` (registry v5).
+ * Kind `plan_review_finding` (registry v6).
  */
 export interface PlanReviewFinding {
   title?: string;
@@ -39821,7 +40577,7 @@ export interface PlanReviewFinding {
 }
 
 /**
- * Kind `plan_review_findings` (registry v7).
+ * Kind `plan_review_findings` (registry v8).
  */
 export interface PlanReviewFindings {
   /**
@@ -39890,7 +40646,7 @@ export interface PlanReviewIssue {
 }
 
 /**
- * Kind `plan_shape_recommendation` (registry v7).
+ * Kind `plan_shape_recommendation` (registry v8).
  */
 export interface PlanShapeRecommendation {
   /**
@@ -39911,7 +40667,7 @@ export interface PlanShapeRecommendation {
  * it once instead of once per table. The row's own columns live under
  * ``fields`` — the columns are the table's business, not this kind's.
  *  *
- *  * Kind `platform_record` (registry v5).
+ *  * Kind `platform_record` (registry v6).
  */
 export interface PlatformRecord {
   /**
@@ -40915,7 +41671,7 @@ export interface PodcastVideoRenderOffer {
 /**
  * Output of ``podcast.cast.preview`` — the resolved deterministic cast.
  *  *
- *  * Kind `podcast_cast_preview_result` (registry v7).
+ *  * Kind `podcast_cast_preview_result` (registry v8).
  */
 export interface PodcastCastPreviewResult {
   /**
@@ -41241,7 +41997,7 @@ export interface PodcastEpisode {
 /**
  * The Podcast Episode Metadata Generator's answer: title, description and media prompts.
  *  *
- *  * Kind `podcast_episode_metadata` (registry v2).
+ *  * Kind `podcast_episode_metadata` (registry v3).
  */
 export interface PodcastEpisodeMetadata {
   title: string;
@@ -41257,7 +42013,7 @@ export interface PodcastEpisodeMetadata {
 /**
  * Output of ``podcast.video.compose`` — the composed official video's durable URL.
  *  *
- *  * Kind `podcast_video_compose_result` (registry v6).
+ *  * Kind `podcast_video_compose_result` (registry v7).
  */
 export interface PodcastVideoComposeResult {
   /**
@@ -41272,7 +42028,7 @@ export interface PodcastVideoComposeResult {
  * performer is built yet, so no real output has been studied; the fields are the mandate's required keys
  * and the ``social.post_analysis`` columns.
  *  *
- *  * Kind `post_breakdown` (registry v2).
+ *  * Kind `post_breakdown` (registry v3).
  */
 export interface PostBreakdown {
   cta?: string | null;
@@ -41311,7 +42067,7 @@ export interface PostBreakdown {
  * The shared transcript of a post — bought or transcribed once for every organization. ``text`` and
  * ``segments`` are present only when asked for (a 20-minute video is ~11k words).
  *  *
- *  * Kind `post_transcript` (registry v2).
+ *  * Kind `post_transcript` (registry v3).
  */
 export interface PostTranscript {
   text?: string | null;
@@ -41331,7 +42087,7 @@ export interface PostTranscript {
 }
 
 /**
- * Kind `postal_address` (registry v16).
+ * Kind `postal_address` (registry v17).
  */
 export interface PostalAddress {
   city?: string | null;
@@ -41350,7 +42106,7 @@ export interface PostalAddress {
 }
 
 /**
- * Kind `pr_calendar_handoff` (registry v3).
+ * Kind `pr_calendar_handoff` (registry v4).
  */
 export interface PrCalendarHandoff {
   proof?: string[];
@@ -41364,7 +42120,7 @@ export interface PrCalendarHandoff {
 }
 
 /**
- * Kind `pr_calendar_moment` (registry v3).
+ * Kind `pr_calendar_moment` (registry v4).
  */
 export interface PrCalendarMoment {
   /**
@@ -41387,7 +42143,7 @@ export interface PrCalendarMoment {
 }
 
 /**
- * Kind `pr_calendar_plan` (registry v3).
+ * Kind `pr_calendar_plan` (registry v4).
  */
 export interface PrCalendarPlan {
   /**
@@ -41404,7 +42160,7 @@ export interface PrCalendarPlan {
 }
 
 /**
- * Kind `pr_diagnosis` (registry v3).
+ * Kind `pr_diagnosis` (registry v4).
  */
 export interface PrDiagnosis {
   goal: string;
@@ -41419,7 +42175,7 @@ export interface PrDiagnosis {
 }
 
 /**
- * Kind `pr_moment_candidate` (registry v3).
+ * Kind `pr_moment_candidate` (registry v4).
  */
 export interface PrMomentCandidate {
   type: "industry_event" | "earnings";
@@ -41437,7 +42193,7 @@ export interface PrMomentCandidate {
 }
 
 /**
- * Kind `pr_moment_candidates` (registry v3).
+ * Kind `pr_moment_candidates` (registry v4).
  */
 export interface PrMomentCandidates {
   /**
@@ -41449,7 +42205,7 @@ export interface PrMomentCandidates {
 }
 
 /**
- * Kind `pr_moments_collect_result` (registry v3).
+ * Kind `pr_moments_collect_result` (registry v4).
  */
 export interface PrMomentsCollectResult {
   __kind?: string;
@@ -41469,7 +42225,7 @@ export interface PrMomentsCollectResult {
 }
 
 /**
- * Kind `pr_peg_check` (registry v3).
+ * Kind `pr_peg_check` (registry v4).
  */
 export interface PrPegCheck {
   text: string;
@@ -41483,7 +42239,7 @@ export interface PrPegCheck {
 }
 
 /**
- * Kind `pr_play` (registry v3).
+ * Kind `pr_play` (registry v4).
  */
 export interface PrPlay {
   trap: string;
@@ -41501,7 +42257,7 @@ export interface PrPlay {
 /**
  * What the play's button starts: a specialist, a pipeline, or a screen.
  *  *
- *  * Kind `pr_play_action` (registry v3).
+ *  * Kind `pr_play_action` (registry v4).
  */
 export interface PrPlayAction {
   type: "run_member" | "run_workflow" | "open_surface";
@@ -41523,7 +42279,7 @@ export interface PrPlayAction {
  * The Director's menu: a main play plus backups, each a button. Data for the buttons; the reader never sees
  * these field names.
  *  *
- *  * Kind `pr_play_menu` (registry v4).
+ *  * Kind `pr_play_menu` (registry v5).
  */
 export interface PrPlayMenu {
   peg?: PrPegCheck | null;
@@ -41537,7 +42293,7 @@ export interface PrPlayMenu {
 }
 
 /**
- * Kind `pr_prior_coverage_result` (registry v3).
+ * Kind `pr_prior_coverage_result` (registry v4).
  */
 export interface PrPriorCoverageResult {
   __kind?: string;
@@ -41548,7 +42304,7 @@ export interface PrPriorCoverageResult {
 }
 
 /**
- * Kind `practice_prompt` (registry v3).
+ * Kind `practice_prompt` (registry v4).
  */
 export interface PracticePrompt {
   __kind: "practice_prompt";
@@ -41637,7 +42393,7 @@ export interface PresentationSlide {
 /**
  * One live article rendered as a press clip: PDF, preview and page rasters.
  *  *
- *  * Kind `press_clip_render` (registry v5).
+ *  * Kind `press_clip_render` (registry v6).
  */
 export interface PressClipRender {
   /**
@@ -41711,7 +42467,7 @@ export interface PressClipRender {
 }
 
 /**
- * Kind `press_clip_review` (registry v4).
+ * Kind `press_clip_review` (registry v5).
  */
 export interface PressClipReview {
   /**
@@ -41757,7 +42513,7 @@ export interface PressClipReview {
  * rather than a crash. Nothing here is a nested structure; the shape is
  * boring because the operation is.
  *  *
- *  * Kind `press_newsroom_sync_result` (registry v3).
+ *  * Kind `press_newsroom_sync_result` (registry v4).
  */
 export interface PressNewsroomSyncResult {
   /**
@@ -41786,7 +42542,7 @@ export interface PressNewsroomSyncResult {
  * responder mandate ruled, and whether a draft came out of it. There is no
  * richer shape hiding here — the node returns exactly these four facts.
  *  *
- *  * Kind `press_source_request_evaluate_result` (registry v3).
+ *  * Kind `press_source_request_evaluate_result` (registry v4).
  */
 export interface PressSourceRequestEvaluateResult {
   id: string;
@@ -41807,7 +42563,7 @@ export interface PressSourceRequestEvaluateResult {
  * the counters are the summary, the outcomes are the truth, and the node
  * reports both rather than making a caller infer the difference.
  *  *
- *  * Kind `press_source_request_ingest_result` (registry v4).
+ *  * Kind `press_source_request_ingest_result` (registry v5).
  */
 export interface PressSourceRequestIngestResult {
   /**
@@ -41829,7 +42585,7 @@ export interface PressSourceRequestIngestResult {
 }
 
 /**
- * Kind `press_source_request_response_v1` (registry v4).
+ * Kind `press_source_request_response_v1` (registry v5).
  */
 export interface PressSourceRequestResponseV1 {
   __kind: "press_source_request_response_v1";
@@ -41910,7 +42666,7 @@ export interface PressSourceRequestResponseV1 {
 /**
  * Output of ``seo.press.story_angles.generate`` — mirrors ``StoryAngleGenerateResult``.
  *  *
- *  * Kind `press_story_angle_generation_result` (registry v9).
+ *  * Kind `press_story_angle_generation_result` (registry v10).
  */
 export interface PressStoryAngleGenerationResult {
   kept: number;
@@ -41950,7 +42706,7 @@ export interface PressStoryAngleGenerationResult {
 /**
  * Output of ``seo.press.story_angle.rule`` — mirrors ``StoryAngleRulingResult``.
  *  *
- *  * Kind `press_story_angle_ruling_result` (registry v6).
+ *  * Kind `press_story_angle_ruling_result` (registry v7).
  */
 export interface PressStoryAngleRulingResult {
   id: string;
@@ -41967,7 +42723,7 @@ export interface PressStoryAngleRulingResult {
  * ``evidence_quality='weak'`` — a wide honest range beats a narrow invented
  * one.
  *  *
- *  * Kind `pricing_proposal` (registry v5).
+ *  * Kind `pricing_proposal` (registry v6).
  */
 export interface PricingProposal {
   floor?: Money | null;
@@ -42165,7 +42921,7 @@ export interface ProductKnowledgeItem {
  * ``identity`` / ``identity_unresolved`` is set — an unresolved identity with
  * the candidates considered is a legal, useful output, not a failure.
  *  *
- *  * Kind `product_research` (registry v4).
+ *  * Kind `product_research` (registry v5).
  */
 export interface ProductResearch {
   specs?: SourcedSpec[];
@@ -42227,10 +42983,10 @@ export interface ProductResearchReport {
 }
 
 /**
- * One product listing from a shopping search. Not the Brave web-result
+ * One product listing from a shopping search. Not the web search web-result
  * `ProductDetails` sidecar (a page's structured data); this IS the result.
  *  *
- *  * Kind `product_result` (registry v2).
+ *  * Kind `product_result` (registry v4).
  */
 export interface ProductResult {
   /**
@@ -42348,7 +43104,7 @@ export interface ProgressTracker {
  * ``replay_only`` — recorded payloads were replayed, so the spend proofs were
  * skipped by design and this run proves WIRING, not reality.
  *  *
- *  * Kind `proof_attestation` (registry v4).
+ *  * Kind `proof_attestation` (registry v5).
  */
 export interface ProofAttestation {
   mode?: "live" | "replay";
@@ -42373,7 +43129,7 @@ export interface ProofAttestation {
 /**
  * One check's registry row plus its rolling 30-day KPIs.
  *  *
- *  * Kind `proof_check_status` (registry v4).
+ *  * Kind `proof_check_status` (registry v5).
  */
 export interface ProofCheckStatus {
   slug?: string;
@@ -42408,7 +43164,7 @@ export interface ProofCheckStatus {
  * during replay, which is what makes a replay run a real wiring test rather
  * than a playback.
  *  *
- *  * Kind `proof_recording` (registry v3).
+ *  * Kind `proof_recording` (registry v4).
  */
 export interface ProofRecording {
   notes?: string;
@@ -42428,7 +43184,7 @@ export interface ProofRecording {
  * ``skipped`` is a first-class outcome and is NEVER a pass: a replay run
  * cannot prove a provider was billed, and saying so out loud is the point.
  *  *
- *  * Kind `proof_result` (registry v3).
+ *  * Kind `proof_result` (registry v4).
  */
 export interface ProofResult {
   id?: string;
@@ -42446,7 +43202,7 @@ export interface ProofResult {
 /**
  * The Proof Run Judge's strict pass/fail verdict on one run's output.
  *  *
- *  * Kind `proof_run_judgement` (registry v2).
+ *  * Kind `proof_run_judgement` (registry v3).
  */
 export interface ProofRunJudgement {
   /**
@@ -42498,10 +43254,10 @@ export interface ProofRunsJudgeCaseOffer {
  * 🚨 `cost_usd = None` means UNMEASURED, never free. A run that reported
  * `0.00` has evidence and is genuinely free; a run with no cost evidence at
  * all must not be folded into a total as zero. That coalesce previously let
- * 112 live SerpAPI runs spend nothing against every ceiling
+ * 112 live the search provider runs spend nothing against every ceiling
  * (`matrx_seo.contracts.SpendSummary`).
  *  *
- *  * Kind `provider_run_receipt` (registry v5).
+ *  * Kind `provider_run_receipt` (registry v8).
  */
 export interface ProviderRunReceipt {
   /**
@@ -42517,7 +43273,7 @@ export interface ProviderRunReceipt {
    */
   cost_usd?: number | null;
   /**
-   * Provider that served the call, e.g. 'brave' | 'serpapi' | 'dataforseo'.
+   * Provider that served the call (machine id; shown to people as Matrx).
    */
   provider: string;
   /**
@@ -42566,7 +43322,7 @@ export interface ProviderRunReceipt {
  * One section of the provider answers available at a point, one row per source, each row naming its source.
  * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
  *  *
- *  * Kind `provider_section_list` (registry v2).
+ *  * Kind `provider_section_list` (registry v3).
  */
 export interface ProviderSectionList {
   items?: ProviderSectionRow[];
@@ -42582,7 +43338,7 @@ export interface ProviderSectionList {
  * metadata cache (``aidream/services/ebay_metadata/`` validator). The
  * verdict is rule-based and reproducible; only ``fix`` suggestions are AI.
  *  *
- *  * Kind `publish_preflight` (registry v4).
+ *  * Kind `publish_preflight` (registry v5).
  */
 export interface PublishPreflight {
   /**
@@ -42671,7 +43427,7 @@ export interface QuestionnaireQuestion {
 }
 
 /**
- * Kind `quiz_item` (registry v5).
+ * Kind `quiz_item` (registry v6).
  */
 export interface QuizItem {
   /**
@@ -42910,7 +43666,7 @@ export interface RagRetrievalQueryOffer {
 /**
  * Output of ``rag.chunk`` (and, today, ``rag.enrich`` — see module docstring).
  *  *
- *  * Kind `rag_chunk_set` (registry v9).
+ *  * Kind `rag_chunk_set` (registry v10).
  */
 export interface RagChunkSet {
   /**
@@ -42938,7 +43694,7 @@ export interface RagChunkSet {
  * Output of ``rag.verify`` — each claim in an answer checked against the
  * retrieved source passages.
  *  *
- *  * Kind `rag_claim_verification` (registry v7).
+ *  * Kind `rag_claim_verification` (registry v8).
  */
 export interface RagClaimVerification {
   /**
@@ -42954,7 +43710,7 @@ export interface RagClaimVerification {
 /**
  * Output of ``rag.classify`` — the chosen chunker/language for a source.
  *  *
- *  * Kind `rag_classification_result` (registry v9).
+ *  * Kind `rag_classification_result` (registry v10).
  */
 export interface RagClassificationResult {
   /**
@@ -42974,7 +43730,7 @@ export interface RagClassificationResult {
 /**
  * Output of ``rag.search_cross_doc`` — library and case results, side by side.
  *  *
- *  * Kind `rag_cross_doc_search_result` (registry v8).
+ *  * Kind `rag_cross_doc_search_result` (registry v9).
  */
 export interface RagCrossDocSearchResult {
   /**
@@ -42992,7 +43748,7 @@ export interface RagCrossDocSearchResult {
 /**
  * Output of ``rag.embed`` — chunks plus their embedding vectors.
  *  *
- *  * Kind `rag_embedded_chunk_set` (registry v9).
+ *  * Kind `rag_embedded_chunk_set` (registry v10).
  */
 export interface RagEmbeddedChunkSet {
   /**
@@ -43021,7 +43777,7 @@ export interface RagEmbeddedChunkSet {
 /**
  * Output of ``rag.audit`` — the ingestion run's closing report.
  *  *
- *  * Kind `rag_ingestion_audit` (registry v9).
+ *  * Kind `rag_ingestion_audit` (registry v10).
  */
 export interface RagIngestionAudit {
   /**
@@ -43064,7 +43820,7 @@ export interface RagKindsGroundedSynthesisOffer {
 /**
  * Output of ``rag.library.upsert`` — the saved/updated library doc row.
  *  *
- *  * Kind `rag_library_doc_result` (registry v8).
+ *  * Kind `rag_library_doc_result` (registry v9).
  */
 export interface RagLibraryDocResult {
   /**
@@ -43079,7 +43835,7 @@ export interface RagLibraryDocResult {
 /**
  * Output of ``rag.library.ingest_pdf`` — a PDF processed straight into the library.
  *  *
- *  * Kind `rag_library_pdf_ingestion_result` (registry v8).
+ *  * Kind `rag_library_pdf_ingestion_result` (registry v9).
  */
 export interface RagLibraryPdfIngestionResult {
   /**
@@ -43095,7 +43851,7 @@ export interface RagLibraryPdfIngestionResult {
 /**
  * Output of ``rag.parse`` — the source's content converted to plain text.
  *  *
- *  * Kind `rag_parsed_document` (registry v7).
+ *  * Kind `rag_parsed_document` (registry v8).
  */
 export interface RagParsedDocument {
   /**
@@ -43115,7 +43871,7 @@ export interface RagParsedDocument {
 /**
  * Output of ``rag.repo.ingest`` — a full-repo walk + ingestion summary.
  *  *
- *  * Kind `rag_repo_ingestion_result` (registry v7).
+ *  * Kind `rag_repo_ingestion_result` (registry v8).
  */
 export interface RagRepoIngestionResult {
   /**
@@ -43145,7 +43901,7 @@ export interface RagRepoIngestionResult {
 /**
  * Output of ``rag.resolve`` — a source's current content, ready to parse.
  *  *
- *  * Kind `rag_resolved_source` (registry v7).
+ *  * Kind `rag_resolved_source` (registry v8).
  */
 export interface RagResolvedSource {
   /**
@@ -43165,7 +43921,7 @@ export interface RagResolvedSource {
 /**
  * Output of ``rag.search`` — the best matching passages with sources.
  *  *
- *  * Kind `rag_search_result` (registry v8).
+ *  * Kind `rag_search_result` (registry v9).
  */
 export interface RagSearchResult {
   hits?: RetrievedChunk[];
@@ -43183,7 +43939,7 @@ export interface RagSearchResult {
 /**
  * Output of ``rag.ingest_source`` — one-shot single-source ingestion.
  *  *
- *  * Kind `rag_source_ingestion_result` (registry v8).
+ *  * Kind `rag_source_ingestion_result` (registry v9).
  */
 export interface RagSourceIngestionResult {
   /**
@@ -43212,7 +43968,7 @@ export interface RagSourceIngestionResult {
  * way to perform. `used_chunk_ids` stays because it is the machine join key;
  * `citations` is what a person reads.
  *  *
- *  * Kind `rag_synthesize_result` (registry v7).
+ *  * Kind `rag_synthesize_result` (registry v8).
  */
 export interface RagSynthesizeResult {
   model?: string;
@@ -43240,7 +43996,7 @@ export interface RagSynthesizeResult {
  * Output of ``rag.upsert`` — the transactional write to ``rag.kg_chunks``
  * plus ``rag.embeddings_*``.
  *  *
- *  * Kind `rag_upsert_result` (registry v8).
+ *  * Kind `rag_upsert_result` (registry v9).
  */
 export interface RagUpsertResult {
   /**
@@ -43260,7 +44016,7 @@ export interface RagUpsertResult {
 }
 
 /**
- * Kind `random_string_result` (registry v9).
+ * Kind `random_string_result` (registry v10).
  */
 export interface RandomStringResult {
   /**
@@ -43274,7 +44030,7 @@ export interface RandomStringResult {
 }
 
 /**
- * Kind `rating` (registry v16).
+ * Kind `rating` (registry v17).
  */
 export interface Rating {
   /**
@@ -43338,7 +44094,7 @@ export interface RecipeStep {
 }
 
 /**
- * Kind `recipient_shortlist_result` (registry v5).
+ * Kind `recipient_shortlist_result` (registry v6).
  */
 export interface RecipientShortlistResult {
   __kind: "recipient_shortlist_result";
@@ -43381,7 +44137,7 @@ export interface RecipientShortlistResult {
 }
 
 /**
- * Kind `recipient_shortlist_verdict` (registry v4).
+ * Kind `recipient_shortlist_verdict` (registry v5).
  */
 export interface RecipientShortlistVerdict {
   /**
@@ -43424,7 +44180,7 @@ export interface RecipientShortlistVerdict {
  * ``custom.io_comment`` rows migrated in with their ``field_key`` carried here (STORE-DESIGN
  * §3.8 item 4, register row RC-A2). Null anchor = the whole record.
  *  *
- *  * Kind `record_field_anchor` (registry v3).
+ *  * Kind `record_field_anchor` (registry v4).
  */
 export interface RecordFieldAnchor {
   /**
@@ -43441,7 +44197,7 @@ export interface RecordFieldAnchor {
  * THE ``record_result`` kind — one model for every node that answers with
  * a single reshaped record (``data.merge``, ``data.pick``, ``data.omit``).
  *  *
- *  * Kind `record_result` (registry v11).
+ *  * Kind `record_result` (registry v12).
  */
 export interface RecordResult {
   /**
@@ -43509,7 +44265,7 @@ export interface RecordsEnrichmentOffer {
 /**
  * One hop of the redirect chain. A chain of length 1 means no redirect.
  *  *
- *  * Kind `redirect_hop` (registry v4).
+ *  * Kind `redirect_hop` (registry v5).
  */
 export interface RedirectHop {
   url: string;
@@ -43527,7 +44283,7 @@ export interface RedirectHop {
  * this is showing a FINISHED result: the honest answer to the question asked
  * is "not until I know these things, and here is how to find them out".
  *  *
- *  * Kind `refusal` (registry v3).
+ *  * Kind `refusal` (registry v4).
  */
 export interface Refusal {
   /**
@@ -43579,7 +44335,7 @@ export interface RegexExtractResult {
 }
 
 /**
- * Kind `regex_replace_result` (registry v11).
+ * Kind `regex_replace_result` (registry v12).
  */
 export interface RegexReplaceResult {
   /**
@@ -43608,7 +44364,7 @@ export interface RegisterTerm {
 /**
  * A pointer at one record or platform thing that already exists. Never stored as a row.
  *  *
- *  * Kind `relation` (registry v4).
+ *  * Kind `relation` (registry v5).
  */
 export interface Relation {
   /**
@@ -43648,7 +44404,7 @@ export interface Relation {
  * Pins the template's ``content_version`` so version thinning never removes it and the render
  * can always be traced to the exact template text, plus the variable values that filled it.
  *  *
- *  * Kind `render_binding` (registry v3).
+ *  * Kind `render_binding` (registry v4).
  */
 export interface RenderBinding {
   /**
@@ -43701,7 +44457,7 @@ export interface RenderedText {
  * One rental listing reduced to the essentials a renter compares: price, size,
  * place, pet policy, and the one thing that stands out.
  *  *
- *  * Kind `rental_listing_summary` (registry v2).
+ *  * Kind `rental_listing_summary` (registry v3).
  */
 export interface RentalListingSummary {
   /**
@@ -44557,7 +45313,7 @@ export interface ResearchClientReportOutputOffer {
 /**
  * Audit of whether the gathered research evidence covers the claims a report needs to make.
  *  *
- *  * Kind `research_coverage_audit` (registry v5).
+ *  * Kind `research_coverage_audit` (registry v6).
  */
 export interface ResearchCoverageAudit {
   /**
@@ -44744,7 +45500,7 @@ export interface ResearchReport {
 }
 
 /**
- * Kind `research_run_state` (registry v3).
+ * Kind `research_run_state` (registry v4).
  */
 export interface ResearchRunState {
   hint?: string | null;
@@ -44783,7 +45539,7 @@ export interface ResearchRunState {
 /**
  * The captures a run stored, one per page in page order.
  *  *
- *  * Kind `research_saved_captures` (registry v2).
+ *  * Kind `research_saved_captures` (registry v3).
  */
 export interface ResearchSavedCaptures {
   /**
@@ -44984,7 +45740,7 @@ export interface ResourceItem {
  * The step's result — registered kind ``response_check_revision`` (published by
  * the host, aidream ``aidream/kinds/response_checks.py``).
  *  *
- *  * Kind `response_check_revision` (registry v2).
+ *  * Kind `response_check_revision` (registry v3).
  */
 export interface ResponseCheckRevision {
   /**
@@ -45061,7 +45817,7 @@ export interface ResponseOption {
  * connected it, and `rerank_score` says the reranker agreed. A single opaque
  * score cannot explain a result to the person reading it.
  *  *
- *  * Kind `retrieved_chunk` (registry v5).
+ *  * Kind `retrieved_chunk` (registry v6).
  */
 export interface RetrievedChunk {
   /**
@@ -45117,7 +45873,7 @@ export interface RetrievedChunk {
  * kept apart, with an earliest-seen hint. Output of
  * ``web.google.reverse_image_search`` and the ``reverse_image_search`` tool.
  *  *
- *  * Kind `reverse_image_search_results` (registry v4).
+ *  * Kind `reverse_image_search_results` (registry v6).
  */
 export interface ReverseImageSearchResults {
   /**
@@ -45185,7 +45941,7 @@ export interface ReviewRiskAnalysis {
  * ``overruled_findings`` is populated only by the final arbiter (M10c), which
  * may overrule a lens only with explicit reasoning naming the finding.
  *  *
- *  * Kind `review_verdict` (registry v4).
+ *  * Kind `review_verdict` (registry v5).
  */
 export interface ReviewVerdict {
   lens: string;
@@ -45347,7 +46103,7 @@ export interface RulebookReadResult {
 }
 
 /**
- * Kind `rulebook_tool_result` (registry v6).
+ * Kind `rulebook_tool_result` (registry v7).
  */
 export interface RulebookToolResult {
   name?: string | null;
@@ -45407,7 +46163,7 @@ export interface RulebookToolResult {
 }
 
 /**
- * Kind `run_log_entry` (registry v3).
+ * Kind `run_log_entry` (registry v4).
  */
 export interface RunLogEntry {
   label?: string;
@@ -45436,7 +46192,7 @@ export interface RunLogEntry {
  * a frame that already carries it (a run read response), it is elided via
  * ``output_ref`` rather than serialized twice.
  *  *
- *  * Kind `run_result` (registry v9).
+ *  * Kind `run_result` (registry v10).
  */
 export interface RunResult {
   /**
@@ -45456,7 +46212,7 @@ export interface RunResult {
 }
 
 /**
- * Kind `same_outlet_ranking` (registry v4).
+ * Kind `same_outlet_ranking` (registry v5).
  */
 export interface SameOutletRanking {
   held: ({
@@ -45570,7 +46326,7 @@ export interface SavedRow {
 /**
  * One persisted study artifact — what it is, where it lives, what to call it.
  *  *
- *  * Kind `saved_study_artifact` (registry v3).
+ *  * Kind `saved_study_artifact` (registry v4).
  */
 export interface SavedStudyArtifact {
   href: string;
@@ -45849,7 +46605,7 @@ export interface SchemaShowcaseRef {
 }
 
 /**
- * Kind `scope_system_result` (registry v4).
+ * Kind `scope_system_result` (registry v5).
  */
 export interface ScopeSystemResult {
   /**
@@ -46164,7 +46920,7 @@ export interface ScraperPageCaptureOffer {
  * the node's projection and is now the real nested ``scraped_page`` kind, so a
  * batch renders with exactly the components a single page renders with.
  *  *
- *  * Kind `scraper_batch_result` (registry v8).
+ *  * Kind `scraper_batch_result` (registry v9).
  */
 export interface ScraperBatchResult {
   pages?: ScrapedPage[];
@@ -46184,7 +46940,7 @@ export interface ScraperBatchResult {
  * the engine's return type changes — together with the repair of the node,
  * which passes three keyword arguments the engine has never accepted.
  *  *
- *  * Kind `scraper_crawl_result` (registry v8).
+ *  * Kind `scraper_crawl_result` (registry v9).
  */
 export interface ScraperCrawlResult {
   pages?: ScrapedPage[];
@@ -46197,7 +46953,7 @@ export interface ScraperCrawlResult {
 }
 
 /**
- * Kind `sealed_case_answer` (registry v4).
+ * Kind `sealed_case_answer` (registry v5).
  */
 export interface SealedCaseAnswer {
   cost?: string;
@@ -46219,7 +46975,7 @@ export interface SealedCaseAnswer {
  * KINDS_EVERYWHERE_PLAN §10d-E) — and one shape gets ONE model, so the node
  * imports this one instead of keeping a twin of its own.
  *  *
- *  * Kind `sealed_case_commit_status` (registry v3).
+ *  * Kind `sealed_case_commit_status` (registry v4).
  */
 export interface SealedCaseCommitStatus {
   /**
@@ -46245,7 +47001,7 @@ export interface SealedCaseCommitStatus {
 }
 
 /**
- * Kind `sealed_case_tool_result` (registry v3).
+ * Kind `sealed_case_tool_result` (registry v4).
  */
 export interface SealedCaseToolResult {
   seq?: number | null;
@@ -46271,7 +47027,7 @@ export interface SealedCaseToolResult {
 /**
  * One search's whole provider response, exactly as the engine returned it.
  *  *
- *  * Kind `search_response` (registry v1).
+ *  * Kind `search_response` (registry v2).
  */
 export interface SearchResponse {
   query?: string;
@@ -46290,10 +47046,10 @@ export interface SearchResponse {
 }
 
 /**
- * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+ * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
  * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
  *  *
- *  * Kind `search_result_block` (registry v1).
+ *  * Kind `search_result_block` (registry v3).
  */
 export interface SearchResultBlock {
   data?: unknown;
@@ -46310,7 +47066,7 @@ export interface SearchResultBlock {
  * One search's result list in rank order: the provider's full objects (raw form) or only the
  * fields that carry facts (clean form).
  *  *
- *  * Kind `search_result_list` (registry v1).
+ *  * Kind `search_result_list` (registry v2).
  */
 export interface SearchResultList {
   items?: SearchResultRow[];
@@ -46342,7 +47098,7 @@ export interface SearchResults {
 }
 
 /**
- * Kind `seat_job_suggestion` (registry v2).
+ * Kind `seat_job_suggestion` (registry v3).
  */
 export interface SeatJobSuggestion {
   /**
@@ -46382,7 +47138,7 @@ export interface SeatJobSuggestion {
 }
 
 /**
- * Kind `self_prompt_result` (registry v3).
+ * Kind `self_prompt_result` (registry v4).
  */
 export interface SelfPromptResult {
   key?: string | null;
@@ -46858,7 +47614,7 @@ export interface SeoCompetitorClassificationOffer {
 }
 
 /**
- * Kind `seo.competitor_opportunity_autopsy.offer` (registry v20).
+ * Kind `seo.competitor_opportunity_autopsy.offer` (registry v21).
  */
 export interface SeoCompetitorOpportunityAutopsyOffer {
   /**
@@ -46978,7 +47734,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   owned_page_analyses: unknown;
   /**
-   * The questions people asked on each competitor's Google Business profile and the answers. Fetchable via DataForSEO business_data.google.questions_and_answers. Surfaces demand the competitor is or is not meeting.
+   * The questions people asked on each competitor's Google Business profile and the answers. Fetchable via our SEO data business_data.google.questions_and_answers. Surfaces demand the competitor is or is not meeting.
    */
   competitor_google_qa?: unknown;
   /**
@@ -46990,7 +47746,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   competitor_job_openings?: unknown;
   /**
-   * Each competitor's actual Google reviews — star distribution and the most recent review bodies with dates and any owner replies. Fetchable via DataForSEO business_data.google.reviews / extended_reviews. The raw material for a reputation read (what customers praise and complain about).
+   * Each competitor's actual Google reviews — star distribution and the most recent review bodies with dates and any owner replies. Fetchable via our SEO data business_data.google.reviews / extended_reviews. The raw material for a reputation read (what customers praise and complain about).
    */
   competitor_google_reviews?: unknown;
   /**
@@ -47002,7 +47758,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   provider_backlink_metrics: unknown;
   /**
-   * Each competitor's Google Business / Maps profile — overall star rating, total review count, primary category, address, hours and price level. Fetchable via DataForSEO business_data.google.my_business_info keyed by competitor domain/name.
+   * Each competitor's Google Business / Maps profile — overall star rating, total review count, primary category, address, hours and price level. Fetchable via our SEO data business_data.google.my_business_info keyed by competitor domain/name.
    */
   competitor_google_business?: unknown;
   /**
@@ -48779,7 +49535,7 @@ export interface SeoStarterPackProposalOffer {
 /**
  * The canonical SEO envelope, including approval and recovery semantics.
  *  *
- *  * Kind `seo.tool_envelope` (registry v5).
+ *  * Kind `seo.tool_envelope` (registry v6).
  */
 export interface SeoToolEnvelope {
   cost: EnvelopeCost;
@@ -48897,7 +49653,7 @@ export interface SeoTopicCurationOffer {
 /**
  * The `seo_authority_route_analysis` Content IR Shape.
  *  *
- *  * Kind `seo_authority_route_analysis` (registry v7).
+ *  * Kind `seo_authority_route_analysis` (registry v8).
  */
 export interface SeoAuthorityRouteAnalysis {
   __kind: "seo_authority_route_analysis";
@@ -48911,7 +49667,7 @@ export interface SeoAuthorityRouteAnalysis {
  * Output of ``seo.authority.route`` — recommended internal-link authority
  * routes from internal links, backlinks, GSC evidence, and page roles.
  *  *
- *  * Kind `seo_authority_route_result` (registry v7).
+ *  * Kind `seo_authority_route_result` (registry v8).
  */
 export interface SeoAuthorityRouteResult {
   pages?: SeoAuthorityPage[];
@@ -48939,7 +49695,7 @@ export interface SeoAuthorityRouteResult {
  * Output of ``seo.backlinks.enrich`` — raw backlink rows turned into
  * assessed, actionable evidence.
  *  *
- *  * Kind `seo_backlink_enrichment_result` (registry v7).
+ *  * Kind `seo_backlink_enrichment_result` (registry v8).
  */
 export interface SeoBacklinkEnrichmentResult {
   items?: SeoBacklinkEnrichItemResult[];
@@ -48966,7 +49722,7 @@ export interface SeoBacklinkEnrichmentResult {
 /**
  * Output of ``seo.backlinks.refresh`` — collection receipt plus optional enrichment.
  *  *
- *  * Kind `seo_backlink_refresh_result` (registry v7).
+ *  * Kind `seo_backlink_refresh_result` (registry v8).
  */
 export interface SeoBacklinkRefreshResult {
   /**
@@ -48980,7 +49736,7 @@ export interface SeoBacklinkRefreshResult {
 /**
  * Output of ``seo.ga4.analytics.sync`` (and sibling provider-sync nodes).
  *  *
- *  * Kind `seo_collection_receipts` (registry v7).
+ *  * Kind `seo_collection_receipts` (registry v8).
  */
 export interface SeoCollectionReceipts {
   /**
@@ -48999,7 +49755,7 @@ export interface SeoCollectionReceipts {
 /**
  * Output of ``seo.competitors.classification.propose``.
  *  *
- *  * Kind `seo_competitor_classification_proposal` (registry v7).
+ *  * Kind `seo_competitor_classification_proposal` (registry v8).
  */
 export interface SeoCompetitorClassificationProposal {
   rule?: string | null;
@@ -49031,7 +49787,7 @@ export interface SeoCompetitorClassificationProposal {
 /**
  * Output of ``seo.competitors.discover``.
  *  *
- *  * Kind `seo_competitor_discovery_result` (registry v6).
+ *  * Kind `seo_competitor_discovery_result` (registry v7).
  */
 export interface SeoCompetitorDiscoveryResult {
   count?: number;
@@ -49046,7 +49802,7 @@ export interface SeoCompetitorDiscoveryResult {
 /**
  * The fixer's whole world: one finding, one page, one site.
  *  *
- *  * Kind `seo_finding_fix_context` (registry v12).
+ *  * Kind `seo_finding_fix_context` (registry v13).
  */
 export interface SeoFindingFixContext {
   page: FixPageContext;
@@ -49064,7 +49820,7 @@ export interface SeoFindingFixContext {
 /**
  * A drafted fix. Only the fields the finding actually calls for are set.
  *  *
- *  * Kind `seo_finding_fix_proposal` (registry v12).
+ *  * Kind `seo_finding_fix_proposal` (registry v13).
  */
 export interface SeoFindingFixProposal {
   risks: string[];
@@ -49086,7 +49842,7 @@ export interface SeoFindingFixProposal {
 /**
  * Output of ``seo.finding.fix.draft`` — a reviewable drafted fix, never applied.
  *  *
- *  * Kind `seo_finding_fix_result` (registry v7).
+ *  * Kind `seo_finding_fix_result` (registry v8).
  */
 export interface SeoFindingFixResult {
   /**
@@ -49111,7 +49867,7 @@ export interface SeoFindingFixResult {
  * Output of ``seo.local.google_listing.check`` — a location's live public
  * Google listing, persisted for NAP, category, review, and profile audits.
  *  *
- *  * Kind `seo_google_listing_check_result` (registry v7).
+ *  * Kind `seo_google_listing_check_result` (registry v8).
  */
 export interface SeoGoogleListingCheckResult {
   /**
@@ -49128,7 +49884,7 @@ export interface SeoGoogleListingCheckResult {
 /**
  * Output of ``seo.gsc.search_performance.sync`` — the terminal seo.receipt.
  *  *
- *  * Kind `seo_gsc_search_performance_receipt` (registry v7).
+ *  * Kind `seo_gsc_search_performance_receipt` (registry v8).
  */
 export interface SeoGscSearchPerformanceReceipt {
   /**
@@ -49147,7 +49903,7 @@ export interface SeoGscSearchPerformanceReceipt {
 /**
  * Output of ``seo.keywords.classify`` — batch classification counters.
  *  *
- *  * Kind `seo_keyword_classify_result` (registry v7).
+ *  * Kind `seo_keyword_classify_result` (registry v8).
  */
 export interface SeoKeywordClassifyResult {
   /**
@@ -49169,7 +49925,7 @@ export interface SeoKeywordClassifyResult {
 /**
  * Output of ``seo.keywords.relationships.research``.
  *  *
- *  * Kind `seo_keyword_relationship_research_result` (registry v15).
+ *  * Kind `seo_keyword_relationship_research_result` (registry v16).
  */
 export interface SeoKeywordRelationshipResearchResult {
   /**
@@ -49189,7 +49945,7 @@ export interface SeoKeywordRelationshipResearchResult {
 /**
  * Keywords as the database holds them (keyword, value tier, volume, intent…), one row each.
  *  *
- *  * Kind `seo_keyword_rows` (registry v2).
+ *  * Kind `seo_keyword_rows` (registry v3).
  */
 export interface SeoKeywordRows {
   items?: Row[];
@@ -49206,7 +49962,7 @@ export interface SeoKeywordRows {
  * module docstring) — every other field mirrors
  * ``aidream.services.seo.keyword_serp_intent.SerpIntentAnalysis`` exactly.
  *  *
- *  * Kind `seo_keyword_serp_intent_analysis` (registry v8).
+ *  * Kind `seo_keyword_serp_intent_analysis` (registry v10).
  */
 export interface SeoKeywordSerpIntentAnalysis {
   kind?: "keyword_serp_intent_analysis_v1";
@@ -49264,7 +50020,7 @@ export interface SeoKeywordSerpIntentAnalysis {
  * Output of ``seo.keywords.topics.assign`` — keywords placed into the
  * shared topic tree for a business territory.
  *  *
- *  * Kind `seo_keyword_topic_assign_result` (registry v8).
+ *  * Kind `seo_keyword_topic_assign_result` (registry v9).
  */
 export interface SeoKeywordTopicAssignResult {
   /**
@@ -49284,7 +50040,7 @@ export interface SeoKeywordTopicAssignResult {
 /**
  * Output of ``seo.keywords.market_volume.refresh``.
  *  *
- *  * Kind `seo_keyword_volume_refresh_result` (registry v7).
+ *  * Kind `seo_keyword_volume_refresh_result` (registry v8).
  */
 export interface SeoKeywordVolumeRefreshResult {
   /**
@@ -49308,7 +50064,7 @@ export interface SeoKeywordVolumeRefreshResult {
  * already-persisted brief remains readable; the strategy service itself still
  * requires and writes both fields for every new payload.
  *  *
- *  * Kind `seo_landscape_brief` (registry v7).
+ *  * Kind `seo_landscape_brief` (registry v8).
  */
 export interface SeoLandscapeBrief {
   id: string;
@@ -49348,7 +50104,7 @@ export interface SeoLandscapeBrief {
 /**
  * Output of ``seo.competitors.landscape_brief.read`` — brief, or none yet.
  *  *
- *  * Kind `seo_landscape_brief_read_result` (registry v8).
+ *  * Kind `seo_landscape_brief_read_result` (registry v9).
  */
 export interface SeoLandscapeBriefReadResult {
   brief?: SeoLandscapeBriefData | null;
@@ -49362,7 +50118,7 @@ export interface SeoLandscapeBriefReadResult {
  * Output of ``seo.link_gap.page.collect`` — referring pages shared by
  * accepted competitor-page opportunities but absent from one canonical page.
  *  *
- *  * Kind `seo_link_gap_page_receipt` (registry v7).
+ *  * Kind `seo_link_gap_page_receipt` (registry v8).
  */
 export interface SeoLinkGapPageReceipt {
   /**
@@ -49380,7 +50136,7 @@ export interface SeoLinkGapPageReceipt {
  * Output of ``seo.link_gap.site.preview`` — which human-confirmed
  * competitors would seed a paid site-wide link-gap run, and its cost.
  *  *
- *  * Kind `seo_link_gap_site_preview` (registry v7).
+ *  * Kind `seo_link_gap_site_preview` (registry v8).
  */
 export interface SeoLinkGapSitePreview {
   /**
@@ -49402,7 +50158,7 @@ export interface SeoLinkGapSitePreview {
  * Output of ``seo.link_gap.site.collect`` — domains linking to confirmed
  * eligible competitors but not to the site, with optional authority measurement.
  *  *
- *  * Kind `seo_link_gap_site_receipt` (registry v7).
+ *  * Kind `seo_link_gap_site_receipt` (registry v8).
  */
 export interface SeoLinkGapSiteReceipt {
   /**
@@ -49510,7 +50266,7 @@ export interface SeoPackage {
  * Output of ``seo.page.analyze`` — one canonical page's keyword, intent,
  * and content-role understanding.
  *  *
- *  * Kind `seo_page_analysis_result` (registry v8).
+ *  * Kind `seo_page_analysis_result` (registry v9).
  */
 export interface SeoPageAnalysisResult {
   /**
@@ -49540,7 +50296,7 @@ export interface SeoPageAnalysisResult {
 /**
  * Output of ``seo.audit.page.run`` — one public page's SEO audit report.
  *  *
- *  * Kind `seo_page_audit_result` (registry v7).
+ *  * Kind `seo_page_audit_result` (registry v8).
  */
 export interface SeoPageAuditResult {
   url?: string;
@@ -49566,7 +50322,7 @@ export interface SeoPageAuditResult {
  * Output of ``seo.pages.analyze_batch`` — change-gated page analyses
  * queued through the durable Batch lane.
  *  *
- *  * Kind `seo_page_batch_submit_result` (registry v7).
+ *  * Kind `seo_page_batch_submit_result` (registry v8).
  */
 export interface SeoPageBatchSubmitResult {
   /**
@@ -49586,7 +50342,7 @@ export interface SeoPageBatchSubmitResult {
  * Output of ``seo.pages.keywords.map`` — a site's pages and keywords
  * mapped for one topic cluster, including roles, priorities, and conflicts.
  *  *
- *  * Kind `seo_page_keyword_map_result` (registry v8).
+ *  * Kind `seo_page_keyword_map_result` (registry v9).
  */
 export interface SeoPageKeywordMapResult {
   /**
@@ -49616,7 +50372,7 @@ export interface SeoPageKeywordMapResult {
 /**
  * Output of ``seo.performance.page.read`` — mirrors ``PagePerformanceResponse``.
  *  *
- *  * Kind `seo_page_performance` (registry v7).
+ *  * Kind `seo_page_performance` (registry v8).
  */
 export interface SeoPagePerformance {
   gsc: SeoGscPageSummary;
@@ -49639,7 +50395,7 @@ export interface SeoPagePerformance {
 /**
  * Each page's stored renditions (summaries and other derived text), one row per rendition.
  *  *
- *  * Kind `seo_page_renditions` (registry v2).
+ *  * Kind `seo_page_renditions` (registry v3).
  */
 export interface SeoPageRenditions {
   items?: Row[];
@@ -49654,7 +50410,7 @@ export interface SeoPageRenditions {
  * page would land in and whether its domain is already a known
  * relationship, without writing anything.
  *  *
- *  * Kind `seo_prospect_capture_preview` (registry v7).
+ *  * Kind `seo_prospect_capture_preview` (registry v8).
  */
 export interface SeoProspectCapturePreview {
   url: string;
@@ -49676,7 +50432,7 @@ export interface SeoProspectCapturePreview {
  * Output of ``seo.prospecting.capture.run`` — what the one-click capture
  * actually did, via the same import path every prospecting method uses.
  *  *
- *  * Kind `seo_prospect_capture_result` (registry v8).
+ *  * Kind `seo_prospect_capture_result` (registry v9).
  */
 export interface SeoProspectCaptureResult {
   url: string;
@@ -49697,7 +50453,7 @@ export interface SeoProspectCaptureResult {
  * Output of ``seo.prospecting.import.preview`` — a verdict and reason
  * for every entry before anything is written.
  *  *
- *  * Kind `seo_prospect_import_preview` (registry v7).
+ *  * Kind `seo_prospect_import_preview` (registry v8).
  */
 export interface SeoProspectImportPreview {
   /**
@@ -49716,7 +50472,7 @@ export interface SeoProspectImportPreview {
  * Output of ``seo.prospecting.import.run`` — what the import actually
  * did to the shared prospect triage surface.
  *  *
- *  * Kind `seo_prospect_import_report` (registry v7).
+ *  * Kind `seo_prospect_import_report` (registry v8).
  */
 export interface SeoProspectImportReport {
   /**
@@ -49740,7 +50496,7 @@ export interface SeoProspectImportReport {
  * rank-check command run — genuinely open, so it is typed as an explicit
  * ``dict[str, JsonValue]`` rather than forced closed.
  *  *
- *  * Kind `seo_rank_check_result` (registry v7).
+ *  * Kind `seo_rank_check_result` (registry v8).
  */
 export interface SeoRankCheckResult {
   /**
@@ -49762,7 +50518,7 @@ export interface SeoRankCheckResult {
  * Output of ``seo.rank.history.read`` — chart-ready chronological
  * position history for one tracked ranking.
  *  *
- *  * Kind `seo_rank_history` (registry v7).
+ *  * Kind `seo_rank_history` (registry v8).
  */
 export interface SeoRankHistory {
   /**
@@ -49775,7 +50531,7 @@ export interface SeoRankHistory {
 /**
  * Everything one site tracks. ADDITIVE SUPERSEDE — `targets` is unchanged.
  *  *
- *  * Kind `seo_rank_portfolio` (registry v6).
+ *  * Kind `seo_rank_portfolio` (registry v8).
  */
 export interface SeoRankPortfolio {
   /**
@@ -49813,7 +50569,7 @@ export interface SeoRankPortfolio {
  * reading with `organic_rank = None` reads identically to a reading that was
  * never taken, and the difference is the entire product.
  *  *
- *  * Kind `seo_rank_reading` (registry v4).
+ *  * Kind `seo_rank_reading` (registry v5).
  */
 export interface SeoRankReading {
   /**
@@ -49869,7 +50625,7 @@ export interface SeoRankReading {
 /**
  * Output of ``seo.rank.serp_landscape.read``. Mirrors ``SerpLandscape``.
  *  *
- *  * Kind `seo_rank_serp_landscape` (registry v8).
+ *  * Kind `seo_rank_serp_landscape` (registry v9).
  */
 export interface SeoRankSerpLandscape {
   /**
@@ -49896,7 +50652,7 @@ export interface SeoRankSerpLandscape {
  * fact twice (the "one copy of everything" law). The history kind owns
  * readings; this one owns standing.
  *  *
- *  * Kind `seo_rank_target` (registry v6).
+ *  * Kind `seo_rank_target` (registry v8).
  */
 export interface SeoRankTarget {
   tags?: string[];
@@ -49926,7 +50682,7 @@ export interface SeoRankTarget {
   language: string;
   movement?: number | null;
   /**
-   * Who collects it: 'brave' | 'serpapi' | 'dataforseo'.
+   * Who collects it (machine id; shown to people as Matrx).
    */
   provider: string;
   is_active: boolean;
@@ -49971,7 +50727,7 @@ export interface SeoRankTarget {
  * earns the full treatment — there is none here. `target_id` is added only so
  * the receipt can say WHICH target, which it previously could not.
  *  *
- *  * Kind `seo_rank_target_removal` (registry v6).
+ *  * Kind `seo_rank_target_removal` (registry v7).
  */
 export interface SeoRankTargetRemoval {
   /**
@@ -49990,7 +50746,7 @@ export interface SeoRankTargetRemoval {
  *
  * Mirrors ``ReputationRunResult`` field-for-field.
  *  *
- *  * Kind `seo_reputation_analysis` (registry v7).
+ *  * Kind `seo_reputation_analysis` (registry v8).
  */
 export interface SeoReputationAnalysis {
   brief: SeoReputationBrief;
@@ -50011,7 +50767,7 @@ export interface SeoReputationAnalysis {
  * Output of ``seo.audit.robots.check`` — robots.txt fetched and tested
  * against specific paths/crawlers.
  *  *
- *  * Kind `seo_robots_check_result` (registry v7).
+ *  * Kind `seo_robots_check_result` (registry v8).
  */
 export interface SeoRobotsCheckResult {
   found?: boolean;
@@ -50036,7 +50792,7 @@ export interface SeoRobotsCheckResult {
 /**
  * A proposal the person ruled right.
  *  *
- *  * Kind `seo_ruling_confirmation` (registry v4).
+ *  * Kind `seo_ruling_confirmation` (registry v5).
  */
 export interface SeoRulingConfirmation {
   /**
@@ -50051,7 +50807,7 @@ export interface SeoRulingConfirmation {
 /**
  * Proposals the person ruled right.
  *  *
- *  * Kind `seo_ruling_confirmation_set` (registry v4).
+ *  * Kind `seo_ruling_confirmation_set` (registry v5).
  */
 export interface SeoRulingConfirmationSet {
   /**
@@ -50064,7 +50820,7 @@ export interface SeoRulingConfirmationSet {
 /**
  * A proposal the person ruled wrong, with the value they chose instead.
  *  *
- *  * Kind `seo_ruling_correction` (registry v4).
+ *  * Kind `seo_ruling_correction` (registry v5).
  */
 export interface SeoRulingCorrection {
   /**
@@ -50082,7 +50838,7 @@ export interface SeoRulingCorrection {
 /**
  * Proposals the person ruled wrong.
  *  *
- *  * Kind `seo_ruling_correction_set` (registry v4).
+ *  * Kind `seo_ruling_correction_set` (registry v5).
  */
 export interface SeoRulingCorrectionSet {
   /**
@@ -50095,7 +50851,7 @@ export interface SeoRulingCorrectionSet {
 /**
  * A dimension being ruled and the only values allowed for it.
  *  *
- *  * Kind `seo_ruling_dimension` (registry v4).
+ *  * Kind `seo_ruling_dimension` (registry v5).
  */
 export interface SeoRulingDimension {
   slug: string;
@@ -50111,7 +50867,7 @@ export interface SeoRulingDimension {
 /**
  * The dimension being ruled and the only values allowed.
  *  *
- *  * Kind `seo_ruling_dimension_catalog` (registry v4).
+ *  * Kind `seo_ruling_dimension_catalog` (registry v5).
  */
 export interface SeoRulingDimensionCatalog {
   /**
@@ -50124,7 +50880,7 @@ export interface SeoRulingDimensionCatalog {
 /**
  * One ruling the person already made, with the reason they gave.
  *  *
- *  * Kind `seo_ruling_example` (registry v4).
+ *  * Kind `seo_ruling_example` (registry v5).
  */
 export interface SeoRulingExample {
   /**
@@ -50142,7 +50898,7 @@ export interface SeoRulingExample {
 /**
  * The rulings the person already made. Empty on the blind check.
  *  *
- *  * Kind `seo_ruling_example_set` (registry v4).
+ *  * Kind `seo_ruling_example_set` (registry v5).
  */
 export interface SeoRulingExampleSet {
   /**
@@ -50155,7 +50911,7 @@ export interface SeoRulingExampleSet {
 /**
  * One keyword the session asks a proposer to stamp a value on.
  *  *
- *  * Kind `seo_ruling_keyword` (registry v4).
+ *  * Kind `seo_ruling_keyword` (registry v5).
  */
 export interface SeoRulingKeyword {
   /**
@@ -50171,7 +50927,7 @@ export interface SeoRulingKeyword {
 /**
  * The keywords to propose a value for.
  *  *
- *  * Kind `seo_ruling_keyword_set` (registry v4).
+ *  * Kind `seo_ruling_keyword_set` (registry v5).
  */
 export interface SeoRulingKeywordSet {
   /**
@@ -50184,7 +50940,7 @@ export interface SeoRulingKeywordSet {
 /**
  * A site rule in play behind the proposals being taught from.
  *  *
- *  * Kind `seo_ruling_matcher` (registry v4).
+ *  * Kind `seo_ruling_matcher` (registry v5).
  */
 export interface SeoRulingMatcher {
   /**
@@ -50199,7 +50955,7 @@ export interface SeoRulingMatcher {
 /**
  * A keyword the site's own rules already explained, and the rule that did.
  *  *
- *  * Kind `seo_ruling_matcher_hit` (registry v4).
+ *  * Kind `seo_ruling_matcher_hit` (registry v5).
  */
 export interface SeoRulingMatcherHit {
   /**
@@ -50215,7 +50971,7 @@ export interface SeoRulingMatcherHit {
 /**
  * Keywords the site's own rules already explained. Empty on the blind check.
  *  *
- *  * Kind `seo_ruling_matcher_hit_set` (registry v4).
+ *  * Kind `seo_ruling_matcher_hit_set` (registry v5).
  */
 export interface SeoRulingMatcherHitSet {
   hits?: SeoRulingMatcherHit[];
@@ -50228,7 +50984,7 @@ export interface SeoRulingMatcherHitSet {
 /**
  * The site rules behind the proposals being taught from. Empty on the blind check.
  *  *
- *  * Kind `seo_ruling_matcher_set` (registry v4).
+ *  * Kind `seo_ruling_matcher_set` (registry v5).
  */
 export interface SeoRulingMatcherSet {
   /**
@@ -50243,7 +50999,7 @@ export interface SeoRulingMatcherSet {
  *
  * Mirrors ``SearchPerformanceReadResult`` field-for-field.
  *  *
- *  * Kind `seo_search_performance_daily` (registry v7).
+ *  * Kind `seo_search_performance_daily` (registry v8).
  */
 export interface SeoSearchPerformanceDaily {
   rows?: SeoSearchPerformanceRow[];
@@ -50262,7 +51018,7 @@ export interface SeoSearchPerformanceDaily {
  * Output of ``seo.prospecting.serp.preview`` — every query and the
  * estimated cost before money moves.
  *  *
- *  * Kind `seo_serp_prospecting_preview` (registry v7).
+ *  * Kind `seo_serp_prospecting_preview` (registry v8).
  */
 export interface SeoSerpProspectingPreview {
   /**
@@ -50280,7 +51036,7 @@ export interface SeoSerpProspectingPreview {
  * Output of ``seo.prospecting.serp.collect`` — the collection run's
  * receipt plus how many opportunity domains were authority-scored.
  *  *
- *  * Kind `seo_serp_prospecting_receipt` (registry v7).
+ *  * Kind `seo_serp_prospecting_receipt` (registry v8).
  */
 export interface SeoSerpProspectingReceipt {
   /**
@@ -50298,7 +51054,7 @@ export interface SeoSerpProspectingReceipt {
 /**
  * Output of ``seo.performance.site.read`` — mirrors ``SitePerformanceResponse``.
  *  *
- *  * Kind `seo_site_performance` (registry v7).
+ *  * Kind `seo_site_performance` (registry v8).
  */
 export interface SeoSitePerformance {
   /**
@@ -50325,7 +51081,7 @@ export interface SeoSitePerformance {
  * last-run, row-count, failure, and next-due status for every SEO provider
  * on a site.
  *  *
- *  * Kind `seo_site_provider_freshness` (registry v7).
+ *  * Kind `seo_site_provider_freshness` (registry v8).
  */
 export interface SeoSiteProviderFreshness {
   /**
@@ -50340,7 +51096,7 @@ export interface SeoSiteProviderFreshness {
 /**
  * Output of ``seo.spend.summary.read`` — workspace provider spend, ceilings, and rejections.
  *  *
- *  * Kind `seo_spend_summary` (registry v7).
+ *  * Kind `seo_spend_summary` (registry v8).
  */
 export interface SeoSpendSummary {
   /**
@@ -50362,7 +51118,7 @@ export interface SeoSpendSummary {
  * Output of ``seo.audit.structured_data.validate`` — every JSON-LD/
  * microdata block on a page, validated against Google rich-result rules.
  *  *
- *  * Kind `seo_structured_data_validation_result` (registry v7).
+ *  * Kind `seo_structured_data_validation_result` (registry v8).
  */
 export interface SeoStructuredDataValidationResult {
   url?: string;
@@ -50383,7 +51139,7 @@ export interface SeoStructuredDataValidationResult {
 /**
  * One map topic's whole context as the database returns it: its pages, planned pages and keywords.
  *  *
- *  * Kind `seo_topic_context` (registry v2).
+ *  * Kind `seo_topic_context` (registry v3).
  */
 export interface SeoTopicContext {
   /**
@@ -50395,7 +51151,7 @@ export interface SeoTopicContext {
 /**
  * Output of ``seo.ga4.landing_pages.read`` — persisted GA4 evidence rows.
  *  *
- *  * Kind `seo_web_analytics_read_result` (registry v7).
+ *  * Kind `seo_web_analytics_read_result` (registry v8).
  */
 export interface SeoWebAnalyticsReadResult {
   rows?: SeoWebAnalyticsRow[];
@@ -50499,7 +51255,7 @@ export interface SerpAnalysis {
  * dispatches on the nested `__kind` and renders the canonical component the
  * search pilot already built.
  *  *
- *  * Kind `serp_placement` (registry v6).
+ *  * Kind `serp_placement` (registry v8).
  */
 export interface SerpPlacement {
   /**
@@ -50529,7 +51285,7 @@ export interface SerpPlacement {
 }
 
 /**
- * Kind `setting_value` (registry v2).
+ * Kind `setting_value` (registry v3).
  */
 export interface SettingValue {
   /**
@@ -50578,7 +51334,7 @@ export interface ShapesPickerDescriptionOffer {
  * Shared by ``shell_execute`` / ``shell_python`` / ``code_execute_python``
  * across every backend branch (sandbox proxy, durable VFS, real disk).
  *  *
- *  * Kind `shell_execution` (registry v4).
+ *  * Kind `shell_execution` (registry v5).
  */
 export interface ShellExecution {
   cwd?: string | null;
@@ -50596,7 +51352,7 @@ export interface ShellExecution {
 }
 
 /**
- * Kind `shifted_datetime` (registry v9).
+ * Kind `shifted_datetime` (registry v10).
  */
 export interface ShiftedDatetime {
   /**
@@ -50626,7 +51382,7 @@ export interface ShiftedDatetime {
 }
 
 /**
- * Kind `shopping_results` (registry v2).
+ * Kind `shopping_results` (registry v4).
  */
 export interface ShoppingResults {
   query: string;
@@ -50648,7 +51404,7 @@ export interface ShoppingResults {
 /**
  * A short-form video script in a brand's voice, as timed beats.
  *  *
- *  * Kind `short_script` (registry v2).
+ *  * Kind `short_script` (registry v3).
  */
 export interface ShortScript {
   cta?: string | null;
@@ -50679,7 +51435,7 @@ export interface SiteAuditIssue {
  * A front page that only routes visitors elsewhere (a division chooser, age gate, splash), as the
  * page reader found it.
  *  *
- *  * Kind `site_gate` (registry v1).
+ *  * Kind `site_gate` (registry v2).
  */
 export interface SiteGate {
   type?: string | null;
@@ -50692,7 +51448,7 @@ export interface SiteGate {
 /**
  * Output of ``seo.site.intake.analyze`` — the proposed intake interview.
  *  *
- *  * Kind `site_intake_analysis` (registry v7).
+ *  * Kind `site_intake_analysis` (registry v8).
  */
 export interface SiteIntakeAnalysis {
   usage?: {
@@ -50721,7 +51477,7 @@ export interface SiteIntakeAnalysis {
 /**
  * Output of ``seo.site.intake.apply`` — the confirmed intake persisted.
  *  *
- *  * Kind `site_intake_apply_result` (registry v9).
+ *  * Kind `site_intake_apply_result` (registry v10).
  */
 export interface SiteIntakeApplyResult {
   /**
@@ -50741,7 +51497,7 @@ export interface SiteIntakeApplyResult {
 /**
  * Output of ``seo.site.strategy.interview`` — business context turned into topic values.
  *  *
- *  * Kind `site_strategy_result` (registry v6).
+ *  * Kind `site_strategy_result` (registry v7).
  */
 export interface SiteStrategyResult {
   /**
@@ -50757,7 +51513,7 @@ export interface SiteStrategyResult {
 /**
  * Output of ``seo.site.urls.verify`` — the durable verification sweep summary.
  *  *
- *  * Kind `site_url_verification_result` (registry v7).
+ *  * Kind `site_url_verification_result` (registry v8).
  */
 export interface SiteUrlVerificationResult {
   /**
@@ -50768,7 +51524,7 @@ export interface SiteUrlVerificationResult {
 }
 
 /**
- * Kind `skill_tool_result` (registry v3).
+ * Kind `skill_tool_result` (registry v4).
  */
 export interface SkillToolResult {
   id?: string | null;
@@ -50802,7 +51558,7 @@ export interface SkillToolResult {
 }
 
 /**
- * Kind `slug_result` (registry v7).
+ * Kind `slug_result` (registry v8).
  */
 export interface SlugResult {
   /**
@@ -50854,7 +51610,7 @@ export interface SocialPostBreakdownOffer {
  * One public post (TikTok, Instagram, YouTube, LinkedIn, Facebook, X, Threads) as stored in the shared
  * cache, with its stored media, transcript status and outlier stat. Provider is a field, never a slug.
  *  *
- *  * Kind `social_post` (registry v4).
+ *  * Kind `social_post` (registry v5).
  */
 export interface SocialPost {
   url?: string | null;
@@ -50889,7 +51645,7 @@ export interface SocialPost {
 /**
  * A public account with its audience numbers, plus what this fetch walked (posts pages, ids).
  *  *
- *  * Kind `social_profile` (registry v2).
+ *  * Kind `social_profile` (registry v3).
  */
 export interface SocialProfile {
   bio?: string | null;
@@ -50925,7 +51681,7 @@ export interface SocialProfile {
  * Social accounts as their provider answered a profile lookup, one row per account: the whole
  * answer (raw form) or only its fact fields (clean form).
  *  *
- *  * Kind `social_profile_answer_list` (registry v1).
+ *  * Kind `social_profile_answer_list` (registry v2).
  */
 export interface SocialProfileAnswerList {
   items?: ProfileAnswer[];
@@ -50940,7 +51696,7 @@ export interface SocialProfileAnswerList {
  * profile with its recent posts. Every item is a stored ``social_post`` / ``social_profile`` — the rows the
  * search, trending and profile fetches already keep in the shared cache — so each card opens its record.
  *  *
- *  * Kind `social_search_results` (registry v2).
+ *  * Kind `social_search_results` (registry v3).
  */
 export interface SocialSearchResults {
   mode: "search" | "trending" | "profile";
@@ -50955,7 +51711,7 @@ export interface SocialSearchResults {
 }
 
 /**
- * Kind `sorted_list_result` (registry v8).
+ * Kind `sorted_list_result` (registry v9).
  */
 export interface SortedListResult {
   /**
@@ -50973,7 +51729,7 @@ export interface SortedListResult {
 }
 
 /**
- * Kind `source_authority_ranking` (registry v4).
+ * Kind `source_authority_ranking` (registry v5).
  */
 export interface SourceAuthorityRanking {
   id?: string;
@@ -50990,7 +51746,7 @@ export interface SourceAuthorityRanking {
 /**
  * Authority ranking set, one entry per input source.
  *  *
- *  * Kind `source_authority_rankings` (registry v4).
+ *  * Kind `source_authority_rankings` (registry v5).
  */
 export interface SourceAuthorityRankings {
   __kind: "source_authority_rankings";
@@ -51121,7 +51877,7 @@ export interface SourceRecord {
  * distillation laws say it becomes an optional field on ONE shape, never two
  * shapes or a dropped field.
  *  *
- *  * Kind `source_ref` (registry v5).
+ *  * Kind `source_ref` (registry v6).
  */
 export interface SourceRef {
   /**
@@ -51182,7 +51938,7 @@ export interface SourceRef {
 }
 
 /**
- * Kind `source_request_verdict` (registry v5).
+ * Kind `source_request_verdict` (registry v6).
  */
 export interface SourceRequestVerdict {
   cap?: {
@@ -51238,7 +51994,7 @@ export interface SourceRequestVerdict {
 }
 
 /**
- * Kind `space_build_result` (registry v2).
+ * Kind `space_build_result` (registry v3).
  */
 export interface SpaceBuildResult {
   /**
@@ -51264,7 +52020,7 @@ export interface SpaceBuildResult {
 }
 
 /**
- * Kind `space_database_design` (registry v2).
+ * Kind `space_database_design` (registry v3).
  */
 export interface SpaceDatabaseDesign {
   /**
@@ -51292,7 +52048,7 @@ export interface SpaceDatabaseDesign {
 }
 
 /**
- * Kind `space_notion_import` (registry v2).
+ * Kind `space_notion_import` (registry v3).
  */
 export interface SpaceNotionImport {
   /**
@@ -51507,7 +52263,7 @@ export interface SpacesWritingAssistOffer {
 }
 
 /**
- * Kind `speech_budget` (registry v2).
+ * Kind `speech_budget` (registry v3).
  */
 export interface SpeechBudget {
   /**
@@ -51547,7 +52303,7 @@ export interface SpeechBudget {
 /**
  * An ordered script of spoken turns — the text-to-speech authoring part.
  *  *
- *  * Kind `speech_script` (registry v4).
+ *  * Kind `speech_script` (registry v5).
  */
 export interface SpeechScript {
   turns: SpeechTurn[];
@@ -51558,7 +52314,7 @@ export interface SpeechScript {
 }
 
 /**
- * Kind `split_result` (registry v11).
+ * Kind `split_result` (registry v12).
  */
 export interface SplitResult {
   /**
@@ -51576,7 +52332,7 @@ export interface SplitResult {
 }
 
 /**
- * Kind `spoken_practice_session` (registry v4).
+ * Kind `spoken_practice_session` (registry v5).
  */
 export interface SpokenPracticeSession {
   /**
@@ -51617,7 +52373,7 @@ export interface SpokenPracticeSession {
 }
 
 /**
- * Kind `sql_query_result` (registry v10).
+ * Kind `sql_query_result` (registry v11).
  */
 export interface SqlQueryResult {
   rows?: ({
@@ -51640,7 +52396,7 @@ export interface SqlQueryResult {
 }
 
 /**
- * Kind `sql_tool_result` (registry v4).
+ * Kind `sql_tool_result` (registry v5).
  */
 export interface SqlToolResult {
   ids?: (string | null)[] | null;
@@ -51765,7 +52521,7 @@ export interface StatusPingDebug {
 /**
  * One Unsplash stock-photo result with attribution + size variants.
  *  *
- *  * Kind `stock_image` (registry v5).
+ *  * Kind `stock_image` (registry v6).
  */
 export interface StockImage {
   width?: number;
@@ -51789,7 +52545,7 @@ export interface StockImage {
 /**
  * Output of ``media.stock_image.search`` — Unsplash results for a query.
  *  *
- *  * Kind `stock_image_search_result` (registry v5).
+ *  * Kind `stock_image_search_result` (registry v6).
  */
 export interface StockImageSearchResult {
   query?: string;
@@ -51818,7 +52574,7 @@ export interface StringList {
 /**
  * Every structured-data (JSON-LD) block a page carries, parsed, exactly as written.
  *  *
- *  * Kind `structured_data_list` (registry v1).
+ *  * Kind `structured_data_list` (registry v2).
  */
 export interface StructuredDataList {
   items?: unknown[];
@@ -51829,7 +52585,7 @@ export interface StructuredDataList {
 }
 
 /**
- * Kind `structured_document` (registry v12).
+ * Kind `structured_document` (registry v13).
  */
 export interface StructuredDocument {
   title: string;
@@ -51882,7 +52638,7 @@ export interface StructuredInfoSection {
 }
 
 /**
- * Kind `study_analytics_narrative` (registry v5).
+ * Kind `study_analytics_narrative` (registry v6).
  */
 export interface StudyAnalyticsNarrative {
   __kind: "study_analytics_narrative";
@@ -51925,7 +52681,7 @@ export interface StudyAnalyticsNarrative {
 /**
  * One artifact that did not make it into the kit, and why.
  *  *
- *  * Kind `study_artifact_failure` (registry v3).
+ *  * Kind `study_artifact_failure` (registry v4).
  */
 export interface StudyArtifactFailure {
   error: string;
@@ -51939,7 +52695,7 @@ export interface StudyArtifactFailure {
 /**
  * Everything one study-kit save produced — the kit, its artifacts, its gaps.
  *  *
- *  * Kind `study_kit_save_result` (registry v3).
+ *  * Kind `study_kit_save_result` (registry v4).
  */
 export interface StudyKitSaveResult {
   /**
@@ -51988,7 +52744,7 @@ export interface StudyNotes {
 }
 
 /**
- * Kind `study_notes_document` (registry v3).
+ * Kind `study_notes_document` (registry v4).
  */
 export interface StudyNotesDocument {
   /**
@@ -52127,7 +52883,7 @@ export interface StudyPackSet {
 }
 
 /**
- * Kind `study_plan` (registry v6).
+ * Kind `study_plan` (registry v7).
  */
 export interface StudyPlan {
   /**
@@ -52160,7 +52916,7 @@ export interface StudyPlan {
 }
 
 /**
- * Kind `study_plan_block` (registry v4).
+ * Kind `study_plan_block` (registry v5).
  */
 export interface StudyPlanBlock {
   /**
@@ -52195,7 +52951,7 @@ export interface StudyPlanBlock {
 }
 
 /**
- * Kind `study_plan_day` (registry v4).
+ * Kind `study_plan_day` (registry v5).
  */
 export interface StudyPlanDay {
   __kind: "study_plan_day";
@@ -52229,7 +52985,7 @@ export interface StudyPlanDay {
 /**
  * The durable file a study kit hangs off — its id IS the kit id.
  *  *
- *  * Kind `study_source_anchor` (registry v3).
+ *  * Kind `study_source_anchor` (registry v4).
  */
 export interface StudySourceAnchor {
   /**
@@ -52253,7 +53009,7 @@ export interface StudySourceAnchor {
 /**
  * A grounded study summary produced from source material: title, markdown body, key takeaways, and an optional trust envelope.
  *  *
- *  * Kind `study_summary` (registry v4).
+ *  * Kind `study_summary` (registry v5).
  */
 export interface StudySummary {
   /**
@@ -52276,7 +53032,7 @@ export interface StudySummary {
 }
 
 /**
- * Kind `study_tip` (registry v6).
+ * Kind `study_tip` (registry v7).
  */
 export interface StudyTip {
   tip: string;
@@ -52287,7 +53043,7 @@ export interface StudyTip {
 }
 
 /**
- * Kind `sub_card` (registry v5).
+ * Kind `sub_card` (registry v6).
  */
 export interface SubCard {
   back?: string;
@@ -52315,7 +53071,7 @@ export interface SuccessCriterion {
  * One inbound customer email, triaged for routing: which queue, how urgent, what
  * the customer wants in one sentence, and the order it is about.
  *  *
- *  * Kind `support_email_triage_result` (registry v2).
+ *  * Kind `support_email_triage_result` (registry v3).
  */
 export interface SupportEmailTriageResult {
   /**
@@ -52385,7 +53141,7 @@ export interface SurfacesClientBindingContextOffer {
 /**
  * A saved group of posts, ads and profiles an organization keeps for reference.
  *  *
- *  * Kind `swipe_collection` (registry v2).
+ *  * Kind `swipe_collection` (registry v3).
  */
 export interface SwipeCollection {
   name: string;
@@ -52459,7 +53215,7 @@ export interface TableColumnFillOffer {
 }
 
 /**
- * Kind `table_fields_result` (registry v2).
+ * Kind `table_fields_result` (registry v3).
  */
 export interface TableFieldsResult {
   count?: number;
@@ -52478,7 +53234,7 @@ export interface TableFieldsResult {
 }
 
 /**
- * Kind `table_metadata_result` (registry v2).
+ * Kind `table_metadata_result` (registry v3).
  */
 export interface TableMetadataResult {
   /**
@@ -52540,7 +53296,7 @@ export interface TableRows {
 }
 
 /**
- * Kind `table_tool_result` (registry v3).
+ * Kind `table_tool_result` (registry v4).
  */
 export interface TableToolResult {
   cap?: {
@@ -52625,7 +53381,7 @@ export interface TaskList {
 }
 
 /**
- * Kind `task_tool_result` (registry v4).
+ * Kind `task_tool_result` (registry v5).
  */
 export interface TaskToolResult {
   id?: string | null;
@@ -52768,7 +53524,7 @@ export interface TastingNote {
 }
 
 /**
- * Kind `template_render_result` (registry v7).
+ * Kind `template_render_result` (registry v8).
  */
 export interface TemplateRenderResult {
   /**
@@ -52826,7 +53582,7 @@ export interface Text {
  * * ``language`` — char/word counts, ``unique_words``, ``avg_word_length``
  * * unknown mode — ``message`` explains what is supported
  *  *
- *  * Kind `text_analysis` (registry v3).
+ *  * Kind `text_analysis` (registry v4).
  */
 export interface TextAnalysis {
   urls?: string[] | null;
@@ -52851,7 +53607,7 @@ export interface TextAnalysis {
 /**
  * One passage of one content version, in Unicode code points.
  *  *
- *  * Kind `text_anchor` (registry v4).
+ *  * Kind `text_anchor` (registry v5).
  */
 export interface TextAnchor {
   /**
@@ -52897,7 +53653,7 @@ export interface TextAnchor {
  * that already holds another passage is MERGED into a ``text_anchor_set``; sending a whole set
  * is the explicit way to replace or remove passages (reanchoring, detaching one highlight).
  *  *
- *  * Kind `text_anchor_set` (registry v3).
+ *  * Kind `text_anchor_set` (registry v4).
  */
 export interface TextAnchorSet {
   /**
@@ -52911,7 +53667,7 @@ export interface TextAnchorSet {
 }
 
 /**
- * Kind `text_chunk_set` (registry v8).
+ * Kind `text_chunk_set` (registry v9).
  */
 export interface TextChunkSet {
   count?: number;
@@ -52925,7 +53681,7 @@ export interface TextChunkSet {
 }
 
 /**
- * Kind `text_quality_check_result` (registry v11).
+ * Kind `text_quality_check_result` (registry v12).
  */
 export interface TextQualityCheckResult {
   chars: number;
@@ -52950,7 +53706,7 @@ export interface TextQualityCheckResult {
  * precedent as ``record_projection_result`` below: retirement is a ruling,
  * never an agent's cleanup.
  *  *
- *  * Kind `text_result` (registry v11).
+ *  * Kind `text_result` (registry v12).
  */
 export interface TextResult {
   text: string;
@@ -52961,7 +53717,7 @@ export interface TextResult {
 }
 
 /**
- * Kind `threshold_evaluation_result` (registry v3).
+ * Kind `threshold_evaluation_result` (registry v4).
  */
 export interface ThresholdEvaluationResult {
   model: string;
@@ -52991,7 +53747,7 @@ export interface ThresholdEvaluationResult {
 /**
  * A brief for a thumbnail or cover image.
  *  *
- *  * Kind `thumbnail_brief` (registry v2).
+ *  * Kind `thumbnail_brief` (registry v3).
  */
 export interface ThumbnailBrief {
   /**
@@ -53081,7 +53837,7 @@ export interface TimelinePeriod {
 /**
  * What a ``bundle:list_<name>`` lister returns after swapping the toolset.
  *  *
- *  * Kind `tool_bundle_listing` (registry v7).
+ *  * Kind `tool_bundle_listing` (registry v8).
  */
 export interface ToolBundleListing {
   count?: number;
@@ -53104,7 +53860,7 @@ export interface ToolBundleListing {
  * ``output_note`` says so. Declaring it as anything narrower would be a lie
  * about every other tool in the registry.
  *  *
- *  * Kind `tool_call_record` (registry v5).
+ *  * Kind `tool_call_record` (registry v6).
  */
 export interface ToolCallRecord {
   id?: string;
@@ -53136,7 +53892,7 @@ export interface ToolCallRecord {
  * needed to call patch/update correctly. The prompt still receives the
  * labeled fenced-block text via ``provider_content``.
  *  *
- *  * Kind `tool_component_code` (registry v3).
+ *  * Kind `tool_component_code` (registry v4).
  */
 export interface ToolComponentCode {
   /**
@@ -53160,7 +53916,7 @@ export interface ToolComponentCode {
  * one tool's UI component: tool facts, component summaries, condensed samples,
  * open incidents, and the summary block.
  *  *
- *  * Kind `tool_component_context` (registry v3).
+ *  * Kind `tool_component_context` (registry v4).
  */
 export interface ToolComponentContext {
   tool?: ToolComponentToolDef;
@@ -53178,7 +53934,7 @@ export interface ToolComponentContext {
 /**
  * The at-a-glance facts block of a ``toolcomp_get_context`` result.
  *  *
- *  * Kind `tool_component_context_summary` (registry v3).
+ *  * Kind `tool_component_context_summary` (registry v4).
  */
 export interface ToolComponentContextSummary {
   /**
@@ -53199,7 +53955,7 @@ export interface ToolComponentContextSummary {
 /**
  * ``toolcomp_create_component`` — the receipt for one created component.
  *  *
- *  * Kind `tool_component_create_result` (registry v4).
+ *  * Kind `tool_component_create_result` (registry v5).
  */
 export interface ToolComponentCreateResult {
   /**
@@ -53219,7 +53975,7 @@ export interface ToolComponentCreateResult {
  * ``toolcomp_get_incident_detail`` — one full ``tool_ui_incident`` row,
  * including the crash-time snapshot the component received.
  *  *
- *  * Kind `tool_component_incident_detail` (registry v3).
+ *  * Kind `tool_component_incident_detail` (registry v4).
  */
 export interface ToolComponentIncidentDetail {
   /**
@@ -53245,7 +54001,7 @@ export interface ToolComponentIncidentDetail {
 /**
  * ``toolcomp_resolve_incident`` — the receipt for one resolved incident.
  *  *
- *  * Kind `tool_component_incident_resolution` (registry v3).
+ *  * Kind `tool_component_incident_resolution` (registry v4).
  */
 export interface ToolComponentIncidentResolution {
   /**
@@ -53262,7 +54018,7 @@ export interface ToolComponentIncidentResolution {
  * One deduped open-incident signature (identical error_type/message/stack
  * head collapsed; oldest id kept, occurrences rolled up).
  *  *
- *  * Kind `tool_component_incident_summary` (registry v3).
+ *  * Kind `tool_component_incident_summary` (registry v4).
  */
 export interface ToolComponentIncidentSummary {
   id?: string | null;
@@ -53286,7 +54042,7 @@ export interface ToolComponentIncidentSummary {
 /**
  * ``toolcomp_list_tools`` result — flat paginated mode OR grouped mode.
  *  *
- *  * Kind `tool_component_listing` (registry v4).
+ *  * Kind `tool_component_listing` (registry v5).
  */
 export interface ToolComponentListing {
   note?: string | null;
@@ -53316,7 +54072,7 @@ export interface ToolComponentListing {
 /**
  * One applied edit in a ``toolcomp_patch_code`` call.
  *  *
- *  * Kind `tool_component_patch_outcome` (registry v4).
+ *  * Kind `tool_component_patch_outcome` (registry v5).
  */
 export interface ToolComponentPatchOutcome {
   index?: number;
@@ -53332,7 +54088,7 @@ export interface ToolComponentPatchOutcome {
 /**
  * ``toolcomp_patch_code`` success receipt — every patch applied in order.
  *  *
- *  * Kind `tool_component_patch_result` (registry v4).
+ *  * Kind `tool_component_patch_result` (registry v5).
  */
 export interface ToolComponentPatchResult {
   /**
@@ -53354,7 +54110,7 @@ export interface ToolComponentPatchResult {
  * ``tool_component_context.samples``) OR the raw ``full_events=true`` shape
  * of ``toolcomp_get_sample_detail``. Branch-only fields optional.
  *  *
- *  * Kind `tool_component_sample` (registry v3).
+ *  * Kind `tool_component_sample` (registry v4).
  */
 export interface ToolComponentSample {
   id?: string | null;
@@ -53379,7 +54135,7 @@ export interface ToolComponentSample {
  * One condensed entry in a test sample's event timeline. Value fields are
  * ``Any``: they are lifted from stored stream-event JSON the producer owns.
  *  *
- *  * Kind `tool_component_sample_event` (registry v3).
+ *  * Kind `tool_component_sample_event` (registry v4).
  */
 export interface ToolComponentSampleEvent {
   note?: string | null;
@@ -53399,7 +54155,7 @@ export interface ToolComponentSampleEvent {
 /**
  * A ``tool_ui`` row without its code bodies (lengths + presence flags only).
  *  *
- *  * Kind `tool_component_summary` (registry v3).
+ *  * Kind `tool_component_summary` (registry v4).
  */
 export interface ToolComponentSummary {
   id?: string;
@@ -53434,7 +54190,7 @@ export interface ToolComponentSummary {
  * the synthesized stub for a workflow emit-to-frontend component (``id=None``,
  * ``source_kind='workflow_component'``, stub-only fields set).
  *  *
- *  * Kind `tool_component_tool_def` (registry v3).
+ *  * Kind `tool_component_tool_def` (registry v4).
  */
 export interface ToolComponentToolDef {
   id?: string | null;
@@ -53460,7 +54216,7 @@ export interface ToolComponentToolDef {
 /**
  * One group of tools in a grouped ``toolcomp_list_tools`` result.
  *  *
- *  * Kind `tool_component_tool_group` (registry v4).
+ *  * Kind `tool_component_tool_group` (registry v5).
  */
 export interface ToolComponentToolGroup {
   count?: number;
@@ -53475,7 +54231,7 @@ export interface ToolComponentToolGroup {
 /**
  * One tool row in a ``toolcomp_list_tools`` result (description capped at 120).
  *  *
- *  * Kind `tool_component_tool_row` (registry v3).
+ *  * Kind `tool_component_tool_row` (registry v4).
  */
 export interface ToolComponentToolRow {
   id?: string;
@@ -53497,7 +54253,7 @@ export interface ToolComponentToolRow {
  * (``toolcomp_update_settings``: settings + updated_at only). One union kind
  * for the two receipts, branch-only fields optional.
  *  *
- *  * Kind `tool_component_update_result` (registry v4).
+ *  * Kind `tool_component_update_result` (registry v5).
  */
 export interface ToolComponentUpdateResult {
   /**
@@ -53520,7 +54276,7 @@ export interface ToolComponentUpdateResult {
  * payload arrives typed — the same law the node wrapper enforces, so a tool
  * result is as routable as a node output.
  *  *
- *  * Kind `tool_result` (registry v5).
+ *  * Kind `tool_result` (registry v6).
  */
 export interface ToolResult {
   ok?: boolean;
@@ -53540,7 +54296,7 @@ export interface ToolResult {
 }
 
 /**
- * Kind `tool_result_page` (registry v3).
+ * Kind `tool_result_page` (registry v4).
  */
 export interface ToolResultPage {
   /**
@@ -53569,7 +54325,7 @@ export interface ToolResultPage {
  * cx_tool_call row does not (the call died before the row was written — the
  * exact case this tool is used to investigate).
  *  *
- *  * Kind `tool_trace_call_detail` (registry v5).
+ *  * Kind `tool_trace_call_detail` (registry v6).
  */
 export interface ToolTraceCallDetail {
   /**
@@ -53584,7 +54340,7 @@ export interface ToolTraceCallDetail {
 /**
  * One ``cx_tool_trace`` row as the debug tools project it.
  *  *
- *  * Kind `tool_trace_event` (registry v5).
+ *  * Kind `tool_trace_event` (registry v6).
  */
 export interface ToolTraceEvent {
   id?: string;
@@ -53612,7 +54368,7 @@ export interface ToolTraceEvent {
 /**
  * A bounded page of trace events — the shared return of all four query tools.
  *  *
- *  * Kind `tool_trace_event_page` (registry v5).
+ *  * Kind `tool_trace_event_page` (registry v6).
  */
 export interface ToolTraceEventPage {
   note?: string | null;
@@ -53632,7 +54388,7 @@ export interface ToolTraceEventPage {
 /**
  * One ``tool-trace-*.log`` file in the local debug sink.
  *  *
- *  * Kind `tool_trace_file` (registry v5).
+ *  * Kind `tool_trace_file` (registry v6).
  */
 export interface ToolTraceFile {
   name?: string;
@@ -53648,7 +54404,7 @@ export interface ToolTraceFile {
 /**
  * The local trace-log directory. ``log_dir`` is None when no sink is active.
  *  *
- *  * Kind `tool_trace_file_listing` (registry v5).
+ *  * Kind `tool_trace_file_listing` (registry v6).
  */
 export interface ToolTraceFileListing {
   count?: number;
@@ -53667,7 +54423,7 @@ export interface ToolTraceFileListing {
  * tool returns a window and the caller pages with ``next_offset``. ``content``
  * is raw log text — opaque by definition, not a shape being flattened.
  *  *
- *  * Kind `tool_trace_file_window` (registry v5).
+ *  * Kind `tool_trace_file_window` (registry v6).
  */
 export interface ToolTraceFileWindow {
   note?: string | null;
@@ -53688,7 +54444,7 @@ export interface ToolTraceFileWindow {
 /**
  * One open incident row. ``route`` is always ``tool:<tool_name>``.
  *  *
- *  * Kind `tool_trace_incident` (registry v5).
+ *  * Kind `tool_trace_incident` (registry v6).
  */
 export interface ToolTraceIncident {
   id?: string;
@@ -53712,7 +54468,7 @@ export interface ToolTraceIncident {
  * The filter a listing was produced under — echoed back so a reader knows
  * what the absence of a row means. None means "not filtered on".
  *  *
- *  * Kind `tool_trace_incident_filter` (registry v5).
+ *  * Kind `tool_trace_incident_filter` (registry v6).
  */
 export interface ToolTraceIncidentFilter {
   limit?: number;
@@ -53727,7 +54483,7 @@ export interface ToolTraceIncidentFilter {
 /**
  * Open Tool Trace incidents, newest first.
  *  *
- *  * Kind `tool_trace_incident_list` (registry v5).
+ *  * Kind `tool_trace_incident_list` (registry v6).
  */
 export interface ToolTraceIncidentList {
   count?: number;
@@ -53746,7 +54502,7 @@ export interface ToolTraceIncidentList {
  * both are kept: the tool DEDUPES on ``dedupe_key``, so a caller has to be able
  * to tell "I filed something new" from "I bumped an existing row's count".
  *  *
- *  * Kind `tool_trace_incident_report` (registry v6).
+ *  * Kind `tool_trace_incident_report` (registry v7).
  */
 export interface ToolTraceIncidentReport {
   /**
@@ -53830,7 +54586,7 @@ export interface ToolsContentSummarizationOffer {
 }
 
 /**
- * Kind `topic_assignment_batch_v1` (registry v8).
+ * Kind `topic_assignment_batch_v1` (registry v9).
  */
 export interface TopicAssignmentBatchV1 {
   /**
@@ -53970,7 +54726,7 @@ export interface TopicIdeas {
 }
 
 /**
- * Kind `topic_relevance` (registry v4).
+ * Kind `topic_relevance` (registry v5).
  */
 export interface TopicRelevance {
   topic: string;
@@ -53980,7 +54736,7 @@ export interface TopicRelevance {
 }
 
 /**
- * Kind `topical_map_result` (registry v7).
+ * Kind `topical_map_result` (registry v8).
  */
 export interface TopicalMapResult {
   ok?: boolean | null;
@@ -54173,7 +54929,7 @@ export interface TranscriptStudioSessionContextOffer {
 }
 
 /**
- * Kind `transcript_usage` (registry v4).
+ * Kind `transcript_usage` (registry v5).
  */
 export interface TranscriptUsage {
   model: string;
@@ -54189,7 +54945,7 @@ export interface TranscriptUsage {
 /**
  * Output of ``ai.transcribe`` — plain text + timing, no chat shape.
  *  *
- *  * Kind `transcription_result` (registry v9).
+ *  * Kind `transcription_result` (registry v10).
  */
 export interface TranscriptionResult {
   text?: string;
@@ -54322,7 +55078,7 @@ export interface TranscriptsCleanupPlainOffer {
 }
 
 /**
- * Kind `translation_cell_evidence` (registry v4).
+ * Kind `translation_cell_evidence` (registry v5).
  */
 export interface TranslationCellEvidence {
   /**
@@ -54345,7 +55101,7 @@ export interface TranslationCellEvidence {
 }
 
 /**
- * Kind `translation_cell_proposal` (registry v3).
+ * Kind `translation_cell_proposal` (registry v4).
  */
 export interface TranslationCellProposal {
   /**
@@ -54433,7 +55189,7 @@ export interface TranslationCellProposal {
 }
 
 /**
- * Kind `translation_cell_unsettled_value` (registry v3).
+ * Kind `translation_cell_unsettled_value` (registry v4).
  */
 export interface TranslationCellUnsettledValue {
   why?: string;
@@ -54442,7 +55198,7 @@ export interface TranslationCellUnsettledValue {
 }
 
 /**
- * Kind `trend_report` (registry v2).
+ * Kind `trend_report` (registry v3).
  */
 export interface TrendReport {
   /**
@@ -54540,7 +55296,7 @@ export interface TroubleshootingStep {
 /**
  * Reusable grounding/trust envelope shared by live-help answers and grounded flashcards.
  *  *
- *  * Kind `trust_envelope` (registry v8).
+ *  * Kind `trust_envelope` (registry v9).
  */
 export interface TrustEnvelope {
   /**
@@ -54574,7 +55330,7 @@ export interface TrustEnvelope {
 /**
  * The social accounts a person typed, exactly as typed, with the platform when they named one.
  *  *
- *  * Kind `typed_account_list` (registry v1).
+ *  * Kind `typed_account_list` (registry v2).
  */
 export interface TypedAccountList {
   items?: TypedAccount[];
@@ -54589,7 +55345,7 @@ export interface TypedAccountList {
  * the oracle node. Committing is a judgment; the oracle only ever says what
  * the case says.
  *  *
- *  * Kind `unfolding_ruling` (registry v3).
+ *  * Kind `unfolding_ruling` (registry v4).
  */
 export interface UnfoldingRuling {
   /**
@@ -54621,7 +55377,7 @@ export interface UnfoldingRuling {
 /**
  * Output of ``assets.upload`` — the master file plus its rendered variants.
  *  *
- *  * Kind `uploaded_asset` (registry v13).
+ *  * Kind `uploaded_asset` (registry v14).
  */
 export interface UploadedAsset {
   /**
@@ -54665,7 +55421,7 @@ export interface UserInputs {
 }
 
 /**
- * Kind `user_secret_receipt` (registry v3).
+ * Kind `user_secret_receipt` (registry v4).
  */
 export interface UserSecretReceipt {
   key?: string;
@@ -54681,7 +55437,7 @@ export interface UserSecretReceipt {
 }
 
 /**
- * Kind `uuid_value` (registry v9).
+ * Kind `uuid_value` (registry v10).
  */
 export interface UuidValue {
   /**
@@ -54731,7 +55487,7 @@ export interface Value {
  * never ships with confidence < 0.8 — below that the bucket is ``unknown``
  * by construction.
  *  *
- *  * Kind `value_assessment` (registry v4).
+ *  * Kind `value_assessment` (registry v5).
  */
 export interface ValueAssessment {
   /**
@@ -54749,7 +55505,7 @@ export interface ValueAssessment {
 }
 
 /**
- * Kind `value_store_result` (registry v3).
+ * Kind `value_store_result` (registry v4).
  */
 export interface ValueStoreResult {
   key?: string | null;
@@ -54839,7 +55595,7 @@ export interface VideoPromptVariation {
 }
 
 /**
- * Kind `video_result` (registry v16).
+ * Kind `video_result` (registry v17).
  */
 export interface VideoResult {
   url: string;
@@ -54870,7 +55626,7 @@ export interface VideoResult {
  * Sound (``music``, ``sfx``) is never read by the video model: ``music`` is ``{"status": "not_analysed"}`` until a
  * music-ID step exists.
  *  *
- *  * Kind `video_structure` (registry v3).
+ *  * Kind `video_structure` (registry v4).
  */
 export interface VideoStructure {
   sfx?: ({
@@ -54912,7 +55668,7 @@ export interface VideoStructure {
  * works. It never reports sound (speech, music, effects): those come from STT or are marked not analysed. The
  * platform merges this with the measured ground truth into ``video_structure``.
  *  *
- *  * Kind `video_structure_read` (registry v3).
+ *  * Kind `video_structure_read` (registry v4).
  */
 export interface VideoStructureRead {
   hook?: VideoHook | null;
@@ -54931,7 +55687,7 @@ export interface VideoStructureRead {
 }
 
 /**
- * Kind `video_transcript_research` (registry v6).
+ * Kind `video_transcript_research` (registry v7).
  */
 export interface VideoTranscriptResearch {
   title: string;
@@ -55073,7 +55829,7 @@ export interface VisualQcResult {
 /**
  * A measured writing voice: cadence, mechanics, lexicon, openers, register, idioms.
  *  *
- *  * Kind `voice_fingerprint` (registry v4).
+ *  * Kind `voice_fingerprint` (registry v5).
  */
 export interface VoiceFingerprint {
   /**
@@ -55128,7 +55884,7 @@ export interface VoiceFingerprint {
 /**
  * One result of ``brand_voice_measure``: an extraction or a draft check.
  *  *
- *  * Kind `voice_measure_result` (registry v5).
+ *  * Kind `voice_measure_result` (registry v6).
  */
 export interface VoiceMeasureResult {
   stats?: VoiceCheckStats | null;
@@ -55167,7 +55923,7 @@ export interface VoiceMeasureResult {
 }
 
 /**
- * Kind `voice_rewrite` (registry v5).
+ * Kind `voice_rewrite` (registry v6).
  */
 export interface VoiceRewrite {
   /**
@@ -55297,7 +56053,7 @@ export interface WarRoomThreadContextOffer {
 /**
  * What the weather actually was at one place on one past date.
  *  *
- *  * Kind `weather_history_reading` (registry v3).
+ *  * Kind `weather_history_reading` (registry v4).
  */
 export interface WeatherHistoryReading {
   /**
@@ -56090,7 +56846,7 @@ export interface WebDuplicateContentExactV1 {
 /**
  * Evidence payload for the Anchor Text Descriptiveness Evidence SEO check.
  *  *
- *  * Kind `web_evidence_anchor_text_descriptiveness_v1` (registry v3).
+ *  * Kind `web_evidence_anchor_text_descriptiveness_v1` (registry v4).
  */
 export interface WebEvidenceAnchorTextDescriptivenessV1 {
   /**
@@ -56103,7 +56859,7 @@ export interface WebEvidenceAnchorTextDescriptivenessV1 {
 /**
  * Evidence payload for the Asset Delivery Evidence SEO check.
  *  *
- *  * Kind `web_evidence_asset_delivery_v1` (registry v3).
+ *  * Kind `web_evidence_asset_delivery_v1` (registry v4).
  */
 export interface WebEvidenceAssetDeliveryV1 {
   /**
@@ -56118,7 +56874,7 @@ export interface WebEvidenceAssetDeliveryV1 {
 /**
  * Evidence payload for the Broken Images Evidence SEO check.
  *  *
- *  * Kind `web_evidence_broken_images_v1` (registry v3).
+ *  * Kind `web_evidence_broken_images_v1` (registry v4).
  */
 export interface WebEvidenceBrokenImagesV1 {
   /**
@@ -56131,7 +56887,7 @@ export interface WebEvidenceBrokenImagesV1 {
 /**
  * Shared by ``broken_internal_links`` and ``broken_external_links``.
  *  *
- *  * Kind `web_evidence_broken_targets_v1` (registry v3).
+ *  * Kind `web_evidence_broken_targets_v1` (registry v4).
  */
 export interface WebEvidenceBrokenTargetsV1 {
   /**
@@ -56144,7 +56900,7 @@ export interface WebEvidenceBrokenTargetsV1 {
 /**
  * Evidence payload for the Caching Policy Evidence SEO check.
  *  *
- *  * Kind `web_evidence_caching_policy_v1` (registry v3).
+ *  * Kind `web_evidence_caching_policy_v1` (registry v4).
  */
 export interface WebEvidenceCachingPolicyV1 {
   /**
@@ -56160,7 +56916,7 @@ export interface WebEvidenceCachingPolicyV1 {
 /**
  * Evidence payload for the Canonical Conflicts Evidence SEO check.
  *  *
- *  * Kind `web_evidence_canonical_conflicts_v1` (registry v3).
+ *  * Kind `web_evidence_canonical_conflicts_v1` (registry v4).
  */
 export interface WebEvidenceCanonicalConflictsV1 {
   /**
@@ -56173,7 +56929,7 @@ export interface WebEvidenceCanonicalConflictsV1 {
 /**
  * Evidence payload for the Cumulative Layout Shift Evidence SEO check.
  *  *
- *  * Kind `web_evidence_cls_v1` (registry v3).
+ *  * Kind `web_evidence_cls_v1` (registry v4).
  */
 export interface WebEvidenceClsV1 {
   cls?: number | null;
@@ -56187,7 +56943,7 @@ export interface WebEvidenceClsV1 {
 /**
  * Evidence payload for the Content Depth Evidence SEO check.
  *  *
- *  * Kind `web_evidence_content_depth_v1` (registry v3).
+ *  * Kind `web_evidence_content_depth_v1` (registry v4).
  */
 export interface WebEvidenceContentDepthV1 {
   /**
@@ -56201,7 +56957,7 @@ export interface WebEvidenceContentDepthV1 {
 /**
  * Evidence payload for the Crawl Depth Evidence SEO check.
  *  *
- *  * Kind `web_evidence_crawl_depth_v1` (registry v3).
+ *  * Kind `web_evidence_crawl_depth_v1` (registry v4).
  */
 export interface WebEvidenceCrawlDepthV1 {
   depth?: number | null;
@@ -56215,7 +56971,7 @@ export interface WebEvidenceCrawlDepthV1 {
  * Shared by ``title_duplication``, ``meta_description_duplication`` and
  * ``duplicate_content_exact`` — all three report the same clustered shape.
  *  *
- *  * Kind `web_evidence_duplicate_pages_v1` (registry v3).
+ *  * Kind `web_evidence_duplicate_pages_v1` (registry v4).
  */
 export interface WebEvidenceDuplicatePagesV1 {
   /**
@@ -56228,7 +56984,7 @@ export interface WebEvidenceDuplicatePagesV1 {
 /**
  * Evidence payload for the Excessive Outlinks Evidence SEO check.
  *  *
- *  * Kind `web_evidence_excessive_outlinks_v1` (registry v3).
+ *  * Kind `web_evidence_excessive_outlinks_v1` (registry v4).
  */
 export interface WebEvidenceExcessiveOutlinksV1 {
   /**
@@ -56242,7 +56998,7 @@ export interface WebEvidenceExcessiveOutlinksV1 {
 /**
  * Evidence payload for the Search Console CTR Opportunity Evidence SEO check.
  *  *
- *  * Kind `web_evidence_gsc_ctr_opportunity_v1` (registry v3).
+ *  * Kind `web_evidence_gsc_ctr_opportunity_v1` (registry v4).
  */
 export interface WebEvidenceGscCtrOpportunityV1 {
   ctr?: number | null;
@@ -56262,7 +57018,7 @@ export interface WebEvidenceGscCtrOpportunityV1 {
 /**
  * Evidence payload for the Search Console Performance Decay Evidence SEO check.
  *  *
- *  * Kind `web_evidence_gsc_performance_decay_v1` (registry v3).
+ *  * Kind `web_evidence_gsc_performance_decay_v1` (registry v4).
  */
 export interface WebEvidenceGscPerformanceDecayV1 {
   prior?: Record<string, unknown> | null;
@@ -56280,7 +57036,7 @@ export interface WebEvidenceGscPerformanceDecayV1 {
 /**
  * Evidence payload for the Heading Hierarchy Evidence SEO check.
  *  *
- *  * Kind `web_evidence_heading_hierarchy_v1` (registry v3).
+ *  * Kind `web_evidence_heading_hierarchy_v1` (registry v4).
  */
 export interface WebEvidenceHeadingHierarchyV1 {
   /**
@@ -56296,7 +57052,7 @@ export interface WebEvidenceHeadingHierarchyV1 {
 /**
  * Evidence payload for the Host Protocol Consistency Evidence SEO check.
  *  *
- *  * Kind `web_evidence_host_protocol_consistency_v1` (registry v3).
+ *  * Kind `web_evidence_host_protocol_consistency_v1` (registry v4).
  */
 export interface WebEvidenceHostProtocolConsistencyV1 {
   /**
@@ -56315,7 +57071,7 @@ export interface WebEvidenceHostProtocolConsistencyV1 {
 /**
  * Evidence payload for the Hreflang Reciprocity Evidence SEO check.
  *  *
- *  * Kind `web_evidence_hreflang_reciprocity_v1` (registry v3).
+ *  * Kind `web_evidence_hreflang_reciprocity_v1` (registry v4).
  */
 export interface WebEvidenceHreflangReciprocityV1 {
   /**
@@ -56329,7 +57085,7 @@ export interface WebEvidenceHreflangReciprocityV1 {
 /**
  * Evidence payload for the Hreflang Validity Evidence SEO check.
  *  *
- *  * Kind `web_evidence_hreflang_validity_v1` (registry v3).
+ *  * Kind `web_evidence_hreflang_validity_v1` (registry v4).
  */
 export interface WebEvidenceHreflangValidityV1 {
   /**
@@ -56346,7 +57102,7 @@ export interface WebEvidenceHreflangValidityV1 {
 /**
  * Evidence payload for the HSTS Policy Evidence SEO check.
  *  *
- *  * Kind `web_evidence_hsts_policy_v1` (registry v3).
+ *  * Kind `web_evidence_hsts_policy_v1` (registry v4).
  */
 export interface WebEvidenceHstsPolicyV1 {
   /**
@@ -56364,7 +57120,7 @@ export interface WebEvidenceHstsPolicyV1 {
 /**
  * Evidence payload for the HTML Lang Attribute Evidence SEO check.
  *  *
- *  * Kind `web_evidence_html_lang_validity_v1` (registry v3).
+ *  * Kind `web_evidence_html_lang_validity_v1` (registry v4).
  */
 export interface WebEvidenceHtmlLangValidityV1 {
   lang?: string | null;
@@ -56377,7 +57133,7 @@ export interface WebEvidenceHtmlLangValidityV1 {
 /**
  * Shared by ``broken_page_4xx`` and ``server_error_5xx``.
  *  *
- *  * Kind `web_evidence_http_status_v1` (registry v4).
+ *  * Kind `web_evidence_http_status_v1` (registry v5).
  */
 export interface WebEvidenceHttpStatusV1 {
   /**
@@ -56391,7 +57147,7 @@ export interface WebEvidenceHttpStatusV1 {
 /**
  * Evidence payload for the HTTPS Enforcement Evidence SEO check.
  *  *
- *  * Kind `web_evidence_https_enforcement_v1` (registry v3).
+ *  * Kind `web_evidence_https_enforcement_v1` (registry v4).
  */
 export interface WebEvidenceHttpsEnforcementV1 {
   url?: string | null;
@@ -56406,7 +57162,7 @@ export interface WebEvidenceHttpsEnforcementV1 {
 /**
  * Evidence payload for the Image Dimension Attrs Evidence SEO check.
  *  *
- *  * Kind `web_evidence_image_dimension_attrs_v1` (registry v3).
+ *  * Kind `web_evidence_image_dimension_attrs_v1` (registry v4).
  */
 export interface WebEvidenceImageDimensionAttrsV1 {
   /**
@@ -56419,7 +57175,7 @@ export interface WebEvidenceImageDimensionAttrsV1 {
 /**
  * Evidence payload for the Image Lazy Loading Evidence SEO check.
  *  *
- *  * Kind `web_evidence_image_lazy_loading_v1` (registry v3).
+ *  * Kind `web_evidence_image_lazy_loading_v1` (registry v4).
  */
 export interface WebEvidenceImageLazyLoadingV1 {
   /**
@@ -56433,7 +57189,7 @@ export interface WebEvidenceImageLazyLoadingV1 {
 /**
  * Evidence payload for the Image Modern Format Evidence SEO check.
  *  *
- *  * Kind `web_evidence_image_modern_format_v1` (registry v3).
+ *  * Kind `web_evidence_image_modern_format_v1` (registry v4).
  */
 export interface WebEvidenceImageModernFormatV1 {
   /**
@@ -56446,7 +57202,7 @@ export interface WebEvidenceImageModernFormatV1 {
 /**
  * Evidence payload for the Image Oversized Evidence SEO check.
  *  *
- *  * Kind `web_evidence_image_oversized_v1` (registry v3).
+ *  * Kind `web_evidence_image_oversized_v1` (registry v4).
  */
 export interface WebEvidenceImageOversizedV1 {
   /**
@@ -56461,7 +57217,7 @@ export interface WebEvidenceImageOversizedV1 {
 /**
  * Evidence payload for the Interactivity (TBT/INP) Evidence SEO check.
  *  *
- *  * Kind `web_evidence_inp_tbt_v1` (registry v3).
+ *  * Kind `web_evidence_inp_tbt_v1` (registry v4).
  */
 export interface WebEvidenceInpTbtV1 {
   /**
@@ -56475,7 +57231,7 @@ export interface WebEvidenceInpTbtV1 {
 /**
  * Evidence payload for the Internal Inlink Coverage Evidence SEO check.
  *  *
- *  * Kind `web_evidence_internal_inlink_coverage_v1` (registry v3).
+ *  * Kind `web_evidence_internal_inlink_coverage_v1` (registry v4).
  */
 export interface WebEvidenceInternalInlinkCoverageV1 {
   /**
@@ -56488,7 +57244,7 @@ export interface WebEvidenceInternalInlinkCoverageV1 {
 /**
  * Evidence payload for the Internal Link Equity Evidence SEO check.
  *  *
- *  * Kind `web_evidence_internal_link_equity_v1` (registry v3).
+ *  * Kind `web_evidence_internal_link_equity_v1` (registry v4).
  */
 export interface WebEvidenceInternalLinkEquityV1 {
   /**
@@ -56505,7 +57261,7 @@ export interface WebEvidenceInternalLinkEquityV1 {
 /**
  * Evidence payload for the Internal Redirect Links Evidence SEO check.
  *  *
- *  * Kind `web_evidence_internal_redirect_links_v1` (registry v3).
+ *  * Kind `web_evidence_internal_redirect_links_v1` (registry v4).
  */
 export interface WebEvidenceInternalRedirectLinksV1 {
   /**
@@ -56518,7 +57274,7 @@ export interface WebEvidenceInternalRedirectLinksV1 {
 /**
  * Evidence payload for the Largest Contentful Paint Evidence SEO check.
  *  *
- *  * Kind `web_evidence_lcp_v1` (registry v3).
+ *  * Kind `web_evidence_lcp_v1` (registry v4).
  */
 export interface WebEvidenceLcpV1 {
   /**
@@ -56532,7 +57288,7 @@ export interface WebEvidenceLcpV1 {
 /**
  * Evidence payload for the Local Business Markup Evidence SEO check.
  *  *
- *  * Kind `web_evidence_local_business_markup_v1` (registry v3).
+ *  * Kind `web_evidence_local_business_markup_v1` (registry v4).
  */
 export interface WebEvidenceLocalBusinessMarkupV1 {
   types?: string[] | null;
@@ -56547,7 +57303,7 @@ export interface WebEvidenceLocalBusinessMarkupV1 {
 /**
  * Evidence payload for the Meta Refresh Redirect Evidence SEO check.
  *  *
- *  * Kind `web_evidence_meta_refresh_redirect_v1` (registry v3).
+ *  * Kind `web_evidence_meta_refresh_redirect_v1` (registry v4).
  */
 export interface WebEvidenceMetaRefreshRedirectV1 {
   /**
@@ -56561,7 +57317,7 @@ export interface WebEvidenceMetaRefreshRedirectV1 {
 /**
  * Evidence payload for the Meta Robots Conflicts Evidence SEO check.
  *  *
- *  * Kind `web_evidence_meta_robots_conflicts_v1` (registry v3).
+ *  * Kind `web_evidence_meta_robots_conflicts_v1` (registry v4).
  */
 export interface WebEvidenceMetaRobotsConflictsV1 {
   /**
@@ -56574,7 +57330,7 @@ export interface WebEvidenceMetaRobotsConflictsV1 {
 /**
  * Evidence payload for the Mixed Content Evidence SEO check.
  *  *
- *  * Kind `web_evidence_mixed_content_v1` (registry v3).
+ *  * Kind `web_evidence_mixed_content_v1` (registry v4).
  */
 export interface WebEvidenceMixedContentV1 {
   /**
@@ -56587,7 +57343,7 @@ export interface WebEvidenceMixedContentV1 {
 /**
  * Evidence payload for the Near Duplicate Content Evidence SEO check.
  *  *
- *  * Kind `web_evidence_near_duplicate_content_v1` (registry v3).
+ *  * Kind `web_evidence_near_duplicate_content_v1` (registry v4).
  */
 export interface WebEvidenceNearDuplicateContentV1 {
   /**
@@ -56610,7 +57366,7 @@ export interface WebEvidenceNearDuplicateContentV1 {
 /**
  * Evidence payload for the Nofollow Internal Links Evidence SEO check.
  *  *
- *  * Kind `web_evidence_nofollow_internal_links_v1` (registry v3).
+ *  * Kind `web_evidence_nofollow_internal_links_v1` (registry v4).
  */
 export interface WebEvidenceNofollowInternalLinksV1 {
   /**
@@ -56623,7 +57379,7 @@ export interface WebEvidenceNofollowInternalLinksV1 {
 /**
  * Evidence payload for the Social Share Image Evidence SEO check.
  *  *
- *  * Kind `web_evidence_og_image_validity_v1` (registry v3).
+ *  * Kind `web_evidence_og_image_validity_v1` (registry v4).
  */
 export interface WebEvidenceOgImageValidityV1 {
   /**
@@ -56636,7 +57392,7 @@ export interface WebEvidenceOgImageValidityV1 {
 /**
  * Evidence payload for the Orphan Pages Evidence SEO check.
  *  *
- *  * Kind `web_evidence_orphan_pages_v1` (registry v3).
+ *  * Kind `web_evidence_orphan_pages_v1` (registry v4).
  */
 export interface WebEvidenceOrphanPagesV1 {
   /**
@@ -56653,7 +57409,7 @@ export interface WebEvidenceOrphanPagesV1 {
 /**
  * Evidence payload for the Page Weight Evidence SEO check.
  *  *
- *  * Kind `web_evidence_page_weight_v1` (registry v3).
+ *  * Kind `web_evidence_page_weight_v1` (registry v4).
  */
 export interface WebEvidencePageWeightV1 {
   bytes?: number | null;
@@ -56666,7 +57422,7 @@ export interface WebEvidencePageWeightV1 {
 /**
  * Evidence payload for the Pagination Markup Evidence SEO check.
  *  *
- *  * Kind `web_evidence_pagination_markup_v1` (registry v3).
+ *  * Kind `web_evidence_pagination_markup_v1` (registry v4).
  */
 export interface WebEvidencePaginationMarkupV1 {
   /**
@@ -56679,7 +57435,7 @@ export interface WebEvidencePaginationMarkupV1 {
 /**
  * Evidence payload for the Redirect Chain Evidence SEO check.
  *  *
- *  * Kind `web_evidence_redirect_chain_v1` (registry v3).
+ *  * Kind `web_evidence_redirect_chain_v1` (registry v4).
  */
 export interface WebEvidenceRedirectChainV1 {
   /**
@@ -56693,7 +57449,7 @@ export interface WebEvidenceRedirectChainV1 {
 /**
  * Evidence payload for the Redirect Loop Evidence SEO check.
  *  *
- *  * Kind `web_evidence_redirect_loop_v1` (registry v3).
+ *  * Kind `web_evidence_redirect_loop_v1` (registry v4).
  */
 export interface WebEvidenceRedirectLoopV1 {
   /**
@@ -56706,7 +57462,7 @@ export interface WebEvidenceRedirectLoopV1 {
 /**
  * Evidence payload for the Robots.txt Health Evidence SEO check.
  *  *
- *  * Kind `web_evidence_robots_txt_health_v1` (registry v3).
+ *  * Kind `web_evidence_robots_txt_health_v1` (registry v4).
  */
 export interface WebEvidenceRobotsTxtHealthV1 {
   /**
@@ -56724,7 +57480,7 @@ export interface WebEvidenceRobotsTxtHealthV1 {
 /**
  * Evidence payload for the Security Headers Evidence SEO check.
  *  *
- *  * Kind `web_evidence_security_headers_v1` (registry v3).
+ *  * Kind `web_evidence_security_headers_v1` (registry v4).
  */
 export interface WebEvidenceSecurityHeadersV1 {
   /**
@@ -56739,7 +57495,7 @@ export interface WebEvidenceSecurityHeadersV1 {
 /**
  * Evidence payload for the Sitemap Coverage Evidence SEO check.
  *  *
- *  * Kind `web_evidence_sitemap_coverage_v1` (registry v3).
+ *  * Kind `web_evidence_sitemap_coverage_v1` (registry v4).
  */
 export interface WebEvidenceSitemapCoverageV1 {
   /**
@@ -56753,7 +57509,7 @@ export interface WebEvidenceSitemapCoverageV1 {
 /**
  * Evidence payload for the Sitemap Health Evidence SEO check.
  *  *
- *  * Kind `web_evidence_sitemap_health_v1` (registry v3).
+ *  * Kind `web_evidence_sitemap_health_v1` (registry v4).
  */
 export interface WebEvidenceSitemapHealthV1 {
   /**
@@ -56772,7 +57528,7 @@ export interface WebEvidenceSitemapHealthV1 {
 /**
  * Evidence payload for the Open Graph & Twitter Card Evidence SEO check.
  *  *
- *  * Kind `web_evidence_social_meta_completeness_v1` (registry v3).
+ *  * Kind `web_evidence_social_meta_completeness_v1` (registry v4).
  */
 export interface WebEvidenceSocialMetaCompletenessV1 {
   /**
@@ -56788,7 +57544,7 @@ export interface WebEvidenceSocialMetaCompletenessV1 {
 /**
  * Evidence payload for the Soft 404 Evidence SEO check.
  *  *
- *  * Kind `web_evidence_soft_four_oh_four_v1` (registry v3).
+ *  * Kind `web_evidence_soft_four_oh_four_v1` (registry v4).
  */
 export interface WebEvidenceSoftFourOhFourV1 {
   title?: string | null;
@@ -56803,7 +57559,7 @@ export interface WebEvidenceSoftFourOhFourV1 {
 /**
  * Evidence payload for the Structured Data Validity Evidence SEO check.
  *  *
- *  * Kind `web_evidence_structured_data_validity_v1` (registry v3).
+ *  * Kind `web_evidence_structured_data_validity_v1` (registry v4).
  */
 export interface WebEvidenceStructuredDataValidityV1 {
   /**
@@ -56818,7 +57574,7 @@ export interface WebEvidenceStructuredDataValidityV1 {
 /**
  * Evidence payload for the Temporary Redirect Usage Evidence SEO check.
  *  *
- *  * Kind `web_evidence_temporary_redirect_usage_v1` (registry v3).
+ *  * Kind `web_evidence_temporary_redirect_usage_v1` (registry v4).
  */
 export interface WebEvidenceTemporaryRedirectUsageV1 {
   /**
@@ -56832,7 +57588,7 @@ export interface WebEvidenceTemporaryRedirectUsageV1 {
 /**
  * Evidence payload for the Text Html Ratio Evidence SEO check.
  *  *
- *  * Kind `web_evidence_text_html_ratio_v1` (registry v3).
+ *  * Kind `web_evidence_text_html_ratio_v1` (registry v4).
  */
 export interface WebEvidenceTextHtmlRatioV1 {
   ratio?: number | null;
@@ -56847,7 +57603,7 @@ export interface WebEvidenceTextHtmlRatioV1 {
 /**
  * Evidence payload for the TLS Certificate Evidence SEO check.
  *  *
- *  * Kind `web_evidence_tls_certificate_v1` (registry v3).
+ *  * Kind `web_evidence_tls_certificate_v1` (registry v4).
  */
 export interface WebEvidenceTlsCertificateV1 {
   /**
@@ -56862,7 +57618,7 @@ export interface WebEvidenceTlsCertificateV1 {
 /**
  * Evidence payload for the Server Response Time Evidence SEO check.
  *  *
- *  * Kind `web_evidence_ttfb_v1` (registry v3).
+ *  * Kind `web_evidence_ttfb_v1` (registry v4).
  */
 export interface WebEvidenceTtfbV1 {
   /**
@@ -56876,7 +57632,7 @@ export interface WebEvidenceTtfbV1 {
 /**
  * Evidence payload for the URL Design Quality Evidence SEO check.
  *  *
- *  * Kind `web_evidence_url_design_quality_v1` (registry v3).
+ *  * Kind `web_evidence_url_design_quality_v1` (registry v4).
  */
 export interface WebEvidenceUrlDesignQualityV1 {
   /**
@@ -56894,7 +57650,7 @@ export interface WebEvidenceUrlDesignQualityV1 {
 /**
  * Evidence payload for the Viewport Meta Evidence SEO check.
  *  *
- *  * Kind `web_evidence_viewport_meta_v1` (registry v3).
+ *  * Kind `web_evidence_viewport_meta_v1` (registry v4).
  */
 export interface WebEvidenceViewportMetaV1 {
   /**
@@ -58448,7 +59204,7 @@ export interface WebOrphanPagesV1 {
  * One page as read: its address and its clean main text (plus footer text when it holds contact
  * details).
  *  *
- *  * Kind `web_page` (registry v1).
+ *  * Kind `web_page` (registry v2).
  */
 export interface WebPage {
   url?: string | null;
@@ -58464,7 +59220,7 @@ export interface WebPage {
 /**
  * A page's header as the page writes it: title, meta description, og / twitter tags, canonical.
  *  *
- *  * Kind `web_page_head` (registry v1).
+ *  * Kind `web_page_head` (registry v2).
  */
 export interface WebPageHead {
   title?: string | null;
@@ -58478,7 +59234,7 @@ export interface WebPageHead {
 /**
  * Several pages as read, each once, in the order they were read.
  *  *
- *  * Kind `web_page_list` (registry v1).
+ *  * Kind `web_page_list` (registry v2).
  */
 export interface WebPageList {
   items?: WebPageRow[];
@@ -58686,7 +59442,7 @@ export interface WebRedirectLoopV1 {
 }
 
 /**
- * Kind `web_result` (registry v21).
+ * Kind `web_result` (registry v22).
  */
 export interface WebResult {
   url: string;
@@ -58837,7 +59593,7 @@ export interface WebSearchIntentAlignmentV1 {
 }
 
 /**
- * Kind `web_search_results` (registry v5).
+ * Kind `web_search_results` (registry v6).
  */
 export interface WebSearchResults {
   urls?: string[];
@@ -58852,7 +59608,7 @@ export interface WebSearchResults {
 /**
  * Output of ``ai.util.extract_search_urls`` — flat URL list.
  *  *
- *  * Kind `web_search_urls` (registry v8).
+ *  * Kind `web_search_urls` (registry v9).
  */
 export interface WebSearchUrls {
   urls?: string[];
@@ -59658,7 +60414,7 @@ export interface WebViewportMetaV1 {
 /**
  * The face the wheel landed on, and what that face resolved to.
  *  *
- *  * Kind `wheel_choice` (registry v3).
+ *  * Kind `wheel_choice` (registry v4).
  */
 export interface WheelChoice {
   label?: string;
@@ -59672,7 +60428,7 @@ export interface WheelChoice {
 /**
  * The wheel's display projection of the randomly-picked stock photo.
  *  *
- *  * Kind `wheel_image` (registry v3).
+ *  * Kind `wheel_image` (registry v4).
  */
 export interface WheelImage {
   url?: string;
@@ -59690,7 +60446,7 @@ export interface WheelImage {
 /**
  * One true-random wheel spin: the faces shown, the winner, the resolution.
  *  *
- *  * Kind `wheel_spin_result` (registry v3).
+ *  * Kind `wheel_spin_result` (registry v4).
  */
 export interface WheelSpinResult {
   mode?: string;
@@ -59727,7 +60483,7 @@ export interface WineTasting {
 }
 
 /**
- * Kind `word_count_result` (registry v11).
+ * Kind `word_count_result` (registry v12).
  */
 export interface WordCountResult {
   /**
@@ -59763,7 +60519,7 @@ export interface WordCountResult {
 /**
  * One word and how many times it appeared.
  *  *
- *  * Kind `word_frequency` (registry v3).
+ *  * Kind `word_frequency` (registry v4).
  */
 export interface WordFrequency {
   word?: string;
@@ -59775,7 +60531,7 @@ export interface WordFrequency {
 }
 
 /**
- * Kind `work_claim` (registry v3).
+ * Kind `work_claim` (registry v4).
  */
 export interface WorkClaim {
   fact?: string;
@@ -59788,7 +60544,7 @@ export interface WorkClaim {
 }
 
 /**
- * Kind `work_queue_wave_result` (registry v9).
+ * Kind `work_queue_wave_result` (registry v10).
  */
 export interface WorkQueueWaveResult {
   /**
@@ -59822,7 +60578,7 @@ export interface WorkQueueWaveResult {
 }
 
 /**
- * Kind `work_receipt` (registry v3).
+ * Kind `work_receipt` (registry v4).
  */
 export interface WorkReceipt {
   /**
@@ -59838,7 +60594,7 @@ export interface WorkReceipt {
 }
 
 /**
- * Kind `work_seed_result` (registry v9).
+ * Kind `work_seed_result` (registry v10).
  */
 export interface WorkSeedResult {
   /**
@@ -59860,7 +60616,7 @@ export interface WorkSeedResult {
 }
 
 /**
- * Kind `workbook_result` (registry v4).
+ * Kind `workbook_result` (registry v5).
  */
 export interface WorkbookResult {
   cols?: number | null;
@@ -60260,7 +61016,7 @@ export interface WorkflowRunRecoveryOffer {
 }
 
 /**
- * Kind `workflow_author_result` (registry v6).
+ * Kind `workflow_author_result` (registry v7).
  */
 export interface WorkflowAuthorResult {
   id?: string | null;
@@ -60284,7 +61040,7 @@ export interface WorkflowAuthorResult {
 }
 
 /**
- * Kind `workflow_catalog_result` (registry v6).
+ * Kind `workflow_catalog_result` (registry v7).
  */
 export interface WorkflowCatalogResult {
   hint?: string | null;
@@ -60307,7 +61063,7 @@ export interface WorkflowCatalogResult {
 }
 
 /**
- * Kind `workflow_node_result` (registry v4).
+ * Kind `workflow_node_result` (registry v5).
  */
 export interface WorkflowNodeResult {
   hint?: string | null;
@@ -60335,7 +61091,7 @@ export interface WorkflowNodeResult {
 }
 
 /**
- * Kind `workflow_plan_result` (registry v6).
+ * Kind `workflow_plan_result` (registry v7).
  */
 export interface WorkflowPlanResult {
   next?: string | null;
@@ -60416,7 +61172,7 @@ export interface WorkflowRunResult {
 }
 
 /**
- * Kind `workflow_run_status` (registry v3).
+ * Kind `workflow_run_status` (registry v4).
  */
 export interface WorkflowRunStatus {
   hint?: string | null;
@@ -60532,6 +61288,10 @@ export type GeneratedKindSlug =
   | "agent_result"
   | "agent_studio.chat_brief.offer"
   | "agent_task_list"
+  | "agent_test_case_ref"
+  | "agent_test_case_state"
+  | "agent_test_notice"
+  | "agent_test_run_ref"
   | "aggregate_group"
   | "aggregate_result"
   | "ai.translation_cell_draft.offer"
@@ -62097,6 +62857,10 @@ export interface KindPayloadBySlug {
   "agent_result": AgentResult;
   "agent_studio.chat_brief.offer": AgentStudioChatBriefOffer;
   "agent_task_list": AgentTaskList;
+  "agent_test_case_ref": AgentTestCaseRef;
+  "agent_test_case_state": AgentTestCaseState;
+  "agent_test_notice": AgentTestNotice;
+  "agent_test_run_ref": AgentTestRunRef;
   "aggregate_group": AggregateGroup;
   "aggregate_result": AggregateResult;
   "ai.translation_cell_draft.offer": AiTranslationCellDraftOffer;
@@ -63666,6 +64430,10 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_result",
   "agent_studio.chat_brief.offer",
   "agent_task_list",
+  "agent_test_case_ref",
+  "agent_test_case_state",
+  "agent_test_notice",
+  "agent_test_run_ref",
   "aggregate_group",
   "aggregate_result",
   "ai.translation_cell_draft.offer",
