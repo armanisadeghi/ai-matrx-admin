@@ -1037,7 +1037,7 @@ function resolveCommandService(univer: Univer): CommandServiceLike {
  * non-collab documents never load it.
  */
 function collabFactoryFor(documentId: string): DocumentCollabFactory {
-  return async (commandService, onAwareness, onReplaced) => {
+  return async (commandService, onAwareness, onReplaced, base) => {
     const { data: userData } = await getClaimsUser(supabase);
     const uid = userData?.user?.id;
     if (!uid) return null;
@@ -1050,12 +1050,17 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
         ? crypto.randomUUID()
         : `c-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     let host = true; // solo = host
+    // ONE saver per room (the lowest uid's tab leader): a second saver's checkpoint could trim entries
+    // the other's snapshot lacks.
+    const elect = () => session.electHost({ tabTieBreak: true }).isHost;
     const session = new WorkbookCollabSession({
       // The session takes an opaque resource id — the documentId rides the
       // `workbookId` field; the session only forwards it to makeProvider.
       workbookId: documentId,
       // A document's typed text IS its doc.mutation.* stream; without this the room drops it as cell-editor scratch.
       forwardDocumentMutations: true,
+      // What this tab booted from: the room never replays an edit that snapshot already holds.
+      base,
       uid,
       clientId,
       commandService,
@@ -1072,7 +1077,7 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
           readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
         }),
       onAwarenessChange: (aw) => {
-        host = session.electHost().isHost;
+        host = elect();
         onAwareness({
           states: new Map(aw.getStates() as Map<number, AwarenessState>),
           selfUid: uid,
@@ -1081,10 +1086,13 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
       onReplaced: () => onReplaced(),
     });
     await session.start();
+    host = elect();
     return {
       stop: () => session.stop(),
       isHost: () => host,
       announceReplaced: (snapshotId) => session.announceReplaced(snapshotId),
+      coveredNow: () => session.coveredNow(),
+      checkpoint: (snapshotId, covered) => session.checkpoint(snapshotId, covered),
     };
   };
 }

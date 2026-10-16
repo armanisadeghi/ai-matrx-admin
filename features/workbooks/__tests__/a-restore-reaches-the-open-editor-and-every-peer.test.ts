@@ -212,7 +212,9 @@ describe("a document restore", () => {
     await model.startCollab(async () => ({
       stop: () => {},
       isHost: () => true,
-      announceReplaced: (id) => announced.push(id),
+      announceReplaced: (id) => void announced.push(id),
+      coveredNow: () => [],
+      checkpoint: () => {},
     }));
 
     // An unsaved edit is pending when the person restores an older version.

@@ -131,6 +131,7 @@ import { workbookHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { copyActiveSheetReference } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
 import { useWorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
 import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@ai-matrx/office/univer";
+import { stampCovered, takeCovered } from "@ai-matrx/office/univer";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -192,6 +193,8 @@ export default function WorkbookEditor({
   const lastSaveByUserRef = useRef<string | null>(null);
   /** The snapshot row the canvas shows (loaded, saved, or replaced to). */
   const shownSnapshotIdRef = useRef<string | null>(null);
+  /** The collab-room entries the shown snapshot already holds (never replayed on top of it). */
+  const baseCoveredRef = useRef<ReadonlySet<string>>(new Set());
   /** True while the content is being swapped: what Univer emits then is not an edit. */
   const replacingRef = useRef(false);
   // V2 collab session — null until `collab=true` AND Univer has booted.
@@ -397,9 +400,9 @@ export default function WorkbookEditor({
           setBootState("load_error");
           return;
         }
-        const initial: Partial<IWorkbookData> =
-          (res.data?.snapshot as Partial<IWorkbookData>) ??
-          defaultEmptyWorkbook();
+        const loaded = takeCovered((res.data?.snapshot ?? null) as Partial<IWorkbookData> | null);
+        baseCoveredRef.current = loaded.covered;
+        const initial: Partial<IWorkbookData> = loaded.snapshot ?? defaultEmptyWorkbook();
         apiRef.current.createWorkbook(initial);
         shownSnapshotIdRef.current = res.data?.id ?? null;
         setBootState("ready");
@@ -582,6 +585,13 @@ export default function WorkbookEditor({
       },
       // A peer restored history / took Google's version: show the newest save.
       onReplaced: () => void reloadFromLatest(),
+      // What this seat booted from: the room never replays an edit that snapshot already holds, and a
+      // seat that booted from an older snapshot than the room's newest checkpoint loads the newest first.
+      base: {
+        snapshotId: () => shownSnapshotIdRef.current,
+        covered: () => baseCoveredRef.current,
+        reload: () => reloadFromLatest(),
+      },
     });
 
     collabSessionRef.current = session;
@@ -666,7 +676,8 @@ export default function WorkbookEditor({
     const previous = api.getActiveWorkbook()?.save() ?? null;
     // Guarded: if the new content cannot be created, the old content is put back at once (never a
     // blank grid), then the latest saved version is reloaded; the error still reaches the caller.
-    const guarded = () => swapContentGuarded({ swap: swapTo, next: row.snapshot, previous });
+    const next = takeCovered(row.snapshot);
+    const guarded = () => swapContentGuarded({ swap: swapTo, next: next.snapshot, previous });
     replacingRef.current = true;
     let swapped: ReturnType<typeof guarded>;
     try {
@@ -681,8 +692,10 @@ export default function WorkbookEditor({
         if (isServiceFailure(latest) || !latest.data?.snapshot) return;
         replacingRef.current = true;
         try {
-          swapTo(latest.data.snapshot);
+          const shown = takeCovered(latest.data.snapshot);
+          swapTo(shown.snapshot);
           shownSnapshotIdRef.current = latest.data.id;
+          baseCoveredRef.current = shown.covered;
         } catch (err) {
           console.warn("[workbook] could not show the latest saved version after a failed swap", err);
         } finally {
@@ -693,6 +706,7 @@ export default function WorkbookEditor({
       throw swapped.error instanceof Error ? swapped.error : new Error(String(swapped.error));
     }
     shownSnapshotIdRef.current = row.id;
+    baseCoveredRef.current = next.covered;
     setSaveStatus("idle");
     wireCollabSelection();
     if (announce) session?.announceReplaced(row.id);
@@ -716,9 +730,12 @@ export default function WorkbookEditor({
       if (!apiRef.current) return;
       const workbook = apiRef.current.getActiveWorkbook();
       if (!workbook) return;
-      // Entries already in the shared mutation log are inside this snapshot.
-      const logMark = collabSessionRef.current?.logLength() ?? 0;
-      const snapshot = workbook.save();
+      // The room entries this workbook holds, read WITH the snapshot: the saved row names them, so a
+      // seat that reloads from it never replays them on top of it.
+      const session = collabSessionRef.current;
+      const covered = session ? session.coveredNow() : null;
+      const saved = workbook.save();
+      const snapshot = covered ? stampCovered(saved, covered) : saved;
       setSaveStatus("saving");
 
       const { data: userData } = await getClaimsUser(supabase);
@@ -736,10 +753,9 @@ export default function WorkbookEditor({
       }
       setSaveStatus("saved");
       shownSnapshotIdRef.current = res.data.id;
-      // The host's saved snapshot now holds those mutations; trim them from
-      // the shared log so a joiner does not replay them onto it.
-      if (collabSessionRef.current && collabIsHostRef.current) {
-        collabSessionRef.current.compactLog(logMark);
+      // The host's saved snapshot now holds those entries: they leave the shared log (by id).
+      if (session && covered && collabIsHostRef.current) {
+        session.checkpoint(res.data.id, covered);
       }
       if (origin === "manual") {
         toast({ title: "Snapshot saved", variant: "success" });

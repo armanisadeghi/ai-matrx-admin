@@ -226,7 +226,7 @@ async function stageA() {
   // mutations the loaded workbook already holds (feedback 88184e53).
   const mark = sessionA.logLength();
   check("A6 log holds the pushed mutation", mark === 1, `length ${mark}`);
-  sessionA.compactLog(mark);
+  sessionA.checkpoint("snapshot-a6", sessionA.coveredNow());
   const userC = makeMockCommandService();
   const sessionC = new WorkbookCollabSession({
     workbookId: roomId,
