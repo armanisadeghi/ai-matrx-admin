@@ -18,7 +18,7 @@ import { FlaskConical } from "lucide-react";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectIsAdmin, selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";
 import {
   captureAiTestModeFromUrl,
@@ -52,8 +52,12 @@ export function aiTestModeNotice(mode: AiTestMode, status: AiTestModeStatus): st
 /** The tab's mode and what the server says about it; `status` null = the switch is absent. */
 function useAiTestModeState() {
   const userId = useAppSelector(selectUserId);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const mode = useSyncExternalStore(subscribeAiTestMode, readAiTestMode, () => "real" as AiTestMode);
-  const cacheKey = userId ? `${userId}:${mode}` : null;
+  // ASK ONLY WHO CAN USE IT (2026-10-15): an admin, or a tab someone deliberately switched off
+  // "real" (a fixture account under ?ai_test_mode=). Everyone else never calls the server: the
+  // status request ran on every route for every signed-in person.
+  const cacheKey = userId && (isAdmin || mode !== "real") ? `${userId}:${mode}` : null;
   const [status, setStatus] = useState<AiTestModeStatus | null>(() =>
     cacheKey ? (statusCache.get(cacheKey) ?? null) : null,
   );
