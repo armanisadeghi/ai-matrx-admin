@@ -50,6 +50,7 @@ import {
   personPeekRequested,
   subscribePersonPeek,
 } from "@/features/data-tables/records-ui-host/personPeekStore";
+import { installFirstEngagementListeners } from "@/lib/boot/firstEngagement";
 import { installGlobalErrorCapture } from "@/lib/diagnostics/globalErrorCapture";
 import { installErrorPersistence } from "@/lib/diagnostics/persistCapturedErrors";
 
@@ -68,6 +69,9 @@ import { installErrorPersistence } from "@/lib/diagnostics/persistCapturedErrors
 // immediately when `window` is undefined, so the SSR pass of this client
 // module is a no-op.
 installGlobalErrorCapture();
+// The engagement tier (lib/boot/firstEngagement.ts) must see a click or key press made BEFORE the
+// deferred core loads, so its listeners go on here, at boot-bundle evaluation.
+installFirstEngagementListeners();
 
 const DeferredSingletonCore = dynamic(
   () => import("./DeferredSingletonCore"),

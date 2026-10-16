@@ -39,6 +39,7 @@ import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree"
 import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
 import { registerBlobCacheServiceWorker } from "@/features/files/cache/register-service-worker";
 import { resolveBaseUrl } from "@/lib/python-client";
+import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { forgetEntitlementSnapshot } from "@/features/entitlements/service";
 import { UsageGateBridge } from "@/features/entitlements/usage-gate/UsageGateBridge";
 import {
@@ -62,12 +63,16 @@ export default function DeferredSingletonCore() {
   // so it never re-warms (the same before/after rule as
   // features/mandates/redux/org-switch-cache-middleware.ts). The primitive
   // dedupes per person+org for 60s and is silent when the server says no.
+  // ENGAGEMENT, NOT IDLE (owner rule, 2026-10-16): the first warm waits for the page's first real
+  // engagement (pointer/key press or composer focus — lib/boot/firstEngagement.ts), once per page
+  // load; an org change after that re-warms.
+  const engaged = useHasEngaged();
   const warmup = useWarmup();
   const warmedFor = useRef<{ userId: string; organizationId: string } | null>(
     null,
   );
   useEffect(() => {
-    if (!warmup || !user?.id || !organizationId) return;
+    if (!engaged || !warmup || !user?.id || !organizationId) return;
     const before = warmedFor.current;
     if (before?.userId === user.id && before.organizationId === organizationId)
       return;
@@ -80,7 +85,7 @@ export default function DeferredSingletonCore() {
     } else {
       warmup.warm([{ key: "core" }], "session");
     }
-  }, [warmup, user?.id, organizationId]);
+  }, [engaged, warmup, user?.id, organizationId]);
 
   // NOTE: global error capture + persistence install live in the WRAPPER
   // (DeferredSingletonWrapper.tsx), not here — they must be running during
