@@ -13,7 +13,7 @@
  *    visitor there — and an in-app banner floating over it covers its
  *    controls (live 2026-10-10: it sat on the study deck's Ask button).
  *
- * The body — server-action call to `getActiveAnnouncements`,
+ * The body — direct Supabase read (after the page settles),
  * `SystemAnnouncement` types, and the `SystemAnnouncementBanner` markup —
  * lives in `AnnouncementProviderImpl.tsx` and is `next/dynamic`-loaded only
  * once both gates open, so its dep graph never enters the static graph of

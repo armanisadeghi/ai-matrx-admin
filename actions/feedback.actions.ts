@@ -1084,56 +1084,6 @@ export async function confirmFeedbackResolution(
 // ============= ANNOUNCEMENT ACTIONS =============
 
 /**
- * Get active announcements
- */
-export async function getActiveAnnouncements(): Promise<{
-  success: boolean;
-  error?: string;
-  data?: SystemAnnouncement[];
-}> {
-  try {
-    const supabase = await createClient();
-
-    // Targeted announcements: target_user_id NULL = global; a user_id means
-    // only that user sees the popup. Never an alarm: operator alerts live on
-    // the super-admin attention dock (features/admin/attention).
-    const {
-      data: { user },
-    } = await getClaimsUser(supabase);
-
-    let query = supabase
-      .schema("users")
-      .from("system_announcements")
-      .select("*")
-      .eq("is_active", true)
-      .is("deleted_at", null);
-    query = user
-      ? query.or(`target_user_id.is.null,target_user_id.eq.${user.id}`)
-      : query.is("target_user_id", null);
-    const { data, error } = await query.order("created_at", {
-      ascending: false,
-    });
-
-    if (error) {
-      console.error("Error fetching announcements:", error);
-      return { success: false, error: error.message };
-    }
-
-    return {
-      success: true,
-      data: mapSystemAnnouncementRows(data ?? []),
-    };
-  } catch (error: unknown) {
-    console.error("Error in getActiveAnnouncements:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
-    };
-  }
-}
-
-/**
  * Get all announcements (admin only)
  */
 export async function getAllAnnouncements(): Promise<{

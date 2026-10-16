@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { getActiveAnnouncements } from "@/actions/feedback.actions";
+import { readActiveAnnouncements } from "@/lib/announcements/readActiveAnnouncements";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import type {
   AnnouncementType,
@@ -238,7 +238,7 @@ export function AnnouncementExperience({
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
-    getActiveAnnouncements()
+    readActiveAnnouncements()
       .then((result) => {
         if (cancelled) return;
         if (result.success) setAnnouncements(result.data ?? []);
