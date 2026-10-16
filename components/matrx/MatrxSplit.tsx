@@ -15,7 +15,7 @@ import { Eye, PenLine } from "lucide-react";
 import {
   type ScrollEdgeIntent,
   useScrollEdgeIntent,
-} from "./useTrimEdgeScrollIntent";
+} from "@ai-matrx/chat/ui/content-refine/useTrimEdgeScrollIntent";
 import type {
   ContentSource,
   RichDocumentActionId,

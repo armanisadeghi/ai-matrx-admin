@@ -183,7 +183,7 @@ import { marketingSiteKeywordsManifest } from "./marketing-site-keywords.manifes
 import { marketingSiteMediaManifest } from "./marketing-site-media.manifest";
 import { quickTasksManifest } from "./quick-tasks.manifest";
 import { taskCreateManifest } from "./task-create.manifest";
-import { quickNoteSaveManifest } from "./quick-note-save.manifest";
+import { quickNoteSaveManifest } from "@ai-matrx/chat/surfaces/manifests/quick-note-save.manifest";
 import { filePreviewManifest } from "./file-preview.manifest";
 import { fileManifest } from "./file.manifest";
 import { imageViewerManifest } from "./image-viewer.manifest";

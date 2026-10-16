@@ -48,7 +48,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 | Family | Best file to copy |
 |--------|-------------------|
 | Notes | [`QuickNoteSaveCore.tsx`](../features/notes/actions/quick-save/QuickNoteSaveCore.tsx) + [`saveToNotes.tsx`](../features/overlays/openers/saveToNotes.tsx) |
-| Code | [`QuickSaveCodeCore.tsx`](../features/code-files/actions/QuickSaveCodeCore.tsx) + [`saveToCode.tsx`](../features/overlays/openers/saveToCode.tsx) |
+| Code | `@ai-matrx/chat/window-panels/windows/code/SaveToCodeWindow` (package body over the `host/code-files` slots, registered in `providers/chatMessageActionSlots.ts`) + [`saveToCode.tsx`](../features/overlays/openers/saveToCode.tsx) |
 | Tasks | [`TaskQuickCreateCore.tsx`](../features/tasks/widgets/quick-create/TaskQuickCreateCore.tsx) + [`CreateTaskFromSourceDialog.tsx`](../features/tasks/widgets/CreateTaskFromSourceDialog.tsx) (bridge pattern) |
 
 ### Minimal checklist — new family
@@ -87,9 +87,8 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 
 | Piece | Path |
 |-------|------|
-| Hook | [`useQuickSaveCode.ts`](../features/code-files/actions/useQuickSaveCode.ts) |
-| Core | [`QuickSaveCodeCore.tsx`](../features/code-files/actions/QuickSaveCodeCore.tsx) |
-| Shell | [`QuickSaveCodeDialog.tsx`](../features/code-files/actions/QuickSaveCodeDialog.tsx) |
+| Body | `@ai-matrx/chat/window-panels/windows/code/SaveToCodeWindow` (the package; every host opens the same window) |
+| Host services | `@ai-matrx/chat/host/code-files` slots, this app's in [`chatMessageActionSlots.ts`](../providers/chatMessageActionSlots.ts) |
 | Overlay ID | `saveToCode` |
 | Opener | [`saveToCode.tsx`](../features/overlays/openers/saveToCode.tsx) |
 | Trigger | [`SaveToCodeButton.tsx`](../features/code-files/actions/SaveToCodeButton.tsx) |

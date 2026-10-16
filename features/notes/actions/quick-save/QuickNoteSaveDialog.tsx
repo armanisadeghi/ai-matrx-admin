@@ -16,15 +16,15 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import type { Note } from "@/features/notes/types";
-import { QuickNoteSaveCore, type PostSaveAction } from "./QuickNoteSaveCore";
+import type { QuickSaveNote } from "@ai-matrx/chat/window-panels/windows/notes/quick-save-notes-port";
+import { QuickNoteSaveCore, type PostSaveAction } from "@ai-matrx/chat/window-panels/windows/notes/QuickNoteSaveCore";
 
 export interface QuickNoteSaveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialContent: string;
   bucketTag?: string;
-  onSaved?: (note?: Note, action?: PostSaveAction) => void;
+  onSaved?: (note?: QuickSaveNote, action?: PostSaveAction) => void;
 }
 
 export function QuickNoteSaveDialog({
@@ -36,7 +36,7 @@ export function QuickNoteSaveDialog({
 }: QuickNoteSaveDialogProps) {
   const isMobile = useIsMobile();
 
-  const handleSaved = (note: Note, action: PostSaveAction) => {
+  const handleSaved = (note: QuickSaveNote, action: PostSaveAction) => {
     onSaved?.(note, action);
     onOpenChange(false);
   };
