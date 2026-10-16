@@ -4,6 +4,7 @@ import type { WheelEvent as ReactWheelEvent } from "react";
 import { usePathname } from "next/navigation";
 import { AdminModuleHeader } from "./_nav/AdminModuleHeader";
 import { filteredPages, MODULE_HOME, MODULE_NAME } from "./config";
+import { AdminOrganizationAsk } from "@/features/admin/admin-organization/AdminOrganizationAsk";
 
 /**
  * "Fullscreen" admin routes — pages that render their own in-page chrome
@@ -100,6 +101,7 @@ export function ClientAdminLayout({
           routes={routes}
         />
       )}
+      <AdminOrganizationAsk />
       <main
         className={`w-full flex-1 min-h-0 bg-textured ${
           databaseRoute ? "overflow-hidden" : "overflow-y-auto"
