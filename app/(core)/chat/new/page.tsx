@@ -7,29 +7,19 @@ import {
 import { ChatNewHeader } from "@ai-matrx/chat/agents/components/chat/ChatNewHeader";
 import { readComposerModeCookie } from "@ai-matrx/chat/next/server/composer-mode.server";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
-import { ChatMandateWarmup } from "@/components/warmup/ChatMandateWarmup";
-import { resolveMandateSeed } from "@/features/mandates/seed.server";
+import { mandateDisplaySeed } from "@ai-matrx/agents/mandates";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 /**
- * SSR mandate resolution: which agent owns `/chat/new` for THIS user (system
- * default → their own `chat.default_new_chat` binding). Resolving here means
- * the header and input bar mount the right agent with no client flash. On a
- * resolution failure we SCREAM server-side and return null — the client then
- * re-attempts through the one client resolver and surfaces its loud error
- * state; there is no hardcoded-agent fallback.
+ * ZERO LOOKUPS (Arman, 2026-10-15): the default chat agent is never read to paint
+ * this page. Its name, description and run settings are the GENERATED seed of the
+ * mandate's system Holder (`MANDATE_DISPLAY_SEEDS`, written from the live binding and
+ * release-checked by `mandate-display-seeds`). The send goes through the mandate
+ * door, where the server applies this person's own binding.
  */
-async function resolveDefaultChatAgentId(): Promise<string | null> {
-  // BOUNDED — see seed.server.ts. The seed screams on its own and never throws.
-  return (await resolveMandateSeed(DEFAULT_NEW_CHAT_MANDATE_KEY)).agentId;
-}
+const DEFAULT_SEED = mandateDisplaySeed(DEFAULT_NEW_CHAT_MANDATE_KEY);
 
-/**
- * Single-column SSR lookup for the default agent's display name so the chat
- * picker bar has a real label on first paint (instead of the bare placeholder
- * or a "loading" flicker). The lazy `AgentListDropdown` still defers its full
- * fetch until the user actually clicks the picker.
- */
+/** A `?agent=<id>` agent's display name for first paint (one column, that agent only). */
 async function resolveAgentName(agentId: string): Promise<string | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -54,10 +44,8 @@ function requestedAgentId(
 
 /**
  * 🚨 THE PAGE STREAMS. Nothing here is awaited above a Suspense boundary: the
- * shell and the composer outline go out with the first byte, and the default
- * agent's seed (three sequential reads — mandate, treatment, agent name)
- * fills in behind it. Awaiting them at the top held the whole document until
- * every read had come back (first byte ~6 s signed in, 2026-10-09).
+ * shell and the composer outline go out with the first byte. The default agent
+ * is the generated seed above — no read at all.
  */
 export default function NewChatPage({
   searchParams,
@@ -77,23 +65,17 @@ async function NewChatSeeded({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const pinnedAgentId = requestedAgentId(await searchParams);
-  const [defaultAgentId, initialMode] = await Promise.all([
-    pinnedAgentId ? Promise.resolve(null) : resolveDefaultChatAgentId(),
+  const [initialMode, pinnedAgentName] = await Promise.all([
     readComposerModeCookie(),
+    pinnedAgentId ? resolveAgentName(pinnedAgentId) : Promise.resolve(null),
   ]);
   // An explicit agent wins over the default-chat mandate; it is addressed
   // directly (like /chat/a/[agentId]) so an unreadable id shows the access
   // gate rather than silently answering with someone else.
-  const agentId = pinnedAgentId ?? defaultAgentId;
-  const defaultAgentName = agentId ? await resolveAgentName(agentId) : null;
+  const agentId = pinnedAgentId ?? DEFAULT_SEED?.agentId ?? null;
+  const defaultAgentName = pinnedAgentId ? pinnedAgentName : (DEFAULT_SEED?.runTier.name ?? null);
   return (
     <>
-      {!pinnedAgentId && (
-        <ChatMandateWarmup
-          mandateKey={DEFAULT_NEW_CHAT_MANDATE_KEY}
-          agentId={agentId}
-        />
-      )}
       <ChatNewHeader
         agentId={agentId}
         initialAgentName={defaultAgentName ?? undefined}

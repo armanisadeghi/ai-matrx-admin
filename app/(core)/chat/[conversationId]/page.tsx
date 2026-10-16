@@ -4,12 +4,11 @@ import { createClient } from "@/utils/supabase/server";
 import { conversationIdOrNull } from "@ai-matrx/chat/agents/utils/conversation-ref";
 import { ChatConversationRoom } from "@ai-matrx/chat/agents/components/chat/ChatConversationRoom";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
-import { ChatMandateWarmup } from "@/components/warmup/ChatMandateWarmup";
 import { ChatConversationWarmup } from "@/components/warmup/ChatConversationWarmup";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ServerReadRecheck } from "@/features/access-gate/components/ServerReadRecheck";
 import { ChatNewLandingSkeleton } from "@ai-matrx/chat/agents/components/chat/ChatNewClient";
-import { resolveMandateSeed } from "@/features/mandates/seed.server";
+import { mandateDisplaySeed } from "@ai-matrx/agents/mandates";
 import { ChatRunHeader } from "@ai-matrx/chat/agents/components/chat/ChatRunHeader";
 import { readComposerModeCookie } from "@ai-matrx/chat/next/server/composer-mode.server";
 import {
@@ -109,23 +108,14 @@ async function resolveAgentName(
 }
 
 /**
- * The mandate that owns an agent-less room — the same SSR resolution
- * `/chat/new` performs. A failure SCREAMS and returns null; the client room
- * then re-resolves through the one client resolver and goes loud itself.
- * There is no hardcoded-agent fallback.
+ * The mandate that owns an agent-less room paints its GENERATED system-Holder
+ * seed — no read (Arman, 2026-10-15; `MANDATE_DISPLAY_SEEDS`, release-checked).
+ * The send goes through the mandate door, where the server applies this
+ * person's own binding.
  */
-async function resolveMandateAgent(): Promise<{
-  agentId: string;
-  agentName: string | null;
-} | null> {
-  // BOUNDED — see seed.server.ts. The seed screams on its own and never throws.
-  const seed = await resolveMandateSeed(DEFAULT_NEW_CHAT_MANDATE_KEY);
-  if (!seed.agentId) return null;
-  const supabase = await createClient();
-  return {
-    agentId: seed.agentId,
-    agentName: await resolveAgentName(supabase, seed.agentId),
-  };
+function mandateAgent(): { agentId: string; agentName: string | null } | null {
+  const seed = mandateDisplaySeed(DEFAULT_NEW_CHAT_MANDATE_KEY);
+  return seed ? { agentId: seed.agentId, agentName: seed.runTier.name } : null;
 }
 
 async function ChatConversationSeeded({
@@ -160,7 +150,7 @@ async function ChatConversationSeeded({
 
   const ownedByMandate = seed.agentId === null;
   const [display, initialMode] = await Promise.all([
-    ownedByMandate ? resolveMandateAgent() : Promise.resolve(seed),
+    ownedByMandate ? mandateAgent() : seed,
     readComposerModeCookie(),
   ]);
 
@@ -170,9 +160,6 @@ async function ChatConversationSeeded({
         conversationId={conversationId}
         agentId={display?.agentId ?? null}
       />
-      {ownedByMandate && (
-        <ChatMandateWarmup mandateKey={DEFAULT_NEW_CHAT_MANDATE_KEY} />
-      )}
       <ChatRunHeader
         activeAgentId={display?.agentId ?? undefined}
         initialAgentName={display?.agentName ?? undefined}
