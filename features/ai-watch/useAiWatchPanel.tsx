@@ -60,6 +60,7 @@ import { AI_WATCH_PAGE_INSTANCE } from "@/features/overlays/openers/aiWatchWindo
 import { autoSelection, buildRail, callKindTitle, focusKey, railGroupHeading, UNRECORDED_GROUP } from "@/features/ai-watch/watch-rail";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
+import { loadRunValues } from "@/features/workflow-runtime/transport/run-values";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
 import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
 import {
@@ -698,7 +699,11 @@ function MandateSection({
       {continuation ? (
         <ContinuationTurn frame={frame} />
       ) : (
-        <ProvisionSection title={`Provision · routed at the door (${provisions.length})`} rows={provisions} />
+        <ProvisionSection
+          title={`Provision · routed at the door (${provisions.length})`}
+          rows={provisions}
+          requestId={frame.request_id ?? null}
+        />
       )}
 
       {earlierFrames(frame).map((prior, i) => {
@@ -706,7 +711,12 @@ function MandateSection({
         return continuationView(prior) ? (
           <ContinuationTurn key={i} frame={prior} title={`Earlier on this run · ${prior.door}`} />
         ) : (
-          <ProvisionSection key={i} title={`Earlier on this run · ${prior.door} · provision (${rows.length})`} rows={rows} />
+          <ProvisionSection
+            key={i}
+            title={`Earlier on this run · ${prior.door} · provision (${rows.length})`}
+            rows={rows}
+            requestId={prior.request_id ?? null}
+          />
         );
       })}
 
@@ -729,9 +739,30 @@ function MandateSection({
   );
 }
 
-function ProvisionSection({ title, rows }: { title: string; rows: ProvisionRow[] }) {
+function ProvisionSection({ title, rows, requestId }: { title: string; rows: ProvisionRow[]; requestId: string | null }) {
+  // The streamed frame names each value by hash only; the values come from the server on demand
+  // (GET /runs/{request_id}/values, admin debug mode — Watch AI is admin + debug only).
+  const [values, setValues] = useState<Map<string, unknown>>(new Map());
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const hashKey = rows
+    .filter((r) => !r.inline && r.hash)
+    .map((r) => r.hash as string)
+    .join(",");
+  useEffect(() => {
+    const hashes = hashKey ? hashKey.split(",") : [];
+    if (!requestId || hashes.length === 0) return;
+    let live = true;
+    loadRunValues(requestId, hashes).then(
+      (found) => live && setValues(found),
+      (e: unknown) => live && setLoadError(e instanceof Error ? e.message : String(e)),
+    );
+    return () => {
+      live = false;
+    };
+  }, [requestId, hashKey]);
   return (
     <Section title={title}>
+      {loadError ? <ErrorNotice title="The provision values could not be read" message={loadError} /> : null}
       {rows.length === 0 ? (
         <div className="text-muted-foreground">No provision values on this run</div>
       ) : (
@@ -739,7 +770,13 @@ function ProvisionSection({ title, rows }: { title: string; rows: ProvisionRow[]
           <Block
             key={p.name}
             label={`${p.name} · ${p.kind}${p.supplied ? "" : " · not supplied"} → ${p.landed}`}
-            value={p.inline ? p.value : `Not inlined (${p.ref ?? "no value"})`}
+            value={
+              p.inline
+                ? p.value
+                : p.hash && values.has(p.hash)
+                  ? values.get(p.hash)
+                  : `Not inlined (${p.ref ?? (p.hash ? "loading" : "no value")})`
+            }
           />
         ))
       )}
@@ -779,6 +816,7 @@ interface ProvisionRow {
   inline: boolean;
   value: unknown;
   ref: string | null;
+  hash: string | null;
 }
 
 function provisionRows(frame: MandateRunData): ProvisionRow[] {
@@ -797,6 +835,7 @@ function provisionRows(frame: MandateRunData): ProvisionRow[] {
       inline: "value" in p,
       value: p.value,
       ref: typeof p.value_ref === "string" ? p.value_ref : null,
+      hash: typeof p.value_hash === "string" ? p.value_hash : null,
     };
   });
 }

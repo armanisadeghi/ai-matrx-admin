@@ -4,6 +4,7 @@
  * source. Capture needs the server (it reads stored captures); reading saved snapshots is direct.
  * Server: aidream/services/provision_window. FEATURE: ./FEATURE.md.
  */
+import { isRunDebugView } from "@/features/workflow-runtime/transport/debug-view";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { supabase } from "@/utils/supabase/client";
@@ -116,6 +117,8 @@ export async function captureProvision(
       pathParams: { point_key: pointKey } as never,
       scopeOverrides: { organization_id: organizationId },
       body: { subject_id: subjectId, trigger } as never,
+      // Values are built only for an admin in debug mode; everyone else records the point's names only.
+      queryParams: isRunDebugView() ? ({ debug_view: "1" } as never) : undefined,
     }),
   );
   if (result.error) throw new Error(result.error.message || "The provision could not be captured.");

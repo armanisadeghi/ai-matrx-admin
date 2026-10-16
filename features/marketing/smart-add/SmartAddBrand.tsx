@@ -64,6 +64,8 @@ import { SmartAddHero, stageLogo, stageLogos, stageName, type PersonMore } from 
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
+import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import { useSocialSpend } from "@/features/marketing/social/cost";
 import { BrandCard, CustomAdd, situationOf } from "./SmartAddExtras";
 import { CompareDialog } from "./compare/CompareDialog";
@@ -1056,6 +1058,11 @@ export function SmartAddBrand({
   const postsKnob = Number(useSessionKnob("social.smart_add_posts_default"));
   const postsPerAccount = Number.isFinite(postsKnob) && postsKnob >= 0 ? postsKnob : 30;
   const spendOrg = useAppSelector((st) => st.appContext?.organization_id ?? null);
+  // Provision values stay on the server: the inputs capture, its window and "Capture again" are an admin's
+  // debug view only (Arman, 2026-10-15/16).
+  const canSeeProvision = useAppSelector(
+    (st) => selectAdminFeature(st, "provision.open-any-snapshot") && Boolean(selectIsDebugMode(st)),
+  );
   const spend = useSocialSpend(spendOrg);
   const trackedAccounts = basics.accounts.filter((a) => a.platform);
   const postsPoints = postsPerAccount ? spend.postsTotalText(trackedAccounts.map((a) => a.platform ?? ""), postsPerAccount) : null;
@@ -1357,7 +1364,7 @@ export function SmartAddBrand({
         }
       }
       // On the validation page the inputs are captured (Builder panel) but no window covers the queue.
-      await showProvision(brand, organizationId, "created", false);
+      if (canSeeProvision) await showProvision(brand, organizationId, "created", false);
     } catch (error) {
       setCreateError(extractErrorMessage(error));
     } finally {
@@ -2087,7 +2094,7 @@ export function SmartAddBrand({
         </div>
       ) : null}
 
-      {created ? (
+      {created && canSeeProvision ? (
         <section className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-xs" data-testid="smart-add-provision" aria-label="Brand analysis inputs">
           <span className="font-semibold">Brand analysis</span>
           <span className="text-muted-foreground">Not running · inputs only</span>
