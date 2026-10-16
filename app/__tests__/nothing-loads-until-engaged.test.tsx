@@ -31,7 +31,7 @@ jest.mock("@/features/scopes/redux/thunks/ensureScopeTree", () => ({
 jest.mock("@/lib/boot/primaryContent", () => ({ whenPrimaryContentShown: () => Promise.resolve() }));
 
 import { scopeTreeDemandEnhancer } from "@/features/scopes/redux/scopeTreeDemand";
-import { hasEngaged, installFirstEngagementListeners, resetFirstEngagement, whenEngaged } from "@/lib/boot/firstEngagement";
+import { engageForTest, hasEngaged, installFirstEngagementListeners, resetFirstEngagement, whenEngaged } from "@/lib/boot/firstEngagement";
 import { isFileBytesUrl, registerBlobCacheOnFirstFileFetch } from "@/features/files/cache/registerOnFirstFileFetch";
 import { openPersonPeek, personPeekRequested, getPersonPeekTarget } from "@/features/data-tables/records-ui-host/personPeekStore";
 
@@ -94,24 +94,27 @@ describe("V25 — the scope tree loads on its first read, never at idle", () => 
 describe("V20 — engagement tier", () => {
   beforeEach(() => resetFirstEngagement());
 
-  test("idle is not engagement; a pointer press is", async () => {
+  test("idle is not engagement; a script-dispatched press is not; a trusted one is", async () => {
     installFirstEngagementListeners();
     expect(hasEngaged()).toBe(false);
     const p = whenEngaged();
-    window.dispatchEvent(new Event("pointerdown"));
+    window.dispatchEvent(new Event("pointerdown")); // isTrusted === false in jsdom and for any script
+    window.dispatchEvent(new Event("keydown"));
+    expect(hasEngaged()).toBe(false);
+    engageForTest();
     await p;
     expect(hasEngaged()).toBe(true);
   });
 
-  test("focus on a button is not engagement; focus in a composer is", () => {
+  test("programmatic focus never engages, in a composer or out of one", () => {
     installFirstEngagementListeners();
     const button = document.createElement("button");
     const composer = document.createElement("textarea");
     document.body.append(button, composer);
     button.focus();
     expect(hasEngaged()).toBe(false);
-    composer.focus();
-    expect(hasEngaged()).toBe(true);
+    composer.focus(); // the composer's autofocus on load: no gesture, no engagement
+    expect(hasEngaged()).toBe(false);
   });
 
   test("the warm waits for engagement, and the wrapper sees engagement before the core loads", () => {

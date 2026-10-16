@@ -303,7 +303,12 @@ export function MessagingHost({ children }: MessagingHostProps) {
   // mute with nothing in the console to explain it.
   useEffect(() => {
     const handle = (): void => {
-      unlockAudio();
+      // `new AudioContext()` opens the audio device synchronously (a 200 ms+ long frame on the
+      // very click it rode). Browser activation outlives the click, so unlock after the click's
+      // frame has painted, in idle time.
+      const unlock = (): void => unlockAudio();
+      if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(unlock, { timeout: 1500 });
+      else window.setTimeout(unlock, 200);
       document.removeEventListener("click", handle);
       document.removeEventListener("keydown", handle);
       document.removeEventListener("touchstart", handle);
