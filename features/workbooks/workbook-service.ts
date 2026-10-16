@@ -8,7 +8,7 @@
  *
  * What lives elsewhere:
  *   - Sharing / permissions: features/sharing/ + `has_permission(...)` RLS
- *   - Realtime: features/workbooks/hooks/useWorkbookRealtime
+ *   - Realtime: @ai-matrx/office/univer/collab useWorkbookRealtime
  *   - Component: features/workbooks/components/WorkbookEditor
  *
  * See `features/data-tables/FEATURE.md` for architecture context.
