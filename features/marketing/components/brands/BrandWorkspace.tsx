@@ -1,6 +1,7 @@
 "use client";
 
 import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
+import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
 import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useEffect, useRef, useState } from "react";
@@ -1033,6 +1034,9 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               ) : null}
             </div>
           </section>
+
+          {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
+          {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
 
           {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
           {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}

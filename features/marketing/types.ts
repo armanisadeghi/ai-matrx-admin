@@ -793,6 +793,7 @@ export interface UpdateBrandAssetInput {
       | "sort_order"
       | "data"
       | "confirmed_at"
+      | "metadata"
     >
   >;
 }
