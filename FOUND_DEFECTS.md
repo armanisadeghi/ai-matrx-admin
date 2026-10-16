@@ -15,6 +15,11 @@ The ledger of found bugs and gaps on the frontend. Twin of aidream's `FOUND_DEFE
 
 ## OPEN
 
+### D359 — Organization switcher omits organizations the person belongs to (2026-10-16)
+
+As admin@admin.com on the shared preview, an organization the account owns (made through `public.org_create` minutes earlier) never appears in the sidebar organization switcher, even after a reload; searching its name says "No organization matches", and none of the account's several other recently made organizations show either. `?org=<id>` on any page does switch to it, so membership is fine: the host's organization list handed to `OrganizationPicker` (`aidream/apps/shared/design-system/src/organization-picker.tsx`) is incomplete — likely capped or served from a stale cache. Fix: list every membership (page it if needed) and refresh after an organization is created.
+
+
 ### D358 — Shared validation blockers observed during surface declaration pass (2026-10-07)
 
 Managed preview `/dashboard` returns 500 with `ReferenceError: Cannot access 'matrxDirectiveHost' before initialization` from the shared rich-content host loader. Owner: content host integration; reproduce with managed preview and repair the initialization cycle. `check:surface-routes` separately reports the published `/p -> matrx-public/p` mapping without a manifest; owner: public route/resolver integration, reconcile the retired route and installed mapping. Direct surface sync uses an unavailable legacy `SUPABASE_MATRIX_*` database host; correct production direct-host credentials also fail authentication, while the connected production Supabase MCP works. Owner: local environment configuration; repair noninteractive database credentials without printing secrets or touching CLI Keychain authentication. Exact surface verification receipt: `docs/verification/surfaces/2026-10-07-five-pages.json`.
