@@ -69,7 +69,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useUserOrganizations } from "@/features/organizations/hooks";
-import { sanitizeFieldName } from "@/features/data-tables/field-name-key";
+import { sanitizeFieldName } from "@ai-matrx/records/core";
 import { normalizeVaultLoginUrlInput, safeVaultLoginUrl } from "../utils";
 
 import {

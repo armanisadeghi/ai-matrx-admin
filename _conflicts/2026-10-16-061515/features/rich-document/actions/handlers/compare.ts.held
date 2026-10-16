@@ -1,0 +1,178 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/rich-document/actions/handlers/compare.ts
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/rich-document/actions/handlers/compare.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-15 21:15  9d2428e637  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB:
+    2026-10-16 06:07  11d18bc80a  "rich-document: the W3d message rows leave the web; the web answers the chat package's new seams"
+    2026-10-16 04:12  9c571d3e93  "rich-document: the W2b message actions leave the web for @ai-matrx/chat (message-actions W2b)"
+    2026-10-15 21:15  f295729c57  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB's latest change is 8h 52m AFTER LOCAL's latest change.
+
+SIZE: common version 136 lines, LOCAL 136 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 4 lines and removed 4 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/rich-document/actions/handlers/compare.ts') <(git show 01d82f791a21:'features/rich-document/actions/handlers/compare.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/rich-document/actions/handlers/compare.ts'
+  GITHUB: git show 63f43ba9b880:'features/rich-document/actions/handlers/compare.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+// features/rich-document/actions/handlers/compare.ts
+//
+// "Compare …" actions for the canonical diff system (components/diff). All
+// three open the headless DiffViewer in a movable window:
+//   - compare-with-clipboard : current content (base) ↔ clipboard text (incoming)
+//   - set-compare-base       : pin current content as the comparison base
+//   - compare-with-base      : pinned base       ↔  current content
+//
+// Clipboard compare direction: the current content is the OLD baseline and the
+// clipboard is the NEW incoming version (the user is about to paste over what
+// they have). So text only in the clipboard reads as an addition; text only in
+// the current content reads as a removal. Users can flip this in the viewer.
+//
+// A diff is read by a person: it compares the readable text of both sides
+// (`contentForDestination`) — a kind answer is never a wall of `__kind` JSON.
+//
+// History comparison is handled by the enhanced Edit-history dialog
+// (per-version "Compare" buttons), not a separate menu item.
+
+import { Clipboard, Pin, GitCompareArrows } from "lucide-react";
+import { readText } from "@ai-matrx/kit/clipboard";
+import { toast } from "@/lib/toast";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import {
+  setCompareBase,
+  openCompareWithBase,
+} from "@/lib/redux/slices/diffCompareSlice";
+import { registerActionIfAbsent } from "./register-if-absent";
+import { contentForDestination } from "../utils";
+import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
+
+function sourceLabel(source: ContentSource): string {
+  switch (source.type) {
+    case "chat-message":
+      return "Message";
+    case "note":
+      return "Note";
+    case "prompt-result":
+      return "Result";
+    case "artifact":
+      return "Artifact";
+    case "scraper-result":
+      return "Scrape";
+    default:
+      return "Current";
+  }
+}
+
+registerActionIfAbsent({
+  id: "compare-with-clipboard",
+  label: "Compare with clipboard",
+  icon: Clipboard,
+  iconColor: "text-sky-500 dark:text-sky-400",
+  category: "edit",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: 10,
+  run: async (ctx) => {
+    const clipboardText = await readText();
+    if (clipboardText === null) {
+      toast.error("Couldn't read the clipboard");
+      return;
+    }
+    if (!clipboardText) {
+      toast.info("Clipboard is empty");
+      return;
+    }
+    const instanceId = ctx.instanceKey("diff-clipboard");
+    ctx.dispatch(
+      openOverlay({
+        overlayId: "diffViewerWindow",
+        instanceId,
+        data: {
+          windowInstanceId: instanceId,
+          original: contentForDestination(ctx),
+          modified: clipboardText,
+          originalLabel: sourceLabel(ctx.source),
+          modifiedLabel: "Clipboard",
+          title: "Compare with clipboard",
+          engine: "auto",
+          language: null,
+          defaultView: "split",
+        },
+      }),
+    );
+  },
+});
+
+registerActionIfAbsent({
+  id: "set-compare-base",
+  label: "Set as compare base",
+  icon: Pin,
+  iconColor: "text-violet-500 dark:text-violet-400",
+  category: "edit",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: 11,
+  run: (ctx) => {
+    ctx.dispatch(
+      setCompareBase({
+        content: contentForDestination(ctx),
+        label: sourceLabel(ctx.source),
+        language: null,
+      }),
+    );
+    toast.success("Set as compare base", {
+      description: "Open another item and choose “Compare with base”.",
+    });
+  },
+});
+
+registerActionIfAbsent({
+  id: "compare-with-base",
+  label: "Compare with base",
+  icon: GitCompareArrows,
+  iconColor: "text-emerald-500 dark:text-emerald-400",
+  category: "edit",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: 12,
+  run: async (ctx) => {
+    const opened = await ctx
+      .dispatch(
+        openCompareWithBase({
+          current: contentForDestination(ctx),
+          currentLabel: sourceLabel(ctx.source),
+        }),
+      )
+      .unwrap();
+    if (!opened) {
+      toast.info("No compare base set", {
+        description: "Choose “Set as compare base” on another item first.",
+      });
+    }
+  },
+});

@@ -1,0 +1,121 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/rag/api/libraryChunks.ts
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/rag/api/libraryChunks.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-16 00:47  d16da375f1  "rag chunks: RPC hides soft-deleted pieces (applied live: rag.fn_list_library_chunks filters deleted_at)"
+    2026-10-16 00:17  f033d1201b  "rag: library chunks read via rag.fn_list_library_chunks (Supabase), not the Python server"
+  GITHUB:
+    2026-10-16 02:36  4d6deaf7c3  "Review fixes for server-to-Supabase moves: DB-clock error snapshot + count once, restore_brief_run refuses silent no-op, pdf by-link via Supabase, abortable derivative chunks"
+    2026-10-16 00:54  54620d7f64  "rag chunks: RPC hides soft-deleted pieces (applied live: rag.fn_list_library_chunks filters deleted_at)"
+    2026-10-16 00:34  261455db79  "rag: library chunks read via rag.fn_list_library_chunks (Supabase), not the Python server"
+  GITHUB's latest change is 1h 49m AFTER LOCAL's latest change.
+
+SIZE: common version 0 lines, LOCAL 67 lines, GITHUB 67 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 50 lines and removed 0 lines.
+  GITHUB added 52 lines and removed 0 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 48 of the 52 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | /** Aborts the read (supabase-js `.abortSignal`). */
+      | signal?: AbortSignal;
+      | const call = ragDb(createClient()).rpc("fn_list_library_chunks", {
+      | const { data, error } = await (opts.signal ? call.abortSignal(opts.signal) : call);
+    (some of those lines also appear in other changed files, which may be a coincidence: features/comparison/settle.ts, features/data-sources/settle.ts, features/marketing/social/video/server.ts)
+  GITHUB has 48 of the 50 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | const { data, error } = await ragDb(createClient()).rpc(
+      | "fn_list_library_chunks",
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/rag/api/libraryChunks.ts') <(git show 01d82f791a21:'features/rag/api/libraryChunks.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/rag/api/libraryChunks.ts'
+  GITHUB: git show 63f43ba9b880:'features/rag/api/libraryChunks.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+/**
+ * One document's searchable pieces, read straight from Postgres.
+ *
+ * `rag.fn_list_library_chunks` is a SECURITY INVOKER function, so row-level
+ * security decides what the caller may see; the Python server is not involved.
+ * Same response shape the old `GET /rag/library/{id}/chunks` returned. Soft-deleted
+ * pieces (`deleted_at`) are hidden by the function itself, as the server did.
+ */
+import { createClient } from "@/utils/supabase/client";
+import { ragDb } from "@/utils/supabase/ragDb";
+import { operationFailed } from "@/utils/errors";
+
+export interface LibraryChunkRow {
+  id: string;
+  chunk_index: number;
+  chunk_kind: string | null;
+  parent_chunk_id: string | null;
+  page_numbers: number[] | null;
+  token_count: number | null;
+  content_text: string;
+  has_oai_embedding: boolean;
+  has_voyage_embedding: boolean;
+  section_kind: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface LibraryChunksPage {
+  chunks: LibraryChunkRow[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface LibraryChunksQuery {
+  limit?: number;
+  offset?: number;
+  pageNumber?: number | null;
+  parentOnly?: boolean;
+  childrenOnly?: boolean;
+}
+
+export async function fetchLibraryChunks(
+  documentId: string,
+  opts: LibraryChunksQuery = {},
+): Promise<LibraryChunksPage> {
+  const limit = opts.limit ?? 100;
+  const offset = opts.offset ?? 0;
+  const { data, error } = await ragDb(createClient()).rpc(
+    "fn_list_library_chunks",
+    {
+      p_id: documentId,
+      p_limit: limit,
+      p_offset: offset,
+      p_parent_only: opts.parentOnly ?? false,
+      p_children_only: opts.childrenOnly ?? false,
+      p_page_number: opts.pageNumber ?? undefined,
+    },
+  );
+  if (error) throw operationFailed("load this document's pieces", error);
+  const resp = data as unknown as Partial<LibraryChunksPage> | null;
+  return {
+    chunks: Array.isArray(resp?.chunks) ? resp.chunks : [],
+    total: typeof resp?.total === "number" ? resp.total : 0,
+    limit: typeof resp?.limit === "number" ? resp.limit : limit,
+    offset: typeof resp?.offset === "number" ? resp.offset : offset,
+  };
+}

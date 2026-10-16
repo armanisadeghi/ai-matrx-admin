@@ -30,7 +30,7 @@ import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import {
   listDocumentSnapshots,
   saveDocumentSnapshot,
-} from "@/features/documents/document-service";
+} from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentSnapshot } from "@ai-matrx/office/core";
 import { AGENT_ICON } from "@/components/icons/domain-icons";

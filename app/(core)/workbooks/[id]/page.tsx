@@ -18,12 +18,12 @@ import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons
 
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createWorkbooksScope } from "@/features/surfaces/manifests/workbooks.manifest";
-import { readWorkbookScopeSource } from "@/features/workbooks/workbook-scope-source";
+import { readWorkbookScopeSource } from "@ai-matrx/office/sheets";
 import {
   getWorkbook,
   renameWorkbook,
   updateWorkbookDescription,
-} from "@/features/workbooks/workbook-service";
+} from "@ai-matrx/office/sheets";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type Workbook } from "@ai-matrx/office/core";
 import { canActOn } from "@/features/access-gate/service/canActOn";

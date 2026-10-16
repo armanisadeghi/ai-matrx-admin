@@ -19,6 +19,7 @@ import { readArtifactPointerId } from "@/features/canvas/artifact-types/artifact
 import {
   captureHtmlArtifact,
   CLOUD_BROWSER_OUTPUT,
+  CLOUD_COMPUTER_OUTPUT,
   CODE_PREVIEW_OUTPUT,
   IFRAME_OUTPUT,
   MAP_OUTPUT,
@@ -72,6 +73,8 @@ export const ARTIFACT_OUTPUT: Record<CanvasContentType, ArtifactOutputDef> = {
   sandbox: { surface: "dom", ...SANDBOX_OUTPUT },
   // A live stream in a frame: its latest screenshot is the picture (the body offers it).
   cloud_browser: { surface: "frame", ...CLOUD_BROWSER_OUTPUT },
+  // The machine's screen is another origin's stream: no DOM copy can read it.
+  cloud_computer: { surface: "frame", ...CLOUD_COMPUTER_OUTPUT },
   // Univer draws on a canvas: the body prints the document's text and captures its page.
   udt_document: { surface: "frame", ...UDT_DOCUMENT_OUTPUT },
   quiz: DOM,

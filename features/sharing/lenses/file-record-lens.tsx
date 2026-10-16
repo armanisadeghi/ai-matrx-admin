@@ -9,9 +9,9 @@
  */
 
 import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
-import { snapshotToGridSheets } from "@/features/workbooks/snapshot-grid";
+import { snapshotToGridSheets } from "@ai-matrx/office/sheets";
 import { SharedSheetView } from "./SharedSheetView";
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 import { shareChildFileUrls } from "@/features/files/handler/utils/python-base";
 import RichContentStandardImpl from "@ai-matrx/rich-content/levels/RichContentStandardImpl";
 import type { ShareLensProps } from "./registry";

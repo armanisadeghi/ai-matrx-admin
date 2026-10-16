@@ -1,6 +1,7 @@
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { parseEvidenceItem, webRow, type EvidenceItem } from "../evidence";
-import { engineRanks, exclusionMatchForUrl, groupByKind, ruleFillIn, suggestKind, type SuggestContext } from "../webKinds";
+import { backlinkSuggestion, engineRanks, exclusionMatchForUrl, groupByKind, ruleFillIn, suggestKind, type SuggestContext } from "../webKinds";
+import { BACKLINK_KIND, parseBacklinkCheck, withPageKind } from "../backlinks";
 
 const kind = (key: string, stance: BrandRelationKind["stance"], match: Partial<BrandRelationKind["match"]> = {}): BrandRelationKind => ({
   id: key,
@@ -239,5 +240,51 @@ describe("a suggestion never contradicts its classifier (MKT-181)", () => {
     expect(ruleFillIn("later", { kind: "irrelevant", reason: "x" })).toBeNull();
     expect(ruleFillIn("later", { kind: "mention", reason: "x" })?.kind).toBe("mention");
     expect(ruleFillIn(undefined, { kind: "not_us", reason: "x" })?.kind).toBe("not_us");
+  });
+});
+
+describe("a page that links to the brand AND is recognized as something specific", () => {
+  const k = (key: string, categories: string[]): BrandRelationKind => ({ ...kind(key, "about_us"), match: { hosts: [], paths: [], categories } });
+  const KINDS_WITH = [...KINDS, kind(BACKLINK_KIND, "about_us"), k("credential", ["certification_body"]), k("membership", ["trade_association"]), k("press_mention", ["news"])];
+  const ctx: SuggestContext = { ourHosts: ["acmeshred.com"], ourAccounts: [], name: "Acme Shred" };
+  const check = (url: string) =>
+    parseBacklinkCheck({
+      key: `web:${url}`,
+      url,
+      status: "found",
+      backlinks: [{ target_kind: "website", platform: null, matched_url: "https://acmeshred.com", anchor_text: "Acme", label: "acmeshred.com" }],
+    })!;
+  const page = (url: string, category: string | null) =>
+    web(url, "Acme Shred", category ? ({ site_kind: { category, label: "x", signal: "known_site", reason: "r", fact: null, fields: {} } } as Partial<EvidenceItem>) : {});
+
+  it.each([
+    ["certification_body", "credential"],
+    ["trade_association", "membership"],
+    ["news", "press_mention"],
+  ])("a recognized %s page keeps %s as the suggestion; the link stays a badge", (category, expected) => {
+    const url = "https://unknown-site.org/a";
+    const i = page(url, category);
+    expect(backlinkSuggestion(i, KINDS_WITH, check(url))).toBeNull();
+    expect(suggestKind(i, KINDS_WITH, ctx)?.kind).toBe(expected);
+  });
+
+  it("backlink is the suggestion only when nothing more specific was recognized", () => {
+    const url = "https://unknown-site.org/b";
+    expect(backlinkSuggestion(page(url, null), KINDS_WITH, check(url))?.kind).toBe(BACKLINK_KIND);
+    // a recognized category no kind names is not "more specific" for us either
+    expect(backlinkSuggestion(page(url, "podcast"), KINDS_WITH, check(url))?.kind).toBe(BACKLINK_KIND);
+    expect(backlinkSuggestion(page(url, null), KINDS, check(url))).toBeNull(); // no Backlink kind in the vocabulary
+  });
+
+  it("the backlinks step's own recognition (read off the page) completes the row's", () => {
+    const url = "https://unknown-site.org/c";
+    const c = parseBacklinkCheck({
+      key: `web:${url}`, url, status: "found", backlinks: [],
+      site_kind: { category: "news", label: "News", signal: "page_markup", reason: "schema.org NewsArticle", fact: "press_mention", fields: { headline: "Acme" } },
+    })!;
+    const merged = withPageKind(page(url, null), c);
+    expect(merged.siteKind?.signal).toBe("page_markup");
+    expect(suggestKind(merged, KINDS_WITH, ctx)?.kind).toBe("press_mention");
+    expect(withPageKind(page(url, null), undefined).siteKind ?? null).toBeNull();
   });
 });

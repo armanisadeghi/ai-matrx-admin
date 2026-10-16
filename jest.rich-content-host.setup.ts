@@ -36,7 +36,7 @@ configureRichContent({
     require("@/features/rich-content-host/app-bindings");
   },
   ensureRichDocumentRegistrations: () => {
-    require("@/features/rich-content-host/rich-document-registrations");
+    require("@/features/rich-content-host/rich-document-registrations").ensureWebRichDocumentRegistrations();
   },
   showManualCopy: (opts) => require("@/components/dialogs/clipboard-fallback/manualCopyOpener").showManualCopy(opts),
   readSessionKnob: (knob) => require("@/lib/scoped-config/sessionKnob").getSessionKnob(knob),

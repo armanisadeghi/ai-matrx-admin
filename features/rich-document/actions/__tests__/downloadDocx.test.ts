@@ -16,10 +16,14 @@ jest.mock("@/lib/toast", () => ({
   toast: { loading: jest.fn(), success: jest.fn(), error: jest.fn() },
 }));
 
-import "../handlers";
+import "@/__tests__/helpers/configure-chat-fake-host";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "../../test-utils/chatContext";
 import { readZip } from "@ai-matrx/alchemy/operate/zip";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 it("writes a .docx whose document body holds the table text", async () => {
   await getAction("download-docx")!.run(chatContext("assistant"));

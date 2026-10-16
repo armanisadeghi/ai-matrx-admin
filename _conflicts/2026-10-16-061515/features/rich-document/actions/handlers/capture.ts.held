@@ -1,0 +1,293 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/rich-document/actions/handlers/capture.ts
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/rich-document/actions/handlers/capture.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-16 06:08  17f37c3896  collected by the sync; the edit itself happened at or before this time
+    2026-10-15 21:15  9d2428e637  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB:
+    2026-10-16 06:07  11d18bc80a  "rich-document: the W3d message rows leave the web; the web answers the chat package's new seams"
+    2026-10-16 05:45  3fac1403ff  "rich-document: the W3c window rows (Save to Code, Rulebook, context value, template, contact, listen x2, feedback, bind to page, open in editor) leave the web for @ai-matrx/chat 0.8.131"
+    2026-10-16 05:27  70d41e2994  "fix: restore the W2b message-action removals in capture.ts that 8562cd38e78 reverted from a stale copy"
+    2026-10-16 05:26  8562cd38e7  "first-load: chat UI registration defers its after-paint thunks and services behind the existing impl import (register items 2+3)"
+    2026-10-16 04:12  9c571d3e93  "rich-document: the W2b message actions leave the web for @ai-matrx/chat (message-actions W2b)"
+    2026-10-16 02:18  0e8e786382  "rich-document: the W1a message actions leave the web for @ai-matrx/chat (message-actions W1a)"
+    2026-10-15 21:15  f295729c57  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB's latest change is 8h 52m AFTER LOCAL's latest change.
+
+SIZE: common version 425 lines, LOCAL 246 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 9 lines and removed 134 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/rich-document/actions/handlers/capture.ts') <(git show 01d82f791a21:'features/rich-document/actions/handlers/capture.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/rich-document/actions/handlers/capture.ts'
+  GITHUB: git show 63f43ba9b880:'features/rich-document/actions/handlers/capture.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+// features/rich-document/actions/handlers/capture.ts
+//
+// Capture actions that used to live ONLY in the chat message menu
+// (messageActionRegistry.ts, deleted in RC-B6). Each is source-agnostic: the
+// content is whatever the reader sees (`ctx.content`), and chat provenance
+// (conversation / message ids, the "{conversation} Message {n}" title) rides
+// along when the source is a chat message. Heavy services load inside the
+// handler (code-splitting rule 6 — this module is reachable from every
+// RichDocument surface).
+
+import { durableRecordId } from "@ai-matrx/kit/ids";
+import { BookOpen, Boxes, Layers, LayoutTemplate } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { extractFlatText, selectMessageById, selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
+import { messageMayContainKindBlock } from "@/features/content-ir/studio/message-kind-gate";
+import { registerActionIfAbsent } from "./register-if-absent";
+import { chatIds, deriveContentTitle, getErrorMessage, requireAuth, contentForDestination, chatStateOf } from "../utils";
+import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { openOutbound } from "@ai-matrx/kit/outbound";
+import { precedingQuestion } from "@/features/masterwork/oracle/precedingQuestion";
+
+/**
+ * THE ORACLE TAP's question half: for an ASSISTANT message, the user turn it
+ * answered. Null for a user message (the message IS the question), for an
+ * opening turn, for non-chat sources, and whenever the thread is not loaded.
+ */
+async function resolveAnsweredQuestion(
+  ctx: RichDocumentActionContext,
+): Promise<string | null> {
+  const { conversationId, messageId } = chatIds(ctx);
+  if (!conversationId || !messageId) return null;
+  const state = chatStateOf(ctx, ["messages"]);
+  if (!state) return null;
+  const self = selectMessageById(conversationId, messageId)(state);
+  if (!self || self.role === "user") return null;
+  const thread = selectOrderedMessageIds(conversationId)(state).map((id) => {
+    const record = selectMessageById(conversationId, id)(state);
+    const content = record?.content;
+    return {
+      id,
+      role: String(record?.role ?? ""),
+      content: typeof content === "string" ? content : extractFlatText(record),
+    };
+  });
+  return precedingQuestion(thread, messageId);
+}
+
+registerActionIfAbsent({
+  // The Oracle tap (Masterwork Approach #10): an answer worth keeping lands in
+  // one of the user's Rulebooks as a DRAFT rule. Same dialog + append path as
+  // the thumbs follow-up nudge — ONE implementation (features/masterwork/oracle/).
+  id: "add-to-rulebook",
+  label: "Add to Rulebook",
+  icon: BookOpen,
+  iconColor: "text-violet-500 dark:text-violet-400",
+  category: "save",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: -20,
+  run: async (ctx) => {
+    if (
+      !requireAuth(
+        ctx,
+        "add-to-rulebook",
+        "Add to Rulebook",
+        "Sign in to save answers into your Rulebooks.",
+      )
+    )
+      return;
+    const { conversationId, messageId } = chatIds(ctx);
+    const initialQuestion = await resolveAnsweredQuestion(ctx);
+    ctx.dispatch(
+      openOverlay({
+        overlayId: "addToRulebookDialog",
+        data: {
+          initialContent: contentForDestination(ctx),
+          initialConversationId: conversationId,
+          // Provenance: the exact turn the draft came from.
+          initialMessageId: durableRecordId(messageId),
+          // And the QUESTION it answered — the Oracle tap's whole premise.
+          initialQuestion,
+        },
+      }),
+    );
+    ctx.onClose();
+  },
+});
+
+registerActionIfAbsent({
+  id: "set-context-value",
+  label: "Set Context Value",
+  icon: Layers,
+  iconColor: "text-emerald-500 dark:text-emerald-400",
+  category: "save",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: 20,
+  run: (ctx) => {
+    if (
+      !requireAuth(
+        ctx,
+        "set-context-value",
+        "Set context value",
+        "Sign in to save this content into a scope's context item.",
+      )
+    )
+      return;
+    ctx.dispatch(
+      openOverlay({
+        overlayId: "setContextValueWindow",
+        data: { initialContent: contentForDestination(ctx) },
+      }),
+    );
+    ctx.onClose();
+  },
+});
+
+registerActionIfAbsent({
+  id: "save-as-message-template",
+  label: "Save as Message Template",
+  icon: LayoutTemplate,
+  category: "save",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: 12,
+  run: (ctx) => {
+    if (
+      !requireAuth(
+        ctx,
+        "save-as-message-template",
+        "Save as Message Template",
+        "Sign in to save this content as a reusable message template.",
+      )
+    )
+      return;
+    ctx.dispatch(
+      openOverlay({
+        overlayId: "quickMessageTemplateSaveWindow",
+        data: {
+          initialContent: contentForDestination(ctx),
+          defaultName: deriveContentTitle(ctx),
+          defaultRole: "assistant",
+        },
+      }),
+    );
+    ctx.onClose();
+  },
+});
+
+registerActionIfAbsent({
+  // "Save to my Shapes": persist a registered `__kind` block from this content
+  // as a `content_ir.kind_instance` row. Hot-path gate is CHEAP by design (a
+  // marker substring check); the heavy extraction lazy-loads on click.
+  // Unregistered kinds surface an honest error toast, never a write.
+  id: "save-shape-instance",
+  label: "Save to my Shapes",
+  icon: Boxes,
+  iconColor: "text-primary",
+  category: "save",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: 13,
+  requiresAuth: true,
+  visible: (ctx) => messageMayContainKindBlock(ctx.content),
+  run: async (ctx) => {
+    ctx.onClose();
+    // THE EXPLICIT ACTIVE ORG, NEVER A PERSONAL SUBSTITUTE — the gate asks
+    // instead of guessing; cancelling writes nothing and says nothing.
+    let organizationId: string;
+    try {
+      organizationId = await ensureOrgId(ctx.organizationId);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to save to Shapes"));
+      return;
+    }
+    const { conversationId, messageId } = chatIds(ctx);
+    const toastId = toast.loading("Saving shape instance…");
+    try {
+      const { saveKindInstancesFromMessage } = await import(
+        "@/features/content-ir/studio/message-kind-instances"
+      );
+      const { shapeInstancesHref } = await import(
+        "@/features/content-ir/studio/constants"
+      );
+      const saved = await saveKindInstancesFromMessage({
+        text: contentForDestination(ctx),
+        organizationId,
+        // Provenance rides with the save (DD-131 slice 1): HOMED in this
+        // conversation with a `produced_by` edge back to this message.
+        conversationId,
+        // A client-temp answer has no row for the `produced_by` edge.
+        messageId: durableRecordId(messageId),
+      });
+      const drifted = saved.filter((s) => s.validationStatus !== "passed");
+      if (drifted.length > 0) {
+        toast.error(
+          `Saved ${saved.length} instance${saved.length === 1 ? "" : "s"}, but ${drifted.length} did not pass validation`,
+          {
+            id: toastId,
+            description: drifted
+              .map((s) => `${s.label}: ${s.validationStatus}`)
+              .join("; "),
+          },
+        );
+        return;
+      }
+      const first = saved[0];
+      const unlinked = saved.filter((entry) => entry.provenanceWarning);
+      if (unlinked.length > 0) {
+        toast.warning(
+          `Saved ${saved.length} instance${saved.length === 1 ? "" : "s"}, but the link back to this message was not written`,
+          { id: toastId, description: unlinked[0].provenanceWarning ?? "" },
+        );
+        return;
+      }
+      toast.success(
+        saved.length === 1
+          ? first.title
+            ? `Saved "${first.title}" to your Shapes`
+            : `Saved a ${first.label} instance`
+          : `Saved ${saved.length} instances to your Shapes`,
+        {
+          id: toastId,
+          description: `${first.label} v${first.kindVersion} — validation passed.`,
+          action: {
+            label: "View in Instances",
+            onClick: () =>
+              openOutbound(
+                `${shapeInstancesHref(first.kind)}?i=${first.id}`,
+                "_blank",
+                "noopener",
+              ),
+          },
+        },
+      );
+    } catch (err) {
+      toast.error("Failed to save to Shapes", {
+        id: toastId,
+        description: getErrorMessage(err, "Unknown error"),
+      });
+    }
+  },
+});
+

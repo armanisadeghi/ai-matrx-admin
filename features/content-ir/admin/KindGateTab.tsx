@@ -40,8 +40,7 @@ import type { Json } from "@/types/database.types";
 import type { ExamplesState } from "@/features/content-ir/studio/kind-examples";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { useEngineeringDetail } from "@/features/content-ir/studio/use-engineering-detail";
 
 const PASTED = "__pasted__";
 
@@ -148,7 +147,8 @@ export default function KindGateTab({
   const [pasted, setPasted] = useState("");
   const [manualRun, setManualRun] = useState<GateRun | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
-  const debug = useAppSelector(selectIsAdminDebugger);
+  // Engineering detail: an admin with the debug switch on, never by default.
+  const debug = useEngineeringDetail();
 
   // `resolveComponent` is SYNCHRONOUS and answers from the compiled floor until
   // the DB tier warms. Running the gate before that resolves a `source='db'`

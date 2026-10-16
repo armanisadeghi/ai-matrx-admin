@@ -20,7 +20,7 @@ import {
   type SheetPageSetup,
   type SheetPrintScope,
   type SheetScale,
-} from "@/features/workbooks/sheet-page-setup";
+} from "@ai-matrx/office/sheets";
 
 const PAPER_OPTIONS = (Object.keys(PAPER_SIZES) as PaperSizeName[]).map((k) => ({ value: k, label: PAPER_SIZES[k].label }));
 const SCALE_OPTIONS: { value: SheetScale; label: string }[] = [

@@ -129,12 +129,29 @@ const SHAPE_NOUN = "shape";
 const shapeId = (row: ShapeBrowseRow) => row.id;
 const shapeLabel = (row: ShapeBrowseRow) => row.label;
 
+/**
+ * True only when the list holds EVERY selected row and each one matches — a
+ * selection that outlived a page change (rows ⊂ ids) is never judged unseen.
+ */
+export function everyHeldRow(
+  count: number,
+  rows: readonly ShapeBrowseRow[],
+  test: (row: ShapeBrowseRow) => boolean,
+): boolean {
+  return count > 0 && rows.length === count && rows.every(test);
+}
+
 /** Batch verbs every viewer gets; each row is decided by the database, refusals are named. */
 const SHAPE_BULK_ACTIONS: EntityBulkAction<ShapeBrowseRow>[] = [
   {
     id: "activate",
     label: "Activate",
     icon: Power,
+    // Never offer a click that would do nothing (2026-10-15 review B5).
+    disabledReason: (count, selection) =>
+      everyHeldRow(count, selection.rows, (row) => row.is_active)
+        ? "Every selected shape is already active"
+        : null,
     run: (selection) =>
       runPerRow(
         selection,
@@ -155,6 +172,10 @@ const SHAPE_BULK_ACTIONS: EntityBulkAction<ShapeBrowseRow>[] = [
     id: "deactivate",
     label: "Deactivate",
     icon: PowerOff,
+    disabledReason: (count, selection) =>
+      everyHeldRow(count, selection.rows, (row) => !row.is_active)
+        ? "Every selected shape is already inactive"
+        : null,
     confirm: (selection) => ({
       title: `Deactivate ${bulkCountLabel(selection.count, SHAPE_NOUN)}?`,
       description:

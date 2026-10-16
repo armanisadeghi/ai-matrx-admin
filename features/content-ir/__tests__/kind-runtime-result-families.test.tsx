@@ -267,6 +267,23 @@ describe("the four runtime-result families route to their registered component",
     expect(markup).toContain("42");
   });
 
+  it("value_result never says 'returned no value' above an any-value payload (B2, 2026-10-15)", () => {
+    // /shapes/json: "JSON returned no value." sat above "Anything: true /
+    // Nested: 1, two" — a `json` payload has no `value` key; its fields ARE it.
+    const markup = renderToStaticMarkup(
+      <ValueResultBlock
+        content={JSON.stringify({ __kind: "json", anything: true, nested: [1, "two"] })}
+        metadata={undefined}
+      />,
+    );
+    expect(markup).not.toContain("returned no value");
+    expect(markup).toContain("two");
+    const empty = renderToStaticMarkup(
+      <ValueResultBlock content={JSON.stringify({ __kind: "json" })} metadata={undefined} />,
+    );
+    expect(empty).toContain("returned no value");
+  });
+
   it("carries a field no family promoted through to the reader", () => {
     // HIDE NOTHING: an unmodelled scalar lands in the meta strip rather than
     // disappearing between the headline and the payload.

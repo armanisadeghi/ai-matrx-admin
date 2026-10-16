@@ -15,10 +15,13 @@
  * green after.
  */
 
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAllActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { chatContext } from "../../test-utils/chatContext";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 const MENU_TIME = ["label", "visible", "disabled", "active", "stateIcon"] as const;
 

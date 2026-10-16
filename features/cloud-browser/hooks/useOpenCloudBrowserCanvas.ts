@@ -19,6 +19,7 @@
 import { useCallback } from "react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { useArtifactCanvasActions } from "@/features/canvas/host/useArtifactCanvas";
+import { buildCloudComputerCanvasContent } from "@/features/cloud-computer/useOpenCloudComputerCanvas";
 import type { CanvasContent } from "@/features/canvas/canvasContent";
 
 export interface OpenCloudBrowserCanvasOptions {
@@ -63,11 +64,14 @@ export function buildCloudBrowserCanvasContent(
 
 export function useOpenCloudBrowserCanvas() {
   const { open } = useCanvas();
+  const { offer } = useArtifactCanvasActions();
   return useCallback(
     (opts: OpenCloudBrowserCanvasOptions = {}) => {
       open(buildCloudBrowserCanvasContent(opts));
+      // The person's Cloud Computer sits beside the browser as its own tab.
+      offer(buildCloudComputerCanvasContent({ conversationId: opts.conversationId }));
     },
-    [open],
+    [open, offer],
   );
 }
 

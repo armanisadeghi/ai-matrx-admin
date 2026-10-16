@@ -22,15 +22,15 @@ import {
   DOCUMENT_UPLOAD_ACCEPT,
   documentFileKind,
   importDocumentFile,
-} from "@/features/documents/import-document-file";
+} from "@ai-matrx/office/docs/io";
 import {
   createDocument,
   listAccessibleDocuments,
   listTrashedDocuments,
-} from "@/features/documents/document-service";
+} from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentRow } from "@ai-matrx/office/core";
-import { documentSourceLabel } from "@/features/documents/utils/documentsHubDisplay";
+import { documentSourceLabel } from "@ai-matrx/office/docs";
 import {
   buildDocumentsLibraryContextData,
   DOCUMENTS_SURFACE_NAME,

@@ -97,11 +97,11 @@ export function deriveShapeRenderStatus(
   // Below this point `resolution` is non-null and non-generic.
   const row = resolution as ShapeRenderResolutionInput;
 
-  if (dataOnly) {
-    problems.push(
-      "Marked as data only, yet it has its own view.",
-    );
-  }
+  // A data-only family member that resolves a real view (its family's shared
+  // view, e.g. `json` → value_result) is NOT a problem: the family needs no
+  // view, and this one has one. Reporting it as a defect warned every member of
+  // the family about nothing (2026-10-15 review B2).
+  void dataOnly;
 
   if (!row.isActive) {
     problems.push(

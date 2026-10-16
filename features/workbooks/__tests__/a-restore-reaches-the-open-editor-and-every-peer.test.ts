@@ -30,7 +30,7 @@ import {
   DocumentModel,
   type DocumentModelDeps,
   type DocumentSnapshotData,
-} from "@/features/documents/document-model/documentModel";
+} from "@ai-matrx/office/docs";
 
 // ── an in-memory room: every doc update reaches every other member ─────────
 function makeRoom() {

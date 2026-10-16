@@ -29,13 +29,16 @@ import {
   useCanFixKindComponent,
 } from "./KindComponentFixBadge";
 import { cn } from "@/lib/utils";
+import { ReportKindDraw } from "./kind-draw-report";
 
 const LazyImpl = dynamic(
   () =>
     import("./DbKindComponentImpl").then((m) => ({
       default: m.DbKindComponentImpl,
     })),
-  { ssr: false, loading: () => null },
+  // While the body's code loads nothing has drawn: a verdict host must wait
+  // (2026-10-15 review B0) rather than read "no reporter" as "it drew".
+  { ssr: false, loading: () => <ReportKindDraw state="waiting" /> },
 );
 
 // The public wrapper props ARE the impl props MINUS what the shell binds: the

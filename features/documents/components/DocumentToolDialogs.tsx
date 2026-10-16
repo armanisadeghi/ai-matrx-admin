@@ -13,7 +13,7 @@ import { ProTextarea, type ProTextareaElement } from "@/components/official/ProT
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
-import type { DocEditOps } from "@/features/documents/doc-edit-ops";
+import type { DocEditOps } from "@ai-matrx/office/docs/tools";
 import {
   BUILDING_BLOCKS,
   DOCUMENT_LANGUAGES,
@@ -22,10 +22,10 @@ import {
   paragraphBorderParams,
   type Bookmark,
   type BorderChoice,
-} from "@/features/documents/doc-tools-core";
-import { EMOJI_GROUPS, SPECIAL_GROUPS, searchSymbols } from "@/features/documents/doc-symbols";
-import { getLatestDocumentSnapshot, listAccessibleDocuments } from "@/features/documents/document-service";
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
+} from "@ai-matrx/office/docs/tools";
+import { EMOJI_GROUPS, SPECIAL_GROUPS, searchSymbols } from "@ai-matrx/office/docs";
+import { getLatestDocumentSnapshot, listAccessibleDocuments } from "@ai-matrx/office/docs";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 
 export type DocDialogId = "emoji" | "special" | "building-blocks" | "bookmarks" | "borders" | "compare" | "voice" | "language";
 

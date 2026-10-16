@@ -1,0 +1,456 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/rich-document/actions/handlers/edit.ts
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/rich-document/actions/handlers/edit.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-15 21:15  9d2428e637  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB:
+    2026-10-16 04:12  9c571d3e93  "rich-document: the W2b message actions leave the web for @ai-matrx/chat (message-actions W2b)"
+    2026-10-16 02:18  0e8e786382  "rich-document: the W1a message actions leave the web for @ai-matrx/chat (message-actions W1a)"
+    2026-10-16 02:18  95216c033f  "rich-document: the web registers through @ai-matrx/chat's registerChatMessageActions (message-actions W0, A2)"
+    2026-10-15 21:15  f295729c57  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB's latest change is 6h 57m AFTER LOCAL's latest change.
+
+SIZE: common version 413 lines, LOCAL 413 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 7 lines and removed 7 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/rich-document/actions/handlers/edit.ts') <(git show 01d82f791a21:'features/rich-document/actions/handlers/edit.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/rich-document/actions/handlers/edit.ts'
+  GITHUB: git show 63f43ba9b880:'features/rich-document/actions/handlers/edit.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+// features/rich-document/actions/handlers/edit.ts
+//
+// Edit / fork / delete actions.
+//
+// `edit` is source-agnostic via ctx.sourceAdapter.edit — chat dispatches
+// editMessage, note dispatches NotesAPI.update, etc. The doctrine fix here
+// (vs. the legacy registry): the onSave closure is constructed at click
+// time and only the data shape goes through Redux, never the function. We
+// pass `mode: "free"` to the fullScreenEditor and let the host wire its
+// own save path via the source adapter — there's no `onSave` in the data
+// payload.
+//
+// edit-history / fork-at-message / delete-message stay chat-only because
+// they touch cx_message.content_history / forkConversation / the host's
+// destructive-vs-fork dialog respectively. Generalizing them to notes /
+// prompts requires new infrastructure that doesn't exist yet (note version
+// browser, prompt-result branching) — out of scope for Phase 1.
+
+import { Edit, History, GitBranch, Trash2, Send } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { createFullScreenEditorCallbackGroup } from "@/features/overlays/callbacks/fullScreenEditor";
+import { registerActionIfAbsent } from "./register-if-absent";
+import {
+  chatExtensions,
+  chatStateOf,
+  getErrorMessage,
+  isChatUserMessage,
+  serializeError,
+} from "../utils";
+import { openStructuredRawViewer } from "@ai-matrx/chat/agents/components/messages-display/message-options/openAssistantMessageEditor";
+import { acknowledgedPreparedSource, prepareContentEdit, savePreparedContentEdit } from "./preparedEdit";
+import { updateMessageRecord } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.slice";
+import { openEditInPlaceFromLastInteraction } from "@ai-matrx/rich-content/editor/in-place/EditInPlace";
+
+registerActionIfAbsent({
+  id: "edit",
+  writesSource: true,
+  label: (ctx) =>
+    chatExtensions(ctx)?.editTarget?.isStructuredRaw
+      ? "View raw content"
+      : "Edit content",
+  icon: Edit,
+  // No colour of its own: every bar icon is the same muted glyph (Arman, 2026-10-08).
+  category: "edit",
+  supportedSources: "*",
+  // The pencil sits in every bar AND in the Edit submenu.
+  renderSlot: "both",
+  order: 0,
+  visible: (ctx) => {
+    if (!ctx.sourceAdapter.edit) return false;
+    const ext = chatExtensions(ctx);
+    if (!ext) return true;
+    // A user turn edits through its three-outcome editor (edit-and-resubmit);
+    // an assistant turn needs a text-bearing row to save to.
+    // A step of a multi-step turn that only called tools has no text: no
+    // Edit there (absent, never a control that opens an empty editor).
+    // The in-place editor needs the row loaded in this store (its spot on
+    // screen); a row that is not has no Edit here — never a fallback editor.
+    const target = ext.editTarget;
+    const conversationId = ctx.source.type === "chat-message" ? ctx.source.conversationId : null;
+    const loaded =
+      !!target &&
+      !!conversationId &&
+      !!chatStateOf(ctx, ["messages"])?.messages.byConversationId[conversationId]?.byId?.[target.messageId];
+    return (
+      ext.role === "assistant" &&
+      !!target &&
+      (target.isStructuredRaw || (loaded && target.content.length > 0))
+    );
+  },
+  run: async (ctx) => {
+    // CHAT ASSISTANT MESSAGE — edit IN PLACE (RC-B5, PLAN decision 11): the
+    // answer's spot becomes THE ONE editor and Save returns it to preview
+    // (`InPlaceAnswerEditor`, mounted by `AgentAssistantMessage`). The editor
+    // opens on the STORED bytes, so inline reasoning (`<thinking>` /
+    // `<reasoning>` sections the chat view hides) shows as a locked island —
+    // written back verbatim, never routed elsewhere. A grouped (multi-
+    // iteration) turn edits its answer row — the row the bar's pencil is on;
+    // `AssistantTurnGroup` renders that turn from its persisted rows while
+    // any of them is being edited, so the row's spot exists on screen — and
+    // every step then carries its own right-click menu (this same action,
+    // targeting that step's row), which is the per-step door.
+    // Structured payloads keep the read-only raw view. "Open in full-screen
+    // editor" opens this same editor expanded — no other editor writes a chat
+    // answer.
+    const ext = chatExtensions(ctx);
+    if (ext && ctx.source.type === "chat-message") {
+      const target = ext.editTarget;
+      if (!target) return;
+      const conversationId = ctx.source.conversationId;
+      if (target.isStructuredRaw) {
+        // A structured payload is inspected read-only, never text-edited.
+        openStructuredRawViewer(ctx.dispatch, {
+          content: target.content,
+          messageId: target.messageId,
+          metadata: ctx.metadata,
+        });
+        ctx.onClose();
+        return;
+      }
+      if (!conversationId) return;
+      ctx.dispatch(
+        updateMessageRecord({
+          conversationId,
+          messageId: target.messageId,
+          patch: { _editingInPlace: true },
+        }),
+      );
+      ctx.onClose();
+      return;
+    }
+    // EDIT IN PLACE first (a note's Read, a study guide…): the Edit icon or right-click "Edit"
+    // opens the editor in the content's own spot when that content sits in an edit-in-place zone.
+    if (openEditInPlaceFromLastInteraction()) {
+      ctx.onClose();
+      return;
+    }
+    // Save is source-agnostic via `ctx.sourceAdapter.edit` (chat → editMessage,
+    // note → NotesAPI.update, …), so the bridge's editMessage self-handle is
+    // NOT the right path. Route onSave through the callback registry — a
+    // function can never travel through Redux (the controller drops it, which
+    // silently broke note/prompt saves). The group auto-disposes on save.
+    const prepared = await prepareContentEdit(ctx);
+    let preparedSource = prepared.source;
+    // What the editor opened on — a display projection for chat — so the
+    // adapter splices only the changed span into the stored text.
+    let openedOn = prepared.content;
+    const { callbackGroupId } = createFullScreenEditorCallbackGroup({
+      onSave: async (newContent: string) => {
+        try {
+          preparedSource = await savePreparedContentEdit({
+            ctx,
+            source: preparedSource,
+            newContent,
+            previousContent: openedOn,
+          });
+          openedOn = newContent;
+          toast.success("Changes saved");
+        } catch (err) {
+          preparedSource = acknowledgedPreparedSource(preparedSource, err, newContent) ?? preparedSource;
+          console.error(
+            "[edit] save failed",
+            JSON.stringify(serializeError(err), null, 2),
+          );
+          toast.error(getErrorMessage(err, "Failed to save changes"));
+          throw err;
+        }
+      },
+    });
+    ctx.dispatch(
+      openOverlay({
+        overlayId: "fullScreenEditor",
+        instanceId: ctx.instanceKey("edit-content"),
+        data: {
+          content: prepared.content,
+          mode: "free",
+          callbackGroupId,
+          // IDs passed for metadata display only; the save goes through the
+          // source adapter via the callback above, not the self-handle.
+          messageId:
+            preparedSource.type === "chat-message"
+              ? preparedSource.messageId
+              : undefined,
+          noteId:
+            preparedSource.type === "note" ? preparedSource.noteId : undefined,
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData: ctx.metadata as
+            | Record<string, unknown>
+            | undefined,
+          title: undefined,
+          showSaveButton: true,
+          showCopyButton: true,
+        },
+      }),
+    );
+  },
+});
+
+registerActionIfAbsent({
+  id: "edit-history",
+  writesSource: true,
+  label: (ctx) => {
+    const ext =
+      ctx.extensions?.type === "chat-message" ? ctx.extensions : null;
+    return ext && ext.contentHistoryCount > 0
+      ? `Edit history (${ext.contentHistoryCount})`
+      : "Edit history";
+  },
+  icon: History,
+  iconColor: "text-amber-500 dark:text-amber-400",
+  category: "edit",
+  supportedSources: ["chat-message"],
+  renderSlot: "overflow",
+  order: 1,
+  visible: (ctx) =>
+    ctx.extensions?.type === "chat-message" &&
+    ctx.extensions.contentHistoryCount > 0 &&
+    Boolean(ctx.callbacks?.onRequestEditHistory),
+  run: (ctx) => {
+    // The dialog is host-owned (the chat bar) so it survives the menu closing.
+    ctx.callbacks?.onRequestEditHistory?.();
+    ctx.onClose();
+  },
+});
+
+registerActionIfAbsent({
+  id: "fork-at-message",
+  writesSource: true,
+  label: "Fork at this message",
+  icon: GitBranch,
+  iconColor: "text-violet-500 dark:text-violet-400",
+  category: "edit",
+  supportedSources: ["chat-message"],
+  renderSlot: "overflow",
+  order: 2,
+  // An assistant turn ends the exchange, so its branch is complete. A user
+  // turn forking here would dead-end on an unanswered question — it gets
+  // fork-and-regenerate instead.
+  visible: (ctx) => !isChatUserMessage(ctx),
+  run: async (ctx) => {
+    if (ctx.source.type !== "chat-message") return;
+    // Close the menu first: the fork RPC's post-fork dialog shares its layer.
+    ctx.onClose();
+    const { messageId, conversationId } = ctx.source;
+    if (!conversationId || !messageId) return;
+
+    try {
+      const { forkConversation } = await import(
+        "@ai-matrx/chat/agents/redux/execution-system/message-crud/fork-conversation.thunk"
+      );
+      // Position-aware fork: read position from state at fire-time so we
+      // capture the message itself. Imported from the chat module because
+      // the position concept is chat-specific.
+      const positionThunk = async (
+        _: unknown,
+        getState: () => unknown,
+      ): Promise<{ conversationId: string }> => {
+        const state = getState() as {
+          messages: {
+            byConversationId: Record<
+              string,
+              { byId?: Record<string, { position?: number }> }
+            >;
+          };
+        };
+        const entry = state.messages?.byConversationId?.[conversationId];
+        const msg = entry?.byId?.[messageId];
+        const position = msg?.position ?? 0;
+        return (await ctx.dispatch(
+          forkConversation({
+            conversationId,
+            atPosition: position,
+          }),
+        ).unwrap()) as { conversationId: string };
+      };
+
+      const result = await ctx.dispatch(
+        positionThunk as unknown as ReturnType<typeof forkConversation>,
+      );
+      const newConvId = (result as { conversationId?: string })
+        ?.conversationId;
+
+      if (ctx.surfaceKey && newConvId) {
+        const { promptForkOutcome } = await import(
+          "@ai-matrx/chat/agents/components/messages-display/message-options/promptForkOutcome"
+        );
+        await promptForkOutcome({
+          dispatch: ctx.dispatch,
+          surfaceKey: ctx.surfaceKey,
+          newConversationId: newConvId,
+        });
+      }
+    } catch (err) {
+       
+      console.error("[fork-at-message] failed", err);
+      toast.error(getErrorMessage(err, "Failed to fork conversation"));
+    }
+  },
+});
+
+registerActionIfAbsent({
+  id: "delete-message",
+  writesSource: true,
+  label: "Delete message",
+  icon: Trash2,
+  iconColor: "text-red-500 dark:text-red-400",
+  category: "edit",
+  supportedSources: ["chat-message"],
+  renderSlot: "overflow",
+  order: 3,
+  visible: (ctx) => Boolean(ctx.callbacks?.onRequestDelete),
+  run: (ctx) => {
+    ctx.onClose();
+    ctx.callbacks?.onRequestDelete?.();
+  },
+});
+
+/**
+ * USER MESSAGES — edit the prompt and choose an outcome from the editor footer
+ * (Save only / Save & resubmit / Fork & resubmit). The SAME three-outcome
+ * editor as the inline UserActionBar pencil — one shared definition
+ * (`USER_EDIT_ACTIONS` + `routeUserEditAction`). `onAction` rides the callback
+ * group (a function can't travel through overlay data).
+ */
+registerActionIfAbsent({
+  id: "edit-and-resubmit",
+  writesSource: true,
+  label: (ctx) =>
+    chatExtensions(ctx)?.contentIsStructuredRaw
+      ? "View raw content"
+      : "Edit & resubmit",
+  icon: Send,
+  iconColor: "text-cyan-500 dark:text-cyan-400",
+  category: "edit",
+  supportedSources: ["chat-message"],
+  renderSlot: "overflow",
+  order: 0,
+  visible: (ctx) => isChatUserMessage(ctx),
+  run: async (ctx) => {
+    ctx.onClose();
+    if (ctx.source.type !== "chat-message") return;
+    const ext = chatExtensions(ctx);
+    const { conversationId, messageId } = ctx.source;
+    const content = ext?.messageContent ?? ctx.content;
+    if (ext?.contentIsStructuredRaw) {
+      // Structured payload: faithful read-only raw view — the text editor
+      // would save the JSON string back as a text block.
+      const { openStructuredRawViewer } = await import(
+        "@ai-matrx/chat/agents/components/messages-display/message-options/openAssistantMessageEditor"
+      );
+      openStructuredRawViewer(ctx.dispatch, {
+        content,
+        messageId,
+        metadata: ctx.metadata,
+      });
+      return;
+    }
+    const { USER_EDIT_ACTIONS, routeUserEditAction } = await import(
+      "@ai-matrx/chat/agents/components/messages-display/message-options/userEditActions"
+    );
+    const surfaceKey = ctx.surfaceKey;
+    const { callbackGroupId } = createFullScreenEditorCallbackGroup({
+      onAction: (actionId, newContent) =>
+        routeUserEditAction(ctx.dispatch, {
+          actionId,
+          conversationId,
+          messageId,
+          newContent,
+          surfaceKey,
+        }),
+    });
+    ctx.dispatch(
+      openOverlay({
+        overlayId: "fullScreenEditor",
+        instanceId: `user-edit-${messageId}`,
+        data: {
+          content,
+          mode: "free",
+          conversationId,
+          messageId,
+          callbackGroupId,
+          primaryActions: USER_EDIT_ACTIONS,
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData: ctx.metadata ?? undefined,
+          showCopyButton: true,
+        },
+      }),
+    );
+  },
+});
+
+/**
+ * USER MESSAGES — fork at this question and REGENERATE its answer on the
+ * branch (no edit). The shared `forkAndResubmitFromMessage` thunk means the
+ * branch never dead-ends on an unanswered question.
+ */
+registerActionIfAbsent({
+  id: "fork-and-regenerate",
+  writesSource: true,
+  label: "Fork & regenerate from here",
+  icon: GitBranch,
+  iconColor: "text-violet-500 dark:text-violet-400",
+  category: "edit",
+  supportedSources: ["chat-message"],
+  renderSlot: "overflow",
+  order: 2,
+  visible: (ctx) => isChatUserMessage(ctx),
+  run: async (ctx) => {
+    ctx.onClose();
+    if (ctx.source.type !== "chat-message") return;
+    const { conversationId, messageId } = ctx.source;
+    try {
+      const { forkAndResubmitFromMessage } = await import(
+        "@ai-matrx/chat/agents/redux/execution-system/message-crud/fork-and-resubmit-from-message.thunk"
+      );
+      await ctx
+        .dispatch(
+          forkAndResubmitFromMessage({
+            conversationId,
+            messageId,
+            surfaceKey: ctx.surfaceKey,
+          }),
+        )
+        .unwrap();
+    } catch (err) {
+      console.error("[fork-and-regenerate] failed", err);
+      toast.error(getErrorMessage(err, "Failed to fork conversation"));
+    }
+  },
+});

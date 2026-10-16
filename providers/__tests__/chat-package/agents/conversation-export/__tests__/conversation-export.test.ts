@@ -216,7 +216,8 @@ describe("one catalogue, one engine", () => {
 
   it("the header menu and the answer menu both render THE catalogue", () => {
     const header = readFileSync(join(root, `${CHAT_SRC_REL}/agents/components/chat/ConversationPageMenu.tsx`), "utf8");
-    const answer = readFileSync(join(root, "features/rich-document/actions/handlers/conversation-section.ts"), "utf8");
+    // The answer menu's Conversation section is the package's own since message-actions W1b.
+    const answer = readFileSync(join(root, `${CHAT_SRC_REL}/agents/components/messages-display/rich-document/actions/descriptors/conversation.ts`), "utf8");
     for (const src of [header, answer]) expect(src).toContain("CONVERSATION_TRANSFER_ROWS");
   });
 

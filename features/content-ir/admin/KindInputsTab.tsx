@@ -59,8 +59,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 import { humanizeStructuralMessage } from "@/features/content-ir/input/humanize-structural-error";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { useEngineeringDetail } from "@/features/content-ir/studio/use-engineering-detail";
 
 type SchemaState =
   | { status: "loading" }
@@ -137,7 +136,8 @@ export default function KindInputsTab({
   const [values, setValues] = useState<Record<string, unknown>>({});
   // Bumping this reseeds the form from the bridge's defaultValues.
   const [resetNonce, setResetNonce] = useState(0);
-  const debug = useAppSelector(selectIsAdminDebugger);
+  // Engineering detail: an admin with the debug switch on, never by default.
+  const debug = useEngineeringDetail();
   // No validation is shown until the user has actually typed something.
   const [touched, setTouched] = useState(false);
 
@@ -253,7 +253,7 @@ export default function KindInputsTab({
               Derived input form
             </span>
             <span className="text-[11px] text-muted-foreground">
-              production VariableInputComponent
+              The same form agents show
             </span>
             <button
               type="button"
@@ -358,7 +358,7 @@ export default function KindInputsTab({
                 Round trip
               </span>
               <span className="text-[11px] text-muted-foreground">
-                variableDefinitionsToKindFields
+                Inputs turned back into fields
               </span>
               <span
                 className={`ml-auto rounded px-1.5 py-0.5 text-[11px] font-medium ${
@@ -367,19 +367,19 @@ export default function KindInputsTab({
                     : "bg-amber-500/10 text-amber-800 dark:text-amber-200"
                 }`}
               >
-                {roundTrip.losses.length} losses · {driftedCount} type drift
+                {roundTrip.losses.length} lost · {driftedCount} changed type
               </span>
             </div>
 
             {/* Channel 1 — the converter's own loss report */}
             <div className="border-b border-border px-3 py-2">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                losses[] — value-domain narrowings
+                Lost on the way back
               </p>
               {roundTrip.losses.length === 0 ? (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  None. The reverse converter narrowed no value domains.
+                  Nothing lost.
                 </p>
               ) : (
                 <ul className="mt-1 space-y-1">
@@ -404,13 +404,10 @@ export default function KindInputsTab({
             {/* Channel 2 — forward flattenings losses[] cannot see */}
             <div className="px-3 py-2">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                Type drift — original vs reconstructed
+                Changed type
               </p>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Forward flattenings (structured field → textarea) come back as{" "}
-                <code className="font-mono">string</code> and are NOT recorded in{" "}
-                <code className="font-mono">losses[]</code>. Only this comparison
-                sees them.
+                Structured fields asked as plain text come back as text.
               </p>
               <div className="mt-1.5">
                 <MatrxDataTable<DriftRow>
@@ -421,7 +418,7 @@ export default function KindInputsTab({
                   detail={{ enabled: false }}
                   density="condensed"
                   toolbar={{
-                    searchPlaceholder: "Search type drift…",
+                    searchPlaceholder: "Search fields…",
                   }}
                   pageSize={0}
                   coverage={{

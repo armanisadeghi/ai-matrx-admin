@@ -44,7 +44,7 @@ import { useAppStore } from "@/lib/redux/hooks";
 import { documentWorkingCopy } from "@/features/documents/document-model/documentModels";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { PlainTextView } from "@ai-matrx/rich-content/copy/ContentActions";
 import { usePlainView } from "@ai-matrx/rich-content/copy/content-view-store";
@@ -62,7 +62,7 @@ import {
   renameDocument,
   saveDocumentSnapshot,
   updateDocumentDescription,
-} from "@/features/documents/document-service";
+} from "@ai-matrx/office/docs";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -75,12 +75,12 @@ import {
   DOCUMENT_NAME_MAX_LENGTH,
   validateDocumentDescription,
   validateDocumentName,
-} from "@/features/documents/agent-context/documentWriteValidation";
+} from "@ai-matrx/office/docs";
 import {
   bodyTextOf,
   documentBodyWriteHandler,
   type DocumentBodyPort,
-} from "@/features/documents/document-body-text";
+} from "@ai-matrx/office/docs";
 
 // Univer hard-depends on `window` / `document`. Mount client-only. This is the
 // editor's one SSR boundary; the board reaches it statically from inside its
@@ -399,7 +399,7 @@ export function DocumentRecord({
   });
   const runOpenDownload = async (format: "epub" | "odt" | "rtf") => {
     try {
-      const { downloadOpenFormat } = await import("@/features/documents/export-open-formats");
+      const { downloadOpenFormat } = await import("@ai-matrx/office/docs/io");
       const file = await downloadOpenFormat(documentMarkdown(), format, doc?.document_name);
       toast.success(`${file} downloaded`);
     } catch (err) {

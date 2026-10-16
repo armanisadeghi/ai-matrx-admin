@@ -138,7 +138,10 @@ describe("deriveShapeRenderStatus", () => {
     ]);
   });
 
-  it("family-derived data-only while an active custom component exists — the lie the incident was about", () => {
+  // 2026-10-15 review B2: data-only is family-derived now (the manual flag that
+  // could drift is gone), so a member that HAS a view is not a defect — the old
+  // "Marked as data only, yet it has its own view." warned every family member.
+  it("family-derived data-only while an active component exists — says what renders it, raises no problem", () => {
     const status = deriveShapeRenderStatus(
       base({
         dataOnly: true,
@@ -151,9 +154,8 @@ describe("deriveShapeRenderStatus", () => {
         candidateCount: 1,
       }),
     );
-    expect(status.problems).toEqual([
-      "Marked as data only, yet it has its own view.",
-    ]);
+    expect(status.source).toBe("custom");
+    expect(status.problems).toEqual([]);
   });
 
   it("family-derived data-only with no component at all is consistent — no problem raised", () => {
@@ -181,7 +183,7 @@ describe("deriveShapeRenderStatus", () => {
     ]);
   });
 
-  it("combines multiple problems in order: not-live, data-only lie, inactive row", () => {
+  it("combines multiple problems in order: not-live, inactive row (data-only is not one)", () => {
     const status = deriveShapeRenderStatus(
       base({
         kindIsActive: false,
@@ -195,9 +197,8 @@ describe("deriveShapeRenderStatus", () => {
         candidateCount: 1,
       }),
     );
-    expect(status.problems).toHaveLength(3);
+    expect(status.problems).toHaveLength(2);
     expect(status.problems[0]).toMatch(/not live/);
-    expect(status.problems[1]).toMatch(/data only/);
-    expect(status.problems[2]).toMatch(/turned off/);
+    expect(status.problems[1]).toMatch(/turned off/);
   });
 });

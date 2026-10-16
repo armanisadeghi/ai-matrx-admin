@@ -8,41 +8,12 @@
 // The code travels as STDIN to a fixed interpreter command, never spliced
 // into the command line, so nothing in the code can escape the shell.
 
-import type { ExecutionInstance } from "@ai-matrx/chat/agents/types/instance.types";
 import type { ProcessResult } from "@/features/code/types";
 
-type SandboxBinding = NonNullable<ExecutionInstance["sandboxBinding"]>;
-
-const INTERPRETERS: Record<string, string> = {
-  python: "python3 -",
-  python3: "python3 -",
-  py: "python3 -",
-  javascript: "node -",
-  js: "node -",
-  node: "node -",
-  mjs: "node -",
-  bash: "bash -s",
-  sh: "bash -s",
-  shell: "bash -s",
-  zsh: "bash -s",
-};
-
-/** The fixed stdin interpreter for a fence language, or null when none. */
-export function runCommandFor(language: string | null | undefined): string | null {
-  if (!language) return null;
-  return INTERPRETERS[language.trim().toLowerCase()] ?? null;
-}
-
-/** The orchestrator sandbox a conversation is bound to, when it can exec. */
-export function runnableSandboxId(
-  binding: SandboxBinding | null | undefined,
-): string | null {
-  if (!binding?.rowId) return null;
-  // A local PC target resolves its URL server-side at send time; the exec
-  // route addresses orchestrator sandboxes only.
-  if (binding.kind === "local-pc") return null;
-  return binding.rowId;
-}
+// The interpreter table and the runnable-sandbox rule are the chat package's (the "Run in
+// sandbox" row lives there); this module is this app's run through the sandbox exec route.
+import { runCommandFor } from "@ai-matrx/chat/agents/components/messages-display/rich-document/actions/code-run";
+export { runCommandFor, runnableSandboxId } from "@ai-matrx/chat/agents/components/messages-display/rich-document/actions/code-run";
 
 export interface CodeRunResult extends ProcessResult {
   command: string;

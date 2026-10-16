@@ -51,6 +51,19 @@ export interface LinkedOperation {
   created_at: string | null;
   started_at: string | null;
   ended_at: string | null;
+  /** Public event paths of the execution (derived; the server built the same strings). */
+  events_path: string;
+  stream_path: string;
+  /**
+   * The execution's current event cursor (what a follower resumes from). Present only when the
+   * caller asked for it (`eventCursor: true`), because it is one extra read per operation.
+   */
+  last_event_seq?: number;
+}
+
+export interface OperationsByLinkOptions {
+  /** Also read each operation's latest event seq (`last_event_seq`) for followers. */
+  eventCursor?: boolean;
 }
 
 export interface OperationsByLink {
@@ -84,7 +97,28 @@ function view(row: ExecutionRow, root: ExecutionRow): LinkedOperation {
     created_at: row.created_at,
     started_at: row.started_at,
     ended_at: row.ended_at,
+    events_path: `/api/runtime/executions/${row.id}/events`,
+    stream_path: `/api/runtime/executions/${row.id}/events/stream`,
   };
+}
+
+/** Same value the server computed: the newest event seq of the tree rooted at the execution. */
+async function withEventCursors(operations: LinkedOperation[]): Promise<LinkedOperation[]> {
+  const runtime = createClient().schema("runtime");
+  return Promise.all(
+    operations.map(async (op) => {
+      const res = await runtime
+        .from("global_execution_event")
+        .select("seq")
+        .eq("root_execution_id", op.execution_id)
+        .not("seq", "is", null)
+        .order("seq", { ascending: false })
+        .limit(1);
+      if (res.error) throw operationFailed("look up this record's running work", res.error);
+      const seq = (res.data as unknown as Array<{ seq: number | null }> | null)?.[0]?.seq;
+      return { ...op, last_event_seq: Number(seq ?? 0) };
+    }),
+  );
 }
 
 /** Newest active first, then newest settled (stable on created_at desc). */
@@ -101,10 +135,8 @@ const isAutoRoot = (r: ExecutionRow) => r.parent_execution_id == null && r.strea
  * is hidden once the work opened its own (non-auto) root for the same request.
  * If the request has no other root, the auto run stays.
  */
-async function withoutSupersededAutoRuns(
-  runtime: ReturnType<ReturnType<typeof createClient>["schema"]>,
-  rows: ExecutionRow[],
-): Promise<ExecutionRow[]> {
+async function withoutSupersededAutoRuns(rows: ExecutionRow[]): Promise<ExecutionRow[]> {
+  const runtime = createClient().schema("runtime");
   const autos = rows.filter((r) => isAutoRoot(r) && r.request_id);
   if (!autos.length) return rows;
   const requestIds = [...new Set(autos.map((r) => r.request_id as string))];
@@ -125,6 +157,7 @@ export async function fetchOperationsByLink(
   linkKind: string,
   linkId: string,
   limit = 20,
+  options: OperationsByLinkOptions = {},
 ): Promise<OperationsByLink> {
   const runtime = createClient().schema("runtime");
   const { data, error } = await runtime
@@ -139,7 +172,7 @@ export async function fetchOperationsByLink(
   const cap = Math.max(1, limit);
 
   if (!COLLAPSES_TO_ROOT.has(linkKind)) {
-    const linked = await withoutSupersededAutoRuns(runtime, fetched);
+    const linked = await withoutSupersededAutoRuns(fetched);
     const ordered = activeFirst(linked).slice(0, cap);
     const rootIds = [
       ...new Set(ordered.map((r) => r.root_execution_id ?? r.id).filter((id) => !ordered.some((o) => o.id === id))),
@@ -150,7 +183,8 @@ export async function fetchOperationsByLink(
       if (rootRes.error) throw operationFailed("look up this record's running work", rootRes.error);
       for (const r of (rootRes.data ?? []) as unknown as ExecutionRow[]) roots.set(r.id, r);
     }
-    const operations = ordered.map((r) => view(r, roots.get(r.root_execution_id ?? r.id) ?? r));
+    let operations = ordered.map((r) => view(r, roots.get(r.root_execution_id ?? r.id) ?? r));
+    if (options.eventCursor) operations = await withEventCursors(operations);
     return { link_kind: linkKind, link_id: linkId, operation_count: operations.length, operations };
   }
 
@@ -167,6 +201,7 @@ export async function fetchOperationsByLink(
     (b.created_at ?? "").localeCompare(a.created_at ?? ""),
   );
   const visible = activeFirst(roots).slice(0, cap);
-  const operations = visible.map((r) => view(r, r));
+  let operations = visible.map((r) => view(r, r));
+  if (options.eventCursor) operations = await withEventCursors(operations);
   return { link_kind: linkKind, link_id: linkId, operation_count: operations.length, operations };
 }

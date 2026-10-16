@@ -6,11 +6,14 @@
  * Break it names: a new registerAction(...) (or engine row) nobody categorized →
  * "uncategorized" red, listing the id.
  */
-import "@/features/rich-document/actions/handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAllActions, toAlchemyAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { CONTEXT_MENU_ENGINE_ROWS } from "@ai-matrx/context-menu/engine";
 import { matchRule } from "@ai-matrx/context-menu/engine";
 import { PROPOSED_MENU_GROUPING } from "@ai-matrx/context-menu/engine";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 describe("v2 grouping covers the whole inventory", () => {
   it("uncategorized: no registered row falls through to the fallback", () => {

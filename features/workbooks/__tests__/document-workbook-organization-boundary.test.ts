@@ -10,8 +10,11 @@ jest.mock("@/utils/supabase/client", () => ({
   supabase: { auth: withClaims({ getUser }), schema },
 }));
 
-import { createDocument } from "@/features/documents/document-service";
-import { createWorkbook } from "@/features/workbooks/workbook-service";
+import { configureDocsHost, createDocument, type DocsSupabase } from "@ai-matrx/office/docs";
+import { supabase } from "@/utils/supabase/client";
+
+// The app states this at start-up (lib/docs-host); here the mocked client stands in for it.
+configureDocsHost({ getSupabase: () => supabase as unknown as DocsSupabase, requestRaw: async () => new Response(null) });
 
 const ORGANIZATION_ID = "1b2c3d4e-5f60-4a71-8b92-0c1d2e3f4a5b";
 
@@ -24,10 +27,8 @@ describe("document and workbook create organization boundary", () => {
     select.mockReturnValue({ single });
   });
 
-  it.each([
-    ["document", createDocument],
-    ["workbook", createWorkbook],
-  ] as const)(
+  // The workbook half moved with the workbook service into @ai-matrx/office/sheets (its own test).
+  it.each([["document", createDocument]] as const)(
     "refuses missing or malformed %s organization before auth or database I/O",
     async (_name, create) => {
       await expect(
@@ -41,10 +42,7 @@ describe("document and workbook create organization boundary", () => {
     },
   );
 
-  it.each([
-    ["document", createDocument, "udt_documents"],
-    ["workbook", createWorkbook, "udt_workbooks"],
-  ] as const)(
+  it.each([["document", createDocument, "udt_documents"]] as const)(
     "persists an explicitly captured %s organization",
     async (_name, create, table) => {
       getUser.mockResolvedValue({

@@ -4,7 +4,7 @@
  * (raw UUIDs) must never reach a reader; the editor/import path (no flag) still sees every column.
  */
 import { RECORD_ID_HEADER, buildLinkedWorkbook, linkedFieldFor, type LinkedField } from "../table-link/link-model";
-import { univerSnapshotToRows } from "../univer-snapshot-rows";
+import { univerSnapshotToRows } from "@ai-matrx/office/sheets";
 
 const FIELDS: LinkedField[] = [linkedFieldFor({ field_name: "company", display_name: "Company", data_type: "string", metadata: {} } as Parameters<typeof linkedFieldFor>[0])];
 const snapshot = buildLinkedWorkbook(

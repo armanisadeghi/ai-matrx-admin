@@ -25,7 +25,7 @@ import dynamic from "next/dynamic";
 import { AlertTriangle, ExternalLink, Loader2 } from "lucide-react";
 
 import { supabase } from "@/utils/supabase/client";
-import { getDocument } from "@/features/documents/document-service";
+import { getDocument } from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentRow } from "@ai-matrx/office/core";
 import { cn } from "@/lib/utils";
@@ -35,8 +35,8 @@ import { canActOn } from "@/features/access-gate/service/canActOn";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { printMarkdown } from "@ai-matrx/print/markdown";
 import { useArtifactBodyOutput } from "@/features/canvas/output/bodyOutput";
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
-import { bodyTextOf, type DocumentBodyPort } from "@/features/documents/document-body-text";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
+import { bodyTextOf, type DocumentBodyPort } from "@ai-matrx/office/docs";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 // Univer hard-depends on `window` / `document`, and it is a heavy chunk — keep
 // it out of the canvas base bundle until a document pane actually opens.

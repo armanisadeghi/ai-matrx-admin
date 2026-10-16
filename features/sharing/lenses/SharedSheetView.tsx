@@ -11,7 +11,7 @@ import { useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import { Tabs } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { GRID_MAX_ROWS, type GridCell, type GridSheet } from "@/features/workbooks/snapshot-grid";
+import { GRID_MAX_ROWS, type GridCell, type GridSheet } from "@ai-matrx/office/sheets";
 
 const HEAD_H = 24;
 /** Row-number column: fits at least 4 digits on one line (11px tabular digits ~7px each + padding). */

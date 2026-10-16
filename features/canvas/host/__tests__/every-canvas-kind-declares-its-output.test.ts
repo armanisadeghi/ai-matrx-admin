@@ -19,7 +19,7 @@ const ALL: readonly AnyCanvasKind[] = [...ARTIFACT_CANVAS_KINDS, SAVED_ITEMS_CAN
 describe("every registered canvas kind meets the rendered-output standard", () => {
   it("covers every artifact type (37 on 2026-10-08)", () => {
     expect(ARTIFACT_CANVAS_KINDS).toHaveLength(Object.keys(ARTIFACT_OUTPUT).length);
-    expect(ARTIFACT_CANVAS_KINDS).toHaveLength(37);
+    expect(ARTIFACT_CANVAS_KINDS).toHaveLength(38);
   });
 
   it.each(ALL.map((kind) => [kind.id, kind] as const))("%s declares its surface (and frame/native: print + capture)", (_id, kind) => {

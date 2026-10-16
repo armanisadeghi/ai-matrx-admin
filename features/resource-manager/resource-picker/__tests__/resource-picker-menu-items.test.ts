@@ -31,6 +31,7 @@ describe("getVisibleResourcePickerCategories", () => {
       "webpage",
       "google",
       "cloud_browser",
+      "cloud_computer",
     ]);
     const allIds = categories.flatMap((c) => c.items.map((i) => i.id));
     expect(allIds).not.toContain("upload");
@@ -54,6 +55,7 @@ describe("getVisibleResourcePickerCategories", () => {
       "webpage",
       "google",
       "cloud_browser",
+      "cloud_computer",
       "tools",
       "connections",
       "skills",

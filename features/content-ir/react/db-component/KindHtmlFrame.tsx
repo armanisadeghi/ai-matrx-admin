@@ -21,7 +21,8 @@
  *     kind instance, already on their page.)
  */
 
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
+import { useReportKindDraw } from "./kind-draw-report";
 
 import { inlineJson } from "@/features/content-ir/sandbox/inline-json";
 
@@ -43,6 +44,9 @@ export const KindHtmlFrame: React.FC<KindHtmlFrameProps> = ({
   className,
 }) => {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
+  // "Rendered" waits for the document to load (2026-10-15 review B0).
+  const [loaded, setLoaded] = useState(false);
+  useReportKindDraw(loaded ? "drew" : "waiting");
 
   const srcDoc = useMemo(() => {
     const payload = inlineJson({ kind, data });
@@ -62,6 +66,7 @@ export const KindHtmlFrame: React.FC<KindHtmlFrameProps> = ({
       style={{ minHeight: "300px", height: "400px" }}
       aria-label={title ?? `${kind} component`}
       onLoad={() => {
+        setLoaded(true);
         // Channel 2 of the injection contract.
         frameRef.current?.contentWindow?.postMessage(
           { type: "matrx:kind-data", kind, data },

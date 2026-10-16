@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2, FileText } from "lucide-react";
-import { listAccessibleDocuments } from "@/features/documents/document-service";
+import { listAccessibleDocuments } from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentRow } from "@ai-matrx/office/core";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";

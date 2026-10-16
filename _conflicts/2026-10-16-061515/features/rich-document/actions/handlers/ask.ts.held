@@ -1,0 +1,144 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/rich-document/actions/handlers/ask.ts
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/rich-document/actions/handlers/ask.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-15 21:15  9d2428e637  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB:
+    2026-10-16 02:18  0e8e786382  "rich-document: the W1a message actions leave the web for @ai-matrx/chat (message-actions W1a)"
+    2026-10-15 21:15  f295729c57  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB's latest change is 5h 2m AFTER LOCAL's latest change.
+
+SIZE: common version 103 lines, LOCAL 103 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 3 lines and removed 3 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/rich-document/actions/handlers/ask.ts') <(git show 01d82f791a21:'features/rich-document/actions/handlers/ask.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/rich-document/actions/handlers/ask.ts'
+  GITHUB: git show 63f43ba9b880:'features/rich-document/actions/handlers/ask.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+// features/rich-document/actions/handlers/ask.ts
+//
+// "Quote into chat" and "Ask a follow-up about this" — the reader points at a
+// passage (a selection from the right-click menu, or the whole content from a
+// bar) and brings it into the conversation it came from.
+//
+// THE USER-INPUT LAW: a selection is machine-carried content, so it NEVER goes
+// into the composer text. It rides as a context entry on the conversation
+// (`quoted_passages`, accumulated), exactly as picked resources do; the person
+// then types their own question. Absent where there is no conversation.
+
+import { MessageSquareQuote, MessagesSquare } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { setContextEntries } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
+import { selectInstanceContextEntry } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.selectors";
+import { registerActionIfAbsent } from "./register-if-absent";
+import { chatIds, chatStateOf, deriveContentTitle } from "../utils";
+import { unwrapKindEnvelopes } from "@/lib/markdown/plain-text";
+import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
+
+/** The context key every quote lands under — one list per conversation. */
+export const QUOTED_PASSAGES_CONTEXT_KEY = "quoted_passages";
+
+function quote(ctx: RichDocumentActionContext): boolean {
+  const { conversationId, messageId } = chatIds(ctx);
+  // The quote is context the MODEL reads, not a page a person reads: a kind
+  // stays its data (`__kind` is part of the data), so this is the one
+  // outbound path that skips `contentForDestination`'s kind → markdown step.
+  const text = unwrapKindEnvelopes(ctx.content).trim();
+  if (!conversationId || !text) return false;
+  const state = chatStateOf(ctx, ["instanceContext"]);
+  const existing = state ? selectInstanceContextEntry(conversationId, QUOTED_PASSAGES_CONTEXT_KEY)(state) : undefined;
+  const prior = Array.isArray(existing?.value) ? existing.value : [];
+  ctx.dispatch(
+    setContextEntries({
+      conversationId,
+      entries: [
+        {
+          key: QUOTED_PASSAGES_CONTEXT_KEY,
+          value: [
+            ...prior,
+            {
+              text,
+              source_message_id: messageId,
+              source_title: deriveContentTitle(ctx) ?? null,
+            },
+          ],
+          type: "json",
+          label: "Quoted passages",
+        },
+      ],
+    }),
+  );
+  ctx.onClose();
+  return true;
+}
+
+function focusComposer(): void {
+  const input = document.querySelector<HTMLTextAreaElement>(
+    "textarea[data-agent-main-input]",
+  );
+  input?.focus();
+}
+
+const hasConversation = (ctx: RichDocumentActionContext) =>
+  Boolean(chatIds(ctx).conversationId) && ctx.content.trim().length > 0;
+
+registerActionIfAbsent({
+  id: "ask-followup",
+  label: "Ask a follow-up about this",
+  icon: MessagesSquare,
+  iconColor: "text-sky-500 dark:text-sky-400",
+  category: "ask",
+  supportedSources: ["chat-message", "working-document"],
+  renderSlot: "overflow",
+  order: 0,
+  visible: hasConversation,
+  run: (ctx) => {
+    if (!quote(ctx)) return;
+    focusComposer();
+    toast.success("Passage attached to this chat", {
+      description: "Type your follow-up question — the passage goes with it.",
+    });
+  },
+});
+
+registerActionIfAbsent({
+  id: "quote-into-chat",
+  label: "Quote into chat",
+  icon: MessageSquareQuote,
+  iconColor: "text-sky-500 dark:text-sky-400",
+  category: "ask",
+  supportedSources: ["chat-message", "working-document"],
+  renderSlot: "overflow",
+  order: 1,
+  visible: hasConversation,
+  run: (ctx) => {
+    if (!quote(ctx)) return;
+    toast.success("Quoted into this chat", {
+      description: "It rides with your next message as a quoted passage.",
+    });
+  },
+});

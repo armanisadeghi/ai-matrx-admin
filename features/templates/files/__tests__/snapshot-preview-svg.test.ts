@@ -1,5 +1,5 @@
-import { documentPreviewSvg, formatCellValue, workbookPreviewSvg } from "../thumbnail/snapshot-preview-svg";
-import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
+import { documentPreviewSvg, formatCellValue, workbookPreviewSvg } from "@ai-matrx/office/sheets";
+import { markdownToUniverDoc } from "@ai-matrx/office/docs/io";
 
 describe("snapshot preview — workbook", () => {
   const wb = {

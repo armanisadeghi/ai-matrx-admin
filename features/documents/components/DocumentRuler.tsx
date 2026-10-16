@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { PX_PER_INCH } from "@ai-matrx/office/core";
-import { rulerGeometry } from "@/features/documents/doc-tools-core";
+import { rulerGeometry } from "@ai-matrx/office/docs/tools";
 
 interface Props {
   /** Width of the area the page is centred in. */

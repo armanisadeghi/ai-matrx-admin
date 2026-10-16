@@ -45,11 +45,11 @@ import { HtmlPreviewBridge } from "@ai-matrx/chat/ui/html-preview/HtmlPreviewBri
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-import "./edit";
-import "./export";
-import "./fullscreen-editor";
+// Edit and export actions register from @ai-matrx/chat through ensureWebRichDocumentRegistrations() below.
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 
 enableMapSet();
+ensureWebRichDocumentRegistrations();
 // The shared host registration loads the app's providers, which reach the supabase client mock above
 // (its factory reads the `mock*` consts) — so it registers once those consts exist, before any render.
 beforeAll(() => {

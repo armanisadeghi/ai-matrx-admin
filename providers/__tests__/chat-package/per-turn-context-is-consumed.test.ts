@@ -9,7 +9,7 @@ import reducer, {
   consumePerTurnContext,
   setContextEntries,
 } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
-import { QUOTED_PASSAGES_CONTEXT_KEY } from "@/features/rich-document/actions/handlers/ask";
+import { QUOTED_PASSAGES_CONTEXT_KEY } from "@ai-matrx/chat/agents/components/messages-display/rich-document/actions/quoted-passages";
 import * as fs from "fs";
 import * as path from "path";
 

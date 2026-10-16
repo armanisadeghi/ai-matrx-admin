@@ -114,7 +114,11 @@ describe("the Conversation section", () => {
 
   it("runs the SAME verbs the header menu runs — never a second implementation", () => {
     const root = join(__dirname, "..", "..", "..", "..");
-    const section = readFileSync(join(root, "features/rich-document/actions/handlers/conversation-section.ts"), "utf8");
+    // The answer menu's section is @ai-matrx/chat's own since message-actions W1b.
+    const section = readFileSync(
+      join(root, "../aidream/apps/shared/chat/src/agents/components/messages-display/rich-document/actions/bodies/conversation-actions.ts"),
+      "utf8",
+    );
     const listMenu = readFileSync(
       join(root, "../aidream/apps/shared/chat/src/agents/components/conversation-actions/conversationActionRegistry.tsx"),
       "utf8",

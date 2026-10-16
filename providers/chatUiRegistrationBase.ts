@@ -44,6 +44,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { summarizeContextCell } from "@/features/scopes/utils/referenceCell";
 import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
 import "@/providers/chatUsageGateRegistration";
+import "@/providers/chatMessageActionSlots";
 import { registerKindValueMarkdown } from "@ai-matrx/content-ir/surfaces";
 import { useKnowledgeAttachSearch } from "@/features/resource-manager/resource-picker/useKnowledgeAttachSearch";
 import { useConversationAttachments } from "@/features/connectors/useConversationAttachments";

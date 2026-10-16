@@ -97,7 +97,8 @@ const CHAT_KEYS_ADDED = ["chatHost"];
  */
 // conversationAttachments: moved in deliberately by 9e363c01e5 (P17b). modelRegistry moved in at
 // P17b and RETIRED at B3 (chat 0.4.0): model records live in the core model catalog, not Redux.
-const CHAT_KEYS_MOVED_IN = ["proposedDirectives", "agentSettings", "conversationAttachments"];
+// diffCompare: the pinned compare base, moved in by message-actions W3d (Set as / Compare with base).
+const CHAT_KEYS_MOVED_IN = ["proposedDirectives", "agentSettings", "conversationAttachments", "diffCompare"];
 
 const ALL_CHAT_KEYS = [...CHAT_KEYS_BEFORE_P2, ...CHAT_KEYS_ADDED, ...CHAT_KEYS_MOVED_IN];
 

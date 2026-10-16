@@ -188,7 +188,8 @@ describe("one click: markdown or plain text, and the button equals the menu", ()
     expect(bar).toMatch(/"copy-formatted"/);
     expect(bar).toMatch(/triggerHidden/);
     // …and those two rows are the registry's "Copy as" rows, over the one cleaned source.
-    const transfer = fs.readFileSync(path.join(ROOT, "features/rich-document/actions/handlers/transfer.ts"), "utf8");
+    // The "Copy as" rows are @ai-matrx/chat's own since message-actions W1a (the web's transfer.ts is gone, W2a).
+    const transfer = fs.readFileSync(path.join(ROOT, "../aidream/apps/shared/chat/src/agents/components/messages-display/rich-document/actions/descriptors/copy.ts"), "utf8");
     expect(transfer).toMatch(/id: "copy-markdown"[\s\S]*?copyRichContent\(contentForDestination\(ctx\), "markdown"\)/);
     expect(transfer).toMatch(/id: "copy-plain-text"[\s\S]*?copyRichContent\(contentForDestination\(ctx\), "text"\)/);
     expect(transfer).toMatch(/id: "copy-formatted"[\s\S]*?copyRichContent\(contentForDestination\(ctx\), "formatted"\)/);

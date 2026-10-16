@@ -41,6 +41,7 @@ import {
   Share2,
   LayoutDashboard,
   Database,
+  Monitor,
   Copy,
   Download,
   ExternalLink,
@@ -111,6 +112,7 @@ const ICONS: Record<CanvasContentType, LucideIcon> = {
   tree: ListTree,
   tasks: ListChecks,
   cloud_browser: Cloud,
+  cloud_computer: Monitor,
   udt_document: FileText,
   sandbox: Terminal,
   topical_map: Brain,
@@ -126,6 +128,7 @@ const NOT_RESTORABLE: ReadonlySet<CanvasContentType> = new Set([
   "code_preview",
   "code_edit_error",
   "cloud_browser",
+  "cloud_computer",
   "sandbox",
 ]);
 

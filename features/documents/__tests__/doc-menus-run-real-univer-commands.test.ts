@@ -9,6 +9,13 @@ import { join } from "node:path";
 
 import { buildDocMenus, buildDocToolbar, type DocChromeHost } from "../chrome/doc-commands";
 import { flattenMenus, type EditorMenuEntry } from "@ai-matrx/office/core";
+// The app registers its Coming-soon ids in the browser (lib/coming-soon/ComingSoonClient.tsx); load the same
+// registry here so a row announcing an unregistered id still fails closed.
+import "@/lib/coming-soon/registry";
+import { setComingSoonAnnouncer } from "@ai-matrx/kit/coming-soon";
+
+// The app's announcer opens a dialog; here a registered id just has to reach it.
+setComingSoonAnnouncer(async () => {});
 
 function fakeHost() {
   const calls: { kind: string; args: unknown[] }[] = [];
@@ -29,6 +36,14 @@ function fakeHost() {
     openPageSetup: () => calls.push({ kind: "host.openPageSetup", args: [] }),
     pageless: () => false,
     setPageless: (v) => calls.push({ kind: "host.setPageless", args: [v] }),
+    tools: {
+      open: (id) => calls.push({ kind: "host.open", args: [id] }),
+      mode: () => "editing",
+      setMode: (m) => calls.push({ kind: "host.setMode", args: [m] }),
+      ruler: () => false,
+      toggleRuler: () => calls.push({ kind: "host.toggleRuler", args: [] }),
+      imageOptions: () => calls.push({ kind: "host.imageOptions", args: [] }),
+    },
     show: { outline: () => false, toggleOutline: () => calls.push({ kind: "host.toggleOutline", args: [] }) },
   };
   return { host, calls };

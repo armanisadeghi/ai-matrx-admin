@@ -18,7 +18,7 @@ import { defineWorkingCopyKind } from "@/lib/working-copy/reduxPort";
 import { announceWorkingCopyConflict, dismissWorkingCopyConflict } from "@/lib/working-copy/announce";
 import { openShared } from "@/lib/realtime/sharedChannel";
 import { toast } from "@/components/ui/use-toast";
-import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@/features/documents/document-service";
+import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { registerOpenEditorContent } from "@ai-matrx/office/univer";
 import {
@@ -26,7 +26,7 @@ import {
   DocumentModel,
   type DocumentModelDeps,
   type DocumentSnapshotData,
-} from "@/features/documents/document-model/documentModel";
+} from "@ai-matrx/office/docs";
 
 /** One place names this channel. A second, different declaration throws. */
 const documentSnapshotsChannel = defineChannelNamespace({
@@ -52,6 +52,10 @@ const deps: DocumentModelDeps = {
   },
   onSaved(_documentId, origin) {
     if (origin === "manual") toast({ title: "Snapshot saved", variant: "success" });
+  },
+  onApplyFailed() {
+    // A collaborator's edit could not be applied here; the model re-syncs the view from the saved version.
+    toast({ title: "A collaborator's change could not be applied", description: "Showing the last saved version of this document.", variant: "destructive" });
   },
   listenToPage({ flush, hasUnsaved }) {
     // TYPED WORK NEVER LEAVES THE PAGE UNWRITTEN: a reload / tab switch /

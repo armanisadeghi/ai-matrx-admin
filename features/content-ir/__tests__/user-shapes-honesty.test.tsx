@@ -77,7 +77,9 @@ describe("3.7 — member-facing text carries no developer harness", () => {
 
   it("the path explanations and the verdict's block-type chips are admin-debug only", () => {
     const src = read("render-paths/KindRenderPaths.tsx");
-    expect(src).toMatch(/selectIsAdminDebugger/);
+    // An admin with the debug switch on — never every admin by default (B4, 2026-10-15).
+    expect(src).toMatch(/useEngineeringDetail\(\)/);
+    expect(src).not.toMatch(/selectIsAdminDebugger/);
     expect(src).toMatch(/\{debug && \(\s*<p className="flex gap-1\.5/);
     expect(src).toMatch(/\{debug && \(\s*<span className="ml-auto/);
   });

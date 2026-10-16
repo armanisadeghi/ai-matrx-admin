@@ -11,7 +11,6 @@ import "@ai-matrx/meet/tokens.css";
 // above, so this app's own tokens and Tailwind utilities win.
 import "@ai-matrx/agents/catalog/styles.css";
 import "./globals.css";
-import "@/lib/coming-soon/registry";
 import "@/providers/chatServerRegistration";
 // Tap-button geometry (the .matrx-tap-* system) ships in the package.
 import "@ai-matrx/design-system/tap-target.css";

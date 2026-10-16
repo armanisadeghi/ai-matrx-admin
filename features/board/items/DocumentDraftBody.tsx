@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { createDocument } from "@/features/documents/document-service";
+import { createDocument } from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import type { ItemBodyProps } from "./types";
 import { NEW_DOCUMENT_NAME, documentSource } from "./document-items.logic";

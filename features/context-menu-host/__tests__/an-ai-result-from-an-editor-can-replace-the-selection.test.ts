@@ -13,7 +13,8 @@
  * the launch handle carries no write-back.
  */
 
-import "@/features/rich-document/actions/handlers";
+import "@/__tests__/helpers/configure-chat-fake-host";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction, resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "@/features/rich-document/test-utils/chatContext";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
@@ -25,6 +26,9 @@ import { callbackManager } from "@/utils/callbackManager";
 import { buildEditableWidgetHandle } from "@ai-matrx/context-menu/engine";
 import { buildSelectionWriteBack } from "@ai-matrx/context-menu/model";
 import { registerLaunchWidgetHandle } from "@ai-matrx/chat/agents/utils/launch-widget-handles";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 const JUNK = "Skip to main content | Patient portal | Cookie settings";
 const CLEAN = "Patient portal";

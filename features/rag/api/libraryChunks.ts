@@ -37,6 +37,8 @@ export interface LibraryChunksQuery {
   pageNumber?: number | null;
   parentOnly?: boolean;
   childrenOnly?: boolean;
+  /** Aborts the read (supabase-js `.abortSignal`). */
+  signal?: AbortSignal;
 }
 
 export async function fetchLibraryChunks(
@@ -45,17 +47,15 @@ export async function fetchLibraryChunks(
 ): Promise<LibraryChunksPage> {
   const limit = opts.limit ?? 100;
   const offset = opts.offset ?? 0;
-  const { data, error } = await ragDb(createClient()).rpc(
-    "fn_list_library_chunks",
-    {
-      p_id: documentId,
-      p_limit: limit,
-      p_offset: offset,
-      p_parent_only: opts.parentOnly ?? false,
-      p_children_only: opts.childrenOnly ?? false,
-      p_page_number: opts.pageNumber ?? undefined,
-    },
-  );
+  const call = ragDb(createClient()).rpc("fn_list_library_chunks", {
+    p_id: documentId,
+    p_limit: limit,
+    p_offset: offset,
+    p_parent_only: opts.parentOnly ?? false,
+    p_children_only: opts.childrenOnly ?? false,
+    p_page_number: opts.pageNumber ?? undefined,
+  });
+  const { data, error } = await (opts.signal ? call.abortSignal(opts.signal) : call);
   if (error) throw operationFailed("load this document's pieces", error);
   const resp = data as unknown as Partial<LibraryChunksPage> | null;
   return {

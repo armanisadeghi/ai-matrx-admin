@@ -1,0 +1,218 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/documents/doc-tools-core.ts
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/documents/doc-tools-core.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-15 21:16  ddd95ed214  "Docs: Insert table of contents and Building blocks go at a paragraph boundary, never inside a heading (the TOC split 'Intro heading line' into 'ng line'); Viewing mode answers a refused edit with our own notice instead of Univer's 'This content is protected'"
+  GITHUB:
+    2026-10-15 23:18  d5530bac2b  "Docs model, service and io move into @ai-matrx/office 0.5.2 (W1-G4): document service, model, converters, file import, open-format export and insert tools repointed to @ai-matrx/office/docs, /docs/io, /docs/tools; docs host in lib/docs-host (client StoreProvider); two-seat co-editing fix: the editor states its unit and a failed apply says so"
+    2026-10-15 21:18  17d2b30b79  "Docs: Insert table of contents and Building blocks go at a paragraph boundary, never inside a heading (the TOC split 'Intro heading line' into 'ng line'); Viewing mode answers a refused edit with our own notice instead of Univer's 'This content is protected'"
+  GITHUB's latest change is 2h 2m AFTER LOCAL's latest change.
+
+SIZE: common version 160 lines, LOCAL 177 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 13 lines and removed 0 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/documents/doc-tools-core.ts') <(git show 01d82f791a21:'features/documents/doc-tools-core.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/documents/doc-tools-core.ts'
+  GITHUB: git show 63f43ba9b880:'features/documents/doc-tools-core.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+/**
+ * The pure half of the Docs tools: building blocks, bookmarks, paragraph borders, the ruler's
+ * geometry and the document language. No Univer import, so each is proven on plain snapshots.
+ */
+
+import { PX_PER_INCH } from "@ai-matrx/office/core";
+import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
+
+export interface BuildingBlock {
+  id: string;
+  label: string;
+  description: string;
+  markdown: string;
+}
+
+export const BUILDING_BLOCKS: BuildingBlock[] = [
+  { id: "meeting-notes", label: "Meeting notes", description: "Date, attendees, agenda, decisions and action items.", markdown: "## Meeting notes\n\nDate: \nAttendees: \n\n### Agenda\n\n1. \n\n### Discussion\n\n### Decisions\n\n### Action items\n\n☐ Owner: Task, due date\n" },
+  { id: "project-tracker", label: "Project tracker", description: "Goal, milestones, owners, risks and status.", markdown: "## Project tracker\n\nGoal: \nOwner: \nStatus: On track\n\n### Milestones\n\n☐ Milestone, owner, due date\n\n### Risks\n\n### Next steps\n" },
+  { id: "email-draft", label: "Email draft", description: "To, subject and a three-part message ready to fill in.", markdown: "## Email draft\n\nTo: \nSubject: \n\nHi ,\n\nI am writing about .\n\nThe next step is .\n\nThanks,\n" },
+  { id: "weekly-status", label: "Weekly status", description: "Done, next, and blocked, for one week.", markdown: "## Weekly status\n\nWeek of: \n\n### Done this week\n\n### Next week\n\n### Blocked\n" },
+  { id: "decision-log", label: "Decision record", description: "Context, options, decision and consequences.", markdown: "## Decision record\n\nDate: \nDecider: \n\n### Context\n\n### Options considered\n\n### Decision\n\n### Consequences\n" },
+  { id: "pros-cons", label: "Pros and cons", description: "A side-by-side weighing of one choice.", markdown: "## Pros and cons\n\nChoice: \n\n### Pros\n\n### Cons\n\n### Verdict\n" },
+];
+
+export interface InsertableBody {
+  dataStream: string;
+  paragraphs: Array<{ startIndex: number; paragraphStyle?: Record<string, unknown> }>;
+  textRuns?: Array<{ st: number; ed: number; ts?: Record<string, unknown> }>;
+}
+
+/** Markdown to a body Univer can insert at the caret: the document-closing `\n` is dropped. */
+export function insertableBody(markdown: string): InsertableBody {
+  const body = (markdownToUniverDoc(markdown).body ?? { dataStream: "" }) as Partial<InsertableBody> & { dataStream: string };
+  let stream = body.dataStream;
+  if (stream.endsWith("\n")) stream = stream.slice(0, -1);
+  const paragraphs = (body.paragraphs ?? []).filter((p) => p.startIndex < stream.length);
+  const textRuns = (body.textRuns ?? []).filter((r) => r.st < stream.length).map((r) => ({ ...r, ed: Math.min(r.ed, stream.length) }));
+  return { dataStream: stream, paragraphs, ...(textRuns.length ? { textRuns } : {}) };
+}
+
+/**
+ * Where a BLOCK (table of contents, building block) goes for a caret: never inside a paragraph's
+ * text, so a heading is never split. Caret at the start of a paragraph (or in an empty one) →
+ * insert right there; anywhere else → end the caret's paragraph with a new line and insert at the
+ * start of that new paragraph. `dataStream` is Univer's body stream (paragraphs end in `\r`).
+ */
+export function blockInsertPlan(dataStream: string, caret: number): { at: number; breakAt: number | null } {
+  const c = Math.max(0, Math.min(caret, dataStream.length));
+  const start = Math.max(dataStream.lastIndexOf("\r", c - 1), dataStream.lastIndexOf("\n", c - 1)) + 1;
+  let end = dataStream.indexOf("\r", c);
+  if (end < 0) end = dataStream.length;
+  // Field marks and anchors are zero-width: a paragraph holding only them is empty.
+  const text = dataStream.slice(start, end).replace(/[\u0000-\u001f\u200b]/g, "").trim();
+  if (c === start || text === "") return { at: start, breakAt: null };
+  return { at: end + 1, breakAt: end };
+}
+
+/** Univer's CustomRangeType.BOOKMARK. */
+export const BOOKMARK_RANGE_TYPE = 3;
+/** A bookmark is an invisible anchor: one zero-width character the custom range wraps. */
+export const BOOKMARK_ANCHOR = "​";
+
+export interface Bookmark {
+  id: string;
+  name: string;
+  offset: number;
+}
+
+interface BodyWithRanges {
+  customRanges?: Array<{ rangeId: string; rangeType: number; startIndex: number; properties?: { name?: unknown } }>;
+}
+
+export function collectBookmarks(snapshot: unknown): Bookmark[] {
+  const body = (snapshot as { body?: BodyWithRanges } | null)?.body;
+  const out: Bookmark[] = [];
+  for (const r of body?.customRanges ?? []) {
+    if (r.rangeType !== BOOKMARK_RANGE_TYPE) continue;
+    out.push({ id: r.rangeId, name: typeof r.properties?.name === "string" ? r.properties.name : "", offset: r.startIndex });
+  }
+  return out.sort((a, b) => a.offset - b.offset);
+}
+
+export function bookmarkBody(id: string, name: string) {
+  return {
+    dataStream: BOOKMARK_ANCHOR,
+    customRanges: [{ startIndex: 0, endIndex: 0, rangeId: id, rangeType: BOOKMARK_RANGE_TYPE, properties: { name }, wholeEntity: true }],
+  };
+}
+
+export function cleanBookmarkName(raw: string, existing: readonly Bookmark[]): { ok: true; name: string } | { ok: false; why: string } {
+  const name = raw.replace(/\s+/g, " ").trim().slice(0, 80);
+  if (!name) return { ok: false, why: "Give the bookmark a name." };
+  if (existing.some((b) => b.name.toLowerCase() === name.toLowerCase())) return { ok: false, why: `A bookmark named "${name}" already exists.` };
+  return { ok: true, name };
+}
+
+/** `#bookmark=<name>` in the page address names a bookmark to jump to on open. */
+export function bookmarkFromHash(hash: string): string | null {
+  const m = /^#bookmark=(.+)$/.exec(hash);
+  if (!m) return null;
+  try {
+    return decodeURIComponent(m[1]!);
+  } catch {
+    return null;
+  }
+}
+export const bookmarkHash = (name: string) => `#bookmark=${encodeURIComponent(name)}`;
+
+export type BorderSide = "top" | "bottom" | "both" | "none";
+export type BorderDash = "solid" | "dashed" | "dotted";
+/** Univer's DashStyleType values. */
+const DASH: Record<BorderDash, number> = { solid: 1, dotted: 2, dashed: 3 };
+
+export interface BorderChoice {
+  side: BorderSide;
+  color: string;
+  width: number;
+  dash: BorderDash;
+  padding: number;
+}
+
+/** The `paragraph` argument of `doc-paragraph-setting.command` for a choice (Univer draws top and bottom paragraph borders). */
+export function paragraphBorderParams(c: BorderChoice): Record<string, unknown> {
+  const line = { color: { rgb: c.color }, width: c.width, dashStyle: DASH[c.dash], padding: c.padding };
+  return {
+    borderTop: c.side === "top" || c.side === "both" ? line : null,
+    borderBottom: c.side === "bottom" || c.side === "both" ? line : null,
+  };
+}
+
+export interface RulerGeometry {
+  pageLeft: number;
+  pageWidth: number;
+  marginLeft: number;
+  marginRight: number;
+  ticks: Array<{ x: number; kind: "inch" | "half" | "eighth"; label?: string }>;
+}
+
+/** The ruler above the page: inch ticks from the page's left edge (margins shaded), at the current zoom. */
+export function rulerGeometry(a: { containerWidth: number; zoom: number; pageWidthPx: number; marginLeftPx: number; marginRightPx: number }): RulerGeometry {
+  const pageWidth = a.pageWidthPx * a.zoom;
+  const pageLeft = Math.max(0, (a.containerWidth - pageWidth) / 2);
+  const ticks: RulerGeometry["ticks"] = [];
+  const inches = a.pageWidthPx / PX_PER_INCH;
+  for (let eighth = 0; eighth <= Math.floor(inches * 8); eighth++) {
+    const x = pageLeft + (eighth * PX_PER_INCH * a.zoom) / 8;
+    if (eighth % 8 === 0) {
+      const marginInches = a.marginLeftPx / PX_PER_INCH;
+      ticks.push({ x, kind: "inch", ...(eighth / 8 !== marginInches ? { label: String(Math.round(Math.abs(eighth / 8 - marginInches))) } : {}) });
+    } else ticks.push({ x, kind: eighth % 4 === 0 ? "half" : "eighth" });
+  }
+  return { pageLeft, pageWidth, marginLeft: a.marginLeftPx * a.zoom, marginRight: a.marginRightPx * a.zoom, ticks };
+}
+
+/** The key on the document style that carries the language (the slot the paper colour also uses). */
+export const DOCUMENT_LANGUAGE_KEY = "matrxLanguage";
+export const DOCUMENT_LANGUAGES: Array<{ code: string; label: string }> = [
+  { code: "en-US", label: "English (United States)" },
+  { code: "en-GB", label: "English (United Kingdom)" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "it", label: "Italian" },
+  { code: "pt-BR", label: "Portuguese (Brazil)" },
+  { code: "nl", label: "Dutch" },
+  { code: "ja", label: "Japanese" },
+  { code: "ko", label: "Korean" },
+  { code: "zh-CN", label: "Chinese (Simplified)" },
+  { code: "ar", label: "Arabic" },
+  { code: "hi", label: "Hindi" },
+  { code: "ru", label: "Russian" },
+];
+
+export function readDocumentLanguage(documentStyle: unknown): string {
+  const v = (documentStyle as Record<string, unknown> | undefined)?.[DOCUMENT_LANGUAGE_KEY];
+  return typeof v === "string" && DOCUMENT_LANGUAGES.some((l) => l.code === v) ? v : "en-US";
+}

@@ -60,7 +60,7 @@ import {
 import { conflictCopy, decideUpdate } from "./sync-decision";
 import { googleImageNote, googleReadyMarkdown } from "./doc-images";
 import { documentNameFrom, isPlaceholderName } from "./importers";
-import { renameDocument } from "@/features/documents/document-service";
+import { renameDocument } from "@ai-matrx/office/docs";
 import { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 

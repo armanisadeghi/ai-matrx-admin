@@ -1,80 +1,8 @@
 // features/rich-document/actions/handlers/print.ts
 //
-// Print / PDF actions. `print` is source-agnostic; `full-print` requires
-// the host to wire an `onFullPrint` callback (full-page render that
-// includes all blocks, currently a chat-specific renderer feature).
+// `print` (W1a) and `full-print` (W2b) are @ai-matrx/chat's own rows; this app's block printers
+// stay registered here, so the package's print still prints every embedded artifact.
 
-import { Printer, ScanLine } from "lucide-react";
-import { printMarkdownContent } from "@ai-matrx/chat/conversation/utils/markdown-print";
-import { registerActionIfAbsent } from "./register-if-absent";
-import { contentForPrint } from "../utils";
 // Each embedded block prints through its type's adapter (the one block-printer registry).
 import "@/features/canvas/artifact-types/artifact-printers";
 
-registerActionIfAbsent({
-  id: "print",
-  label: "Print / Save PDF",
-  icon: Printer,
-  iconColor: "text-slate-500 dark:text-slate-400",
-  category: "export",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  // The ContentActions set in this item's bar already shows it — once per surface.
-  order: 10,
-  run: async (ctx) => {
-    const title =
-      ctx.source.type === "note"
-        ? "Note"
-        : ctx.source.type === "chat-message"
-          ? "Message"
-          : ctx.source.type === "prompt-result"
-            ? "Prompt result"
-            : ctx.source.type === "artifact"
-              ? "Artifact"
-              : ctx.source.type === "scraper-result"
-                ? "Scraper result"
-                : "Content";
-    await printMarkdownContent(contentForPrint(ctx), title);
-  },
-});
-
-registerActionIfAbsent({
-  id: "full-print",
-  label: (ctx) => {
-    const ext =
-      ctx.extensions?.type === "chat-message"
-        ? ctx.extensions
-        : null;
-    return ext?.isCapturing ? "Generating PDF…" : "Full Print (all blocks)";
-  },
-  icon: ScanLine,
-  iconColor: "text-slate-600 dark:text-slate-300",
-  category: "export",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 11,
-  visible: (ctx) => {
-    if (!ctx.callbacks?.onFullPrint) return false;
-    if (ctx.extensions?.type === "chat-message") {
-      return ctx.extensions.showFullPrint;
-    }
-    // Non-chat hosts can opt in by providing onFullPrint without the chat
-    // extension — assume they meant it.
-    return true;
-  },
-  disabled: (ctx) => {
-    if (ctx.extensions?.type === "chat-message" && ctx.extensions.isCapturing) {
-      return { reason: "PDF generation in progress" };
-    }
-    return false;
-  },
-  run: (ctx) => {
-    const isCapturing =
-      ctx.extensions?.type === "chat-message"
-        ? ctx.extensions.isCapturing
-        : false;
-    if (!isCapturing) {
-      ctx.callbacks?.onFullPrint?.();
-    }
-  },
-});

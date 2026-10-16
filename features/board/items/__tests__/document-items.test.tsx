@@ -22,7 +22,8 @@ import {
 const createDocument = jest.fn();
 const ensureOrgId = jest.fn();
 
-jest.mock("@/features/documents/document-service", () => ({
+jest.mock("@ai-matrx/office/docs", () => ({
+  ...jest.requireActual("@ai-matrx/office/docs"),
   createDocument: (...args: unknown[]) => createDocument(...args),
 }));
 jest.mock("@/lib/organizations/ensureOrgId", () => ({

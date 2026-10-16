@@ -10,10 +10,13 @@
  * flashcard set), so it is skipped: no code snippet is offered for it and Save
  * to Code opens with the readable markdown instead.
  */
-import "../handlers";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { extractFirstCodeBlock } from "../utils";
 import { chatContext } from "../../test-utils/chatContext";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 const SET = {
   __kind: "flashcard_set",

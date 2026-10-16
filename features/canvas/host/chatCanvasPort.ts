@@ -71,6 +71,7 @@ const CONTENT_TYPES = {
   tree: true,
   tasks: true,
   cloud_browser: true,
+  cloud_computer: true,
   udt_document: true,
   sandbox: true,
   topical_map: true,

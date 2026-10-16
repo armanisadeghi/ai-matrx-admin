@@ -1,0 +1,120 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/rich-document/actions/handlers/chat.ts
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/rich-document/actions/handlers/chat.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-15 21:15  9d2428e637  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB:
+    2026-10-16 06:07  11d18bc80a  "rich-document: the W3d message rows leave the web; the web answers the chat package's new seams"
+    2026-10-16 02:18  0e8e786382  "rich-document: the W1a message actions leave the web for @ai-matrx/chat (message-actions W1a)"
+    2026-10-15 21:15  f295729c57  "rich-document: web handlers register only ids nobody registered yet"
+  GITHUB's latest change is 8h 52m AFTER LOCAL's latest change.
+
+SIZE: common version 77 lines, LOCAL 78 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 4 lines and removed 3 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/rich-document/actions/handlers/chat.ts') <(git show 01d82f791a21:'features/rich-document/actions/handlers/chat.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/rich-document/actions/handlers/chat.ts'
+  GITHUB: git show 63f43ba9b880:'features/rich-document/actions/handlers/chat.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+// features/rich-document/actions/handlers/chat.ts
+//
+// Chat-turn doors that used to be hand-built buttons on the /chat assistant
+// bar: "Continue in chat mode" (open this conversation in the full chat page
+// from any embedded surface). Absent on the chat page itself.
+
+import { MessageSquareShare, RefreshCw } from "lucide-react";
+import { selectIsLatestAssistantMessage } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
+import { selectRegenerateAnchor } from "@ai-matrx/chat/agents/redux/execution-system/message-crud/regenerate-anchor";
+import { selectReservedConversationId } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
+import {
+  isChatRoutePath,
+  resolveContinueInChatConversationId,
+} from "@ai-matrx/chat/agents/components/messages-display/assistant/continue-in-chat";
+import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";
+import { chatStateOf } from "../utils";
+import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
+import { registerActionIfAbsent } from "./register-if-absent";
+import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
+
+function continueHref(ctx: RichDocumentActionContext): string | null {
+  if (ctx.source.type !== "chat-message") return null;
+  const requestId = ctx.source.streamRequestId ?? null;
+  const state = chatStateOf(ctx, ["activeRequests"]);
+  const reserved = requestId && state ? selectReservedConversationId(requestId)(state) : null;
+  const id = resolveContinueInChatConversationId(
+    ctx.source.conversationId,
+    reserved,
+  );
+  return getEntityInfo("conversation").hrefFor?.(id) ?? null;
+}
+
+registerActionIfAbsent({
+  id: "continue-in-chat",
+  label: "Continue in chat mode",
+  icon: MessageSquareShare,
+  category: "share",
+  supportedSources: ["chat-message"],
+  renderSlot: "primary",
+  order: 10,
+  visible: (ctx) =>
+    typeof window !== "undefined" &&
+    !isChatRoutePath(window.location.pathname) &&
+    continueHref(ctx) !== null,
+  run: (ctx) => {
+    const href = continueHref(ctx);
+    if (href) openOutbound(href, "_blank", "noopener");
+  },
+});
+
+// The latest answer's one-tap Regenerate (older answers use Fork) — an inline
+// door onto the SAME registry action the ⋯ menu carries (answer-tools.ts).
+registerActionIfAbsent({
+  id: "regenerate-latest",
+  writesSource: true,
+  label: "Regenerate answer",
+  icon: RefreshCw,
+  category: "edit",
+  supportedSources: ["chat-message"],
+  renderSlot: "primary",
+  order: 5,
+  requiresAuth: true,
+  visible: (ctx) => {
+    if (ctx.source.type !== "chat-message") return false;
+    if (ctx.extensions?.type !== "chat-message" || ctx.extensions.role !== "assistant") {
+      return false;
+    }
+    const { conversationId, messageId } = ctx.source;
+    const state = chatStateOf(ctx, ["messages"]);
+    if (!state) return false;
+    return (
+      selectIsLatestAssistantMessage(conversationId, messageId)(state) &&
+      selectRegenerateAnchor(state, conversationId, messageId) !== null
+    );
+  },
+  run: (ctx) => getAction("regenerate-response")?.run(ctx),
+});

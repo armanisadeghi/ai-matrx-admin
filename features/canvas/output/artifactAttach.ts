@@ -64,6 +64,7 @@ export const ARTIFACT_ATTACH: Record<CanvasContentType, ArtifactAttachDef> = {
   map: DATA,
   sandbox: DATA,
   cloud_browser: DATA,
+  cloud_computer: DATA,
   udt_document: DATA,
   diagram: DATA,
   chart: DATA,

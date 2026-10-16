@@ -89,10 +89,13 @@ jest.mock("@univerjs/presets", () => ({
 }));
 jest.mock("@univerjs/core", () => ({
   CommandType: { COMMAND: 0, OPERATION: 1, MUTATION: 2 },
+  NamedStyleType: {}, // read at import by the Docs snapshot sanitizer inside @ai-matrx/office/docs
   ICommandService: Symbol("ICommandService"),
   createParagraphId: () => "p1",
   createSectionId: () => "s1",
 }));
+// @univerjs/ui drags in engine-render, which cannot load against the mocked @univerjs/core above; the glue only needs two names from it.
+jest.mock("@univerjs/ui", () => ({ IconManager: class {}, INotificationService: Symbol("INotificationService") }));
 jest.mock("@univerjs/themes", () => ({ defaultTheme: {} }));
 jest.mock("@univerjs/preset-docs-core", () => ({ UniverDocsCorePreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-core/locales/en-US", () => ({}));
@@ -118,6 +121,9 @@ jest.mock("@ai-matrx/office/univer", () => ({
 }));
 jest.mock("@/lib/univer-host", () => ({}));
 jest.mock("@univerjs/docs-find-replace", () => ({ UniverDocsFindReplacePlugin: class {} }));
+jest.mock("@univerjs/docs-toc", () => ({ UniverDocsTocPlugin: class {} }));
+jest.mock("@univerjs/docs-toc-ui", () => ({ UniverDocsTocUIPlugin: class {} }));
+jest.mock("@univerjs/docs-toc-ui/locale/en-US", () => ({}));
 jest.mock("@univerjs/find-replace/locale/en-US", () => ({}));
 jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({
   DocumentGoogleLink: () => null,
@@ -135,13 +141,12 @@ jest.mock("@/features/canvas/host/toolCanvas", () => ({
 }));
 jest.mock("@/features/documents/hooks/useUniverDocSurfaceTheme", () => ({ useUniverDocSurfaceTheme: () => {} }));
 jest.mock("@/features/documents/univer-doc-canvas-colors", () => ({ renderDocumentCanvasColorsVerbatim: () => ({ applied: true }) }));
-jest.mock("@/features/documents/utils/sanitizeUniverDocSnapshot", () => ({ sanitizeUniverDocSnapshot: (s: unknown) => s }));
 jest.mock("@ai-matrx/data/realtime/collab/react", () => ({ RemotePeerChips: () => null }));
 jest.mock("@/features/documents/components/DocumentPageReferenceCopyButton", () => ({ DocumentPageReferenceCopyButton: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/components/ui/use-toast", () => ({ toast: jest.fn() }));
 jest.mock("@/styles/themes/useThemeMode", () => ({ useThemeMode: () => "light" }));
-jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc: async () => ({ data: null, error: null }) } }));
 jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "user-potter" } } }),
 }))() }));
@@ -150,7 +155,9 @@ jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ..
 const SERVER_TEXT = "Kiln log: cone 6 firing, 9 hours.";
 const saves: string[] = [];
 const pendingSaves: Array<() => void> = [];
-jest.mock("@/features/documents/document-service", () => ({
+jest.mock("@ai-matrx/office/docs", () => ({
+  ...jest.requireActual("@ai-matrx/office/docs"),
+  sanitizeUniverDocSnapshot: (s: unknown) => s,
   getLatestDocumentSnapshot: async () => ({
     success: true,
     data: { id: "snap-server", snapshot: { id: "unit-kiln", body: { dataStream: `${SERVER_TEXT}\r\n` } } },

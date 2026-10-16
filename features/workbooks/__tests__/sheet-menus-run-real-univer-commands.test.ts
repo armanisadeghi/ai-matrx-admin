@@ -22,6 +22,13 @@ import {
   type WorksheetLike,
 } from "../chrome/sheet-commands";
 import { flattenMenus, type EditorMenuEntry } from "@ai-matrx/office/core";
+// The app registers its Coming-soon ids in the browser (lib/coming-soon/ComingSoonClient.tsx); load the same
+// registry here so a row announcing an unregistered id still fails closed.
+import "@/lib/coming-soon/registry";
+import { setComingSoonAnnouncer } from "@ai-matrx/kit/coming-soon";
+
+// The app's announcer opens a dialog; here a registered id just has to reach it.
+setComingSoonAnnouncer(async () => {});
 
 // "Custom number format" asks in our own dialog; the test answers it.
 jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({

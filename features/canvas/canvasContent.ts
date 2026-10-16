@@ -47,6 +47,9 @@ export type CanvasContentType =
   // `{ initialProfileId?, runId? }`; the body holds live run/screenshot/handoff
   // state (never serializable) — NON_PERSISTABLE, like the editor surfaces.
   | "cloud_browser"
+  // The person's one Cloud Computer (wake / watch / take control). `data` is empty;
+  // the conversation rides in metadata. Live state — NON_PERSISTABLE.
+  | "cloud_computer"
   // A CLOUD DOCUMENT (`workbench.udt_documents`) hosted in the canvas pane.
   // `data` is a pointer `{ documentId }`; the body mounts the canonical
   // `DocumentEditor` — the very component `/documents/[id]` mounts — so the
@@ -95,6 +98,8 @@ export const NON_PERSISTABLE_CANVAS_TYPES: ReadonlySet<string> = new Set([
   // Live Cloud Browser: holds run/screenshot/controller/handoff state — a
   // canvas_items row would freeze a dead pointer with no live session.
   "cloud_browser",
+  // Live machine screen: a stream and a lease, nothing a row could restore.
+  "cloud_computer",
   // Live sandbox: a pty and a file tree against a running box. A canvas_items
   // row would freeze a pointer to a box that is gone by the time it is read.
   "sandbox",
@@ -195,6 +200,7 @@ export function getDefaultTitle(type: string): string {
     code_preview: "Code Preview",
     code_edit_error: "Code Edit Error",
     cloud_browser: "Cloud Browser",
+    cloud_computer: "Computer",
     sandbox: "Sandbox",
     udt_document: "Document",
     topical_map: "Topical map",

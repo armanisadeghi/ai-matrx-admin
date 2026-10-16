@@ -40,6 +40,8 @@
  * functions whose tests did not change.
  */
 
+// The app states the Docs host at start-up (StoreProvider); the canvas Source view reads through it.
+import "@/lib/docs-host";
 import React, { act, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
@@ -78,7 +80,7 @@ import {
   decideToolResultCanvasAction,
 } from "@/features/canvas/tool-results/decideToolResultCanvasAction";
 import { buildDocumentCanvasContent } from "@/features/documents/hooks/useOpenDocumentCanvas";
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 import type { ToolLifecycleEntry } from "@ai-matrx/chat/agents/types/request.types";
 import { DocumentInline } from "@/features/chat-tool-renderers/renderers/document/DocumentInline";
 

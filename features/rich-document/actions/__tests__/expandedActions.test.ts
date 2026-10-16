@@ -5,12 +5,16 @@
  * present or ABSENT (never dead) by what the source and its host can do.
  */
 
-import "../handlers";
+import "@/__tests__/helpers/configure-chat-fake-host";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction, resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { parseFirstMarkdownTable, tableToDelimited } from "@ai-matrx/rich-content/rich-document/actions/markdownTable";
 import { chatContext, RICH_MESSAGE } from "../../test-utils/chatContext";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
+
+// Chat's message actions and this app's handlers, before any registry read.
+ensureWebRichDocumentRegistrations();
 
 function noteContext(
   overrides: Partial<RichDocumentActionContext> = {},
@@ -104,15 +108,8 @@ describe("the expanded action set", () => {
 
   // SAVE-AS-TABLE-EVERYWHERE: "Save to a table…" needs no host — it opens the one overlay — and it
   // is offered for every shape the one reader understands, not only a markdown table.
-  it("save-table-as-data opens the one Save to a table overlay with the content", () => {
-    const dispatch = jest.fn();
-    const ctx = chatContext("assistant", { dispatch });
-    void getAction("save-table-as-data")!.run(ctx);
-    const opened = dispatch.mock.calls.map((c) => c[0]).find((a) => a?.payload?.overlayId === "saveToTable");
-    expect(opened).toBeDefined();
-    expect(opened.payload.data.text).toBe(ctx.content);
-  });
-
+  // What "Save to a table…" opens (the saveToTable window, with the content) is @ai-matrx/chat's own
+  // since message-actions W2a: its guard is the package's w2a-rows-reach-their-host-seams test.
   it("offers Save to a table for a few bullet points and for Key: value lines, never for prose", () => {
     const bullets = ids(noteContext({ content: "Bring:\n\n- Loose shorts\n- Water bottle\n- Knee brace\n" }));
     expect(bullets).toContain("save-table-as-data");
@@ -122,7 +119,7 @@ describe("the expanded action set", () => {
     expect(prose).not.toContain("save-table-as-data");
   });
 
-  it("ask-in-chat is offered only where a conversation exists, and quotes as CONTEXT", () => {
+  it("ask-in-chat is offered only where a conversation exists, and quotes as CONTEXT", async () => {
     expect(ids(noteContext())).not.toContain("quote-into-chat");
     const dispatch = jest.fn();
     const ctx = chatContext("assistant", {
@@ -135,7 +132,7 @@ describe("the expanded action set", () => {
       })) as never,
     });
     expect(ids(ctx)).toEqual(expect.arrayContaining(["ask-followup", "quote-into-chat"]));
-    void getAction("quote-into-chat")!.run(ctx);
+    await getAction("quote-into-chat")!.run(ctx);
     const action = dispatch.mock.calls[0][0];
     // THE USER-INPUT LAW: a context entry on the conversation, never composer text.
     expect(action.type).toMatch(/setContextEntries$/);

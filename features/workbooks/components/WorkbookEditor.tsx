@@ -22,8 +22,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bookmark, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Settings, Sheet, Upload } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
-import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
-import { workbookSourceLabel } from "@/features/workbooks/workbook-service";
+import { importWorkbookFile, unsupportedFileReason } from "@ai-matrx/office/sheets/xlsx";
+import { workbookSourceLabel } from "@ai-matrx/office/sheets";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
@@ -37,15 +37,15 @@ import { SHEET_RIBBON } from "@/features/workbooks/chrome/sheet-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
 import { boundActions, matchesShortcut, type EditorMenuEntry, type Workbook } from "@ai-matrx/office/core";
 import { buildSheetMenus, buildSheetToolbar, sheetPageSetupRow, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
-import { createWorkbook } from "@/features/workbooks/workbook-service";
+import { createWorkbook } from "@ai-matrx/office/sheets";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { downloadSheetAsCsv, downloadSheetAsHtml, downloadSheetAsPdf, downloadSheetAsTsv, printSheet } from "@/features/workbooks/sheet-output";
-import { pageSetupFromMetadata, type SheetPageSetup } from "@/features/workbooks/sheet-page-setup";
-import { readSheetPageSetup, writeSheetPageSetup } from "@/features/workbooks/sheet-page-setup-service";
+import { downloadSheetAsCsv, downloadSheetAsHtml, downloadSheetAsPdf, downloadSheetAsTsv, printSheet } from "@ai-matrx/office/sheets";
+import { pageSetupFromMetadata, type SheetPageSetup } from "@ai-matrx/office/sheets";
+import { readSheetPageSetup, writeSheetPageSetup } from "@ai-matrx/office/sheets";
 import { SheetPageSetupDialog } from "@/features/workbooks/components/SheetPageSetupDialog";
 import { SheetToolPanels, type PanelApi } from "@/features/workbooks/components/SheetToolPanels";
 import { useSheetExtras } from "@/features/workbooks/components/useSheetExtras";
-import type { CellRange } from "@/features/workbooks/univer-snapshot-rows";
+import type { CellRange } from "@ai-matrx/office/sheets";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 
@@ -101,8 +101,9 @@ import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
+import { workbookSeatOptions, type WorkbookSeatApi } from "@/features/workbooks/collab/workbookSeatOptions";
 
-import { useWorkbookRealtime } from "@/features/workbooks/hooks/useWorkbookRealtime";
+import { useWorkbookRealtime } from "@ai-matrx/office/univer/realtime";
 import "@/lib/univer-host";
 import { useUniverDarkModeSync } from "@ai-matrx/office/univer";
 import { identifyUniverUser } from "@ai-matrx/office/univer";
@@ -119,12 +120,12 @@ import { mayAutosave, remoteOriginOf } from "@ai-matrx/data/realtime/collab";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
-import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
+import { getLatestSnapshot, saveSnapshot } from "@ai-matrx/office/sheets";
 import { useWorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
-import { registerWorkbookScopeSource } from "@/features/workbooks/workbook-scope-source";
+import { registerWorkbookScopeSource } from "@ai-matrx/office/sheets";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { isServiceFailure } from "@/features/data-tables/types";
-import { downloadUniverAsXlsx } from "@/features/workbooks/univer-to-xlsx";
+import { isServiceFailure } from "@ai-matrx/records/core";
+import { downloadUniverAsXlsx } from "@ai-matrx/office/sheets/xlsx";
 import { resolveExportImage } from "@ai-matrx/office/univer";
 import { workbookHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { copyActiveSheetReference } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
@@ -197,7 +198,7 @@ export default function WorkbookEditor({
   // See `../collab/FEATURE.md` for the full architecture; this ref is the
   // sole live connection between Univer's command service and Yjs.
   const collabSessionRef = useRef<
-    import("@/features/workbooks/collab/WorkbookCollabSession").WorkbookCollabSession | null
+    import("@ai-matrx/office/univer/collab").WorkbookCollabSession | null
   >(null);
   // Univer selection-listener disposer, kept ref-side so the unmount path can
   // reach it regardless of which render registered it.
@@ -490,7 +491,7 @@ export default function WorkbookEditor({
 
     const [{ WorkbookCollabSession }, { SupabaseYjsProvider }] =
       await Promise.all([
-        import("@/features/workbooks/collab/WorkbookCollabSession"),
+        import("@ai-matrx/office/univer/collab"),
         import("@ai-matrx/data/realtime/collab"),
       ]);
 
@@ -501,7 +502,7 @@ export default function WorkbookEditor({
     // resolve the command service, log + return so the editor runs in
     // solo-without-collab mode rather than tearing down the route.
     let commandService:
-      | import("@/features/workbooks/collab/WorkbookCollabSession").CommandServiceLike
+      | import("@ai-matrx/office/univer/collab").CommandServiceLike
       | null = null;
     try {
       const injector = (
@@ -517,7 +518,7 @@ export default function WorkbookEditor({
       }
       const { ICommandService } = await import("@univerjs/core");
       const resolved = injector.get<
-        import("@/features/workbooks/collab/WorkbookCollabSession").CommandServiceLike
+        import("@ai-matrx/office/univer/collab").CommandServiceLike
       >(ICommandService as unknown);
       if (
         !resolved ||
@@ -544,6 +545,19 @@ export default function WorkbookEditor({
       uid,
       clientId,
       commandService,
+      // Each seat mounts its own Univer unit: peers' mutations are re-addressed
+      // to it, and one that cannot be applied says so and re-syncs.
+      ...workbookSeatOptions({
+        getApi: () => apiRef.current as unknown as WorkbookSeatApi,
+        onFailed: () => {
+          toast({
+            title: "A collaborator's change could not be applied",
+            description: "Showing the last saved version of this workbook.",
+            variant: "destructive",
+          });
+          void reloadFromLatest();
+        },
+      }),
       makeProvider: ({ workbookId: wid, clientId: cid, doc, awareness, onLeaderChange }) =>
         new SupabaseYjsProvider({
           workbookId: wid,
@@ -780,7 +794,7 @@ export default function WorkbookEditor({
     if (!workbook) return;
     try {
       const name = workbookName ?? workbookId;
-      const { univerSnapshotToXlsxBytes } = await import("@/features/workbooks/univer-to-xlsx");
+      const { univerSnapshotToXlsxBytes } = await import("@ai-matrx/office/sheets/xlsx");
       const { downloadOpenXmlAs } = await import("@/features/file-actions/office-convert");
       const bytes = await univerSnapshotToXlsxBytes(workbook.save(), { resolveImage: resolveExportImage });
       await downloadOpenXmlAs(bytes, `${name}.xlsx`, name, "ods");

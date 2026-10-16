@@ -7,6 +7,7 @@
 import { lazy } from "react";
 // The app bindings (windows, canvas, menus, kind views, chat state), mermaid, and this app's domain blocks.
 import "@/features/rich-content-host/app-bindings";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { configureRichContent } from "@ai-matrx/rich-content/host";
 import { toast } from "@/lib/toast";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
@@ -31,6 +32,8 @@ const NestedContent = lazy(() =>
 );
 
 configureRichContent({
+  // Chat's message actions + this app's remaining handlers, on the engine's first registry read.
+  ensureRichDocumentRegistrations: ensureWebRichDocumentRegistrations,
   toast: toast as never,
   captureError: captureError as never,
   ErrorActions: ErrorAlchemyMenu,

@@ -8,6 +8,7 @@ import { createRoot } from "react-dom/client";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const wire: string[] = [];
+const wireArgs: unknown[][] = [];
 const OP = (docId: string) => ({
   execution_id: "e1",
   request_id: "r1",
@@ -25,15 +26,21 @@ const OP = (docId: string) => ({
   ended_at: "2020-01-01T00:00:00Z",
   last_event_seq: 1,
 });
+// The by-link read is Supabase (runtime.global_execution), not the Python server: the wire
+// here is the operationsByLink seam, and the transport must never be asked for a by-link GET.
+const transportPaths: string[] = [];
+jest.mock("@/lib/runtime-operations/operationsByLink", () => ({
+  fetchOperationsByLink: async (kind: string, id: string, limit: number, opts: unknown) => {
+    wire.push(`${kind}/${id}`);
+    wireArgs.push([limit, opts]);
+    return { operations: [OP(id)] };
+  },
+}));
 jest.mock("@/lib/api/matrx-transport", () => ({
   createMatrxTransport: () => ({
     fetch: async (path: string) => {
-      wire.push(path.split("?")[0]);
-      const docId = path.split("/by-link/processed_document/")[1]?.split("?")[0] ?? "";
-      return new Response(JSON.stringify({ operations: [OP(docId)] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      transportPaths.push(path);
+      return new Response("{}", { status: 200 });
     },
   }),
 }));
@@ -59,6 +66,8 @@ function mount(docId: string) {
 
 beforeEach(() => {
   wire.length = 0;
+  wireArgs.length = 0;
+  transportPaths.length = 0;
   resetSharedPdfRunLookups();
   window.sessionStorage.clear();
 });
@@ -67,6 +76,8 @@ it("opening a doc issues exactly one by-link GET (probe + follow share it)", asy
   const { result } = mount(DOC);
   for (let i = 0; i < 6; i++) await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
   expect(result.current?.answered).toBe(true);
-  const links = wire.filter((p) => p.includes("/by-link/"));
-  expect(links).toEqual([`/runtime/operations/by-link/processed_document/${DOC}`]);
+  expect(wire).toEqual([`processed_document/${DOC}`]);
+  // the follow resumes from the event cursor, so the read asks for it
+  expect(wireArgs[0]).toEqual([5, { eventCursor: true }]);
+  expect(transportPaths.filter((p) => p.includes("/by-link/"))).toEqual([]);
 });

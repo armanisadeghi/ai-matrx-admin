@@ -126,12 +126,16 @@ export function EntityBulkActions<TRow>({
     }
   };
 
+  // Built once per render, only when a verb asks — it lets a verb say it would
+  // do nothing on THIS selection (every row already in its state).
+  const held = actions.some((action) => action.disabledReason) ? selection.build() : null;
+
   return (
     <>
       {actions.map((action) => {
         const Icon = action.icon;
         const busy = pending === action.id;
-        const unavailable = action.disabledReason?.(selection.count) ?? null;
+        const unavailable = (held && action.disabledReason?.(selection.count, held)) ?? null;
         return (
           <Button
             key={action.id}

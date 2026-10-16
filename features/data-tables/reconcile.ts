@@ -8,7 +8,7 @@
  *
  * See `features/data-tables/FEATURE.md` for architectural context.
  */
-import { sanitizeFieldName } from "@/features/data-tables/field-name-key";
+import { sanitizeFieldName } from "@ai-matrx/records/core";
 import type { TableField } from "@/features/data-tables/table-shapes";
 
 /** Special mapping value meaning "do not write this incoming column". */

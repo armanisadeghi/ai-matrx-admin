@@ -34,6 +34,10 @@ import {
     sandboxFrameSrc,
 } from "@/features/content-ir/react/db-component/KindSandboxFrame";
 import {
+    KindDrawReportHost,
+    useKindDrawCollector,
+} from "@/features/content-ir/react/db-component/kind-draw-report";
+import {
     deliverInit,
     hostChannels,
     installBrowserStandIns,
@@ -123,6 +127,8 @@ async function stand(
         contentBottom?: number;
         runAction?: jest.Mock;
         data?: unknown;
+        /** Wrap the frame (e.g. in a draw-report host). */
+        wrap?: (frame: React.ReactElement) => React.ReactElement;
     } = {},
 ): Promise<Harness> {
     const posted = recordFramePosts();
@@ -143,7 +149,8 @@ async function stand(
     const onResolve = jest.fn();
 
     let currentData: unknown = options.data ?? { title: "first" };
-    const render = (data: unknown) => (
+    const wrap = options.wrap ?? ((frame: React.ReactElement) => frame);
+    const render = (data: unknown) => wrap(
         <KindSandboxFrame
             kind="round_trip_kind"
             resolution={
@@ -159,7 +166,7 @@ async function stand(
             runAction={runAction as never}
             onResolve={onResolve as never}
             ceilings={CEILINGS}
-        />
+        />,
     );
 
     await act(async () => {
@@ -235,6 +242,41 @@ describe("a frame that never speaks is heard by the Error Inspector", () => {
         );
         expect(captured).toHaveLength(1);
     }, 20_000);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe("the frame reports what it DREW, never what resolved (B0, 2026-10-15)", () => {
+    // With the frame blocked, the Preview said "This shape's own component
+    // rendered." beside the frame's own "This view did not load."
+    function DrawProbe({ children }: { children: React.ReactNode }) {
+        const draw = useKindDrawCollector();
+        return (
+            <>
+                <output data-draw-state={draw.state} />
+                <KindDrawReportHost report={draw.report}>{children}</KindDrawReportHost>
+            </>
+        );
+    }
+    const drawState = (el: HTMLElement) =>
+        el.querySelector("[data-draw-state]")?.getAttribute("data-draw-state");
+
+    it("a frame that never answers reports failed, not drew", async () => {
+        const h = await stand({ connect: false, wrap: (f) => <DrawProbe>{f}</DrawProbe> });
+        expect(drawState(h.hostEl)).toBe("waiting");
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 8_400));
+        });
+        expect(h.hostEl.textContent ?? "").toContain("did not load");
+        expect(drawState(h.hostEl)).toBe("failed");
+    }, 20_000);
+
+    it("a frame that drew and measured its content reports drew", async () => {
+        const h = await stand({ wrap: (f) => <DrawProbe>{f}</DrawProbe> });
+        await act(async () => {
+            await settleFrames();
+        });
+        expect(drawState(h.hostEl)).toBe("drew");
+    });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,516 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/rag/api/derivations.ts
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/rag/api/derivations.ts
+  Both grew from the same COMMON version: commit 8783931423, 2026-10-15 20:37.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-16 00:17  f033d1201b  "rag: library chunks read via rag.fn_list_library_chunks (Supabase), not the Python server"
+  GITHUB:
+    2026-10-16 02:36  4d6deaf7c3  "Review fixes for server-to-Supabase moves: DB-clock error snapshot + count once, restore_brief_run refuses silent no-op, pdf by-link via Supabase, abortable derivative chunks"
+    2026-10-16 00:34  261455db79  "rag: library chunks read via rag.fn_list_library_chunks (Supabase), not the Python server"
+  GITHUB's latest change is 2h 19m AFTER LOCAL's latest change.
+
+SIZE: common version 477 lines, LOCAL 467 lines, GITHUB 468 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 5 lines and removed 12 lines.
+  GITHUB added 6 lines and removed 12 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 5 of the 6 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | signal: opts.signal,
+    Lines GITHUB deliberately REMOVED that LOCAL still has: 1
+      | { signal: opts.signal },
+  GITHUB has 5 of the 5 lines LOCAL added.
+    Lines LOCAL deliberately REMOVED that GITHUB still has: 1
+      | { signal: opts.signal },
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 63f43ba9b880:'features/rag/api/derivations.ts') <(git show 01d82f791a21:'features/rag/api/derivations.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 01d82f791a21:'features/rag/api/derivations.ts'
+  GITHUB: git show 63f43ba9b880:'features/rag/api/derivations.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+/**
+ * features/rag/api/derivations.ts
+ *
+ * Typed client for the Knowledge-Asset "derivation" surface — the premium
+ * representations the backend can build from an extracted document (table
+ * rows, figure captions, multi-granularity chunks, page verification,
+ * section summaries, synthetic Q&A).
+ *
+ *   GET  /rag/library/{id}/derivations        — rollup + recent runs
+ *   POST /rag/library/{id}/derive/{kind}/rebuild-preview — destructive impact + confirmation token
+ *   POST /rag/library/{id}/derive/{kind}       — NDJSON progress stream
+ *   POST /rag/library/derive-runs/{id}/cancel  — cancel an in-flight run
+ *
+ * Shares the exact wire envelope used by the per-stage runners in
+ * `stages.ts` (matrx-connect data/completion/error events). This module
+ * flattens that into a typed stream the Knowledge Asset UI renders.
+ *
+ * Cancel nuance (verified against aidream `rag.py::_run_derive_stream`):
+ * when a run is cancelled the backend emits a `phase:"error"` progress
+ * event carrying `extra.cancelled === true` (NOT a `rag.stage.result`),
+ * then ends the stream. Callers must treat that as a cancellation, not a
+ * failure — `runDeriveStream` surfaces it as a dedicated `derive.cancelled`
+ * event so the runner never paints a cancelled op red.
+ */
+
+import { getJson, postJson, postNdjson } from "@/lib/python-client";
+import { fetchLibraryChunks } from "./libraryChunks";
+import { getUserMessage } from "@ai-matrx/api";
+
+// ---------------------------------------------------------------------------
+// Kinds
+// ---------------------------------------------------------------------------
+
+/** The six derivation operations the backend exposes. Order here is the
+ *  canonical "Build All" order (verification first so the rest derives off a
+ *  verified base). */
+export const DERIVE_KINDS = [
+  "page_verification",
+  "table_row",
+  "multigranularity",
+  "page_image_caption",
+  "section_summary",
+  "synthetic_qa",
+] as const;
+
+export type DeriveKind = (typeof DERIVE_KINDS)[number];
+
+export function isDeriveKind(value: string): value is DeriveKind {
+  return (DERIVE_KINDS as readonly string[]).includes(value);
+}
+
+// ---------------------------------------------------------------------------
+// Rollup read (GET /derivations)
+// ---------------------------------------------------------------------------
+
+export type DeriveRunStatus = "running" | "completed" | "failed" | "cancelled";
+
+export interface DerivationRollup {
+  /** May be one of DeriveKind, but the backend can also surface other
+   *  parent-derived kinds (e.g. `initial_extract`); keep it a string. */
+  derivation_kind: string;
+  derivative_id: string;
+  chunk_count: number;
+  /** Durable resume keys completed (section indexes/page numbers). Unlike
+   * chunk_count, this stays one-per-scope-item for synthetic Q&A. */
+  completed_items?: number;
+  updated_at: string | null;
+}
+
+export interface DerivationRun {
+  run_id: string;
+  derivation_kind: string;
+  status: DeriveRunStatus;
+  current: number;
+  total: number;
+  chunks_written: number;
+  error: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+}
+
+export interface DerivationsResponse {
+  derivations: DerivationRollup[];
+  runs: DerivationRun[];
+}
+
+export async function fetchDerivations(
+  processedDocumentId: string,
+  signal?: AbortSignal,
+): Promise<DerivationsResponse> {
+  const { data } = await getJson<DerivationsResponse>(
+    `/rag/library/${encodeURIComponent(processedDocumentId)}/derivations`,
+    { signal },
+  );
+  return {
+    derivations: Array.isArray(data?.derivations) ? data.derivations : [],
+    runs: Array.isArray(data?.runs) ? data.runs : [],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Reality estimate (GET /estimate)
+//
+// Tells the UI, BEFORE the user spends, exactly how many runs each derivation
+// will do, the scope (rows/pages/sections), and a rough cost — so a card can
+// show "25 sections → 25 Gemini runs · ~$0.05" instead of a blind Build button.
+// One DB read + one PDF scan on the backend (a few seconds on a large doc).
+// Backend: aidream rag.py::estimate_derivations_endpoint → knowledge_derivations.estimate_derivations.
+// ---------------------------------------------------------------------------
+
+export interface DeriveEstimate {
+  /** How many model/vision calls this derivation will make. 0 for
+   *  deterministic kinds (table_row, multigranularity) and read-only ones. */
+  runs: number;
+  /** Unit noun for `items` (rows, sections, figure pages, …). */
+  unit: string;
+  /** How many `unit`s exist in the doc (e.g. 62 rows). */
+  items: number;
+  /** Human one-liner the card surfaces verbatim, e.g.
+   *  "1 Gemini run / section · 25 runs". */
+  note: string;
+  /** Rough USD cost (order-of-magnitude; shown as "~$X"). */
+  cost_usd: number;
+}
+
+export interface DocEstimateShape {
+  pages: number;
+  sections: number;
+  tables: number;
+  rows: number;
+  figure_pages: number;
+}
+
+export interface DerivationsEstimate {
+  name: string;
+  doc: DocEstimateShape;
+  /** Keyed by DeriveKind. Backend may omit kinds it can't estimate; callers
+   *  must treat a missing key as "unknown", not "zero". */
+  estimates: Partial<Record<DeriveKind, DeriveEstimate>>;
+}
+
+function isDocEstimate(v: unknown): v is DocEstimateShape {
+  if (!v || typeof v !== "object") return false;
+  const d = v as Record<string, unknown>;
+  return ["pages", "sections", "tables", "rows", "figure_pages"].every(
+    (k) => typeof d[k] === "number",
+  );
+}
+
+export async function fetchEstimate(
+  processedDocumentId: string,
+  signal?: AbortSignal,
+): Promise<DerivationsEstimate> {
+  const { data } = await getJson<DerivationsEstimate>(
+    `/rag/library/${encodeURIComponent(processedDocumentId)}/estimate`,
+    // The estimate does a live PDF scan (tables/figures/sections); on a large
+    // doc it can take well over the default 30s. Give it room so our own fetch
+    // timeout doesn't turn a slow scan into "scope estimate unavailable".
+    { signal, timeoutMs: 120_000 },
+  );
+  return {
+    name: typeof data?.name === "string" ? data.name : "",
+    doc: isDocEstimate(data?.doc)
+      ? data.doc
+      : { pages: 0, sections: 0, tables: 0, rows: 0, figure_pages: 0 },
+    estimates:
+      data?.estimates && typeof data.estimates === "object"
+        ? data.estimates
+        : {},
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Destructive rebuild handshake
+// ---------------------------------------------------------------------------
+
+export interface RebuildPreview {
+  confirmation_token: string;
+  expires_at: string;
+  processed_document_id: string;
+  derivation_kind: DeriveKind;
+  /** Persisted retrievable chunks/pages that reset will discard. */
+  existing_output_units: number;
+  /** Paid/deterministic scope items already durably completed. */
+  completed_items: number;
+  total_items: number;
+  remaining_items: number;
+  unit: string;
+  full_rebuild_cost_usd: number;
+  resume_cost_usd: number;
+  latest_run: {
+    status: DeriveRunStatus;
+    current: number;
+    total: number;
+    finished_at: string | null;
+  } | null;
+}
+
+export async function prepareRebuild(
+  processedDocumentId: string,
+  kind: DeriveKind,
+  signal?: AbortSignal,
+): Promise<RebuildPreview> {
+  const { data } = await postJson<RebuildPreview>(
+    `/rag/library/${encodeURIComponent(processedDocumentId)}/derive/${encodeURIComponent(kind)}/rebuild-preview`,
+    {},
+    // The server performs the same authoritative PDF scan used by estimates.
+    { signal, timeoutMs: 120_000 },
+  );
+  return data;
+}
+
+// ---------------------------------------------------------------------------
+// Derivative chunks read (GET /chunks on the derivative's own id)
+//
+// A derivation set IS a processed_document (a child of the source doc), so the
+// existing chunks endpoint serves its rows directly — this is how the UI makes
+// "Table rows: 62" actually SHOWable: fetch the derivative's chunks and render
+// each one with page provenance. The endpoint owner-checks via the parent doc's
+// ownership, which derivatives inherit.
+// ---------------------------------------------------------------------------
+
+export interface DerivativeChunkRow {
+  id: string;
+  chunk_index: number | null;
+  chunk_kind: string | null;
+  parent_chunk_id: string | null;
+  page_numbers: number[] | null;
+  token_count: number | null;
+  content_text: string;
+  has_oai_embedding: boolean;
+  has_voyage_embedding: boolean;
+  section_kind: string | null;
+  /** Full chunk metadata passthrough — e.g. table_row chunks carry
+   *  header / cells / table_index / row_index so the UI can rebuild real grids. */
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface DerivativeChunksResponse {
+  chunks: DerivativeChunkRow[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export async function fetchDerivativeChunks(
+  derivativeId: string,
+  opts: {
+    limit?: number;
+    offset?: number;
+    pageNumber?: number;
+    signal?: AbortSignal;
+  } = {},
+): Promise<DerivativeChunksResponse> {
+  return fetchLibraryChunks(derivativeId, {
+    limit: opts.limit ?? 50,
+    offset: opts.offset,
+    pageNumber: opts.pageNumber,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Streaming runner (POST /derive/{kind})
+// ---------------------------------------------------------------------------
+
+export type DerivePhase =
+  "started" | "progress" | "heartbeat" | "done" | "error";
+
+export interface DeriveStartedEvent {
+  event: "derive.started";
+  data: {
+    kind: DeriveKind;
+    /** Captured here so the caller can address the cancel endpoint. */
+    runId: string | null;
+  };
+}
+
+export interface DeriveProgressEvent {
+  event: "derive.progress";
+  data: {
+    kind: DeriveKind;
+    phase: DerivePhase;
+    message: string;
+    current: number;
+    total: number;
+    extra: Record<string, unknown>;
+  };
+}
+
+export interface DeriveResultEvent {
+  event: "derive.result";
+  data: {
+    kind: DeriveKind;
+    ok: boolean;
+    processedDocumentId: string | null;
+    chunksWritten: number;
+    error: string | null;
+    runId: string | null;
+  };
+}
+
+/** Cooperative cancellation acknowledged by the server (phase:"error" with
+ *  extra.cancelled). Distinct from a real failure. */
+export interface DeriveCancelledEvent {
+  event: "derive.cancelled";
+  data: { kind: DeriveKind; runId: string | null };
+}
+
+export interface DeriveErrorEvent {
+  event: "derive.error";
+  data: { kind: DeriveKind; message: string };
+}
+
+export interface DeriveEndEvent {
+  event: "derive.end";
+  data: Record<string, unknown>;
+}
+
+export type DeriveStreamEvent =
+  | DeriveStartedEvent
+  | DeriveProgressEvent
+  | DeriveResultEvent
+  | DeriveCancelledEvent
+  | DeriveErrorEvent
+  | DeriveEndEvent;
+
+export async function* runDeriveStream(
+  processedDocumentId: string,
+  kind: DeriveKind,
+  opts: {
+    signal?: AbortSignal;
+    reset?: boolean;
+    rebuildConfirmationToken?: string;
+  } = {},
+): AsyncGenerator<DeriveStreamEvent, void, void> {
+  // reset=true forces a clean rebuild (clears the set, then rebuilds). Omitted
+  // (the default) RESUMES — already-done sections are skipped server-side, so a
+  // re-run after an interruption never re-pays for completed work.
+  const path =
+    `/rag/library/${encodeURIComponent(
+      processedDocumentId,
+    )}/derive/${encodeURIComponent(kind)}` + (opts.reset ? "?reset=true" : "");
+
+  try {
+    for await (const envelope of postNdjson(
+      path,
+      { rebuild_confirmation_token: opts.rebuildConfirmationToken ?? null },
+      { signal: opts.signal },
+    )) {
+      const ev = parseEnvelope(envelope, kind);
+      if (ev) yield ev;
+    }
+  } catch (error) {
+    if (opts.signal?.aborted) return;
+    yield { event: "derive.error", data: { kind, message: getUserMessage(error) } };
+  }
+}
+
+function asString(v: unknown, fallback = ""): string {
+  return typeof v === "string" ? v : fallback;
+}
+function asNumber(v: unknown, fallback = 0): number {
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+
+function parseEnvelope(
+  env: { event: string; data?: unknown },
+  kind: DeriveKind,
+): DeriveStreamEvent | null {
+  const evName = asString(env.event);
+  const data = (env.data ?? {}) as Record<string, unknown>;
+
+  if (evName === "data") {
+    const dataKind = asString(data.kind);
+    const stageKind = (asString(data.stage) as DeriveKind) || kind;
+    const extra = (data.extra as Record<string, unknown>) ?? {};
+    const runId = typeof extra.run_id === "string" ? extra.run_id : null;
+
+    if (dataKind === "rag.stage.progress") {
+      const phase = (asString(data.phase) || "progress") as DerivePhase;
+
+      // started — carry the run_id out so the caller can cancel.
+      if (phase === "started") {
+        return { event: "derive.started", data: { kind: stageKind, runId } };
+      }
+
+      // error phase with extra.cancelled === true is a cooperative cancel,
+      // not a failure (verified against aidream _run_derive_stream).
+      if (phase === "error" && extra.cancelled === true) {
+        return { event: "derive.cancelled", data: { kind: stageKind, runId } };
+      }
+      if (phase === "error") {
+        return {
+          event: "derive.error",
+          data: {
+            kind: stageKind,
+            message: asString(data.message, "Derivation failed"),
+          },
+        };
+      }
+
+      return {
+        event: "derive.progress",
+        data: {
+          kind: stageKind,
+          phase,
+          message: asString(data.message),
+          current: asNumber(data.current),
+          total: asNumber(data.total),
+          extra,
+        },
+      };
+    }
+
+    if (dataKind === "rag.stage.result") {
+      const ok = data.ok === true;
+      return {
+        event: "derive.result",
+        data: {
+          kind: stageKind,
+          ok,
+          processedDocumentId:
+            typeof data.processed_document_id === "string"
+              ? data.processed_document_id
+              : null,
+          chunksWritten: asNumber(data.chunks_written),
+          error: typeof data.error === "string" ? data.error : null,
+          runId,
+        },
+      };
+    }
+    return null;
+  }
+
+  if (evName === "completion" || evName === "end") {
+    return { event: "derive.end", data };
+  }
+
+  if (evName === "error") {
+    return {
+      event: "derive.error",
+      data: { kind, message: asString(data.message, "Stream error") },
+    };
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Cancel (POST /derive-runs/{id}/cancel)
+// ---------------------------------------------------------------------------
+
+export interface CancelDeriveRunResponse {
+  ok: boolean;
+  status: DeriveRunStatus;
+}
+
+export async function cancelDeriveRun(
+  runId: string,
+  signal?: AbortSignal,
+): Promise<CancelDeriveRunResponse> {
+  const { data } = await postJson<CancelDeriveRunResponse>(
+    `/rag/library/derive-runs/${encodeURIComponent(runId)}/cancel`,
+    {},
+    { signal },
+  );
+  return data;
+}

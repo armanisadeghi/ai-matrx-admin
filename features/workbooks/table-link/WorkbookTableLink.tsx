@@ -30,8 +30,8 @@ import { toast } from "@/lib/toast";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
 import { getTableMetadata } from "@/features/data-tables/service";
-import { isServiceFailure } from "@/features/data-tables/types";
-import { univerSnapshotToRows } from "@/features/workbooks/univer-snapshot-rows";
+import { isServiceFailure } from "@ai-matrx/records/core";
+import { univerSnapshotToRows } from "@ai-matrx/office/sheets";
 
 import { RECORD_ID_HEADER, parseSheet, type TableLink } from "./link-model";
 import { matchRowsToRecords } from "./sync-plan";
