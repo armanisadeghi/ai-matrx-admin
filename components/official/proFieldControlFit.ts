@@ -13,9 +13,10 @@
  *    it holds anything.
  *  - OPTIONAL controls show in priority order while the text keeps its floor;
  *    the rest go inside "…". Folding runs from the lowest priority up: Expand,
- *    then Clear, then the mic's device chooser, then the mic itself.
- *  - On a phone the device chooser never sits beside the mic (Arman,
- *    2026-10-15): it is always inside "…" as "Microphone".
+ *    then Clear, then the mic.
+ *  - There is no device chevron (Arman, 2026-10-16): the microphone choice is
+ *    a right-click / press-and-hold on the mic, and an "Audio settings" row in
+ *    "…" whenever "…" shows — so it never takes room here.
  *  - A live recording always keeps its stop button inline (the caller forces it).
  *
  * Widths are the real rendered footprints per pointer and density (measured
@@ -25,24 +26,22 @@
 
 export type FoldableControl = "mic" | "clear" | "expand";
 
-/** How the mic shows: inline with its device chooser, inline alone, inside "…", or not offered. */
-export type MicFit = "with-chooser" | "alone" | "folded" | "none";
+/** How the mic shows: inline, inside "…", or not offered. */
+export type MicFit = "inline" | "folded" | "none";
 
 export interface ControlSizes {
   /** One tap box (Send, "…", Clear, Expand). */
   box: number;
-  /** The mic capsule with its device chevron, margins included. */
-  micWithChooser: number;
-  /** The mic capsule alone, margins included. */
-  micAlone: number;
+  /** The mic button, its own 3px margins included. */
+  mic: number;
 }
 
-/** 38px tap box; the mic capsule's own 3px margins included. */
-export const FINE_SIZES: ControlSizes = { box: 38, micWithChooser: 50, micAlone: 34 };
-/** Touch: the tap box keeps 38px of layout (the 44px hit area is invisible); the mic capsule pads out. */
-export const COARSE_SIZES: ControlSizes = { box: 38, micWithChooser: 70, micAlone: 46 };
+/** 38px tap box; the mic is a 28px button plus its 3px margins. */
+export const FINE_SIZES: ControlSizes = { box: 38, mic: 34 };
+/** Touch: the tap box keeps 38px of layout (the 44px hit area is invisible); the mic pads out. */
+export const COARSE_SIZES: ControlSizes = { box: 38, mic: 46 };
 /** The dense field scope (`data-matrx-tap-dense`): a 24px pill in a 28px box. */
-export const DENSE_SIZES: ControlSizes = { box: 28, micWithChooser: 44, micAlone: 30 };
+export const DENSE_SIZES: ControlSizes = { box: 28, mic: 28 };
 
 export function controlSizes(opts: { coarse: boolean; dense: boolean }): ControlSizes {
   if (opts.dense) return DENSE_SIZES;
@@ -77,8 +76,6 @@ export interface FitRequest {
   menuHasOwnItems: boolean;
   /** The field offers voice input. */
   mic: boolean;
-  /** The device chooser may sit beside the mic (false on a phone). Default true. */
-  chooserMayBeInline?: boolean;
   /** Clear is offered right now (the field has text). */
   clear: boolean;
   /** Expand is offered right now (the text overflows the box). */
@@ -91,9 +88,7 @@ export interface FitResult {
   expandInline: boolean;
   /** Controls that live inside "…" because they did not fit. */
   folded: FoldableControl[];
-  /** The device chooser is inside "…" (the mic is not inline with its chevron). */
-  chooserInMenu: boolean;
-  /** "…" shows: it has its own items or holds a folded control or the chooser. */
+  /** "…" shows: it has its own items or holds a folded control. */
   showMenu: boolean;
   /** Width every inline control takes together, px. */
   inlineWidth: number;
@@ -102,17 +97,15 @@ export interface FitResult {
 export function fitFieldControls(req: FitRequest): FitResult {
   const { sizes } = req;
   const folded: FoldableControl[] = [];
-  const chooserMayBeInline = req.chooserMayBeInline ?? true;
-  let mic: MicFit = !req.mic ? "none" : chooserMayBeInline ? "with-chooser" : "alone";
+  let mic: MicFit = req.mic ? "inline" : "none";
   let clearInline = req.clear;
   let expandInline = req.expand;
 
-  const menuWillShow = () =>
-    req.menuHasOwnItems || folded.length > 0 || (req.mic && mic !== "with-chooser");
+  const menuWillShow = () => req.menuHasOwnItems || folded.length > 0;
   const width = () =>
     (req.hasSubmit ? sizes.box : 0) +
     (menuWillShow() ? sizes.box : 0) +
-    (mic === "with-chooser" ? sizes.micWithChooser : mic === "alone" ? sizes.micAlone : 0) +
+    (mic === "inline" ? sizes.mic : 0) +
     (clearInline ? sizes.box : 0) +
     (expandInline ? sizes.box : 0);
 
@@ -133,10 +126,7 @@ export function fitFieldControls(req: FitRequest): FitResult {
         }
       },
       () => {
-        if (mic === "with-chooser") mic = "alone";
-      },
-      () => {
-        if (mic === "alone") {
+        if (mic === "inline") {
           mic = "folded";
           folded.push("mic");
         }
@@ -153,7 +143,6 @@ export function fitFieldControls(req: FitRequest): FitResult {
     clearInline,
     expandInline,
     folded,
-    chooserInMenu: req.mic && mic !== "with-chooser",
     showMenu: menuWillShow(),
     inlineWidth: width(),
   };

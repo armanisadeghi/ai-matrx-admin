@@ -30,11 +30,11 @@ const textRoom = (w: number, r: ReturnType<typeof fit>) => w - FIXED - r.inlineW
 describe("the one fitting rule", () => {
   it("unmeasured (first paint) keeps everything inline", () => {
     const r = fit(0, { hasSubmit: true, clear: true });
-    expect(r).toMatchObject({ mic: "with-chooser", clearInline: true, folded: [], showMenu: true });
+    expect(r).toMatchObject({ mic: "inline", clearInline: true, folded: [], showMenu: true });
   });
 
   it("a plain field steps mic → '…' only, and the mic is never lost", () => {
-    for (const w of [520, 320, 220]) expect(fit(w).mic).toBe("with-chooser");
+    for (const w of [520, 320, 220]) expect(fit(w).mic).toBe("inline");
     for (const w of [160, 110]) {
       const r = fit(w);
       expect(r.mic).toBe("folded");
@@ -45,7 +45,7 @@ describe("the one fitting rule", () => {
 
   it("with Clear + Send, Clear and the mic FOLD into '…' instead of vanishing (the 220px defect)", () => {
     const wide = fit(320, { hasSubmit: true, clear: true });
-    expect(wide).toMatchObject({ mic: "with-chooser", clearInline: true, folded: [] });
+    expect(wide).toMatchObject({ mic: "inline", clearInline: true, folded: [] });
 
     const tight = fit(220, { hasSubmit: true, clear: true });
     expect(tight.clearInline).toBe(false);
@@ -72,19 +72,19 @@ describe("the one fitting rule", () => {
   });
 
   it("a phone folds earlier: 173px with Clear + Send keeps ~80px of text, not five letters", () => {
-    const r = fit(173, { sizes: COARSE_SIZES, hasSubmit: true, clear: true, chooserMayBeInline: false });
+    const r = fit(173, { sizes: COARSE_SIZES, hasSubmit: true, clear: true });
     expect(r).toMatchObject({ mic: "folded", clearInline: false, showMenu: true });
     expect(textRoom(173, r)).toBeGreaterThanOrEqual(80);
   });
 
-  it("on a phone the device chooser is never inline, and '…' exists to hold it (Arman, 2026-10-15)", () => {
-    const r = fit(600, { sizes: COARSE_SIZES, chooserMayBeInline: false, menuHasOwnItems: false });
-    expect(r.mic).toBe("alone");
-    expect(r.chooserInMenu).toBe(true);
-    expect(r.showMenu).toBe(true);
+  it("the mic is ONE button — no device chevron takes room beside it (Arman, 2026-10-16)", () => {
+    const r = fit(600, { menuHasOwnItems: false });
+    expect(r.mic).toBe("inline");
+    expect(r.inlineWidth).toBe(FINE_SIZES.mic);
+    expect(r.showMenu).toBe(false); // the microphone choice lives on the mic itself
   });
 
-  it("Expand folds first, then Clear, then the mic's chooser, then the mic", () => {
+  it("Expand folds first, then Clear, then the mic", () => {
     const order = [600, 330, 300, 260, 200].map((w) =>
       fit(w, { hasSubmit: true, clear: true, expand: true }).folded.join(","),
     );
@@ -99,7 +99,6 @@ describe("the one fitting rule", () => {
     const r = fit(110, { mic: false });
     expect(r.mic).toBe("none");
     expect(r.folded).toEqual([]);
-    expect(r.chooserInMenu).toBe(false);
   });
 
   it("a menu with nothing of its own appears only to hold a folded control", () => {

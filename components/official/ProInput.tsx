@@ -96,7 +96,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ai-matrx/design-system";
-import { MicWithDeviceMenu } from "@/components/audio/MicWithDeviceMenu";
+import { MicButton } from "@/components/audio/MicButton";
 import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";
 import { useOpenAudioDevices } from "@/features/overlays/openers/audioDevices";
 import {
@@ -118,7 +118,7 @@ import { useProTextareaAgentAction } from "./useProTextareaAgentAction";
 import { ProTextAgentActionPopoverBody } from "./ProTextAgentActionPopoverBody";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { copyText } from "@ai-matrx/kit/clipboard";
-import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
+import { useMediaQuery } from "@ai-matrx/kit/media-query";
 import { ReadAloudMenuRow } from "./ReadAloudMenuRow";
 /** Real HTMLInputElement with optional expando methods set by ProInput. */
 export interface ProInputElement extends HTMLInputElement {
@@ -595,12 +595,11 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     const showClear = clearable && hasContent;
     const cleanupEligible = type === "text" && enableCleanup;
     // THE ONE FITTING RULE (proFieldControlFit): Send and "…" always show;
-    // the mic (with, then without, its device chooser) and Clear stay inline
-    // while the text keeps its floor, and whatever does not fit moves inside
-    // "…" — never deleted. 🚨 On a phone the device chevron never sits beside
-    // the mic (Arman, 2026-10-15): it is always "Microphone" inside "…".
-    // A live recording always keeps its stop button.
-    const isMobile = useIsMobile();
+    // the mic and Clear stay inline while the text keeps its floor, and
+    // whatever does not fit moves inside "…" — never deleted. A live recording
+    // always keeps its stop button. 🚨 There is no device chevron (Arman,
+    // 2026-10-16): right-click or hold the mic to choose a microphone, and
+    // "…" — whenever it shows — carries "Audio settings".
     const denseField = isDenseField(inputHeight);
     const fit = fitFieldControls({
       fieldWidth: inputWidth,
@@ -609,20 +608,19 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
       hasSubmit: !!onSubmit,
       menuHasOwnItems: !disabled && (showCopyButton || cleanupEligible || hasContent),
       mic: showMic,
-      chooserMayBeInline: !isMobile,
       clear: showClear,
       expand: false,
     });
     const voiceBusy = isRecording || isTranscribing;
-    const showMicInline =
-      showMic && (fit.mic === "with-chooser" || fit.mic === "alone" || voiceBusy);
+    const showMicInline = showMic && (fit.mic === "inline" || voiceBusy);
     const voiceInMenu = showMic && !showMicInline;
-    const micChoiceInMenu = fit.chooserInMenu;
     const clearInline = showClear && fit.clearInline;
     const clearInMenu = showClear && !fit.clearInline;
     const showMenu =
       !disabled &&
-      (showCopyButton || cleanupEligible || micChoiceInMenu || clearInMenu || hasContent);
+      (showCopyButton || cleanupEligible || voiceInMenu || clearInMenu || hasContent);
+    // Whenever "…" shows on a field that takes voice, it carries Audio settings.
+    const audioSettingsInMenu = showMenu && enableVoice;
     const rightPadding = rightPaddingClass(!!onSubmit, clearInline);
     const auxVisible =
       (showHoverControls || menuOpen) && (showMicInline || showMenu);
@@ -726,15 +724,9 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
             )}
           >
             {showMicInline && (
-              <MicWithDeviceMenu
-                showDeviceMenu={micChoiceInMenu ? false : undefined}
+              <MicButton
                 dense={denseField}
                 tabIndex={auxiliaryControlsTabIndex}
-                deviceMenuAriaLabel={
-                  auxiliaryControlsLabel
-                    ? `Choose microphone for ${auxiliaryControlsLabel}`
-                    : undefined
-                }
                 onMicClick={handleVoiceClick}
                 disabled={isVoiceDisabled}
                 isRecording={isRecording}
@@ -822,7 +814,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
                           Voice input
                         </button>
                       )}
-                      {micChoiceInMenu && (
+                      {audioSettingsInMenu && (
                         <button
                           type="button"
                           onClick={() => {
@@ -832,10 +824,10 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
                           className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         >
                           <SlidersHorizontal className="h-4 w-4" />
-                          Microphone
+                          Audio settings
                         </button>
                       )}
-                      {micChoiceInMenu &&
+                      {audioSettingsInMenu &&
                         (showCopyButton || cleanupEligible) && (
                           <div
                             className="my-1 h-px bg-border"
