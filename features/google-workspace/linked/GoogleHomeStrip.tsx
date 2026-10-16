@@ -9,7 +9,7 @@
  * recent unlinked files send to Google in one click. Holds its height while it resolves, so the
  * list below never jumps.
  *
- * Type: Roboto (Apache 2.0, self-hosted by next/font) — the public face of Google's own web UI;
+ * Type: Roboto (OFL 1.1, self-hosted in public/fonts/roboto) — the public face of Google's own web UI;
  * Google Sans is not licensed for use outside Google.
  */
 
@@ -17,7 +17,6 @@ import { GoogleG, GoogleSignInButton } from "@/components/icons/google-brand";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Roboto } from "next/font/google";
 import { Download, ExternalLink, Plus, RotateCw, Upload } from "lucide-react";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 
@@ -71,8 +70,6 @@ export interface UnlinkedItem {
   name: string;
   updatedAt?: string | null;
 }
-
-const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500"], display: "swap" });
 
 type StripKind = "workbook" | "document" | "presentation";
 
@@ -130,7 +127,7 @@ function Strip({
   chips?: ReactNode;
 }) {
   return (
-    <section className={`${styles.strip} ${roboto.className}`} aria-label={label} data-google-strip>
+    <section className={styles.strip} aria-label={label} data-google-strip>
       <div className={styles.bar}>
         <div className={styles.product}>
           <GoogleG className="size-[18px] shrink-0" />
