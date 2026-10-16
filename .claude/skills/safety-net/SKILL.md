@@ -188,6 +188,10 @@ true unless the file was received, parsed, placed in context, the page tool was 
 chose it, the confirmation appeared, the person approved, the write landed, and the page re-rendered.
 That is what makes one passing test worth hundreds of smaller ones.
 
+**Hide the pieces behind the approved silent breaks.** Every playbook reads `silent-breaks.md` beside
+this skill and hides each piece of its answer behind a different row there, so a missing piece names the
+break. Only Arman adds rows; propose new ones to him in chat.
+
 **Triggers are a slot, not a copy.** The same playbook names every entry point that can perform the
 job, and a run is one playbook through one trigger. The after-run covers every trigger.
 
