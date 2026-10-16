@@ -690,6 +690,8 @@ export async function fetchMandateExemplars(
     .from("exemplar")
     .select("*")
     .eq("mandate_id", mandateId)
+    // Test cases (kind='test_case') are agent tests, never bench samples.
+    .eq("kind", "sample")
     .is("deleted_at", null)
     .order("position")
     .order("created_at");

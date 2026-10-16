@@ -1256,20 +1256,28 @@ export type Database = {
         Row: {
           agent_id: string
           agent_version: number | null
+          ai_model_id: string | null
           captured_agent_id: string | null
           captured_model_id: string | null
+          checks: Json
+          context: Json | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          door: string
           id: string
           input_contract_hash: string | null
           is_active: boolean
+          judge_facts: Json
+          kind: string
           label: string
           mandate_id: string | null
+          markers: Json
           metadata: Json
           organization_id: string
           output_contract_hash: string | null
           position: number
+          prompt_blocks: Json | null
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -1279,6 +1287,7 @@ export type Database = {
           source: string
           source_conversation_id: string | null
           status: string
+          turns: Json
           updated_at: string
           updated_by: string | null
           user_input: string | null
@@ -1289,20 +1298,28 @@ export type Database = {
         Insert: {
           agent_id: string
           agent_version?: number | null
+          ai_model_id?: string | null
           captured_agent_id?: string | null
           captured_model_id?: string | null
+          checks?: Json
+          context?: Json | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          door?: string
           id?: string
           input_contract_hash?: string | null
           is_active?: boolean
+          judge_facts?: Json
+          kind?: string
           label: string
           mandate_id?: string | null
+          markers?: Json
           metadata?: Json
           organization_id: string
           output_contract_hash?: string | null
           position?: number
+          prompt_blocks?: Json | null
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -1312,6 +1329,7 @@ export type Database = {
           source?: string
           source_conversation_id?: string | null
           status?: string
+          turns?: Json
           updated_at?: string
           updated_by?: string | null
           user_input?: string | null
@@ -1322,20 +1340,28 @@ export type Database = {
         Update: {
           agent_id?: string
           agent_version?: number | null
+          ai_model_id?: string | null
           captured_agent_id?: string | null
           captured_model_id?: string | null
+          checks?: Json
+          context?: Json | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          door?: string
           id?: string
           input_contract_hash?: string | null
           is_active?: boolean
+          judge_facts?: Json
+          kind?: string
           label?: string
           mandate_id?: string | null
+          markers?: Json
           metadata?: Json
           organization_id?: string
           output_contract_hash?: string | null
           position?: number
+          prompt_blocks?: Json | null
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -1345,6 +1371,7 @@ export type Database = {
           source?: string
           source_conversation_id?: string | null
           status?: string
+          turns?: Json
           updated_at?: string
           updated_by?: string | null
           user_input?: string | null
@@ -2332,6 +2359,232 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: []
+      }
+      test_result: {
+        Row: {
+          agent_version_id: string | null
+          ai_model_id: string | null
+          blocked_by: Json | null
+          case_id: string
+          case_version: number | null
+          checks: Json
+          conversation_id: string | null
+          created_at: string
+          created_by: string | null
+          door: string | null
+          door_reason: string | null
+          duration_ms: number | null
+          error: Json | null
+          id: string
+          identity_mode: string | null
+          inputs: Json
+          judge_cost_cents: number | null
+          judge_verdict_id: string | null
+          metadata: Json
+          organization_id: string
+          origin_class: string | null
+          repeat: number
+          run_cost_cents: number | null
+          saved_answer: boolean
+          setup_key: string
+          status: string
+          test_run_id: string
+          tokens: Json | null
+          updated_at: string
+          updated_by: string | null
+          user_request_ids: string[]
+          verdict: string | null
+          version: number
+          work_item_id: string | null
+        }
+        Insert: {
+          agent_version_id?: string | null
+          ai_model_id?: string | null
+          blocked_by?: Json | null
+          case_id: string
+          case_version?: number | null
+          checks?: Json
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          door?: string | null
+          door_reason?: string | null
+          duration_ms?: number | null
+          error?: Json | null
+          id?: string
+          identity_mode?: string | null
+          inputs?: Json
+          judge_cost_cents?: number | null
+          judge_verdict_id?: string | null
+          metadata?: Json
+          organization_id: string
+          origin_class?: string | null
+          repeat?: number
+          run_cost_cents?: number | null
+          saved_answer?: boolean
+          setup_key: string
+          status?: string
+          test_run_id: string
+          tokens?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          user_request_ids?: string[]
+          verdict?: string | null
+          version?: number
+          work_item_id?: string | null
+        }
+        Update: {
+          agent_version_id?: string | null
+          ai_model_id?: string | null
+          blocked_by?: Json | null
+          case_id?: string
+          case_version?: number | null
+          checks?: Json
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          door?: string | null
+          door_reason?: string | null
+          duration_ms?: number | null
+          error?: Json | null
+          id?: string
+          identity_mode?: string | null
+          inputs?: Json
+          judge_cost_cents?: number | null
+          judge_verdict_id?: string | null
+          metadata?: Json
+          organization_id?: string
+          origin_class?: string | null
+          repeat?: number
+          run_cost_cents?: number | null
+          saved_answer?: boolean
+          setup_key?: string
+          status?: string
+          test_run_id?: string
+          tokens?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          user_request_ids?: string[]
+          verdict?: string | null
+          version?: number
+          work_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_result_test_run_id_fkey"
+            columns: ["test_run_id"]
+            isOneToOne: false
+            referencedRelation: "test_run"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_run: {
+        Row: {
+          agent_ids: string[]
+          ai_test_mode: string
+          comparison_set_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          door_policy: string
+          execution_id: string | null
+          finished_at: string | null
+          id: string
+          judge_policy: string
+          mandate_id: string | null
+          max_cost_cents: number
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          purpose: string
+          rechecked_from_run_id: string | null
+          repeats: number
+          setups: Json
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+          workflow_id: string | null
+        }
+        Insert: {
+          agent_ids?: string[]
+          ai_test_mode?: string
+          comparison_set_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          door_policy?: string
+          execution_id?: string | null
+          finished_at?: string | null
+          id?: string
+          judge_policy?: string
+          mandate_id?: string | null
+          max_cost_cents?: number
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          purpose?: string
+          rechecked_from_run_id?: string | null
+          repeats?: number
+          setups?: Json
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+          workflow_id?: string | null
+        }
+        Update: {
+          agent_ids?: string[]
+          ai_test_mode?: string
+          comparison_set_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          door_policy?: string
+          execution_id?: string | null
+          finished_at?: string | null
+          id?: string
+          judge_policy?: string
+          mandate_id?: string | null
+          max_cost_cents?: number
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          purpose?: string
+          rechecked_from_run_id?: string | null
+          repeats?: number
+          setups?: Json
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_run_rechecked_from_fk"
+            columns: ["rechecked_from_run_id"]
+            isOneToOne: false
+            referencedRelation: "test_run"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usage: {
         Row: {
@@ -40061,6 +40314,10 @@ export type Database = {
           p_spec: Json
           p_table_id: string
         }
+        Returns: Json
+      }
+      automation_note: {
+        Args: { p_run_id: string; p_says: string }
         Returns: Json
       }
       automation_restore: {
@@ -94387,6 +94644,206 @@ export type Database = {
           },
         ]
       }
+      change_item: {
+        Row: {
+          action: string
+          copy_of: string | null
+          created_at: string
+          depth: number
+          new_values: Json | null
+          old_values: Json | null
+          plan_id: string
+          row_id: string | null
+          seq: number
+          table_ref: unknown
+        }
+        Insert: {
+          action: string
+          copy_of?: string | null
+          created_at?: string
+          depth?: number
+          new_values?: Json | null
+          old_values?: Json | null
+          plan_id: string
+          row_id?: string | null
+          seq: number
+          table_ref: unknown
+        }
+        Update: {
+          action?: string
+          copy_of?: string | null
+          created_at?: string
+          depth?: number
+          new_values?: Json | null
+          old_values?: Json | null
+          plan_id?: string
+          row_id?: string | null
+          seq?: number
+          table_ref?: unknown
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_item_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "change_plan"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      change_job: {
+        Row: {
+          attempts: number
+          created_at: string
+          finished_at: string | null
+          heartbeat_at: string | null
+          held_rows: Json | null
+          id: string
+          last_error: string | null
+          plan_id: string
+          rows_done: number
+          rows_estimate: number
+          state: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          held_rows?: Json | null
+          id?: string
+          last_error?: string | null
+          plan_id: string
+          rows_done?: number
+          rows_estimate?: number
+          state?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          held_rows?: Json | null
+          id?: string
+          last_error?: string | null
+          plan_id?: string
+          rows_done?: number
+          rows_estimate?: number
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_job_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: true
+            referencedRelation: "change_plan"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      change_job_row: {
+        Row: {
+          depth: number
+          done: boolean
+          plan_id: string
+          rel: unknown
+          row_id: string
+          seq: number
+        }
+        Insert: {
+          depth: number
+          done?: boolean
+          plan_id: string
+          rel: unknown
+          row_id: string
+          seq?: never
+        }
+        Update: {
+          depth?: number
+          done?: boolean
+          plan_id?: string
+          rel?: unknown
+          row_id?: string
+          seq?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_job_row_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "change_plan"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      change_plan: {
+        Row: {
+          actor: string | null
+          answers: Json
+          committed_at: string | null
+          created_at: string
+          entity_type: string | null
+          fingerprint: string | null
+          id: string
+          mode: string
+          preview: Json | null
+          root_ids: string[]
+          source_organization_id: string | null
+          stamp: string | null
+          state: string
+          target_organization_id: string | null
+          undo_until: string | null
+          undone_by: string | null
+          verb: string
+        }
+        Insert: {
+          actor?: string | null
+          answers?: Json
+          committed_at?: string | null
+          created_at?: string
+          entity_type?: string | null
+          fingerprint?: string | null
+          id?: string
+          mode?: string
+          preview?: Json | null
+          root_ids?: string[]
+          source_organization_id?: string | null
+          stamp?: string | null
+          state?: string
+          target_organization_id?: string | null
+          undo_until?: string | null
+          undone_by?: string | null
+          verb: string
+        }
+        Update: {
+          actor?: string | null
+          answers?: Json
+          committed_at?: string | null
+          created_at?: string
+          entity_type?: string | null
+          fingerprint?: string | null
+          id?: string
+          mode?: string
+          preview?: Json | null
+          root_ids?: string[]
+          source_organization_id?: string | null
+          stamp?: string | null
+          state?: string
+          target_organization_id?: string | null
+          undo_until?: string | null
+          undone_by?: string | null
+          verb?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_plan_undone_by_fkey"
+            columns: ["undone_by"]
+            isOneToOne: false
+            referencedRelation: "change_plan"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_type_default: {
         Row: {
           change_type_key: string
@@ -96336,6 +96793,7 @@ export type Database = {
           component_signed_in_read_via_public_parent: boolean
           confirmation_enabled: boolean
           content_role: string | null
+          copy_mode: string | null
           custom_fields_enabled: boolean
           data_class: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason: string | null
@@ -96358,6 +96816,7 @@ export type Database = {
           lifecycle_enlisted: boolean
           lifecycle_hot_days: number | null
           notes: string | null
+          org_move: string
           origin: string
           ownership_handover: string
           ownership_handover_reason: string | null
@@ -96405,6 +96864,7 @@ export type Database = {
           component_signed_in_read_via_public_parent?: boolean
           confirmation_enabled?: boolean
           content_role?: string | null
+          copy_mode?: string | null
           custom_fields_enabled?: boolean
           data_class?: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason?: string | null
@@ -96431,6 +96891,7 @@ export type Database = {
           lifecycle_enlisted?: boolean
           lifecycle_hot_days?: number | null
           notes?: string | null
+          org_move?: string
           origin?: string
           ownership_handover?: string
           ownership_handover_reason?: string | null
@@ -96478,6 +96939,7 @@ export type Database = {
           component_signed_in_read_via_public_parent?: boolean
           confirmation_enabled?: boolean
           content_role?: string | null
+          copy_mode?: string | null
           custom_fields_enabled?: boolean
           data_class?: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason?: string | null
@@ -96504,6 +96966,7 @@ export type Database = {
           lifecycle_enlisted?: boolean
           lifecycle_hot_days?: number | null
           notes?: string | null
+          org_move?: string
           origin?: string
           ownership_handover?: string
           ownership_handover_reason?: string | null
@@ -99419,6 +99882,87 @@ export type Database = {
           },
         ]
       }
+      relationship_rule: {
+        Row: {
+          access: string
+          assoc_role: string | null
+          assoc_source_type: string | null
+          assoc_target_type: string | null
+          child_columns: string[] | null
+          child_nullable: boolean | null
+          child_table: unknown
+          constraint_name: string | null
+          custom_field_id: string | null
+          declared_at: string
+          declared_by: string
+          detach: string
+          id: string
+          on_copy: string
+          on_delete: string
+          on_purge: string
+          org_on_move: string
+          parent_columns: string[] | null
+          parent_noun: string | null
+          parent_table: unknown
+          parent_token: string | null
+          reason: string | null
+          same_org_required: boolean
+          source_kind: string
+        }
+        Insert: {
+          access: string
+          assoc_role?: string | null
+          assoc_source_type?: string | null
+          assoc_target_type?: string | null
+          child_columns?: string[] | null
+          child_nullable?: boolean | null
+          child_table?: unknown
+          constraint_name?: string | null
+          custom_field_id?: string | null
+          declared_at?: string
+          declared_by: string
+          detach: string
+          id?: string
+          on_copy: string
+          on_delete: string
+          on_purge: string
+          org_on_move: string
+          parent_columns?: string[] | null
+          parent_noun?: string | null
+          parent_table?: unknown
+          parent_token?: string | null
+          reason?: string | null
+          same_org_required?: boolean
+          source_kind: string
+        }
+        Update: {
+          access?: string
+          assoc_role?: string | null
+          assoc_source_type?: string | null
+          assoc_target_type?: string | null
+          child_columns?: string[] | null
+          child_nullable?: boolean | null
+          child_table?: unknown
+          constraint_name?: string | null
+          custom_field_id?: string | null
+          declared_at?: string
+          declared_by?: string
+          detach?: string
+          id?: string
+          on_copy?: string
+          on_delete?: string
+          on_purge?: string
+          org_on_move?: string
+          parent_columns?: string[] | null
+          parent_noun?: string | null
+          parent_table?: unknown
+          parent_token?: string | null
+          reason?: string | null
+          same_org_required?: boolean
+          source_kind?: string
+        }
+        Relationships: []
+      }
       repo: {
         Row: {
           github_full_name: string | null
@@ -101299,6 +101843,15 @@ export type Database = {
         }
         Relationships: []
       }
+      v_relationship_unruled: {
+        Row: {
+          child_columns: string[] | null
+          child_table: string | null
+          constraint_name: string | null
+          parent_table: string | null
+        }
+        Relationships: []
+      }
       v_soft_delete_edge_unclassified: {
         Row: {
           child_column: unknown
@@ -101448,6 +102001,75 @@ export type Database = {
       _cf_str_array: { Args: { p_value: Json }; Returns: string[] }
       _cf_valid_date: { Args: { p_value: string }; Returns: boolean }
       _cf_valid_datetime: { Args: { p_value: string }; Returns: boolean }
+      _chg_build: {
+        Args: { p_roots: Json; p_target: string; p_verb: string }
+        Returns: Json
+      }
+      _chg_col_type: {
+        Args: { p_col: string; p_rel: unknown }
+        Returns: string
+      }
+      _chg_copy: {
+        Args: {
+          p_entity_type: string
+          p_fingerprint: string
+          p_ids: string[]
+          p_preview: boolean
+          p_target: string
+        }
+        Returns: Json
+      }
+      _chg_fk_value: {
+        Args: { p_col: string; p_id: string; p_rel: unknown }
+        Returns: string
+      }
+      _chg_items: {
+        Args: { p_ids: string[]; p_limit?: number; p_rel: unknown }
+        Returns: Json
+      }
+      _chg_log: {
+        Args: {
+          p_action: string
+          p_depth: number
+          p_id: string
+          p_new?: Json
+          p_old?: Json
+          p_plan: string
+          p_rel: unknown
+        }
+        Returns: undefined
+      }
+      _chg_org_name: { Args: { p_org: string }; Returns: string }
+      _chg_outside_users: {
+        Args: { p_any_fk?: boolean; p_ids: string[]; p_rel: unknown }
+        Returns: {
+          id: string
+          pinned: boolean
+          sample: Json
+          users: number
+        }[]
+      }
+      _chg_records: {
+        Args: {
+          p_answers?: Json
+          p_entity_type: string
+          p_fingerprint?: string
+          p_ids: string[]
+          p_organization_id?: string
+          p_plan_id?: string
+          p_preview?: boolean
+          p_verb: string
+        }
+        Returns: Json
+      }
+      _chg_rel: { Args: { p_token: string }; Returns: unknown }
+      _chg_row_org: { Args: { p_id: string; p_rel: unknown }; Returns: string }
+      _chg_token: { Args: { p_rel: unknown }; Returns: string }
+      _chg_undo: {
+        Args: { p_fingerprint: string; p_plan_id: string; p_preview: boolean }
+        Returns: Json
+      }
+      _chg_walk: { Args: { p_verb: string }; Returns: number }
       _confirmation_admission: { Args: { p_relid: unknown }; Returns: string }
       _cutover_carry_back: {
         Args: {
@@ -102639,6 +103261,35 @@ export type Database = {
       cf_re_url: { Args: never; Returns: string }
       cf_utf8_byte_length: { Args: { p_text: string }; Returns: number }
       cf_ws_class: { Args: never; Returns: string }
+      change_engine_conformance: {
+        Args: never
+        Returns: {
+          check_key: string
+          detail: Json
+          ok: boolean
+          severity: string
+        }[]
+      }
+      change_job_advance: {
+        Args: { p_budget_ms?: number; p_plan_id: string }
+        Returns: Json
+      }
+      change_job_progress: { Args: { p_plan_id: string }; Returns: Json }
+      change_job_retry: { Args: { p_plan_id: string }; Returns: Json }
+      change_marker: { Args: never; Returns: string }
+      change_records: {
+        Args: {
+          p_answers?: Json
+          p_entity_type: string
+          p_fingerprint?: string
+          p_ids: string[]
+          p_organization_id?: string
+          p_plan_id?: string
+          p_preview?: boolean
+          p_verb: string
+        }
+        Returns: Json
+      }
       child_parent_columns: { Args: { p_token: string }; Returns: string[] }
       child_parent_types: { Args: { p_token: string }; Returns: string[] }
       claim_oauth_handoff_hash: {
@@ -102650,6 +103301,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      classify_relationships: { Args: never; Returns: Json }
       clear_output_feedback: {
         Args: { p_subject_id: string; p_subject_type: string }
         Returns: boolean
@@ -103153,9 +103805,40 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      decision_answer_verdict: {
+        Args: { p_ans: Json }
+        Returns: Record<string, unknown>
+      }
       declare_custom_record_edge: {
         Args: { p_target_token: string }
         Returns: Json
+      }
+      declare_relationship_rule: {
+        Args: {
+          p_access: string
+          p_assoc_role?: string
+          p_assoc_source_type?: string
+          p_assoc_target_type?: string
+          p_child_columns: string[]
+          p_child_nullable?: boolean
+          p_child_table: unknown
+          p_constraint_name?: string
+          p_custom_field_id?: string
+          p_declared_by?: string
+          p_detach: string
+          p_on_copy: string
+          p_on_delete: string
+          p_on_purge: string
+          p_org_on_move: string
+          p_parent_columns?: string[]
+          p_parent_noun?: string
+          p_parent_table: unknown
+          p_parent_token?: string
+          p_reason?: string
+          p_same_org_required?: boolean
+          p_source_kind: string
+        }
+        Returns: string
       }
       declare_soft_delete_edge: {
         Args: {
@@ -104570,6 +105253,18 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      record_decision_reference: {
+        Args: {
+          p_answer: Json
+          p_context?: Json
+          p_item_id: string
+          p_judge_key: string
+          p_model: string
+          p_replace?: boolean
+          p_user_id: string
+        }
+        Returns: Json
       }
       record_entity_title: { Args: { p_id: string }; Returns: string }
       record_page_vitals: {

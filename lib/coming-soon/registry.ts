@@ -19,6 +19,19 @@ import { EDITOR_MENU_COMING_SOON } from "./editor-menus";
 export const COMING_SOON: Record<string, ComingSoonEntry> = {
   // Every Google Sheets / Docs / Slides menu row the editors cannot run yet (editor-menus.ts).
   ...EDITOR_MENU_COMING_SOON,
+  "agents.test-runs": {
+    id: "agents.test-runs",
+    label: "Run tests",
+    owner: "agents",
+    promise:
+      "Run an agent's test cases through the doors people use and see pass or fail for each check.",
+    stage: "building",
+    // Agent Evaluation Phase 1 (common-docs projects/agent-evaluation): the
+    // pages read agent.test_run / test_result directly; launch, cancel and
+    // re-check are POST /agent-tests/runs… on the server (lane B). The button
+    // turns on when that route is in @ai-matrx/api's generated paths.
+    surfaces: ["/agents/[id]/test Run tests"],
+  },
   "agents.admin-masterwork-from-chat": {
     id: "agents.admin-masterwork-from-chat",
     label: "Masterwork from a person's chat",

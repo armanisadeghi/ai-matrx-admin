@@ -65,8 +65,9 @@ tsc_count() {
 }
 echo "type-check baseline: $(tsc_count "$W/base" "$W/base.tsc.txt") errors"
 echo "type-check switched: $(tsc_count "$W/sw" "$W/sw.tsc.txt") errors"
-grep "error TS" "$W/base.tsc.txt" | sort > "$W/base.err" || true
-grep "error TS" "$W/sw.tsc.txt" | sort > "$W/sw.err" || true
+# compared without positions: an import block the switch rewrites shifts later lines of a file
+grep "error TS" "$W/base.tsc.txt" | sed -E 's/\([0-9]+,[0-9]+\)//' | sort > "$W/base.err" || true
+grep "error TS" "$W/sw.tsc.txt" | sed -E 's/\([0-9]+,[0-9]+\)//' | sort > "$W/sw.err" || true
 echo "new errors (in switched, not in baseline):"
 comm -13 "$W/base.err" "$W/sw.err" | tee "$W/new.err" | head -80
 echo "new error count: $(wc -l < "$W/new.err" | tr -d ' ')"

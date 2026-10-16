@@ -30,6 +30,7 @@ function bench(): BenchState {
   ]);
   b.stances = STANCES;
   b.systems = ["holder", "jev"];
+  b.agents = { holder: "holder-agent", jev: "jev-agent", referenceModel: null };
   return b;
 }
 
@@ -46,6 +47,9 @@ test("Jev runs per result, the holder per batch of 25, never crossed", () => {
   const cells = cellsToRun(setup, ["holder", "jev"]);
   expect(cells.filter((c) => c.column_id === "jev")).toHaveLength(3);
   expect(cells.filter((c) => c.column_id === "holder")).toEqual([{ row_id: "batch:0", column_id: "holder", repeat: 0 }]);
+  expect(setup.columns.variants.map((c) => c.patch.agent_id)).toEqual(["holder-agent", "jev-agent"]);
+  // No reference model picked: no reference column, so no reference cells even when asked for.
+  expect(cellsToRun(setup, ["reference"])).toEqual([]);
 });
 
 test("stances come from the vocabulary; undecided keys are can't tell", () => {

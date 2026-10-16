@@ -1,0 +1,169 @@
+/**
+ * Agent tests — the client's view of the Agent Evaluation contract.
+ *
+ * Source of truth: common-docs/projects/agent-evaluation/CONTRACT.md (lane A
+ * owns it). Every shape the pages read is declared HERE, once, so binding to a
+ * new contract version is a one-file change. Rows arrive as jsonb, so each
+ * reader in `service.ts` parses defensively into these view models — an
+ * unknown value is shown as unknown, never guessed.
+ */
+
+/** Per-result verdict (CONTRACT §2.6, plus `refused` from the contract attack B5). */
+export type TestVerdict =
+  | "pass"
+  | "pass_judged"
+  | "fail"
+  | "fail_format"
+  | "inconclusive"
+  | "refused"
+  | "blocked"
+  | "error";
+
+/** One check's outcome on one result. */
+export type CheckOutcome = "pass" | "fail" | "undecided" | "not_applicable";
+
+export type TestRunStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled"
+  | "paused_limit"
+  | "paused_approval"
+  | "paused_credential";
+
+/** Door policy: `random` (default), `all`, or `fixed:<door>`. */
+export type DoorPolicy = "random" | "all" | `fixed:${TestDoor}`;
+
+export type TestDoor =
+  | "manual"
+  | "manual_chat"
+  | "agents"
+  | "mandates"
+  | "mcp_agent_run"
+  | "agent_call";
+
+export type JudgePolicy = "off" | "on_fail_or_undecided";
+
+/** The doors Phase 1 can drive (PLAN §8 P1: manual + chat variant, agents). */
+export const P1_DOORS: readonly TestDoor[] = [
+  "manual",
+  "manual_chat",
+  "agents",
+];
+
+/** A test case: an `agent.exemplar` row with `kind='test_case'`. */
+export interface TestCaseView {
+  id: string;
+  agentId: string;
+  label: string;
+  userInput: string;
+  variables: Record<string, unknown>;
+  checkCount: number;
+  door: string;
+  updatedAt: string | null;
+}
+
+/** One check result as stored on `agent.test_result.checks`. */
+export interface CheckResultView {
+  id: string;
+  title: string;
+  proves: string;
+  required: boolean;
+  outcome: CheckOutcome;
+  side: string;
+  /** Rendered text; `null` when the value was redacted for this viewer. */
+  observed: string | null;
+  expected: string | null;
+  observedRedacted: boolean;
+  expectedSource: string;
+  reason: string;
+  canFail: boolean | null;
+}
+
+export interface VerdictCounts {
+  total: number;
+  done: number;
+  byVerdict: Partial<Record<TestVerdict, number>>;
+}
+
+/** `agent.test_run`. */
+export interface TestRunView {
+  id: string;
+  organizationId: string;
+  agentIds: string[];
+  status: TestRunStatus | string;
+  doorPolicy: string;
+  repeats: number;
+  judgePolicy: string;
+  purpose: string;
+  aiTestMode: string;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  /** Rollup counters kept on the run (attack S3); null until the drainer writes them. */
+  counts: VerdictCounts | null;
+  /** Integer cents (attack S4). */
+  spentCents: number | null;
+  maxCostCents: number | null;
+}
+
+/** `agent.test_result`. */
+export interface TestResultView {
+  id: string;
+  testRunId: string;
+  caseId: string;
+  setupKey: string;
+  repeat: number;
+  door: string | null;
+  doorReason: string | null;
+  identityMode: string | null;
+  originClass: string | null;
+  conversationId: string | null;
+  userRequestIds: string[];
+  status: string;
+  verdict: TestVerdict | null;
+  blockedBy: { gate?: string; kind?: string; approvalUrl?: string } | null;
+  checks: CheckResultView[];
+  judgeVerdictId: string | null;
+  runCostCents: number | null;
+  judgeCostCents: number | null;
+  durationMs: number | null;
+  savedAnswer: boolean;
+  error: string | null;
+  createdAt: string;
+}
+
+/** The judge's ledger row for a result (`platform.judge_verdict`). */
+export interface JudgeVerdictView {
+  id: string;
+  verdict: string | null;
+  reasoning: string | null;
+  confidence: number | null;
+  model: string | null;
+}
+
+/** POST /agent-tests/runs body (CONTRACT §4.1). */
+export interface LaunchRunRequest {
+  agent_ids: string[];
+  case_ids?: string[] | null;
+  door_policy: DoorPolicy;
+  repeats: number;
+  judge_policy: JudgePolicy;
+  purpose: "user" | "platform";
+}
+
+export interface RunOptions {
+  doorPolicy: DoorPolicy;
+  repeats: number;
+  judgePolicy: JudgePolicy;
+}
+
+export const DEFAULT_RUN_OPTIONS: RunOptions = {
+  doorPolicy: "random",
+  repeats: 1,
+  judgePolicy: "on_fail_or_undecided",
+};
+
+/** Who is looking: the user seat may run; the admin mirror is read-only in Phase 1. */
+export type AgentTestSeat = "user" | "admin";

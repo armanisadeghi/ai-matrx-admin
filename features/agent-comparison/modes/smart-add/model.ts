@@ -10,12 +10,6 @@
 
 import type { MatrixCell, MatrixPatch, MatrixSetup, MatrixVariant } from "../matrix/types";
 
-/** Today's Smart Add web-result holder (mandate `brand_intake.web_result_classifier`). */
-export const HOLDER_CLASSIFIER_AGENT_ID = "c64d840d-75b2-4404-ad70-404a7f5cf51e";
-/** Its Jev decision version (questions `kind` + `stance`), built for this bench 2026-10-16. */
-export const JEV_CLASSIFIER_AGENT_ID = "6d308d1b-ec78-468a-b551-df06ed03f7d9";
-/** The reference model run with today's holder instructions: Claude Opus 5.5. */
-export const REFERENCE_MODEL_ID = "bc43581f-c7a6-4fd5-aa6a-8267074f480e";
 /** Production batch size for the holder (`web_classifier_provision.CALL_BATCH`). */
 export const HOLDER_BATCH = 25;
 
@@ -71,6 +65,17 @@ export interface RelationKind {
   description: string | null;
 }
 
+/**
+ * Who judged, recorded on the bench at run time: today's holder is whatever agent holds the
+ * mandate `brand_intake.web_result_classifier` then; Jev is its decision agent (found by its tags);
+ * the reference model is the person's pick. Never constants in code.
+ */
+export interface BenchAgents {
+  holder: string | null;
+  jev: string | null;
+  referenceModel: string | null;
+}
+
 export interface BenchState {
   brand: BenchBrand;
   queries: string[];
@@ -80,8 +85,7 @@ export interface BenchState {
   stances: Record<string, string>;
   systems: SystemKey[];
   truth: Record<string, Truth>;
-  /** Jev's reviewable answer rows already labelled, so a re-mark relabels instead of guessing. */
-  labelled?: Record<string, string>;
+  agents: BenchAgents;
   ranAt?: string | null;
 }
 
@@ -254,15 +258,17 @@ export function buildSetup(bench: BenchState, kinds: RelationKind[]): MatrixSetu
     label: `Batch ${i + 1} (${batch.length} results)`,
     patch: { variables: { ...holderVars, results: JSON.stringify({ items: batch.map(itemOf) }) } },
   }));
-  const columns: MatrixVariant[] = [
-    { id: COLUMN_ID.holder, label: SYSTEM_LABEL.holder, patch: { agent_id: HOLDER_CLASSIFIER_AGENT_ID } },
-    { id: COLUMN_ID.jev, label: SYSTEM_LABEL.jev, patch: { agent_id: JEV_CLASSIFIER_AGENT_ID } },
-    {
+  const { holder, jev, referenceModel } = bench.agents;
+  const columns: MatrixVariant[] = [];
+  if (holder) columns.push({ id: COLUMN_ID.holder, label: SYSTEM_LABEL.holder, patch: { agent_id: holder } });
+  if (jev) columns.push({ id: COLUMN_ID.jev, label: SYSTEM_LABEL.jev, patch: { agent_id: jev } });
+  if (holder && referenceModel) {
+    columns.push({
       id: COLUMN_ID.reference,
       label: SYSTEM_LABEL.reference,
-      patch: { agent_id: HOLDER_CLASSIFIER_AGENT_ID, model_id: REFERENCE_MODEL_ID } satisfies MatrixPatch,
-    },
-  ];
+      patch: { agent_id: holder, model_id: referenceModel } satisfies MatrixPatch,
+    });
+  }
   return {
     schema_version: 1,
     base: {},
@@ -281,9 +287,11 @@ export function cellsToRun(setup: MatrixSetup, systems: SystemKey[]): { row_id: 
   const rows = [...setup.rows.variants].sort(
     (a, b) => Number(b.id.startsWith(BATCH_ROW_PREFIX)) - Number(a.id.startsWith(BATCH_ROW_PREFIX)),
   );
+  const present = new Set(setup.columns.variants.map((c) => c.id));
   for (const row of rows) {
     const batch = row.id.startsWith(BATCH_ROW_PREFIX);
     for (const s of systems) {
+      if (!present.has(COLUMN_ID[s])) continue;
       if ((s === "jev") !== batch) out.push({ row_id: row.id, column_id: COLUMN_ID[s], repeat: 0 });
     }
   }
@@ -445,7 +453,7 @@ export function score(run: SystemRun, truth: Record<string, Truth>): Score {
 
 export function emptyBench(): BenchState {
   return { brand: { website: "", name: "", place: "", accounts: "" }, queries: [], pages: 2, results: [], stances: {},
-    systems: ["holder", "jev"], truth: {}, labelled: {}, ranAt: null };
+    systems: ["holder", "jev"], truth: {}, agents: { holder: null, jev: null, referenceModel: null }, ranAt: null };
 }
 
 export function readBench(metadata: Record<string, unknown> | null | undefined): BenchState | null {

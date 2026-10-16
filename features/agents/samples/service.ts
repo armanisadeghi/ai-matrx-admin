@@ -225,6 +225,8 @@ export async function fetchAgentSamples(
     .from("exemplar")
     .select("*")
     .eq("agent_id", agentId)
+    // Test cases (kind='test_case') live on /agents/[id]/test, never in Samples.
+    .eq("kind", "sample")
     .is("deleted_at", null)
     .order("status") // approved < candidate alphabetically — approved first
     .order("position")

@@ -9,6 +9,9 @@ import { createClient } from "@/utils/supabase/client";
 import type { AppDispatch } from "@/lib/redux/store";
 import { runKindSearch, type RunSearchArgs } from "@/features/search/service";
 import { labelConversations } from "@/features/agents/decision-review/service";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { resolveMandateDefaultAgentId } from "@/features/mandates/admin/service";
+import { mandateDefinitions } from "@/lib/supabase/mandateStorage";
 import { createComparisonSet, mergeComparisonSetMetadata } from "../../service/comparisonSetsService";
 import { runMatrixCells } from "../matrix/service";
 import { setupToMetadata } from "../matrix/model";
@@ -75,6 +78,35 @@ export async function castNet(
     `${queries.indexOf(c.query).toString().padStart(3, "0")}:${c.engine}:${c.page.toString().padStart(2, "0")}`;
   calls.sort((a, b) => order(a).localeCompare(order(b)));
   return { results: mergeResults(calls), failures };
+}
+
+/** The tags that mark the Jev web-result decision agent (set when it was built, 2026-10-16). */
+const JEV_WEB_RESULT_TAGS = ["smart-add", "jev", "decision", "web-result"];
+
+/**
+ * Who judges, read from data at the moment of the run: today's holder is the agent that holds the
+ * mandate `brand_intake.web_result_classifier` now; Jev is the decision agent carrying its tags.
+ */
+export async function resolveJudges(): Promise<{ holder: string | null; jev: string | null }> {
+  const client = createClient();
+  const { data: mandate, error } = await mandateDefinitions(client)
+    .select("*")
+    .eq("mandate_key", MANDATE_KEYS.brand_intake__web_result_classifier)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw new Error(`Could not read who holds the web-result job: ${error.message}`);
+  const holder = mandate ? await resolveMandateDefaultAgentId(mandate) : null;
+  const { data: jevRows, error: jevError } = await client
+    .schema("agent")
+    .from("definition")
+    .select("id")
+    .contains("tags", JEV_WEB_RESULT_TAGS)
+    .is("deleted_at", null)
+    .eq("is_archived", false)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  if (jevError) throw new Error(`Could not find the Jev agent: ${jevError.message}`);
+  return { holder, jev: jevRows?.[0]?.id ?? null };
 }
 
 /** The shared relation vocabulary (what today's holder answers in), as production reads it. */

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ExternalLink, ListChecks, Search } from "lucide-react";
 import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
 import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
+import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -24,11 +25,9 @@ import { SearchReviewBody } from "@/features/search-review/SearchReviewBody";
 import type { ReviewAnswer, SearchReviewSession } from "@/features/search-review/types";
 import { loadComparisonSet } from "../../../service/comparisonSetsService";
 import { listMatrixEntries } from "../../matrix/service";
-import { entryToCell } from "../../matrix/model";
+import { entryToCell, metadataToSetup } from "../../matrix/model";
 import type { MatrixCell } from "../../matrix/types";
 import {
-  HOLDER_CLASSIFIER_AGENT_ID,
-  JEV_CLASSIFIER_AGENT_ID,
   SYSTEM_LABEL,
   TRUTH_LABEL,
   defaultQueries,
@@ -42,7 +41,7 @@ import {
   type SystemKey,
   type Truth,
 } from "../model";
-import { castNet, createAndRun, loadJevAnswers, saveTruth, type NetProgress } from "../service";
+import { castNet, createAndRun, loadJevAnswers, resolveJudges, saveTruth, type NetProgress } from "../service";
 
 const POLL_MS = 2000;
 const SYSTEMS: SystemKey[] = ["holder", "jev", "reference"];
@@ -80,13 +79,35 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
         if (!alive) return;
         const saved = readBench(set.metadata as Record<string, unknown> | null);
         if (!saved) throw new Error("This saved battle is not a Smart Add bench.");
-        setBench(saved);
+        // Who judged is the battle's own columns (a bench saved before it recorded them carries only those).
+        const columns = metadataToSetup(set.metadata as Record<string, unknown> | null).columns.variants;
+        const agentOf = (id: string) => columns.find((c) => c.id === id)?.patch;
+        setBench({
+          ...saved,
+          agents: {
+            holder: agentOf("holder")?.agent_id ?? saved.agents.holder,
+            jev: agentOf("jev")?.agent_id ?? saved.agents.jev,
+            referenceModel: agentOf("reference")?.model_id ?? saved.agents.referenceModel,
+          },
+        });
         setQueriesText(saved.queries.join("\n"));
         const now = Date.now();
         setCells(entries.map((e) => entryToCell(e, now)).filter((c): c is MatrixCell => c !== null));
       })
       .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)))
       .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [setId]);
+
+  // Who judges, from data: the web-result job's holder and the Jev agent tagged for it.
+  useEffect(() => {
+    if (setId) return;
+    let alive = true;
+    resolveJudges()
+      .then((j) => alive && setBench((b) => ({ ...b, agents: { ...b.agents, holder: j.holder, jev: j.jev } })))
+      .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)));
     return () => {
       alive = false;
     };
@@ -174,14 +195,22 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const onAnswer = async (key: string, answer: ReviewAnswer | null) => {
     if (!setId) return;
     const truth = answer?.status === "answered" ? (answer.kind as Truth) : null;
-    setBench((b) => {
-      const next = { ...b.truth };
-      if (truth) next[key] = truth;
-      else delete next[key];
-      return { ...b, truth: next };
-    });
-    const { labelError } = await saveTruth(setId, key, truth, runs.jev.conversations.get(key) ?? null);
-    if (labelError) toast.error(labelError);
+    const before = bench.truth[key] ?? null;
+    const apply = (t: Truth | null) =>
+      setBench((b) => {
+        const next = { ...b.truth };
+        if (t) next[key] = t;
+        else delete next[key];
+        return { ...b, truth: next };
+      });
+    apply(truth);
+    try {
+      const { labelError } = await saveTruth(setId, key, truth, runs.jev.conversations.get(key) ?? null);
+      if (labelError) toast.error(labelError);
+    } catch (err) {
+      apply(before);
+      throw err;
+    }
   };
 
   const session: SearchReviewSession = {
@@ -246,7 +275,8 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
           ) : (
             <>
               <ProgressStrip runs={runs} systems={bench.systems} results={bench.results.length} marked={marked} />
-              <div className="flex items-center gap-3">
+              <JudgedBy bench={bench} />
+              <div className="flex flex-wrap items-center gap-3">
                 <SegmentedControl<View>
                   aria-label="Bench view"
                   value={view}
@@ -365,21 +395,44 @@ function SetupPanel({
       <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
         <h2 className="type-section">Who judges</h2>
         <div className="flex flex-col gap-2">
-          {SYSTEMS.map((s) => (
-            <label key={s} className="flex items-center gap-3">
-              <Switch checked={bench.systems.includes(s)} onCheckedChange={(v) => toggle(s, v)} aria-label={SYSTEM_LABEL[s]} />
-              <span className="type-body font-medium w-28">{SYSTEM_LABEL[s]}</span>
-              <span className="type-caption text-muted-foreground">{SYSTEM_HINT[s]}</span>
-            </label>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-3 type-caption text-muted-foreground">
-          <Link href={`/agents/${JEV_CLASSIFIER_AGENT_ID}`} target="_blank" className="inline-flex items-center gap-1 underline">
-            Jev agent <ExternalLink className="w-3 h-3" />
-          </Link>
-          <Link href={`/agents/${HOLDER_CLASSIFIER_AGENT_ID}`} target="_blank" className="inline-flex items-center gap-1 underline">
-            Today's agent <ExternalLink className="w-3 h-3" />
-          </Link>
+          {SYSTEMS.map((s) => {
+            const missing = s === "reference" ? !bench.agents.referenceModel : !bench.agents[s];
+            return (
+              <div key={s} className="flex flex-wrap items-center gap-3">
+                <Switch
+                  checked={bench.systems.includes(s) && !missing}
+                  disabled={missing}
+                  onCheckedChange={(v) => toggle(s, v)}
+                  aria-label={SYSTEM_LABEL[s]}
+                />
+                <span className="type-body font-medium w-28">{SYSTEM_LABEL[s]}</span>
+                <span className="type-caption text-muted-foreground">{SYSTEM_HINT[s]}</span>
+                {s === "reference" ? (
+                  <ModelListDropdown
+                    value={bench.agents.referenceModel}
+                    modelOnly
+                    inputModalities={["text"]}
+                    outputModalities={["text"]}
+                    placeholder="Pick a reference model"
+                    aria-label="Reference model"
+                    onValueChange={(modelId) =>
+                      setBench((b) => ({
+                        ...b,
+                        agents: { ...b.agents, referenceModel: modelId },
+                        systems: modelId ? [...new Set([...b.systems, "reference" as SystemKey])] : b.systems,
+                      }))
+                    }
+                  />
+                ) : bench.agents[s] ? (
+                  <Link href={`/agents/${bench.agents[s]}`} target="_blank" className="type-caption inline-flex items-center gap-1 underline">
+                    Open agent <ExternalLink className="w-3 h-3" />
+                  </Link>
+                ) : (
+                  <span className="type-caption text-destructive">No agent found</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -401,6 +454,26 @@ function SetupPanel({
         <EmptyState icon={<Search className="w-5 h-5" />} title="No results yet" line="Name a brand, then cast the net." />
       )}
     </>
+  );
+}
+
+function JudgedBy({ bench }: { bench: BenchState }) {
+  const { holder, jev, referenceModel } = bench.agents;
+  return (
+    <div className="flex flex-wrap items-center gap-3 type-caption text-muted-foreground">
+      <span>Judged by</span>
+      {holder && bench.systems.includes("holder") ? (
+        <Link href={`/agents/${holder}`} target="_blank" className="inline-flex items-center gap-1 underline">
+          {SYSTEM_LABEL.holder} <ExternalLink className="w-3 h-3" />
+        </Link>
+      ) : null}
+      {jev && bench.systems.includes("jev") ? (
+        <Link href={`/agents/${jev}`} target="_blank" className="inline-flex items-center gap-1 underline">
+          {SYSTEM_LABEL.jev} <ExternalLink className="w-3 h-3" />
+        </Link>
+      ) : null}
+      {referenceModel && bench.systems.includes("reference") ? <span>{SYSTEM_LABEL.reference} on the picked model</span> : null}
+    </div>
   );
 }
 
@@ -459,13 +532,14 @@ function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeo
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-border bg-card overflow-x-auto">
-        <table className="w-full type-body tabular-nums">
+        <table className="w-full type-body tabular-nums whitespace-nowrap">
           <thead>
             <tr className="border-b border-border text-left type-label text-muted-foreground">
               <th className="p-2">System</th>
               <th className="p-2 text-right">Right</th>
               <th className="p-2 text-right">Wrong</th>
               <th className="p-2 text-right">Can't tell</th>
+              <th className="p-2 text-right">No answer</th>
               <th className="p-2 text-right">Stranger marked ours</th>
               <th className="p-2 text-right">Us marked not us</th>
               <th className="p-2 text-right">Typical call</th>
@@ -483,10 +557,11 @@ function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeo
                 </td>
                 <td className="p-2 text-right">{sc.wrong}</td>
                 <td className="p-2 text-right">{sc.cantTell}</td>
+                <td className="p-2 text-right">{sc.missing}</td>
                 <td className="p-2 text-right">{sc.falseOurs}</td>
                 <td className="p-2 text-right">{sc.missedUs}</td>
-                <td className="p-2 text-right">{formatDurationMs(sc.p50)}</td>
-                <td className="p-2 text-right">{formatDurationMs(sc.p90)}</td>
+                <td className="p-2 text-right">{formatDurationMs(sc.p50, { style: "compact" })}</td>
+                <td className="p-2 text-right">{formatDurationMs(sc.p90, { style: "compact" })}</td>
                 <td className="p-2 text-right">{sc.calls}</td>
                 <td className="p-2 text-right">{formatUsd(sc.cost, { digits: "adaptive" })}</td>
               </tr>
