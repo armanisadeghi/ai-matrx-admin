@@ -434,7 +434,7 @@ function AddMoreCardsDialog({
           toast.warning(
             `The cards were added, but the parts they came from could not be saved with the deck (${notRecorded}).`,
           );
-        await cardGen.commit();
+        await cardGen.commit({ initiation: "user" });
         toast.success(
           `Added ${made.cards.length} new card${made.cards.length === 1 ? "" : "s"}${
             made.gapNote ? ` — ${made.gapNote}` : ""

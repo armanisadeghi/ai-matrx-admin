@@ -216,7 +216,7 @@ export function EnhanceSetDialog({
       // usage regardless of whether the user later saves or discards the
       // preview; the AI call already happened. Failed/empty branches above
       // return first, so a failed generation never burns quota.
-      await enrichGuard.commit();
+      await enrichGuard.commit({ initiation: "user" });
     } else {
       const subCards = await dispatch(
         expandCard({ card, depth, onConversationCreated, onUnusable }),
@@ -241,7 +241,7 @@ export function EnhanceSetDialog({
         preview: { mode: "deepen", subCards },
       });
       // Same one-model-call-per-card metering as the enrich branch above.
-      await enrichGuard.commit();
+      await enrichGuard.commit({ initiation: "user" });
     }
   };
 

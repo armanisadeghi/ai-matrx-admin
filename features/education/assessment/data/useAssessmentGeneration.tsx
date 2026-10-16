@@ -186,7 +186,7 @@ export function useAssessmentGeneration(config: KindConfig) {
         return { status: "failed", error: created.error ?? `Could not save the ${config.noun}` };
       // Metered action SUCCEEDED — record real usage. Failed branches return
       // first, so a failed generation never burns quota.
-      await entitlement.commit();
+      await entitlement.commit({ initiation: "user" });
       return {
         status: "created",
         assessment: created.data.assessment,

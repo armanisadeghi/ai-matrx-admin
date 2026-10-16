@@ -1,4 +1,4 @@
-import type { MyCostGroup, MyCostRecord } from "./myCostService";
+import type { MyCostBucket, MyCostGroup, MyCostRecord } from "./myCostService";
 
 /** The three ways the cost table can be read. */
 export type MyCostTab = "feature" | "organization" | "day";
@@ -93,4 +93,28 @@ export function chargeLink(r: Parameters<typeof chargeHref>[0]): { href: string;
     return { href, label: "All social", hint: "This charge did not record which account or post it was for." };
   }
   return { href, label: "Open" };
+}
+
+/** The three readings of "who started this spend", in the order the page shows them. */
+export const BUCKETS: { key: MyCostBucket; label: string }[] = [
+  { key: "own", label: "You" },
+  { key: "automated", label: "Automated" },
+  { key: "unattributed", label: "Unknown origin" },
+];
+
+const ORIGIN_LABEL: Record<string, string> = {
+  human: "You",
+  child_agent: "Agents",
+  workflow: "Workflows",
+  system: "System",
+  scheduled: "Scheduled",
+  client_auto: "App automatic",
+  api: "API",
+  delegated_member: "Delegated member",
+  unknown: "Unknown",
+};
+
+/** A recorded origin class in plain words (an unlisted class reads as itself, never hidden). */
+export function originLabel(origin: string): string {
+  return ORIGIN_LABEL[origin] ?? origin.replace(/_/g, " ");
 }

@@ -175,7 +175,7 @@ export function FastFireSetup() {
         // Done means DONE — count what actually persisted, never the attempts.
         const ready = Object.keys(result).length;
         const generated = Math.max(ready - before, 0);
-        if (generated > 0) await enrichGuard.commit({ quantity: generated });
+        if (generated > 0) await enrichGuard.commit({ initiation: "user", quantity: generated });
         setHelpPrepProgress({ done: ready, total });
         setHelpPrepDone(total > 0 && ready >= total);
         if (ready < total) {
@@ -292,7 +292,7 @@ export function FastFireSetup() {
       // check would stall the timed loop). Commit only on a real
       // start; a failed/aborted start never burns quota.
       const started = await start();
-      if (started) await liveGrade.commit();
+      if (started) await liveGrade.commit({ initiation: "user" });
     });
   };
   const progressHref = config.setId

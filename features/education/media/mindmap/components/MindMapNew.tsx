@@ -148,7 +148,7 @@ export function MindMapNew() {
         // Metered action SUCCEEDED — record real usage so the meter decrements
         // (honest even while enforced:false). Failed branches return first, so a
         // failed generation never burns quota.
-        await gen.commit();
+        await gen.commit({ initiation: "user" });
         router.push(`/education/mind-maps/${media.data.id}`);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't generate the mind map");

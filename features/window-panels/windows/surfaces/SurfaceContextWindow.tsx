@@ -339,7 +339,7 @@ export default function SurfaceContextWindow({
 
   const runAgent = async (agentId: string) => {
     try {
-      await launchAgent(agentId, {
+      await launchAgent(agentId, { initiation: "user",
         surfaceKey: `surface-chrome:${surfaceName}:${agentId}`,
         sourceFeature: sourceFeatureFromSurfaceName(surfaceName) ?? "ai-results",
         config: { displayMode: "flexible-panel", allowChat: true, showVariablePanel: true },

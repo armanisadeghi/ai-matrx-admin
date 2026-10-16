@@ -127,7 +127,7 @@ export function GenerateCardsDialog({
             saved.error ?? "The cards were made but could not be saved. Try again.",
           );
         }
-        await guard.commit();
+        await guard.commit({ initiation: "user" });
         const n = saved.data.length;
         toast.success(`Added ${n} ${n === 1 ? "card" : "cards"} to this deck`);
         onAdded(n);

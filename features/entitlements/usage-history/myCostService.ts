@@ -1,7 +1,9 @@
 import { createClient } from "@/utils/supabase/client";
 
 /** What the cost doors group by. */
-export type MyCostGroup = "feature" | "organization" | "day" | "activity";
+export type MyCostGroup = "feature" | "organization" | "day" | "activity" | "origin";
+/** Who started the spend: the person (own), something running for them (automated), or no origin recorded. */
+export type MyCostBucket = "own" | "automated" | "unattributed";
 export type MyCostPeriodKey = "today" | "week" | "month" | "all" | "custom";
 
 export interface MyCostPeriod {
@@ -24,6 +26,8 @@ export interface MyCostGroupRow {
   chargedPoints: number;
   firstAt: string | null;
   lastAt: string | null;
+  /** Set only when grouped by origin. */
+  bucket: MyCostBucket | null;
 }
 
 export interface MyCostRecord {
@@ -47,6 +51,9 @@ export interface MyCostRecord {
   costUsd: number | null;
   points: number;
   chargedPoints: number;
+  /** The recorded origin class (human, child_agent, workflow, system, scheduled, ...). */
+  origin: string;
+  bucket: MyCostBucket;
 }
 
 export const MY_COST_RECORDS_PAGE = 100;
@@ -78,6 +85,7 @@ const n = (v: unknown): number => (v === null || v === undefined ? 0 : Number(v)
 const nn = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
 
 type Row = Record<string, unknown>;
+const asBucket = (v: unknown): MyCostBucket | null => (v === "own" || v === "automated" || v === "unattributed" ? v : null);
 
 export interface MyCostScope {
   feature?: string | null;
@@ -85,10 +93,14 @@ export interface MyCostScope {
   activity?: string | null;
   /** "unattributed" (admin only): costs with no person on them. */
   scope?: "mine" | "unattributed";
+  /** Who started it; omitted = every origin. */
+  bucket?: MyCostBucket | null;
+  /** One recorded origin class (records only). */
+  origin?: string | null;
 }
 
 export async function fetchMyCostBreakdown(period: MyCostPeriod, group: MyCostGroup, scope: MyCostScope = {}): Promise<MyCostGroupRow[]> {
-  const { data, error } = await billingRpc("my_cost_breakdown", { p_from: period.from ?? undefined, p_to: period.to ?? undefined, p_group: group, p_feature: scope.feature ?? undefined, p_organization: scope.organizationId ?? undefined, p_scope: scope.scope ?? undefined });
+  const { data, error } = await billingRpc("my_cost_breakdown", { p_from: period.from ?? undefined, p_to: period.to ?? undefined, p_group: group, p_feature: scope.feature ?? undefined, p_organization: scope.organizationId ?? undefined, p_scope: scope.scope ?? undefined, p_bucket: scope.bucket ?? undefined });
   if (error) throw error;
   return ((data ?? []) as Row[]).map((r) => ({
     key: String(r.group_key ?? ""),
@@ -99,6 +111,7 @@ export async function fetchMyCostBreakdown(period: MyCostPeriod, group: MyCostGr
     chargedPoints: n(r.charged_points),
     firstAt: (r.first_at as string | null) ?? null,
     lastAt: (r.last_at as string | null) ?? null,
+    bucket: asBucket(r.origin_bucket),
   }));
 }
 
@@ -117,6 +130,8 @@ export async function fetchMyCostRecords(period: MyCostPeriod, filter: MyCostRec
       p_before_id: filter.before?.id ?? undefined,
       p_activity: filter.activity ?? undefined,
       p_scope: filter.scope ?? undefined,
+      p_bucket: filter.bucket ?? undefined,
+      p_origin: filter.origin ?? undefined,
   });
   if (error) throw error;
   return ((data ?? []) as Row[]).map((r) => ({
@@ -138,5 +153,7 @@ export async function fetchMyCostRecords(period: MyCostPeriod, filter: MyCostRec
     costUsd: nn(r.cost_usd),
     points: n(r.points),
     chargedPoints: n(r.charged_points),
+    origin: String(r.origin ?? "unknown"),
+    bucket: asBucket(r.origin_bucket) ?? "unattributed",
   }));
 }

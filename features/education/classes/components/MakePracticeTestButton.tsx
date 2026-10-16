@@ -317,7 +317,7 @@ function MakePracticeTestDialog({
             await recordLineageForSources(result, linkSources, orgId),
             () => recordLineageForSources(result, linkSources, orgId),
           );
-          await generation.commit();
+          await generation.commit({ initiation: "user" });
           recordToast.success(
             { type: "assessment", id: assessment.id, title: assessment.title },
             `Made ${assessment.title} with ${questionCount(made.questions.length)}.`,

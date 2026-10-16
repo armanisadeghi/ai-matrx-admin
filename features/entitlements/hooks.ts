@@ -30,6 +30,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import {
   checkEntitlement,
   consumeEntitlement,
+  type EntitlementInitiation,
   fetchEntitlementSnapshot,
   fetchOrgCapabilityStatus,
   usageFromConsume,
@@ -220,8 +221,14 @@ export function useOrgEntitlement(
   }, [status, capability, definition, check, refresh, organizationId]);
 }
 
-/** Options for a consume/commit — quantity (default 1) + optional check_id. */
+/** Options for a consume/commit — who started it, quantity (default 1) + optional check_id. */
 export interface EntitlementCommitOptions {
+  /**
+   * Who started the metered action, stated truthfully by the caller: "user" when a person's click or
+   * send caused it, "auto" when the app ran it on its own. Required: the ledger records it as the
+   * spend's origin, and an undeclared call is recorded as an unattested API call.
+   */
+  initiation: EntitlementInitiation;
   /** How many units this action spent (e.g. per-card enrichment). Default 1. */
   quantity?: number;
   /** The `checkId` from a prior `check()` — pairs check + consume for idempotency. */
@@ -230,7 +237,7 @@ export interface EntitlementCommitOptions {
 
 /** A consume-on-success callback: records real usage + refreshes the meter. */
 export type EntitlementCommit = (
-  opts?: EntitlementCommitOptions,
+  opts: EntitlementCommitOptions,
 ) => Promise<EntitlementConsumeResult | null>;
 
 /**
@@ -248,7 +255,7 @@ export type EntitlementCommit = (
 export function useEntitlementConsume(capability: Capability): EntitlementCommit {
   const dispatch = useAppDispatch();
   return useCallback(
-    async (opts?: EntitlementCommitOptions) => {
+    async (opts: EntitlementCommitOptions) => {
       const result = await consumeEntitlement(capability, opts);
       if (result) {
         // Authoritative fresh windows from the same resolver the snapshot uses —

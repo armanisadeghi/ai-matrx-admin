@@ -148,7 +148,7 @@ export const runConceptPassThunk = createAsyncThunk<
 
   try {
     const result = (await dispatch(
-      launchAgentExecution({
+      launchAgentExecution({ initiation: "auto",
         shortcutId,
         surfaceKey: `studio:concepts:${sessionId}`,
         sourceFeature: "transcription",

@@ -115,7 +115,7 @@ export function RecordScopedChat({ ctx, organizationId, className }: RecordScope
     if (!memberHere || openedFor.current === ctx.surfaceKey) return;
     openedFor.current = ctx.surfaceKey;
     let cancelled = false;
-    void launchMandate(MANDATE_KEYS.data__table_chat, {
+    void launchMandate(MANDATE_KEYS.data__table_chat, { initiation: "auto",
       surfaceKey: ctx.surfaceKey,
       // A REGISTERED feature, never a new string: `SOURCE_FEATURES` is generated from the
       // database and this surface IS the chat, opened from a record.

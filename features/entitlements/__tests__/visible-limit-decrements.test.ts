@@ -27,6 +27,8 @@ import { setStoreSingleton } from "@/lib/redux/store-singleton";
 import type { EntitlementConsumeResult, EntitlementSnapshot } from "../types";
 
 const rpc = jest.fn();
+/** Headers the consume call sent: the real client carries them on the builder via `.setHeader`. */
+const sentHeaders: Record<string, string> = {};
 /**
  * The client answers TWO doors now, because the consume path resolves the
  * workspace before it charges anything: `billing.entitlement_consume` through
@@ -51,7 +53,12 @@ const KNOB_ROWS = [
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({
     schema: (name: string) => ({
-      rpc: (...a: unknown[]) => rpc(...a),
+      rpc: (...a: unknown[]) => ({
+        setHeader: (name: string, value: string) => {
+          sentHeaders[name] = value;
+          return rpc(...a);
+        },
+      }),
       from: () => {
         const page = {
           select: () => page,
@@ -109,6 +116,7 @@ const asState = (e: unknown) => ({ entitlements: e }) as unknown as RootState;
 
 beforeEach(() => {
   rpc.mockReset();
+  for (const k of Object.keys(sentHeaders)) delete sentHeaders[k];
   signedInto(ORG);
 });
 
@@ -138,10 +146,12 @@ describe("a visible limit must decrement", () => {
       error: null,
     });
 
-    const result = await consumeEntitlement(CAP);
+    const result = await consumeEntitlement(CAP, { initiation: "user" });
 
     // The round trip HAPPENED — no `enforced: false` short-circuit.
     expect(rpc).toHaveBeenCalledTimes(1);
+    // Who started it is stated, never left for the database to guess as an unattested API call.
+    expect(sentHeaders["x-matrx-initiation"]).toBe("user");
     expect(rpc).toHaveBeenCalledWith(
       "entitlement_consume",
       // …and it names the organization it is charging, rather than leaving the
@@ -263,7 +273,7 @@ describe("a visible limit must decrement", () => {
     signedInto(null);
     rpc.mockResolvedValue({ data: {}, error: null });
 
-    await expect(consumeEntitlement(CAP)).resolves.toBeNull();
+    await expect(consumeEntitlement(CAP, { initiation: "user" })).resolves.toBeNull();
     expect(rpc).not.toHaveBeenCalled();
   });
 
@@ -271,6 +281,6 @@ describe("a visible limit must decrement", () => {
     // Silently returning a fabricated verdict here would freeze the meter at a
     // stale number — the exact dishonesty this invariant exists to prevent.
     rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
-    return expect(consumeEntitlement(CAP)).resolves.toBeNull();
+    return expect(consumeEntitlement(CAP, { initiation: "user" })).resolves.toBeNull();
   });
 });

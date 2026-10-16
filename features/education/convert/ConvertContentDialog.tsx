@@ -535,7 +535,7 @@ function TargetRow({
           onClick={() =>
             void gen.guard(async () => {
               // Meter only a successful conversion; a failure burns nothing.
-              if (await onConvert()) await gen.commit();
+              if (await onConvert()) await gen.commit({ initiation: "user" });
             })
           }
           title={!available ? "This target isn't available yet" : `Convert to ${meta.label}`}

@@ -131,7 +131,7 @@ export function AudioStudyNew() {
         adaptive: sourceKind === "deck" && adaptive,
       });
       // Meter only a real generation; a failed/early-returned create burns nothing.
-      if (ok) await gen.commit();
+      if (ok) await gen.commit({ initiation: "user" });
     });
   }
 

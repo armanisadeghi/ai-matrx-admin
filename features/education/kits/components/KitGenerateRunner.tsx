@@ -91,7 +91,7 @@ export function KitGenerateRun({
         settle,
       }),
     );
-    await gen.commit();
+    await gen.commit({ initiation: "user" });
     setCard({
       phase: "done",
       line: outcome.summary,
