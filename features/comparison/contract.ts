@@ -138,6 +138,9 @@ export type ItemStage = "queued" | "fetching" | "waiting_for_provider" | "storin
 export interface ItemProgress {
   index: number;
   label: string;
+  /** What the person confirmed for the item (kept on the run so a rejoining page shows it). */
+  logoUrl?: string | null;
+  website?: string | null;
   stage: ItemStage;
   stageLabel: string;
   current: number | null;
@@ -410,6 +413,8 @@ function parseItemProgress(v: unknown): ItemProgress {
   return {
     index: num(o.index),
     label: str(o.label),
+    logoUrl: strOrNull(o.logo_url),
+    website: strOrNull(o.website),
     stage: stageOf(o.stage),
     stageLabel: str(o.stage_label),
     current: numOrNull(o.current),
@@ -489,6 +494,18 @@ export function readEvent(evt: unknown): Read {
     return result ? { kind: "result", result } : null;
   }
   return null;
+}
+
+const STAGE_ORDER: Record<ItemStage, number> = { queued: 0, fetching: 1, waiting_for_provider: 2, storing: 3, done: 4 };
+
+/** Fold a read of the run row into what is shown: an item never moves backwards (the row is
+ * written on stage changes, a live stream can be a moment ahead of it). */
+export function mergeRunProgress(shown: ItemProgress[], fromRun: ItemProgress[]): ItemProgress[] {
+  return fromRun.map((r, i) => {
+    const s = shown[i];
+    if (!s || r.done || r.error) return { ...s, ...r, logoUrl: r.logoUrl ?? s?.logoUrl, website: r.website ?? s?.website };
+    return STAGE_ORDER[s.stage] > STAGE_ORDER[r.stage] ? { ...r, ...s, done: s.done || r.done } : { ...s, ...r };
+  });
 }
 
 /** Fold one stage event into the per-item progress list (index-addressed, never reorders). */

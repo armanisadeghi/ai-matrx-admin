@@ -77,6 +77,9 @@ export function whyLine(field: CompareField, result: ComparisonResult): string {
   const sign = field.direction === "lower_better" ? 1 : -1;
   const runner = rest.slice().sort((a, b) =>
     sign * ((numberOf(a.values[field.key]?.value) ?? 0) - (numberOf(b.values[field.key]?.value) ?? 0)))[0];
+  if (field.type === "percent") {
+    return `${names(best)} leads · ${shown} to ${runner.values[field.key]?.display ?? "—"} for ${runner.name}`;
+  }
   const gap = gapText(field, numberOf(best[0].values[field.key]?.value), numberOf(runner.values[field.key]?.value));
   return gap ? `${names(best)} leads · ${gap} ahead of ${runner.name}` : `${names(best)} leads at ${shown}`;
 }
@@ -84,7 +87,6 @@ export function whyLine(field: CompareField, result: ComparisonResult): string {
 function gapText(field: CompareField, a: number | null, b: number | null): string {
   if (a === null || b === null) return "";
   const d = Math.abs(a - b);
-  if (field.type === "percent") return `${Math.round(d * 100)} pts`;
   if (field.type === "rating") return d.toFixed(1);
   if (field.type === "int") return Math.round(d).toLocaleString("en-US");
   return Number.isInteger(d) ? d.toLocaleString("en-US") : d.toFixed(1);
