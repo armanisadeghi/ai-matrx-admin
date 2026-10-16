@@ -96,6 +96,15 @@ const CloudBrowserBody = dynamic(
   { ssr: false },
 );
 
+// The person's Cloud Computer (wake / watch / take control) — same lazy rule.
+const ComputerView = dynamic(
+  () =>
+    import("@/features/cloud-computer/ComputerView").then((m) => ({
+      default: m.ComputerView,
+    })),
+  { ssr: false },
+);
+
 export interface CanvasBodyProps {
   content: CanvasContent;
 }
@@ -294,6 +303,9 @@ function renderContent(content: CanvasContent): React.ReactNode {
   switch (type) {
     case "code_preview":
       return <LiveCodePreviewCanvas data={data} />;
+
+    case "cloud_computer":
+      return <ComputerView conversationId={content.metadata?.conversationId} />;
 
     case "cloud_browser":
       // `data` is a pointer { initialProfileId?, runId? } and the metadata

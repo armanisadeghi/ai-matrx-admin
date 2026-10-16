@@ -27,6 +27,7 @@ import { ResourcePickerSubViewHeader } from "./ResourcePickerSubViewHeader";
 import { toast } from "@/lib/toast";
 import type { GoogleWorkspaceResourceType } from "@/features/google-workspace/resource-types";
 import { GoogleResourcePicker } from "./GoogleResourcePicker";
+import { useOpenCloudComputerCanvas } from "@/features/cloud-computer/useOpenCloudComputerCanvas";
 import { useOpenCloudBrowserCanvas } from "@/features/cloud-browser/hooks/useOpenCloudBrowserCanvas";
 import { setContextEntry } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
 import {
@@ -154,6 +155,7 @@ export function ResourcePickerMenu({
   };
   const [currentUrl, setCurrentUrl] = useState<string>("");
   const openCloudBrowser = useOpenCloudBrowserCanvas();
+  const openCloudComputer = useOpenCloudComputerCanvas();
   const dispatch = useAppDispatch();
   const store = useAppStore();
   // Run-state counts for the "This run" rows only — see useRunControlCounts.
@@ -545,6 +547,11 @@ export function ResourcePickerMenu({
     // the canvas), not a drill-in picker view.
     if (id === "cloud_browser") {
       openCloudBrowser({ conversationId });
+      onClose();
+      return;
+    }
+    if ((id as string) === "cloud_computer") {
+      openCloudComputer({ conversationId });
       onClose();
       return;
     }

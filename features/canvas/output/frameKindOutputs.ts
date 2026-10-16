@@ -93,6 +93,12 @@ export const CLOUD_BROWSER_OUTPUT = {
   capture: "turn on Screenshots first",
 };
 
+/** The machine's screen is a live stream from another origin. */
+export const CLOUD_COMPUTER_OUTPUT = {
+  print: "a live screen cannot be printed",
+  capture: "a live screen cannot be captured",
+};
+
 /** Shown until the document editor has opened (its body then prints its text and captures its page). */
 export const UDT_DOCUMENT_OUTPUT = {
   print: "the document is still opening",

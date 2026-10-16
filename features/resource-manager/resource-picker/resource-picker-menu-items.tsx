@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
+  Monitor,
   CheckSquare,
   File,
   FileText,
@@ -105,6 +106,17 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
         label: "Cloud browser",
         icon: AppWindow,
         iconClassName: "text-sky-600 dark:text-sky-400",
+        requiresCapability: null,
+      },
+      {
+        // Direct ACTION row like Cloud browser: opens the Computer tab — the
+        // person's one cloud machine their agents work on.
+        // Not yet in the published `ResourcePickerViewId` union (a direct action,
+        // never a picker view) — drop the cast once @ai-matrx/chat lists it.
+        id: "cloud_computer" as ResourcePickerMenuItem["id"],
+        label: "Computer",
+        icon: Monitor,
+        iconClassName: "text-violet-600 dark:text-violet-400",
         requiresCapability: null,
       },
       {
