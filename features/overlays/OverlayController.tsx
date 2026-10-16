@@ -1039,7 +1039,7 @@ const QuickMessageTemplateSaveWindow = lazyOverlay(
   { ssr: false },
 );
 const QuickNoteSaveWindow = lazyOverlay(
-  () => import("@/features/window-panels/windows/notes/QuickNoteSaveWindow"),
+  () => import("@ai-matrx/chat/window-panels/windows/notes/QuickNoteSaveWindow"),
   { ssr: false },
 );
 const SetContextValueWindow = lazyOverlay(

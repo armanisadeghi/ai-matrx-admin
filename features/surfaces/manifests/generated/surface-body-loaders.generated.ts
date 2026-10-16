@@ -163,7 +163,7 @@ export const SURFACE_BODY_LOADERS: Readonly<Record<string, () => Promise<readonl
   "matrx-user/marketing-site-media": () => Promise.all([import("../marketing-brand.manifest").then((m) => m.marketingBrandManifest), import("../marketing-site.manifest").then((m) => m.marketingSiteManifest), import("../marketing-site-media.manifest").then((m) => m.marketingSiteMediaManifest)]),
   "matrx-user/quick-tasks": () => Promise.all([import("../quick-tasks.manifest").then((m) => m.quickTasksManifest)]),
   "matrx-user/task-create": () => Promise.all([import("../task-create.manifest").then((m) => m.taskCreateManifest)]),
-  "matrx-user/quick-note-save": () => Promise.all([import("../quick-note-save.manifest").then((m) => m.quickNoteSaveManifest)]),
+  "matrx-user/quick-note-save": () => Promise.all([import("@ai-matrx/chat/surfaces/manifests/quick-note-save.manifest").then((m) => m.quickNoteSaveManifest)]),
   "matrx-user/file-preview": () => Promise.all([import("../file-preview.manifest").then((m) => m.filePreviewManifest)]),
   "matrx-user/file": () => Promise.all([import("../file.manifest").then((m) => m.fileManifest)]),
   "matrx-user/image-viewer": () => Promise.all([import("../image-viewer.manifest").then((m) => m.imageViewerManifest)]),

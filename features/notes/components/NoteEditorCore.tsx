@@ -39,7 +39,7 @@ import { useMeasure } from "@ai-matrx/kit/hooks";
 import {
   type ScrollEdgeIntent,
   useScrollEdgeIntent,
-} from "@/components/matrx/useTrimEdgeScrollIntent";
+} from "@ai-matrx/chat/ui/content-refine/useTrimEdgeScrollIntent";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
 import type {

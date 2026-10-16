@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import type { Note } from "@/features/notes/types";
-import { QuickNoteSaveCore, type PostSaveAction } from "./QuickNoteSaveCore";
+import { QuickNoteSaveCore, type PostSaveAction } from "@ai-matrx/chat/window-panels/windows/notes/QuickNoteSaveCore";
 
 export interface QuickNoteSaveDialogProps {
   open: boolean;

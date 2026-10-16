@@ -1,6 +1,6 @@
 "use client";
 
-import { QuickNoteSaveCore } from "./QuickNoteSaveCore";
+import { QuickNoteSaveCore } from "@ai-matrx/chat/window-panels/windows/notes/QuickNoteSaveCore";
 import type { EditorMode } from "@/features/notes/components/NoteEditorCore";
 import FullScreenOverlay from "@/components/official/FullScreenOverlay";
 

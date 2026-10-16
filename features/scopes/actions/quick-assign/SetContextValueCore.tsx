@@ -43,8 +43,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { TrimControl } from "@/components/content-refine/TrimControl";
-import { useTrimEdgeScrollIntent } from "@/components/matrx/useTrimEdgeScrollIntent";
+import { TrimControl } from "@ai-matrx/chat/ui/content-refine/TrimControl";
+import { useTrimEdgeScrollIntent } from "@ai-matrx/chat/ui/content-refine/useTrimEdgeScrollIntent";
 import {
   NoteEditorCore,
   type EditorMode,

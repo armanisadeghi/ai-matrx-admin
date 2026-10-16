@@ -9,7 +9,7 @@ import {
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { cn } from "@/lib/utils";
 import type { Note } from "@/features/notes/types";
-import { QuickNoteSaveCore, type PostSaveAction } from "./QuickNoteSaveCore";
+import { QuickNoteSaveCore, type PostSaveAction } from "@ai-matrx/chat/window-panels/windows/notes/QuickNoteSaveCore";
 
 export interface QuickNoteSavePopoverProps {
   open: boolean;

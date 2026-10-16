@@ -68,3 +68,7 @@ registerChatUi({
     return runCodeInSandbox(input);
   },
 });
+
+// Save to Notes (the package's Quick Note Save window): this app's notes slice, homes and openers.
+import { useWebQuickSaveNotes } from "@/features/notes/actions/quick-save/useWebQuickSaveNotes";
+registerChatUi({ useQuickSaveNotes: useWebQuickSaveNotes });
