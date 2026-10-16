@@ -44,6 +44,7 @@ import {
   listSitemapPages,
   listSitemaps,
   confirmDiscoveredFact,
+  countDiscoveredInCategory,
   countPendingDiscovered,
   countSites,
   createBrand,
@@ -178,6 +179,7 @@ export const marketingKeys = {
     status: DiscoveredItemStatus | null,
     page: number,
     pageSize: number,
+    excludeCategories: readonly string[] = [],
   ) =>
     [
       ...marketingKeys.root,
@@ -187,9 +189,12 @@ export const marketingKeys = {
       status,
       page,
       pageSize,
+      excludeCategories.join(","),
     ] as const,
   discoveredCount: (brandId: string) =>
     [...marketingKeys.root, "brand", brandId, "discovered-count"] as const,
+  discoveredCategoryCount: (brandId: string, status: DiscoveredItemStatus, category: string) =>
+    [...marketingKeys.root, "brand", brandId, "discovered-count", status, category] as const,
   pages: (siteId: string, state: MatrxDataTableQueryState) =>
     [...marketingKeys.site(siteId), "pages", state] as const,
   page: (siteId: string, pageId: string) =>
@@ -745,6 +750,7 @@ export function useDiscoveredItems(
   status: DiscoveredItemStatus | null,
   page: number,
   pageSize: number,
+  excludeCategories: readonly string[] = [],
 ) {
   return useQuery({
     queryKey: marketingKeys.discovered(
@@ -752,11 +758,25 @@ export function useDiscoveredItems(
       status,
       page,
       pageSize,
+      excludeCategories,
     ),
     queryFn: ({ signal }) =>
-      listDiscoveredItems(brandId ?? "", status, page, pageSize, signal),
+      listDiscoveredItems(brandId ?? "", status, page, pageSize, signal, excludeCategories),
     enabled: Boolean(brandId),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useDiscoveredCategoryCount(
+  brandId: string | null,
+  status: DiscoveredItemStatus,
+  category: string,
+) {
+  return useQuery({
+    queryKey: marketingKeys.discoveredCategoryCount(brandId ?? "none", status, category),
+    queryFn: ({ signal }) => countDiscoveredInCategory(brandId ?? "", status, category, signal),
+    enabled: Boolean(brandId),
+    staleTime: 15_000,
   });
 }
 

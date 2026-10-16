@@ -28,22 +28,13 @@ interface OpenGate {
 /** Re-ask while a page is open: a gate opens when a background run reaches it. */
 const GATE_POLL_MS = 15_000;
 
-export function HumanGatePanel({
-  entityType,
-  entityId,
-  onAnswered,
-}: {
-  entityType: string;
-  entityId: string;
-  onAnswered?: () => void;
-}) {
+export const openGatesKey = (entityType: string, entityId: string) => ["workflow", "open-gates", entityType, entityId];
+
+/** The open gates on a record. Shared by the panel and by hosts that show the gate elsewhere (a button, a dialog). */
+export function useOpenGates(entityType: string, entityId: string) {
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient();
-  const { answerInterrupt } = useWorkflowRunControls();
-  const [sending, setSending] = useState(false);
-  const queryKey = ["workflow", "open-gates", entityType, entityId];
-  const gates = useQuery({
-    queryKey,
+  return useQuery({
+    queryKey: openGatesKey(entityType, entityId),
     queryFn: async (): Promise<OpenGate[]> => {
       const result = await dispatch(
         callApi({
@@ -60,6 +51,22 @@ export function HumanGatePanel({
     refetchInterval: GATE_POLL_MS,
     refetchIntervalInBackground: false,
   });
+}
+
+export function HumanGatePanel({
+  entityType,
+  entityId,
+  onAnswered,
+}: {
+  entityType: string;
+  entityId: string;
+  onAnswered?: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const { answerInterrupt } = useWorkflowRunControls();
+  const [sending, setSending] = useState(false);
+  const queryKey = openGatesKey(entityType, entityId);
+  const gates = useOpenGates(entityType, entityId);
   const gate = gates.data?.[0];
   const spec = gate ? parseDecisionSpec(gate.decision) : null;
   if (!gate || !spec || !gate.checkpoint_id) return null;

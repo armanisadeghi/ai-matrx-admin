@@ -2506,6 +2506,8 @@ export async function listDiscoveredItems(
   page: number,
   pageSize: number,
   signal?: AbortSignal,
+  /** Categories reviewed on their own screen (offerings): left out of the page AND the count. */
+  excludeCategories: readonly string[] = [],
 ): Promise<PagedResult<DiscoveredItem>> {
   const db = await authenticatedWebDb(supabase);
   let query = db
@@ -2514,6 +2516,8 @@ export async function listDiscoveredItems(
     .eq("brand_id", brandId)
     .is("deleted_at", null);
   if (status) query = query.eq("status", status);
+  if (excludeCategories.length > 0)
+    query = query.not("category", "in", `(${excludeCategories.join(",")})`);
   const from = (page - 1) * pageSize;
   const response = await query
     .order("category", { ascending: true })
@@ -2525,6 +2529,27 @@ export async function listDiscoveredItems(
     rows: assertData(response.data, response.error),
     total: response.count ?? 0,
   };
+}
+
+/** How many discoveries of one category sit in one review status (the inbox's Offerings door). */
+export async function countDiscoveredInCategory(
+  brandId: string,
+  status: DiscoveredItemStatus,
+  category: string,
+  signal?: AbortSignal,
+): Promise<number> {
+  const response = await (
+    await authenticatedWebDb(supabase)
+  )
+    .from("discovered_item")
+    .select("id", { count: "exact", head: true })
+    .eq("brand_id", brandId)
+    .eq("status", status)
+    .eq("category", category)
+    .is("deleted_at", null)
+    .abortSignal(signal ?? new AbortController().signal);
+  if (response.error) throw response.error;
+  return response.count ?? 0;
 }
 
 export async function countPendingDiscovered(

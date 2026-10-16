@@ -24,6 +24,8 @@ import { researchThisHref } from "@/features/research/utils/init-route";
 import { subjectFromBrandProperties } from "@/features/research/utils/subject";
 import { brandKindCopy, type BrandRoom } from "@/features/marketing/lib/brand-kind";
 import { BrandAnalysisInputs } from "@/features/provision-window/BrandAnalysisInputs";
+import { BrandGuideInputs } from "@/features/provision-window/BrandGuideInputs";
+import { BrandVisualSuggestions } from "@/features/marketing/brand-guide/BrandVisualSuggestions";
 
 /**
  * Brand Identity — who this client IS, as opposed to what it owns or what the
@@ -131,7 +133,9 @@ export default async function BrandIdentityPage({
             {brand.name} · Identity
           </h1>
           <BrandAnalysisInputs brandId={brand.id} brandName={brand.name} />
+          <BrandGuideInputs brandId={brand.id} brandName={brand.name} organizationId={brand.organization_id} />
         </header>
+        <BrandVisualSuggestions brandId={brand.id} organizationId={brand.organization_id} />
         <div className="grid gap-3 sm:grid-cols-2">
           {rooms.map((room) => {
             const Icon = room.icon;

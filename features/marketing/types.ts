@@ -792,6 +792,7 @@ export interface UpdateBrandAssetInput {
       | "is_primary"
       | "sort_order"
       | "data"
+      | "confirmed_at"
     >
   >;
 }

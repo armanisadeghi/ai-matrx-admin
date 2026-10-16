@@ -18,6 +18,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Loader2, RotateCcw } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { UserCheck } from "lucide-react";
 import type { paths } from "@ai-matrx/api/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { callApi } from "@/lib/api/call-api";
@@ -25,7 +27,7 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { extractErrorMessage } from "@/utils/errors";
 import { toast } from "@/lib/toast";
 import { runHref } from "@/features/workflow-runtime/run-doors";
-import { HumanGatePanel } from "@/features/workflow-runtime/interrupt/HumanGatePanel";
+import { HumanGatePanel, useOpenGates } from "@/features/workflow-runtime/interrupt/HumanGatePanel";
 import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
 import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
 import { loadAccounts } from "@/features/marketing/components/brands/BrandBackgroundWork";
@@ -54,14 +56,30 @@ function useSetupRun(brandId: string, organizationId: string) {
  */
 export function SmartAddBasicsGate({ brandId }: { brandId: string; organizationId?: string }) {
   const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const gates = useOpenGates("web_brand", brandId);
+  // A decision waiting never moves the page: it is one button at the end of the section bar (which scrolls
+  // sideways and has a fixed height), and the question itself opens in a dialog.
+  if (!gates.data?.length) return null;
   return (
-    <div className="basis-full empty:hidden">
-      <HumanGatePanel
-        entityType="web_brand"
-        entityId={brandId}
-        onAnswered={() => void queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup", brandId] })}
-      />
-    </div>
+    <>
+      <Button variant="outline" icon={<UserCheck />} data-testid="smart-add-confirm-basics" className="shrink-0" onClick={() => setOpen(true)}>
+        Confirm basics
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogTitle className="sr-only">Confirm your brand profile basics</DialogTitle>
+          <HumanGatePanel
+            entityType="web_brand"
+            entityId={brandId}
+            onAnswered={() => {
+              setOpen(false);
+              void queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup", brandId] });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
