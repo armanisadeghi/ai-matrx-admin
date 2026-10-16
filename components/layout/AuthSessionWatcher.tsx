@@ -56,6 +56,8 @@ import { noteHardNavigationReason } from "@/lib/diagnostics/hardNavigationTrace"
 import dynamic from "next/dynamic";
 import { supabase } from "@/utils/supabase/client";
 import { captureDrafts } from "@ai-matrx/kit/drafts";
+import { fireInvalidation } from "@ai-matrx/kit/invalidation";
+import { CONTENT_IR_IDENTITY_FLUSH } from "@/features/content-ir/registry/identity-flush";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 // Surface A lifecycle write: reset the global active context on sign-out so the
@@ -344,18 +346,9 @@ export default function AuthSessionWatcher() {
     // schemas/components in memory. Reload as the now-anon identity so
     // only public data survives; a session that never demanded a kind
     // still fetches nothing (THE ZERO-PREFETCH LAW).
-    void import("@/features/content-ir/registry/kind-registry").then(
-      (m) => {
-        if (m.kindRegistry.hasBeenDemanded()) void m.kindRegistry.refresh(0);
-      },
-    );
-    void import("@/features/content-ir/registry/component-registry").then(
-      (m) => {
-        if (m.componentRegistry.hasBeenDemanded()) {
-          void m.componentRegistry.refresh(0);
-        }
-      },
-    );
+    // Fired by name: the registries register at their own init, so a tab that
+    // never loaded them has nothing to flush and this file has no edge into them.
+    fireInvalidation(CONTENT_IR_IDENTITY_FLUSH);
   
   }, [dispatch]);
 
@@ -485,18 +478,7 @@ export default function AuthSessionWatcher() {
         // Only when WHO is signed in changed — never on the tab-return echo, and not on
         // USER_UPDATED (a profile edit changes no kind access).
         if (event !== "INITIAL_SESSION" && identityChanged) {
-          void import("@/features/content-ir/registry/kind-registry").then(
-            (m) => {
-              if (m.kindRegistry.hasBeenDemanded()) void m.kindRegistry.refresh(0);
-            },
-          );
-          void import("@/features/content-ir/registry/component-registry").then(
-            (m) => {
-              if (m.componentRegistry.hasBeenDemanded()) {
-                void m.componentRegistry.refresh(0);
-              }
-            },
-          );
+          fireInvalidation(CONTENT_IR_IDENTITY_FLUSH);
         }
       }
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {

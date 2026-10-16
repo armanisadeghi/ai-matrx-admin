@@ -27,6 +27,7 @@ import {
   INVALIDATION_KEYS,
   registerInvalidationCallback,
 } from "@ai-matrx/kit/invalidation";
+import { CONTENT_IR_IDENTITY_FLUSH } from "./identity-flush";
 import type { KindSchema } from "@ai-matrx/content-ir";
 import {
   setJsonRootKeyLookup,
@@ -709,4 +710,10 @@ export const kindRegistry = new KindRegistry(SYSTEM_KIND_DEFINITIONS);
 // upgrades mounted blocks in place.
 registerInvalidationCallback(INVALIDATION_KEYS.kindDefinitions, () => {
   void kindRegistry.refresh(0);
+});
+
+// WHO is signed in changed (the auth watcher fires this by name): reload as the
+// new identity, only when something here was ever demanded.
+registerInvalidationCallback(CONTENT_IR_IDENTITY_FLUSH, () => {
+  if (kindRegistry.hasBeenDemanded()) void kindRegistry.refresh(0);
 });

@@ -39,6 +39,7 @@ import {
   INVALIDATION_KEYS,
   registerInvalidationCallback,
 } from "@ai-matrx/kit/invalidation";
+import { CONTENT_IR_IDENTITY_FLUSH } from "./identity-flush";
 import {
   getKindComponentBySlug,
   isAccessRefusalError,
@@ -644,4 +645,10 @@ registerInvalidationCallback(INVALIDATION_KEYS.kindComponents, () => {
   void refreshKindComponents(0);
   // A layered write (my view / my organization's view) lands the same way.
   if (componentRegistry.hasBeenDemanded()) void componentRegistry.syncOverlay(true);
+});
+
+// WHO is signed in changed (the auth watcher fires this by name): reload as the
+// new identity, only when something here was ever demanded.
+registerInvalidationCallback(CONTENT_IR_IDENTITY_FLUSH, () => {
+  if (componentRegistry.hasBeenDemanded()) void componentRegistry.refresh(0);
 });

@@ -7,8 +7,11 @@
 // LAZY vs STATIC (2026-10-13, first-load campaign): component slots load through ONE
 // implementation module (chatUiRegistrationBaseImpl.ts) via `lazySlot` below. STATIC on purpose:
 //   · DockedSidePanel — the (core) shell's chat dock draws it on first paint.
-//   · CopyButtons, AnswerValueView, EntityRef — drawn inside kind trees rendered synchronously
-//     (static markup / SSR) and reached statically elsewhere anyway (modelled saving ~0).
+//   · CopyButtons, EntityRef — drawn inside kind trees rendered synchronously (static markup /
+//     SSR) and reached statically elsewhere anyway (modelled saving ~0).
+//   · AnswerValueView → AnswerValueSlot: text draws at once; a structured value loads the kind
+//     stack through the kind front door's existing lazy edge (a static AnswerValueView here put
+//     the content-ir component registry in every route's first load).
 //   · EditableContextMenu, MicrophoneIconButton, MicDeviceMenu — the composer on /chat/new.
 //   · ConnectorPromptHost — NewChatGreeting draws it above the composer on first paint.
 //   · NonEditableContextMenu, SearchGroup (+ its trigger) — wrappers: a loading state would hide
@@ -31,7 +34,7 @@ import {
 // Kind-value doors: they render inside kind trees that are drawn synchronously (SSR / static
 // markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modelled 0.01 MB).
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
+import { AnswerValueSlot } from "@/components/official/structured-value/AnswerValueSlot";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { DockedSidePanel } from "@/components/official/side-panel/DockedSidePanel";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -232,7 +235,7 @@ registerChatUi({
   RecordChangeApprovalCard,
   CopyButtons,
   InfoHint,
-  AnswerValueView,
+  AnswerValueView: AnswerValueSlot,
   ErrorAlchemyMenu,
   EntityRef,
   AdvancedMenu,

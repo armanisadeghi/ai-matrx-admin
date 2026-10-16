@@ -13,8 +13,9 @@ jest.mock("@/features/matrx-envelope/MatrxEnvelopeBlock", () => ({ __esModule: t
 jest.mock("@ai-matrx/rich-content/display/chat-markdown/BasicMarkdownContent", () => ({
   BasicMarkdownContent: ({ content }: { content: string }) => <div data-testid="basic-md">{content}</div>,
 }));
-jest.mock("@/components/official/structured-value/AnswerValueView", () => ({
-  AnswerValueView: () => <div data-testid="answer-value-view" />,
+// The slot form of the one answer view (text at once, structured through the kind front door).
+jest.mock("@/components/official/structured-value/AnswerValueSlot", () => ({
+  AnswerValueSlot: () => <div data-testid="answer-value-view" />,
 }));
 
 import { ContextValueDisplay } from "../ContextValueDisplay";

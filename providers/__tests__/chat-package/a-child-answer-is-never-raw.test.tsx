@@ -133,14 +133,21 @@ afterEach(() => {
 const route = (name: string) => container.querySelector(`[data-route="${name}"]`);
 
 describe("a plain agent_call", () => {
-  it("draws a kind the child returned as its kind", () => {
-    act(() =>
+  it("draws a kind the child returned as its kind", async () => {
+    await act(async () =>
       root.render(
         <AgentCallInline
           entry={entry({ result: { agent_name: "Tutor", result: flashcards } })}
         />,
       ),
     );
+    // A structured answer opens the kind front door (one lazy edge) — the kind stack is never in
+    // the shell graph. Let the door resolve, then the kind's own component draws.
+    for (let i = 0; i < 5 && !route("kind"); i += 1) {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    }
     expect(route("kind")).not.toBeNull();
     expect(container.innerHTML).not.toContain('"__kind"');
   });

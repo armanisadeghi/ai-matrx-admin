@@ -13,8 +13,10 @@ import { agentRunResult } from "../proTextareaAgentActions";
 jest.mock("@ai-matrx/agents/catalog/react", () => ({ AgentListDropdown: () => null }));
 jest.mock("@ai-matrx/design-system/tap-target/buttons", () => ({ CheckTapButton: () => null, CopyTapButton: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
-jest.mock("@/components/official/structured-value/AnswerValueView", () => ({
-  AnswerValueView: ({ text }: { text?: string | null }) => (
+// The popover draws its (always text) answer through AnswerValueView's text half, which hands
+// marked kind JSON to the markdown kind path — never the kind stack in the shell graph.
+jest.mock("@/components/official/structured-value/AnswerTextView", () => ({
+  AnswerTextView: ({ text }: { text?: string | null }) => (
     <div data-testid="answer-value-view" data-text={text ?? ""} />
   ),
 }));

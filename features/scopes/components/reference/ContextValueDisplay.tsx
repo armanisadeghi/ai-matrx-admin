@@ -24,7 +24,9 @@ import {
 import { cn } from "@/utils/cn";
 import { parseReferenceCellValue } from "@/features/scopes/utils/referenceCell";
 import { BasicMarkdownContent } from "@ai-matrx/rich-content/display/chat-markdown/BasicMarkdownContent";
-import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
+// The slot form of the one value door: text draws at once, a structured value loads the kind
+// stack on show — this display is in every route's shell graph (chat context sources).
+import { AnswerValueSlot as AnswerValueView } from "@/components/official/structured-value/AnswerValueSlot";
 import { hasKindKeyAnySpelling } from "@/features/content-ir/surfaces/json-kind-signal";
 import { referenceFence, type ContextFieldKind } from "@ai-matrx/records/scopes";
 import type { ContextCellLike } from "@/features/scopes/utils/referenceCell";

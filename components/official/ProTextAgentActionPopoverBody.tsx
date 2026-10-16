@@ -21,7 +21,10 @@ import type { useProTextareaAgentAction } from "./useProTextareaAgentAction";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-markdown";
-import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
+// TEXT only: the answer here is always text, and this body is in every route's shell graph
+// (AlchemyHost → ProTextarea) — AnswerValueView's kind stack would load the content-ir registry
+// on every page before anyone runs an action.
+import { AnswerTextView } from "@/components/official/structured-value/AnswerTextView";
 
 import { Button } from "@ai-matrx/design-system/controls";
 export function ProTextAgentActionPopoverBody({
@@ -115,7 +118,7 @@ export function ProTextAgentActionPopoverBody({
           ) : hasResult ? (
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1 type-body leading-relaxed text-foreground">
-                <AnswerValueView text={result} />
+                <AnswerTextView text={result} />
               </div>
               <div className="sticky top-0 shrink-0">
                 {resultCopied ? (

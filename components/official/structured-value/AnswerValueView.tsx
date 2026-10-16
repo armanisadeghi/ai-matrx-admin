@@ -19,15 +19,13 @@
 // which renders through this same view.
 
 import { KIND_KEY } from "@ai-matrx/content-ir";
-import { InlineMediaRef } from "@ai-matrx/media/react";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
+import { AnswerTextView } from "@/components/official/structured-value/AnswerTextView";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { KindFixItBar } from "@/features/content-ir/react/fixit/KindFixItBar";
 import {
   StructuredValueView,
   type StructuredValueDensity,
 } from "@/components/official/structured-value/StructuredValueView";
-import { fileIdFromUserFilesUrl } from "@/lib/media/durability";
 
 /** The kind a structured value claims for itself, when it carries one. */
 export function kindOfValue(value: unknown): string | null {
@@ -57,20 +55,6 @@ export function AnswerValueView({
   density,
   emptyText = "The run finished with an empty answer.",
 }: AnswerValueViewProps) {
-  // Saved inputs can carry marked JSON as a string. Give its ORIGINAL text
-  // to the canonical JSON detector: parsing it into a value here would lose
-  // duplicate-key diagnostics before the Shape System can examine it.
-  const serialized =
-    typeof value === "string" ? value : value == null ? text : null;
-  let kindJsonText = false;
-  if (serialized?.trim().startsWith("{")) {
-    try {
-      const parsed: unknown = JSON.parse(serialized);
-      kindJsonText = kindOfValue(parsed) !== null;
-    } catch {
-      // Ordinary or incomplete text continues through the markdown renderer.
-    }
-  }
   if (value != null && typeof value === "object") {
     const routeKind = kind ?? kindOfValue(value);
     return routeKind ? (
@@ -95,23 +79,13 @@ export function AnswerValueView({
       <StructuredValueView value={value} density={density} />
     );
   }
-  const shown = (typeof value === "string" ? value : (text ?? "")).trim();
-  const fileId = shown ? fileIdFromUserFilesUrl(shown) : null;
-  if (fileId) return <InlineMediaRef ref={fileId} size="xl" fit="cover" />;
-  if (!shown) {
-    if (value != null)
-      return <StructuredValueView value={value} density={density} />;
-    return <p className="type-body text-muted-foreground">{emptyText}</p>;
-  }
+  // Text, a scalar, a file URL, marked kind JSON (AnswerTextView).
   return (
-    <RichContent level="full"
-      imagePolicy="ai"
-      source={
-        kindJsonText
-          ? `\u0060\u0060\u0060json\n${shown}\n\u0060\u0060\u0060`
-          : shown
-      }
-      hideCopyButton={false}
+    <AnswerTextView
+      value={value}
+      text={text}
+      density={density}
+      emptyText={emptyText}
     />
   );
 }
