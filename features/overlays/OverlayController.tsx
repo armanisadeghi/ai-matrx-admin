@@ -940,7 +940,7 @@ const WorkflowRunWindow = lazyOverlay(
   { ssr: false },
 );
 const ListenSummaryWindow = lazyOverlay(
-  () => import("@/features/window-panels/windows/listen/ListenSummaryWindow"),
+  () => import("@ai-matrx/chat/window-panels/windows/listen/ListenSummaryWindow"),
   { ssr: false },
 );
 const ReadAloudVoiceSettingsWindow = lazyOverlay(
