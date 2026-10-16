@@ -79,6 +79,7 @@ describe("a social-platform page is never a Review site", () => {
     stance: "about_us",
     description: null,
     hasSentiment: false,
+    usage: "use",
     match: { hosts: key === "review_site" ? ["facebook.com"] : [], paths: [], categories: [] },
   })) as BrandRelationKind[];
   it("a listing row on facebook.com gets no review/listing suggestion", () => {

@@ -143877,6 +143877,7 @@ export type Database = {
           status: string
           updated_at: string
           updated_by: string | null
+          usage: string
           version: number
           visibility: Database["platform"]["Enums"]["visibility"]
         }
@@ -143902,6 +143903,7 @@ export type Database = {
           status?: string
           updated_at?: string
           updated_by?: string | null
+          usage?: string
           version?: number
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
@@ -143927,6 +143929,7 @@ export type Database = {
           status?: string
           updated_at?: string
           updated_by?: string | null
+          usage?: string
           version?: number
           visibility?: Database["platform"]["Enums"]["visibility"]
         }

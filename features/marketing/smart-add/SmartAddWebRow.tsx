@@ -23,7 +23,7 @@ import type { EvidenceItem } from "./evidence";
 import { useState } from "react";
 import { webRow } from "./evidence";
 import type { WebMark } from "./runMemory";
-import { STANCE_LABEL, STANCE_ORDER, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
+import { compareRelationKinds, relationGroupLabel, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
 
 /** The one-click answers; every other kind is under "More". */
 const PINNED = new Set(["ours", "mention", "review_site", "competitor", "not_us", "irrelevant"]);
@@ -60,11 +60,11 @@ export function reviewResultOf(item: EvidenceItem): ReviewResult {
 
 export function reviewChoicesOf(kinds: BrandRelationKind[]): ReviewChoice[] {
   return [...kinds]
-    .sort((a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown))
+    .sort(compareRelationKinds)
     .map((k) => ({
       key: k.key,
       label: k.label,
-      group: STANCE_LABEL[k.stance],
+      group: relationGroupLabel(k),
       description: k.description,
       hasSentiment: k.hasSentiment,
       pinned: PINNED.has(k.key),

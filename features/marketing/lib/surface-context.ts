@@ -22,6 +22,7 @@ import type {
   MarketingSite,
 } from "@/features/marketing/types";
 import { isJsonRecord, parseBrandProfile } from "@/features/marketing/types";
+import { marketingProperties } from "@/features/marketing/data/relation-usage";
 import { personaDemographics, type BrandPersona } from "@/features/marketing/lib/persona-model";
 import type { SiteConnectionStatus } from "@/features/marketing/lib/site-status";
 import { escapeXml } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
@@ -66,7 +67,9 @@ export interface BrandContextInput {
  * assets, social/website properties, and every managed site.
  */
 export function buildBrandContextXml(input: BrandContextInput): string {
-  const { brand, properties = [], facts = [], assets = [], sites = [], personas = [] } = input;
+  const { brand, facts = [], assets = [], sites = [], personas = [] } = input;
+  // Agents get only properties in use: a dead link or a former account is never brand context (relation-usage.ts).
+  const properties = marketingProperties(input.properties ?? []);
   const sections: string[] = [];
 
   if (brand.description?.trim()) {

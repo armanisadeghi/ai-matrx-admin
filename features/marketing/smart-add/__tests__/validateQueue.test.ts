@@ -11,6 +11,7 @@ const kind = (key: string, stance: BrandRelationKind["stance"]): BrandRelationKi
   stance,
   description: null,
   hasSentiment: false,
+  usage: "use",
   match: { hosts: [], paths: [], categories: [] },
 });
 const kinds = [kind("ours", "ours"), kind("review_site", "about_us"), kind("mention", "about_us"), kind("not_us", "not_us"), kind("competitor", "competitor")];

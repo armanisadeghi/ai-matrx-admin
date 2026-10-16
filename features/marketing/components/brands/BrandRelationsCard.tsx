@@ -23,7 +23,14 @@ import type { Json } from "@/types/database.types";
 import { Favicon } from "@/features/research/components/overview/live-pipeline/ui/Favicon";
 import { outboundHref } from "@/features/marketing/smart-add/SmartAddExtras";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
-import { listBrandRelationKinds, mergeBrandProfile, type BrandRelationKind } from "@/features/marketing/data/service";
+import {
+  deleteProperty,
+  listBrandPropertiesForMatching,
+  listBrandRelationKinds,
+  mergeBrandProfile,
+  type BrandRelationKind,
+} from "@/features/marketing/data/service";
+import { isMarketingProperty, isMarketingUsage, propertyMatchOnlyReason } from "@/features/marketing/data/relation-usage";
 import {
   addBrandExclusion,
   addBrandRelation,
@@ -40,7 +47,7 @@ import { clearStashedRetraction, restoreRetraction, type RetractionSummary } fro
 import type { MarketingBrand } from "@/features/marketing/types";
 import { linkPersonToBrand } from "@/features/marketing/smart-add/relations";
 
-type GroupKey = "names" | "people" | "related" | "competitors" | "about" | "not_us";
+type GroupKey = "names" | "people" | "related" | "competitors" | "about" | "kept" | "not_us";
 
 const GROUP_TITLES: Record<GroupKey, string> = {
   names: "Other names",
@@ -48,13 +55,14 @@ const GROUP_TITLES: Record<GroupKey, string> = {
   related: "Related companies",
   competitors: "Competitors",
   about: "Listings, reviews, mentions",
+  kept: "Kept for matching",
   not_us: "Not us",
 };
 
 const ALIAS = "__alias";
 
 /** Each group's fixed column: names / people / related, then competitors / listings, then not-us. */
-const COLUMNS: GroupKey[][] = [["names", "people", "related"], ["competitors", "about"], ["not_us"]];
+const COLUMNS: GroupKey[][] = [["names", "people", "related"], ["competitors", "about"], ["kept", "not_us"]];
 const COLUMN_PLACE = ["", "", "md:col-start-2 xl:col-start-3 xl:row-start-1"];
 
 interface Row {
@@ -189,6 +197,8 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
 
 function groupOf(kind: BrandRelationKind | undefined, key: string): GroupKey {
   if (!kind) return key === "competitor" ? "competitors" : "related";
+  // Never used, never shown as ours (relation-usage.ts): Former, Misspelled, Broken link, Maybe…
+  if (!isMarketingUsage(kind.usage)) return "kept";
   if (kind.routesTo === "owns" || kind.routesTo === "key_person") return "people";
   if (kind.stance === "competitor") return "competitors";
   if (kind.stance === "about_us" || kind.stance === "ours") return "about";
@@ -200,6 +210,10 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
   const kinds = useQuery({ queryKey: ["marketing", "brand-relation-kinds"], queryFn: listBrandRelationKinds, staleTime: 5 * 60_000 });
   const relations = useQuery({ queryKey: ["marketing", "brand-relations", brand.id], queryFn: () => listBrandRelations(brand.id) });
   const exclusions = useQuery({ queryKey: ["marketing", "brand-exclusions", brand.id], queryFn: () => listBrandExclusions(brand.id) });
+  const keptProperties = useQuery({
+    queryKey: ["marketing", "brand-kept-properties", brand.id],
+    queryFn: async () => (await listBrandPropertiesForMatching(brand.id)).filter((p) => !isMarketingProperty(p)),
+  });
   const [text, setText] = useState("");
   const [choice, setChoice] = useState<string>("competitor");
   const [sentiment, setSentiment] = useState<"positive" | "neutral" | "negative">("neutral");
@@ -210,6 +224,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
   const refresh = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["marketing", "brand-relations", brand.id] }),
+      queryClient.invalidateQueries({ queryKey: ["marketing", "brand-kept-properties", brand.id] }),
       queryClient.invalidateQueries({ queryKey: ["marketing", "brand-exclusions", brand.id] }),
       queryClient.invalidateQueries({ queryKey: ["marketing", "brand", brand.id] }),
     ]);
@@ -221,7 +236,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
     await refresh();
   };
 
-  const groups: Record<GroupKey, Row[]> = { names: [], people: [], related: [], competitors: [], about: [], not_us: [] };
+  const groups: Record<GroupKey, Row[]> = { names: [], people: [], related: [], competitors: [], about: [], kept: [], not_us: [] };
   for (const alias of profileAliases(brand.profile)) {
     groups.names.push({
       id: `alias:${alias}`,
@@ -255,6 +270,21 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
       grounding: { where: r.where, reason: r.reason, confidence: r.confidence, by: r.answeredBy },
       remove: async () => {
         await removeBrandRelation(r.id);
+        await refresh();
+      },
+    });
+  }
+  // The brand's accounts kept for matching only (a dead link): shown here with why, never as a working account.
+  for (const p of keptProperties.data ?? []) {
+    const why = propertyMatchOnlyReason(p);
+    groups.kept.push({
+      id: `property:${p.id}`,
+      label: p.handle ? `${p.kind} · ${p.handle}` : (p.url ?? p.kind),
+      url: p.url,
+      kindLabel: why?.label ?? "Kept for matching",
+      grounding: { where: p.kind, reason: why?.reason ?? null, confidence: null, by: why?.checkedAt ? `checked ${why.checkedAt.slice(0, 10)}` : null },
+      remove: async () => {
+        await deleteProperty(p.id);
         await refresh();
       },
     });

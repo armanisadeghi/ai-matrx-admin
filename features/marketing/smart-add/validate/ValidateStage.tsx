@@ -33,7 +33,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { websiteHost } from "../evidence";
 import { personNameOnPage } from "../personParty";
 import { outboundHref } from "../SmartAddExtras";
-import { STANCE_LABEL, STANCE_ORDER } from "../webKinds";
+import { compareRelationKinds, relationGroupKey, relationGroupLabel } from "../webKinds";
 import { WeThinkHint } from "../WeThinkHint";
 import { useLogoGroups } from "../logoGroups";
 import { ANSWER_LABEL, isGapKey, optionsFor, type Answer, type FocusItem } from "./queue";
@@ -197,11 +197,11 @@ function Grounding({ item }: { item: FocusItem }) {
 function relationItems(kinds: BrandRelationKind[]): WayOutItem[] {
   const list = [...kinds]
     .filter((k) => k.key !== "ours" && k.key !== "not_us")
-    .sort((a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown));
+    .sort(compareRelationKinds);
   return list.map((k, n) => ({
     value: `rel:${k.key}`,
     label: k.label,
-    group: n === 0 || list[n - 1].stance !== k.stance ? `Related · ${STANCE_LABEL[k.stance]}` : undefined,
+    group: n === 0 || relationGroupKey(list[n - 1]) !== relationGroupKey(k) ? `Related · ${relationGroupLabel(k)}` : undefined,
   }));
 }
 
