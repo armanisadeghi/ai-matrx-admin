@@ -31,7 +31,6 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-16-061515/features/marketing/smart-add/__tests__/webKinds.test.ts.held — LOCAL latest 2026-10-16 00:30; GITHUB latest 2026-10-16 01:08; LOCAL lacks 35 of GITHUB's 84 new lines; GITHUB lacks 1 of LOCAL's 49 new lines; recover: git show 01d82f791a:'features/marketing/smart-add/__tests__/webKinds.test.ts' / 63f43ba9b8:'features/marketing/smart-add/__tests__/webKinds.test.ts'
 - _conflicts/2026-10-16-061515/features/marketing/smart-add/validate/persist.ts.held — LOCAL latest 2026-10-15 23:58; GITHUB latest 2026-10-16 02:33; LOCAL lacks 0 of GITHUB's 57 new lines; GITHUB lacks 19 of LOCAL's 80 new lines; recover: git show 01d82f791a:'features/marketing/smart-add/validate/persist.ts' / 63f43ba9b8:'features/marketing/smart-add/validate/persist.ts'
 
 ## Resolution log
