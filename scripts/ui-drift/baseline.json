@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 36071,
-  "count": 25,
+  "count": 26,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -21,6 +21,7 @@
     "raw-color|features/shell/components/header/templates/EditorDocumentHeader.tsx",
     "styled-raw-button|components/editor-chrome/EditorRibbon.tsx",
     "styled-raw-button|components/navigation/MetricNavigation.tsx",
+    "styled-raw-button|features/ai-models/decisions/DecisionQuestionEditor.tsx",
     "styled-raw-button|features/ai-work/live/components/LiveSidebar.tsx",
     "styled-raw-button|features/ai-work/live/components/RoomDetail.tsx",
     "styled-raw-button|features/connectors/IntegrationDirectory.tsx",
@@ -11968,6 +11969,11 @@
       "reason": "The template tile face is a paper-shaped preview (Google's template tile), not a control; same shape as StartTile; unchanged button, line moved by the caption edit",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-15"
+    },
+    "styled-raw-button|features/ai-models/decisions/DecisionQuestionEditor.tsx": {
+      "reason": "Question-type tiles: the design system has no option-tile control yet (podcast GeneratorForm hand-builds the same tile); a shared tile is proposed as follow-up",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-16"
     }
   }
 }
