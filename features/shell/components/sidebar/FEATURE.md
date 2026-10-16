@@ -19,7 +19,7 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 - `../../constants/route-menu-registry.ts` — ordered route-family registrations.
 - `../../constants/route-menu-style.ts` — canonical route-menu row class and icon metrics.
 - `../../../../styles/shell.css` — expansion, collapse, animation, mode-control, and collapsed-tooltip behavior.
-- `admin-menu/AdminSidebarSection.tsx` — admin-only footer controls and the direct new-tab Admin Launchpad door.
+- `admin-menu/AdminSidebarSection.tsx` → `AdminSidebarSectionImpl.tsx` — the admin gate (identity boolean only) and, behind its ONE dynamic edge, the admin-only footer controls and the direct new-tab Admin Launchpad door; a non-admin downloads none of the controls.
 - `../mobile-sheet/MobileNavigationDrawer.tsx` — solid 92dvh mobile drawer, drill-in stack, Back navigation, and destination search.
 - `../mobile-sheet/MobileSideSheet.tsx` — server boundary that filters the canonical nav tree for the viewer before handing it to the drawer.
 
@@ -40,7 +40,7 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 
 ### Launch administration work
 
-1. `AdminSidebarSection` hydrates the existing `selectIsAdmin` gate.
+1. `AdminSidebarSection` hydrates the `selectIsAdminPerson` gate and only then loads `AdminSidebarSectionImpl`.
 2. Admins receive a neutral Admin Launchpad anchor (shield icon) — the one door into administration — followed by operational toggles. It is a launcher, so it never borrows the selected-route treatment.
 3. The anchor opens `/administration/launchpad` in a new tab so the current product workspace is never displaced.
 
