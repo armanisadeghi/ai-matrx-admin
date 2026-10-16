@@ -73,6 +73,14 @@ const ASSERT: Record<string, Array<[string, (x: Obs) => boolean]>> = {
       return o(x.commit).status === "done" && a.brand === TARGET && a.asset === TARGET && a.persona === TARGET && a.file === TARGET && a.brand2 === SOURCE;
     }],
   ],
+  "brand-move-durable-job.sql": [
+    ["a move above the inline budget runs as a durable job", (x) => x.preview_mode === "durable" && o(x.commit).status === "running" && o(x.commit).rows_estimate === 3],
+    ["step 1 moves the brand; its parts wait for the job", (x) => o(x.after_step1).brand === TARGET && o(x.after_step1).asset === SOURCE],
+    ["one advance moves every part, the logo with its asset", (x) => {
+      const a = o(x.after);
+      return o(x.advance).state === "done" && o(x.advance).rows_done === 3 && a.asset === TARGET && a.persona === TARGET && a.file === TARGET;
+    }],
+  ],
   "contact-and-shared-file.sql": [
     ["a contact's delete takes its address", (x) => o(x.party_delete).addr_deleted === true],
     ["restore brings contact and address back", (x) => o(x.party_restore).party_live === true && o(x.party_restore).addr_live === true],
