@@ -1058,11 +1058,8 @@ const UtilitiesOverlay = lazyOverlay(
     ),
   { ssr: false },
 );
-const QuickSaveCodeDialog = lazyOverlay(
-  () =>
-    import("@/features/code-files/actions/QuickSaveCodeDialog").then((m) => ({
-      default: m.QuickSaveCodeDialog,
-    })),
+const SaveToCodeWindow = lazyOverlay(
+  () => import("@ai-matrx/chat/window-panels/windows/code/SaveToCodeWindow"),
   { ssr: false },
 );
 const SaveContactFromSelectionDialog = lazyOverlay(() =>
@@ -7001,12 +6998,11 @@ export default function OverlayController() {
         );
       })()}
 
-      {/* TODO: review prop wiring for saveToCode */}
-      {/* saveToCode — multi-instance */}
+      {/* saveToCode — multi-instance (the package's window body) */}
       {instancesById.saveToCode.map((inst) => {
         const data = inst.data as Record<string, unknown> | null | undefined;
         return (
-          <QuickSaveCodeDialog
+          <SaveToCodeWindow
             key={inst.instanceId}
             isOpen
             onClose={() =>
