@@ -31,6 +31,7 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
 import { FACTS_FOUND_BY, mergeConfirmedIntoPlan, planKeptFacts, saveKeptFacts, type ConfirmedContactFact } from "./keptFacts";
+import { loadFactRules, NO_FACT_RULES } from "./factRules";
 import { foundByForSource } from "./factIdentity";
 import { probeFromDraft, type BrandMatch, type BrandProbe } from "./brandMatch";
 import { findMatchingBrands } from "./brandMatchLive";
@@ -1192,10 +1193,17 @@ export function SmartAddBrand({
         .filter((u): u is string => Boolean(u) && !webCtx.ourHosts.includes(websiteHost(u as string)));
       // Every fact the facts agent found that the person did not say No to is kept (keptFacts.ts); the basics
       // Create had no confirmed value for are filled from it, and the gate later asks only about those.
+      // The filing rules (which kind a field is, which fields live on the profile) are the server's; unreachable means
+      // everything is filed as `other` and the server's promotion re-types it, said in the notes, never silent.
+      const ruleProblems: string[] = [];
+      const factRules = await loadFactRules().catch((error: unknown) => {
+        ruleProblems.push(`Fact kinds: ${extractErrorMessage(error)}`);
+        return NO_FACT_RULES;
+      });
       const factPlan = planKeptFacts(facts, (f) => {
         const k = factSlotKey(f);
         return k ? decisions[k] : undefined;
-      }, { description: basics.description, industry: basics.category, tagline: basics.tagline, brandName: basics.name });
+      }, factRules, { description: basics.description, industry: basics.category, tagline: basics.tagline, brandName: basics.name });
       const brand = await createBrand({
         organizationId,
         name: basics.name,
@@ -1237,7 +1245,7 @@ export function SmartAddBrand({
           ...(competitors.length ? { competitors } : {}),
         },
       });
-      const problems: string[] = [];
+      const problems: string[] = [...ruleProblems];
       const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
       for (const item of basics.accounts) {
         try {

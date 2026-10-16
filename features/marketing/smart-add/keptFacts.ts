@@ -24,48 +24,19 @@ import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { extractErrorMessage } from "@/utils/errors";
-import { isBusinessFactKind } from "@/features/marketing/types";
 import type { BrandFact } from "./validate/queue";
 import type { Decision } from "./evidence";
 import { EARLY_FACTS_MANDATE, factIdentity } from "./factIdentity";
+import { factKindFor, profileHomeFor, type FactRules, type ProfileHome } from "./factRules";
 
 /** The mandate that produces these facts (Arman's Brand Basics Fact Finder). */
 export const FACTS_FOUND_BY = EARLY_FACTS_MANDATE;
-
-/** The facts agent's fields that are a web.business_fact kind under another name (validate/persist.ts agrees). */
-const FIELD_KIND: Record<string, string> = {
-  toll_free_phone: "phone",
-  sms_number: "phone",
-  street_address: "address",
-  business_hours: "hours",
-  official_name: "legal_name",
-  legal_entity_name: "legal_name",
-  brand_legal_name: "legal_name",
-  short_description: "description",
-  registration_number: "registration",
-  license_number: "registration",
-};
-
-/** Fact fields whose one home is a web.brand profile key (validate/persist.ts PROFILE_HOME). */
-const PROFILE_HOME: Record<string, "brand_aliases" | "service_area" | "competitors"> = {
-  also_known_as: "brand_aliases",
-  dba_name: "brand_aliases",
-  former_name: "brand_aliases",
-  service_area: "service_area",
-  competitor: "competitors",
-};
 
 const OFFERING_FIELDS = new Set(["primary_products_services", "product", "service", "products", "services"]);
 const SERVICE_WORDS = /\b(service|services|repair|install|installation|consult|consulting|coaching|training|placement|search|staffing|recruit|cleaning|care|therapy|treatment|design|management|support|plumbing|delivery|catering|classes?|lessons?|programs?)\b/i;
 
 const CERTAINTY_RANK: Record<string, number> = { confirmed: 3, likely: 2, possible: 1 };
 const sure = (f: BrandFact) => (CERTAINTY_RANK[f.certainty] ?? 0) >= 2;
-
-export function factKindFor(field: string): string {
-  const f = field.toLowerCase();
-  if (isBusinessFactKind(f)) return f;
-  return FIELD_KIND[f] ?? "other";
-}
 
 export type FactDecision = "kept" | "confirmed";
 
@@ -74,7 +45,7 @@ export interface KeptFactRow {
   decision: FactDecision;
   /** web.business_fact kind; null when the fact's home is a profile key. */
   kind: string | null;
-  profileHome: "brand_aliases" | "service_area" | "competitors" | null;
+  profileHome: ProfileHome | null;
   metadata: Record<string, Json>;
 }
 
@@ -92,11 +63,13 @@ export interface KeptFactPlan {
 
 /**
  * Plan what Create writes from the facts. `slotDecision(fact)` is the person's answer on the slot the fact
- * fed (name / phone / email / category), if any; facts are otherwise unanswered before Create.
+ * fed (name / phone / email / category), if any; facts are otherwise unanswered before Create. `rules` is the
+ * server's fact-filing rules (factRules.ts) — which kind a field is filed under and which fields live on the profile.
  */
 export function planKeptFacts(
   facts: BrandFact[],
   slotDecision: (fact: BrandFact) => Decision | undefined,
+  rules: FactRules,
   already: { description?: string | null; industry?: string | null; tagline?: string | null; brandName?: string | null } = {},
 ): KeptFactPlan {
   const seen = new Set<string>();
@@ -108,9 +81,9 @@ export function planKeptFacts(
     if (d === "no") continue;
     if (seen.has(fact.key)) continue;
     seen.add(fact.key);
-    const profileHome = PROFILE_HOME[fact.field.toLowerCase()] ?? null;
+    const profileHome = profileHomeFor(fact.field, rules);
     // The same fact in another format (or under another field name) is one row, never two.
-    const identity = profileHome ? null : factIdentity(factKindFor(fact.field), fact.value);
+    const identity = profileHome ? null : factIdentity(factKindFor(fact.field, rules), fact.value);
     if (identity) {
       if (seenIdentity.has(identity)) continue;
       seenIdentity.add(identity);
@@ -119,7 +92,7 @@ export function planKeptFacts(
     rows.push({
       fact,
       decision,
-      kind: profileHome ? null : factKindFor(fact.field),
+      kind: profileHome ? null : factKindFor(fact.field, rules),
       profileHome,
       metadata: provenance(fact, decision),
     });

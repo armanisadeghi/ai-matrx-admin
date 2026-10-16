@@ -46,13 +46,13 @@ import { linkPersonToBrand } from "../relations";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
 import {
-  isBusinessFactKind,
   isJsonRecord,
   parseBrandProfile,
   type MarketingBrand,
 } from "@/features/marketing/types";
 import { candidateCategory, websiteHost } from "../evidence";
 import { webIdentity } from "../webKinds";
+import { factKindFor, loadFactRules, profileHomeFor } from "../factRules";
 import { webSiteRoot } from "../relations";
 import { claimSite } from "../siteOwnership";
 import { siteNameOf } from "../siteName";
@@ -89,34 +89,6 @@ function relationKeyFor(answer: Answer, relationKey: string | null): string | nu
   if (answer === "not_us") return "not_us";
   return null;
 }
-
-/** The facts agent's fields (brand_basics) that are a web.business_fact kind under another name. */
-const FACT_FIELD_KIND: Record<string, string> = {
-  toll_free_phone: "phone",
-  sms_number: "phone",
-  street_address: "address",
-  business_hours: "hours",
-  legal_entity_name: "legal_name",
-  brand_legal_name: "legal_name",
-  short_description: "description",
-  registration_number: "registration",
-};
-
-/** web.business_fact kind for a fact field (the table's own list), else `other` with its label. */
-function factKind(field: string): string {
-  const f = field.toLowerCase();
-  if (isBusinessFactKind(f)) return f;
-  return FACT_FIELD_KIND[f] ?? "other";
-}
-
-/** Fact fields whose canonical home is a web.brand profile key (BrandProfile), not web.business_fact. */
-const PROFILE_HOME: Record<string, "brand_aliases" | "service_area" | "competitors"> = {
-  also_known_as: "brand_aliases",
-  dba_name: "brand_aliases",
-  former_name: "brand_aliases",
-  service_area: "service_area",
-  competitor: "competitors",
-};
 
 async function db() {
   return authenticatedWebDb(supabase);
@@ -736,7 +708,7 @@ async function persistAnswerOnce(
     if (ex.id) homes.push(`web.brand_exclusion:${ex.id}`);
     undos.push(ex.undo);
   }
-  const profileHome = answer === "correct" && item.fact ? PROFILE_HOME[item.fact.field] : undefined;
+  const profileHome = answer === "correct" && item.fact ? profileHomeFor(item.fact.field, await loadFactRules()) : null;
   if (profileHome) {
     // A brand profile key is the fact's one home (aliases, service area, competitors).
     const undo = await patchProfile(ctx, (p) => {
@@ -755,7 +727,7 @@ async function persistAnswerOnce(
     // The fact Create kept (keptFacts.ts) is settled in place: confirmed, or soft-deleted — never a second row.
   } else if (answer === "correct" && item.kind === "fact") {
     const field = item.fact?.field ?? ev?.field ?? "other";
-    const kind = factKind(field);
+    const kind = factKindFor(field, await loadFactRules());
     const fact = await createBusinessFact({
       organizationId: ctx.organizationId,
       brandId: ctx.getBrand().id,
