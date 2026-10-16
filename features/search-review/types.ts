@@ -27,6 +27,8 @@ export interface ReviewResult {
   tier?: string | null;
   /** Why it sits there — admin debuggers only, on the rank hover. */
   adminNote?: string | null;
+  /** Does this page link to the subject? Absent = never checked (no slot is drawn). */
+  links?: ReviewLinkCheck;
   /** What kind of place the page is (certification body, trade association, industry media…); absent = unrecognized. */
   placeKind?: ReviewPlaceKind | null;
 }
@@ -35,6 +37,24 @@ export interface ReviewResult {
 export interface ReviewPlaceKind {
   label: string;
   reason: string;
+}
+
+/** One link on a result's page that points at the subject (its site or one of its accounts). */
+export interface ReviewLinkTarget {
+  kind: "website" | "social";
+  /** Social platform id (instagram, youtube…) for its mark; null for a website. */
+  platform: string | null;
+  /** What it points at: the host or `@handle`. */
+  label: string;
+  url: string;
+  anchorText: string;
+}
+
+/** The link check for one result: still checking (shimmer), found, none, or could not be read. */
+export interface ReviewLinkCheck {
+  state: "checking" | "found" | "none" | "failed";
+  targets: ReviewLinkTarget[];
+  reason?: string | null;
 }
 
 /** A quality tier: shown best first, one tier at a time ("Show next"). */
