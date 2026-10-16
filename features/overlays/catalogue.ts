@@ -1033,6 +1033,11 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "multi",
     isWindow: false,
   },
+  changeReviewWindow: {
+    label: "Review changes",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
   accessSetupWindow: {
     label: "People Involved",
     instanceMode: "singleton",

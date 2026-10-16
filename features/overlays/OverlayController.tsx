@@ -1132,6 +1132,7 @@ const SaveTemplateDialog = lazyOverlay(
     })),
   { ssr: false },
 );
+const ChangeReviewOverlay = lazyOverlay(() => import("@/features/trash/review/ChangeReviewOverlay"));
 const AccessSetupWindow = lazyOverlay(
   () => import("@/features/window-panels/windows/access-setup/AccessSetupWindow"),
   { ssr: false },
@@ -1671,6 +1672,9 @@ export default function OverlayController() {
     saveTemplateDialog: useAppSelector((s) =>
       selectIsOverlayOpen(s, "saveTemplateDialog"),
     ),
+    changeReviewWindow: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "changeReviewWindow"),
+    ),
     accessSetupWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "accessSetupWindow"),
     ),
@@ -2117,6 +2121,9 @@ export default function OverlayController() {
     saveTemplateDialog: useAppSelector((s) =>
       selectOverlayData(s, "saveTemplateDialog"),
     ) as Record<string, unknown> | null,
+    changeReviewWindow: useAppSelector((s) =>
+      selectOverlayData(s, "changeReviewWindow"),
+    ),
     accessSetupWindow: useAppSelector((s) =>
       selectOverlayData(s, "accessSetupWindow"),
     ),
@@ -7593,6 +7600,29 @@ export default function OverlayController() {
         );
       })()}
 
+      {/* changeReviewWindow */}
+      {(() => {
+        const isOpen = isOpenById.changeReviewWindow;
+        const data = dataById.changeReviewWindow as Record<string, unknown> | null | undefined;
+        if (!isOpen) return null;
+        const verb = data?.verb === "move" || data?.verb === "delete" ? data.verb : null;
+        const entityType = typeof data?.entityType === "string" ? data.entityType : null;
+        const ids = Array.isArray(data?.ids) ? data.ids.filter((x): x is string => typeof x === "string") : [];
+        if (!verb || !entityType || ids.length === 0) {
+          console.error("[overlays] Refused to render Review changes without a verb, record type and ids.");
+          return null;
+        }
+        return (
+          <ChangeReviewOverlay
+            isOpen
+            onClose={() => dispatch(closeOverlay({ overlayId: "changeReviewWindow" }))}
+            target={{ verb, entityType, ids }}
+            title={typeof data?.title === "string" ? data.title : "Review changes"}
+            recordName={typeof data?.recordName === "string" ? data.recordName : "this record"}
+            currentOrganizationId={typeof data?.currentOrganizationId === "string" ? data.currentOrganizationId : null}
+          />
+        );
+      })()}
       {/* accessSetupWindow */}
       {(() => {
         const isOpen = isOpenById.accessSetupWindow;

@@ -24,6 +24,7 @@ import {
   Share2,
   Download,
   House,
+  ArrowRightLeft,
   Database,
   Trash2,
   Printer,
@@ -31,6 +32,7 @@ import {
 import { toast } from "@/lib/toast";
 import { renameIntentFallback } from "@ai-matrx/chat/ui/renameIntentFallback";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
+import { changeReviewOverlayData } from "@/features/overlays/openers/changeReviewWindow";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
@@ -196,6 +198,13 @@ export function buildNoteContextSections(
     icon: House,
     onSelect: ctx.onMoveToHome,
   });
+  items.push({
+    kind: "item",
+    id: "move-organization",
+    label: "Move to organization…",
+    icon: ArrowRightLeft,
+    onSelect: () => ctx.dispatch(openOverlay(changeReviewOverlayData({ verb: "move", entityType: "note", id: ctx.noteId, name: displayLabel(ctx.label) }))),
+  });
 
   items.push(
     { kind: "separator", id: "danger-sep" },
@@ -297,6 +306,12 @@ export function buildNoteMenu(ctx: NoteMenuContext): ItemMenuConfig {
             label: "Move to…",
             icon: House,
             onSelect: ctx.onMoveToHome,
+          },
+          {
+            id: "move-organization",
+            label: "Move to organization…",
+            icon: ArrowRightLeft,
+            onSelect: () => ctx.dispatch(openOverlay(changeReviewOverlayData({ verb: "move", entityType: "note", id: ctx.noteId, name: displayLabel(ctx.label) }))),
           },
         ],
       },
