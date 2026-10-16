@@ -73,6 +73,7 @@ export default function DeferredSingletonCore() {
     if (before?.userId === user.id && before.organizationId === organizationId)
       return;
     warmedFor.current = { userId: user.id, organizationId };
+    performance.mark("load:lazy:warm-up"); // LOAD MARKER (lazy) — page-load trace, no import
     if (before?.userId === user.id) {
       warmup.warm(
         [{ key: "core" }, { key: "org", id: organizationId }],

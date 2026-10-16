@@ -2869,6 +2869,33 @@ export async function confirmDiscoveredFact(
   input: ConfirmFactInput,
 ): Promise<void> {
   const db = await authenticatedWebDb(supabase);
+  // A finding Smart Add already kept as a fact (its row names it) is confirmed IN PLACE: a second copy would show
+  // the same fact twice on the brand and leave the first one unconfirmed forever.
+  if (input.item.resolved_fact_id) {
+    await writeOne(
+      db
+        .from("business_fact")
+        .update({
+          confirmed_at: new Date().toISOString(),
+          kind: input.factKind,
+          ...(input.label ? { label: input.label } : {}),
+        })
+        .eq("id", input.item.resolved_fact_id)
+        .is("deleted_at", null)
+        .select("id"),
+      { action: "save", noun: "fact" },
+    );
+    await writeOne(
+      db
+        .from("discovered_item")
+        .update({ status: "confirmed", reviewed_at: new Date().toISOString() })
+        .eq("id", input.item.id)
+        .eq("status", "pending")
+        .select("id"),
+      { action: "save", noun: "discovery", compareAndSet: true },
+    );
+    return;
+  }
   const fact = await db
     .from("business_fact")
     .insert({
@@ -3563,6 +3590,44 @@ export async function updateBrand(
     conflictMessage:
       "This brand changed in another session. Reload and try again.",
   });
+}
+
+/**
+ * Name Smart Add rounds on a brand (`web.brand.metadata.smart_add.runs`): a round still running lands the findings
+ * it makes after this moment on that brand (aidream `land_late_facts`), so an enrich run's late findings are kept
+ * and promoted like Create's. Merged on the metadata the server holds now; ids already named are not repeated.
+ */
+export async function registerBrandSmartAddRuns(brandId: string, runIds: readonly string[]): Promise<void> {
+  if (runIds.length === 0) return;
+  const db = await authenticatedWebDb(supabase);
+  const result = await mergeJsonColumn<MarketingBrand>({
+    fetchCurrent: () =>
+      db.from("brand").select(BRAND_COLUMNS).eq("id", brandId).is("deleted_at", null).maybeSingle(),
+    readColumn: (row) => row.metadata,
+    merge: (current) => {
+      const meta = (current ?? {}) as Record<string, Json>;
+      const smartAdd = (meta.smart_add && typeof meta.smart_add === "object" && !Array.isArray(meta.smart_add)
+        ? meta.smart_add
+        : {}) as Record<string, Json>;
+      const known = Array.isArray(smartAdd.runs) ? smartAdd.runs.filter((r): r is string => typeof r === "string") : [];
+      return { ...meta, smart_add: { ...smartAdd, runs: [...new Set([...known, ...runIds])] } };
+    },
+    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+      db
+        .from("brand")
+        .update({ metadata: value as Json, version: nextVersion })
+        .eq("id", brandId)
+        .eq("version", expectedVersion)
+        .is("deleted_at", null)
+        .select(BRAND_COLUMNS)
+        .maybeSingle(),
+  });
+  if (result.status === "saved") return;
+  throw result.status === "error"
+    ? result.error instanceof Error
+      ? result.error
+      : new Error(extractErrorMessage(result.error))
+    : new Error("This brand is no longer available.");
 }
 
 /**

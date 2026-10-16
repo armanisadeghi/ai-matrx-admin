@@ -22,7 +22,7 @@ async function sha12(text: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
 }
 
-async function listBrandOfferings(brandId: string): Promise<BrandOffering[]> {
+export async function listBrandOfferings(brandId: string): Promise<BrandOffering[]> {
   const { data, error } = await (await authenticatedWebDb(supabase))
     .from("brand_offering")
     .select("id, name, kind")
@@ -35,6 +35,7 @@ async function listBrandOfferings(brandId: string): Promise<BrandOffering[]> {
 }
 
 export async function loadBrandSnapshot(brandId: string): Promise<BrandSnapshot> {
+  const readAt = new Date().toISOString();
   const [brand, sites, properties, assets, facts, relations, kinds, offerings, exclusions] = await Promise.all([
     getBrand(brandId),
     listBrandSites(brandId),
@@ -64,5 +65,5 @@ export async function loadBrandSnapshot(brandId: string): Promise<BrandSnapshot>
       textKeys[src] = await sha12(src);
     }),
   );
-  return { brand, sites, properties, assets, facts, people, offerings, exclusions, textKeys };
+  return { brand, sites, properties, assets, facts, people, offerings, exclusions, textKeys, readAt };
 }

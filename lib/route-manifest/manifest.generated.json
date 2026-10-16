@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1449,
+  "routeCount": 1451,
   "routes": [
     {
       "pattern": "/",
@@ -179,6 +179,11 @@
       "source": "app/(admin)/administration/agents/system-agents/agents/[id]/build/page.tsx"
     },
     {
+      "pattern": "/administration/agents/system-agents/agents/[id]/hindsight",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/system-agents/agents/[id]/hindsight/page.tsx"
+    },
+    {
       "pattern": "/administration/agents/system-agents/agents/[id]/latest",
       "status": "live",
       "source": "app/(admin)/administration/agents/system-agents/agents/[id]/latest/page.tsx"
@@ -187,6 +192,11 @@
       "pattern": "/administration/agents/system-agents/agents/[id]/run",
       "status": "live",
       "source": "app/(admin)/administration/agents/system-agents/agents/[id]/run/page.tsx"
+    },
+    {
+      "pattern": "/administration/agents/system-agents/agents/[id]/runs",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/system-agents/agents/[id]/runs/page.tsx"
     },
     {
       "pattern": "/administration/agents/system-agents/agents/[id]/samples",

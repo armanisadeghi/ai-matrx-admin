@@ -162,6 +162,9 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { WorkingCopyAlert } from "@/lib/working-copy/WorkingCopyAlert";
 import { formatCount } from "@ai-matrx/kit/format";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Univer docs editor", { detail: { home: ["/documents"] } });
+
 const VIEWING_MODE_NOTICE = "Viewing mode — switch to Editing to change";
 
 type Props = {

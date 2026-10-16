@@ -29,6 +29,14 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
 }));
 import { getGoogleBackend, listGoogleCapabilities, postGoogleBackend } from "./service";
 
+function lowerCaseHeaders(headers: HeadersInit | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  new Headers(headers).forEach((value, name) => {
+    out[name.toLowerCase()] = value;
+  });
+  return out;
+}
+
 describe("Google requests follow the shared selected server", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -95,19 +103,23 @@ describe("Google requests follow the shared selected server", () => {
     expect(mockGetSession).toHaveBeenCalledTimes(2);
     const [url, init] = jest.mocked(fetch).mock.calls[0];
     expect(url).toBe("https://server.app.matrxserver.com/google-integrations/gmail/search");
+    // The package client lower-cases header names and adds x-request-id, so
+    // compare names case-insensitively.
     expect(init).toMatchObject({
       method: "POST",
       body: JSON.stringify({
         connection_id: "connection-harbor-dental",
         query: "subject:appointment",
       }),
-      headers: expect.objectContaining({
-        Authorization: "Bearer token-original",
-        "Content-Type": "application/json",
-        "X-Organization-Id": "39c38960-d30c-4840-b0c1-c9960de95582",
-        Accept: "application/json",
-      }),
     });
+    const sent = lowerCaseHeaders(init?.headers);
+    expect(sent).toMatchObject({
+      authorization: "Bearer token-original",
+      "content-type": "application/json",
+      "x-organization-id": "39c38960-d30c-4840-b0c1-c9960de95582",
+      accept: "application/json",
+    });
+    expect(sent["x-request-id"]).toEqual(expect.any(String));
   });
 
   it("preserves the caller signal on a Google GET", async () => {
@@ -142,7 +154,7 @@ describe("Google requests follow the shared selected server", () => {
 
     expect(jest.mocked(fetch)).toHaveBeenCalledTimes(1);
     const [, init] = jest.mocked(fetch).mock.calls[0];
-    const requestId = (init?.headers as Record<string, string>)["X-Request-Id"];
+    const requestId = lowerCaseHeaders(init?.headers)["x-request-id"];
     expect(requestId).toEqual(expect.any(String));
     expect(requestId).not.toBe("");
     expect(mockCapturePythonClientError).toHaveBeenCalledWith(

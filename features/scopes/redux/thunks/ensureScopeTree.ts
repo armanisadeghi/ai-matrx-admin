@@ -97,6 +97,7 @@ export function ensureScopeTree(
       await awaitSavedTree();
       if (getState().scopesTree.treeStatus === "ready") return;
     }
+    performance.mark("load:lazy:scope tree load"); // LOAD MARKER (lazy) — page-load trace, no import
 
     // A refresh asks for her organizations and projects again (lane PAGE-BUNDLE-2).
     if (refresh) forgetSharedScopeBootRead();

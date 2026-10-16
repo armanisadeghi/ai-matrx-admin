@@ -104,11 +104,17 @@ export function isKindInPool(pool: KindPool, kind: unknown): kind is string {
  * when it is a member of the row's pool, otherwise the pool's trailing
  * `other`. Social rows defer to the canonical URL classifier.
  */
-export function defaultKind(item: DiscoveredItem): string {
+export function defaultKind(
+  item: DiscoveredItem,
+  /** The server's field → kind rules (`loadFactRules`): a facts-agent field already has its kind there. */
+  fieldKind: Readonly<Record<string, string>> = {},
+): string {
   if (isSocialCategory(item.category)) return inferDiscoveredPropertyType(item);
   const guess = item.guessed_kind ?? "";
   const pool = kindOptionsFor(kindPoolOf(item.category));
   if (pool.some((option) => option.value === guess)) return guess;
+  const mapped = fieldKind[guess.toLowerCase()];
+  if (mapped && pool.some((option) => option.value === mapped)) return mapped;
   return pool[pool.length - 1].value;
 }
 

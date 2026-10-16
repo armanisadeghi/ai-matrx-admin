@@ -60,6 +60,9 @@ import {
   type SystemComponentEntry,
 } from "./system-components";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Content-ir component registry");
+
 export type { ComponentResolution, ComponentRole };
 
 /** The bundled component every `table:<uuid>` kind resolves to — the one record card. */

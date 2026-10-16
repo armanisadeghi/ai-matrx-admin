@@ -66,6 +66,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:PDF viewer");
+
 /** One toolbar icon button — every control in the row shares it. */
 /**
  * Every size in the toolbar row comes from TOOLBAR_METRICS / the plan — the

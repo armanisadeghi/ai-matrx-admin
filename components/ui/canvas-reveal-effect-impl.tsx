@@ -4,6 +4,9 @@ import {Canvas, useFrame, useThree} from "@react-three/fiber";
 import React, {useMemo, useRef} from "react";
 import * as THREE from "three";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:three.js reveal effect");
+
 export const CanvasRevealEffect = (
     {
         animationSpeed = 0.4,

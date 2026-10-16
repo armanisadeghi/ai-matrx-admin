@@ -19,6 +19,7 @@ Smart Add Brand: a person types a website, a social link or a name, Smart Add fi
 - `/marketing/brands/smart-add` redirects to `/company` and keeps the query.
 - `/marketing/brands/smart-add/company` is a business (the default).
 - `/marketing/brands/smart-add/person` is a person.
+- `/marketing/brands/smart-add/found` is the found-first door (VISION Part 23): the SAME company session (`SmartAddBrand door="found"`), whose first findings screen is a calm card grid of only the certain facts (`found/FoundStage.tsx`). "Looks right" gives the full review's answers for exactly what is shown (`foundAnswers`) and opens the full page in place; the way out ("Not quite": Fix something / Not this business / Start over) opens it unanswered or restarts. A session whose name and website are already confirmed skips the grid. Offered beside Smart Add in the Add brand dialog (`marketingRoutes.smartAddFound`).
 - `/marketing/brands/smart-add/enrich/<brandId>` enriches one existing brand (`enrich/`).
 
 **Components / hooks**
@@ -35,6 +36,7 @@ Smart Add Brand: a person types a website, a social link or a name, Smart Add fi
 | Address | Meaning | History |
 |---|---|---|
 | `/smart-add/company`, `/smart-add/person` | the kind | switching kind is `router.push` (Back flips it back) |
+| `/smart-add/found` | the company kind through the found-first door (`parseSmartAddDoor`, `smartAddFoundHref`; same query grammar, deep links auto-start the same way) | a link |
 | `/smart-add/enrich/<brandId>` | enrich that brand | a link |
 | `/smart-add/validate/<brandId>` | the validation stage from the brand's saved findings; Create (core settled) switches the address here (`toValidate`: replace, no navigation, the live session stays mounted via `validateAddressOwner`); a reload loads saved data and starts no round | replace after Create |
 | `?via=website\|social\|name` | the open way-in card (when absent: implied by a prefill; `/person` opens the name fields) | pushed without navigating (Back closes the card) |
@@ -87,7 +89,15 @@ each name search step's `name_strength` (`SmartAddRound` → `onNameStrength`), 
 under the Name slot only when `full_name_asked`, and sends the typed value as `confirmed.full_name` /
 `person.full_name` (a fact apart from the display name). Builder › Decisions shows the verdict and every keyword sent.
 
+## Found first: what "certain" means (`found/foundCards.ts`)
+
+A card needs two independent HOSTS. Each finding's witness is the host it was read from, once however it arrived: the brand's own site (every page, a web result on it, a fact citing it) is one; facebook.com is one; the web tier counts only results its rules call `certain`. The facts agent is never a witness itself: a `confirmed`/`likely` fact adds the hosts it cites. Typed or confirmed = certain; a website the person typed or confirmed is vouched for, so what that site says about itself (name, logo, description, address) is certain from that one host, while a site we found still needs a second host; Not us removes a card; a category equal to a name the site gives itself (title, og:site_name) is never shown. The tally rides `onEvidence` (`addWitnesses`, found door only). "Looks right" answers every card: evidence rows through their slot, facts behind a card (a city, tools, a competitor) as Yes under the fact's own key, which Create reads (`decisions[fact.key]`) and the validation queue treats as answered. The grid's shape is fixed from the first frame; a slot that settles without a certain value stays as a quiet "Not sure" box. Guard: `__tests__/foundCards.test.ts` (fullspecstaff round; nlpkak title-as-category case).
+
 ## Change Log
+
+- 2026-10-16 — Nothing dies: an enrich round is named on the brand as it starts (`registerBrandSmartAddRuns`), so the findings it makes later land and promote like Create's; the Discovery inbox starts every fact on its server-rule kind (never a dead Confirm), confirms a kept fact in place (no duplicate) and promotes after every confirm; products and services open the Offerings screen from the inbox.
+- 2026-10-16 — Fact evidence addresses are only ever complete: a cut-off streamed address is dropped or replaced by the one that completes it (`completeUrls`, at parse and in `grownFact`). Guard: `__tests__/factEvidenceUrlsComplete.test.ts`.
+- 2026-10-16 — Found-first door (`/smart-add/found`, VISION Part 23): card grid of certain facts, one "Looks right" with a way out, then the full review in place on the same session.
 
 - 2026-10-16 — Promotion moved to the server, every census type: Create and every confirmed validation answer call aidream `POST /brand-intake/promote/{brandId}` (`promote.ts` is only its client + `undoPromotion`); the rules live once in aidream `services/brand_profile/promote.py` (competitor, person, location, listing, keyword, backlink, offering, industry, typed fact kinds; confirmed only, Not us / match-only / Maybe never). Create records `metadata.smart_add.runs`, so the round's facts step finishing after Create keeps the late facts on the brand and promotes them server-side (`brand.identify.land_late_findings`). Guards: `__tests__/promoteFindings.test.ts` (client holds no rule), aidream `brand_profile/tests/test_promote.py` (each type lands).
 - 2026-10-16 — Promotion: what Create and the validation page keep on the brand reaches its real home through ONE reconcile, `promote.ts` (`promoteSmartAddFindings`, one promoter per type in `PROMOTERS`; idempotent, insert-if-missing). Competitors with a domain → `seo.competitor` on the brand's first site; name/handle-only rivals stay in `web.brand.profile.competitors`, which the Competitors page now lists (`listBrandCompetitors` step 6). Before, every Smart Add rival sat in the profile list the page never read. Guard: `__tests__/promoteFindings.test.ts`.

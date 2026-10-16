@@ -16,6 +16,9 @@ import L from "leaflet";
 import { escapeHtml } from "@ai-matrx/kit/html-escape";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Map (leaflet)", { detail: { home: ["/maps"] } });
+
 export interface MapMarker {
   lat: number;
   lng: number;

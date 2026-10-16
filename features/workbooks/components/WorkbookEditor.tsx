@@ -136,6 +136,10 @@ import { stampCovered, takeCovered } from "@ai-matrx/office/univer";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Univer sheets editor", { detail: { home: ["/workbooks"] } });
+
 type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
 
 /**

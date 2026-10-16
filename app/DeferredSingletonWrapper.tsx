@@ -43,7 +43,7 @@ import "@/components/diff/heavy-renderer-setup";
 
 import dynamic from "next/dynamic";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
+import { registerIdleTask, useIdleReady } from "@ai-matrx/kit/idle-scheduler";
 import { useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/rootReducer";
 import {
@@ -72,6 +72,17 @@ installGlobalErrorCapture();
 // The engagement tier (lib/boot/firstEngagement.ts) must see a click or key press made BEFORE the
 // deferred core loads, so its listeners go on here, at boot-bundle evaluation.
 installFirstEngagementListeners();
+
+// LOAD MARKER (core) — the signed-in boot bundle evaluated; page-load trace, no import.
+if (typeof window !== "undefined") performance.mark("load:core:app boot bundle");
+
+// REAL-USER PAGE SPEED (lib/diagnostics/pageVitalsReporter.ts): one row per page load, loaded as the
+// LAST idle task after the page settles — first paint never pays for it.
+if (typeof window !== "undefined") {
+  registerIdleTask("matrx-page-vitals", 5, () =>
+    import("@/lib/diagnostics/pageVitalsReporter").then((m) => m.startPageVitals()),
+  );
+}
 
 const DeferredSingletonCore = dynamic(
   () => import("./DeferredSingletonCore"),

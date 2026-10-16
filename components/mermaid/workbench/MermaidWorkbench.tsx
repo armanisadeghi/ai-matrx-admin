@@ -98,6 +98,9 @@ import { useMermaidArtifactSave } from "./useMermaidArtifactSave";
 import { useMermaidEditor, type WorkbenchMode } from "./useMermaidEditor";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Mermaid workbench");
+
 const THEME_CHOICES: MermaidThemePreference[] = [
   "auto",
   "default",

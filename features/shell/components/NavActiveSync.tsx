@@ -67,6 +67,10 @@ function syncNav() {
 
 export default function NavActiveSync() {
   const pathname = usePathname();
+  // LOAD MARKER (core) — the app shell is on screen; page-load trace, no import.
+  useEffect(() => {
+    performance.mark("load:core:app shell mounted");
+  }, []);
 
   // Router navigations, plus the mount pass that corrects any server/client
   // pathname mismatch.

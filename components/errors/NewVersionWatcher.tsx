@@ -130,6 +130,7 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
     // `min_supported_app_version`, read through the one app-config door (counted), compared with
     // the version this page was served as. Older → the same consent prompt, never a forced reload.
     const checkMinimumVersion = async () => {
+      performance.mark("load:lazy:minimum-version check"); // LOAD MARKER (lazy) — page-load trace, no import
       const current = document.querySelector<HTMLMetaElement>(`meta[name="${APP_VERSION_META}"]`)?.content ?? "";
       const { value: minimum, error, skipped } = await readAppConfigKey<string>("min_supported_app_version");
       // A guest has no session, so there is no row to read: not a failed check.
@@ -173,6 +174,7 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
     const check = async () => {
       if (cancelled || promptedRef.current || document.hidden) return;
       lastCheckRef.current = Date.now();
+      performance.mark("load:lazy:new-version check"); // LOAD MARKER (lazy) — page-load trace, no import
       try {
         const res = await fetch("/api/version", { cache: "no-store" });
         if (!res.ok) return;

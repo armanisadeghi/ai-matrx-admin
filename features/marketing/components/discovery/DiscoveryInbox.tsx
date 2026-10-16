@@ -2,6 +2,8 @@
 
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import {
   AtSign,
   Check,
@@ -12,7 +14,7 @@ import {
   Globe2,
   Image as ImageIcon,
   Link2,
-  MapPin,
+  ListChecks,
   MapPinned,
   Phone,
   Share2,
@@ -22,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { InfoHint } from "@/components/official/InfoHint";
 import { toast } from "@/lib/toast";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { jsonExportItem, rowsToCsv } from "@/components/agent-copy/export";
@@ -106,6 +109,7 @@ import { cn } from "@/lib/utils";
 import { describeDiscoveredSocialProfile } from "@/features/marketing/lib/discovery-promotion";
 import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { loadFactRules } from "@/features/marketing/smart-add/factRules";
 import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -114,6 +118,9 @@ const STATUS_TABS: Array<{ value: DiscoveredItemStatus; label: string }> = [
   { value: "confirmed", label: "Confirmed" },
   { value: "dismissed", label: "Dismissed" },
 ];
+
+/** Discovered products and services: managed on the Offerings screen. */
+const OFFERING_CATEGORY = "offering";
 
 const PAGE_SIZE_OPTIONS = [50, 100, 250] as const;
 const DEFAULT_PAGE_SIZE = 100;
@@ -155,7 +162,9 @@ function itemContextSnippet(item: DiscoveredItem): string | null {
   for (const key of ["found_in", "alt", "surrounding_text", "schema_path"]) {
     const value = item.context[key];
     if (typeof value === "string" && value.trim()) {
-      return `${key.replace(/_/g, " ")}: ${value.trim()}`;
+      const text = value.trim();
+      const clipped = text.length > 140 ? `${text.slice(0, 139)}…` : text;
+      return `${key.replace(/_/g, " ")}: ${clipped}`;
     }
   }
   return null;
@@ -202,7 +211,14 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
   const currentPage = Math.min(page, knownPageCount);
   const items = useDiscoveredItems(brandId, status, currentPage, pageSize);
 
-  const rows = useMemo(() => items.data?.rows ?? [], [items.data]);
+  // Products and services have their own screen (Yes / No / Other per item, the offering tree behind it): the inbox
+  // names them and opens it, and never shows rows it cannot confirm.
+  // A finding the brand already keeps is resolved by the server (promote.py), so what is pending is what is left to decide.
+  const rows = useMemo(() => (items.data?.rows ?? []).filter((item) => item.category !== OFFERING_CATEGORY), [items.data]);
+  const offeringCount = useMemo(() => (items.data?.rows ?? []).filter((item) => item.category === OFFERING_CATEGORY).length, [items.data]);
+  // The server's field → kind rules: a fact the facts agent named already has its kind (never "Other fact").
+  const factRules = useQuery({ queryKey: ["marketing", "fact-rules"], queryFn: loadFactRules, staleTime: Infinity });
+  const fieldKind = factRules.data?.fieldKind;
   const total = items.data?.total ?? 0;
   if (items.data !== undefined && total !== knownTotal) setKnownTotal(total);
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -229,9 +245,11 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
   }, [rows]);
 
   const effectiveKind = (item: DiscoveredItem) =>
-    kindOverrides[item.id] ?? defaultKind(item);
+    kindOverrides[item.id] ?? defaultKind(item, fieldKind);
+  // A row filed under Other starts labelled by what the finder called it, so Confirm is never a dead button.
   const effectiveLabel = (item: DiscoveredItem) =>
-    labelOverrides[item.id] ?? "";
+    labelOverrides[item.id] ??
+    (effectiveKind(item) === LABEL_REQUIRED_KIND && item.guessed_kind ? humanizeIdentifier(item.guessed_kind) : "");
 
   // Selection is only meaningful against the rows actually on screen —
   // refetches can move ids out from under a stale selection.
@@ -638,12 +656,8 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
                 <span className="text-xs font-normal tabular-nums text-muted-foreground">
                   {total}
                 </span>
+                <InfoHint text="What was found for this brand, waiting for a person. Confirm adds it to the brand's facts, assets or properties." />
               </h1>
-              <p className="text-xs text-muted-foreground">
-                Everything found for this brand that needs a human to say what
-                it is. Confirming promotes an item to confirmed assets, facts,
-                and properties.
-              </p>
             </div>
             <div className="flex items-center gap-1.5">
               {rows.length > 0 ? (
@@ -799,6 +813,19 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
                 </div>
               ) : null}
             </div>
+          ) : null}
+
+          {offeringCount > 0 ? (
+            <section
+              className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2"
+              data-testid="discovery-offerings-door"
+            >
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Products &amp; services</h2>
+              <span className="text-[11px] tabular-nums text-muted-foreground">{offeringCount}</span>
+              <Button asChild variant="outline" className="ml-auto" icon={<ChevronRight />}>
+                <Link href={marketingRoutes.brandOfferings(brandId)}>Review in Offerings</Link>
+              </Button>
+            </section>
           ) : null}
 
           {grouped.length === 0 && status === "pending" && brandSites.isSuccess && (brandSites.data ?? []).length === 0 ? (
@@ -1138,11 +1165,20 @@ function DiscoveryRow({
           />
         </span>
       ) : (
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted/40 text-muted-foreground">
+        <span
+          className={cn(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
+            item.category === "social"
+              ? "bg-info/10 text-info-ink"
+              : item.category === "fact"
+                ? "bg-primary/10 text-primary-ink"
+                : "bg-success/10 text-success-ink",
+          )}
+        >
           {item.category === "social" ? (
             <AtSign className="h-4 w-4" />
           ) : item.category === "fact" ? (
-            <MapPin className="h-4 w-4" />
+            <ListChecks className="h-4 w-4" />
           ) : (
             <Link2 className="h-4 w-4" />
           )}
@@ -1152,17 +1188,28 @@ function DiscoveryRow({
       <div className="min-w-0 flex-1 basis-56">
         <div className="flex items-center gap-1.5">
           {item.guessed_kind ? (
-            <Badge variant="outline" className="text-[10px]">
+            <span className="truncate type-label">
               {socialPreview
                 ? socialPreview.providerLabel
                 : (humanizeIdentifier(item.guessed_kind) || item.guessed_kind)}
-            </Badge>
+            </span>
           ) : null}
           {typeof item.confidence === "number" ? (
-            <span className="text-[10px] tabular-nums text-muted-foreground">
+            <span
+              title="How sure the finder is"
+              className={cn(
+                "type-meta tabular-nums font-medium",
+                item.confidence >= 0.8
+                  ? "text-success-ink"
+                  : item.confidence >= 0.5
+                    ? "text-warning-ink"
+                    : "text-destructive-ink",
+              )}
+            >
               {Math.round(item.confidence * 100)}%
             </span>
           ) : null}
+          {context ? <InfoHint text={context} label="Where it was found" /> : null}
         </div>
         {socialPreview ? (
           <div className="mt-0.5 flex min-w-0 items-baseline gap-2">
@@ -1178,22 +1225,17 @@ function DiscoveryRow({
           <OutboundLink
             href={item.url}
             className={cn(
-              "block truncate font-mono text-xs text-muted-foreground transition-colors hover:text-primary",
-              !socialPreview && "mt-0.5 text-foreground",
+              "block truncate text-xs text-muted-foreground transition-colors hover:text-primary",
+              !socialPreview && "mt-0.5 text-sm text-foreground",
             )}
           >
             {display}
           </OutboundLink>
         ) : (
-          <p className="mt-0.5 truncate font-mono text-xs text-foreground">
+          <p className="mt-0.5 truncate text-sm text-foreground" title={display}>
             {display}
           </p>
         )}
-        {context ? (
-          <p className="truncate text-[11px] text-muted-foreground">
-            {context}
-          </p>
-        ) : null}
       </div>
 
       <span className="shrink-0">
@@ -1212,7 +1254,10 @@ function DiscoveryRow({
             title="Open in new tab"
           />
         </Button>
-      ) : null}
+      ) : (
+        // No address to open: the slot stays, disabled, so every row's controls line up.
+        <Button icon={<ExternalLink />} aria-label="No link to open" title="No link to open" variant="quiet" disabled className="shrink-0" />
+      )}
 
       {readOnly ? (
         <div className="flex shrink-0 items-center gap-1.5">

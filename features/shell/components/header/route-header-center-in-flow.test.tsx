@@ -53,7 +53,9 @@ jest.mock("@ai-matrx/design-system", () => ({
   Popover: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   PopoverContent: () => null,
   PopoverTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TapDefaultVariant: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+jest.mock("@ai-matrx/design-system/tap-target/buttons", () => ({ MoreHorizontalTapButton: () => null }));
 jest.mock("@/utils/navigation/should-open-in-new-tab", () => ({ allowNativeNewTab: () => false }));
 jest.mock("@/features/shell/components/header/NavItemTooltip", () => ({
   NavItemTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,

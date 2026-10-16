@@ -135,6 +135,35 @@ function host(url: string | null): string | null {
   }
 }
 
+const SOCIAL_HOSTS: Record<string, string> = {
+  "instagram.com": "Instagram",
+  "facebook.com": "Facebook",
+  "tiktok.com": "TikTok",
+  "x.com": "X",
+  "twitter.com": "X",
+  "youtube.com": "YouTube",
+  "pinterest.com": "Pinterest",
+  "linkedin.com": "LinkedIn",
+  "threads.net": "Threads",
+};
+
+/** A row whose name IS its address reads as a link chip: "@handle" on a social site, else the bare domain + path. */
+function chipLabel(label: string, url: string | null): { text: string; platform: string | null } | null {
+  const raw = /^https?:\/\//i.test(label) ? label : null;
+  if (!raw || (url && url.replace(/\/+$/, "") !== raw.replace(/\/+$/, ""))) return null;
+  try {
+    const u = new URL(raw);
+    const hostName = u.hostname.replace(/^www\./, "");
+    const path = u.pathname.replace(/\/+$/, "");
+    const platform = SOCIAL_HOSTS[hostName] ?? null;
+    const first = path.split("/").filter(Boolean)[0];
+    if (platform && first) return { text: `@${first.replace(/^@/, "")}`, platform };
+    return { text: `${hostName}${path}`, platform: null };
+  } catch {
+    return null;
+  }
+}
+
 const SENTIMENT_DOT: Record<string, string> = {
   positive: "bg-success",
   neutral: "bg-muted-foreground",
@@ -144,6 +173,7 @@ const SENTIMENT_DOT: Record<string, string> = {
 export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
   const [busy, setBusy] = useState(false);
   const h = host(row.url);
+  const chip = chipLabel(row.label, row.url);
   const g = row.grounding;
   const hasGrounding = Boolean(g && (g.where || g.reason || g.confidence != null));
   if (row.pending) {
@@ -164,13 +194,14 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
       ) : row.url ? (
         <Favicon hostname={h} size={16} />
       ) : null}
-      <span className="truncate text-sm text-foreground">{row.label}</span>
+      <span className="truncate text-sm text-foreground" title={row.label}>{chip ? chip.text : row.label}</span>
+      {chip?.platform ? <span className="shrink-0 text-xs text-muted-foreground">{chip.platform}</span> : null}
       {row.matchOnly ? (
         <span className="min-w-0 shrink truncate text-xs text-muted-foreground" data-testid="brand-relation-address">
           {row.url}
         </span>
       ) : null}
-      {h && !row.thumb && !row.matchOnly && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
+      {h && !chip && !row.thumb && !row.matchOnly && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
       {row.sentiment ? (
         <span className={`size-1.5 shrink-0 rounded-full ${SENTIMENT_DOT[row.sentiment] ?? ""}`} aria-label={row.sentiment} />
       ) : null}
@@ -475,7 +506,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
 
   return (
     <SectionCard title="Relationships" anchor="relationships">
-      <div className="grid gap-3" data-testid="brand-relations">
+      <div className="grid gap-3 p-3" data-testid="brand-relations">
         {failed ? <ErrorNotice error={failed} operation="Load brand relationships" size="compact" /> : null}
         {loading ? (
           <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">

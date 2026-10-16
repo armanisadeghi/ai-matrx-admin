@@ -61,6 +61,9 @@ import { noteIdentityContentSource } from "../richDocumentSource";
 import type { ImagePolicyDeclaration } from "@ai-matrx/rich-content/levels/prose/remote-image-policy";
 import { NOTE_EXCLUDED_ACTIONS } from "../constants/noteExcludedActions";
 
+// LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
+if (typeof window !== "undefined") performance.mark("load:heavy:Notes editor", { detail: { home: ["/notes"] } });
+
 function assignRef<T>(ref: React.Ref<T> | undefined, node: T | null) {
   if (!ref) return;
   if (typeof ref === "function") ref(node);

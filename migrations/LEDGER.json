@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-16T09:35:42.885Z",
+  "generated_at": "2026-10-16T15:08:24.938Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -13,6 +13,18 @@
       "filename": "a_table_is_archived_in_chunks_and_survives_a_cut.sql",
       "checksum": "eddc24117aed62b23e6b571ed31cd96dc1cb4c4f76ff9b880d08643e57dce8df",
       "applied_at": "2026-09-22 02:38:00.699942+00"
+    },
+    "migrations/campaign/accept_fix_a_a_claimed_step_carries_how_its_run_started.sql": {
+      "source": "matrx-frontend",
+      "filename": "accept_fix_a_a_claimed_step_carries_how_its_run_started.sql",
+      "checksum": "7c7c2411306b59ba54af9c782c826f58c0d1d48c07136522af104820591b7270",
+      "applied_at": "2026-10-16 15:03:50.55148+00"
+    },
+    "migrations/campaign/accept_fix_b_a_legacy_field_id_token_resolves_like_trigger_token.sql": {
+      "source": "matrx-frontend",
+      "filename": "accept_fix_b_a_legacy_field_id_token_resolves_like_trigger_token.sql",
+      "checksum": "f8938b8417ca431c63b05b56074b0401e77e9c8b27426ecdf7a6effc0209b8df",
+      "applied_at": "2026-10-16 15:08:23.802886+00"
     },
     "migrations/campaign/accesspersonal_a_personal_record_is_not_carried_by_membership.sql": {
       "source": "matrx-frontend",

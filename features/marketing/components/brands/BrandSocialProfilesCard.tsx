@@ -328,28 +328,36 @@ export function BrandSocialProfilesCard({
       },
   ];
 
+  // Every row draws the same slots in the same order; an action that does not apply is disabled in its
+  // slot (never omitted), so the Actions column lines up row to row.
   const rowActions = (r: ProfileRow): MatrxTableIconAction[] => {
     const a = r.account;
     const actions: MatrxTableIconAction[] = [];
-    if (canEdit && a && r.tracking === "Not tracked") {
+    if (canEdit) {
+      const canTrack = Boolean(a && r.tracking === "Not tracked");
       actions.push({
         id: "track",
         icon: UserPlus,
         label: "Track",
-        tooltip: joinTitle("Track as Own", costText("track", 1)),
+        tooltip: canTrack ? joinTitle("Track as Own", costText("track", 1)) : a ? "Already tracked" : "No account to track",
         loading: busyRow === r.id,
-        disabled: busyRow !== null,
-        onClick: () => void trackOwn(a),
+        disabled: !canTrack || busyRow !== null,
+        onClick: () => {
+          if (a && canTrack) void trackOwn(a);
+        },
       });
-    }
-    // Never read (no profile, or tracked with nothing in it): the person's own browser can still get it.
-    if (canEdit && a && GUIDED_CAPTURE_PLATFORMS.has(a.platform) && (!a.profileId || (a.trackedAccountId && a.postsTracked === 0))) {
+      // Never read (no profile, or tracked with nothing in it): the person's own browser can still get it.
+      const canCapture = Boolean(
+        a && GUIDED_CAPTURE_PLATFORMS.has(a.platform) && (!a.profileId || (a.trackedAccountId && a.postsTracked === 0)),
+      );
       actions.push({
         id: "capture",
         icon: Globe,
         label: "Capture with my browser",
-        disabled: busyRow !== null,
-        onClick: () =>
+        tooltip: canCapture ? "Capture with my browser" : "Nothing to capture",
+        disabled: !canCapture || busyRow !== null,
+        onClick: () => {
+          if (!a || !canCapture) return;
           openCapture({
             platform: a.platform,
             handleOrUrl: a.profileUrl || a.externalUrl || a.handle,
@@ -357,23 +365,42 @@ export function BrandSocialProfilesCard({
             ...(a.trackedAccountId ? { trackedAccountId: a.trackedAccountId } : {}),
             ...(a.propertyId ? { propertyId: a.propertyId } : {}),
             brandId,
-          }),
+          });
+        },
       });
     }
-    if (r.externalUrl) {
-      const url = r.externalUrl;
-      actions.push({
-        id: "external",
-        icon: ExternalLink,
-        label: a ? `Open on ${platformLabel(r.platform)}` : "Open link",
-        onClick: () => void openOutbound(url, "_blank", "noopener"),
-      });
-    }
+    const url = r.externalUrl;
+    actions.push({
+      id: "external",
+      icon: ExternalLink,
+      label: url ? (a ? `Open on ${platformLabel(r.platform)}` : "Open link") : "No link to open",
+      disabled: !url,
+      onClick: () => {
+        if (url) void openOutbound(url, "_blank", "noopener");
+      },
+    });
     const property = r.property;
-    if (canEdit && property) {
+    if (canEdit) {
       actions.push(
-        { id: "edit", icon: Pencil, label: "Edit property", onClick: () => onEdit(property) },
-        { id: "delete", icon: Trash2, label: "Delete property", tone: "destructive", onClick: () => onDelete(property) },
+        {
+          id: "edit",
+          icon: Pencil,
+          label: property ? "Edit property" : "No property to edit",
+          disabled: !property,
+          onClick: () => {
+            if (property) onEdit(property);
+          },
+        },
+        {
+          id: "delete",
+          icon: Trash2,
+          label: property ? "Delete property" : "No property to delete",
+          tone: "destructive",
+          disabled: !property,
+          onClick: () => {
+            if (property) onDelete(property);
+          },
+        },
       );
     }
     return actions;
@@ -383,7 +410,6 @@ export function BrandSocialProfilesCard({
     <SectionCard
       title="Social profiles"
       copy={copy}
-      className="lg:col-span-2"
       action={canEdit ? { label: "Add property", onClick: onAdd } : undefined}
       headerExtra={
         <>
