@@ -8,6 +8,11 @@
 // (`data-shell-chat-available`); pressed while it is docked open
 // (`data-shell-chat-open`). Below 1024px the rail is gone and the header's
 // ShellChatToggle / the phone's ⋮ row are the door.
+//
+// It is named "Side Chat" with its own square bubble (owner, 2026-10-15: two
+// chat icons both labelled "Chat" read as one thing) and sits apart from the
+// navigation under a hairline: the nav's "Chat" goes to the chat pages, this
+// opens a chat beside the page you are on.
 
 import { useEffect, useState } from "react";
 import { SHELL_CHAT_TOGGLE_EVENT } from "@ai-matrx/chat/canvas/workspace/shell-chat-route";
@@ -29,17 +34,17 @@ export default function SidebarChatToggle() {
     <button
       type="button"
       className="shell-nav-item shell-nav-chat shell-tactile-subtle"
-      title="Chat (Ctrl/Cmd + \)"
-      aria-label={open ? "Close chat" : "Open chat"}
+      title="Side Chat: chat beside this page (Ctrl/Cmd + \)"
+      aria-label={open ? "Close Side Chat" : "Open Side Chat"}
       aria-pressed={open}
       aria-keyshortcuts="Meta+\ Control+\"
       data-state={open ? "on" : "off"}
       onClick={() => window.dispatchEvent(new Event(SHELL_CHAT_TOGGLE_EVENT))}
     >
       <span className="shell-nav-icon">
-        <ShellIcon name="MessageSquare" size={18} strokeWidth={1.75} />
+        <ShellIcon name="MessageSquareText" size={18} strokeWidth={1.75} />
       </span>
-      <span className="shell-nav-label">Chat</span>
+      <span className="shell-nav-label">Side Chat</span>
     </button>
   );
 }
