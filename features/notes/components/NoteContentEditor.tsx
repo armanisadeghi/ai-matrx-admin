@@ -587,6 +587,7 @@ export function NoteContentEditor({
     rootRef: editorRootRef,
     textareaRef,
     notesExtras,
+    noteId,
   });
 
   // A deep link adds its tab before the request resolves, and a note opened
