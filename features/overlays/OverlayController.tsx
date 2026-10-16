@@ -947,10 +947,6 @@ const ReadAloudVoiceSettingsWindow = lazyOverlay(
   () => import("@ai-matrx/chat/window-panels/windows/listen/ReadAloudVoiceSettingsWindow"),
   { ssr: false },
 );
-const ReadAloudVoiceSettingsWindow = lazyOverlay(
-  () => import("@ai-matrx/chat/window-panels/windows/listen/ReadAloudVoiceSettingsWindow"),
-  { ssr: false },
-);
 const SiteCommandRunWindow = lazyOverlay(
   () =>
     import("@/features/window-panels/windows/marketing/SiteCommandRunWindow"),

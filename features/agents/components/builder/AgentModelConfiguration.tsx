@@ -130,7 +130,7 @@ export function AgentModelConfiguration({
             "text-xs shrink-0",
             modelMissing
               ? "text-yellow-600 dark:text-yellow-400"
-              : "text-gray-600 dark:text-gray-400",
+              : "text-muted-foreground",
           )}
           title={
             modelMissing ? "A model is required to run this agent" : undefined
