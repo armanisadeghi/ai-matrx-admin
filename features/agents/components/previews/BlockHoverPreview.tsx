@@ -2,12 +2,7 @@
 
 /** Hover preview over the canonical, already-validated attachment item. */
 
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { cn } from "@/lib/utils";
+import { PeekHoverCard } from "@ai-matrx/design-system";
 import { NotePreviewContent } from "./NoteHoverPreview";
 import { TaskPreviewContent } from "./TaskHoverPreview";
 import { WebpagePreviewContent } from "./WebpageHoverPreview";
@@ -20,10 +15,10 @@ import type { ContextDrawerItem } from "@ai-matrx/chat/agents/components/context
 
 function PreviewBody({ item }: { item: ContextDrawerItem }) {
   const noteId = item.refs.noteIds?.[0];
-  if (noteId) return <NotePreviewContent noteId={noteId} />;
+  if (noteId) return <NotePreviewContent noteId={noteId} frame="surface" />;
 
   const taskId = item.refs.taskIds?.[0];
-  if (taskId) return <TaskPreviewContent taskId={taskId} />;
+  if (taskId) return <TaskPreviewContent taskId={taskId} frame="surface" />;
 
   const webpage = item.refs.webpages?.[0];
   if (webpage) {
@@ -32,12 +27,13 @@ function PreviewBody({ item }: { item: ContextDrawerItem }) {
         url={webpageUrl(webpage)}
         title={webpageTitle(webpage)}
         snippet={typeof webpage === "string" ? null : webpage.textContent}
+        frame="surface"
       />
     );
   }
 
   const dataRef = item.refs.dataRefs?.[0];
-  if (dataRef) return <DataRefPreviewContent dataRef={dataRef} />;
+  if (dataRef) return <DataRefPreviewContent dataRef={dataRef} frame="surface" />;
 
   return null;
 }
@@ -64,26 +60,17 @@ export function BlockHoverPreview({
   children,
   side = "top",
   align = "start",
-  className,
 }: BlockHoverPreviewProps) {
   if (!hasPreview(item)) return <>{children}</>;
 
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <div className="inline-flex min-w-0">{children}</div>
-      </HoverCardTrigger>
-      <HoverCardContent
-        side={side}
-        align={align}
-        sideOffset={8}
-        className={cn(
-          "w-80 border border-border bg-card p-3 shadow-lg",
-          className,
-        )}
-      >
-        <PreviewBody item={item} />
-      </HoverCardContent>
-    </HoverCard>
+    <PeekHoverCard
+      trigger={<div className="inline-flex min-w-0">{children}</div>}
+      side={side}
+      align={align}
+      label="Details"
+    >
+      <PreviewBody item={item} />
+    </PeekHoverCard>
   );
 }

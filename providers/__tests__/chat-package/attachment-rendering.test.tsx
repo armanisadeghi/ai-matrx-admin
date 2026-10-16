@@ -23,6 +23,13 @@ jest.mock("@ai-matrx/chat/agents/components/context-items/registry", () => ({
 
 jest.mock("@ai-matrx/design-system", () => ({
   ...jest.requireActual<Record<string, unknown>>("@ai-matrx/design-system"),
+  // The hover preview is THE Peek's host now: open, its card inline.
+  PeekHoverCard: ({ trigger, children }: { trigger: React.ReactNode; children: React.ReactNode }) => (
+    <div>
+      {trigger}
+      <aside data-testid="hover-content">{children}</aside>
+    </div>
+  ),
   ...({
   HoverCard: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>

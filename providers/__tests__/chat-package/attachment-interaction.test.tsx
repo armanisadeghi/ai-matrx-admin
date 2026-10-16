@@ -108,7 +108,7 @@ describe("attachment chip interaction", () => {
       hoverTrigger?.dispatchEvent(
         new MouseEvent("pointerover", { bubbles: true }),
       );
-      jest.advanceTimersByTime(300);
+      jest.advanceTimersByTime(1500);
     });
 
     expect(document.body.textContent).toContain("Saved webpage preview");

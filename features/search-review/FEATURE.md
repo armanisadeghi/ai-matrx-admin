@@ -56,5 +56,6 @@ The AI "we think" source is the declared mandate `brand_intake.web_result_classi
 
 ## Change log
 
+- 2026-10-16 — the "we think" hover and the "found at #N" hover are THE Peek (`PeekHoverCard`): reason, certainty, up to five evidence links, source; every query, rank and (admin) engine.
 - 2026-10-14 — tiers ("Show next") and the admin-only per-result note; first tiered caller: Smart Add's hard paths.
 - 2026-10-14 — created; Smart Add's inline web rows replaced by one "Review N web results" entry.

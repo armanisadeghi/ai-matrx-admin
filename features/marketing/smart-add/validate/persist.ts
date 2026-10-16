@@ -18,7 +18,6 @@
  *   Ask me later            → nothing (stays pending)
  */
 
-import { livePromoteDeps, promoteSmartAddFindings } from "../promote";
 import { foundByForSource } from "../factIdentity";
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
@@ -323,27 +322,6 @@ async function addSite(ctx: PersistContext, url: string): Promise<{ id: string |
   return { id: site.id, undo: async () => deleteSite(site.id) };
 }
 
-/** A live web.business_fact on the brand of this finding's kind with the same text (case and spacing ignored). */
-async function sameFactOnBrand(ctx: PersistContext, item: FocusItem, value: string): Promise<string | null> {
-  const field = item.fact?.field ?? item.evidence?.field;
-  if (!field) return null;
-  const norm = (v: string) => v.trim().replace(/\s+/g, " ").toLowerCase();
-  const wanted = new Set([value, item.fact?.value ?? ""].filter(Boolean).map(norm));
-  const { data, error } = await (await db())
-    .from("business_fact")
-    .select("id, kind, value")
-    .eq("brand_id", ctx.getBrand().id)
-    .is("deleted_at", null);
-  if (error) throw new Error(error.message);
-  const kind = factKind(field);
-  const hit = (data ?? []).find((row) => {
-    if (row.kind !== kind) return false;
-    const v = isJsonRecord(row.value) ? (row.value.text ?? row.value.url) : row.value;
-    return typeof v === "string" && wanted.has(norm(v));
-  });
-  return hit?.id ?? null;
-}
-
 /**
  * The web.business_fact Create kept for this finding (keptFacts.ts; its discovered_item's resolved_fact_id), settled in
  * place: Correct confirms it (and takes an edit), Wrong soft-deletes it. Returns false when Create kept none.
@@ -370,9 +348,7 @@ async function settleKeptFact(
     .limit(1)
     .maybeSingle();
   if (link.error) throw new Error(link.error.message);
-  // No link (the card came from another round or step): the same fact already on the brand is the one to settle,
-  // so a Yes never writes it twice (MKT-179: a tagline Create kept was written again by the validate Yes).
-  const factId = link.data?.resolved_fact_id ?? (await sameFactOnBrand(ctx, item, value));
+  const factId = link.data?.resolved_fact_id;
   if (!factId) return false;
   const current = await w
     .from("business_fact")
@@ -722,14 +698,6 @@ async function persistAnswerOnce(
       }, before);
       homes.push(`web.brand.profile.competitors:${ctx.getBrand().id}`);
       undos.push(undo);
-      // The kept rival lands in its real home (seo.competitor when it has a domain and the brand a site);
-      // Undo removes only the rows this promotion created, never one a person made.
-      const promoted = await promoteSmartAddFindings(livePromoteDeps, ctx.getBrand().id);
-      const created = promoted.createdIds.competitor;
-      if (created.length) {
-        homes.push(...created.map((id) => `seo.competitor:${id}`));
-        undos.push(() => livePromoteDeps.deleteCompetitors(created));
-      }
     }
   }
   if (answer === "not_us") {
@@ -752,13 +720,6 @@ async function persistAnswerOnce(
     }, before);
     homes.push(`web.brand.profile.${profileHome}:${ctx.getBrand().id}`);
     undos.push(undo);
-    if (profileHome === "competitors") {
-      const created = (await promoteSmartAddFindings(livePromoteDeps, ctx.getBrand().id)).createdIds.competitor;
-      if (created.length) {
-        homes.push(...created.map((id) => `seo.competitor:${id}`));
-        undos.push(() => livePromoteDeps.deleteCompetitors(created));
-      }
-    }
   } else if ((answer === "correct" || answer === "wrong") && item.kind === "fact" && (await settleKeptFact(ctx, item, answer, value, resolved, homes, undos, before))) {
     // The fact Create kept (keptFacts.ts) is settled in place: confirmed, or soft-deleted — never a second row.
   } else if (answer === "correct" && item.kind === "fact") {
@@ -775,7 +736,7 @@ async function persistAnswerOnce(
         ? {
             source: "discovered" as const,
             metadata: {
-              found_by: item.fact.mandate ?? "brand_intake.early_facts",
+              found_by: "brand_intake.early_facts",
               field: item.fact.field,
               field_label: item.fact.field_label,
               found_value: item.fact.value,
@@ -785,7 +746,7 @@ async function persistAnswerOnce(
             },
           }
         : ev
-          ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind, ev.source.mandate), where: ev.source.where, url: ev.source.url } }
+          ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind), where: ev.source.where, url: ev.source.url } }
           : // Still a validation-queue item (it lands in web.discovered_item below): found, then confirmed.
             { source: "discovered" as const }),
     });

@@ -1,78 +1,34 @@
 "use client";
 
 /**
- * Lightweight hover preview for a single message. Reads from Redux directly —
+ * Lightweight hover preview for a single message, drawn by THE Peek. Reads from Redux directly —
  * no fetch — because messages are essentially always already in state by the
  * time anything renders a reference to one. Pairs with ConversationHoverPreview
  * for "attached" chips and inline links.
  */
 
-import { copyRichContent, defaultCopyTitle } from "@ai-matrx/rich-content/copy/copy-commands";
+import { Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
 import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-markdown";
-import { useState } from "react";
-import Link from "next/link";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   extractInspectableText,
   selectMessageById,
 } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { selectInstance } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
-import {
-  Check,
-  Copy,
-  ExternalLink,
-  CircleDot,
-  User,
-  Settings,
-  Wrench,
-  ArrowUpRight,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CircleDot, Settings, User, Wrench } from "lucide-react";
+import { formatDateTime } from "./peek-lines";
 
 const MESSAGE_PREVIEW_CHARS = 600;
 
-const ROLE_STYLE: Record<
-  string,
-  { Icon: React.ComponentType<{ className?: string }>; color: string; label: string }
-> = {
-  system: {
-    Icon: Settings,
-    color:
-      "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
-    label: "System",
-  },
-  user: {
-    Icon: User,
-    color:
-      "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
-    label: "User",
-  },
-  assistant: {
-    Icon: CircleDot,
-    color:
-      "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30",
-    label: "Assistant",
-  },
+const ROLE_STYLE: Record<string, { Icon: React.ComponentType<{ className?: string }>; label: string }> = {
+  system: { Icon: Settings, label: "System" },
+  user: { Icon: User, label: "User" },
+  assistant: { Icon: CircleDot, label: "Assistant" },
 };
 
 function countToolCalls(content: unknown): number {
   if (!Array.isArray(content)) return 0;
-  return (content as Array<{ type?: string }>).filter(
-    (b) => b?.type === "tool_call",
-  ).length;
-}
-
-function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "—";
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return value;
-  return d.toLocaleString();
+  return (content as Array<{ type?: string }>).filter((b) => b?.type === "tool_call").length;
 }
 
 interface MessagePreviewContentProps {
@@ -80,134 +36,54 @@ interface MessagePreviewContentProps {
   messageId: string;
   /** When provided, "Open" calls this; otherwise links to the conversation. */
   onOpen?: () => void;
+  /** `surface` when this is the card itself (a hover), `bare` inside a panel that already frames it. */
+  frame?: "surface" | "bare";
 }
 
-export function MessagePreviewContent({
-  conversationId,
-  messageId,
-  onOpen,
-}: MessagePreviewContentProps) {
-  const message = useAppSelector(
-    selectMessageById(conversationId, messageId),
-  );
+export function MessagePreviewContent({ conversationId, messageId, onOpen, frame = "bare" }: MessagePreviewContentProps) {
+  const message = useAppSelector(selectMessageById(conversationId, messageId));
   const conversation = useAppSelector(selectInstance(conversationId));
-  const [copied, setCopied] = useState(false);
 
-  // Structured (non-text) payloads preview instead of a blank ("screen lies"
-  // class fix).
+  // Structured (non-text) payloads preview instead of a blank ("screen lies" class fix).
   // A preview is read by a person: a `__kind` answer previews as its kind's
   // markdown, never its stored JSON (the record itself is untouched).
   const text = message ? kindTextToMarkdown(extractInspectableText(message).text) : "";
   const toolCalls = countToolCalls(message?.content);
 
-  const handleCopy = async () => {
-    if (!text) return;
-    if (!(await copyRichContent(text, "default", { toast: "Message copied" }))) return;
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
   if (!message) {
-    return (
-      <div className="type-secondary text-muted-foreground italic">
-        Message not loaded.
-      </div>
-    );
+    return <Peek frame={frame} record={{ kind: "Message", id: messageId, title: "Message not loaded", copyData: false }} />;
   }
 
-  const roleKey = message.role as keyof typeof ROLE_STYLE;
-  const role = ROLE_STYLE[roleKey] ?? ROLE_STYLE.assistant;
-  const RoleIcon = role.Icon;
+  const role = ROLE_STYLE[message.role as string] ?? ROLE_STYLE["assistant"]!;
+  const truncated = text.length > MESSAGE_PREVIEW_CHARS ? text.slice(0, MESSAGE_PREVIEW_CHARS).trimEnd() + "…" : text;
+  const conversationTitle = conversation?.title?.trim();
+  const openHref = conversation ? `/agents/go/${conversation.agentId}/run?conversationId=${conversationId}` : null;
 
-  const truncated =
-    text.length > MESSAGE_PREVIEW_CHARS
-      ? text.slice(0, MESSAGE_PREVIEW_CHARS).trimEnd() + "…"
-      : text;
-
-  const openHref = conversation
-    ? `/agents/go/${conversation.agentId}/run?conversationId=${conversationId}`
-    : null;
-
-  return (
-    <div className="flex flex-col gap-2.5">
-      <div className="flex items-center gap-2">
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border type-meta font-semibold",
-            role.color,
-          )}
-        >
-          <RoleIcon className="w-3 h-3" />
-          {role.label}
-        </span>
-        {message.position != null && (
-          <span className="type-meta text-muted-foreground tabular-nums">
-            #{message.position + 1}
-          </span>
-        )}
-        {toolCalls > 0 && (
-          <span className="inline-flex items-center gap-0.5 type-meta text-orange-600 dark:text-orange-400">
-            <Wrench className="w-2.5 h-2.5" />
-            {toolCalls} tool{toolCalls === 1 ? "" : "s"}
-          </span>
-        )}
-      </div>
-
-      {conversation?.title?.trim() && (
-        <div className="type-meta text-muted-foreground truncate">
-          in <span className="text-foreground/80">{conversation.title}</span>
-        </div>
-      )}
-
-      {truncated ? (
-        <p className="type-secondary text-foreground whitespace-pre-wrap break-words max-h-48 overflow-y-auto">
-          {truncated}
-        </p>
-      ) : (
-        // read-gate-exempt: describes one message record already loaded in the store (non-text message), not a read's empty answer
-        <p className="type-secondary text-muted-foreground italic">No text content</p>
-      )}
-
-      <div className="type-meta text-muted-foreground pt-1 border-t border-border">
-        {formatDateTime(message.createdAt)}
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <Button
-          icon={copied ? <Check className="text-success" /> : <Copy />}
-          variant="quiet"
-          onClick={handleCopy}
-          title={defaultCopyTitle()}
-          disabled={!text}
-        >
-          {copied ? "Copied" : "Copy"}
-        </Button>
-        <div className="ml-auto">
-          {onOpen ? (
-            <Button
-              icon={<ArrowUpRight />}
-              variant="primary"
-              onClick={onOpen}
-            >
-              Open
-            </Button>
-          ) : openHref ? (
-            <Link href={openHref} target="_blank" rel="noopener noreferrer">
-              <Button icon={<ExternalLink />} type="submit" variant="primary">
-                Open
-              </Button>
-            </Link>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
+  const record: PeekRecord = {
+    kind: "Message",
+    id: messageId,
+    title: message.position != null ? `${role.label} · #${message.position + 1}` : role.label,
+    glyph: role.Icon,
+    ...(conversationTitle ? { subtitle: `in ${conversationTitle}` } : {}),
+    body: [
+      ...(toolCalls > 0 ? [{ fact: `${toolCalls} tool${toolCalls === 1 ? "" : "s"}`, glyph: Wrench }] : []),
+      truncated.trim()
+        ? { section: "Message", text: truncated, breaks: true }
+        : // read-gate-exempt: describes one message record already loaded in the store (non-text message), not a read's empty answer
+          { fact: "No text content", muted: true },
+      { fact: formatDateTime(message.createdAt), muted: true },
+    ],
+    // The old Copy button copied the whole message text (disabled when there is none).
+    copyData: text ? text : false,
+    ...(onOpen ? { primary: { label: "Open", onSelect: onOpen } } : openHref ? { href: openHref } : {}),
+  };
+  return <Peek frame={frame} record={record} />;
 }
 
 interface MessageHoverPreviewProps {
   conversationId: string;
   messageId: string;
-  children: React.ReactNode;
+  children: React.ReactElement;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
@@ -226,26 +102,10 @@ export function MessageHoverPreview({
   side = "right",
   align = "start",
   onOpen,
-  className,
 }: MessageHoverPreviewProps) {
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>{children}</HoverCardTrigger>
-      <HoverCardContent
-        side={side}
-        align={align}
-        sideOffset={8}
-        className={cn(
-          "w-80 p-3 bg-card border border-border shadow-lg",
-          className,
-        )}
-      >
-        <MessagePreviewContent
-          conversationId={conversationId}
-          messageId={messageId}
-          onOpen={onOpen}
-        />
-      </HoverCardContent>
-    </HoverCard>
+    <PeekHoverCard trigger={children} side={side} align={align} label="Message">
+      <MessagePreviewContent conversationId={conversationId} messageId={messageId} onOpen={onOpen} frame="surface" />
+    </PeekHoverCard>
   );
 }

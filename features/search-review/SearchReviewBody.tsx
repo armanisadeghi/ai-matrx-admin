@@ -21,7 +21,6 @@ import {
   type SelectOption,
 } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Peek, PeekHoverCard, Skeleton } from "@ai-matrx/design-system";
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { SearchKindNested } from "@/components/mardown-display/blocks/search-kinds/SearchKindNested";
@@ -79,35 +78,35 @@ function SuggestionPopover({
   onPick: () => void;
 }) {
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        {/* The glow is the frame around the control, never a restyle of it. */}
+    <PeekHoverCard
+      align="start"
+      label={`We think: ${choice.label}`}
+      trigger={
+        // The glow is the frame around the control, never a restyle of it.
         <span className="inline-flex rounded-md shadow-[0_0_14px] shadow-primary/45 ring-2 ring-primary/50">
           <Button variant="outline" icon={<Lightbulb aria-hidden />} onClick={onPick} data-testid="search-review-suggestion">
             {choice.label}
           </Button>
         </span>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80 space-y-1.5 text-xs" align="start">
-        <p className="font-medium text-foreground">We think: {choice.label}</p>
-        {suggestion.reason ? <p className="text-muted-foreground">{suggestion.reason}</p> : null}
-        {typeof suggestion.probability === "number" ? (
-          <p className="tabular-nums text-muted-foreground">{Math.round(suggestion.probability * 100)}% sure</p>
-        ) : null}
-        {suggestion.evidence?.length ? (
-          <ul className="space-y-0.5">
-            {suggestion.evidence.slice(0, 5).map((u) => (
-              <li key={u} className="truncate">
-                <OutboundLink href={u} className="text-primary underline-offset-2 hover:underline">
-                  {u}
-                </OutboundLink>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        {suggestion.by ? <p className="text-muted-foreground">By {suggestion.by}</p> : null}
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <Peek
+        size="sm"
+        record={{
+          kind: "Suggestion",
+          id: `we-think:${choice.key}`,
+          title: `We think: ${choice.label}`,
+          ...(typeof suggestion.probability === "number" ? { subtitle: `${Math.round(suggestion.probability * 100)}% sure` } : {}),
+          body: [
+            ...(suggestion.reason ? [{ section: "Why", text: suggestion.reason }] : []),
+            ...(suggestion.evidence?.length
+              ? [{ section: "Evidence", links: suggestion.evidence.slice(0, 5).map((u) => ({ text: u, href: u })) }]
+              : []),
+            ...(suggestion.by ? [{ property: "By", value: suggestion.by }] : []),
+          ],
+        }}
+      />
+    </PeekHoverCard>
   );
 }
 
@@ -115,23 +114,31 @@ function SuggestionPopover({
 function FoundPopover({ result, position, showEngines }: { result: ReviewResult; position: number; showEngines: boolean }) {
   if (!result.hits.length) return null;
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
+    <PeekHoverCard
+      align="end"
+      label={`Found at #${position}`}
+      trigger={
         <span className="cursor-default text-xs tabular-nums text-muted-foreground" data-testid="search-review-rank">
           #{position}
         </span>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-72 space-y-1 text-xs" align="end">
-        {showEngines && result.adminNote ? <p className="text-muted-foreground" data-testid="search-review-admin-note">{result.adminNote}</p> : null}
-        {result.hits.map((h, i) => (
-          <p key={i} className="flex gap-2">
-            <span className="tabular-nums text-muted-foreground">#{h.rank}</span>
-            <span className="min-w-0 flex-1 truncate">{h.query}</span>
-            {showEngines ? <span className="text-muted-foreground">{searchEngineLabel(h.engine)}</span> : null}
-          </p>
-        ))}
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <Peek
+        size="sm"
+        record={{
+          kind: "Search result",
+          id: result.key,
+          title: `Found at #${position}`,
+          body: [
+            ...(showEngines && result.adminNote ? [{ fact: result.adminNote, muted: true, wrap: true }] : []),
+            ...result.hits.map((h) => ({
+              fact: `#${h.rank}  ${h.query}`,
+              ...(showEngines ? { meta: searchEngineLabel(h.engine) } : {}),
+            })),
+          ],
+        }}
+      />
+    </PeekHoverCard>
   );
 }
 

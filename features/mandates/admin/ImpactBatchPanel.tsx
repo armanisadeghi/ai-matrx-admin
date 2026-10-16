@@ -45,11 +45,8 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
+import { verdictPeekRecord } from "./verdict-peek";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
@@ -101,7 +98,6 @@ import { SettingsFixReportCard, settleSettingsFix, type SettingsFixReport } from
 import {
   AdvanceResultBadge,
   AdvanceResultsCard,
-  VerdictDetail,
 } from "./impact-cells";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
@@ -184,8 +180,10 @@ const TIER_FILTER_OPTIONS = BATCH_TIER_ORDER.map((tier) => ({
 
 function GradeHover({ verdict }: { verdict: ImpactVerdict }) {
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
+    <PeekHoverCard
+      align="start"
+      label="What changed"
+      trigger={
         <button
           type="button"
           onClick={(event) => event.stopPropagation()}
@@ -201,25 +199,10 @@ function GradeHover({ verdict }: { verdict: ImpactVerdict }) {
             </span>
           ) : null}
         </button>
-      </HoverCardTrigger>
-      <HoverCardContent
-        align="start"
-        className="w-[min(28rem,96vw)] space-y-2 p-3"
-      >
-        <div className="type-secondary font-medium">{verdict.agent_name} — what changed</div>
-        <VerdictDetail verdict={verdict} />
-        {verdict.lineage_path && verdict.lineage_path.length > 1 ? (
-          <p className="border-t border-border pt-2 type-meta text-muted-foreground">
-            Reached through lineage:{" "}
-            {verdict.lineage_path
-              .map((step) =>
-                step.relation === "self" ? step.agent_name : `duplicate → ${step.agent_name}`,
-              )
-              .join(" ")}
-          </p>
-        ) : null}
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <Peek record={verdictPeekRecord(verdict)} />
+    </PeekHoverCard>
   );
 }
 

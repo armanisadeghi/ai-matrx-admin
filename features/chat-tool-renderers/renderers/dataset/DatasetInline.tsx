@@ -7,31 +7,25 @@ import { parseDataset, type ParsedDatasetField } from "./parseDataset";
 import { isTerminal } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared";
 import { EntityCard, type EntityAction } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/EntityCard";
 import { EmptyResultCard } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/EmptyResultCard";
-import { PartPeekPopover } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/PartPeekPopover";
+import { Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
 import { displayLabel } from "@ai-matrx/kit/text-case";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const MAX_FIELD_CHIPS = 12;
 
-function DatasetFieldPeek({ f }: { f: ParsedDatasetField }) {
-  return (
-    <div className="space-y-1">
-      {f.type ? (
-        <div>
-          <span className="text-muted-foreground">Type:</span>{" "}
-          <span className="font-mono">{f.type}</span>
-        </div>
-      ) : null}
-      {f.displayName && f.displayName !== f.name ? (
-        <div>
-          <span className="text-muted-foreground">Display:</span> {f.displayName}
-        </div>
-      ) : null}
-      {!f.type && !(f.displayName && f.displayName !== f.name) ? (
-        <div className="text-muted-foreground">Column</div>
-      ) : null}
-    </div>
-  );
+/** One column as THE Peek's record: its name, type and display name (a bare column says so). */
+function datasetFieldRecord(f: ParsedDatasetField): PeekRecord {
+  const showDisplay = Boolean(f.displayName && f.displayName !== f.name);
+  return {
+    kind: "Column",
+    id: f.name,
+    title: displayLabel(f.displayName, f.name),
+    body: [
+      ...(f.type ? [{ property: "Type", value: f.type }] : []),
+      ...(showDisplay ? [{ property: "Display", value: f.displayName as string }] : []),
+      ...(!f.type && !showDisplay ? [{ fact: "Column", muted: true }] : []),
+    ],
+  };
 }
 
 /**
@@ -125,20 +119,24 @@ export function DatasetInline({
           {shownFields.length ? (
             <div className="flex flex-wrap gap-1.5">
               {shownFields.map((f) => (
-                <PartPeekPopover
+                <PeekHoverCard
                   key={f.name}
-                  header={displayLabel(f.displayName, f.name)}
-                  body={<DatasetFieldPeek f={f} />}
+                  side="top"
+                  align="start"
+                  label={displayLabel(f.displayName, f.name)}
+                  trigger={
+                    <span className="inline-flex cursor-default items-center gap-1 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[11px] transition-colors hover:bg-muted">
+                      <span className="font-medium text-foreground">{displayLabel(f.displayName, f.name)}</span>
+                      {f.type ? (
+                        <span className="font-mono text-muted-foreground">
+                          {f.type}
+                        </span>
+                      ) : null}
+                    </span>
+                  }
                 >
-                  <span className="inline-flex cursor-default items-center gap-1 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[11px] transition-colors hover:bg-muted">
-                    <span className="font-medium text-foreground">{displayLabel(f.displayName, f.name)}</span>
-                    {f.type ? (
-                      <span className="font-mono text-muted-foreground">
-                        {f.type}
-                      </span>
-                    ) : null}
-                  </span>
-                </PartPeekPopover>
+                  <Peek size="sm" record={datasetFieldRecord(f)} />
+                </PeekHoverCard>
               ))}
               {moreFields > 0 ? (
                 <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-muted-foreground">
