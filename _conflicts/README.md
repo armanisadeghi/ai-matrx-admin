@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-16-165503/pnpm-lock.yaml.held — LOCAL latest 2026-10-16 16:52; GITHUB latest 2026-10-16 16:53; LOCAL lacks 0 of GITHUB's 12 new lines; GITHUB lacks 7 of LOCAL's 20 new lines; recover: git show 8bc2692b3a:'pnpm-lock.yaml' / 45d4546818:'pnpm-lock.yaml'
 
 ## Resolution log
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
