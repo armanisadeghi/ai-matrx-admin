@@ -34,6 +34,21 @@ describe("fitOpening", () => {
   });
 });
 
+// SHIFT: the opening view is a jump behind a hidden world, never a flight over painted tiles (the browser
+// measures tiles painted at the default camera and then flown as one 0.34 layout shift). Fails against a
+// fitOpening that always flies.
+describe("fitOpening(instant)", () => {
+  it("sets the camera in one write and starts no flight", () => {
+    const store = new BoardCameraStore({ x: 0, y: 0, z: 1 });
+    store.setSize({ w: 1400, h: 800 });
+    STUDIO.forEach((r, i) => store.registerItem(`t${i}`, r));
+    const fly = jest.spyOn(store, "flyTo");
+    store.fitOpening(48, true);
+    expect(fly).not.toHaveBeenCalled();
+    expect(store.getCamera().z).toBeLessThan(1);
+  });
+});
+
 describe("cameraIsUnreadable", () => {
   it("reopens a saved 27% view on a phone, never on a desktop", () => {
     expect(cameraIsUnreadable({ z: 0.27 }, { w: 375 })).toBe(true);

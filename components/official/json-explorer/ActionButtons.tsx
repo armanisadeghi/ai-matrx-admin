@@ -2,8 +2,7 @@
 import React from "react";
 import { Button } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
-import { CopyIcon, RefreshCw, BookmarkIcon, Brackets } from "lucide-react";
-import { IoBookmarks } from "react-icons/io5";
+import { CopyIcon, RefreshCw, BookmarkIcon, Brackets, BookMarked } from "lucide-react";
 import { ActionButtonsProps } from "./types";
 import { generateAccessPath } from "./json-utils";
 import BookmarkManagerActions from "@/features/scraper/parts/BookmarkManagerActions";
@@ -53,7 +52,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClick={onOpenBookmarksDialog}
         title="View Saved Paths"
       >
-        <IoBookmarks className="w-3 h-3" />
+        <BookMarked className="w-3 h-3" />
         Paths
       </Button>
 

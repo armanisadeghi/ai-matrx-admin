@@ -28,6 +28,12 @@ import { CustomDataBindingSummary } from "@/features/agents/components/variables
 import { CustomDataBindingPreview } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingPreview";
 import { Cost } from "@/components/cost/Cost";
 import { CanvasItemCard } from "@/features/canvas/components/CanvasItemCard";
+import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { loadCodeEditHistoryThunk } from "@/features/code/redux/codeEditHistoryHydration";
+import { reconcileMessagesArtifacts } from "@/features/canvas/materialization/reconcileArtifacts";
+import { adoptCloudBrowserRunFromStream } from "@/features/cloud-browser/redux/adoptRunFromStream";
+import { dispatchWarRoomTool } from "@/features/agents/war-room-tools/dispatcher/dispatch-war-room-tool.thunk";
+import { dispatchWarRoomMasterTool } from "@/features/agents/war-room-master-tools/dispatcher/dispatch-war-room-master-tool.thunk";
 
 export const fullSlotImpls = {
   HtmlPreviewFullScreenEditor,
@@ -53,4 +59,15 @@ export const fullSlotImpls = {
   CustomDataBindingPreview,
   Cost,
   CanvasItemCard,
+};
+
+// The deferred functions: thunks and services the package runs after first paint (a tool call, a
+// conversation load's follow-ups, a share). chatUiRegistration.ts binds each to this module.
+export const fullFnImpls = {
+  HTMLPageService,
+  loadCodeEditHistoryThunk,
+  reconcileMessagesArtifacts,
+  adoptCloudBrowserRunFromStream,
+  dispatchWarRoomTool,
+  dispatchWarRoomMasterTool,
 };

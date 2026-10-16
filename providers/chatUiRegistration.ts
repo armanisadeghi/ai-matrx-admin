@@ -42,9 +42,20 @@ const asSlot = <T,>(impl: T) => impl as unknown as never;
 // LAZY SLOTS — one implementation module, one `import()` (providers/chatSlotLazy.tsx explains
 // the law and the loading footprints). Registration stays synchronous; only the component loads
 // on first render.
-const lazySlot = lazySlotsFrom(() =>
-  import("@/providers/chatUiRegistrationImpl").then((m) => m.fullSlotImpls),
-);
+// The ONE `import()` of the implementation module. Component slots and the deferred functions
+// below (thunks and services run after first paint) all resolve through it: one async edge.
+const loadImpl = () => import("@/providers/chatUiRegistrationImpl");
+const lazySlot = lazySlotsFrom(() => loadImpl().then((m) => m.fullSlotImpls));
+type FnImpls = Awaited<ReturnType<typeof loadImpl>>["fullFnImpls"];
+type ImplDispatch = (action: unknown) => unknown;
+/** A thunk creator whose real thunk loads with the impl module; the package only dispatches it. */
+const lazyThunk =
+  <K extends keyof FnImpls>(name: K) =>
+  (...args: unknown[]) =>
+  async (dispatch: ImplDispatch) => {
+    const create = (await loadImpl()).fullFnImpls[name] as unknown as (...a: unknown[]) => unknown;
+    return dispatch(create(...args));
+  };
 const HtmlPreviewFullScreenEditor = lazySlot("HtmlPreviewFullScreenEditor");
 const AgentEditAccessBadge = lazySlot("AgentEditAccessBadge", SlotLoadingInline);
 const DataRefPreviewContent = lazySlot("DataRefPreviewContent", SlotLoadingBlock);
@@ -71,7 +82,6 @@ const CanvasItemCard = lazySlot("CanvasItemCard", SlotLoadingBlock);
 
 import { canvasArtifactService } from "@/features/canvas/services/canvasArtifactService";
 import { SandboxFilesystemAdapter } from "@/features/code/adapters/SandboxFilesystemAdapter";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { sklActions } from "@/features/agent-connections/redux/skl/slice";
 import { BlockHoverPreview } from "@/features/agents/components/previews/BlockHoverPreview";
 // The preview hook loads its markdown renderer (KaTeX, ~680 KB) when a preview first opens (lane AF).
@@ -93,19 +103,16 @@ import { usePickListForSelection } from "@/features/data-tables/pick-lists/hooks
 import { useGitHubConnection } from "@/features/github-integration/useGitHubConnection";
 import { useOutputFeedback } from "@/lib/output-feedback/useOutputFeedback";
 import { saveOutputFeedback } from "@/lib/output-feedback/service";
-import { precedingQuestion } from "@/features/masterwork/oracle/service";
+import { precedingQuestion } from "@/features/masterwork/oracle/precedingQuestion";
+import type { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import type { reconcileMessagesArtifacts } from "@/features/canvas/materialization/reconcileArtifacts";
 import { invalidateCanvasItemCache } from "@/features/canvas/hooks/useCanvasItem";
 import { studioDocumentContentChanged } from "@/features/transcript-studio/redux/slice";
 import { selectEditorState } from "@/features/code-editor/redux/editor-state.slice";
 import { selectActiveSandboxId, selectActiveSandboxProxyUrl, selectEditorMode } from "@/features/code/redux/codeWorkspaceSlice";
 import { receivedFsChange } from "@/features/code/redux/fsChangesSlice";
-import { loadCodeEditHistoryThunk } from "@/features/code/redux/codeEditHistoryHydration";
 import { materializeMessageArtifacts } from "@/features/canvas/materialization/materializeMessageArtifacts";
-import { reconcileMessagesArtifacts } from "@/features/canvas/materialization/reconcileArtifacts";
 import { noteBrowserActivity, selectCloudBrowserRunLive } from "@/features/cloud-browser/redux/cloudBrowserSlice";
-import { adoptCloudBrowserRunFromStream } from "@/features/cloud-browser/redux/adoptRunFromStream";
-import { dispatchWarRoomTool } from "@/features/agents/war-room-tools/dispatcher/dispatch-war-room-tool.thunk";
-import { dispatchWarRoomMasterTool } from "@/features/agents/war-room-master-tools/dispatcher/dispatch-war-room-master-tool.thunk";
 import { resolveGmailSendConnection } from "@/features/google-workspace/connection";
 import { selectAllContentBlocksArray, selectContentBlocksByScope, selectContentBlocksByScopeRef, selectActiveContentBlocks } from "@/features/agent-connections/redux/skl/content-block-compat";
 import { createElement } from "react";
@@ -158,20 +165,24 @@ registerChatUi({
   selectActiveSandboxProxyUrl,
   selectEditorMode,
   receivedFsChange,
-  loadCodeEditHistoryThunk,
+  // Deferred (2026-10-16, first-load register items 2+3): dispatched or awaited after first paint,
+  // so their machinery loads with the impl module, never in the shell's eager set.
+  loadCodeEditHistoryThunk: lazyThunk("loadCodeEditHistoryThunk"),
   materializeMessageArtifacts,
-  reconcileMessagesArtifacts,
+  reconcileMessagesArtifacts: async (...args: Parameters<typeof reconcileMessagesArtifacts>) =>
+    (await loadImpl()).fullFnImpls.reconcileMessagesArtifacts(...args),
   noteBrowserActivity,
   selectCloudBrowserRunLive,
-  adoptCloudBrowserRunFromStream,
-  dispatchWarRoomTool,
-  dispatchWarRoomMasterTool,
+  adoptCloudBrowserRunFromStream: lazyThunk("adoptCloudBrowserRunFromStream"),
+  dispatchWarRoomTool: lazyThunk("dispatchWarRoomTool"),
+  dispatchWarRoomMasterTool: lazyThunk("dispatchWarRoomMasterTool"),
   resolveGmailSendConnection,
   canvasGetVersionHistory: (id: string) => canvasArtifactService.getVersionHistory(id),
   canvasGetById: (id: string) => canvasArtifactService.getById(id),
   createSandboxFilesystemAdapter: (instanceId: string) => new SandboxFilesystemAdapter(instanceId),
   notesGetById: (id: string) => NotesAPI.getById(id),
-  createHtmlPage: (...args: Parameters<typeof HTMLPageService.createPage>) => HTMLPageService.createPage(...args),
+  createHtmlPage: async (...args: Parameters<typeof HTMLPageService.createPage>) =>
+    (await loadImpl()).fullFnImpls.HTMLPageService.createPage(...args),
   // Loads @ai-matrx/print/markdown (KaTeX, ~680 KB) on the first share, never on every page;
   // @ai-matrx/chat >= 0.5.2 awaits this slot.
   convertMarkdownToHtml: async (markdown: string) =>

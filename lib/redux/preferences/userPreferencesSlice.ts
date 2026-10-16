@@ -676,17 +676,6 @@ export interface InboxPreferences {
 }
 
 /**
- * Smart Add: the answers a person gave on the screen before Create (Preferred / Ours / Not us / Related /
- * a web result's kind), saved per session as they are given and restored when the address `?run=` is
- * opened again (reload, shared tab, Back). A session is named by its first round's run id. Opaque to the
- * slice: shaped and capped by features/marketing/smart-add/runMemory.ts. After Create the answers live in
- * web.discovered_item instead.
- */
-export interface SmartAddPreferences {
-  runs: Record<string, Record<string, unknown>>;
-}
-
-/**
  * Choices made inside the shared data tools (the JSON truncator, the server-log
  * viewer). They used to live in per-browser localStorage keys and were lost on
  * every other device; they follow the person now. `null` = the tool's own
@@ -952,7 +941,6 @@ export interface UserPreferences {
   connectors: ConnectorsPreferences;
   reversible: ReversiblePreferences;
   inbox: InboxPreferences;
-  smartAdd: SmartAddPreferences;
   dataTools: DataToolsPreferences;
 }
 
@@ -1511,7 +1499,6 @@ export const initializeUserPreferencesState = (
     reversible: { verbs: {}, pairs: {} },
     // Nothing seen, cleared or hidden yet: every source shows in the bell.
     inbox: { sourcesSeen: {}, sourcesSeenIds: {}, sourcesCleared: {}, sourcesClearedIds: {}, hiddenSources: [] },
-    smartAdd: { runs: {} },
     dataTools: {
       truncator: { autoThreshold: null, autoLeadChars: null, autoTailChars: null, autoArrayKeepN: null, maxDepth: null },
       serverLogNoiseExcludes: null,
@@ -1625,7 +1612,6 @@ export const initializeUserPreferencesState = (
       sourcesClearedIds: { ...preferences.inbox?.sourcesClearedIds },
       hiddenSources: [...(preferences.inbox?.hiddenSources ?? [])],
     },
-    smartAdd: { runs: { ...preferences.smartAdd?.runs } },
     dataTools: {
       truncator: { ...defaultPreferences.dataTools.truncator, ...preferences.dataTools?.truncator },
       serverLogNoiseExcludes: preferences.dataTools?.serverLogNoiseExcludes ?? null,
@@ -2070,7 +2056,6 @@ const PERSISTED_PREFERENCE_MODULES: Record<keyof UserPreferences, true> = {
   connectors: true,
   reversible: true,
   inbox: true,
-  smartAdd: true,
   dataTools: true,
 };
 

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1442,
+  "routeCount": 1443,
   "routes": [
     {
       "pattern": "/",
@@ -4843,6 +4843,11 @@
       "pattern": "/marketing/[brandId]/socials/swipe",
       "status": "live",
       "source": "app/(core)/marketing/[brandId]/socials/swipe/page.tsx"
+    },
+    {
+      "pattern": "/marketing/[brandId]/socials/videos",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/socials/videos/page.tsx"
     },
     {
       "pattern": "/marketing/[brandId]/websites",

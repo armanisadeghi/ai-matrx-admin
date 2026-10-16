@@ -35,9 +35,11 @@ import { ADMIN_FOOTER_PREPAINT_SCRIPT } from "./admin-menu/admin-footer-reserve"
 interface SidebarProps {
   pathname: string;
   isAuthenticated: boolean;
+  /** The server-resolved admin boolean (the layout's getAdminStatus) — sizes the footer before the client knows. */
+  isAdmin?: boolean;
 }
 
-export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
+export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: SidebarProps) {
   const initialView = initialSidebarView(pathname);
   const visibleItems = navItemsForViewer(primaryNavItems, isAuthenticated);
   return (
@@ -117,7 +119,7 @@ export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
       {/* Reserves the admin block's last measured height before first paint, so the footer
           does not grow (and shift) when admin status resolves — admin-footer-reserve.ts. */}
       <script dangerouslySetInnerHTML={{ __html: ADMIN_FOOTER_PREPAINT_SCRIPT }} />
-      <div className="shell-sidebar-footer">
+      <div className="shell-sidebar-footer" {...(isAdmin ? { "data-admin-reserve": "" } : {})}>
         <AdminSidebarSection />
         <SidebarWindowToggleIsland />
       </div>

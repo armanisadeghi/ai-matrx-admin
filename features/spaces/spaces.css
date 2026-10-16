@@ -252,9 +252,14 @@
 .spaces-sidebar-foot {
   padding-top: 4px;
   border-top: 1px solid var(--spaces-rule);
-  /* Its three rows (Templates, Import, Trash; 30px each) are held from the first paint — they draw a
+  /* Its four rows (Templates, Sites, Import, Trash; 30px each) are held from the first paint — they draw a
      moment after the tree and moved it up by 94px (D2). */
-  min-height: calc(4px + 1px + 3 * 30px);
+  min-height: calc(4px + 1px + 4 * 30px);
+}
+/* Only the page tree gives way: when the tree fills in (~3 s) the column overflows, and a shrinkable
+   head, Search, Home or footer was squeezed 4-30px, moving every row above it (0.0026). */
+.spaces-sidebar-inner > :not(.spaces-sidebar-scroll) {
+  flex-shrink: 0;
 }
 .spaces-section-head {
   display: flex;

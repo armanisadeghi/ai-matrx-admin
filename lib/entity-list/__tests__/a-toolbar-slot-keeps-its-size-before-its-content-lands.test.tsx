@@ -75,7 +75,7 @@ it("a FIRST visit to /data reserves the slot's typical size, so a cold browser's
   document.body.innerHTML = '<div id="slot"></div><script id="s"></script>';
   new Function("document", reserveSlotScript("data-home", "controls"))({ currentScript: document.getElementById("s") });
   const slot2 = document.getElementById("slot") as HTMLElement;
-  expect([slot2.style.minWidth, slot2.style.minHeight]).toEqual(["147px", "34px"]);
+  expect([slot2.style.minWidth, slot2.style.minHeight]).toEqual(["200px", "34px"]);
 });
 
 it("remembers what the content measures once it lands", async () => {

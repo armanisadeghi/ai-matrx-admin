@@ -230,18 +230,19 @@ export class BoardCameraStore {
    * tile in reading order instead (top-left, one screen wide), and the rest is a pan away. Wider views and boards
    * that fit readably keep fit-all.
    */
-  fitOpening(padding = 48): void {
+  fitOpening(padding = 48, instant = false): void {
+    const go = (cam: Camera) => (instant ? this.setCamera(cam) : this.flyTo(cam));
     const rects = [...this.items.values()];
     const bounds = unionRects(rects);
     if (!bounds) return;
     const all = this.fitClear(bounds, padding, 1);
-    if (this.size.w >= PHONE_VIEW_WIDTH || all.z >= PHONE_MIN_READABLE_Z) return this.flyTo(all);
+    if (this.size.w >= PHONE_VIEW_WIDTH || all.z >= PHONE_MIN_READABLE_Z) return go(all);
     const first = this.firstTile() ?? [...rects].sort((a, b) => a.y - b.y || a.x - b.x)[0];
     const { top, right, left } = this.insets;
     const edge = 16;
     // Fit the first tile to the width between the side insets: a tile wider than the view at PHONE_OPEN_Z would clip at the right edge.
     const z = clampZoom(Math.min((this.size.w - left - right - edge * 2) / first.w, 1));
-    this.flyTo({ z, x: left + edge - first.x * z, y: top + edge - first.y * z });
+    go({ z, x: left + edge - first.x * z, y: top + edge - first.y * z });
   }
 
   /** The first tile in reading order: frames (a label band over a group) and drawn marks are not tiles. */

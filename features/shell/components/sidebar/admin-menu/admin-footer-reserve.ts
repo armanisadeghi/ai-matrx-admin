@@ -8,6 +8,11 @@
 // block fills space that was already there. A person who turns out not to be an admin drops the
 // hint; the next load draws no gap.
 
+// First-ever load on a device (nothing in localStorage): the server already knows the admin boolean
+// (the layout's getAdminStatus), so Sidebar marks the footer `data-admin-reserve` and shell.css holds
+// ADMIN_FOOTER_RESERVE_PX — the admin footer's settled height — with no client storage at all.
+export const ADMIN_FOOTER_RESERVE_PX = 169;
+
 export const ADMIN_FOOTER_STORAGE_KEY = "matrx:admin-footer-h";
 export const ADMIN_FOOTER_ATTR = "data-admin-footer";
 export const ADMIN_FOOTER_VAR = "--shell-admin-footer-h";

@@ -4,15 +4,19 @@
  * Smart Add run memory: the answers a person gave BEFORE Create (Preferred / Ours / Not us / Related /
  * a web result's kind, and the values they typed themselves) are saved on the server as they are given and
  * restored when the session's `?run=` address is opened again. Before Create there is no brand, so
- * web.discovered_item (the home of a decision after Create) has nothing to attach to; the person's synced
- * preferences are the server store, keyed by the session (its first run id). Nothing is kept in the browser.
+ * web.discovered_item (the home of a decision after Create) has nothing to attach to; the person's
+ * own row in users.user_surface_state (one per session, keyed by its first run id) is the server store. It is
+ * NOT a preference: it never rides the boot seed. Nothing is kept in the browser.
  *
  * Pure helpers (`pack`, `unpack`, `prune`) + one hook; the screen only calls the hook.
  */
 
-import { useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
+import { useEffect, useRef, useState } from "react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@ai-matrx/chat/host/identity";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { supabase } from "@/utils/supabase/client";
+import type { Json } from "@/types/database.types";
 import type { Decision, EvidenceItem } from "./evidence";
 import type { RelatedCandidate } from "./relations";
 import type { WebChoice } from "./webKinds";
@@ -59,7 +63,10 @@ interface Stored extends RunAnswers {
   at: string;
 }
 
-const MAX_SESSIONS = 30;
+/** users.user_surface_state.feature for every Smart Add session (surface_key = the session id). */
+export const SMART_ADD_FEATURE = "smart_add";
+
+const surfaceTable = () => supabase.schema("users").from("user_surface_state");
 
 export const emptyAnswers = (): RunAnswers => ({ decisions: {}, webChoices: {}, relations: {}, namesakes: [], typed: [], skipped: [], taglines: {}, webMarks: {}, separated: [], later: [] });
 
@@ -104,43 +111,50 @@ export function unpack(raw: unknown): RunAnswers | null {
   };
 }
 
-/** Keep the newest sessions; the rest are dropped (a session is only useful while its address is). */
-export function prune(runs: Record<string, Record<string, unknown>>): Record<string, Record<string, unknown>> {
-  const keys = Object.keys(runs);
-  if (keys.length <= MAX_SESSIONS) return runs;
-  const newest = keys.sort((a, b) => String(runs[b].at ?? "").localeCompare(String(runs[a].at ?? ""))).slice(0, MAX_SESSIONS);
-  return Object.fromEntries(newest.map((k) => [k, runs[k]]));
-}
-
 /**
- * `sessionId`: the first run id of the session (null until a round starts). `restore` is called once, when
- * the saved preferences have loaded, with what was saved for this session; after that every change to
- * `answers` is saved. Nothing is written before the restore ran, so a reload can never wipe the saved answers.
+ * `sessionId`: the first run id of the session (null until a round starts). When the session opens, its saved
+ * answers are read ONCE from the person's own row in users.user_surface_state (feature `smart_add`, surface_key
+ * = the session); `restore` is called with them. After that every change to `answers` is saved to that row.
+ * Nothing is written before the restore ran, so a reload can never wipe the saved answers. Nothing rides the
+ * preferences boot seed: the state loads only when this screen engages with a session.
  */
 export function useRunMemory(sessionId: string | null, answers: RunAnswers, restore: (saved: RunAnswers) => void) {
-  const dispatch = useAppDispatch();
-  const loaded = useAppSelector((s) => s.userPreferences._meta.loadStatus === "loaded");
-  const allRuns = useAppSelector((s) => s.userPreferences.smartAdd.runs);
-  const stored = sessionId ? allRuns[sessionId] : undefined;
+  const userId = useAppSelector(selectUserId);
   const restored = useRef<string | null>(null);
   const lastSaved = useRef<string>("");
+  const hasRow = useRef(false);
 
   useEffect(() => {
-    if (!sessionId || !loaded || restored.current === sessionId) return;
+    if (!sessionId || !userId || restored.current === sessionId) return;
     restored.current = sessionId;
-    const saved = unpack(stored);
-    if (saved) {
-      lastSaved.current = JSON.stringify(saved);
-      if (!isEmptyAnswers(saved)) restore(saved);
-    }
-  }, [sessionId, loaded, stored, restore]);
+    void (async () => {
+      const { data } = await surfaceTable().select("state").eq("user_id", userId).eq("feature", SMART_ADD_FEATURE).eq("surface_key", sessionId).is("deleted_at", null).maybeSingle();
+      const saved = unpack(data?.state);
+      hasRow.current = !!data;
+      if (saved) {
+        lastSaved.current = JSON.stringify(saved);
+        if (!isEmptyAnswers(saved)) restore(saved);
+      }
+      setReady(sessionId);
+    })();
+  }, [sessionId, userId, restore]);
 
+  const [readyFor, setReady] = useState<string | null>(null);
   const body = JSON.stringify(answers);
   useEffect(() => {
-    if (!sessionId || !loaded || restored.current !== sessionId || body === lastSaved.current) return;
-    if (!stored && isEmptyAnswers(answers)) return;
+    if (!sessionId || !userId || readyFor !== sessionId || body === lastSaved.current) return;
+    if (!hasRow.current && isEmptyAnswers(answers)) return;
     lastSaved.current = body;
-    const next = prune({ ...allRuns, [sessionId]: { ...answers, at: new Date().toISOString() } });
-    dispatch(setPreference({ module: "smartAdd", preference: "runs", value: next }));
-  }, [body, sessionId, loaded]);
+    void (async () => {
+      const organizationId = await ensureOrgId(null);
+      const { error } = await surfaceTable().upsert(
+        { user_id: userId, created_by: userId, updated_by: userId, organization_id: organizationId, feature: SMART_ADD_FEATURE, surface_key: sessionId, state: { ...answers, at: new Date().toISOString() } as unknown as Json },
+        { onConflict: "user_id,feature,surface_key" },
+      );
+      if (error) {
+        lastSaved.current = "";
+        console.error("Smart Add: could not save this session's answers", error.message);
+      } else hasRow.current = true;
+    })();
+  }, [body, sessionId, userId, readyFor]);
 }

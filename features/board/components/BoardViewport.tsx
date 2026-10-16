@@ -187,13 +187,28 @@ export function BoardViewport({
     const fromUrl = cameraFromHash(window.location.hash);
     let fitted = !!fromUrl || !fitOnMount;
     if (fromUrl) store.setCamera(fromUrl);
+    // The board is not painted until its first view is set: tiles painted at the default camera and then flown
+    // to the fit are measured by the browser as one big layout shift (the old rect is the pre-flight one). The
+    // opening fit is a jump, behind a hidden world; a safety timer reveals it if no fit ever comes.
+    const world = worldRef.current;
+    let reveal: ReturnType<typeof setTimeout> | null = null;
+    const show = () => {
+      if (reveal) clearTimeout(reveal);
+      reveal = null;
+      if (world) world.style.visibility = "";
+    };
+    if (!fitted && world) {
+      world.style.visibility = "hidden";
+      reveal = setTimeout(show, 2500);
+    }
     // The first fit waits for the view to hold still: a board mounted in a pane that is still laying out is
     // measured a few px wide first, and fitting then lands at the minimum zoom (5%) and SAVES it.
     const tryFit = () => {
       const { w, h } = store.getSize();
       if (!fitted && w > MIN_FIT_VIEW && h > MIN_FIT_VIEW && store.getItems().size > 0) {
         fitted = true;
-        store.fitOpening();
+        store.fitOpening(48, true);
+        show();
       }
     };
     let settled: ReturnType<typeof setTimeout> | null = null;
@@ -241,6 +256,7 @@ export function BoardViewport({
     if (restored) settleSoon();
     const offLost = restored ? store.subscribeItems(settleSoon) : () => undefined;
     return () => {
+      show();
       ro.disconnect();
       offItems();
       offLost();
