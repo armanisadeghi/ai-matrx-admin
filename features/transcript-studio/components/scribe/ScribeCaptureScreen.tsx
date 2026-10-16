@@ -210,8 +210,8 @@ export function ScribeCaptureScreen({ sessionId }: ScribeCaptureScreenProps) {
               )}
             </button>
 
-            {/* Mic-device caret — the same picker ProInput/ProTextarea expose
-                via MicWithDeviceMenu. Docked to the record button's corner
+            {/* Mic-device caret — the same picker ProInput/ProTextarea open
+                from a right-click or hold on their mic. Docked to the record button's corner
                 (absolute, so the fixed control row never shifts); dimmed +
                 inert while recording/finalizing, matching the split-pill
                 convention of hiding device choice mid-capture. */}

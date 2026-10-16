@@ -180,7 +180,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@ai-matrx/design-system";
-import { MicWithDeviceMenu } from "@/components/audio/MicWithDeviceMenu";
+import { MicButton } from "@/components/audio/MicButton";
 import { useOpenAudioDevices } from "@/features/overlays/openers/audioDevices";
 import { supabase } from "@/utils/supabase/client";
 import type { SessionContextItem } from "@/features/transcript-studio/types";
@@ -245,7 +245,7 @@ import {
   composerKeyIntent,
   intentTakesTheKey,
 } from "@ai-matrx/kit/composer-keys";
-import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
+import { useMediaQuery } from "@ai-matrx/kit/media-query";
 
 const FILL_HEIGHT_REGEX =
   /(?:^|\s)(h-full|h-dvh|flex-1|grow|inset-0|min-h-0)(?:\s|$)/;
@@ -619,10 +619,6 @@ export const ProTextarea = React.forwardRef<
       [],
     );
     const coarsePointer = useMediaQuery("(pointer: coarse)");
-    // 🚨 On a phone the mic's device chevron never sits beside the mic
-    // (Arman, 2026-10-15): a composer row has no room for it, so it folds
-    // into the "…" menu as "Microphone" (proFieldControlFit).
-    const isMobile = useIsMobile();
     const openAudioDevices = useOpenAudioDevices();
     const generatedId = useId();
     const inputId = idProp ?? (floatingLabel ? generatedId : undefined);
@@ -1322,10 +1318,12 @@ export const ProTextarea = React.forwardRef<
         enabledAgentActionIds.length > 0 ||
         showBoundAgentsMenu);
     // THE ONE FITTING RULE (proFieldControlFit), shared with ProInput: Send
-    // and "…" always show; the mic (with, then without, its device chooser)
-    // and Expand stay inline while there is room, and whatever does not fit
-    // moves inside "…" — never deleted. A reserved row has the whole width to
-    // itself; inline controls share it with the text, which keeps its floor.
+    // and "…" always show; the mic and Expand stay inline while there is room,
+    // and whatever does not fit moves inside "…" — never deleted. A reserved
+    // row has the whole width to itself; inline controls share it with the
+    // text, which keeps its floor. 🚨 There is no device chevron (Arman,
+    // 2026-10-16): right-click or hold the mic to choose a microphone, and
+    // "…" — whenever it shows — carries "Audio settings".
     const micOffered = enableVoice && isAudioAvailable;
     const fit = fitFieldControls({
       fieldWidth: fieldBoxWidth,
@@ -1335,18 +1333,16 @@ export const ProTextarea = React.forwardRef<
       hasSubmit: !!onSubmit,
       menuHasOwnItems: showMenu,
       mic: micOffered,
-      chooserMayBeInline: !isMobile,
       clear: false,
       expand: expandable && !editor && overflowing,
     });
     const voiceBusyNow = isRecording || isTranscribing;
-    const micInline =
-      micOffered && (fit.mic === "with-chooser" || fit.mic === "alone" || voiceBusyNow);
+    const micInline = micOffered && (fit.mic === "inline" || voiceBusyNow);
     const voiceInMenu = micOffered && !micInline;
-    const micChoiceInMenu = !disabled && fit.chooserInMenu;
     const expandInMenu = fit.folded.includes("expand");
-    // A phone keeps the device choice reachable even with no other action.
-    const menuShown = !disabled && (showMenu || voiceInMenu || micChoiceInMenu || expandInMenu);
+    const menuShown = !disabled && (showMenu || voiceInMenu || expandInMenu);
+    // Whenever "…" shows on a field that takes voice, it carries Audio settings.
+    const audioSettingsInMenu = menuShown && enableVoice;
     // Touch devices have no hover, so the control cluster is ALWAYS visible
     // there (pointer-coarse). Reserve one shallow toolbar row below the text,
     // not a right gutter on every line: this preserves full-width lines while
@@ -1582,15 +1578,9 @@ export const ProTextarea = React.forwardRef<
                 )}
               >
                 {micInline && (
-                  <MicWithDeviceMenu
+                  <MicButton
                     tabIndex={auxiliaryControlsTabIndex}
-                    deviceMenuAriaLabel={
-                      auxiliaryControlsLabel
-                        ? `Choose microphone for ${auxiliaryControlsLabel}`
-                        : undefined
-                    }
                     onMicClick={handleVoiceClick}
-                    {...(micChoiceInMenu ? { showDeviceMenu: false } : {})}
                     dense={denseInline}
                     disabled={isVoiceDisabled}
                     isRecording={isRecording}
@@ -1651,8 +1641,8 @@ export const ProTextarea = React.forwardRef<
                         <div className="flex flex-col p-1">
                           {/* Controls that did not fit beside the text
                             (proFieldControlFit) live here — never deleted.
-                            On a phone the device chooser is always here. */}
-                          {expandInMenu || voiceInMenu || micChoiceInMenu ? (
+                            Audio settings is always here when "…" shows. */}
+                          {expandInMenu || voiceInMenu || audioSettingsInMenu ? (
                             <>
                               {expandInMenu ? (
                                 <button
@@ -1681,7 +1671,7 @@ export const ProTextarea = React.forwardRef<
                                   Voice input
                                 </button>
                               ) : null}
-                              {micChoiceInMenu ? (
+                              {audioSettingsInMenu ? (
                                 <button
                                   type="button"
                                   className="flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-foreground hover:bg-accent"
@@ -1691,7 +1681,7 @@ export const ProTextarea = React.forwardRef<
                                   }}
                                 >
                                   <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                                  Microphone
+                                  Audio settings
                                 </button>
                               ) : null}
                               {showMenu ? <div className="my-1 h-px bg-border" role="separator" /> : null}

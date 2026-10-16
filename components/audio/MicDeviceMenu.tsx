@@ -2,8 +2,9 @@
 
 // components/audio/MicDeviceMenu.tsx
 //
-// Standalone device caret — opens mic picker + audio settings. Prefer
-// `MicWithDeviceMenu` when you also need a record toggle in the same control.
+// Standalone device caret — opens mic picker + audio settings, for surfaces
+// whose record control is not a mic button (Scribe, the capture rail). The
+// writing boxes' `MicButton` has no caret: right-click or hold it instead.
 
 import { ChevronDown } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";

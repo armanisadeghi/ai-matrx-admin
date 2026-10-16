@@ -60,7 +60,7 @@ const fakeState = {
     context: null,
   },
   userAuth: { id: "test-user", createdAt: null },
-  // Read by the "…" menu's action list (the phone-menu case opens it).
+  // Read by the "…" menu's action list (the Audio settings case opens it).
   appContext: { organization_id: null },
   userPreferences: {
     mediaDevices: {
@@ -108,8 +108,7 @@ jest.mock("@/utils/supabase/client", () => ({
   },
 }));
 
-let mockIsMobile = false;
-jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => mockIsMobile }));
+jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
 
 // The "…" menu's agent machinery is a different subsystem entirely; stubbing it
 // keeps this suite about the recorder path and nothing else.
@@ -176,7 +175,6 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  mockIsMobile = false;
   recorderStart.mockClear();
   recorderStop.mockClear();
   toast.error.mockClear();
@@ -284,28 +282,38 @@ describe("ProTextarea imperative dictation handle", () => {
   });
 });
 
-// Arman, 2026-10-15: on a phone the mic's device chevron never sits beside the
-// mic; it folds into the "…" menu, and that menu exists even when the field
-// has no other action, so choosing a microphone is never lost.
-describe("ProTextarea on a phone — the device chevron folds into the menu", () => {
-  it("desktop keeps the chevron beside the mic", async () => {
-    const box = await mount({ showCopyButton: false });
-    expect(box.container.querySelector('button[aria-label="Choose microphone"]')).not.toBeNull();
-    await box.unmount();
-  });
-
-  it("a phone shows the mic, no chevron, and a \"…\" menu that holds Microphone", async () => {
-    mockIsMobile = true;
+// Arman, 2026-10-16: there is NO device chevron. Choosing a microphone is a
+// right-click (or a press-and-hold) on the mic itself, and whenever "…" shows
+// it carries "Audio settings".
+describe("ProTextarea mic — no chevron; right-click, hold and Audio settings", () => {
+  it("the mic stands alone: no 'Choose microphone' chevron anywhere", async () => {
     const box = await mount({ showCopyButton: false });
     expect(box.container.querySelector('button[aria-label="Start voice input"]')).not.toBeNull();
     expect(box.container.querySelector('button[aria-label="Choose microphone"]')).toBeNull();
+    expect(box.container.querySelector("svg.lucide-chevron-down")).toBeNull();
+    await box.unmount();
+  });
+
+  it("right-clicking the mic opens the microphone picker and does not start recording", async () => {
+    const box = await mount({ showCopyButton: false });
+    const mic = box.container.querySelector<HTMLButtonElement>('button[aria-label="Start voice input"]')!;
+    await act(async () => {
+      mic.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
+    });
+    expect(document.body.textContent).toContain("System default");
+    expect(recorderStart).not.toHaveBeenCalled();
+    await box.unmount();
+  });
+
+  it("'…' carries Audio settings whenever it shows", async () => {
+    const box = await mount({});
     const more = box.container.querySelector<HTMLButtonElement>('button[aria-label="More options"]');
     expect(more).not.toBeNull();
     await act(async () => {
       more!.click();
     });
     const rows = [...document.querySelectorAll("button")].map((b) => b.textContent?.trim());
-    expect(rows).toContain("Microphone");
+    expect(rows).toContain("Audio settings");
     await box.unmount();
     // Opening "…" the first time loads the lazy action list — slow on a busy machine.
   }, 120_000);
