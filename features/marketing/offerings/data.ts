@@ -139,7 +139,6 @@ export async function fetchOfferingsVerdict(brandId: string): Promise<OfferingsV
   const draft = obj(values.get("coverage_verdict_draft"));
   const claims = obj(values.get("scope_claims"));
   const checks = obj(values.get("reader_checks"));
-  delete checks.__kind;
   return {
     verdict: (str(draft.verdict) as OfferingsVerdict["verdict"]) ?? null,
     line: str(draft.line),
