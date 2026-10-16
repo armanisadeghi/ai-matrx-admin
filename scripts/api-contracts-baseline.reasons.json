@@ -14,5 +14,10 @@
     "reason": "Route GET/POST /browser-manager/cloud-computer is not in the generated client until the server deploys; same raw-client pattern as features/cloud-browser/service.ts",
     "accepted_by": "Armani Sadeghi",
     "date": "2026-10-16"
+  },
+  "features/admin/tool-control/service.ts": {
+    "reason": "The /admin/tool-control routes are new and not in the generated @ai-matrx/api contract until aidream's contract regenerates and publishes; the raw client call moves to the generated operation then (same as open-outages)",
+    "accepted_by": "Armani Sadeghi",
+    "date": "2026-10-16"
   }
 }
