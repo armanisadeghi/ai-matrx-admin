@@ -1,5 +1,5 @@
 import { deckReducer, blankDeck, blankSlide, type DeckState, type Deck } from "../deck-model";
-import { findInDeck, replaceAllInSlides, isSkipped, slideTransitionOf, slideBackgroundOf, plainTextOf, commentsOf } from "../deck-slide-ops";
+import { findInDeck, replaceAllInSlides, isSkipped, showPosition, slideTransitionOf, slideBackgroundOf, plainTextOf, commentsOf } from "../deck-slide-ops";
 import { portionsToSlides } from "../deck-import";
 import { searchSpecialChars } from "../deck-special-chars";
 
@@ -17,6 +17,15 @@ describe("slide-level deck operations", () => {
     const s2 = deckReducer(s1, { type: "setSkipped", index: 1, skipped: false });
     expect(isSkipped(s2.deck.slides[1])).toBe(false);
     expect("skipped" in s2.deck.slides[1]!).toBe(false);
+  });
+
+  it("the slideshow counter counts only the slides the show plays", () => {
+    const three = { ...twoSlides().deck, slides: [...twoSlides().deck.slides, { ...blankSlide("title"), title: "c" }] };
+    const s = deckReducer({ deck: three, current: 0 }, { type: "setSkipped", index: 2, skipped: true });
+    expect(showPosition(s.deck.slides, 1)).toEqual({ shown: 2, total: 2 });
+    const mid = deckReducer({ deck: three, current: 0 }, { type: "setSkipped", index: 1, skipped: true });
+    expect(showPosition(mid.deck.slides, 2)).toEqual({ shown: 2, total: 2 });
+    expect(showPosition(three.slides, 2)).toEqual({ shown: 3, total: 3 });
   });
   it("background and transition apply to one slide or all", () => {
     let s = deckReducer(twoSlides(), { type: "setBackground", index: 0, background: { color: "#112233" } });

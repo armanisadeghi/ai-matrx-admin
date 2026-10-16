@@ -16,7 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useId } from "react";
-import { Copy, Plus, Trash2 } from "lucide-react";
+import { Copy, EyeOff, Plus, Trash2 } from "lucide-react";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
 import {
   ContextMenu,
@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import type { Deck, DeckAction } from "../deck-model";
 import { slideAspect, slideSizeOf } from "@/components/mardown-display/blocks/presentations/slide-size";
 import { PaperSlide } from "../slide-paper";
+import { isSkipped } from "../deck-slide-ops";
 
 function RailItem({
   deck,
@@ -51,6 +52,7 @@ function RailItem({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: !canEdit });
   const slide = deck.slides[index];
+  const skipped = isSkipped(slide);
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -64,7 +66,8 @@ function RailItem({
           <button
             type="button"
             data-clickable
-            aria-label={`Slide ${index + 1}${slide?.title ? `: ${slide.title}` : ""}`}
+            aria-label={`Slide ${index + 1}${slide?.title ? `: ${slide.title}` : ""}${skipped ? " (skipped)" : ""}`}
+            data-skipped={skipped ? "" : undefined}
             aria-current={selected ? "true" : undefined}
             onClick={() => onSelect(index)}
             onKeyDown={(e) => {
@@ -81,9 +84,14 @@ function RailItem({
             {...listeners}
             style={{ aspectRatio: slideAspect(slideSizeOf(deck)) }}
           >
-            <span className="pointer-events-none absolute inset-0">
+            <span className={cn("pointer-events-none absolute inset-0", skipped && "opacity-40")}>
               <PaperSlide deck={deck} slide={slide} slideNumber={index + 1} className="h-full w-full" />
             </span>
+            {skipped ? (
+              <span className="pointer-events-none absolute right-1 top-1 rounded bg-background/90 p-0.5" title="Skipped in the slideshow">
+                <EyeOff className="size-3.5 text-muted-foreground" aria-hidden />
+              </span>
+            ) : null}
           </button>
         </div>
       </ContextMenuTrigger>

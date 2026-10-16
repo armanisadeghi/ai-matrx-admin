@@ -65,7 +65,8 @@ import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost
 import { isSkipped, slideTextStyleOf } from "../deck-slide-ops";
 import { getDeckA11y, setDeckA11y, useDeckA11y } from "../deck-a11y";
 import { plainTextOf } from "../deck-slide-ops";
-import { createDeckSaver, listenToDeckPage } from "../deck-autosave";
+import { createDeckSaver, listenToDeckPage, type DeckSaver } from "../deck-autosave";
+import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { AccessibilityDialog, BackgroundDialog, CommentsDialog, FindReplaceDialog, ImportSlidesDialog, MotionDialog, SpecialCharsDialog, ThemeBuilderDialog } from "./DeckPanels";
 import { DeckGridView } from "./DeckGridView";
 import { deckDownloads, downloadDeckAsOdp, downloadDeckAsText, downloadSlideAsImage, printDeck } from "../deck-export";
@@ -103,7 +104,10 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const [sizeOpen, setSizeOpen] = useState(false);
   const openFeedback = useOpenFeedbackWindow();
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [canEdit, setCanEdit] = useState(false);
+  const [mayEdit, setMayEdit] = useState(false);
+  // Nothing is editable (or saved) until the stored deck has loaded: the blank deck shown while
+  // loading must never take an edit, and never be written over the real one.
+  const canEdit = mayEdit && row !== null;
   const [hist, dispatchHist] = useReducer(historyReducer, initialHistory(blankDeck()));
   const [saveState, setSaveState] = useState<EditorSaveState>("saved");
   const [notesShown, setNotesShown] = useState(true);
@@ -125,47 +129,14 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const { deck, current } = hist.present;
   const slide = deck.slides[current];
 
-  const load = async () => {
-    const res = await getPresentation(presentationId);
-    if (isServiceFailure(res)) {
-      setLoadError(res.error);
-      return;
-    }
-    setRow(res.data);
-    saver.markSaved(0);
-    dispatchHist({ type: "reset", deck: res.data.deck });
-    setSaveState("saved");
-  };
-
-  const loadRef = useRef(load);
-  useEffect(() => {
-    loadRef.current = load;
-  });
-  useEffect(() => {
-    let live = true;
-    void loadRef.current();
-    void canActOn("presentation", presentationId, "editor").then((ok) => live && setCanEdit(ok));
-    return () => {
-      live = false;
-    };
-  }, [presentationId]);
-
-  // Autosave: every content change (revision) is saved after a short pause; each save is one version.
-  // Saves run one at a time (an older whole-deck write can never land last) and leaving the page
-  // flushes and asks while anything is unwritten (deck-autosave).
   const deckRef = useRef(deck);
   const currentRef = useRef(current);
   const revisionRef = useRef(hist.revision);
   const canEditRef = useRef(canEdit);
-  useEffect(() => {
-    deckRef.current = deck;
-    currentRef.current = current;
-    revisionRef.current = hist.revision;
-    canEditRef.current = canEdit;
-    presentationIdRef.current = presentationId;
-  }, [deck, current, hist.revision, canEdit, presentationId]);
-  const [saver] = useState(() =>
-    createDeckSaver({
+  // Built on first use (from an effect or a handler, never during render).
+  const saverRef = useRef<DeckSaver | null>(null);
+  const saverFor = (): DeckSaver =>
+    (saverRef.current ??= createDeckSaver({
       current: () => ({ revision: revisionRef.current, deck: deckRef.current }),
       write: async (d) => {
         if (!canEditRef.current) return false;
@@ -177,23 +148,59 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
         return true;
       },
       onState: setSaveState,
-    }),
-  );
-  const saveNow = () => saver.save();
+    }));
+  const load = async () => {
+    const res = await getPresentation(presentationId);
+    if (isServiceFailure(res)) {
+      setLoadError(res.error);
+      return;
+    }
+    setRow(res.data);
+    saverFor().markSaved(0);
+    dispatchHist({ type: "reset", deck: res.data.deck });
+    setSaveState("saved");
+  };
+
+  const loadRef = useRef(load);
   useEffect(() => {
+    loadRef.current = load;
+  });
+  useEffect(() => {
+    let live = true;
+    void loadRef.current();
+    void canActOn("presentation", presentationId, "editor").then((ok) => live && setMayEdit(ok));
+    return () => {
+      live = false;
+    };
+  }, [presentationId]);
+
+  // Autosave: every content change (revision) is saved after a short pause; each save is one version.
+  // Saves run one at a time (an older whole-deck write can never land last) and leaving the page
+  // flushes and asks while anything is unwritten (deck-autosave).
+  useEffect(() => {
+    deckRef.current = deck;
+    currentRef.current = current;
+    revisionRef.current = hist.revision;
+    canEditRef.current = canEdit;
+    presentationIdRef.current = presentationId;
+  }, [deck, current, hist.revision, canEdit, presentationId]);
+  const saveNow = () => saverFor().save();
+  useEffect(() => {
+    const saver = saverFor();
     if (!saver.hasUnsaved() || !canEdit) return undefined;
     setSaveState("dirty");
     const t = setTimeout(() => void saver.save(), AUTOSAVE_MS);
     return () => clearTimeout(t);
-  }, [hist.revision, canEdit, saver]);
+  }, [hist.revision, canEdit]);
   // Leaving the page (or the editor) never drops the last edits.
   useEffect(() => {
+    const saver = saverFor();
     const stop = listenToDeckPage(saver);
     return () => {
       stop();
       if (canEditRef.current && saver.hasUnsaved()) void saver.save();
     };
-  }, [saver]);
+  }, []);
 
   // A collaborator's (or an agent's) rename shows here live.
   useLiveFileName({ table: "presentation", column: "name", id: presentationId }, (name) => {
@@ -552,9 +559,17 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
         }
       >
         <div className={cn("flex min-h-0 flex-1", isPhone ? "flex-col" : "flex-row")} data-presentation-editor={presentationId}>
-          {!isPhone && rail}
-          {canvas}
-          {isPhone && rail}
+          {row ? (
+            <>
+              {!isPhone && rail}
+              {canvas}
+              {isPhone && rail}
+            </>
+          ) : (
+            <div className="flex flex-1 items-center justify-center text-sm" data-deck-loading="">
+              <ShimmerText text="Opening your presentation…" />
+            </div>
+          )}
           <SlideSizeDialog open={sizeOpen} onOpenChange={setSizeOpen} initial={slideSizeOf(deck)} onApply={(size) => dispatch({ type: "setSlideSize", size })} />
           <EditorDetailsDialog
             open={detailsOpen}

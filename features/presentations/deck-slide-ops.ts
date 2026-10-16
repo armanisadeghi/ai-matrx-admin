@@ -62,6 +62,14 @@ export function playableIndexes(slides: DeckSlide[]): number[] {
   return slides.map((s, i) => (isSkipped(s) ? -1 : i)).filter((i) => i >= 0);
 }
 
+/** The slideshow counter ("2 / 3"): position among the slides the show plays, never the deck. */
+export function showPosition(slides: DeckSlide[], at: number): { shown: number; total: number } {
+  const play = playableIndexes(slides);
+  if (play.length === 0) return { shown: Math.min(at + 1, slides.length), total: slides.length };
+  const before = play.filter((i) => i <= at).length;
+  return { shown: Math.max(1, before), total: play.length };
+}
+
 export interface SlideComment {
   id: string;
   author: string;
