@@ -14,13 +14,15 @@ import type {
 import type { PendingSource } from "@ai-matrx/chat/agents/components/messages-display/message-options/pending-source";
 import type { CodeFileSummary } from "@ai-matrx/chat/host/code-files";
 import { getStore } from "@/lib/redux/store-singleton";
+import type { AppDispatch } from "@/lib/redux/store";
 
 // The code files (Save to Code, Save code to Scratch) go through this app's code-files store, so an
 // open code editor and the library see the saved file at once.
 function codeFilesStore() {
   const store = getStore();
   if (!store) throw new Error("The app store is not ready, so the code file cannot be saved.");
-  return store;
+  // The singleton is typed loosely; its dispatch is the app's thunk dispatch (`.unwrap()` included).
+  return { dispatch: store.dispatch as AppDispatch };
 }
 const codeThunks = () => import("@/features/code-files/redux/thunks");
 const codeApi = async () => (await import("@/features/code-files/service/codeFilesApi")).CodeFilesAPI;

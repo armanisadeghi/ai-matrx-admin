@@ -47,9 +47,9 @@ export function useWebQuickSaveNotes(): QuickSaveNotes {
   const create = useCallback<QuickSaveNotes["create"]>(
     async ({ label, content, homeScopeId, tags, organizationId }) => {
       const id = `note_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-      return runTrackedRequest({
+      return runTrackedRequest(dispatch, {
         id,
-        kind: "note",
+        kind: "crud",
         label: `Note: ${label}`,
         run: async () => {
           let home: string | null = null;
@@ -77,9 +77,9 @@ export function useWebQuickSaveNotes(): QuickSaveNotes {
   const updateContent = useCallback<QuickSaveNotes["updateContent"]>(
     async (noteId, content) => {
       const id = `note_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-      await runTrackedRequest({
+      await runTrackedRequest(dispatch, {
         id,
-        kind: "note",
+        kind: "crud",
         label: "Note update",
         run: () => dispatch(saveNoteField({ noteId, field: "content", value: content })).unwrap(),
       });
