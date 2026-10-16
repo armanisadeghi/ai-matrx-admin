@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1439,
+  "routeCount": 1442,
   "routes": [
     {
       "pattern": "/",
@@ -2334,6 +2334,11 @@
       "source": "app/(core)/commerce/triage/page.tsx"
     },
     {
+      "pattern": "/compare",
+      "status": "live",
+      "source": "app/(core)/compare/page.tsx"
+    },
+    {
       "pattern": "/compare/old",
       "status": "live",
       "source": "app/(core)/compare/old/page.tsx"
@@ -4485,6 +4490,11 @@
       "source": "app/(core)/marketing/[brandId]/locations/[locationId]/grid/page.tsx"
     },
     {
+      "pattern": "/marketing/[brandId]/offerings",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/offerings/page.tsx"
+    },
+    {
       "pattern": "/marketing/[brandId]/planning",
       "status": "live",
       "source": "app/(core)/marketing/[brandId]/planning/page.tsx"
@@ -5028,6 +5038,11 @@
       "pattern": "/marketing/brands/new-website",
       "status": "live",
       "source": "app/(core)/marketing/brands/new-website/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/offerings",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/offerings/page.tsx"
     },
     {
       "pattern": "/marketing/brands/smart-add",

@@ -2,7 +2,9 @@
  * MKT-167: a run's large event values arrive by reference and are loaded ONCE, on
  * demand, through the one path — never with the event log.
  */
+import { withRunDebugView } from "../debug-view";
 import {
+  RUN_VALUE_HELD_KEY,
   RUN_VALUE_REF_KEY,
   cachedRunValues,
   clearRunValueCache,
@@ -48,5 +50,23 @@ describe("run values by reference", () => {
   it("a reference the run never stored is a loud failure, never a marker on screen", async () => {
     const fetchValues = jest.fn(async () => ({ values: {}, missing: ["gone"] }));
     await expect(resolveRunValue("run-1", { x: ref("gone") }, fetchValues)).rejects.toThrow(/no stored value/);
+  });
+});
+
+describe("held values and the debug view (MKT-167 part 2)", () => {
+  beforeEach(() => clearRunValueCache());
+
+  it("treats a held provision marker as a reference an admin in debug mode loads", async () => {
+    const held = { [RUN_VALUE_HELD_KEY]: "p1" };
+    expect([...collectRunValueRefs({ provision_values: held })]).toEqual(["p1"]);
+    const fetchValues = jest.fn(async () => ({ values: { p1: { brand_name: "Acme" } }, missing: [] }));
+    const resolved = await resolveRunValue("run-2", { provision_values: held }, fetchValues);
+    expect(resolved).toEqual({ provision_values: { brand_name: "Acme" } });
+  });
+
+  it("adds debug_view=1 only when the tab is in admin debug mode", () => {
+    expect(withRunDebugView("/runs/r/events?after_seq=0", false)).toBe("/runs/r/events?after_seq=0");
+    expect(withRunDebugView("/runs/r/events?after_seq=0", true)).toBe("/runs/r/events?after_seq=0&debug_view=1");
+    expect(withRunDebugView("/runs/r/events/stream", true)).toBe("/runs/r/events/stream?debug_view=1");
   });
 });

@@ -1,12 +1,6 @@
 {
-  "app/(core)/data/__tests__/route-mount.live.test.tsx": [
-    "undici"
-  ],
   "app/(dev)/demos/general/code-generator/components/DynamicComponentRenderer.tsx": [
     "axios"
-  ],
-  "app/api/image-proxy/route.ts": [
-    "undici"
   ],
   "components/animated/demos/bento-grids/BentoGridExampleThree.tsx": [
     "cobe"
@@ -40,9 +34,6 @@
   ],
   "features/matrx-envelope/directives/createProjectWithTasks/CreateProjectWithTasksRenderer.tsx": [
     "framer-motion"
-  ],
-  "features/record-change-approvals/__tests__/harness.ts": [
-    "undici"
   ],
   "lib/redux/selectors/userSelectors.ts": [
     "reselect"

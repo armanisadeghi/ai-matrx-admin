@@ -37,6 +37,7 @@ import { getJson } from "@/lib/python-client";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { capturePythonClientError, relationPathFromUrl } from "@/lib/diagnostics/capturePythonClientError";
 import { readThroughRestart, restartQuietCapture } from "../transport/read-through-restart";
+import { withRunDebugView } from "../transport/debug-view";
 
 import {
   invocationKeyOf,
@@ -548,7 +549,7 @@ export function adoptWorkflowRun(
         // Each page rides through a server restart on its own (never a re-replay of pages already routed).
         const after = cursor ?? 0;
         const page: RunEventRecord[] = await readThroughRestart(
-          () => fetchJson<RunEventRecord[]>(`/runs/${runId}/events?after_seq=${after}&limit=${REPLAY_PAGE_SIZE}`),
+          () => fetchJson<RunEventRecord[]>(withRunDebugView(`/runs/${runId}/events?after_seq=${after}&limit=${REPLAY_PAGE_SIZE}`)),
           { isStopped },
         );
         for (const record of page) {

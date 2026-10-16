@@ -42,6 +42,7 @@
 
 import { RESTART_WINDOW_MS } from "./read-through-restart";
 import { streamSse } from "@/features/workflow-runtime/transport/sse";
+import { withRunDebugView } from "@/features/workflow-runtime/transport/debug-view";
 import { isNodeStreamEvent, isWorkflowRunEvent } from "@/features/workflow-runtime/types";
 import type {
   NodeStreamEvent,
@@ -215,7 +216,7 @@ export function startRunEventSource(config: RunEventSourceConfig): {
     // frame proves the wire (claim-on-first-frame in onFrame below).
     armStallTimer();
     try {
-      await streamSse(`/runs/${runId}/events/stream`, handleSseEvent, {
+      await streamSse(withRunDebugView(`/runs/${runId}/events/stream`), handleSseEvent, {
         baseUrl,
         headers: getHeaders(),
         lastEventId: cursor !== null ? String(cursor) : null,
@@ -282,7 +283,7 @@ export function startRunEventSource(config: RunEventSourceConfig): {
         : `?limit=${POLL_LIMIT}`;
     // PATH-relative: the injected fetchJson prepends the base URL itself
     // (passing a full URL here double-prefixed every poll — Bugbot #147).
-    const rows = await fetchJson<RunEventRecord[]>(`/runs/${runId}/events${qs}`);
+    const rows = await fetchJson<RunEventRecord[]>(withRunDebugView(`/runs/${runId}/events${qs}`));
     let delivered = 0;
     if (stopped) return delivered;
     for (const row of rows) {
