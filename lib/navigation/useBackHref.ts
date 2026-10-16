@@ -44,6 +44,8 @@ export function previousPageUrl(
     const url = new URL(raw, origin);
     if (url.origin !== origin) return null;
     if (url.pathname === currentPathname) continue;
+    // A sign-in or API hop (dev-login, auth callback) is a redirect, not a page the person saw.
+    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/")) continue;
     return `${url.pathname}${url.search}`;
   }
   return null;

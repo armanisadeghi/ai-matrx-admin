@@ -102,10 +102,14 @@ export function DataToModelLab() {
 
   return (
     <>
-      <RecordPageHeader backHref="/data/library" record={{ name: "Data to model" }} />
+      <RecordPageHeader backHref="/data/library" record={{ name: "Data for a model" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-data-lab="">
           <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-4">
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">Try data with a model</h1>
+              <p className="text-sm text-muted-foreground">Fetch records, then compare handing them over with letting the model fetch</p>
+            </div>
             {catalog.error ? (
               <ReadFailure error={catalog.error} what="the data sources" onRetry={() => void catalog.refetch()} />
             ) : (
@@ -194,7 +198,7 @@ function DataStep({ organizationId, sources, onLoaded }: { organizationId: strin
               <div className="min-w-0 flex-1">
                 <ProInput
                   value={value}
-                  placeholder={source?.example_url ?? "https://www.trustpilot.com/review/example.com"}
+                  placeholder={source?.example_url && !/apple\.com/i.test(source.example_url) ? source.example_url : "https://www.trustpilot.com/review/harborpinecoffee.com"}
                   enableCleanup={false}
                   onChange={(e) => setInputs(inputs.map((v, j) => (j === i ? e.target.value : v)))}
                   aria-label={`Input ${i + 1}`}

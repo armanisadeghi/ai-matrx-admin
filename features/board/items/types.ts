@@ -171,7 +171,7 @@ export type ItemSurface =
  * mounts it bare, never inside a second dialog, and places what it saves.
  */
 export type StartNewEntry =
-  | { label: string; icon?: LucideIcon; create: () => PlacedItem }
+  | { label: string; icon?: LucideIcon; create: () => PlacedItem; /** The new tile opens for work the moment it lands (a picker asks its first question at once). */ openAtOnce?: boolean }
   | { label: string; icon?: LucideIcon; Picker: ComponentType<PickerProps> }
   | { label: string; icon?: LucideIcon; Dialog: ComponentType<PickerProps> };
 
@@ -207,6 +207,8 @@ export interface BoardItemType {
    * field. When it takes its first source it grows to `defaultSize` (never shrinks).
    */
   growOnFill?: boolean;
+  /** A tile whose body is a first question (a source picker): one click on it opens it, no double-click. */
+  opensOnClick?: (source: NodeSource) => boolean;
   /** Does this type render that saved source? */
   matches: (source: NodeSource) => boolean;
   /** The tile body — the feature's canonical component. */

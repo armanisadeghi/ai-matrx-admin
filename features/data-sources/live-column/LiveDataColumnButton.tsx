@@ -20,11 +20,13 @@ import { ProInput } from "@/components/official/ProInput";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { runAiColumn } from "@/features/data-tables/records-ui-host/enrichPort";
 
-import { limitSettingHref, useDataSources } from "../hooks";
-import { usePriceText } from "../library/hooks";
+import { limitSettingHref } from "../hooks";
+import { useLibrary, usePriceText } from "../library/hooks";
+import { resolveTasks } from "../library/tasks";
 import {
   KEEP_OPTIONS,
   addressColumns,
+  guessAddressColumn,
   columnLabelFor,
   columnTypeFor,
   companyLevelSources,
@@ -65,17 +67,31 @@ export function LiveDataColumnButton({ tableId, organizationId }: { tableId: str
 function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: string; organizationId: string | null; onClose: () => void }) {
   const client = useRecordsClient();
   const backend = useBackendApi();
-  const catalog = useDataSources(organizationId);
+  const catalog = useLibrary(organizationId);
   const price = usePriceText();
   const fields = useFields(tableId);
   const sources = useMemo(
     () => (catalog.data?.sources ?? []).filter((s) => s.input.kind === "url" && (s.output_fields?.length ?? 0) > 0),
     [catalog.data],
   );
+  // Sources are offered by the job they do (reviews, places, companies, products, social...), like the library's task cards.
+  const tasks = useMemo(() => {
+    const ok = new Set(sources.map((s) => s.key));
+    return catalog.data
+      ? resolveTasks(catalog.data)
+          .map((r) => ({ id: r.task.id, title: r.task.title, ready: r.confirmed.filter((s) => ok.has(s.key)).map((s) => s.key), more: r.more.filter((s) => ok.has(s.key)).map((s) => s.key) }))
+          .filter((t) => t.ready.length + t.more.length > 0)
+      : [];
+  }, [catalog.data, sources]);
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const activeTask = tasks.find((t) => t.id === (taskId ?? tasks[0]?.id)) ?? null;
+  const allSources = taskId === "all" || !activeTask;
   const inputs = useMemo(() => addressColumns(fields.data ?? []), [fields.data]);
 
   const [sourceKey, setSourceKey] = useState("");
-  const [inputField, setInputField] = useState("");
+  const [pickedField, setInputField] = useState("");
+  // A column the person did not pick is still found: the link-like one, even when the table view hides it.
+  const inputField = pickedField || guessAddressColumn(inputs)?.key || "";
   const [kept, setKept] = useState<string[]>([]);
   const [rows, setRows] = useState("10");
   const [keeps, setKeeps] = useState<Record<string, LiveKeep>>({});
@@ -177,12 +193,18 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
     : serverTotal != null
       ? formatPoints(serverTotal)
       : null;
-  const estimateText = !made && priceSource && kept.length > 0 ? price(priceSource, rowCount * (isItems ? recordsPerRow : 1) * kept.length) : null;
+  const estimateText = !made && priceSource ? price(priceSource, rowCount * (isItems ? recordsPerRow : 1) * Math.max(1, kept.length)) : null;
   const sourceGroups = useMemo(() => {
+    if (!allSources && activeTask) {
+      return [
+        ...(activeTask.ready.length ? [{ heading: "Ready", options: activeTask.ready }] : []),
+        ...(activeTask.more.length ? [{ heading: "More sources", options: activeTask.more }] : []),
+      ];
+    }
     const byGroup = new Map<string, string[]>();
     for (const s of sources) byGroup.set(s.group, [...(byGroup.get(s.group) ?? []), s.key]);
     return [...byGroup.entries()].map(([heading, options]) => ({ heading, options }));
-  }, [sources]);
+  }, [sources, activeTask, allSources]);
   const settings = quote ? limitSettingHref(organizationId, quote.recordsPerRowSetting) : null;
   const rowsSetting = quote ? limitSettingHref(organizationId, quote.maxRowsSetting) : null;
 
@@ -194,6 +216,21 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
         </DialogHeader>
         {!made ? (
           <div className="flex flex-col gap-3">
+            {tasks.length > 0 && (
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-medium text-muted-foreground">What for</span>
+                <Select
+                  aria-label="What for"
+                  value={allSources ? "all" : (activeTask?.id ?? "")}
+                  options={[...tasks.map((t) => ({ value: t.id, label: t.title })), { value: "all", label: "All sources" }]}
+                  onValueChange={(v) => {
+                    setTaskId(v);
+                    setSourceKey("");
+                    setKept([]);
+                  }}
+                />
+              </label>
+            )}
             <label className="flex flex-col gap-1">
               <span className="text-xs font-medium text-muted-foreground">Source</span>
               <OptionCombobox
@@ -218,6 +255,11 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                 onValueChange={setInputField}
               />
             </label>
+            {source?.description && (
+              <p className="line-clamp-2 text-xs text-muted-foreground" data-live-column-about="">
+                {source.description}
+              </p>
+            )}
             {source && (
               <fieldset className="flex flex-col gap-1">
                 <legend className="text-xs font-medium text-muted-foreground">Keep these fields (one column each)</legend>
@@ -294,7 +336,7 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
             )}
             {estimateText && (
               <p className="text-sm" data-live-column-estimate="">
-                Cost for {rowCount} {rowCount === 1 ? "row" : "rows"}: <strong>{estimateText}</strong>
+                {rowCount} {rowCount === 1 ? "row" : "rows"}: <strong>{estimateText}</strong>
               </p>
             )}
             <Button variant="primary" disabled={busy || !source || !inputField || kept.length === 0} onClick={() => void create()} data-live-column-add="">

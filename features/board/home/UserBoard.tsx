@@ -331,7 +331,7 @@ export function UserBoard({
   const place = (
     wanted: PlacedItem[],
     at?: { x: number; y: number },
-    opts: { agent?: boolean } = {},
+    opts: { agent?: boolean; edit?: boolean } = {},
   ): ({ id: string; already: boolean } | null)[] => {
     const busy = opts.agent && store ? (store.getEditing() ?? store.getFocused()) : null;
     const { tiles, results, already } = planPlacement(
@@ -367,6 +367,7 @@ export function UserBoard({
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           store.select(target);
+          if (opts.edit) store.setEditing(target);
           if (placed.reveal) store.flyTo(placed.reveal, 320);
         }),
       );
@@ -376,7 +377,7 @@ export function UserBoard({
 
   const startNew = (_type: BoardItemType, entry: StartNewEntry) => {
     setPicking(null);
-    if ("create" in entry) place([entry.create()]);
+    if ("create" in entry) place([entry.create()], undefined, entry.openAtOnce ? { edit: true } : undefined);
     else if ("Dialog" in entry) setStarting({ Dialog: entry.Dialog });
     else setPicking({ title: entry.label, Picker: entry.Picker });
   };
@@ -1121,6 +1122,7 @@ function BoardItemTile({
         throwActions={BOARD_THROWS}
         onConnect={onConnect}
         sleeps={type?.sleeps ?? false}
+        opensOnClick={type?.opensOnClick?.(source) ?? false}
         titleSlot={type?.TitleField ? <type.TitleField tileId={id} source={source} title={title} /> : undefined}
         actions={
           <>

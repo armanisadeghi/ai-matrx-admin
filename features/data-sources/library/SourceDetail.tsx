@@ -39,7 +39,7 @@ import { RefusalView } from "../RefusalView";
 import { FetchProgress } from "../FetchProgress";
 import { clearRun, resumeRun, runState, startRun, useRun } from "../runs";
 import { fetchData, getJob } from "../server";
-import { orderTellingFields, type Library, type LibrarySource } from "./catalog";
+import { orderTellingFields, plainIssue, type Library, type LibrarySource } from "./catalog";
 import { GroupMark } from "./groupMark";
 import {
   libraryKey,
@@ -337,7 +337,7 @@ function SourceForm({
     limit?.value,
   );
   const price = usePriceText();
-  const unit = price(source, 1);
+  const unit = price(source, 1, { pointsOnly: true });
   const total = price(source, count);
   const built = buildInput(source, values, modeOf(source, option).option);
   const settingHref = limit
@@ -357,15 +357,12 @@ function SourceForm({
         <GroupMark group={source.group} subgroup={source.subgroup} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            {source.confirmed ? (
+            {source.knownIssue ? (
+              <Badge tone="warning">Known issue</Badge>
+            ) : source.confirmed ? (
               <Badge tone="success">Confirmed</Badge>
             ) : (
               <Badge tone="neutral">Not confirmed yet</Badge>
-            )}
-            {source.knownIssue && (
-              <Badge tone="warning" title={source.knownIssue}>
-                Known issue
-              </Badge>
             )}
             {unit && (
               <span
@@ -385,7 +382,7 @@ function SourceForm({
         <p className="-mt-2 text-sm text-foreground">{source.description}</p>
       )}
       {source.knownIssue && (
-        <p className="-mt-2 text-xs text-warning">{source.knownIssue}</p>
+        <p className="-mt-2 text-xs text-warning">{plainIssue(source.knownIssue)}</p>
       )}
 
       <Section

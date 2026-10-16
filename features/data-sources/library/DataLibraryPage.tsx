@@ -36,6 +36,7 @@ import {
   type Library,
   type LibrarySection,
   type LibrarySource,
+  plainIssue,
 } from "./catalog";
 import { GroupMark } from "./groupMark";
 import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
@@ -365,7 +366,7 @@ function CardGrid({ sources, onOpen, rich = false }: { sources: LibrarySource[];
 }
 
 function SourceCard({ source, rich, onOpen }: { source: LibrarySource; rich: boolean; onOpen: () => void }) {
-  const price = usePriceText()(source, 1);
+  const price = usePriceText()(source, 1, { pointsOnly: true });
   const preview = fieldPreview(source.outputFields, rich ? 5 : 3);
   return (
     <button
@@ -398,16 +399,15 @@ function SourceCard({ source, rich, onOpen }: { source: LibrarySource; rich: boo
           {price ? `${price} / record` : "No price yet"}
         </span>
         <span className="ml-auto flex items-center gap-1">
-          {source.knownIssue && (
-            <Badge tone="warning" title={source.knownIssue}>
+          {source.knownIssue ? (
+            <Badge tone="warning" title={plainIssue(source.knownIssue)}>
               Known issue
             </Badge>
-          )}
-          {source.confirmed && (
+          ) : source.confirmed ? (
             <Badge tone="success" title="Confirmed with a live fetch">
               Confirmed
             </Badge>
-          )}
+          ) : null}
         </span>
       </div>
     </button>

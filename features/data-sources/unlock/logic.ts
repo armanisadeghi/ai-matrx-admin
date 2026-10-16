@@ -15,11 +15,11 @@ export const REASON_LABELS: Record<string, string> = {
   cloudflare_block: "Cloudflare wall",
   bot_wall: "Bot wall",
   login_wall: "Login wall",
-  thin_content: "Almost no text",
+  thin_content: "Very little text",
   empty_content: "No text",
   request_error: "Could not connect",
   bad_status: "Error page",
-  wrong_resource: "Wrong page",
+  wrong_resource: "Not the right page",
 };
 
 /** The reasons worth offering: a page a different door might open. Files, DRM and account scopes are not pages. */
@@ -71,6 +71,8 @@ export interface Side {
   status: number;
   text_chars: number;
   preview: string;
+  /** The whole readable page as markdown, when the server sends it (else only `preview`). */
+  markdown?: string | null;
   title?: string | null;
   elapsed_s: number;
   cost_usd?: number;
@@ -101,6 +103,7 @@ export function parseCompare(raw: unknown): Compare {
       status: Number(s.status) || 0,
       text_chars: Number(s.text_chars) || 0,
       preview: typeof s.preview === "string" ? s.preview : "",
+      markdown: typeof s.markdown === "string" && s.markdown.trim() ? s.markdown : typeof s.text === "string" && s.text.trim() ? s.text : null,
       title: typeof s.title === "string" ? s.title : null,
       elapsed_s: Number(s.elapsed_s) || 0,
       cost_usd: Number(s.cost_usd) || 0,

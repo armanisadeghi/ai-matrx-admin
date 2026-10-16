@@ -134,6 +134,8 @@ export interface BoardTileProps {
   /** The body may be FROZEN while not needed (`TileLife`). Only for content
    * proven to wake correctly: waking re-runs every effect. */
   sleeps?: boolean;
+  /** One click on the tile opens it for work (it is a first question, e.g. a source picker). */
+  opensOnClick?: boolean;
   /** The body may also be UNMOUNTED beyond the warm budget (it remounts from
    * its saved source). Only for content with nothing unsaved to lose. */
   discardable?: boolean;
@@ -190,6 +192,7 @@ export function BoardTile({
   onThrow,
   throwActions = DEFAULT_THROW_ACTIONS,
   sleeps = false,
+  opensOnClick = false,
   discardable = false,
   children,
 }: BoardTileProps) {
@@ -197,6 +200,10 @@ export function BoardTile({
   const paceTier = usePaceTier(id);
   // In the selection (alone or with others); `sole` = the only one (resize, the live tile).
   const selected = useIsSelected(id);
+  // A selected tile that is a first question opens at once (no double-click).
+  useEffect(() => {
+    if (opensOnClick && selected && store.getEditing() !== id) store.setEditing(id);
+  }, [opensOnClick, selected, store, id]);
   const lift = useTileLift(id, selected);
   const sole = useIsSoleSelected(id);
   const focused = useIsFocused(id);
