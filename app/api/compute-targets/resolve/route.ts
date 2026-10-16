@@ -25,7 +25,7 @@ import { resolveOrchestratorByTier } from "@/lib/sandbox/orchestrator-routing";
 import type { components } from "@ai-matrx/api/types";
 import { isJsonObject } from "@/types/json";
 import { getClaimsUser } from "@ai-matrx/auth";
-import { computerFilter } from "@/lib/app-instances/computers";
+import { computerQuery } from "@/lib/app-instances/computers";
 
 export type SandboxBindingPayload = Required<components["schemas"]["SandboxBindingRequest"]>;
 
@@ -151,16 +151,18 @@ export async function POST(request: Request) {
   }
 
   if (kind === "local-pc") {
-    const filter = await computerFilter(supabase);
-    const query = supabase
-      .from("app_instances")
-      .select(
-        "id, instance_id, tunnel_active, tunnel_url, last_seen, is_active, home_dir",
-      )
-      .is("deleted_at", null)
-      .eq("id", id)
-      .eq("user_id", user.id);
-    const { data: row, error } = await (filter === null ? query : query.or(filter)).maybeSingle();
+    const { query } = await computerQuery(
+      supabase
+        .from("app_instances")
+        .select(
+          "id, instance_id, tunnel_active, tunnel_url, last_seen, is_active, home_dir",
+        )
+        .is("deleted_at", null)
+        .eq("id", id)
+        .eq("user_id", user.id),
+      supabase,
+    );
+    const { data: row, error } = await query.maybeSingle();
     if (error || !row) {
       return NextResponse.json({ error: "device_not_found" }, { status: 404 });
     }

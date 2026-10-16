@@ -9,7 +9,7 @@
 // never disagree. A NULL platform is a computer (every legacy row). An unseeded knob THROWS (no code default).
 // Python twin: aidream `aidream.services.app_instances.only_computers`.
 //
-// A read that is not a computer list (an update, a lookup of an id the user already picked from a computer
+// Single-row reads use `computerQuery` (the builder, unexecuted). A read that is not a computer list (an update, a lookup of an id the user already picked from a computer
 // list) carries `app-instances: not-a-computer-list (<why>)` instead; `pnpm check:app-instances-computer-only`
 // fails any read with neither.
 
@@ -65,11 +65,21 @@ export async function computerFilter(client: unknown): Promise<string | null> {
  * Keep computers only and RUN the list read: `const { data, error } = await onlyComputers(supabase.from("app_instances")..., supabase)`.
  * An async function cannot hand back an unexecuted Supabase builder — the builder is thenable, so the returned
  * promise runs it. The return type says so (`Awaited<Q>`, the response), so chaining `.maybeSingle()` after it
- * fails typecheck. For a single-row read, apply `computerFilter` yourself, then `.maybeSingle()`.
+ * fails typecheck. For a single-row read use `computerQuery`, then `.maybeSingle()`.
  */
 export async function onlyComputers<Q extends { or(filters: string): Q }>(query: Q, client: unknown): Promise<Awaited<Q>> {
   const filter = await computerFilter(client);
   return (filter === null ? query : query.or(filter)) as Awaited<Q>;
+}
+
+/**
+ * Keep computers only WITHOUT running the read, for a single-row read:
+ * `const { query } = await computerQuery(supabase.from("app_instances")..., supabase); await query.maybeSingle()`.
+ * Boxed on purpose: a promise that resolved to the thenable builder itself would run it.
+ */
+export async function computerQuery<Q extends { or(filters: string): Q }>(query: Q, client: unknown): Promise<{ query: Q }> {
+  const filter = await computerFilter(client);
+  return { query: filter === null ? query : query.or(filter) };
 }
 
 /** Same rule for a row already in hand. */
