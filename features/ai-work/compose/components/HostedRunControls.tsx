@@ -3,7 +3,7 @@
 /**
  * The hosted run's Stop control.
  *
- * A hosted Claude Code run happens in a Matrx Sandbox we started, so the user
+ * A hosted Claude Code or Codex run happens in a Matrx Sandbox we started, so the user
  * must be able to stop it — and the control must say what stopping ends, not
  * ask a generic "Are you sure?" (`common-docs/policies/no-dead-ends.md`).
  * A plain cancel gets no confirm dialog; it gets an honest sentence.
@@ -19,13 +19,19 @@ import { useState } from "react";
 import { Loader2, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
-import { cancelHostedRun } from "@/features/ai-work/lib/hostedSandboxRun";
+import {
+  cancelHostedRun,
+  type HostedProvider,
+} from "@/features/ai-work/lib/hostedSandboxRun";
 
 export function HostedRunControls({
+  provider = "claude_code",
   running,
   runtimeId,
   onCancelled,
 }: {
+  /** Which coding agent the run is: decides the cancel url and the words. */
+  provider?: HostedProvider;
   /** A hosted run is in flight. */
   running: boolean;
   /** The sandbox run id the stream reported, or null if it has not yet. */
@@ -35,6 +41,7 @@ export function HostedRunControls({
   const [cancelling, setCancelling] = useState(false);
 
   if (!running) return null;
+  const agentName = provider === "codex" ? "Codex" : "Claude Code";
 
   if (!runtimeId) {
     return (
@@ -48,10 +55,10 @@ export function HostedRunControls({
   const stop = async () => {
     setCancelling(true);
     try {
-      const result = await cancelHostedRun(runtimeId);
+      const result = await cancelHostedRun(runtimeId, provider);
       if (result.cancelled) {
         toast.success(
-          "The hosted Claude Code session was stopped. Anything it already wrote in the sandbox stays as it is.",
+          `The hosted ${agentName} session was stopped. Anything it already wrote in the sandbox stays as it is.`,
         );
         onCancelled?.();
       } else {
@@ -86,7 +93,7 @@ export function HostedRunControls({
         Stop the hosted session
       </Button>
       <span className="text-xs text-muted-foreground">
-        Stops the Claude Code run in the Matrx Sandbox now. Work it already
+        Stops the {agentName} run in the Matrx Sandbox now. Work it already
         finished stays in the conversation; anything in progress is lost.
       </span>
     </div>

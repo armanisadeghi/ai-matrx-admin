@@ -20,8 +20,12 @@
  *     `start` AND `stream` operations are both supported — an `available`
  *     report whose `start` is refused is exactly the shape that used to put a
  *     button on the screen with nothing behind it.
- *   • Codex/Cursor have no managed runtime at all, so their reason is a
- *     constant fact; VS Code work starts inside the editor.
+ *   • `codex-hosted` is the same thing for Codex, gated the same way by the
+ *     bridge's verdict for `codex × matrx_sandbox` (read separately: a
+ *     verdict is per provider). The plain `codex` row points at it and at a
+ *     Matrx 2 computer (Runs on), the two places Codex runs from here.
+ *   • Cursor has no managed runtime at all, so its reason is a constant
+ *     fact; VS Code work starts inside the editor.
  */
 
 import type { CodingBridgeCapability } from "@/features/ai-work/lib/codingBridgeCapability";
@@ -33,6 +37,7 @@ export type WorkDestinationId =
   | "claude-code"
   | "claude-code-hosted"
   | "codex"
+  | "codex-hosted"
   | "cursor"
   | "vscode";
 
@@ -59,13 +64,17 @@ export const WORK_DESTINATIONS: readonly WorkDestinationDef[] = [
   {
     id: "claude-code-hosted",
     label: "Claude Code (hosted)",
-    summary:
-      "Claude Code runs in a Matrx Sandbox we start for you — nothing to install — and the session lands in a conversation in your account.",
+    summary: "Runs in a Matrx Sandbox we start for you.",
   },
   {
     id: "codex",
     label: "Codex",
     summary: "Codex does the work and mirrors the session back into AI Matrx.",
+  },
+  {
+    id: "codex-hosted",
+    label: "Codex (hosted)",
+    summary: "Runs in a Matrx Sandbox we start for you.",
   },
   {
     id: "cursor",
@@ -96,47 +105,73 @@ const HOSTED_REFUSED_WITHOUT_REASON =
   "AI Matrx did not say whether a hosted sandbox can be started for you, so it is not offered here.";
 
 /**
+ * The hosted verdict, shared by both hosted destinations: selectable ONLY
+ * when the bridge report says `available` AND grades `start` and `stream`
+ * supported; otherwise the server's own sentence.
+ */
+function hostedAvailability(
+  capability: CodingBridgeCapability | undefined,
+  checking: string,
+): DestinationAvailability {
+  if (!capability || capability.state === "loading") {
+    return { selectable: false, reason: checking };
+  }
+  const start = capability.operations.start;
+  const stream = capability.operations.stream;
+  if (
+    capability.state === "ready" &&
+    capability.available &&
+    start?.supported === true &&
+    stream?.supported === true
+  ) {
+    return { selectable: true, reason: null };
+  }
+  // The server's own words, in the server's own order: the report-level
+  // reason first, then the operation that actually failed.
+  const failing = start?.supported !== true ? start : stream;
+  return {
+    selectable: false,
+    reason: capability.reason ?? failing?.reason ?? HOSTED_REFUSED_WITHOUT_REASON,
+  };
+}
+
+/**
  * The one place a destination's runnability is decided.
  *
  * `bridgeCapability` is the coding session bridge's live verdict for
  * `claude_code × matrx_sandbox` — the ONLY source for the hosted destination.
  * `localCapability` is the LIVE answer from the user's own Matrx Local app
  * (undefined while a caller has not asked yet) and the ONLY source for the
- * Matrx Local destination. Neither reads the other.
+ * Matrx Local destination. `codexBridgeCapability` is the bridge's verdict for
+ * `codex × matrx_sandbox` — the ONLY source for `codex-hosted`; undefined
+ * while it has not been read. None reads another.
  */
 export function destinationAvailability(
   id: WorkDestinationId,
   bridgeCapability: CodingBridgeCapability,
   localCapability?: LocalRuntimeCapability | DoorCapability,
+  codexBridgeCapability?: CodingBridgeCapability,
 ): DestinationAvailability {
   if (id === "ai-matrx") return { selectable: true, reason: null };
 
   if (id === "claude-code-hosted") {
-    if (bridgeCapability.state === "loading") {
-      return {
-        selectable: false,
-        reason: "Checking whether a hosted sandbox can be started for you…",
-      };
-    }
-    const start = bridgeCapability.operations.start;
-    const stream = bridgeCapability.operations.stream;
-    if (
-      bridgeCapability.state === "ready" &&
-      bridgeCapability.available &&
-      start?.supported === true &&
-      stream?.supported === true
-    ) {
-      return { selectable: true, reason: null };
-    }
-    // The server's own words, in the server's own order: the report-level
-    // reason first, then the operation that actually failed.
-    const failing = start?.supported !== true ? start : stream;
+    return hostedAvailability(
+      bridgeCapability,
+      "Checking whether a hosted sandbox can be started for you…",
+    );
+  }
+
+  if (id === "codex-hosted") {
+    return hostedAvailability(
+      codexBridgeCapability,
+      "Checking whether Codex can run in a hosted sandbox for you…",
+    );
+  }
+
+  if (id === "codex") {
     return {
       selectable: false,
-      reason:
-        bridgeCapability.reason ??
-        failing?.reason ??
-        HOSTED_REFUSED_WITHOUT_REASON,
+      reason: "Choose Codex (hosted), or a computer under Runs on.",
     };
   }
 

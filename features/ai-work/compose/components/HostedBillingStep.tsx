@@ -1,14 +1,24 @@
 "use client";
 
 /**
- * Who pays for a hosted Claude Code run: AI Matrx credits (the default, the
- * behavior before this control existed) or the person's own Claude plan.
+ * Who pays for a hosted coding run (Claude Code or Codex): AI Matrx credits
+ * (the default, the behavior before this control existed) or the person's own
+ * vendor plan — their Claude plan, or their ChatGPT plan.
  *
- * "Your Claude plan" needs the person signed in to Claude Code INSIDE their
- * Matrx Sandbox. That sign-in is Claude Code's own: we start it, the person
- * signs in on Anthropic's page, pastes back the code it shows, and the box
- * holds the credential. Every answer rendered here is the server's latest
- * `OwnPlanStatus` (`features/ai-work/lib/ownPlan.ts`) — nothing is inferred.
+ * "Your … plan" needs the person signed in to the vendor CLI INSIDE their
+ * Matrx Sandbox, and the box holds the credential. Every answer rendered here
+ * is the server's latest `OwnPlanStatus` (`features/ai-work/lib/ownPlan.ts`) —
+ * nothing is inferred. The two sign-ins differ:
+ *
+ *   • Claude Code: we start it, the person signs in on Anthropic's page,
+ *     pastes back the code it shows (`awaiting_code`).
+ *   • Codex: OpenAI's device sign-in. There is nothing to paste: the server
+ *     answers `awaiting_browser` with OpenAI's link and a one-time code the
+ *     person types THERE; this step shows both (the code copyable) and polls
+ *     the status door every 2s — also while the box is `starting` — until it
+ *     reports `signed_in` (or `signed_in_not_plan`, an API-key sign-in, which
+ *     leaves Run off). A poll goes through the same latest-answer-wins guard,
+ *     so a Cancel or Sign out pressed meanwhile is never overwritten by it.
  *
  * The pasted code is component-local state only: never Redux, never storage,
  * never logged, and cleared the moment it is submitted.
@@ -17,10 +27,11 @@
  * so while it waits instead of a bare spinner.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CheckCircle2,
   CircleAlert,
+  Copy,
   ExternalLink,
   KeyRound,
   LogOut,
@@ -36,9 +47,13 @@ import {
   cancelOwnPlanSignIn,
   readOwnPlanStatus,
   signOutOwnPlan,
+  startOwnPlanSignIn,
   type HostedBilling,
+  type OwnPlanProvider,
   type OwnPlanStatus,
 } from "@/features/ai-work/lib/ownPlan";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
+import { copyNotify } from "@/lib/clipboard/copy-notify";
 
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import {
@@ -46,11 +61,45 @@ import {
   redeemClaudeCode,
 } from "@/features/ai-work/lib/connectClaudeAccount";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-const PROVIDER = "claude_code" as const;
+
+/** How often a Codex sign-in waiting on the browser (or a booting box) is re-read. */
+export const OWN_PLAN_POLL_MS = 2000;
+
+/** Each provider's words. Only the vendor's name changes. */
+const COPY: Record<
+  OwnPlanProvider,
+  {
+    plan: string;
+    checking: string;
+    signedIn: string;
+    notPlan: string;
+    open: string;
+    connect: string;
+  }
+> = {
+  claude_code: {
+    plan: "Your Claude plan",
+    checking: "Checking your Claude sign-in",
+    signedIn: "Signed in to Claude",
+    notPlan: "Signed in, but not on a Claude plan",
+    open: "Open Claude sign-in",
+    connect: "Connect your Claude account",
+  },
+  codex: {
+    plan: "Your ChatGPT plan",
+    checking: "Checking your ChatGPT sign-in",
+    signedIn: "Signed in to ChatGPT",
+    notPlan: "Signed in, but not on a ChatGPT plan",
+    open: "Open OpenAI sign-in",
+    connect: "Connect your ChatGPT account",
+  },
+};
 
 type Busy = "reading" | "starting" | "code" | "cancel" | "sign-out" | null;
 
 export interface HostedBillingStepProps {
+  /** Whose plan "own plan" means. Claude Code when omitted. */
+  provider?: OwnPlanProvider;
   billing: HostedBilling;
   onBillingChange: (billing: HostedBilling) => void;
   /** The latest own-plan status, owned by the composer so Run can read it. */
@@ -59,6 +108,7 @@ export interface HostedBillingStepProps {
 }
 
 export function HostedBillingStep({
+  provider = "claude_code",
   billing,
   onBillingChange,
   status,
@@ -71,6 +121,10 @@ export function HostedBillingStep({
   // that answers after Connect must not drop "Starting your sandbox" or
   // overwrite the sign-in link the later answer carries.
   const latest = useRef(0);
+
+  const PROVIDER = provider;
+  const { copyText } = useClipboard({ notify: copyNotify });
+  const words = COPY[provider];
 
   const run = async (
     kind: Exclude<Busy, null>,
@@ -113,6 +167,54 @@ export function HostedBillingStep({
 
   const state = status?.state ?? null;
 
+  // Codex has no paste step: its sign-in finishes on OpenAI's page, so the
+  // only way to learn it did is to ask again. Re-read while the box boots or
+  // the browser step waits, never while a person-started step is in flight.
+  // The loop re-arms after every answer — an unchanged answer included — and
+  // stops when the answer leaves those states. A failed read is said once and
+  // retried on the same beat, so one dropped request never strands the step.
+  const polling =
+    provider === "codex" &&
+    billing === "own_plan" &&
+    busy === null &&
+    (state === "starting" || state === "awaiting_browser");
+  // The latest callback, read by the loop, so a parent re-render never
+  // restarts the timer.
+  const onStatusChangeRef = useRef(onStatusChange);
+  useEffect(() => {
+    onStatusChangeRef.current = onStatusChange;
+  }, [onStatusChange]);
+  useEffect(() => {
+    if (!polling) return;
+    let stopped = false;
+    let failing = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      timer = setTimeout(() => {
+        const id = ++latest.current;
+        readOwnPlanStatus(provider).then(
+          (next) => {
+            if (stopped || id !== latest.current) return;
+            failing = false;
+            onStatusChangeRef.current(next);
+            schedule();
+          },
+          (error: unknown) => {
+            if (stopped || id !== latest.current) return;
+            if (!failing) toast.error(getUserMessage(error));
+            failing = true;
+            schedule();
+          },
+        );
+      }, OWN_PLAN_POLL_MS);
+    };
+    schedule();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [polling, provider]);
+
   return (
     <div className="mt-3 flex flex-col gap-2">
       <span className="type-secondary font-medium text-foreground">Who pays</span>
@@ -146,7 +248,7 @@ export function HostedBillingStep({
           value="own_plan"
           className="px-2.5 text-xs pointer-coarse:min-h-11 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary-ink"
         >
-          Your Claude plan
+          {words.plan}
         </ToggleGroupItem>
       </ToggleGroup>
 
@@ -155,7 +257,7 @@ export function HostedBillingStep({
           {busy === "reading" && !status ? (
             <span className="flex items-center gap-1.5 type-secondary text-muted-foreground">
               <Spinner size="xs" className="text-current" />
-              Checking your Claude sign-in
+              {words.checking}
             </span>
           ) : state === "signed_in" || state === "signed_in_not_plan" ? (
             <div className="flex flex-wrap items-center gap-2">
@@ -165,9 +267,7 @@ export function HostedBillingStep({
                 ) : (
                   <CircleAlert className="h-3.5 w-3.5 text-muted-foreground" />
                 )}
-                {state === "signed_in"
-                  ? "Signed in to Claude"
-                  : "Signed in, but not on a Claude plan"}
+                {state === "signed_in" ? words.signedIn : words.notPlan}
               </span>
               <Button
                 icon={busy === "sign-out" ? (
@@ -192,11 +292,11 @@ export function HostedBillingStep({
                       href={status.sign_in_url}
                     >
                       <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                      Open Claude sign-in
+                      {words.open}
                     </OutboundLink>
                   </Button>
                 )}
-                {state === "awaiting_browser" && (
+                {state === "awaiting_browser" && provider !== "codex" && (
                   <Button
                     icon={<RefreshCw />}
                     type="button"
@@ -222,9 +322,25 @@ export function HostedBillingStep({
                 </Button>
               </div>
               {state === "awaiting_browser" && status?.user_code && (
-                <span className="type-secondary text-foreground">
+                <span className="flex flex-wrap items-center gap-2 type-secondary text-foreground">
                   Enter this code there:{" "}
-                  <span className="font-mono">{status.user_code}</span>
+                  <span className="font-mono" data-testid="own-plan-user-code">
+                    {status.user_code}
+                  </span>
+                  {provider === "codex" && (
+                    <Button
+                      icon={<Copy />}
+                      type="button"
+                      variant="quiet"
+                      onClick={() => {
+                        if (status.user_code) {
+                          void copyText(status.user_code, "Code copied");
+                        }
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  )}
                 </span>
               )}
               {state === "awaiting_code" && (
@@ -258,6 +374,22 @@ export function HostedBillingStep({
                 </form>
               )}
             </div>
+          ) : provider === "codex" && state === "starting" ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-1.5 type-secondary text-muted-foreground">
+                <Spinner size="xs" className="text-current" />
+                Starting your sandbox can take a minute or two
+              </span>
+              <Button
+                icon={<X />}
+                type="button"
+                variant="quiet"
+                onClick={() => run("cancel", () => cancelOwnPlanSignIn(PROVIDER))}
+                disabled={busy !== null}
+              >
+                Cancel
+              </Button>
+            </div>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -268,10 +400,17 @@ export function HostedBillingStep({
                 )}
                 type="button"
                 variant="outline"
-                onClick={() => run("starting", connectUntilLink)}
+                onClick={() =>
+                  run(
+                    "starting",
+                    provider === "codex"
+                      ? () => startOwnPlanSignIn(PROVIDER)
+                      : connectUntilLink,
+                  )
+                }
                 disabled={busy !== null}
               >
-                Connect your Claude account
+                {words.connect}
               </Button>
               {busy === "starting" && (
                 <span className="type-secondary text-muted-foreground">
