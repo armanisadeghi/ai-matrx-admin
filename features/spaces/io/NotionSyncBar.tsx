@@ -8,7 +8,7 @@
 
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
-import { tableShapeChanged } from "@ai-matrx/records/react";
+import { tableShapeChanged, useTable } from "@ai-matrx/records/react";
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -97,11 +97,22 @@ export function NotionSyncReportDialog({ report, open, onClose }: { report: Noti
   );
 }
 
+/** What "Sync now" says on a table that came in from a Notion export file: nothing to sync from, and the way out. */
+export const FILE_IMPORT_SYNC_SENTENCE =
+  "This table was imported from a Notion file, so it has no Notion connection to sync from. Connect Notion and import it again to keep it in sync.";
+
+/** A table the importer wrote carries its "Notion ID" key column; with no connected source it came from a file. */
+export function carriesNotionKey(fields: ReadonlyArray<{ name?: string; label?: string }> | undefined | null): boolean {
+  return (fields ?? []).some((f) => /^notion[ _-]?id$/i.test(String(f?.name ?? f?.label ?? "").trim()));
+}
+
 export function NotionSyncBar({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
   const [state, setState] = useState<SyncState | null>(null);
   const [busy, setBusy] = useState(false);
   const [showing, setShowing] = useState(false);
   const opts = organizationId ? { organizationId } : {};
+  const table = useTable(tableId);
+  const fileImported = carriesNotionKey((table.data as { fields?: Array<{ name?: string; label?: string }> } | null)?.fields);
 
   useEffect(() => {
     let live = true;
@@ -127,6 +138,18 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
     }
   }, [tableId, organizationId]);
 
+  if (state && !state.connected && fileImported) {
+    return (
+      <div className="flex shrink-0 items-center gap-1" data-notion-sync-bar="file-import">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button icon={<RefreshCw />} variant="quiet" aria-label="Sync now with Notion" onClick={() => toast.info(FILE_IMPORT_SYNC_SENTENCE)} data-notion-sync-now="file-import" />
+          </TooltipTrigger>
+          <TooltipContent>Sync now with Notion</TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  }
   if (!state?.connected) return null;
   const report = state.report ?? null;
   return (
