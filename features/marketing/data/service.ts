@@ -2723,7 +2723,7 @@ export async function createDiscoveredCandidates(
     await authenticatedWebDb(supabase)
   )
     .from("discovered_item")
-    .insert(
+    .upsert(
       rows.map((r) => ({
         organization_id: r.organizationId,
         brand_id: r.brandId,
@@ -2739,6 +2739,9 @@ export async function createDiscoveredCandidates(
         sentiment: r.sentiment ?? null,
         ...(r.relationKey ? { reviewed_at: reviewedAt } : {}),
       })),
+      // MKT-184: a finding the brand already holds (same brand, category, kind, url and value) is the same finding —
+      // the insert is idempotent (ON CONFLICT DO NOTHING on discovered_item_dedup), so saving twice is not an error.
+      { onConflict: "brand_id,category,guessed_kind,url,value_hash", ignoreDuplicates: true },
     );
   if (response.error) throw new Error(response.error.message);
 }

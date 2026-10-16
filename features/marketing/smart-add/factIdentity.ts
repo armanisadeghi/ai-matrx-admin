@@ -27,10 +27,21 @@ export function normalizePhone(value: string): string {
   return digits ? `+${digits.length === 10 ? "1" : ""}${digits}` : text.toLowerCase();
 }
 
+/**
+ * An address compares without scheme, `www.`, fragment or trailing slash; an account address (`social_profile`)
+ * also without its query. `https://www.facebook.com/snowpeak/` and `http://facebook.com/snowpeak` are one account.
+ */
+export function normalizeAddress(kind: string, value: string): string {
+  let v = value.split("#", 1)[0];
+  if (kind === "social_profile") v = v.split("?", 1)[0];
+  return v.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/+$/, "").toLowerCase();
+}
+
 export function normalizeFactValue(kind: string, value: string): string {
   const v = value.replace(/\s+/g, " ").trim();
   if (kind === "phone") return normalizePhone(v);
   if (kind === "email") return v.toLowerCase();
+  if (/^https?:\/\//i.test(v)) return normalizeAddress(kind, v);
   return v.toLowerCase();
 }
 

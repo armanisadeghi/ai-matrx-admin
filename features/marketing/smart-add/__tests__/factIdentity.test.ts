@@ -17,6 +17,23 @@ describe("one fact, however it is formatted (MKT-172)", () => {
     expect(factIdentity("email", " Hi@Ex.com ")).toBe(factIdentity("email", "hi@ex.com"));
   });
 
+  it("an account saved with and without a trailing slash is one fact, on every platform (MKT-185)", () => {
+    for (const [a, b] of [
+      ["https://www.facebook.com/snowpeak/", "https://www.facebook.com/snowpeak"],
+      ["https://instagram.com/Snow.Peak/", "http://www.instagram.com/snow.peak?hl=en"],
+      ["https://x.com/snowpeak/", "https://x.com/snowpeak"],
+      ["https://www.tiktok.com/@snowpeak/", "https://tiktok.com/@snowpeak"],
+    ]) {
+      expect(factIdentity("social_profile", a)).toBe(factIdentity("social_profile", b));
+    }
+    const plan = planKeptFacts(
+      [fact("social_facebook", "https://www.facebook.com/snowpeak/", "k1"), fact("social_facebook", "https://www.facebook.com/snowpeak", "k2")],
+      () => undefined,
+      rules,
+    );
+    expect(plan.rows).toHaveLength(1);
+  });
+
   it("a confirmed phone the facts agent also found is ONE row, confirmed, with the mandate key", () => {
     const plan = planKeptFacts([fact("phone", "(415) 604-2165", "phone:4156042165")], () => undefined, rules);
     const { plan: merged, remaining } = mergeConfirmedIntoPlan(plan, [
