@@ -22,6 +22,8 @@ interface RowRead {
   minSupportedAppVersion: string | null;
   found: boolean;
   error: PostgrestError | null;
+  /** No signed-in session: the table is members-only, so nothing was asked (not an error). */
+  skipped: boolean;
 }
 
 let held: RowRead | null = null;
@@ -31,7 +33,15 @@ async function loadRow(): Promise<RowRead> {
   if (held && Date.now() - held.at < TTL_MS) return held;
   if (inFlight) return inFlight;
   inFlight = (async () => {
-    const { data, error } = await createClient()
+    // The row is for signed-in people (anon has no grant on app_config). A guest page view asks
+    // nothing: asking would be a certain 401 plus a client-error report. getSession reads local
+    // storage — no network.
+    const client = createClient();
+    const { data: sessionData } = await client.auth.getSession();
+    if (!sessionData.session) {
+      return { at: Date.now(), config: null, minSupportedAppVersion: null, found: false, error: null, skipped: true };
+    }
+    const { data, error } = await client
       .from("app_config")
       .select("config, min_supported_app_version")
       .eq("app", WEB_APP_CONFIG_ROW)
@@ -44,6 +54,7 @@ async function loadRow(): Promise<RowRead> {
       minSupportedAppVersion: row?.min_supported_app_version ?? null,
       found: row !== null,
       error,
+      skipped: false,
     };
     // A failed read is never cached: the next caller asks again.
     if (!error) held = read;
@@ -60,6 +71,8 @@ export interface AppConfigRead<T = unknown> {
   /** The row exists (false with a null error = the row is missing). */
   found: boolean;
   error: PostgrestError | null;
+  /** True when no read was made because there is no signed-in session. */
+  skipped?: boolean;
 }
 
 /** Keys of the `ai-matrx` row this app reads (plus the `min_supported_app_version` column). */
@@ -69,7 +82,7 @@ export async function readAppConfigKey<T = unknown>(key: WebAppConfigKey): Promi
   const row = await loadRow();
   const value = (key === "min_supported_app_version" ? (row.minSupportedAppVersion ?? undefined) : row.config?.[key]) as T | undefined;
   if (!row.error && row.found) noteConfigRead("app_config", null, key, "db", value ?? null);
-  return { value, found: row.found, error: row.error };
+  return { value, found: row.found, error: row.error, skipped: row.skipped };
 }
 
 /**
@@ -81,7 +94,7 @@ export async function readAppFlag(name: string): Promise<AppConfigRead<boolean>>
   const flags = row.config?.flags;
   const value = flags && typeof flags === "object" ? (flags as Record<string, unknown>)[name] : undefined;
   if (!row.error && row.found) noteConfigRead("app_config", null, `flags.${name}`, "db", value ?? null, value !== undefined && typeof value !== "boolean");
-  return { value: typeof value === "boolean" ? value : undefined, found: row.found, error: row.error };
+  return { value: typeof value === "boolean" ? value : undefined, found: row.found, error: row.error, skipped: row.skipped };
 }
 
 /** Tests, and after an admin write in this tab. */

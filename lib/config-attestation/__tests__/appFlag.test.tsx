@@ -51,6 +51,7 @@ const waitFor = async (check: () => void) => {
 let rowConfig: Record<string, unknown> = {};
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({
+    auth: { getSession: async () => ({ data: { session: { user: {} } } }) },
     from: () => {
       const q: Record<string, unknown> = {};
       q.select = () => q;

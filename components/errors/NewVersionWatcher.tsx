@@ -131,7 +131,9 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
     // the version this page was served as. Older → the same consent prompt, never a forced reload.
     const checkMinimumVersion = async () => {
       const current = document.querySelector<HTMLMetaElement>(`meta[name="${APP_VERSION_META}"]`)?.content ?? "";
-      const { value: minimum, error } = await readAppConfigKey<string>("min_supported_app_version");
+      const { value: minimum, error, skipped } = await readAppConfigKey<string>("min_supported_app_version");
+      // A guest has no session, so there is no row to read: not a failed check.
+      if (skipped) return;
       if (error) {
         console.error("[new-version] min_supported_app_version could not be read", error);
         return;
