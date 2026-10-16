@@ -73,6 +73,7 @@ import {
   useOpenCloudBrowserCanvas,
   cloudBrowserCanvasSourceId,
 } from "@/features/cloud-browser/hooks/useOpenCloudBrowserCanvas";
+import { useOpenCloudComputerCanvas } from "@/features/cloud-computer/useOpenCloudComputerCanvas";
 import { flattenResourcePickerItems } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 import { useAttachResourcePicker } from "@/features/connectors/useAttachResourcePicker";
 import { usePopoutContainer } from "@/features/window-panels/popout/usePopoutContainer";
@@ -219,6 +220,7 @@ registerChatUi({
   isWarRoomThreadAgentSurface,
   useOpenCloudBrowserCanvas,
   cloudBrowserCanvasSourceId,
+  useOpenCloudComputerCanvas,
   MessageFilesStrip,
   RulebookNudge,
   NegativeVerdictFollowUp,

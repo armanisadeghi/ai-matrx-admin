@@ -33,8 +33,9 @@
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
-import { knobAddress, type KnobRef } from "../effectiveKnobs";
+import { join } from "node:path";
+import { knobAddress } from "../effectiveKnobs";
+import { execFileSync } from "node:child_process";
 import { RUN_OUTPUT_KINDS, RUN_WAIT_KNOB_FEATURE, runWaitKnobKey } from "@/lib/api/run-wait";
 import {
   REMOTE_IMAGE_DEFAULTS,
@@ -123,159 +124,59 @@ function declaredPairs(): { pairs: Set<string>; files: number } {
   return { pairs, files };
 }
 
-/** The readers that take a knob REF — the family this module exposes. */
-const REF_FNS: Record<string, number> = {
-  // (organizationId, userId, ref)
-  useEffectiveKnob: 2,
-  ensureEffectiveKnob: 2,
-  peekEffectiveKnob: 2,
-  // (ref)
-  useSessionKnob: 0,
-  getSessionKnob: 0,
-  resolveSessionKnob: 0,
-};
-
-const SCAN_DIRS = ["app", "components", "features", "../aidream/apps/shared/chat/src", "hooks", "lib", "utils"];
-const SKIP_DIR = /(node_modules|\.next|__tests__)/;
-
-function sourceFiles(dir: string, out: string[] = []): string[] {
-  if (!existsSync(dir)) return out;
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (SKIP_DIR.test(full)) continue;
-    if (statSync(full).isDirectory()) {
-      sourceFiles(full, out);
-      continue;
-    }
-    if (!/\.tsx?$/.test(entry)) continue;
-    if (/\.(test|spec)\.tsx?$/.test(entry)) continue;
-    out.push(full);
-  }
-  return out;
-}
-
-/** Module-level `NAME = "literal"` constants, so a disciplined call resolves. */
-function stringConsts(text: string): Map<string, string> {
-  const out = new Map<string, string>();
-  const re =
-    /^[ \t]*(?:export\s+)?const\s+([A-Za-z_$][\w$]*)(?:\s*:\s*[\w.<>[\]"'| ]+)?\s*=\s*["']([^"'\n]+)["']/gm;
-  for (let m = re.exec(text); m; m = re.exec(text)) out.set(m[1], m[2]);
-  return out;
-}
-
-/** Module-level `NAME = { feature: "…", key: "…" }` address constants. */
-function addressConsts(text: string): Map<string, KnobRef> {
-  const out = new Map<string, KnobRef>();
-  const re =
-    /^[ \t]*(?:export\s+)?const\s+([A-Za-z_$][\w$]*)(?:\s*:\s*[\w.<>[\]"'| ]+)?\s*=\s*\{\s*feature\s*:\s*["']([^"'\n]+)["']\s*,\s*key\s*:\s*["']([^"'\n]+)["']\s*,?\s*\}/gm;
-  for (let m = re.exec(text); m; m = re.exec(text)) {
-    out.set(m[1], { feature: m[2], key: m[3] });
-  }
-  return out;
-}
-
 /**
- * `NAME = `${FEATURE}.${KEY}`` — a call site that declared the PAIR and then
- * templated it into one string. The pair is what it means, so it resolves to the
- * pair rather than being re-split by a guess.
+ * THE ONE EXTRACTOR. The census reads the source with `scanKnobReads` — the same function the
+ * config attestation manifest and `check:settings-unregistered` use — so it can neither disagree
+ * with them about what a read is nor mistake a function DEFINITION for one (this test used to carry
+ * its own regex, which flagged `export function useSessionKnob(` in FrameSessionKnob.ts).
  */
-function templatePairConsts(text: string, strings: Map<string, string>): Map<string, KnobRef> {
-  const out = new Map<string, KnobRef>();
-  const re =
-    /^[ \t]*(?:export\s+)?const\s+([A-Za-z_$][\w$]*)(?:\s*:\s*[\w.<>[\]"'| ]+)?\s*=\s*`\$\{([A-Za-z_$][\w$]*)\}\.\$\{([A-Za-z_$][\w$]*)\}`/gm;
-  for (let m = re.exec(text); m; m = re.exec(text)) {
-    const feature = strings.get(m[2]);
-    const key = strings.get(m[3]);
-    if (feature && key) out.set(m[1], { feature, key });
-  }
-  return out;
-}
-
-/** Split a call's argument list on TOP-LEVEL commas. */
-function args(source: string, open: number): string[] | null {
-  let depth = 0;
-  let start = open + 1;
-  const out: string[] = [];
-  for (let at = open; at < source.length; at += 1) {
-    const char = source[at];
-    if (char === "(" || char === "[" || char === "{") depth += 1;
-    else if (char === ")" || char === "]" || char === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        out.push(source.slice(start, at));
-        return out;
-      }
-    } else if (char === "," && depth === 1) {
-      out.push(source.slice(start, at));
-      start = at + 1;
-    }
-  }
-  return null;
-}
-
 interface ReadSite {
   file: string;
   line: number;
   fn: string;
-  ref: KnobRef | null;
+  feature: string;
+  key: string;
+}
+
+const stripRepo = (rel: string) => rel.replace(/^matrx-frontend\//, "");
+
+interface Unresolved {
+  file: string;
+  line: number;
+  fn: string;
   raw: string;
+  why: string;
+}
+
+/** `scanKnobReads` runs in a tsx child (scripts/settings-guards/dump-knob-reads.ts): the module is ESM. */
+function scan(files?: { abs: string; rel: string; text: string }[]): {
+  sites: ReadSite[];
+  dynamic: Unresolved[];
+} {
+  const out = execFileSync(
+    join(ROOT, "node_modules", ".bin", "tsx"),
+    ["scripts/settings-guards/dump-knob-reads.ts", ...(files ? ["--stdin"] : [])],
+    { cwd: ROOT, input: files ? JSON.stringify(files) : undefined, maxBuffer: 1 << 28 },
+  );
+  const { sites, dynamic } = JSON.parse(out.toString("utf8")) as {
+    sites: ReadSite[];
+    dynamic: Unresolved[];
+  };
+  return {
+    sites: sites.map((s) => ({ ...s, file: stripRepo(s.file) })),
+    dynamic: dynamic.map((d) => ({ ...d, file: stripRepo(d.file) })),
+  };
+}
+
+let whole: ReturnType<typeof scan> | undefined;
+/** The whole tree, scanned once per run. */
+function scanWhole(): ReturnType<typeof scan> {
+  whole ??= scan();
+  return whole;
 }
 
 function readSites(): ReadSite[] {
-  const sites: ReadSite[] = [];
-  const names = Object.keys(REF_FNS).join("|");
-  const call = new RegExp(`\\b(${names})\\s*\\(`, "g");
-  const files = SCAN_DIRS.flatMap((dir) => sourceFiles(join(ROOT, dir)));
-  /**
-   * Every EXPORTED knob constant in the repo, so a call site that imports its
-   * address (`useSessionKnob(LISTENING_VOICE_KNOB)`) resolves like one that
-   * declares it locally — the most disciplined call sites must not be the
-   * invisible ones (the mistake the live guard's matcher made until today).
-   */
-  const exported = new Map<string, KnobRef>();
-  for (const file of files) {
-    const text = readFileSync(file, "utf8");
-    if (!/export\s+const/.test(text)) continue;
-    const local = stringConsts(text);
-    for (const [name, value] of local) if (/KNOB/.test(name)) exported.set(name, value);
-    for (const [name, value] of addressConsts(text)) if (/KNOB/.test(name)) exported.set(name, value);
-    for (const [name, value] of templatePairConsts(text, local)) exported.set(name, value);
-  }
-  for (const dir of SCAN_DIRS) {
-    for (const file of sourceFiles(join(ROOT, dir))) {
-      // The module that DEFINES the readers is not a call site.
-      if (/lib[\\/]scoped-config[\\/]/.test(file)) continue;
-      const text = readFileSync(file, "utf8");
-      if (!new RegExp(names).test(text)) continue;
-      const strings = stringConsts(text);
-      const addresses = new Map<string, KnobRef>([
-        ...addressConsts(text),
-        ...templatePairConsts(text, strings),
-      ]);
-      call.lastIndex = 0;
-      for (let m = call.exec(text); m; m = call.exec(text)) {
-        const fn = m[1];
-        const open = m.index + m[0].length - 1;
-        const parts = args(text, open);
-        if (!parts) continue;
-        const raw = (parts[REF_FNS[fn]] ?? "").trim().replace(/,$/, "");
-        if (!raw) continue;
-        const line = text.slice(0, m.index).split("\n").length;
-        const literal = /^["'](.+)["']$/.exec(raw);
-        const inline =
-          /^\{\s*feature\s*:\s*["']([^"']+)["']\s*,\s*key\s*:\s*["']([^"']+)["']\s*,?\s*\}$/.exec(
-            raw,
-          );
-        const ref: KnobRef | null = literal
-          ? literal[1]
-          : inline
-            ? { feature: inline[1], key: inline[2] }
-            : (addresses.get(raw) ?? strings.get(raw) ?? exported.get(raw) ?? null);
-        sites.push({ file: relative(ROOT, file), line, fn, ref, raw });
-      }
-    }
-  }
-  return sites;
+  return scanWhole().sites;
 }
 
 /**
@@ -317,6 +218,33 @@ const COMPUTED_REFS: Record<string, string> = {
     "authorship in REMOTE_IMAGE_DEFAULTS is proven seeded by the 'remote images' case below",
 };
 
+/**
+ * Computed reads the shared extractor (`scanKnobReads`, strict) sees that the old per-test regex
+ * could not. They are counted and ratcheted by `pnpm check:knob-reads-declared`
+ * (scripts/config-attestation/unresolved-ceiling.json, shrink-only) and by the chat package's own
+ * declaration; this list only stops a NEW file joining them unexplained. Shrink it, never grow it:
+ * explain a new computed read in COMPUTED_REFS above, or make it a literal pair.
+ */
+const COUNTED_BY_THE_ATTESTATION_CEILING = new Set([
+  "features/masterwork/review/NextSessionAgenda.tsx",
+  "features/masterwork/review/vocabulary.ts",
+  "features/notes/hooks/useNotePicker.ts",
+  "features/rich-content-host/app-bindings.tsx",
+  "features/rich-document/annotations/AnnotationSidecar.tsx",
+  "features/rich-document/annotations/comment-remarks.tsx",
+  "features/spaces/state/knobs.ts",
+  "features/window-panels/detail/listContextCap.ts",
+  "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/composer/ComposerSplash.tsx",
+  "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/composer/useCompactInputMaxHeight.ts",
+  "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/composer/useComposerMode.ts",
+  "../aidream/apps/shared/chat/src/agents/identity/preferred-chat-model.ts",
+  "../aidream/apps/shared/chat/src/canvas/workspace/ShellChatDock.tsx",
+  "lib/entity-list/components/EntityListPage.tsx",
+  "lib/list-scope/index.ts",
+  "lib/reversible/announceReversible.tsx",
+  "lib/sandbox/sandbox-defaults.ts",
+]);
+
 describe("the knob address", () => {
   it("is the pair the resolver sends, whichever form a caller passes", () => {
     expect(knobAddress({ feature: "connectors", key: "prompt.resurface_days" })).toEqual({
@@ -346,25 +274,40 @@ describe("the census of client knob reads", () => {
   });
 
   it("addresses a declared row at every resolvable call site", () => {
-    const misses: string[] = [];
-    for (const site of sites) {
-      if (!site.ref) continue;
-      let address: { feature: string; key: string };
-      try {
-        address = knobAddress(site.ref);
-      } catch (error) {
-        misses.push(`${site.file}:${site.line} ${site.fn}(${site.raw}) — ${String(error)}`);
-        continue;
-      }
-      if (!pairs.has(`${address.feature} ${address.key}`)) {
-        misses.push(
-          `${site.file}:${site.line} ${site.fn}(${site.raw}) resolves to ` +
-            `feature='${address.feature}', key='${address.key}' — no seed declares that pair. ` +
-            "Pass the register's own { feature, key } pair.",
-        );
-      }
-    }
+    const misses = sites
+      .filter((site) => !pairs.has(`${site.feature} ${site.key}`))
+      .map(
+        (site) =>
+          `${site.file}:${site.line} ${site.fn} resolves to ` +
+          `feature='${site.feature}', key='${site.key}' — no seed declares that pair. ` +
+          "Pass the register's own { feature, key } pair.",
+      );
     expect(misses).toEqual([]);
+  });
+
+  it("fails by name on a planted read whose row does not exist (the guard can go red)", () => {
+    const planted = scan([
+      {
+        abs: "x",
+        rel: "matrx-frontend/features/zz/planted.tsx",
+        text: 'const v = useSessionKnob({ feature: "zz.planted_feature", key: "no_such_row" });',
+      },
+    ]).sites.filter((site) => !pairs.has(`${site.feature} ${site.key}`));
+    expect(planted.map((site) => `${site.feature}/${site.key}`)).toEqual([
+      "zz.planted_feature/no_such_row",
+    ]);
+  });
+
+  it("does not mistake a function definition for a read", () => {
+    const { sites: found, dynamic: unresolved } = scan([
+      {
+        abs: "x",
+        rel: "matrx-frontend/features/zz/Defines.ts",
+        text: "export function useSessionKnob(_fullKey: KnobRef): unknown { return undefined; }",
+      },
+    ]);
+    expect(found).toEqual([]);
+    expect(unresolved).toEqual([]);
   });
 
   it("run-wait: every output kind a run can wait on addresses a seeded row", () => {
@@ -388,12 +331,20 @@ describe("the census of client knob reads", () => {
   });
 
   it("names every read whose address is assembled at run time", () => {
-    const computed = [...new Set(sites.filter((s) => !s.ref).map((s) => s.file))];
-    for (const file of computed) {
-      expect(COMPUTED_REFS[file] ?? `UNEXPLAINED computed knob ref in ${file}`).not.toContain(
-        "UNEXPLAINED",
-      );
-    }
+    // The knob-ref family this module exposes. The other readers (knobInt(feature, key) …) are graded
+    // by the attestation ceiling (scripts/config-attestation/unresolved-ceiling.json), not here.
+    const REF_FAMILY = /^(useEffectiveKnob|ensureEffectiveKnob|peekEffectiveKnob|useSessionKnob|getSessionKnob|resolveSessionKnob)\b/;
+    const computed = [
+      ...new Set(
+        scanWhole()
+          .dynamic.filter((d) => REF_FAMILY.test(d.fn))
+          .map((d) => d.file),
+      ),
+    ];
+    const unexplained = computed.filter(
+      (file) => !COMPUTED_REFS[file] && !COUNTED_BY_THE_ATTESTATION_CEILING.has(file),
+    );
+    expect(unexplained).toEqual([]);
   });
 
   it("says out loud when the aidream seeds could not be read", () => {

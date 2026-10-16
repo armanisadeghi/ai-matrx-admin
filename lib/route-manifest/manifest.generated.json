@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1443,
+  "routeCount": 1449,
   "routes": [
     {
       "pattern": "/",
@@ -167,6 +167,11 @@
       "pattern": "/administration/agents/system-agents/agents/[id]",
       "status": "live",
       "source": "app/(admin)/administration/agents/system-agents/agents/[id]/page.tsx"
+    },
+    {
+      "pattern": "/administration/agents/system-agents/agents/[id]/approvals",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/system-agents/agents/[id]/approvals/page.tsx"
     },
     {
       "pattern": "/administration/agents/system-agents/agents/[id]/build",
@@ -544,6 +549,11 @@
       "source": "app/(admin)/administration/automation/workflows/[id]/page.tsx"
     },
     {
+      "pattern": "/administration/automation/workflows/[id]/approvals",
+      "status": "live",
+      "source": "app/(admin)/administration/automation/workflows/[id]/approvals/page.tsx"
+    },
+    {
       "pattern": "/administration/automation/workflows/[id]/design",
       "status": "live",
       "source": "app/(admin)/administration/automation/workflows/[id]/design/page.tsx"
@@ -582,6 +592,11 @@
       "pattern": "/administration/billing/approvals",
       "status": "live",
       "source": "app/(admin)/administration/billing/approvals/page.tsx"
+    },
+    {
+      "pattern": "/administration/billing/approvals/[kind]/[subjectId]",
+      "status": "live",
+      "source": "app/(admin)/administration/billing/approvals/[kind]/[subjectId]/page.tsx"
     },
     {
       "pattern": "/administration/billing/held-runs/[id]",
@@ -922,6 +937,11 @@
       "pattern": "/administration/intelligence/mandates/[mandateKey]",
       "status": "live",
       "source": "app/(admin)/administration/intelligence/mandates/[mandateKey]/page.tsx"
+    },
+    {
+      "pattern": "/administration/intelligence/mandates/[mandateKey]/approvals",
+      "status": "live",
+      "source": "app/(admin)/administration/intelligence/mandates/[mandateKey]/approvals/page.tsx"
     },
     {
       "pattern": "/administration/intelligence/mandates/[mandateKey]/overrides",
@@ -1582,6 +1602,11 @@
       "pattern": "/agents/[id]/answers/calibration",
       "status": "live",
       "source": "app/(core)/agents/[id]/answers/calibration/page.tsx"
+    },
+    {
+      "pattern": "/agents/[id]/approvals",
+      "status": "live",
+      "source": "app/(core)/agents/[id]/approvals/page.tsx"
     },
     {
       "pattern": "/agents/[id]/build",
@@ -5684,6 +5709,11 @@
       "pattern": "/organizations/[orgId]/admin/spend-approvals",
       "status": "live",
       "source": "app/(core)/organizations/[orgId]/admin/spend-approvals/page.tsx"
+    },
+    {
+      "pattern": "/organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]",
+      "status": "live",
+      "source": "app/(core)/organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]/page.tsx"
     },
     {
       "pattern": "/organizations/[orgId]/admin/triggers",
