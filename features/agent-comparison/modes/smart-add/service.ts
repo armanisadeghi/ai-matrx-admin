@@ -81,14 +81,13 @@ export async function castNet(
   return { results: mergeResults(calls), failures };
 }
 
-/** The tags that mark the Jev web-result decision agent (set when it was built, 2026-10-16). */
-const JEV_WEB_RESULT_TAGS = ["smart-add", "jev", "decision", "web-result"];
-
 /**
  * Who judges, read from data at the moment of the run: today's holder is the agent that holds the
- * mandate `brand_intake.web_result_classifier` now; Jev is the decision agent carrying its tags.
+ * mandate `brand_intake.web_result_classifier` now; Jev is the agent the person picked in the
+ * canonical agent picker, pre-filled from their own most recent bench (never an id in code, never
+ * a raw agent list query).
  */
-export async function resolveJudges(): Promise<{ holder: string | null; jev: string | null }> {
+export async function resolveJudges(userId: string | null): Promise<{ holder: string | null; jev: string | null }> {
   const client = createClient();
   const { data: mandate, error } = await mandateDefinitions(client)
     .select("*")
@@ -97,17 +96,21 @@ export async function resolveJudges(): Promise<{ holder: string | null; jev: str
     .maybeSingle();
   if (error) throw new Error(`Could not read who holds the web-result job: ${error.message}`);
   const holder = mandate ? await resolveMandateDefaultAgentId(mandate) : null;
-  const { data: jevRows, error: jevError } = await client
+  if (!userId) return { holder, jev: null };
+  const { data: last, error: lastError } = await client
     .schema("agent")
-    .from("definition")
-    .select("id")
-    .contains("tags", JEV_WEB_RESULT_TAGS)
+    .from("cmp_comparison_sets")
+    .select("metadata")
+    .eq("created_by", userId)
     .is("deleted_at", null)
-    .eq("is_archived", false)
-    .order("updated_at", { ascending: false })
-    .limit(1);
-  if (jevError) throw new Error(`Could not find the Jev agent: ${jevError.message}`);
-  return { holder, jev: jevRows?.[0]?.id ?? null };
+    .not(`metadata->${BENCH_KEY}`, "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (lastError) throw new Error(`Could not read your last bench: ${lastError.message}`);
+  const lastBench = (last?.metadata as Record<string, unknown> | null)?.[BENCH_KEY] as { agents?: { jev?: unknown } } | undefined;
+  const jev = typeof lastBench?.agents?.jev === "string" ? lastBench.agents.jev : null;
+  return { holder, jev };
 }
 
 /** The shared relation vocabulary (what today's holder answers in), as production reads it. */

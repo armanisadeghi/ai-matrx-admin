@@ -21,6 +21,7 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
+import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -131,17 +132,17 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     };
   }, [setId]);
 
-  // Who judges, from data: the web-result job's holder and the Jev agent tagged for it.
+  // Who judges, from data: the web-result job's holder, and the Jev agent picked on the last bench.
   useEffect(() => {
     if (setId) return;
     let alive = true;
-    resolveJudges()
+    resolveJudges(userId)
       .then(
         (j) =>
           alive &&
           setBench((b) => ({
             ...b,
-            agents: { ...b.agents, holder: j.holder, jev: j.jev },
+            agents: { ...b.agents, holder: j.holder, jev: b.agents.jev ?? j.jev },
           })),
       )
       .catch(
@@ -152,7 +153,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     return () => {
       alive = false;
     };
-  }, [setId]);
+  }, [setId, userId]);
 
   // Live while any cell is queued or running; stops after five quiet minutes.
   const live = cells.some(
@@ -595,6 +596,30 @@ function SetupPanel({
                       }))
                     }
                   />
+                ) : s === "jev" ? (
+                  <>
+                    <AgentListDropdown
+                      consumerId="smart-add-bench-jev"
+                      activeAgentId={bench.agents.jev}
+                      label={bench.agents.jev ? "Change Jev agent" : "Pick the Jev agent"}
+                      onSelect={(agentId) =>
+                        setBench((b) => ({
+                          ...b,
+                          agents: { ...b.agents, jev: agentId },
+                          systems: [...new Set([...b.systems, "jev" as SystemKey])],
+                        }))
+                      }
+                    />
+                    {bench.agents.jev ? (
+                      <Link
+                        href={`/agents/${bench.agents.jev}`}
+                        target="_blank"
+                        className="type-caption inline-flex items-center gap-1 underline"
+                      >
+                        Open agent <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    ) : null}
+                  </>
                 ) : bench.agents[s] ? (
                   <Link
                     href={`/agents/${bench.agents[s]}`}

@@ -29,9 +29,9 @@ anyone's confidence.** Arman, 2026-10-16: "the key is not to look at confidence 
 | Mapping | today's labels → ours / about us / not us by `web.brand_relation_kind.stance` (frozen at run time); `needs_person` / `maybe` = can't tell |
 
 Judges are resolved from data at run time and recorded on the bench (`smart_add_bench.agents`): today's
-holder = the default holder of mandate `brand_intake.web_result_classifier`; Jev = the agent tagged
-`smart-add, jev, decision, web-result` (questions `kind` — the 35 relation keys + needs_person — and
-`stance`); the reference = today's holder on a model the person picks in `ModelListDropdown`. A bench saved
+holder = the default holder of mandate `brand_intake.web_result_classifier`; Jev = the agent the person
+picks in the canonical `AgentListDropdown`, pre-filled from their own last bench ("Smart Add · Web result,
+about us? (Jev)": questions `kind` — the 35 relation keys + needs_person — and `stance`); the reference = today's holder on a model the person picks in `ModelListDropdown`. A bench saved
 before this reads its judges from the battle's own columns.
 
 Fair-play notes: every system gets the same plain result (title, address, snippet, engine, rank) — the
