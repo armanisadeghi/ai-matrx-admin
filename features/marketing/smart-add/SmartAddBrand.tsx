@@ -154,6 +154,7 @@ import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { SmartAddWebRow } from "./SmartAddWebRow";
+import type { BacklinkCheck } from "./backlinks";
 import { captureProvision } from "@/features/provision-window/data";
 import { autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
 import { DEFAULT_INSTANCE_ID } from "@/lib/redux/slices/overlaySlice";
@@ -341,6 +342,8 @@ export function SmartAddBrand({
   const [personSignals, setPersonSignals] = useState<PersonSignals | null>(null);
   // The homepage pictured on a real browser (desktop + mobile): the card swaps it in once it lands.
   const [screenshots, setScreenshots] = useState<BrandScreenshots | null>(null);
+  // Which found pages link to the brand, per round (aidream backlinks step): the answers and whether it is still checking.
+  const [backlinksByRun, setBacklinksByRun] = useState<Record<string, { checks: Record<string, BacklinkCheck>; checking: boolean }>>({});
   // "Person with a business" (a creator or solo professional): a person on the person path.
   const [kindBoth, setKindBoth] = useState(false);
   // The header label's default: the entity-kind step's answer, unless the person changed the label themselves.
@@ -1580,6 +1583,12 @@ export function SmartAddBrand({
             onPath={(p) => onPath(r.runId as string, p)}
             onNameStrength={setNameStrength}
             onScreenshots={setScreenshots}
+            onBacklinks={(checks, checking) =>
+              setBacklinksByRun((cur) => {
+                const next = { checks, checking };
+                return JSON.stringify(cur[r.runId as string]) === JSON.stringify(next) ? cur : { ...cur, [r.runId as string]: next };
+              })
+            }
             onView={onView}
           />
         ) : null,
@@ -1911,6 +1920,8 @@ export function SmartAddBrand({
         }
         marks={webMarks}
         onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}
+        backlinks={Object.assign({}, ...Object.values(backlinksByRun).map((b) => b.checks)) as Record<string, BacklinkCheck>}
+        backlinksChecking={Object.values(backlinksByRun).some((b) => b.checking)}
       />
       <WebPersonAsk rows={webPersonRows} names={Object.fromEntries(webPersonRows.map((r) => [r.item.key, webPersonNames[r.item.key] ?? r.guess ?? ""]))} onName={(key, name) => setWebPersonNames((cur) => ({ ...cur, [key]: name }))} />
       <SmartAddBioLinks items={visible} />

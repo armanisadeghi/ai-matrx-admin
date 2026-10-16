@@ -23,6 +23,7 @@ import type { EvidenceItem } from "./evidence";
 import { useState } from "react";
 import { webRow } from "./evidence";
 import type { WebMark } from "./runMemory";
+import { BACKLINK_KIND, backlinkReason, reviewLinkCheck, type BacklinkCheck } from "./backlinks";
 import { compareRelationKinds, relationGroupLabel, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
 
 /** The one-click answers; every other kind is under "More". */
@@ -55,6 +56,7 @@ export function reviewResultOf(item: EvidenceItem): ReviewResult {
     key: item.key,
     result,
     hits: (item.hits ?? []).map((h) => ({ engine: h.engine, rank: h.rank, query: h.query, endpoint: h.endpoint })),
+    ...(item.siteKind ? { placeKind: { label: item.siteKind.label, reason: item.siteKind.reason } } : {}),
   };
 }
 
@@ -79,6 +81,8 @@ export function SmartAddWebRow({
   onChoose,
   marks: savedMarks,
   onMark: saveMark,
+  backlinks = {},
+  backlinksChecking = false,
 }: {
   items: EvidenceItem[];
   kinds: BrandRelationKind[];
@@ -88,6 +92,10 @@ export function SmartAddWebRow({
   /** Ask me later / Ignore: the person's place in the review, kept by the session so a reload returns to it. */
   marks?: Record<string, WebMark>;
   onMark?: (key: string, mark: WebMark | null) => void;
+  /** Which rows' pages link to the brand (aidream backlinks step), keyed by row. */
+  backlinks?: Record<string, BacklinkCheck>;
+  /** The backlinks step is still reading pages: unchecked rows shimmer. */
+  backlinksChecking?: boolean;
 }) {
   // Without a session (the lab) the marks live here.
   const [localMarks, setLocalMarks] = useState<Record<string, WebMark>>({});
@@ -103,6 +111,7 @@ export function SmartAddWebRow({
     else if (marks[i.key]) answers[i.key] = { status: marks[i.key] };
   }
   const suggestions: Record<string, ReviewSuggestion | null> = {};
+  const hasBacklinkKind = kinds.some((k) => k.key === BACKLINK_KIND);
   for (const i of row) {
     // The web-result classifier's suggestion (weThink.withSuggestions) wins over the rules'.
     const agent = i.suggestion as { by?: string; choice?: string; relation_key?: string | null; sentiment?: ReviewSuggestion["sentiment"]; probability?: number | null; reason?: string; evidence?: string[] } | null | undefined;
@@ -115,13 +124,26 @@ export function SmartAddWebRow({
       : s
         ? { kind: s.kind, reason: s.reason, by: "Rules" }
         : null;
+    // A page that links to the brand defaults to Backlink: the strongest fact we hold about it (a suggestion, never set).
+    const linked = backlinks[i.key];
+    if (linked?.status === "found" && hasBacklinkKind) {
+      suggestions[i.key] = {
+        kind: BACKLINK_KIND,
+        reason: backlinkReason(linked),
+        evidence: linked.backlinks.map((b) => b.matchedUrl),
+        by: "Links to you",
+      };
+    }
   }
   const sessionId = usePublishSearchReviewSession(
     row.length
       ? {
           title: ctx.name ? `On the web · ${ctx.name}` : "On the web",
           subject: { type: "brand", name: ctx.name ?? "This brand" },
-          results: row.map(reviewResultOf),
+          results: row.map((i) => {
+            const links = reviewLinkCheck(backlinks[i.key], backlinksChecking);
+            return links ? { ...reviewResultOf(i), links } : reviewResultOf(i);
+          }),
           choices: reviewChoicesOf(kinds),
           answers,
           suggestions,
