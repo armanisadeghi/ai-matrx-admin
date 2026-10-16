@@ -22,8 +22,7 @@
 // chunk first loads.
 
 import React from "react";
-import "@/lib/coming-soon/registry";
-import "@/lib/coming-soon/announce";
+import { ComingSoonClient } from "@/lib/coming-soon/ComingSoonClient";
 // The formatted-text engine's host (@ai-matrx/rich-content): a client wrapper configures it before any child renders.
 import { RichContentHostProvider } from "@/providers/RichContentHostProvider";
 // disaster
@@ -270,6 +269,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   global replacement for `window.confirm`.
                                   See components/dialogs/confirm/. */}
                                           <ConfirmDialogHost />
+                                          <ComingSoonClient />
                                           {/* Imperative manual-copy host. When
                                   `navigator.clipboard` refuses to write
                                   (embedded browser, permission policy),

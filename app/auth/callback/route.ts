@@ -20,6 +20,7 @@ import { safeForwardedHost } from "@/utils/auth/safe-redirect";
 import {
   authDestinationOr,
   normalizeAuthDestination,
+  resolveAuthDestinationUrl,
   preserveAuthDestination,
   readAuthDestination,
   withAuthDestination,
@@ -323,7 +324,9 @@ export async function GET(request: Request) {
           console.log(
             `[${timestamp}] Auth callback - exchange failed but a valid session exists; continuing to destination`,
           );
-          return NextResponse.redirect(`${baseUrl}${redirectTo}`);
+          return NextResponse.redirect(
+            resolveAuthDestinationUrl(baseUrl, redirectTo),
+          );
         }
 
         if (!verifierArrived) {
@@ -443,7 +446,10 @@ export async function GET(request: Request) {
 
       const finalRedirectTo = redirectTo;
 
-      const finalRedirectUrl = `${baseUrl}${finalRedirectTo}`;
+      const finalRedirectUrl = resolveAuthDestinationUrl(
+        baseUrl,
+        finalRedirectTo,
+      );
       console.log(
         `[${timestamp}] Auth callback - Final redirect URL: ${finalRedirectUrl}`,
       );

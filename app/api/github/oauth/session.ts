@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { safeRelativePath } from "@/utils/auth/safe-redirect";
 
 export const GITHUB_OAUTH_COOKIE = "github_oauth_session";
 
@@ -26,17 +27,6 @@ export function requestBaseUrl(request: NextRequest): string {
   return `${proto}://${host}`;
 }
 
-export function safeReturnUrl(value: string | null): string {
-  if (
-    !value ||
-    !value.startsWith("/") ||
-    value.startsWith("//") ||
-    value.includes("\\")
-  )
-    return "/code";
-  return value;
-}
-
 export function parseGitHubOAuthSession(
   value: string,
 ): GitHubOAuthSession | null {
@@ -59,7 +49,7 @@ export function parseGitHubOAuthSession(
     ) {
       return {
         state: parsed.state,
-        returnUrl: safeReturnUrl(parsed.returnUrl),
+        returnUrl: safeRelativePath(parsed.returnUrl, "/code"),
         browserProof: parsed.browserProof,
         flow: parsed.flow,
         organizationId: parsed.organizationId,
