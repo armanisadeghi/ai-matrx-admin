@@ -1176,10 +1176,28 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     <div className="flex shrink-0 items-center gap-0.5">
                       <CopyButtons
                         size="icon"
-                        label={`Site ${site.domain}`}
-                        sourceId={`web-brand-site:${site.id}`}
-                        data={site}
-                        dataType="Agent"
+                        {...webCopy({
+                          kind: "web-brand-site",
+                          label: `Site ${site.domain}`,
+                          description:
+                            "One website property (managed site) owned by this brand.",
+                          surface: `Websites — ${current.name}`,
+                          data: site,
+                          lines: [
+                            ["Site", site.name],
+                            ["Domain", site.domain],
+                            ["Status", site.status],
+                            [
+                              "Initialized",
+                              site.initialized_at ? "yes" : "never",
+                            ],
+                          ],
+                          attributes: {
+                            brand_id: current.id,
+                            site_id: site.id,
+                          },
+                        })}
+                        json={() => site}
                       />
                       <RowActionButton
                         title="Content plan — every URL this site should have"
@@ -1372,10 +1390,26 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                         <div className="absolute right-1 top-1 flex items-center gap-0.5 rounded-md bg-card/90 opacity-0 shadow-sm transition-opacity focus-within:opacity-100 group-hover:opacity-100">
                           <CopyButtons
                             size="xs"
-                            label={`${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`}
-                            sourceId={`web-brand-asset:${asset.id}`}
-                            data={asset}
-                            dataType="Agent"
+                            {...webCopy({
+                              kind: "web-brand-asset",
+                              label: `${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`,
+                              description:
+                                "One human-confirmed brand asset (logo, favicon, imagery, or color).",
+                              surface: `Brand assets — ${current.name}`,
+                              data: asset,
+                              lines: [
+                                ["Asset", kindLabel],
+                                ["Title", asset.title],
+                                ["Source URL", asset.source_url],
+                                ["Primary", asset.is_primary ? "yes" : "no"],
+                              ],
+                              attributes: {
+                                brand_id: current.id,
+                                asset_id: asset.id,
+                                kind: asset.kind,
+                              },
+                            })}
+                            json={() => asset}
                           />
                           {canEdit ? (
                             <>
