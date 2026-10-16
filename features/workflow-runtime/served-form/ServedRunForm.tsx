@@ -31,6 +31,7 @@
 
 import { useState } from "react";
 import { ArrowRight, Loader2, TriangleAlert } from "lucide-react";
+import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 
 import {
   buildSubmission,
@@ -39,6 +40,7 @@ import {
 } from "./served-input";
 import {
   EMPTY_SERVED_INPUTS,
+  ServedFieldControl,
   ServedFormScream,
   ServedInputFields,
   useServedInputKinds,
@@ -98,12 +100,17 @@ export function ServedRunForm({
   const gaps = unsatisfiedServedInputs(inputs, values, touched);
   const gapNames = new Set(gaps.map((g) => g.name));
 
-  const submit = () => {
+  // `overrides`: values the one-box form converted on submit (a pasted link
+  // reduced to the website the box asks for). They are what the person saw
+  // and sent, so they travel stamped `human` like anything typed here.
+  const submit = (overrides: Record<string, unknown> = {}) => {
     setTriedToStart(true);
     setStartError(null);
     setServerGaps(null);
-    if (gaps.length > 0) return;
-    void start(definitionId, buildSubmission(inputs, values, touched)).then(
+    const sentValues = { ...values, ...overrides };
+    const sentTouched = new Set([...touched, ...Object.keys(overrides)]);
+    if (unsatisfiedServedInputs(inputs, sentValues, sentTouched).length > 0) return;
+    void start(definitionId, buildSubmission(inputs, sentValues, sentTouched)).then(
       (outcome) => {
         if (outcome.status === "started") onStarted(outcome.runId);
         else if (outcome.status === "gaps") setServerGaps(outcome.gaps);
@@ -133,6 +140,84 @@ export function ServedRunForm({
     );
   }
 
+  // THE ONE-BOX ARRANGEMENT is the default (common-docs
+  // projects/third-party-services/INPUT-HINTS.md); an author who wants the
+  // stacked cards declares `metadata.run_form.layout = "form"`.
+  const simple = state.form.hints.layout !== "form";
+
+  const feedback = (
+    <>
+        {triedToStart && gaps.length > 0 && (
+        <p className="mt-2 text-xs text-destructive">
+          Still needed:{" "}
+          {gaps
+            .map((g) =>
+              simple || g.sourcing !== "ask"
+                ? g.label
+                : `${g.label} (you answer this every run)`,
+            )
+            .join(", ")}
+          .
+        </p>
+      )}
+
+      {serverGaps && (
+        <div className="mt-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3">
+          <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
+            {serverGaps.length === 0
+              ? "The server refused to start this run for want of an input — but it did not say which."
+              : `The server needs ${serverGaps.length} ${
+                  serverGaps.length === 1 ? "input" : "inputs"
+                } before this run can start:`}
+            <ErrorAlchemyMenu operation="Start this run" />
+          </p>
+          {serverGaps.length === 0 && !simple && (
+            <p className="mt-1 flex items-start gap-1.5 text-[11px] text-amber-800/80 dark:text-amber-200/80">
+              <TriangleAlert
+                className="mt-0.5 h-3 w-3 shrink-0"
+                aria-hidden="true"
+              />
+              <span>
+                The 409 carried <code className="font-mono">inputs_required</code>{" "}
+                but no <code className="font-mono">missing</code> list — aidream&apos;s
+                error middleware flattens the detail and drops it. Server-side
+                defect: carry the gap list through the normalizer. Nothing you
+                entered was lost.
+              </span>
+            </p>
+          )}
+          <ul className="mt-1 space-y-0.5">
+            {serverGaps.map((gap) => (
+              <li
+                key={gap.name}
+                className="text-xs text-amber-800 dark:text-amber-200"
+              >
+                <span className="font-medium">{gap.label}</span>
+                {simple ? null : (
+                  <span className="ml-1.5 text-[11px] opacity-80">
+                    {gap.kind} · {gap.sourcing}
+                  </span>
+                )}
+                {gap.help ? (
+                  <span className="ml-1.5 text-[11px] opacity-80">
+                    — {gap.help}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1.5 text-[11px] text-amber-800/80 dark:text-amber-200/80">
+            Fill them in above and start again — nothing was lost.
+          </p>
+        </div>
+      )}
+
+      {startError && (
+        <p className="mt-2 text-xs text-destructive">{startError} <ErrorAlchemyMenu error={startError} /></p>
+      )}
+    </>
+  );
+
   return (
     <div>
       {!state.form.surfaceServed && (
@@ -149,6 +234,28 @@ export function ServedRunForm({
         <ServedFormScream title="Kind registry gap" body={kindError} />
       )}
 
+      {simple ? (
+        <SimpleBoxForm
+          inputs={inputs}
+          values={values}
+          onChange={setValue}
+          onSubmit={submit}
+          submitting={starting}
+          hints={state.form.hints}
+          submitLabel={startLabel}
+          flaggedNames={triedToStart ? gapNames : undefined}
+          renderControl={(input, value, onChange) => (
+            <ServedFieldControl
+              input={input}
+              kind={kinds[input.kind]}
+              value={value}
+              onChange={onChange}
+            />
+          )}
+          footer={feedback}
+        />
+      ) : (
+        <>
       <ServedInputFields
         inputs={inputs}
         values={values}
@@ -161,7 +268,7 @@ export function ServedRunForm({
       <div className="mt-5">
         <button
           type="button"
-          onClick={submit}
+          onClick={() => submit()}
           disabled={starting}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto sm:min-w-64"
         >
@@ -178,73 +285,10 @@ export function ServedRunForm({
           )}
         </button>
 
-        {triedToStart && gaps.length > 0 && (
-          <p className="mt-2 text-xs text-destructive">
-            Still needed:{" "}
-            {gaps
-              .map((g) =>
-                g.sourcing === "ask"
-                  ? `${g.label} (you answer this every run)`
-                  : g.label,
-              )
-              .join(", ")}
-            .
-          </p>
-        )}
-
-        {serverGaps && (
-          <div className="mt-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3">
-            <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
-              {serverGaps.length === 0
-                ? "The server refused to start this run for want of an input — but it did not say which."
-                : `The server needs ${serverGaps.length} ${
-                    serverGaps.length === 1 ? "input" : "inputs"
-                  } before this run can start:`}
-              <ErrorAlchemyMenu operation="Start this run" />
-            </p>
-            {serverGaps.length === 0 && (
-              <p className="mt-1 flex items-start gap-1.5 text-[11px] text-amber-800/80 dark:text-amber-200/80">
-                <TriangleAlert
-                  className="mt-0.5 h-3 w-3 shrink-0"
-                  aria-hidden="true"
-                />
-                <span>
-                  The 409 carried <code className="font-mono">inputs_required</code>{" "}
-                  but no <code className="font-mono">missing</code> list — aidream&apos;s
-                  error middleware flattens the detail and drops it. Server-side
-                  defect: carry the gap list through the normalizer. Nothing you
-                  entered was lost.
-                </span>
-              </p>
-            )}
-            <ul className="mt-1 space-y-0.5">
-              {serverGaps.map((gap) => (
-                <li
-                  key={gap.name}
-                  className="text-xs text-amber-800 dark:text-amber-200"
-                >
-                  <span className="font-medium">{gap.label}</span>
-                  <span className="ml-1.5 text-[11px] opacity-80">
-                    {gap.kind} · {gap.sourcing}
-                  </span>
-                  {gap.help ? (
-                    <span className="ml-1.5 text-[11px] opacity-80">
-                      — {gap.help}
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-1.5 text-[11px] text-amber-800/80 dark:text-amber-200/80">
-              Fill them in above and start again — nothing was lost.
-            </p>
-          </div>
-        )}
-
-        {startError && (
-          <p className="mt-2 text-xs text-destructive">{startError} <ErrorAlchemyMenu error={startError} /></p>
-        )}
+        {feedback}
       </div>
+        </>
+      )}
     </div>
   );
 }
