@@ -1,14 +1,12 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRef } from "react";
 import { UserData } from "@/utils/userDataMapper";
 import { useResetMenuGroupsOnOpen } from "./useResetMenuGroupsOnOpen";
 import { OverlayMenuItem } from "./OverlayMenuItem";
 import { CanvasToolMenuItem } from "./CanvasToolMenuItem";
 import { LinkMenuItem } from "./LinkMenuItem";
-import { AdminIndicatorMenuItem } from "./AdminIndicatorMenuItem";
-import { CostUnitMenuItem } from "./CostUnitMenuItem";
-import { ErrorInspectorMenuItem } from "./ErrorInspectorMenuItem";
 import { CopyShortLinkMenuItem } from "./CopyShortLinkMenuItem";
 import { SignOutMenuItem } from "./SignOutMenuItem";
 import { UserProfileHeader } from "./UserProfileHeader";
@@ -18,6 +16,13 @@ import {
   COMMUNICATION_ITEMS,
 } from "./userMenuItems.constants";
 import { USER_MENU_PANEL_CLASS } from "./menuItemClass";
+
+// The Admin group's items load only for an admin: the boolean below is the whole
+// gate, and the group sits behind this ONE edge (Arman, 2026-10-15).
+const AdminMenuGroup = dynamic(() => import("./AdminMenuGroupImpl"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const divider = (
   <div className="h-px my-1 mx-2 bg-[var(--matrx-glass-border-color)]" />
@@ -68,27 +73,7 @@ export default function UserMenuPanel({
         <OverlayMenuItem key={item.overlayId} {...item} />
       ))}
 
-      {userData.isAdmin && (
-        <>
-          {divider}
-          <MenuGroup
-            id="admin"
-            icon="Shield"
-            label="Admin"
-            iconClassName="[&_svg]:text-amber-500"
-          >
-            <LinkMenuItem
-              href="/administration"
-              icon="Shield"
-              label="Admin Dashboard"
-              className="[&_svg]:text-amber-500"
-            />
-            <AdminIndicatorMenuItem />
-            <CostUnitMenuItem />
-            <ErrorInspectorMenuItem />
-          </MenuGroup>
-        </>
-      )}
+      {userData.isAdmin && <AdminMenuGroup divider={divider} />}
 
       {divider}
 
