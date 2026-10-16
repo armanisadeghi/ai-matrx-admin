@@ -48,8 +48,7 @@ import {
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { operationsByLink } from "@ai-matrx/api/architecture";
-import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
+import { fetchOperationsByLink } from "@/lib/runtime-operations/operationsByLink";
 /** The front door's starting points. `send` runs now; otherwise the words wait in the composer for the rest. */
 export const PR_STARTING_POINTS: ReadonlyArray<{
   label: string;
@@ -132,11 +131,8 @@ async function reopenWithRetry<T>(
  *  safe side: never send a person's question twice on a guess. */
 async function serverIsWorkingOn(conversationId: string): Promise<boolean> {
   try {
-    const data = await operationsByLink(serverApi, { path: {
-        link_kind: "conversation",
-        link_id: conversationId,
-      } }, { headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
-    return ((data as { operation_count?: number } | null)?.operation_count ?? 0) > 0;
+    const data = await fetchOperationsByLink("conversation", conversationId);
+    return data.operation_count > 0;
   } catch (error) {
     // 404 is the server's "no operation you own for this conversation".
     return (error as { status?: number } | null)?.status !== 404;
