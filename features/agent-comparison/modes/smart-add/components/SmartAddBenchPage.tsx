@@ -7,8 +7,9 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import Link from "next/link";
-import { AlertTriangle, ExternalLink, ListChecks, Search } from "lucide-react";
+import { ExternalLink, ListChecks, Search } from "lucide-react";
 import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
 import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
 import { ProInput } from "@/components/official/ProInput";
@@ -68,13 +69,12 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const [runError, setRunError] = useState<string | null>(null);
   const [view, setView] = useState<View>("truth");
   const [, startTransition] = useTransition();
-  const lastChange = useRef(Date.now());
+  const lastChange = useRef(0); // set on mount by the signature effect below
 
   // Open a saved bench.
   useEffect(() => {
     if (!setId) return;
     let alive = true;
-    setLoading(true);
     loadComparisonSet(setId)
       .then(({ set, entries }) => {
         if (!alive) return;
@@ -221,9 +221,8 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
         ]}
       />
       {(runError || loadError) && (
-        <div role="alert" className="flex items-start gap-2 px-3 py-2 border-b border-border bg-destructive/10 type-body shrink-0">
-          <AlertTriangle className="w-4 h-4 mt-0.5 text-destructive shrink-0" />
-          <span className="min-w-0 flex-1 break-words">{runError ?? loadError}</span>
+        <div className="px-3 py-2 border-b border-border shrink-0">
+          <ErrorNotice message={runError ?? loadError ?? ""} size="compact" />
         </div>
       )}
       <div className="flex-1 min-h-0 overflow-y-auto" data-matrx-page-scroll>
