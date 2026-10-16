@@ -65,3 +65,17 @@ it("asks once a tab has switched off real", async () => {
   await mount();
   expect(mockFetch).toHaveBeenCalledTimes(1);
 });
+
+it("keeps the switch on screen while the verdict is asked and after it fails, so a tab can go back to Real", async () => {
+  mockIsAdmin = true;
+  mockMode = "replay";
+  let reject: (e: unknown) => void = () => undefined;
+  mockFetch.mockImplementation(() => new Promise((_r, j) => { reject = j; }));
+  const host = document.body.appendChild(document.createElement("div"));
+  const root = createRoot(host);
+  await act(async () => root.render(<AiTestModeSheetRow />));
+  expect(host.textContent ?? "").toContain("AI test mode");
+  await act(async () => { reject(new Error("502")); });
+  expect(host.textContent ?? "").toContain("AI test mode");
+  act(() => root.unmount());
+});

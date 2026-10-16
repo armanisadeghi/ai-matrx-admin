@@ -662,6 +662,9 @@ export async function bootSync(options: BootOptions): Promise<BootResult> {
         // A boot that throws must not leave a slice "loading" forever: every
         // remotely-loaded slice hears its load failed, then the caller hears
         // the throw (store.ts lets a later mount retry the boot).
+        // The saved theme choice is as known as it will get: let the device-colour reconcile run
+        // rather than leave this session unreconciled (it is idempotent if boot got that far).
+        markThemeChoiceKnown();
         const message = extractErrorMessage(err);
         logger.error("boot.failed", { meta: { error: message } });
         announceLoadFailure(options.store, options.policies, message);
