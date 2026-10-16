@@ -14,6 +14,7 @@ import { sendAndLogSms } from '@/lib/sms/send';
 import { sendAdminMessageSms } from '@/lib/sms/notificationService';
 import { updateAllWebhookUrls } from '@/lib/sms/numbers';
 import { getClaimsUser } from "@ai-matrx/auth";
+import { getCurrentUserAdminStatus } from '@/utils/auth/adminUtils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -199,6 +200,54 @@ export async function POST(request: NextRequest) {
           data: data || [],
           total: count || 0,
         });
+      }
+
+      // ---- Spare texting numbers: the pool, and assigning one to an organization ----
+      case 'list_spares': {
+        const status = await getCurrentUserAdminStatus();
+        if (!status?.isAdmin) {
+          return NextResponse.json({ success: false, msg: 'Platform admin only' }, { status: 403 });
+        }
+        const systemOrgId = await resolveSystemOrgId();
+        const { data: spares, error: sparesError } = await adminSupabase
+          .schema('communication')
+          .from('sms_phone_numbers')
+          .select('phone_number, friendly_name, metadata')
+          .eq('organization_id', systemOrgId)
+          .eq('program_key', 'unassigned_spare')
+          .is('deleted_at', null)
+          .filter('metadata->>status', 'eq', 'available');
+        if (sparesError) {
+          return NextResponse.json({ success: false, msg: sparesError.message }, { status: 500 });
+        }
+        const { data: pool } = await (adminSupabase.schema('communication') as any).rpc('spare_sms_pool_status'); // types regenerate after pnpm db-types
+        return NextResponse.json({ success: true, data: { spares: spares ?? [], pool: pool?.[0] ?? null } });
+      }
+
+      case 'assign_spare': {
+        const status = await getCurrentUserAdminStatus();
+        if (!status?.isAdmin) {
+          return NextResponse.json({ success: false, msg: 'Platform admin only' }, { status: 403 });
+        }
+        const { organization_id: organizationId, phone_number: phoneNumber } = body;
+        if (!organizationId) {
+          return NextResponse.json({ success: false, msg: 'organization_id is required' }, { status: 400 });
+        }
+        const { data: claimed, error: claimError } = await (adminSupabase.schema('communication') as any)
+          .rpc('claim_spare_sms_number', {
+            p_organization_id: organizationId,
+            p_actor: user.id,
+            p_phone: phoneNumber ?? null,
+            p_auto: false,
+          });
+        const row = claimed?.[0];
+        if (claimError || !row?.phone_number) {
+          return NextResponse.json(
+            { success: false, msg: claimError?.message ?? row?.refusal ?? 'No spare number could be assigned' },
+            { status: 409 },
+          );
+        }
+        return NextResponse.json({ success: true, data: { phone_number: row.phone_number, claimed: row.claimed } });
       }
 
       // ---- Update webhook URLs on all phone numbers ----

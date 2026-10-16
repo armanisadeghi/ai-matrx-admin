@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-16T15:08:24.938Z",
+  "generated_at": "2026-10-16T22:43:34.891Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -8605,6 +8605,12 @@
       "filename": "signupdoor_the_dormant_second_signup_door_is_closed_loudly.sql",
       "checksum": "646910e1157632b7a018fda29373220ef26a6a90491248aaff550cb8b26f4cdd",
       "applied_at": "2026-09-22 13:28:31.118022+00"
+    },
+    "migrations/campaign/smsspares_a_spare_number_is_claimed_not_waited_for.sql": {
+      "source": "matrx-frontend",
+      "filename": "smsspares_a_spare_number_is_claimed_not_waited_for.sql",
+      "checksum": "b1170f374d71ed50fa9161d7b400232c2403d9e10a48d25c88b230bb4814146b",
+      "applied_at": "2026-10-16 22:43:31.53985+00"
     },
     "migrations/campaign/sourcekey_a_record_store_tables_changes_are_record_events.sql": {
       "source": "campaign",

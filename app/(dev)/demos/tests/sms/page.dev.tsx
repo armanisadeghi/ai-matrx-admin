@@ -10,6 +10,7 @@ import ConversationsList from './components/ConversationsList';
 import NotificationPreferences from './components/NotificationPreferences';
 import Analytics from './components/Analytics';
 import WebhookLogs from './components/WebhookLogs';
+import SpareNumbers from './components/SpareNumbers';
 
 export default function SMSTestPage() {
   const [activeTab, setActiveTab] = useState('send');
@@ -54,6 +55,10 @@ export default function SMSTestPage() {
                   <Webhook className="h-4 w-4" />
                   Webhook Logs
                 </TabsTrigger>
+                <TabsTrigger value="spares">
+                  <Phone className="h-4 w-4" />
+                  Assign a number
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -82,6 +87,10 @@ export default function SMSTestPage() {
 
               <TabsContent value="webhooks" className="mt-0">
                 <WebhookLogs />
+              </TabsContent>
+
+              <TabsContent value="spares" className="mt-0">
+                <SpareNumbers />
               </TabsContent>
             </div>
           </div>
