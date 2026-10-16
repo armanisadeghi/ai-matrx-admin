@@ -247,7 +247,7 @@ export function useQuizStudy(
     setFallbackAttempted((prev) => new Set(prev).add(q.cardId));
     setFallbackLoading(true);
     void dispatch(
-      makeQuizItems({
+      makeQuizItems({ initiation: "auto",
         front: q.front,
         back: q.correctAnswer,
         topic: set?.topic ?? null,

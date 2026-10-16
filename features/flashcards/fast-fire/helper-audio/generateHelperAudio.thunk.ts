@@ -176,7 +176,7 @@ function renderHelperAudio(
     };
     try {
       const launch = await dispatch(
-        launchAgentExecution({
+        launchAgentExecution({ initiation: "auto",
           mandateKey: HELPER_TTS_MANDATE,
           surfaceKey: `fastfire-helper-tts-${cardId}`,
           sourceFeature: "education-fastfire",

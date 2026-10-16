@@ -124,7 +124,7 @@ export function DirectTestMode({
   const handleExecute = useCallback(async () => {
     if (conversationId) close(conversationId);
     try {
-      const result = await launchAgent(agentId, {
+      const result = await launchAgent(agentId, { initiation: "user",
         surfaceKey,
         sourceFeature: "agent-builder",
         apiEndpointMode,
@@ -267,7 +267,7 @@ export function InlineTestMode({
   const handleExecute = useCallback(async () => {
     if (conversationId) close(conversationId);
     try {
-      const result = await launchAgent(agentId, {
+      const result = await launchAgent(agentId, { initiation: "user",
         surfaceKey,
         sourceFeature: "agent-builder",
         apiEndpointMode,
@@ -444,7 +444,7 @@ function BackgroundTestMode({
 
   const handleExecute = useCallback(async () => {
     try {
-      const result = await launchAgent(agentId, {
+      const result = await launchAgent(agentId, { initiation: "user",
         surfaceKey,
         sourceFeature: "agent-builder",
         apiEndpointMode,

@@ -191,7 +191,7 @@ export function EnhanceSetDialog({
     };
     if (mode === "enrich") {
       const details = await dispatch(
-        enrichCard({ card, depth, onConversationCreated, onUnusable }),
+        enrichCard({ initiation: "user", card, depth, onConversationCreated, onUnusable }),
       );
       if (!details) {
         toast.error(
@@ -219,7 +219,7 @@ export function EnhanceSetDialog({
       await enrichGuard.commit({ initiation: "user" });
     } else {
       const subCards = await dispatch(
-        expandCard({ card, depth, onConversationCreated, onUnusable }),
+        expandCard({ initiation: "user", card, depth, onConversationCreated, onUnusable }),
       );
       if (!subCards) {
         toast.error(

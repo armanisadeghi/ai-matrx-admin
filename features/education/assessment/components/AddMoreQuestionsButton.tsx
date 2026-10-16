@@ -310,7 +310,7 @@ function AddMoreQuestionsDialog({
             batchId,
             targetKind: config.kind,
             surfaceKey: `education-add-more-${config.base}`,
-            ctx: {
+            ctx: { initiation: "user",
               dispatch,
               store,
               orgId,

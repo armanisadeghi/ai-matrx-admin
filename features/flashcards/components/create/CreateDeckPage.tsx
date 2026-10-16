@@ -429,7 +429,7 @@ export function CreateDeckPage({
         user_request: focus.trim() || undefined,
         depth,
       },
-      { onConversationCreated: attach },
+      { initiation: "user", onConversationCreated: attach },
     );
     setPhase("saving");
     // The envelope that drove the live preview is the persistence source.
@@ -506,7 +506,7 @@ export function CreateDeckPage({
         .filter(Boolean)
         .join("\n\n"),
       name: deckName,
-      ctx: {
+      ctx: { initiation: "user",
         dispatch,
         store,
         orgId,

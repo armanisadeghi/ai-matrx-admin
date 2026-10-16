@@ -75,7 +75,7 @@ export function AICodeEditorModalV2({
 
       (async () => {
         try {
-          const result = await launchMandate(defaultMandateKey, {
+          const result = await launchMandate(defaultMandateKey, { initiation: "user",
             surfaceKey: `code-editor:${defaultMandateKey}`,
             sourceFeature: "code-editor",
             config: {

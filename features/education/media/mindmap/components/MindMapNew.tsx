@@ -122,7 +122,7 @@ export function MindMapNew() {
           source_content: resolved.content,
           title: resolved.source.title,
           focus: focus.trim(),
-        });
+        }, "user");
         // Resolve nodes → source cards where we can (DoD item 3). Unmatched nodes
         // stay unlinked; a click still offers "ask the tutor about this idea".
         const { spec: linkedSpec, linkedCount } = linkDiagramToCards(spec, deckCards);

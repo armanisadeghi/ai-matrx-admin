@@ -82,7 +82,7 @@ export function GenerateCardsDialog({
         const result = await run.generate(
           FC_MANDATES.generateCards,
           { topic: about, count, difficulty: difficulty ?? "medium" },
-          {
+          { initiation: "user",
             onConversationCreated: (cid) => {
               // Never discarded: a refused link is said, with its remedy.
               void fcService

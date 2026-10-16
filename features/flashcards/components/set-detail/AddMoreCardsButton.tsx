@@ -391,7 +391,7 @@ function AddMoreCardsDialog({
           outline,
           steer: { instruction, cardKinds },
           batchId,
-          ctx: {
+          ctx: { initiation: "user",
             dispatch,
             store,
             orgId,

@@ -209,6 +209,8 @@ export type HeadlessRunTarget =
   | { mandateKey: AnyMandateKey; agentId?: undefined };
 
 export type HeadlessRunArgs = HeadlessRunTarget & {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   surfaceKey: string;
   /** What the person typed. Omit for variable-driven agents: the agent's own
    *  authored user message carries the variables — code never writes a turn. */
@@ -262,7 +264,7 @@ export async function runHeadlessAgent<T>(
   }
   try {
     const launch = await dispatch(
-      launchAgentExecution({
+      launchAgentExecution({ initiation: args.initiation,
         ...(args.mandateKey
           ? { mandateKey: args.mandateKey }
           : { agentId: args.agentId }),
@@ -380,7 +382,7 @@ export function generatePageImage(args: GeneratePageImageArgs) {
     try {
       return await runHeadlessAgent(
         dispatch,
-        {
+        { initiation: "user",
           agentId: args.agentId,
           surfaceKey: args.surfaceKey,
           variables: { intent_or_content: args.prompt },
@@ -463,7 +465,7 @@ export function generatePageImageTwoStep(args: GeneratePageImageTwoStepArgs) {
     try {
       const answer = await runHeadlessAgent(
         dispatch,
-        {
+        { initiation: "user",
           mandateKey: IMAGE_PROMPT_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {
@@ -500,7 +502,7 @@ export function generatePageImageTwoStep(args: GeneratePageImageTwoStepArgs) {
     try {
       const fileId = await runHeadlessAgent(
         dispatch,
-        {
+        { initiation: "user",
           mandateKey: PAGE_IMAGE_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {
@@ -555,7 +557,7 @@ export function generatePageImageAllInOne(args: GeneratePageImageAllInOneArgs) {
     try {
       const fileId = await runHeadlessAgent(
         dispatch,
-        {
+        { initiation: "user",
           mandateKey: PAGE_IMAGE_ALL_IN_ONE_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {

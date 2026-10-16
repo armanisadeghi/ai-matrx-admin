@@ -558,7 +558,7 @@ export function StudyDeck(props: StudyDeckProps) {
       // learner, not behind a spinner on the Ask button.
       const live = helpWindow.start("Your tutor is answering");
       const result = await dispatch(
-        helpLive({
+        helpLive({ initiation: "user",
           onConversationCreated: live.bind,
           front: current.front,
           back: current.back,

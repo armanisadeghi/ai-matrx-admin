@@ -155,7 +155,7 @@ export function OrchestraBuilder({
   const handleSyncPrompt = async () => {
     setSyncing(true);
     const res = await dispatch(
-      syncConductorPrompt({ conductorId, memberIds }),
+      syncConductorPrompt({ initiation: "user", conductorId, memberIds }),
     );
     setSyncing(false);
     if (res.ok) {

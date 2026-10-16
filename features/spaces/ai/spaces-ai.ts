@@ -81,7 +81,7 @@ export function useWritingAssist() {
   const live = useLiveAgentRun();
   const run = async (req: WritingRequest): Promise<string> => {
     if (!WRITING_ASSIST_KEY) throw new Error("AI is not connected yet");
-    const out = await live.run<unknown>({
+    const out = await live.run<unknown>({ initiation: "user",
       mandateKey: WRITING_ASSIST_KEY,
       variables: {
         action: req.action,
@@ -109,7 +109,7 @@ export function useAskPage() {
   const ask = (page: { title: string; markdown: string }, question: string) => {
     if (!ASK_PAGE_KEY) throw new Error("AI is not connected yet");
     return dispatch(
-      launchAgentExecution({
+      launchAgentExecution({ initiation: "user",
         mandateKey: ASK_PAGE_KEY,
         surfaceKey: SURFACE_KEY,
         sourceFeature: SOURCE_FEATURE,

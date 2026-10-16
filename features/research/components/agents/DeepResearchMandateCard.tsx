@@ -81,7 +81,7 @@ export function DeepResearchMandateCard({ topic }: { topic: ResearchTopic }) {
     setLaunching(true);
     setError(null);
     try {
-      await launcher.launchMandate(DEEP_RESEARCH_MANDATE, {
+      await launcher.launchMandate(DEEP_RESEARCH_MANDATE, { initiation: "user",
         surfaceKey: `research-deep-research:${topic.id}`,
         sourceFeature: "research",
         organizationId: topic.organization_id,

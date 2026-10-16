@@ -73,7 +73,7 @@ export function ConversationAnalyzePanel({
     });
     try {
       const result = await dispatch(
-        launchAgentExecution({
+        launchAgentExecution({ initiation: "user",
           mandateKey: kind.mandateKey,
           sourceFeature: "chat",
           surfaceKey: `conversation-analysis:${conversationId}:${kind.key}`,

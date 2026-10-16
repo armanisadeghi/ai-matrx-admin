@@ -108,6 +108,8 @@ export function enableConductorSync(args: {
  *    and inject it. Never throws; a member the caller can't edit is skipped.
  */
 export function syncConductorPrompt(args: {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   conductorId: string;
   memberIds: string[];
 }): AppThunk<
@@ -200,6 +202,7 @@ export function syncConductorPrompt(args: {
       try {
         const launch = await dispatch(
           launchAgentExecution({
+            initiation: args.initiation,
             mandateKey: ORCHESTRA_ROLE_DESCRIBER_MANDATE_KEY,
             surfaceKey: "conductor-role-describer",
             sourceFeature: "agent-generator",

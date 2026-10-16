@@ -132,7 +132,7 @@ export function generateSpokenFront(
     let conversationId: string | null = null;
     try {
       const launch = await dispatch(
-        launchAgentExecution({
+        launchAgentExecution({ initiation: "auto",
           mandateKey: SPOKEN_FRONT_TTS_MANDATE,
           surfaceKey: `fastfire-tts-${card.id}`,
           // Persisted like the other Fast Fire runs; a distinct system

@@ -275,7 +275,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       toast.error("Say something to the assistant first");
       return false;
     }
-    await launchAgent(doerId, {
+    await launchAgent(doerId, { initiation: "user",
       conversationId: state.chatId,
       surfaceKey: ASSISTANT_SURFACE,
       sourceFeature: "agent-studio",

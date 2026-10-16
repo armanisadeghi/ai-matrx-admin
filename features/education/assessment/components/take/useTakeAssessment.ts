@@ -194,7 +194,7 @@ export function useTakeAssessment(
         // The IMAGE branch of the grade-on-meaning path — a photographed
         // handwritten answer, routed to the vision grader (step-level verdict).
         graded = await dispatch(
-          gradeAnswerImage({
+          gradeAnswerImage({ initiation: "user",
             question: item.prompt,
             expected,
             photo,
@@ -214,7 +214,7 @@ export function useTakeAssessment(
           };
       } else {
         graded = await dispatch(
-          gradeAnswerAI({
+          gradeAnswerAI({ initiation: "user",
             question: item.prompt,
             expected,
             learnerAnswer: response,

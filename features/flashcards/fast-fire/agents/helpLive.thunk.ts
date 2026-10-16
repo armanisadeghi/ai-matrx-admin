@@ -83,7 +83,7 @@ export function helpLive(args: HelpLiveArgs) {
     ]);
 
     return dispatch(
-      helpLiveCore({
+      helpLiveCore({ initiation: "user",
         front: args.front,
         back: args.back,
         question: args.question,

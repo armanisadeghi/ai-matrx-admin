@@ -1029,7 +1029,7 @@ function BlogOutputCard({
       // that used to sit here was the workaround for the era when the whole
       // prompt lived in the SYSTEM message — verified dead 2026-08-23 (all
       // three publishing agents stream cleanly with no user message at all).
-      const md = await blogRun.run<string>({
+      const md = await blogRun.run<string>({ initiation: "user",
         mandateKey: BLOG_MANDATE,
         surfaceKey: `research-outputs-blog:${topicId}`,
         sourceFeature: "research",
@@ -1298,7 +1298,7 @@ function SlidesOutputCard({
     try {
       // NO user turn — see BlogOutputCard's identical comment: the rebuilt
       // agent's own authored user turn carries the request (wave 4, D2).
-      const deck = await slidesRun.run<PresentationDeck>({
+      const deck = await slidesRun.run<PresentationDeck>({ initiation: "user",
         mandateKey: SLIDES_MANDATE,
         surfaceKey: `research-outputs-slides:${topicId}`,
         sourceFeature: "research",
@@ -1510,7 +1510,7 @@ function SeoOutputCard({
     setViewing(null);
     setError(null);
     try {
-      const seo = await seoRun.run<SeoPackage>({
+      const seo = await seoRun.run<SeoPackage>({ initiation: "user",
         mandateKey: SEO_MANDATE,
         surfaceKey: "research-outputs-seo",
         sourceFeature: "research",

@@ -214,7 +214,7 @@ function ShapeBuilderRun({
     if (launchedRef.current) return;
     launchedRef.current = true;
     const seed = composeNewShapeBrief(answers);
-    void launchAgent(agentId, {
+    void launchAgent(agentId, { initiation: "user",
       surfaceKey: `surface-role:${SHAPES_SURFACE_NAME}:${SHAPE_BUILDER_ROLE}`,
       sourceFeature: "ai-results",
       config: {

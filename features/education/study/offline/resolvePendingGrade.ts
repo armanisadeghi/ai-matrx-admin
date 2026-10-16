@@ -68,7 +68,7 @@ export function createPendingGradeResolver(
     if (!responseAudioFileId) return null;
 
     const grade = await dispatch(
-      runSpokenGrader({
+      runSpokenGrader({ initiation: "auto",
         mandateKey: spec.mandateKey,
         front: spec.front,
         back: spec.back,

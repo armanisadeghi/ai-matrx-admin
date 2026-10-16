@@ -246,7 +246,7 @@ function MakePracticeTestDialog({
             batchId: newBatchId(),
             targetKind: config.kind,
             surfaceKey: "education-class-test-practice-test",
-            ctx: {
+            ctx: { initiation: "user",
               dispatch,
               store,
               orgId,

@@ -101,7 +101,7 @@ export function useAssessmentGeneration(config: KindConfig) {
           topic: src.topic.trim(),
           grade_level: "",
           ...sharedVars,
-        });
+        }, "user");
       } else if (src.mode === "deck") {
         sourceKind = "deck";
         sourceId = src.deck.id;
@@ -117,7 +117,7 @@ export function useAssessmentGeneration(config: KindConfig) {
           source_content: sourceContent,
           source_label: src.deck.name,
           ...sharedVars,
-        });
+        }, "user");
       } else {
         sourceKind = "source";
         sourceId = src.document.id;
@@ -149,7 +149,7 @@ export function useAssessmentGeneration(config: KindConfig) {
           source_content: sourceContent,
           source_label: doc.name,
           ...sharedVars,
-        });
+        }, "user");
       }
 
       const items = attach ? generated.questions.map(attach) : generated.questions;

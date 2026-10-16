@@ -265,6 +265,7 @@ export async function segmentedGenerate<T>({
     try {
       return await Promise.race([
         runAgentExtraction(ctx.dispatch, ctx.store, {
+          initiation: ctx.initiation,
           mandateKey,
           surfaceKey,
           sourceFeature,

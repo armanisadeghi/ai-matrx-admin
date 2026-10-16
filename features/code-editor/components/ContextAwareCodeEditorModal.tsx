@@ -173,7 +173,7 @@ export function ContextAwareCodeEditorModal({
 
     // Resolved INSIDE the launch funnel (agent + config_overrides); an
     // unresolvable mandate rejects loudly below — no hardcoded fallback.
-    launchMandate(defaultMandateKey, {
+    launchMandate(defaultMandateKey, { initiation: "user",
       sourceFeature: "code-editor",
       surfaceKey: `code-editor-modal:${defaultMandateKey}`,
       config: {

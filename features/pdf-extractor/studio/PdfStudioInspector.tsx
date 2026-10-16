@@ -416,7 +416,7 @@ function AiActionsPanel({
     }
 
     try {
-      await launchAgent(agentId, {
+      await launchAgent(agentId, { initiation: "user",
         surfaceKey: `pdf-extractor:bound-agent:${agentId}`,
         sourceFeature: "pdf-extractor",
         config: {

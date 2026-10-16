@@ -116,7 +116,7 @@ export interface UseEpisodeArticles {
   busy: Partial<Record<PcArticleKind, boolean>>;
   loading: boolean;
   /** Run the agent for a kind, stream the draft, and save it (status: draft). */
-  generate: (kind: PcArticleKind) => Promise<void>;
+  generate: (kind: PcArticleKind, initiation: "user" | "auto") => Promise<void>;
   /** Flip an article between draft and published. */
   togglePublish: (kind: PcArticleKind) => Promise<void>;
 }
@@ -169,7 +169,7 @@ export function useEpisodeArticles(
   }, [episodeId]);
 
   const generate = useCallback(
-    async (kind: PcArticleKind) => {
+    async (kind: PcArticleKind, initiation: "user" | "auto") => {
       if (!episode || !episode.script?.trim()) {
         toast.error("This episode has no script to write from.");
         return;
@@ -200,7 +200,7 @@ export function useEpisodeArticles(
         // resolved INSIDE the canonical launcher (config_overrides preserved) —
         // never an agent id resolved out here.
         const markdown = await (kind === "blog" ? blogRun : notesRun).run<string>(
-          {
+          { initiation: initiation,
             mandateKey:
               kind === "blog" ? BLOG_WRITER_MANDATE_KEY : SHOW_NOTES_MANDATE_KEY,
             surfaceKey: `podcast-episode-article:${kind}`,

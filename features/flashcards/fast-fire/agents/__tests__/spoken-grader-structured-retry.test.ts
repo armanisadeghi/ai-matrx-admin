@@ -31,7 +31,7 @@ const grade = {
 };
 
 function run() {
-  return runSpokenGrader({
+  return runSpokenGrader({ initiation: "user",
     mandateKey: "flashcards.grade_spoken",
     front: "Capital of France?",
     back: "Paris",

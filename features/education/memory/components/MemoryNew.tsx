@@ -111,7 +111,7 @@ export function MemoryNew() {
           source_content: resolved.content,
           title: resolved.source.title,
           focus: focus.trim(),
-        });
+        }, "user");
         const title = payload.title || resolved.source.title;
         const media = await studyMediaService.create({
           mediaKind: "memory_aid",

@@ -359,7 +359,7 @@ export function TryItNowPanel({
     setFailure(null);
     try {
       if (testMode === "display") {
-        await launchMandate(storedMandateKey(mandate.mandate_key), {
+        await launchMandate(storedMandateKey(mandate.mandate_key), { initiation: "user",
           surfaceKey: `mandate-test:${mandate.mandate_key}`,
           sourceFeature: "agent-runner",
           apiEndpointMode: "agent",

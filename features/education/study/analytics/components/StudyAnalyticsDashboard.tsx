@@ -121,7 +121,7 @@ export function StudyAnalyticsDashboard({
 
   const runNarration = async (a: StudyAnalytics) => {
     try {
-      const r = await narrator.narrate(a, { sessionId });
+      const r = await narrator.narrate(a, { initiation: "user", sessionId });
       setReport(r);
     // read-gate-exempt: narration failure is carried by narrator.error and shown on the NarrativeCard; the numbers stand without it
     } catch {

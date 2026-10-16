@@ -58,7 +58,7 @@ export interface UseEpisodeChapters {
   error: string | null;
   /** Run the chapter agent against the episode script and save the result.
    * Resolves true only after the new canonical list is persisted. */
-  generate: () => Promise<boolean>;
+  generate: (initiation: "user" | "auto") => Promise<boolean>;
 }
 
 export function useEpisodeChapters(
@@ -86,7 +86,7 @@ export function useEpisodeChapters(
     episode?.chapters ??
     null;
 
-  const generate = useCallback(async () => {
+  const generate = useCallback(async (initiation: "user" | "auto") => {
     if (!episode || !episode.script?.trim()) {
       toast.error("This episode has no script to segment.");
       return false;
@@ -102,7 +102,7 @@ export function useEpisodeChapters(
       pending: true,
     });
     try {
-      const list = await run<PcEpisodeChapter[]>({
+      const list = await run<PcEpisodeChapter[]>({ initiation: initiation,
         mandateKey: CHAPTER_MARKER_MANDATE_KEY,
         surfaceKey: "podcast-episode-chapters",
         sourceFeature: "podcasts",

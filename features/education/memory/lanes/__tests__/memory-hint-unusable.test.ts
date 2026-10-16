@@ -26,7 +26,7 @@ describe("memoryHint — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing aid",
     });
     const onUnusable = jest.fn();
-    const out = await memoryHint({ front: "Q", back: "A", onUnusable })(dispatch, getState);
+    const out = await memoryHint({ initiation: "user", front: "Q", back: "A", onUnusable })(dispatch, getState);
     expect(out).toBeNull();
     expect(onUnusable).toHaveBeenCalledWith(SENTENCE);
   });

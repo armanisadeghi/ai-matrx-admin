@@ -279,7 +279,7 @@ export function PrDirectorPanel({
                 // id — the person's words are never lost to a reload.
                 const question = keptQuestion(reopen);
                 if (!question) throw error;
-                const relaunched = await launchMandate(PR_DIRECTOR_MANDATE_KEY, {
+                const relaunched = await launchMandate(PR_DIRECTOR_MANDATE_KEY, { initiation: "user",
                   surfaceKey,
                   sourceFeature: "marketing",
                   organizationId,
@@ -289,7 +289,7 @@ export function PrDirectorPanel({
                 setPendingAsk(question);
                 return relaunched.conversationId;
               })
-          : launchMandate(PR_DIRECTOR_MANDATE_KEY, {
+          : launchMandate(PR_DIRECTOR_MANDATE_KEY, { initiation: "user",
               surfaceKey,
               sourceFeature: "marketing",
               organizationId,
@@ -404,7 +404,7 @@ export function PrDirectorPanel({
     const url = new URL(window.location.href);
     url.searchParams.delete(DIRECTOR_CONVERSATION_PARAM);
     replaceAddressWithoutNavigating(url);
-    launchMandate(PR_DIRECTOR_MANDATE_KEY, {
+    launchMandate(PR_DIRECTOR_MANDATE_KEY, { initiation: "user",
       surfaceKey,
       sourceFeature: "marketing",
       organizationId,

@@ -28,6 +28,8 @@ const EXTRACTION_TIMEOUT_MS = 120_000;
 const POLL_INTERVAL_MS = 250;
 
 export interface NarrateOptions {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   itemLabel?: string;
   /**
    * The learner's most recent `study_session` — where the reading is stored
@@ -40,7 +42,7 @@ export interface NarrateOptions {
 export interface AnalyticsNarrativeResult {
   narrate: (
     analytics: StudyAnalytics,
-    options?: NarrateOptions,
+    options: NarrateOptions,
   ) => Promise<NarrativeReport>;
   isNarrating: boolean;
   error: string | null;
@@ -53,11 +55,11 @@ export function useAnalyticsNarrative(): AnalyticsNarrativeResult {
 
   async function narrate(
     analytics: StudyAnalytics,
-    options: NarrateOptions = {},
+    options: NarrateOptions,
   ): Promise<NarrativeReport> {
     const sessionId = options.sessionId ?? null;
     const fingerprint = narrativeFingerprint(analytics);
-    return run<NarrativeReport>({
+    return run<NarrativeReport>({ initiation: options.initiation,
       mandateKey: STUDY_MANDATES.narrator,
       surfaceKey: "education-analytics-narrate",
       sourceFeature: "education-analytics",

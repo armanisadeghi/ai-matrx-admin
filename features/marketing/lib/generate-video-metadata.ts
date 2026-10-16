@@ -107,7 +107,7 @@ export function generateVideoMetadata(args: GenerateVideoMetadataArgs) {
     try {
       const answer = await runHeadlessAgent(
         dispatch,
-        {
+        { initiation: "user",
           mandateKey: VIDEO_METADATA_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {

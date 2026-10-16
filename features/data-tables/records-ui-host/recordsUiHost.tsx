@@ -401,7 +401,7 @@ export function useRecordsUiPorts({
    */
   const onAskForOne = useCallback(
     (ask: AgentBuildAsk) => {
-      void launchMandate(MANDATE_KEYS.data__page_guidance, {
+      void launchMandate(MANDATE_KEYS.data__page_guidance, { initiation: "user",
         surfaceKey: `data:${ask.tableId}`,
         organizationId,
         sourceFeature: "udt",

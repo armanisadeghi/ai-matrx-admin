@@ -27,7 +27,7 @@ describe("runSpokenGrader — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing result, explanation",
     });
     const onUnusable = jest.fn();
-    const out = await runSpokenGrader({
+    const out = await runSpokenGrader({ initiation: "user",
       mandateKey: "flashcards.grade_spoken" as never,
       front: "Q",
       back: "A",

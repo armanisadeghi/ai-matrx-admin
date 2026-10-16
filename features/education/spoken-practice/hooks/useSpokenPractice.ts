@@ -172,7 +172,7 @@ export function useSpokenPractice(
       // 1) Design the grounded prompt set.
       let unusableSentence: string | null = null;
       const designed = await dispatch(
-        generateSession({
+        generateSession({ initiation: "user",
           mode: config.mode,
           focus: config.focus,
           difficulty: config.difficulty,
@@ -416,7 +416,7 @@ export function useSpokenPractice(
     //    we LOUD-RECOVER: the session already stands completed, we just note the
     //    review gap and show the scorecard without the narrative.
     const summary = await dispatch(
-      reviewPracticeSession({
+      reviewPracticeSession({ initiation: "auto",
         sessionId,
         mode: config.mode,
         attempts,

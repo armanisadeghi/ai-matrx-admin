@@ -26,7 +26,7 @@ describe("helpLive — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing answer",
     });
     const onUnusable = jest.fn();
-    const out = await helpLive({ front: "Q", back: "A", onUnusable })(dispatch, getState);
+    const out = await helpLive({ initiation: "user", front: "Q", back: "A", onUnusable })(dispatch, getState);
     expect(out).toBeNull();
     expect(onUnusable).toHaveBeenCalledWith(SENTENCE);
   });

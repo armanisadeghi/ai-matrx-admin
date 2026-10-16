@@ -80,7 +80,7 @@ export function KitGenerateRun({
         kit,
         request,
         orgId,
-        ctx: { dispatch, store, orgId },
+        ctx: { initiation: "user", dispatch, store, orgId },
         maxCards,
         coverage,
         recover: () =>
