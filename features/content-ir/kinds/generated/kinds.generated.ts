@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1559 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1562 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "8a532d8a3e6b";
+export const KIND_REGISTRY_FINGERPRINT = "5ccb5a033d8a";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -4230,7 +4230,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 117 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 119 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
 
@@ -6687,7 +6687,7 @@ export interface PositiveFlag {
 }
 
 /**
- * * Shared by 2 kinds (post_transcript, social_post).
+ * * Shared by 3 kinds (post_transcript, social_post, social_search_results).
  */
 export interface PostTranscriptSegment {
   end?: number | null;
@@ -9048,11 +9048,59 @@ export interface SocialAccountItem {
 }
 
 /**
+ * * From kind `social_search_results`.
+ */
+export interface SocialBrowserCapture {
+  notes?: string[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  status: "pending" | "complete" | "partial";
+  failed_items?: number;
+  stored_items?: number;
+  observed_items?: number;
+}
+
+/**
+ * Set only when a setting clipped what the person asked for: which setting, its value, what was asked.
+ *  *
+ *  * From kind `social_search_results`.
+ */
+export interface SocialLimitApplied {
+  value: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  setting: string;
+  requested: number;
+}
+
+/**
+ * Archive completeness; a cover never counts as a captured carousel slide.
+ *  *
+ *  * From kind `social_search_results`.
+ */
+export interface SocialMediaCoverage {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  status?: "complete" | "partial" | "unknown" | "embed" | "not_requested";
+  stored_items?: number;
+  missing_items?: number | null;
+  expected_items?: number | null;
+  observed_items?: number;
+  browser_capture?: SocialBrowserCapture | null;
+}
+
+/**
  * One stored media file of a post. ``door`` is the signed-in server path that streams the bytes.
  *  *
  *  * From kind `social_post`.
  */
-export interface SocialPostMedia {
+export interface SocialPostMedia_SocialPost {
   door: string;
   role: string;
   /**
@@ -9065,9 +9113,28 @@ export interface SocialPostMedia {
 }
 
 /**
+ * One stored media file of a post. ``door`` is the signed-in server path that streams the bytes.
+ *  *
+ *  * From kind `social_search_results`.
+ */
+export interface SocialPostMedia_SocialSearchResults {
+  door: string;
+  role: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  file_id: string;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  source_index?: number | null;
+  source_identity?: string | null;
+}
+
+/**
  * Latest metrics plus the outlier score against the author's own previous posts.
  *  *
- *  * From kind `social_post`.
+ *  * Shared by 2 kinds (social_post, social_search_results).
  */
 export interface SocialPostStat {
   likes?: number | null;
@@ -9092,7 +9159,7 @@ export interface SocialPostStat {
 /**
  * Which provider answered, what fell back, what it cost; ``reused`` = served from the shared cache.
  *  *
- *  * Shared by 2 kinds (social_post, social_profile).
+ *  * Shared by 3 kinds (social_post, social_profile, social_search_results).
  */
 export interface SocialProviderTrace {
   /**
@@ -9977,6 +10044,65 @@ export interface ValueUnknown {
 }
 
 /**
+ * A narrative beat (hook, setup, proof, turn, call to action) with its time span.
+ *  *
+ *  * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface VideoBeat {
+  end: number;
+  role: string;
+  start: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  summary?: string | null;
+}
+
+/**
+ * Where the model and the measured facts disagreed. Ground truth won; nothing is dropped silently.
+ *  *
+ *  * From kind `video_structure`.
+ */
+export interface VideoDisagreement {
+  at?: number | null;
+  kind: "model_boundary_without_cut" | "cut_without_model_boundary" | "duration_mismatch" | "audio_claim_discarded" | "span_clamped";
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  detail: string;
+  model_said?: JsonValue | null;
+}
+
+/**
+ * Deterministic facts measured from the file (ffprobe + scene detection + STT words); never model output.
+ *  *
+ *  * From kind `video_structure`.
+ */
+export interface VideoGroundTruth {
+  fps?: number | null;
+  width?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  height?: number | null;
+  speech?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  has_audio?: boolean | null;
+  scene_cuts?: number[];
+  scene_threshold?: number | null;
+  duration_seconds: number;
+  contact_sheet_file_id?: string | null;
+}
+
+/**
  * * Shared by 2 kinds (agent_definition, agent_factory_build).
  */
 export interface VideoMediaPart {
@@ -10004,6 +10130,43 @@ export interface VideoMediaPart {
   size_bytes?: number | null;
   visibility?: string | null;
   duration_ms?: number | null;
+}
+
+/**
+ * * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface VideoOnScreenText {
+  end: number;
+  text: string;
+  start: number;
+  style?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * One shot of a reference video: where it sits in time and whether it is A-roll (the speaker) or B-roll.
+ *  *
+ *  * Shared by 2 kinds (video_structure, video_structure_read).
+ */
+export interface VideoShot {
+  end: number;
+  roll: "a_roll" | "b_roll";
+  start: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  speaker?: string | null;
+  description?: string | null;
 }
 
 /**
@@ -50561,7 +50724,7 @@ export interface SocialPost {
   url?: string | null;
   stat?: SocialPostStat | null;
   is_ad?: boolean | null;
-  media?: SocialPostMedia[];
+  media?: SocialPostMedia_SocialPost[];
   title?: string | null;
   trace: SocialProviderTrace;
   /**
@@ -50634,6 +50797,25 @@ export interface SocialProfileAnswerList {
    * The registered kind this payload is an instance of.
    */
   __kind?: "social_profile_answer_list";
+}
+
+/**
+ * One social lookup as a collection: a keyword search (one platform or all), a trending feed, or a
+ * profile with its recent posts. Every item is a stored ``social_post`` / ``social_profile`` — the rows the
+ * search, trending and profile fetches already keep in the shared cache — so each card opens its record.
+ *  *
+ *  * Kind `social_search_results` (registry v2).
+ */
+export interface SocialSearchResults {
+  mode: "search" | "trending" | "profile";
+  posts?: SocialPost[];
+  query?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_search_results";
+  platform: string;
+  profiles?: SocialProfile[];
 }
 
 /**
@@ -54542,6 +54724,134 @@ export interface VideoResult {
   published_at?: string | null;
   duration_seconds?: number | null;
   preview_clip_url?: string | null;
+}
+
+/**
+ * The structure of a reference video, stored as the payload of a ``social.post_analysis`` row of kind
+ * ``video_structure`` (video-cloning plan, lane VC-04 produces it). Model-read parts (shots, beats, roles,
+ * hook, text, overlays, pacing, why_it_works) sit beside ``ground_truth``, which is measured from the file;
+ * ``disagreements`` lists every place the model and the measurement differed (the measurement won).
+ * Sound (``music``, ``sfx``) is never read by the video model: ``music`` is ``{"status": "not_analysed"}`` until a
+ * music-ID step exists.
+ *  *
+ *  * Kind `video_structure` (registry v2).
+ */
+export interface VideoStructure {
+  sfx?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  hook?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  beats?: VideoBeat[];
+  model?: string | null;
+  music?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  roles?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  shots?: VideoShot[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "video_structure";
+  pacing?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  post_id: string;
+  cost_usd?: number | null;
+  overlays?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  ground_truth: VideoGroundTruth;
+  why_it_works?: string | null;
+  caption_style?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  disagreements?: VideoDisagreement[];
+  on_screen_text?: VideoOnScreenText[];
+}
+
+/**
+ * What the video model READS from a reference video: shots, beats, roles, hook, text, overlays, pacing, why it
+ * works. It never reports sound (speech, music, effects): those come from STT or are marked not analysed. The
+ * platform merges this with the measured ground truth into ``video_structure``.
+ *  *
+ *  * Kind `video_structure_read` (registry v2).
+ */
+export interface VideoStructureRead {
+  hook?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  beats?: VideoBeat[];
+  roles?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  shots?: VideoShot[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "video_structure_read";
+  pacing?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  overlays?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  why_it_works?: string | null;
+  caption_style?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  on_screen_text?: VideoOnScreenText[];
 }
 
 /**
@@ -61275,6 +61585,7 @@ export type GeneratedKindSlug =
   | "social_post"
   | "social_profile"
   | "social_profile_answer_list"
+  | "social_search_results"
   | "sorted_list_result"
   | "source_authority_ranking"
   | "source_authority_rankings"
@@ -61423,6 +61734,8 @@ export type GeneratedKindSlug =
   | "video_prompt_options"
   | "video_prompt_variation"
   | "video_result"
+  | "video_structure"
+  | "video_structure_read"
   | "video_transcript_research"
   | "vision_interview.answer_tracking.offer"
   | "vision_interview.finalize_deliverable.offer"
@@ -62837,6 +63150,7 @@ export interface KindPayloadBySlug {
   "social_post": SocialPost;
   "social_profile": SocialProfile;
   "social_profile_answer_list": SocialProfileAnswerList;
+  "social_search_results": SocialSearchResults;
   "sorted_list_result": SortedListResult;
   "source_authority_ranking": SourceAuthorityRanking;
   "source_authority_rankings": SourceAuthorityRankings;
@@ -62985,6 +63299,8 @@ export interface KindPayloadBySlug {
   "video_prompt_options": VideoPromptOptions;
   "video_prompt_variation": VideoPromptVariation;
   "video_result": VideoResult;
+  "video_structure": VideoStructure;
+  "video_structure_read": VideoStructureRead;
   "video_transcript_research": VideoTranscriptResearch;
   "vision_interview.answer_tracking.offer": VisionInterviewAnswerTrackingOffer;
   "vision_interview.finalize_deliverable.offer": VisionInterviewFinalizeDeliverableOffer;
@@ -64403,6 +64719,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "social_post",
   "social_profile",
   "social_profile_answer_list",
+  "social_search_results",
   "sorted_list_result",
   "source_authority_ranking",
   "source_authority_rankings",
@@ -64551,6 +64868,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "video_prompt_options",
   "video_prompt_variation",
   "video_result",
+  "video_structure",
+  "video_structure_read",
   "video_transcript_research",
   "vision_interview.answer_tracking.offer",
   "vision_interview.finalize_deliverable.offer",
