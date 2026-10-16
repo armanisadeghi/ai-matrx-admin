@@ -3326,18 +3326,6 @@
                   ],
                   "default": []
                 },
-                "created_via": {
-                  "enum": [
-                    "factory_pipeline",
-                    "agent_author_mcp",
-                    "agent_studio",
-                    "migration_seed",
-                    "other_system",
-                    "unknown"
-                  ],
-                  "title": "Created Via",
-                  "type": "string"
-                },
                 "custom_fields": {
                   "anyOf": [
                     {
@@ -3734,6 +3722,38 @@
                   ],
                   "default": null
                 },
+                "prompt_blocks": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": []
+                },
                 "rag_awareness_fragment": {
                   "anyOf": [
                     {
@@ -3991,8 +4011,7 @@
                 }
               },
               "required": [
-                "name",
-                "created_via"
+                "name"
               ],
               "title": "CreateAgentItem",
               "type": "object"
@@ -4940,29 +4959,9 @@
                   ],
                   "default": {}
                 },
-                "folder_id": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Folder Id"
-                },
-                "folder_name": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": "General",
-                  "title": "Folder Name"
+                "home_scope_id": {
+                  "title": "Home Scope Id",
+                  "type": "string"
                 },
                 "label": {
                   "anyOf": [
@@ -5060,6 +5059,9 @@
                   "title": "Task Id"
                 }
               },
+              "required": [
+                "home_scope_id"
+              ],
               "title": "CreateNoteItem",
               "type": "object"
             },
@@ -6617,7 +6619,8 @@
                         "search",
                         "manual_add",
                         "link_extraction",
-                        "file_upload"
+                        "file_upload",
+                        "social_capture"
                       ],
                       "type": "string"
                     },
@@ -6937,7 +6940,8 @@
                         "youtube",
                         "pdf",
                         "file",
-                        "manual"
+                        "manual",
+                        "social"
                       ],
                       "type": "string"
                     },
@@ -7580,6 +7584,57 @@
                   "default": "draft",
                   "title": "Status"
                 },
+                "subject": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "subject_type": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "topic",
+                        "company",
+                        "brand",
+                        "person",
+                        "creator"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Subject Type"
+                },
                 "tag_suggestions": {
                   "anyOf": [
                     {
@@ -7662,6 +7717,1316 @@
         "type": "object"
       },
       "slug": "directive_v1_create_research_topic"
+    },
+    {
+      "capability": "side_effect",
+      "class": "create",
+      "doc": "Create one Social KPI goal row (social.kpi_goal). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
+      "item_model": "CreateSocialKpiGoalItem",
+      "noun": "social_kpi_goal",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_create_social_kpi_goal",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "baseline_value": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Baseline Value"
+                },
+                "brand_id": {
+                  "title": "Brand Id",
+                  "type": "string"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "ends_on": {
+                  "anyOf": [
+                    {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Ends On"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "metric": {
+                  "enum": [
+                    "followers",
+                    "follower_growth",
+                    "views",
+                    "engagement_rate",
+                    "posts",
+                    "likes",
+                    "comments",
+                    "shares",
+                    "saves",
+                    "watch_time_minutes",
+                    "profile_visits",
+                    "link_clicks",
+                    "custom"
+                  ],
+                  "title": "Metric",
+                  "type": "string"
+                },
+                "metric_label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Metric Label"
+                },
+                "notes": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Notes"
+                },
+                "period": {
+                  "enum": [
+                    "week",
+                    "month",
+                    "quarter",
+                    "year",
+                    "custom"
+                  ],
+                  "title": "Period",
+                  "type": "string"
+                },
+                "platform": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "tiktok",
+                        "instagram",
+                        "youtube",
+                        "linkedin",
+                        "facebook",
+                        "x",
+                        "threads",
+                        "pinterest",
+                        "reddit",
+                        "snapchat",
+                        "mastodon",
+                        "twitch"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Platform"
+                },
+                "starts_on": {
+                  "format": "date",
+                  "title": "Starts On",
+                  "type": "string"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "active",
+                        "achieved",
+                        "missed",
+                        "paused"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": "active",
+                  "title": "Status"
+                },
+                "target_value": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    }
+                  ],
+                  "title": "Target Value"
+                },
+                "tracked_account_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Tracked Account Id"
+                }
+              },
+              "required": [
+                "brand_id",
+                "metric",
+                "target_value",
+                "period",
+                "starts_on"
+              ],
+              "title": "CreateSocialKpiGoalItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_create_social_kpi_goal"
+    },
+    {
+      "capability": "side_effect",
+      "class": "create",
+      "doc": "Create one Social post analysis row (social.post_analysis). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
+      "item_model": "CreateSocialPostAnalysisItem",
+      "noun": "social_post_analysis",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_create_social_post_analysis",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "audio": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "cost_usd": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Cost Usd"
+                },
+                "cta": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Cta"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Error"
+                },
+                "format_tags": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": [],
+                  "title": "Format Tags"
+                },
+                "hook_text": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Hook Text"
+                },
+                "hook_type": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Hook Type"
+                },
+                "kind": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": "post_breakdown",
+                  "title": "Kind"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "model": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Model"
+                },
+                "on_screen_text": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "On Screen Text"
+                },
+                "payload": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "post_id": {
+                  "title": "Post Id",
+                  "type": "string"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "pending",
+                        "complete",
+                        "failed"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": "pending",
+                  "title": "Status"
+                },
+                "style_tags": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": [],
+                  "title": "Style Tags"
+                },
+                "summary": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Summary"
+                },
+                "transcript_language": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Transcript Language"
+                }
+              },
+              "required": [
+                "post_id"
+              ],
+              "title": "CreateSocialPostAnalysisItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_create_social_post_analysis"
+    },
+    {
+      "capability": "side_effect",
+      "class": "create",
+      "doc": "Create one Remix output row (social.remix_output). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
+      "item_model": "CreateSocialRemixOutputItem",
+      "noun": "social_remix_output",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_create_social_remix_output",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "title": "Brand Id",
+                  "type": "string"
+                },
+                "content": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "cost_usd": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Cost Usd"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "kind": {
+                  "title": "Kind",
+                  "type": "string"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "model": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Model"
+                },
+                "output_type": {
+                  "enum": [
+                    "script",
+                    "hooks",
+                    "carousel",
+                    "caption",
+                    "thumbnail_brief"
+                  ],
+                  "title": "Output Type",
+                  "type": "string"
+                },
+                "persona_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Persona Id"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "draft",
+                        "approved"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": "draft",
+                  "title": "Status"
+                },
+                "title": {
+                  "title": "Title",
+                  "type": "string"
+                },
+                "voice_fingerprint_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Voice Fingerprint Id"
+                }
+              },
+              "required": [
+                "brand_id",
+                "output_type",
+                "kind",
+                "title"
+              ],
+              "title": "CreateSocialRemixOutputItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_create_social_remix_output"
+    },
+    {
+      "capability": "side_effect",
+      "class": "create",
+      "doc": "Create one Swipe collection row (social.swipe_collection). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
+      "item_model": "CreateSocialSwipeCollectionItem",
+      "noun": "social_swipe_collection",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_create_social_swipe_collection",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Brand Id"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "name": {
+                  "title": "Name",
+                  "type": "string"
+                },
+                "sort": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": 0,
+                  "title": "Sort"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "title": "CreateSocialSwipeCollectionItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_create_social_swipe_collection"
+    },
+    {
+      "capability": "side_effect",
+      "class": "create",
+      "doc": "Create one Tracked social account row (social.tracked_account). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
+      "item_model": "CreateSocialTrackedAccountItem",
+      "noun": "social_tracked_account",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_create_social_tracked_account",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Brand Id"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "notes": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Notes"
+                },
+                "profile_id": {
+                  "title": "Profile Id",
+                  "type": "string"
+                },
+                "property_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Property Id"
+                },
+                "role": {
+                  "enum": [
+                    "own",
+                    "competitor",
+                    "inspiration",
+                    "client"
+                  ],
+                  "title": "Role",
+                  "type": "string"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "active",
+                        "paused"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": "active",
+                  "title": "Status"
+                }
+              },
+              "required": [
+                "profile_id",
+                "role"
+              ],
+              "title": "CreateSocialTrackedAccountItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_create_social_tracked_account"
+    },
+    {
+      "capability": "side_effect",
+      "class": "create",
+      "doc": "Create one Watchlist hit row (social.watchlist_hit). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
+      "item_model": "CreateSocialWatchlistHitItem",
+      "noun": "social_watchlist_hit",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_create_social_watchlist_hit",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "hit_at": {
+                  "format": "date-time",
+                  "title": "Hit At",
+                  "type": "string"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "post_id": {
+                  "title": "Post Id",
+                  "type": "string"
+                },
+                "saved_view_id": {
+                  "title": "Saved View Id",
+                  "type": "string"
+                },
+                "score": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Score"
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "new",
+                        "seen",
+                        "dismissed",
+                        "saved"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": "new",
+                  "title": "State"
+                },
+                "state_changed_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "State Changed At"
+                }
+              },
+              "required": [
+                "saved_view_id",
+                "post_id",
+                "hit_at"
+              ],
+              "title": "CreateSocialWatchlistHitItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_create_social_watchlist_hit"
     },
     {
       "capability": "side_effect",
@@ -8420,6 +9785,243 @@
     {
       "capability": "side_effect",
       "class": "create",
+      "doc": "Create one Brand persona row (web.brand_persona). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
+      "item_model": "CreateWebBrandPersonaItem",
+      "noun": "web_brand_persona",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_create_web_brand_persona",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "title": "Brand Id",
+                  "type": "string"
+                },
+                "channels": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": [],
+                  "title": "Channels"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "demographics": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "goals": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": [],
+                  "title": "Goals"
+                },
+                "is_primary": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": false,
+                  "title": "Is Primary"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": {}
+                },
+                "name": {
+                  "title": "Name",
+                  "type": "string"
+                },
+                "objections": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": [],
+                  "title": "Objections"
+                },
+                "pain_points": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": [],
+                  "title": "Pain Points"
+                },
+                "sort": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": 0,
+                  "title": "Sort"
+                },
+                "summary": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Summary"
+                }
+              },
+              "required": [
+                "brand_id",
+                "name"
+              ],
+              "title": "CreateWebBrandPersonaItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_create_web_brand_persona"
+    },
+    {
+      "capability": "side_effect",
+      "class": "create",
       "doc": "Create one Workbook row (workbench.udt_workbooks). Payload = the table's writable columns, typed from the live model; DB-required columns without defaults must be present. Batch via items.",
       "item_model": "CreateWorkbookItem",
       "noun": "workbook",
@@ -9040,6 +10642,246 @@
     {
       "capability": "side_effect",
       "class": "delete",
+      "doc": "Soft-delete one Social KPI goal row (social.kpi_goal) by id (never a hard delete).",
+      "item_model": "DeleteSocialKpiGoalItem",
+      "noun": "social_kpi_goal",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_delete_social_kpi_goal",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeleteSocialKpiGoalItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_delete_social_kpi_goal"
+    },
+    {
+      "capability": "side_effect",
+      "class": "delete",
+      "doc": "Soft-delete one Social post analysis row (social.post_analysis) by id (never a hard delete).",
+      "item_model": "DeleteSocialPostAnalysisItem",
+      "noun": "social_post_analysis",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_delete_social_post_analysis",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeleteSocialPostAnalysisItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_delete_social_post_analysis"
+    },
+    {
+      "capability": "side_effect",
+      "class": "delete",
+      "doc": "Soft-delete one Remix output row (social.remix_output) by id (never a hard delete).",
+      "item_model": "DeleteSocialRemixOutputItem",
+      "noun": "social_remix_output",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_delete_social_remix_output",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeleteSocialRemixOutputItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_delete_social_remix_output"
+    },
+    {
+      "capability": "side_effect",
+      "class": "delete",
+      "doc": "Soft-delete one Swipe collection row (social.swipe_collection) by id (never a hard delete).",
+      "item_model": "DeleteSocialSwipeCollectionItem",
+      "noun": "social_swipe_collection",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_delete_social_swipe_collection",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeleteSocialSwipeCollectionItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_delete_social_swipe_collection"
+    },
+    {
+      "capability": "side_effect",
+      "class": "delete",
+      "doc": "Soft-delete one Tracked social account row (social.tracked_account) by id (never a hard delete).",
+      "item_model": "DeleteSocialTrackedAccountItem",
+      "noun": "social_tracked_account",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_delete_social_tracked_account",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeleteSocialTrackedAccountItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_delete_social_tracked_account"
+    },
+    {
+      "capability": "side_effect",
+      "class": "delete",
+      "doc": "Soft-delete one Watchlist hit row (social.watchlist_hit) by id (never a hard delete).",
+      "item_model": "DeleteSocialWatchlistHitItem",
+      "noun": "social_watchlist_hit",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_delete_social_watchlist_hit",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeleteSocialWatchlistHitItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_delete_social_watchlist_hit"
+    },
+    {
+      "capability": "side_effect",
+      "class": "delete",
       "doc": "Soft-delete one Task row (projects.tasks) by id (never a hard delete).",
       "item_model": "DeleteTaskItem",
       "noun": "task",
@@ -9156,6 +10998,46 @@
         "type": "object"
       },
       "slug": "directive_v1_delete_udt_document"
+    },
+    {
+      "capability": "side_effect",
+      "class": "delete",
+      "doc": "Soft-delete one Brand persona row (web.brand_persona) by id (never a hard delete).",
+      "item_model": "DeleteWebBrandPersonaItem",
+      "noun": "web_brand_persona",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_delete_web_brand_persona",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeleteWebBrandPersonaItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_delete_web_brand_persona"
     },
     {
       "capability": "side_effect",
@@ -9370,6 +11252,93 @@
         "type": "object"
       },
       "slug": "directive_v1_reference_agent_app"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
+      "doc": "Pointer to one Prompt Block (agent.prompt_block) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "agent_prompt_block",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_agent_prompt_block",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_agent_prompt_block"
     },
     {
       "capability": "pure",
@@ -16617,93 +18586,6 @@
     {
       "capability": "pure",
       "class": "reference",
-      "doc": "Pointer to one Note Folder (workbench.note_folders) row by id (RLS-scoped, read-only).",
-      "item_model": "RecordRef",
-      "noun": "note_folder",
-      "purposes": [
-        "substitute",
-        "expand",
-        "inline",
-        "context"
-      ],
-      "schema": {
-        "additionalProperties": false,
-        "properties": {
-          "__kind": {
-            "const": "directive_v1_reference_note_folder",
-            "type": "string"
-          },
-          "items": {
-            "items": {
-              "additionalProperties": true,
-              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
-              "properties": {
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Description"
-                },
-                "id": {
-                  "title": "Id",
-                  "type": "string"
-                },
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Label"
-                },
-                "purpose": {
-                  "default": "substitute",
-                  "title": "Purpose",
-                  "type": "string"
-                },
-                "slot": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Slot"
-                }
-              },
-              "required": [
-                "id"
-              ],
-              "title": "RecordRef",
-              "type": "object"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "__kind",
-          "items"
-        ],
-        "type": "object"
-      },
-      "slug": "directive_v1_reference_note_folder"
-    },
-    {
-      "capability": "pure",
-      "class": "reference",
       "doc": "Pointer to one Organization (iam.organizations) row by id (RLS-scoped, read-only).",
       "item_model": "RecordRef",
       "noun": "organization",
@@ -19955,6 +21837,528 @@
     {
       "capability": "pure",
       "class": "reference",
+      "doc": "Pointer to one Social KPI goal (social.kpi_goal) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "social_kpi_goal",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_social_kpi_goal",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_social_kpi_goal"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
+      "doc": "Pointer to one Social post analysis (social.post_analysis) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "social_post_analysis",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_social_post_analysis",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_social_post_analysis"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
+      "doc": "Pointer to one Remix output (social.remix_output) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "social_remix_output",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_social_remix_output",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_social_remix_output"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
+      "doc": "Pointer to one Swipe collection (social.swipe_collection) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "social_swipe_collection",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_social_swipe_collection",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_social_swipe_collection"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
+      "doc": "Pointer to one Tracked social account (social.tracked_account) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "social_tracked_account",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_social_tracked_account",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_social_tracked_account"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
+      "doc": "Pointer to one Watchlist hit (social.watchlist_hit) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "social_watchlist_hit",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_social_watchlist_hit",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_social_watchlist_hit"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
       "doc": "Legacy alias of `pick_list`.",
       "item_model": "PicklistRef",
       "noun": "structured_list",
@@ -23032,6 +25436,93 @@
     {
       "capability": "pure",
       "class": "reference",
+      "doc": "Pointer to one Brand persona (web.brand_persona) row by id (RLS-scoped, read-only).",
+      "item_model": "RecordRef",
+      "noun": "web_brand_persona",
+      "purposes": [
+        "substitute",
+        "expand",
+        "inline",
+        "context"
+      ],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_reference_web_brand_persona",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
+              "properties": {
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "purpose": {
+                  "default": "substitute",
+                  "title": "Purpose",
+                  "type": "string"
+                },
+                "slot": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Slot"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "RecordRef",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_reference_web_brand_persona"
+    },
+    {
+      "capability": "pure",
+      "class": "reference",
       "doc": "Pointer to one Provider (web.provider) row by id (RLS-scoped, read-only).",
       "item_model": "RecordRef",
       "noun": "web_provider",
@@ -23755,93 +26246,6 @@
       "slug": "directive_v1_reference_workflow_trigger"
     },
     {
-      "capability": "pure",
-      "class": "reference",
-      "doc": "Pointer to one Working Document (workbench.working_documents) row by id (RLS-scoped, read-only).",
-      "item_model": "RecordRef",
-      "noun": "working_document",
-      "purposes": [
-        "substitute",
-        "expand",
-        "inline",
-        "context"
-      ],
-      "schema": {
-        "additionalProperties": false,
-        "properties": {
-          "__kind": {
-            "const": "directive_v1_reference_working_document",
-            "type": "string"
-          },
-          "items": {
-            "items": {
-              "additionalProperties": true,
-              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
-              "properties": {
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Description"
-                },
-                "id": {
-                  "title": "Id",
-                  "type": "string"
-                },
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Label"
-                },
-                "purpose": {
-                  "default": "substitute",
-                  "title": "Purpose",
-                  "type": "string"
-                },
-                "slot": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Slot"
-                }
-              },
-              "required": [
-                "id"
-              ],
-              "title": "RecordRef",
-              "type": "object"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "__kind",
-          "items"
-        ],
-        "type": "object"
-      },
-      "slug": "directive_v1_reference_working_document"
-    },
-    {
       "capability": "sensitive",
       "class": "secret",
       "doc": "Pointer into the credential vault \u2014 stable {item_id, field_key} / {field_id} (canonical) or legacy {key}; substitutes its decrypted value into the model-bound text on the wire only (never persisted).",
@@ -24039,26 +26443,6 @@
                     }
                   ],
                   "default": null
-                },
-                "created_via": {
-                  "anyOf": [
-                    {
-                      "enum": [
-                        "factory_pipeline",
-                        "agent_author_mcp",
-                        "agent_studio",
-                        "migration_seed",
-                        "other_system",
-                        "unknown"
-                      ],
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Created Via"
                 },
                 "custom_fields": {
                   "anyOf": [
@@ -24437,6 +26821,38 @@
                   "title": "Output Contract Hash"
                 },
                 "output_schema": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "prompt_blocks": {
                   "anyOf": [
                     {
                       "anyOf": [
@@ -25763,7 +28179,7 @@
                   ],
                   "default": null
                 },
-                "folder_id": {
+                "home_scope_id": {
                   "anyOf": [
                     {
                       "type": "string"
@@ -25773,19 +28189,7 @@
                     }
                   ],
                   "default": null,
-                  "title": "Folder Id"
-                },
-                "folder_name": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Folder Name"
+                  "title": "Home Scope Id"
                 },
                 "id": {
                   "title": "Id",
@@ -27501,7 +29905,8 @@
                         "search",
                         "manual_add",
                         "link_extraction",
-                        "file_upload"
+                        "file_upload",
+                        "social_capture"
                       ],
                       "type": "string"
                     },
@@ -27821,7 +30226,8 @@
                         "youtube",
                         "pdf",
                         "file",
-                        "manual"
+                        "manual",
+                        "social"
                       ],
                       "type": "string"
                     },
@@ -28483,6 +30889,57 @@
                   "default": null,
                   "title": "Status"
                 },
+                "subject": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "subject_type": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "topic",
+                        "company",
+                        "brand",
+                        "person",
+                        "creator"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Subject Type"
+                },
                 "tag_suggestions": {
                   "anyOf": [
                     {
@@ -28568,6 +31025,1454 @@
         "type": "object"
       },
       "slug": "directive_v1_update_research_topic"
+    },
+    {
+      "capability": "side_effect",
+      "class": "update",
+      "doc": "Update one Social KPI goal row (social.kpi_goal) by id; any writable columns.",
+      "item_model": "UpdateSocialKpiGoalItem",
+      "noun": "social_kpi_goal",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_update_social_kpi_goal",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "baseline_value": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Baseline Value"
+                },
+                "brand_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Brand Id"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "ends_on": {
+                  "anyOf": [
+                    {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Ends On"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "metric": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "followers",
+                        "follower_growth",
+                        "views",
+                        "engagement_rate",
+                        "posts",
+                        "likes",
+                        "comments",
+                        "shares",
+                        "saves",
+                        "watch_time_minutes",
+                        "profile_visits",
+                        "link_clicks",
+                        "custom"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Metric"
+                },
+                "metric_label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Metric Label"
+                },
+                "notes": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Notes"
+                },
+                "period": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "week",
+                        "month",
+                        "quarter",
+                        "year",
+                        "custom"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Period"
+                },
+                "platform": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "tiktok",
+                        "instagram",
+                        "youtube",
+                        "linkedin",
+                        "facebook",
+                        "x",
+                        "threads",
+                        "pinterest",
+                        "reddit",
+                        "snapchat",
+                        "mastodon",
+                        "twitch"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Platform"
+                },
+                "starts_on": {
+                  "anyOf": [
+                    {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Starts On"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "active",
+                        "achieved",
+                        "missed",
+                        "paused"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Status"
+                },
+                "target_value": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Target Value"
+                },
+                "tracked_account_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Tracked Account Id"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "UpdateSocialKpiGoalItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_update_social_kpi_goal"
+    },
+    {
+      "capability": "side_effect",
+      "class": "update",
+      "doc": "Update one Social post analysis row (social.post_analysis) by id; any writable columns.",
+      "item_model": "UpdateSocialPostAnalysisItem",
+      "noun": "social_post_analysis",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_update_social_post_analysis",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "audio": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "cost_usd": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Cost Usd"
+                },
+                "cta": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Cta"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Error"
+                },
+                "format_tags": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Format Tags"
+                },
+                "hook_text": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Hook Text"
+                },
+                "hook_type": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Hook Type"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "kind": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Kind"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "model": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Model"
+                },
+                "on_screen_text": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "On Screen Text"
+                },
+                "payload": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "post_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Post Id"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "pending",
+                        "complete",
+                        "failed"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Status"
+                },
+                "style_tags": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Style Tags"
+                },
+                "summary": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Summary"
+                },
+                "transcript_language": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Transcript Language"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "UpdateSocialPostAnalysisItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_update_social_post_analysis"
+    },
+    {
+      "capability": "side_effect",
+      "class": "update",
+      "doc": "Update one Remix output row (social.remix_output) by id; any writable columns.",
+      "item_model": "UpdateSocialRemixOutputItem",
+      "noun": "social_remix_output",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_update_social_remix_output",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Brand Id"
+                },
+                "content": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "cost_usd": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Cost Usd"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "kind": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Kind"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "model": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Model"
+                },
+                "output_type": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "script",
+                        "hooks",
+                        "carousel",
+                        "caption",
+                        "thumbnail_brief"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Output Type"
+                },
+                "persona_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Persona Id"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "draft",
+                        "approved"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Status"
+                },
+                "title": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Title"
+                },
+                "voice_fingerprint_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Voice Fingerprint Id"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "UpdateSocialRemixOutputItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_update_social_remix_output"
+    },
+    {
+      "capability": "side_effect",
+      "class": "update",
+      "doc": "Update one Swipe collection row (social.swipe_collection) by id; any writable columns.",
+      "item_model": "UpdateSocialSwipeCollectionItem",
+      "noun": "social_swipe_collection",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_update_social_swipe_collection",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Brand Id"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Description"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Name"
+                },
+                "sort": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Sort"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "UpdateSocialSwipeCollectionItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_update_social_swipe_collection"
+    },
+    {
+      "capability": "side_effect",
+      "class": "update",
+      "doc": "Update one Tracked social account row (social.tracked_account) by id; any writable columns.",
+      "item_model": "UpdateSocialTrackedAccountItem",
+      "noun": "social_tracked_account",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_update_social_tracked_account",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Brand Id"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Label"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "notes": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Notes"
+                },
+                "profile_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Profile Id"
+                },
+                "property_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Property Id"
+                },
+                "role": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "own",
+                        "competitor",
+                        "inspiration",
+                        "client"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Role"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "active",
+                        "paused"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Status"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "UpdateSocialTrackedAccountItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_update_social_tracked_account"
+    },
+    {
+      "capability": "side_effect",
+      "class": "update",
+      "doc": "Update one Watchlist hit row (social.watchlist_hit) by id; any writable columns.",
+      "item_model": "UpdateSocialWatchlistHitItem",
+      "noun": "social_watchlist_hit",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_update_social_watchlist_hit",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "hit_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Hit At"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "post_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Post Id"
+                },
+                "saved_view_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Saved View Id"
+                },
+                "score": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Score"
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "new",
+                        "seen",
+                        "dismissed",
+                        "saved"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "State"
+                },
+                "state_changed_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "State Changed At"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "UpdateSocialWatchlistHitItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_update_social_watchlist_hit"
     },
     {
       "capability": "side_effect",
@@ -29353,6 +33258,262 @@
         "type": "object"
       },
       "slug": "directive_v1_update_udt_document"
+    },
+    {
+      "capability": "side_effect",
+      "class": "update",
+      "doc": "Update one Brand persona row (web.brand_persona) by id; any writable columns.",
+      "item_model": "UpdateWebBrandPersonaItem",
+      "noun": "web_brand_persona",
+      "purposes": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "__kind": {
+            "const": "directive_v1_update_web_brand_persona",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "brand_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Brand Id"
+                },
+                "channels": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Channels"
+                },
+                "custom_fields": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "demographics": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "goals": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Goals"
+                },
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "is_primary": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Is Primary"
+                },
+                "metadata": {
+                  "anyOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array"
+                        },
+                        {
+                          "type": "object"
+                        }
+                      ],
+                      "description": "Any JSON value \u2014 this column is json/jsonb.",
+                      "title": "JSON"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Name"
+                },
+                "objections": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Objections"
+                },
+                "pain_points": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Pain Points"
+                },
+                "sort": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Sort"
+                },
+                "summary": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Summary"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "UpdateWebBrandPersonaItem",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "__kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      "slug": "directive_v1_update_web_brand_persona"
     },
     {
       "capability": "side_effect",

@@ -98,6 +98,8 @@ export const EXTRA_ROWS = [
   "aidream package source on main reached npm latest within 30 minutes|pnpm check:npm-publish-lag",
   "Organization-context transport contract|pnpm check:organization-context",
   "Client run-door initiation attestations|pnpm check:client-initiation",
+  "No false provenance defaults (an unknown source is never a person)|pnpm check:no-false-provenance-defaults",
+  "The false-provenance guard can still fail (self-test)|pnpm check:no-false-provenance-defaults:self-test",
   "CX source attribution is registered|pnpm check:source-attribution",
   "Both migration runners judge the corpus identically|pnpm check:migration-judgment",
   "Migration ledger (strict: unapplied / drifted / unverifiable)|pnpm check:migrations:strict",

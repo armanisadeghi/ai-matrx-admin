@@ -185,6 +185,9 @@ export function useServedRunStart(): ServedRunStart {
             // THE source=human invariant, client side: this form is the human
             // path, so exactly the values a person typed are claimed `human`.
             input_sources: submission.inputSources,
+            // The person pressed Run on this form. The server stamps a value "human"
+            // only when this attestation reaches it on a witnessed request.
+            initiation: "user",
             mode: "inline",
           },
           stream: true,
