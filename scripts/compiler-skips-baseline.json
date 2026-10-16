@@ -1357,7 +1357,6 @@
   "features/window-panels/windows/context-scopes/HierarchyCreationWindow.tsx": 1,
   "features/window-panels/windows/FeedbackWindow.tsx": 1,
   "features/window-panels/windows/files/StorageSourcePickerWindow.tsx": 1,
-  "features/window-panels/windows/listen/ListenSummaryWindow.tsx": 1,
   "features/window-panels/windows/mandates/MandateWindow.tsx": 1,
   "features/window-panels/windows/marketing/MarketingMediaAssetWindow.tsx": 2,
   "features/window-panels/windows/marketing/PageResearchWindow.tsx": 1,

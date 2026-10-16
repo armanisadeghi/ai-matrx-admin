@@ -14,14 +14,14 @@
 
 import React, { useEffect, useState } from "react";
 import { toast } from "@/lib/toast";
-import { Loader2, TerminalSquare, X } from "lucide-react";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { TableChartPanel } from "@ai-matrx/rich-content/display/blocks/chart/TableChart";
 import { parseDelimitedTable } from "@ai-matrx/rich-content/display/blocks/chart/table-chart";
 import type { CodeRunState } from "./code-block-context";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+// The run output under a code block is the package's panel (one copy for every host).
+import { CodeRunOutput } from "@ai-matrx/rich-content/code-block/CodeRunOutput";
 
 type Bridge = typeof import("./code-block-registry-bridge");
 
@@ -99,52 +99,4 @@ export function useCodeBlockAnswerTools(args: {
     </>
   );
   return { items, panel };
-}
-
-function CodeRunOutput({ state, onClose }: { state: CodeRunState; onClose: () => void }) {
-  const failed = state.status === "error" || (state.status === "done" && state.result.exitCode !== 0);
-  return (
-    <div
-      className="my-2 overflow-hidden rounded-lg border border-border bg-card text-sm"
-      role="region"
-      aria-label="Run output"
-      aria-live="polite"
-      data-find-ignore=""
-    >
-      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1">
-        <span className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-          {state.status === "running" ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-          ) : (
-            <TerminalSquare className={failed ? "h-3.5 w-3.5 text-destructive" : "h-3.5 w-3.5 text-primary"} />
-          )}
-          {state.status === "running" && "Running in the sandbox…"}
-          {state.status === "error" && "The sandbox could not run this"}
-          {state.status === "done" &&
-            `Exit ${state.result.exitCode} · ${state.result.durationMs} ms · ${state.result.command}`}
-          <ErrorAlchemyMenu />
-        </span>
-        {state.status !== "running" && (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close output"
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
-      {state.status === "error" && <p className="px-3 py-2 text-xs text-destructive">{state.message} <ErrorAlchemyMenu error={state.message} /></p>}
-      {state.status === "done" && (
-        <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words px-3 py-2 font-mono text-xs text-foreground">
-          {state.result.stdout}
-          {state.result.stderr && <span className="text-destructive">{state.result.stderr}</span>}
-          {!state.result.stdout && !state.result.stderr && (
-            <span className="text-muted-foreground">(no output)</span>
-          )}
-        </pre>
-      )}
-    </div>
-  );
 }

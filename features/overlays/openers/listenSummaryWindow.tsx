@@ -2,7 +2,7 @@
 
 /**
  * Opener for the `listenSummaryWindow` overlay — the floating "summarize for
- * listening" player (features/window-panels/windows/listen/ListenSummaryWindow).
+ * listening" player (@ai-matrx/chat window-panels/windows/listen/ListenSummaryWindow).
  *
  * - `useOpenListenSummaryWindow()` — imperative hook. Opens with typed options;
  *   returns a handle with `close()`.

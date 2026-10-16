@@ -74,3 +74,6 @@ registerChatUi({
 // Save to Notes (the package's Quick Note Save window): this app's notes slice, homes and openers.
 import { useWebQuickSaveNotes } from "@/features/notes/actions/quick-save/useWebQuickSaveNotes";
 registerChatUi({ useQuickSaveNotes: useWebQuickSaveNotes });
+
+// Summarize & listen (the package's window): this app's streaming speaker and audio sessions.
+import "@/providers/chatListenHost";
