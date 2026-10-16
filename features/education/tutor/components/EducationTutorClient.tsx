@@ -738,7 +738,7 @@ function EducationTutorClientInner({
     if (userMessageCount > meteredUserCountRef.current) {
       const delta = userMessageCount - meteredUserCountRef.current;
       meteredUserCountRef.current = userMessageCount;
-      for (let i = 0; i < delta; i++) void commitTutorMessage();
+      for (let i = 0; i < delta; i++) void commitTutorMessage({ initiation: "user" });
     }
   }, [
     userMessageCount,

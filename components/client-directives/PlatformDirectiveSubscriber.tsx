@@ -80,10 +80,20 @@ export function PlatformDirectiveSubscriber() {
   // Two rooms, one sink. `useChannel(null)` is the package's documented
   // "not yet" — a signed-out tab joins nothing, and no tab joins before the
   // page has settled (the load law: nothing first paint does not need leaves
-  // before it). A directive sent in that window is not lost in effect: every
-  // handler invalidates a cache the page has only just read fresh.
+  // before it). A directive sent in that window is caught up below, per kind, and
+  // only where the page's own boot read holds a version to compare against.
   const settled = useLateIdleReady();
   const join = Boolean(userId) && settled;
+
+  // CATCH-UP. Broadcast has no replay, so a directive sent before the rooms joined is missed.
+  //  - settings_changed: caught up where a settings value is SHOWN and editable — the settings
+  //    screen asks on mount (`features/settings/universal/UniversalSettingsContext.tsx`); every
+  //    other reader re-reads its snapshot after its 60 s TTL. No settings read leaves at load
+  //    (first-paint fetch contract V28).
+  //  - refresh_required: NewVersionWatcher's own settled-page deployment-id check IS that compare.
+  //  - app_config_changed: this client consumes no app_config row; nothing to refresh.
+  //  - usage_state_changed: no server version is held at boot (the gate re-reads before each AI
+  //    call); no marker, so no read is added.
   const userSpec = join && userId
     ? serverBusChannelSpec(userId, dispatchDirective)
     : null;

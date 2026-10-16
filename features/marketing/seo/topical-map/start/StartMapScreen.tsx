@@ -169,7 +169,7 @@ export function StartMapScreen({
     setWebError(null);
     setWebFetching(true);
     try {
-      const text = await resolvers.resolveWebsite(url, (progress) => setWebText(progress));
+      const text = await resolvers.resolveWebsite(url, "user", (progress) => setWebText(progress));
       setWebText(text);
     } catch (error) {
       setWebError(extractErrorMessage(error));

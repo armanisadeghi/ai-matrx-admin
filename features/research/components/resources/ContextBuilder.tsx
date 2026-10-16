@@ -571,6 +571,7 @@ function AgentRunnerBody({
         );
       }
       const launchOptions: ManagedAgentOptions = {
+        initiation: "user",
         surfaceKey: `research-context:${topicId}`,
         sourceFeature: "research",
         config: {

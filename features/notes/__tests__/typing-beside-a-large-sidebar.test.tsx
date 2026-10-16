@@ -16,7 +16,7 @@
 
 const rowRenders = new Map<string, number>();
 
-jest.mock("@/utils/supabase/client", () => ({ supabase: { schema: jest.fn(), auth: {} } }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { schema: jest.fn(() => ({ rpc: jest.fn(async () => ({ data: [], error: null })) })), auth: {} } }));
 jest.mock("@/lib/redux/slices/userSlice", () => ({
   selectUser: () => ({ id: "33333333-3333-4333-8333-333333333333" }),
   selectIsSuperAdmin: () => false,

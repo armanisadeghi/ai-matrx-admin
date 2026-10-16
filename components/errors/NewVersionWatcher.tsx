@@ -7,10 +7,13 @@
 // it NEVER refreshes on its own. The user decides. See components/errors/FEATURE.md.
 //
 //   1. Proactive: this deployment's id is baked in server-side as a prop; we
-//      poll /api/version (custom fetches are not pinned by Vercel Skew
+//      ask /api/version (custom fetches are not pinned by Vercel Skew
 //      Protection, so it always answers from the latest deployment) and prompt
-//      when the ids diverge. Polling runs only while the tab is visible, plus
-//      an immediate check when the tab regains focus (tab shown again)/focus.
+//      when the ids diverge. NEVER on mount (owner rule, 2026-10-16): the first
+//      check (and the min-supported-version read) runs once the page has fully
+//      settled (lib/boot/lateIdle); after that only when the person comes back
+//      to the tab (shown / focus) or presses in it, at most every
+//      POLL_INTERVAL_MS. No background interval.
 //   2. Reactive: the "matrx:chunk-load-error" window event (from the boot script's
 //      global listeners or notifyChunkLoadError) means a required module fetch
 //      failed — prompt immediately with firmer, cause-neutral copy.
@@ -24,6 +27,7 @@
 // boot script from ever reloading a live session.
 
 import { useEffect, useRef } from "react";
+import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { noteHardNavigationReason } from "@/lib/diagnostics/hardNavigationTrace";
 import { toast } from "@/lib/toast";
 import { readAppConfigKey } from "@/lib/config-attestation/appConfig";
@@ -50,8 +54,6 @@ export function compareVersions(a: string, b: string): number {
   }
   return 0;
 }
-/** Min gap between tab-shown/focus-triggered checks. */
-const CHECK_THROTTLE_MS = 60_000;
 /** After "Not now", stay quiet this long (chunk errors re-prompt sooner). */
 const SNOOZE_MS = 30 * 60_000;
 const TOAST_ID = "matrx-new-version";
@@ -149,10 +151,17 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
         });
       }
     };
-    void checkMinimumVersion();
+    const settle = new AbortController();
+    // Nothing is read on mount: the first checks wait for the page to settle.
+    lastCheckRef.current = Date.now();
+    const settled = whenLateIdle(undefined, settle.signal);
+    void settled.then((ok) => {
+      if (ok) void checkMinimumVersion();
+    });
 
     if (!deploymentId) {
       return () => {
+        settle.abort();
         window.removeEventListener(CHUNK_LOAD_ERROR_EVENT, onChunkLoadError);
         window.removeEventListener(REFRESH_REQUIRED_EVENT, onRefreshRequired);
       };
@@ -175,20 +184,27 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
       }
     };
 
-    const interval = setInterval(check, POLL_INTERVAL_MS);
+    let ready = false;
+    void settled.then((ok) => {
+      if (!ok) return;
+      ready = true;
+      void check();
+    });
     const onVisible = () => {
-      if (document.hidden) return;
-      if (Date.now() - lastCheckRef.current < CHECK_THROTTLE_MS) return;
+      if (!ready || document.hidden) return;
+      if (Date.now() - lastCheckRef.current < POLL_INTERVAL_MS) return;
       void check();
     };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
+    window.addEventListener("pointerdown", onVisible, { capture: true, passive: true });
 
     return () => {
       cancelled = true;
-      clearInterval(interval);
+      settle.abort();
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onVisible);
+      window.removeEventListener("pointerdown", onVisible, { capture: true });
       window.removeEventListener(CHUNK_LOAD_ERROR_EVENT, onChunkLoadError);
       window.removeEventListener(REFRESH_REQUIRED_EVENT, onRefreshRequired);
     };

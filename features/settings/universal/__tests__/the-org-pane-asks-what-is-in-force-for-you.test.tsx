@@ -41,7 +41,7 @@ jest.mock("../taxonomy", () => ({
   fetchTaxonomyIndex: jest.fn(async () => ({ byId: new Map(), bySlug: new Map() })),
 }));
 jest.mock("@/lib/scoped-config/deviceId", () => ({ getWebDeviceId: () => DEVICE }));
-jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({ invalidateEffectiveKnob: jest.fn() }));
+jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({ invalidateEffectiveKnob: jest.fn(), catchUpKnobsSinceBoot: jest.fn(async () => false) }));
 jest.mock("@/lib/knobs/featureKnobs", () => ({ invalidateFeatureKnobs: jest.fn() }));
 jest.mock("@/lib/client-directives/directiveRegistry", () => ({
   registerDirectiveHandler: () => () => {},

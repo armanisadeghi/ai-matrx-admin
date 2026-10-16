@@ -1,6 +1,6 @@
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { parseEvidenceItem, webRow, type EvidenceItem } from "../evidence";
-import { engineRanks, exclusionMatchForUrl, groupByKind, suggestKind, type SuggestContext } from "../webKinds";
+import { engineRanks, exclusionMatchForUrl, groupByKind, ruleFillIn, suggestKind, type SuggestContext } from "../webKinds";
 
 const kind = (key: string, stance: BrandRelationKind["stance"], match: Partial<BrandRelationKind["match"]> = {}): BrandRelationKind => ({
   id: key,
@@ -220,5 +220,24 @@ describe("recognized pages (VISION Part 22)", () => {
 
   it("an unrecognized page gets no credential suggestion", () => {
     expect(suggestKind(item("https://unknown-certifier.org/about", null), [credential], ctx)?.kind).not.toBe("credential");
+  });
+});
+
+describe("a suggestion never contradicts its classifier (MKT-181)", () => {
+  const NAME_START: SuggestContext = { ourHosts: [], ourAccounts: [], name: "The Blue Cake Company", place: "Little Rock, AR" };
+  const home = () => web("https://www.thebluecakecompany.com/", "The Blue Cake Company | Little Rock, AR");
+  it("with no website known yet, a site whose address is our name is not Not us", () => {
+    expect(suggestKind(home(), KINDS, NAME_START)?.kind).not.toBe("not_us");
+    expect(suggestKind(web("https://www.thebluecakecompany.com/order", "Order"), KINDS, NAME_START)?.kind).not.toBe("not_us");
+  });
+  it("a namesake's own site is still possibly Not us when we know our own site", () => {
+    const known = { ...NAME_START, ourHosts: ["bluecakes.example"], place: undefined };
+    expect(suggestKind(web("https://thebluecakecompany.co.uk/", "Cakes"), KINDS, known)?.kind).toBe("not_us");
+  });
+  it("when the classifier said needs a person, a rule may not suggest Not us or Irrelevant", () => {
+    expect(ruleFillIn("later", { kind: "not_us", reason: "x" })).toBeNull();
+    expect(ruleFillIn("later", { kind: "irrelevant", reason: "x" })).toBeNull();
+    expect(ruleFillIn("later", { kind: "mention", reason: "x" })?.kind).toBe("mention");
+    expect(ruleFillIn(undefined, { kind: "not_us", reason: "x" })?.kind).toBe("not_us");
   });
 });

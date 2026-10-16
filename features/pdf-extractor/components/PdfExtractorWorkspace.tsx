@@ -210,7 +210,7 @@ export function PdfExtractorFloatingWorkspace({
       }
       const doc = activeTab?.document;
       try {
-        await launchAgent(agentId, {
+        await launchAgent(agentId, { initiation: "user",
           surfaceKey: `pdf-extractor:bound-agent:${agentId}`,
           sourceFeature: "pdf-extractor",
           config: {
@@ -892,7 +892,7 @@ function AiActionsView({ doc }: { doc: PdfDocument }) {
       return;
     }
     try {
-      await launchAgent(agentId, {
+      await launchAgent(agentId, { initiation: "user",
         surfaceKey: `pdf-extractor:bound-agent:${agentId}`,
         sourceFeature: "pdf-extractor",
         config: {

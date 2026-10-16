@@ -19,15 +19,15 @@ import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree"
 
 /**
  * `load: false` reads what is already in Redux without asking for the scope tree. The shell's
- * switcher trigger passes `load: open` — the tree is warmed by DeferredSingletonCore at idle and
- * the opened menu's own panel asks for it, so the closed trigger never reads at startup.
+ * switcher trigger passes `load: open`: while false the hook does not even READ the scope tree
+ * (the store treats any read of it as demand), so the closed trigger never starts the load.
  */
 export function useActiveOrganizationPicker({ load = true }: { load?: boolean } = {}) {
   const dispatch = useAppDispatch();
   const activeOrgId = useAppSelector(selectOrganizationId);
   const activeOrgName = useAppSelector(selectOrganizationName);
   const promptForOrg = useAppSelector(selectShouldPromptForOrganization);
-  const { organizations, status } = useScopeTree();
+  const { organizations, status } = useScopeTree({ enabled: load });
   const isAuthenticated = useAppSelector(selectHasAccount);
 
   useEffect(() => {

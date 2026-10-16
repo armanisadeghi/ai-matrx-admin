@@ -74,7 +74,7 @@ export function useContentConverter(): UseContentConverter {
   const convert = useCallback(
     async (request: ConvertRequest, onRequestId?: (id: string) => void) => {
       const orgId = await ensureOrgId(undefined);
-      return runConvert(request, { dispatch, store, orgId, onRequestId });
+      return runConvert(request, { initiation: "user", dispatch, store, orgId, onRequestId });
     },
     [dispatch, store],
   );
@@ -96,7 +96,7 @@ export function useContentConverter(): UseContentConverter {
           try {
             const result = await runConvert(
               { source, targetKind, options },
-              {
+              { initiation: "user",
                 dispatch,
                 store,
                 orgId,

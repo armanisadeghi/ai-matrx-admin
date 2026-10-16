@@ -15,12 +15,13 @@ export class PlannerRefused extends Error {}
 export async function runPlanner(
   dispatch: AppDispatch,
   description: string,
+  initiation: "user" | "auto",
   onConversation?: (conversationId: string) => void,
 ): Promise<{ answer: string; conversationId: string }> {
   let launch;
   try {
     launch = await dispatch(
-      launchAgentExecution({
+      launchAgentExecution({ initiation: initiation,
         mandateKey: PLANNER_MANDATE_KEY,
         surfaceKey: "system-builder",
         sourceFeature: "agent-generator",

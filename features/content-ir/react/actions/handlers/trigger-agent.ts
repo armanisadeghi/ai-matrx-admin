@@ -64,7 +64,7 @@ async function triggerAgentHandler(
   const parsed = parseInput(input);
   if ("error" in parsed) return { ok: false, error: parsed.error };
 
-  const result = await ctx.launchAgent(parsed.agentId, {
+  const result = await ctx.launchAgent(parsed.agentId, { initiation: "user",
     surfaceKey: `kind-action:trigger_agent:${parsed.agentId}`,
     sourceFeature: "ai-results",
     config: {

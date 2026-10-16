@@ -82,7 +82,7 @@ export function GenerateCardsDialog({
         const result = await run.generate(
           FC_MANDATES.generateCards,
           { topic: about, count, difficulty: difficulty ?? "medium" },
-          {
+          { initiation: "user",
             onConversationCreated: (cid) => {
               // Never discarded: a refused link is said, with its remedy.
               void fcService
@@ -127,7 +127,7 @@ export function GenerateCardsDialog({
             saved.error ?? "The cards were made but could not be saved. Try again.",
           );
         }
-        await guard.commit();
+        await guard.commit({ initiation: "user" });
         const n = saved.data.length;
         toast.success(`Added ${n} ${n === 1 ? "card" : "cards"} to this deck`);
         onAdded(n);

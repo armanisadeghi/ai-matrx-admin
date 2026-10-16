@@ -222,6 +222,8 @@ export async function uploadResponseClip(
 }
 
 export interface RunSpokenGraderArgs {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   /** The grading MANDATE to run — resolved live to the DB-bound grader agent. */
   mandateKey: AnyMandateKey;
   front: string;
@@ -272,7 +274,7 @@ export function runSpokenGrader(args: RunSpokenGraderArgs) {
     try {
       for (let attempt = 1; attempt <= SPOKEN_GRADE_ATTEMPTS; attempt += 1) {
         const finalAttempt = attempt === SPOKEN_GRADE_ATTEMPTS;
-        const result = await runHeadlessAgentJson(dispatch, getState, {
+        const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
           mandateKey: args.mandateKey,
           surfaceKey: args.surfaceKey,
           // Persisted (not ephemeral — that path 404s the v2 gate) but kept out of

@@ -13,20 +13,31 @@ export interface CreateGateAsk {
   cancelLabel: string;
 }
 
+/** How long Create waits for the duplicate check before going on without it. */
+export const CREATE_GATE_FIND_TIMEOUT_MS = 8000;
+
 export async function gateCreate({
   probe,
   find,
   ask,
   answered,
+  findTimeoutMs = CREATE_GATE_FIND_TIMEOUT_MS,
 }: {
   probe: BrandProbe | null;
   find: (probe: BrandProbe) => Promise<BrandMatch[]>;
   ask: (q: CreateGateAsk) => Promise<boolean>;
   /** Brand ids the person already chose to keep separate. */
   answered: ReadonlySet<string>;
+  findTimeoutMs?: number;
 }): Promise<{ proceed: boolean; answered: ReadonlySet<string> }> {
   if (!probe) return { proceed: true, answered };
-  const open = (await find(probe).catch(() => [] as BrandMatch[])).filter((m) => !answered.has(m.brand.id));
+  // Bounded: a check that hangs never holds Create (MKT-182 sat 3.5 minutes with no message); no answer = no match.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timedOut = new Promise<BrandMatch[]>((resolve) => {
+    timer = setTimeout(() => resolve([]), findTimeoutMs);
+  });
+  const found = await Promise.race([find(probe).catch(() => [] as BrandMatch[]), timedOut]).finally(() => clearTimeout(timer));
+  const open = found.filter((m) => !answered.has(m.brand.id));
   if (!open.length) return { proceed: true, answered };
   const names = open.slice(0, 2).map((m) => m.brand.name).join(" and ");
   const ok = await ask({

@@ -63,7 +63,7 @@ export interface UseEpisodeTitleOptions {
   applying: string | null;
   error: string | null;
   /** Run the title optimizer against the finished episode. */
-  generate: () => Promise<void>;
+  generate: (initiation: "user" | "auto") => Promise<void>;
   /** Persist a chosen title onto pc_episodes.title. */
   apply: (title: string) => Promise<void>;
 }
@@ -100,7 +100,7 @@ export function useEpisodeTitleOptions(
       ? appliedTitle.title
       : (episode?.title ?? null);
 
-  const generate = useCallback(async () => {
+  const generate = useCallback(async (initiation: "user" | "auto") => {
     if (!episode) return;
     if (!episode.script?.trim()) {
       toast.error("This episode has no script to optimize a title from.");
@@ -117,7 +117,7 @@ export function useEpisodeTitleOptions(
     });
     windowRef.current = handle;
     try {
-      const result = await run<unknown>({
+      const result = await run<unknown>({ initiation: initiation,
         mandateKey: TITLE_OPTIMIZER_MANDATE_KEY,
         surfaceKey: "podcast-run:title-options",
         sourceFeature: "podcasts",

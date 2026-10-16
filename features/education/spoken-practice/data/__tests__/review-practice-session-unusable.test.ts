@@ -26,7 +26,7 @@ describe("reviewPracticeSession — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing summary",
     });
     const onUnusable = jest.fn();
-    const out = await reviewPracticeSession({
+    const out = await reviewPracticeSession({ initiation: "user",
       sessionId: "sess-1",
       mode: "recall" as never,
       attempts: [{ front: "Q", transcript: "a", result: "correct", score: 1 } as never],

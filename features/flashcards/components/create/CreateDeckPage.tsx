@@ -386,7 +386,7 @@ export function CreateDeckPage({
 
   const finish = async (setId: string, name: string, cards: number, gap: string | null) => {
     // Metered action SUCCEEDED (generated AND saved) — record real usage.
-    await cardGen.commit();
+    await cardGen.commit({ initiation: "user" });
     recordToast.success(
       { type: "flashcard_set", id: setId, title: name },
       `Created "${name}" with ${cards} ${cards === 1 ? "card" : "cards"}${gap ? ` — ${gap}` : ""}`,
@@ -429,7 +429,7 @@ export function CreateDeckPage({
         user_request: focus.trim() || undefined,
         depth,
       },
-      { onConversationCreated: attach },
+      { initiation: "user", onConversationCreated: attach },
     );
     setPhase("saving");
     // The envelope that drove the live preview is the persistence source.
@@ -506,7 +506,7 @@ export function CreateDeckPage({
         .filter(Boolean)
         .join("\n\n"),
       name: deckName,
-      ctx: {
+      ctx: { initiation: "user",
         dispatch,
         store,
         orgId,

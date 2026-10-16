@@ -96,7 +96,7 @@ export function VerifyAgainstSourceButton({
         className="w-fit"
         disabled={verify.isVerifying}
         onClick={() =>
-          void verify.verify({
+          void verify.verify({ initiation: "user",
             front,
             back,
             sourceExcerpt: excerptFromCitations(citations),

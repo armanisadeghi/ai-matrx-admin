@@ -64,7 +64,7 @@ export function StudioRun({
     setError(null);
 
     const fresh = () =>
-      launchAgent(agentId, {
+      launchAgent(agentId, { initiation: "user",
         surfaceKey,
         sourceFeature: "agent-studio",
         config: {

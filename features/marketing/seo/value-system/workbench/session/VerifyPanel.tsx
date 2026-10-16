@@ -9,6 +9,7 @@
  * human write path. Logic in ./verify.ts; nothing here invents a mechanic.
  */
 
+import { invalidateShellCounts } from "@/lib/boot/shellCountsKey";
 import { useCallback, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -256,6 +257,7 @@ export function VerifyPanel({
       }
       setRulesSent(sent);
       await queryClient.invalidateQueries({ queryKey: ["assists"] });
+      invalidateShellCounts(queryClient);
       setPhase("done");
     } catch (error) {
       setNote(`The rule writer could not run: ${extractErrorMessage(error)}.`);

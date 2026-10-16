@@ -212,7 +212,7 @@ export async function resolveKitTitle(
 
   const controller = new AbortController();
   const giveUp = setTimeout(() => controller.abort(), NAMER_LATE_MS);
-  const named: Promise<KitTitle | null> = runAgentExtraction(dispatch, store, {
+  const named: Promise<KitTitle | null> = runAgentExtraction(dispatch, store, { initiation: "auto",
     signal: controller.signal,
     mandateKey: KIT_TITLE_MANDATE,
     surfaceKey: "education-ingest-kit-title",

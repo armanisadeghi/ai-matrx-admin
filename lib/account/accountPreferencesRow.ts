@@ -2,6 +2,7 @@
 // with the one organization-choice reader so those columns have one owner.
 export {
   forgetAccountPreferencesRow,
+  primeAccountPreferencesRow,
   readAccountPreferencesRow,
   type AccountPreferencesAnswer,
   type AccountPreferencesRow,

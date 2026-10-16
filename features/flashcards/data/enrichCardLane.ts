@@ -48,7 +48,7 @@ export function enrichAndSaveCard(args: {
     getState: () => RootState,
   ): Promise<EnrichCardOutcome> => {
     const { card, depth } = args;
-    const details = await enrichCard({
+    const details = await enrichCard({ initiation: "auto",
       card,
       depth,
       ...(args.onConversationCreated

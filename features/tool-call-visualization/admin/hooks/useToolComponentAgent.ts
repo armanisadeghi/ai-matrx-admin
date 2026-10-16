@@ -167,7 +167,7 @@ export function useToolComponentAgent(): UseToolComponentAgentReturn {
           };
         });
 
-        await launchMandate(TOOL_UI_COMPONENT_GENERATOR_MANDATE_KEY, {
+        await launchMandate(TOOL_UI_COMPONENT_GENERATOR_MANDATE_KEY, { initiation: "user",
           surfaceKey: "tool-component-generator",
           sourceFeature: "tool-call-visualization",
           // Direct mode — no overlay; this hook owns the streaming UI via

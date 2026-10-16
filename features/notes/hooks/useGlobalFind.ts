@@ -8,7 +8,7 @@
 // same query/options state via Redux but compute their match lists in
 // parallel.
 
-import { useNoteHomes } from "../homes/useNoteHomes";
+import { useNoteHomeNames } from "../homes/useNoteHomes";
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAllNotesList, selectFindReplaceState } from "../redux/selectors";
@@ -38,7 +38,8 @@ export interface GlobalFindResult extends GlobalSearchResults {
 export function useGlobalFind(instanceId: string): GlobalFindResult {
   const findReplace = useAppSelector(selectFindReplaceState(instanceId));
   const allNotes = useAppSelector(selectAllNotesList);
-  const homes = useNoteHomes();
+  // Names of the homes the notes live in (one specific read) — never the whole scope tree.
+  const homes = useNoteHomeNames();
   const dispatch = useAppDispatch();
 
   // Find-across-notes needs every BODY, and list rows carry only a preview

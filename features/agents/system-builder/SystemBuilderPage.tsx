@@ -141,7 +141,7 @@ export default function SystemBuilderPage() {
     setRunning(true);
     setFailure(null);
     try {
-      const { answer, conversationId } = await runPlanner(dispatch, text);
+      const { answer, conversationId } = await runPlanner(dispatch, text, "user");
       const parsed = parsePlannerAnswer(answer, text, conversationId);
       const id = await saveNewPlan(parsed);
       justCreated.current = id;

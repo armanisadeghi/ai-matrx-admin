@@ -60,6 +60,11 @@ const ADMIN_REAL_STATUS: AiTestModeStatus = {
   modes: [...AI_TEST_MODES],
 };
 
+/** No usable verdict for a tab off "real": it runs real, and the switch shows why so it can go back. */
+function unreadableStatus(mode: AiTestMode): AiTestModeStatus {
+  return { ...ADMIN_REAL_STATUS, requested: mode, effective: "real", available: false, reason: "server refuses: status unreadable" };
+}
+
 /** The tab's mode and what the server says about it; `status` null = the switch is absent. */
 function useAiTestModeState() {
   const userId = useAppSelector(selectUserId);
@@ -92,17 +97,22 @@ function useAiTestModeState() {
       })
       .catch(() => {
         if (controller.signal.aborted) return;
-        // An unreadable status is never permission: the dock stays absent.
-        statusCache.set(cacheKey, null);
-        setStatus(null);
+        // An unreadable status is never permission: the tab is told it runs real, and the
+        // switch STAYS so the person can go back to Real (a tab off "real" must never lose it).
+        const refused = unreadableStatus(mode);
+        statusCache.set(cacheKey, refused);
+        setStatus(refused);
       });
     return () => controller.abort();
   }, [cacheKey]);
 
   if (mode === "real") return { mode, status: isAdmin && userId ? ADMIN_REAL_STATUS : null };
-  const stillAsking = status != null && serverRefuses(status);
-  const shown = status != null && (status.available || stillAsking);
-  return { mode, status: shown ? status : null };
+  if (!userId) return { mode, status: null };
+  // While the verdict is on its way the switch stays where the person put it.
+  if (status == null) return { mode, status: { ...ADMIN_REAL_STATUS, requested: mode, effective: mode } };
+  const stillAsking = serverRefuses(status);
+  const shown = status.available || stillAsking;
+  return { mode, status: shown ? status : unreadableStatus(mode) };
 }
 
 /**

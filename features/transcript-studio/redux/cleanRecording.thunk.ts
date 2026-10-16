@@ -163,7 +163,7 @@ export const cleanRecordingThunk = createAsyncThunk<
   let responseText: string | undefined;
   try {
     const result = (await dispatch(
-      launchAgentExecution({
+      launchAgentExecution({ initiation: "user",
         shortcutId,
         surfaceKey: `studio:cleanup:${sessionId}`,
         sourceFeature: "transcription",

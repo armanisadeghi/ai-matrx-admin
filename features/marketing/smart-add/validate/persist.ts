@@ -19,6 +19,9 @@
  */
 
 import { foundByForSource } from "../factIdentity";
+import { toast } from "@/lib/toast";
+import { extractErrorMessage } from "@/utils/errors";
+import { promotedHomes, promoteSmartAddFindings, undoPromotion } from "../promote";
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
@@ -43,13 +46,13 @@ import { linkPersonToBrand } from "../relations";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
 import {
-  isBusinessFactKind,
   isJsonRecord,
   parseBrandProfile,
   type MarketingBrand,
 } from "@/features/marketing/types";
 import { candidateCategory, websiteHost } from "../evidence";
 import { webIdentity } from "../webKinds";
+import { factKindFor, loadFactRules, profileHomeFor } from "../factRules";
 import { webSiteRoot } from "../relations";
 import { claimSite } from "../siteOwnership";
 import { siteNameOf } from "../siteName";
@@ -86,34 +89,6 @@ function relationKeyFor(answer: Answer, relationKey: string | null): string | nu
   if (answer === "not_us") return "not_us";
   return null;
 }
-
-/** The facts agent's fields (brand_basics) that are a web.business_fact kind under another name. */
-const FACT_FIELD_KIND: Record<string, string> = {
-  toll_free_phone: "phone",
-  sms_number: "phone",
-  street_address: "address",
-  business_hours: "hours",
-  legal_entity_name: "legal_name",
-  brand_legal_name: "legal_name",
-  short_description: "description",
-  registration_number: "registration",
-};
-
-/** web.business_fact kind for a fact field (the table's own list), else `other` with its label. */
-function factKind(field: string): string {
-  const f = field.toLowerCase();
-  if (isBusinessFactKind(f)) return f;
-  return FACT_FIELD_KIND[f] ?? "other";
-}
-
-/** Fact fields whose canonical home is a web.brand profile key (BrandProfile), not web.business_fact. */
-const PROFILE_HOME: Record<string, "brand_aliases" | "service_area" | "competitors"> = {
-  also_known_as: "brand_aliases",
-  dba_name: "brand_aliases",
-  former_name: "brand_aliases",
-  service_area: "service_area",
-  competitor: "competitors",
-};
 
 async function db() {
   return authenticatedWebDb(supabase);
@@ -322,6 +297,27 @@ async function addSite(ctx: PersistContext, url: string): Promise<{ id: string |
   return { id: site.id, undo: async () => deleteSite(site.id) };
 }
 
+/** A live web.business_fact on the brand of this finding's kind with the same text (case and spacing ignored). */
+async function sameFactOnBrand(ctx: PersistContext, item: FocusItem, value: string): Promise<string | null> {
+  const field = item.fact?.field ?? item.evidence?.field;
+  if (!field) return null;
+  const norm = (v: string) => v.trim().replace(/\s+/g, " ").toLowerCase();
+  const wanted = new Set([value, item.fact?.value ?? ""].filter(Boolean).map(norm));
+  const { data, error } = await (await db())
+    .from("business_fact")
+    .select("id, kind, value")
+    .eq("brand_id", ctx.getBrand().id)
+    .is("deleted_at", null);
+  if (error) throw new Error(error.message);
+  const kind = factKindFor(field, await loadFactRules());
+  const hit = (data ?? []).find((row) => {
+    if (row.kind !== kind) return false;
+    const v = isJsonRecord(row.value) ? (row.value.text ?? row.value.url) : row.value;
+    return typeof v === "string" && wanted.has(norm(v));
+  });
+  return hit?.id ?? null;
+}
+
 /**
  * The web.business_fact Create kept for this finding (keptFacts.ts; its discovered_item's resolved_fact_id), settled in
  * place: Correct confirms it (and takes an edit), Wrong soft-deletes it. Returns false when Create kept none.
@@ -348,7 +344,9 @@ async function settleKeptFact(
     .limit(1)
     .maybeSingle();
   if (link.error) throw new Error(link.error.message);
-  const factId = link.data?.resolved_fact_id;
+  // No link (the card came from another round or step): the same fact already on the brand is the one to settle,
+  // so a Yes never writes it twice (MKT-179: a tagline Create kept was written again by the validate Yes).
+  const factId = link.data?.resolved_fact_id ?? (await sameFactOnBrand(ctx, item, value));
   if (!factId) return false;
   const current = await w
     .from("business_fact")
@@ -510,12 +508,40 @@ export async function persistAnswer(
   opts: { relationKey?: string | null; value?: string } = {},
 ): Promise<Persisted> {
   const slot = `${ctx.getBrand().id}:${item.key}`;
-  const turn = (saving.get(slot) ?? Promise.resolve()).catch(() => undefined).then(() => persistAnswerOnce(ctx, item, answer, opts));
+  const turn = (saving.get(slot) ?? Promise.resolve())
+    .catch(() => undefined)
+    .then(() => persistAnswerOnce(ctx, item, answer, opts))
+    .then((persisted) => (CONFIRMED.has(answer) ? withPromotion(ctx, persisted) : persisted));
   saving.set(slot, turn);
   try {
     return await turn;
   } finally {
     if (saving.get(slot) === turn) saving.delete(slot);
+  }
+}
+
+/**
+ * A confirmed answer lands in the brand's home tables through the server's ONE promotion (promote.ts): the person
+ * linked, the location added, the listing, the keyword, the rival. Undo removes exactly the rows that promotion
+ * created, then the answer. The answer is already saved, so a promotion that fails is said, never thrown.
+ */
+async function withPromotion(ctx: PersistContext, persisted: Persisted): Promise<Persisted> {
+  try {
+    const promoted = await promoteSmartAddFindings(ctx.getBrand().id);
+    for (const problem of promoted.problems) toast.error(problem);
+    const homes = promotedHomes(promoted);
+    if (!homes.length) return persisted;
+    return {
+      ...persisted,
+      homes: [...persisted.homes, ...homes],
+      undo: async () => {
+        await undoPromotion(promoted.createdIds);
+        await persisted.undo();
+      },
+    };
+  } catch (error) {
+    toast.error(`Saved, but not added to the brand's pages yet: ${extractErrorMessage(error)}`);
+    return persisted;
   }
 }
 
@@ -705,7 +731,7 @@ async function persistAnswerOnce(
     if (ex.id) homes.push(`web.brand_exclusion:${ex.id}`);
     undos.push(ex.undo);
   }
-  const profileHome = answer === "correct" && item.fact ? PROFILE_HOME[item.fact.field] : undefined;
+  const profileHome = answer === "correct" && item.fact ? profileHomeFor(item.fact.field, await loadFactRules()) : null;
   if (profileHome) {
     // A brand profile key is the fact's one home (aliases, service area, competitors).
     const undo = await patchProfile(ctx, (p) => {
@@ -724,7 +750,7 @@ async function persistAnswerOnce(
     // The fact Create kept (keptFacts.ts) is settled in place: confirmed, or soft-deleted — never a second row.
   } else if (answer === "correct" && item.kind === "fact") {
     const field = item.fact?.field ?? ev?.field ?? "other";
-    const kind = factKind(field);
+    const kind = factKindFor(field, await loadFactRules());
     const fact = await createBusinessFact({
       organizationId: ctx.organizationId,
       brandId: ctx.getBrand().id,
@@ -736,7 +762,7 @@ async function persistAnswerOnce(
         ? {
             source: "discovered" as const,
             metadata: {
-              found_by: "brand_intake.early_facts",
+              found_by: item.fact.mandate ?? "brand_intake.early_facts",
               field: item.fact.field,
               field_label: item.fact.field_label,
               found_value: item.fact.value,
@@ -746,7 +772,7 @@ async function persistAnswerOnce(
             },
           }
         : ev
-          ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind), where: ev.source.where, url: ev.source.url } }
+          ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind, ev.source.mandate), where: ev.source.where, url: ev.source.url } }
           : // Still a validation-queue item (it lands in web.discovered_item below): found, then confirmed.
             { source: "discovered" as const }),
     });

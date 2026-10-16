@@ -42,8 +42,15 @@ import "@/components/icons/tap-target-setup";
 import "@/components/diff/heavy-renderer-setup";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
+import { useAppSelector } from "@/lib/redux/hooks";
+import type { RootState } from "@/lib/redux/rootReducer";
+import {
+  personPeekRequested,
+  subscribePersonPeek,
+} from "@/features/data-tables/records-ui-host/personPeekStore";
+import { installFirstEngagementListeners } from "@/lib/boot/firstEngagement";
 import { installGlobalErrorCapture } from "@/lib/diagnostics/globalErrorCapture";
 import { installErrorPersistence } from "@/lib/diagnostics/persistCapturedErrors";
 
@@ -62,11 +69,40 @@ import { installErrorPersistence } from "@/lib/diagnostics/persistCapturedErrors
 // immediately when `window` is undefined, so the SSR pass of this client
 // module is a no-op.
 installGlobalErrorCapture();
+// The engagement tier (lib/boot/firstEngagement.ts) must see a click or key press made BEFORE the
+// deferred core loads, so its listeners go on here, at boot-bundle evaluation.
+installFirstEngagementListeners();
 
 const DeferredSingletonCore = dynamic(
   () => import("./DeferredSingletonCore"),
   { ssr: false, loading: () => null },
 );
+
+// THE OVERLAY WORLD — one edge, loaded on the first open, never at idle. See DeferredOverlayWorld.tsx.
+const DeferredOverlayWorld = dynamic(
+  () => import("./DeferredOverlayWorld"),
+  { ssr: false, loading: () => null },
+);
+
+/** Any overlay currently in the slice (a key is added on open; closing the last instance removes it). */
+const selectAnyOverlayTouched = (state: RootState) =>
+  Object.keys(state.overlays.overlays).length > 0;
+
+/** Latches true on the first overlay open or person-peek request. */
+export function useOverlayWorldWanted(): boolean {
+  const overlayTouched = useAppSelector(selectAnyOverlayTouched);
+  const peekRequested = useSyncExternalStore(
+    subscribePersonPeek,
+    personPeekRequested,
+    () => false,
+  );
+  const [latched, setLatched] = useState(false);
+  const wanted = overlayTouched || peekRequested;
+  // Latch during render (React's "adjust state on a prop change" pattern): closing the last overlay
+  // deletes its key, and the controller must stay mounted once loaded.
+  if (wanted && !latched) setLatched(true);
+  return latched || wanted;
+}
 
 export default function DeferredSingletonWrapper() {
   const [mounted, setMounted] = useState(false);
@@ -84,7 +120,14 @@ export default function DeferredSingletonWrapper() {
     setMounted(true);
   }, []);
 
-  if (!mounted || !ready) return null;
+  const overlayWorldWanted = useOverlayWorldWanted();
 
-  return <DeferredSingletonCore />;
+  if (!mounted) return null;
+
+  return (
+    <>
+      {ready ? <DeferredSingletonCore /> : null}
+      {overlayWorldWanted ? <DeferredOverlayWorld /> : null}
+    </>
+  );
 }

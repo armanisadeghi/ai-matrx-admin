@@ -41,7 +41,7 @@ export function useOpenDictionaryAssistant() {
 
       setIsPending(true);
       try {
-        await launchMandate(DICTIONARY_ASSISTANT_MANDATE_KEY, {
+        await launchMandate(DICTIONARY_ASSISTANT_MANDATE_KEY, { initiation: "user",
           surfaceKey: "dictionary:assistant",
           sourceFeature: "dictionary",
           apiEndpointMode: "agent",

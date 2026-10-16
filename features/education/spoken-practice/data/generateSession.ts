@@ -21,6 +21,8 @@ import type {
 import { promptTrust } from "./grounding";
 
 export interface GenerateSessionArgs {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   mode: SpokenPracticeMode;
   focus: string;
   difficulty: string;
@@ -101,7 +103,7 @@ export function generateSession(args: GenerateSessionArgs) {
           ? SPOKEN_PRACTICE_MANDATES.designLanguageSession
           : SPOKEN_PRACTICE_MANDATES.designSession;
 
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey: designerMandateKey,
         surfaceKey: "education-spoken-practice-generate",
         // No dedicated SourceFeature exists (adding one lives in the frozen

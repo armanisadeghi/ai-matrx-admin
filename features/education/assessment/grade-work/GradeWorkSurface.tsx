@@ -73,7 +73,7 @@ export function GradeWorkSurface() {
       // Metered action SUCCEEDED — record real usage so the meter decrements
       // (honest even while enforced:false). A failed grade returns above, so a
       // failed action never burns quota.
-      await guard.commit();
+      await guard.commit({ initiation: "user" });
     });
   };
 

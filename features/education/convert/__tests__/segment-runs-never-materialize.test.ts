@@ -37,7 +37,7 @@ function fakeRun(conversationId: string) {
 }
 
 const run = (live: boolean) =>
-  runAgentExtraction({} as AppDispatch, { getState: () => ({}) } as unknown as AppStore, {
+  runAgentExtraction({} as AppDispatch, { getState: () => ({}) } as unknown as AppStore, { initiation: "user",
     mandateKey: "flashcards__generate_from_source" as never,
     surfaceKey: "test",
     sourceFeature: "education-flashcards" as never,

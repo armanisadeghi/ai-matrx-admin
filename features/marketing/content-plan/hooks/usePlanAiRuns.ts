@@ -10,15 +10,12 @@
  * for through `platform.associations`. Page-level runs are linked to their
  * page AND to its site, so this one list is the whole feature's spend.
  *
- * Served by `GET /content-plan/sites/{id}/ai-runs` (+ `/{run_id}` to open
- * one). Real server work — the rows are reached through associations and
- * org-verified per row — so it is NOT a direct-to-Supabase read.
+ * Read straight from Supabase: `plan.site_ai_runs` (+ `plan.site_ai_run` to
+ * open one) — see `../data/aiRuns.ts`.
  */
 import { useQuery } from "@tanstack/react-query";
 
-import { callApi } from "@/lib/api/call-api";
-import { describeBackendFailure, parseCallApiError } from "@ai-matrx/api";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { fetchSiteAiRun, fetchSiteAiRuns } from "../data/aiRuns";
 
 export const planAiRunKeys = {
   list: (siteId: string | null) => ["content-plan", "ai-runs", siteId] as const,
@@ -103,50 +100,26 @@ function parseDetail(data: unknown): PlanAiRunDetail | null {
 
 /** Every recorded AI run for one site, newest first. */
 export function usePlanAiRuns(siteId: string | null) {
-  const dispatch = useAppDispatch();
   return useQuery({
     queryKey: planAiRunKeys.list(siteId),
     enabled: Boolean(siteId),
     staleTime: 30_000,
     queryFn: async (): Promise<PlanAiRunSummary[]> => {
-      const result = await dispatch(
-        callApi({
-          path: "/content-plan/sites/{site_id}/ai-runs",
-          method: "GET",
-          pathParams: { site_id: siteId as string },
-        }),
-      );
-      if (result.error) {
-        throw new Error(
-          describeBackendFailure(parseCallApiError(result.error)).headline,
-        );
-      }
-      return parseSummaries(result.data);
+      return parseSummaries(await fetchSiteAiRuns(siteId as string));
     },
   });
 }
 
 /** ONE past run, opened in full. Fetched only when a run is selected. */
 export function usePlanAiRun(siteId: string | null, runId: string | null) {
-  const dispatch = useAppDispatch();
   return useQuery({
     queryKey: planAiRunKeys.detail(siteId, runId ?? ""),
     enabled: Boolean(siteId && runId),
     staleTime: 5 * 60_000,
     queryFn: async (): Promise<PlanAiRunDetail | null> => {
-      const result = await dispatch(
-        callApi({
-          path: "/content-plan/sites/{site_id}/ai-runs/{run_id}",
-          method: "GET",
-          pathParams: { site_id: siteId as string, run_id: runId as string },
-        }),
+      return parseDetail(
+        await fetchSiteAiRun(siteId as string, runId as string),
       );
-      if (result.error) {
-        throw new Error(
-          describeBackendFailure(parseCallApiError(result.error)).headline,
-        );
-      }
-      return parseDetail(result.data);
     },
   });
 }

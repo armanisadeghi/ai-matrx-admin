@@ -89,6 +89,8 @@ export function deeperThan(depth: Depth | null | undefined): Depth {
  * Returns null on any failure.
  */
 export function deepenItem(args: {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   item: Pick<
     AssessmentItemRow,
     "prompt" | "correct_answer" | "question_type" | "depth" | "topic"
@@ -109,7 +111,7 @@ export function deepenItem(args: {
   ): Promise<NewAssessmentItemInput | null> => {
     const target = deeperThan(asDepth(args.item.depth));
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey: ASSESSMENT_MANDATES.deepenItem,
         surfaceKey: "assessment-deepen-item",
         sourceFeature: "education-assessment",

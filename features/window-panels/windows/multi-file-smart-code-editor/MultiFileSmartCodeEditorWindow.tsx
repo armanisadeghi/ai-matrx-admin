@@ -308,7 +308,7 @@ export function MultiFileSmartCodeEditorWindow({
     (async () => {
       try {
         const result = await dispatch(
-          launchAgentExecution({
+          launchAgentExecution({ initiation: "user",
             mandateKey: launchKey,
             surfaceKey: SMART_CODE_EDITOR_SURFACE_KEY,
             sourceFeature: "code-editor",

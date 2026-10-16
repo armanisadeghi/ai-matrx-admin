@@ -130,7 +130,7 @@ function CardAudioPrep({
       const ready = Object.keys(result).length;
       const generated = Math.max(ready - before, 0);
       if (lane === "helper" && generated > 0) {
-        await enrichGuard.commit({ quantity: generated });
+        await enrichGuard.commit({ initiation: "user", quantity: generated });
       }
       if (ready < cards.length) {
         toast.error(

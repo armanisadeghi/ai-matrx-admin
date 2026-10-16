@@ -144,7 +144,7 @@ export function EpisodeContentStudio({ episodeId }: { episodeId: string }) {
                 )}
                 <Button
                   variant={article ? "outline" : "primary"}
-                  onClick={() => generate(kind)}
+                  onClick={() => generate(kind, "user")}
                   disabled={isBusy || noScript}
                   title={noScript ? "This episode has no script to write from." : undefined}
                 >

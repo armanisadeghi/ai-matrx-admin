@@ -19,6 +19,7 @@ import { USERS_ADMIN_LOCATION } from "../constants";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
+import { originLabel } from "@/features/entitlements/usage-history/myCostShaping";
 
 interface EntitlementRow {
   capability: string;
@@ -29,6 +30,10 @@ interface EntitlementRow {
   used_30d: number;
   events: number;
   users: number;
+  own: number;
+  automated: number;
+  unattributed: number;
+  by_origin: string;
 }
 
 export function EntitlementsTableClient() {
@@ -70,6 +75,10 @@ export function EntitlementsTableClient() {
         total_quantity: number;
         event_count: number;
         active_users: number;
+        own_quantity: number;
+        automated_quantity: number;
+        unattributed_quantity: number;
+        by_origin: Array<{ origin_class: string; quantity: number }> | null;
       }>;
       const partial = [useRes.error && `usage rollup: ${useRes.error.message}`, limRes.error && `free limits: ${limRes.error.message}`]
         .filter(Boolean)
@@ -99,6 +108,10 @@ export function EntitlementsTableClient() {
             used_30d: u?.total_quantity ?? 0,
             events: u?.event_count ?? 0,
             users: u?.active_users ?? 0,
+            own: u?.own_quantity ?? 0,
+            automated: u?.automated_quantity ?? 0,
+            unattributed: u?.unattributed_quantity ?? 0,
+            by_origin: (u?.by_origin ?? []).map((o) => `${originLabel(o.origin_class)} ${o.quantity}`).join(" · ") || "—",
           };
         }),
       );
@@ -172,6 +185,40 @@ export function EntitlementsTableClient() {
         align: "right",
         cell: (r) => <span className="tabular-nums">{r.used_30d}</span>,
         width: 100,
+      },
+      {
+        id: "own",
+        accessorKey: "own",
+        header: "People (30d)",
+        filter: "number",
+        align: "right",
+        cell: (r) => <span className="tabular-nums">{r.own}</span>,
+        width: 110,
+      },
+      {
+        id: "automated",
+        accessorKey: "automated",
+        header: "Automated (30d)",
+        filter: "number",
+        align: "right",
+        cell: (r) => <span className="tabular-nums">{r.automated}</span>,
+        width: 130,
+      },
+      {
+        id: "unattributed",
+        accessorKey: "unattributed",
+        header: "Unknown origin (30d)",
+        filter: "number",
+        align: "right",
+        cell: (r) => <span className="tabular-nums">{r.unattributed}</span>,
+        width: 150,
+      },
+      {
+        id: "by_origin",
+        accessorKey: "by_origin",
+        header: "By origin",
+        cell: (r) => <span className="text-[11px]">{r.by_origin}</span>,
+        width: 260,
       },
       // THE DOOR LAW says "a count is a door" — but a count only becomes a door
       // when the records behind it are actually reachable. `events` and `users`
@@ -258,7 +305,7 @@ export function EntitlementsTableClient() {
             rowKind: "capability",
             listKind: "capabilities",
             humanRow: (r) =>
-              `${r.label} (${r.capability}) enforced=${r.enforced} period=${r.period} free=${r.free_limits} used30d=${r.used_30d} users=${r.users}`,
+              `${r.label} (${r.capability}) enforced=${r.enforced} period=${r.period} free=${r.free_limits} used30d=${r.used_30d} own=${r.own} automated=${r.automated} unattributed=${r.unattributed} byOrigin=${r.by_origin} users=${r.users}`,
             rowAttributes: (r) => ({
               capability: r.capability,
               enforced: r.enforced,

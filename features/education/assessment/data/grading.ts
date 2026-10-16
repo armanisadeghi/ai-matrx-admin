@@ -140,6 +140,8 @@ function verdictToGraded(v: GradeVerdict, mandateKey: AnyMandateKey): GradedAnsw
  * Returns a safe fallback verdict on any failure — never throws.
  */
 export function gradeAnswerAI(args: {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   question: string;
   expected: string;
   learnerAnswer: string;
@@ -169,7 +171,7 @@ export function gradeAnswerAI(args: {
       };
     }
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey,
         surfaceKey: "assessment-grade-typed",
         sourceFeature: "education-assessment",
@@ -238,6 +240,8 @@ function stepVerdictToGraded(
  * the attempt still records the learner's work.
  */
 export function gradeAnswerImage(args: {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   question: string;
   expected: string;
   photo: File | Blob;
@@ -275,6 +279,7 @@ export function gradeAnswerImage(args: {
     let unusableSentence: string | null = null;
     const verdict = await dispatch(
       runVisionGrader({
+        initiation: args.initiation,
         mandateKey,
         question: args.question,
         expected: args.expected,

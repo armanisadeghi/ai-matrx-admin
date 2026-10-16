@@ -31,6 +31,7 @@
  * person clicking a cell uses. This component owns no write path.
  */
 
+import { invalidateShellCounts } from "@/lib/boot/shellCountsKey";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -509,6 +510,7 @@ export function TrialPanel({
             : "Sent to the site's owner to approve — it will not appear in your own list.",
       );
       await queryClient.invalidateQueries({ queryKey: ["assists"] });
+      invalidateShellCounts(queryClient);
     },
     onError: (error) => {
       toast.error("Could not send that rule for approval", {

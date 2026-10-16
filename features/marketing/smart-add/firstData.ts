@@ -235,9 +235,39 @@ function factAccount(f: BrandFact): { key: string; platform: SocialPlatform; han
   return { key: `social:${accountKey(parsed)}`, platform, handle: parsed.handle, url: parsed.url, label: parsed.label };
 }
 
+/** What the facts agent has already been given in this session (a round that brings more wakes it again). */
+export interface FactsSaw {
+  site: boolean;
+  social: boolean;
+  name: boolean;
+}
+
+/**
+ * Whether a round wakes the facts agent (MKT-180): a round started from what the person typed does; a later round
+ * does when it brings evidence the last facts run did not have — a website or an account it never saw, or the
+ * name when that run had nothing else to go on. Pure: the caller keeps what the agent has seen.
+ */
+export function wakesFacts(
+  saw: FactsSaw,
+  round: { firstData: boolean; website: boolean; accounts: boolean; name: boolean },
+): { wake: boolean; saw: FactsSaw } {
+  const blind = !saw.site && !saw.social && !saw.name;
+  const wake = round.firstData || (round.website && !saw.site) || (round.accounts && !saw.social) || (round.name && blind);
+  return {
+    wake,
+    saw: wake ? { site: saw.site || round.website, social: saw.social || round.accounts, name: saw.name || round.name } : saw,
+  };
+}
+
 /** The facts agent's findings as slot rows, merged under the server's keys (added or refined, never reset). */
 export function factEvidence(facts: BrandFact[], brandName: string | null): EvidenceItem[] {
-  const src = (url: string | null): EvidenceSource => ({ node: "facts", kind: "web_search", url, where: "research" });
+  const src = (url: string | null, mandate?: string): EvidenceSource => ({
+    node: "facts",
+    kind: "web_search",
+    url,
+    where: "research",
+    ...(mandate ? { mandate } : {}),
+  });
   const out: EvidenceItem[] = [];
   if (realName(brandName)) out.push(item("name", brandName as string, src(null), 0.85));
   for (const f of facts) {
@@ -252,7 +282,7 @@ export function factEvidence(facts: BrandFact[], brandName: string | null): Evid
       const account = factAccount(f);
       if (account)
         out.push({
-          ...item("social", account.url, src(f.evidence_urls[0] ?? null), confidence, certainty),
+          ...item("social", account.url, src(f.evidence_urls[0] ?? null, f.mandate), confidence, certainty),
           key: account.key,
           url: account.url,
           platform: account.platform,
@@ -267,7 +297,7 @@ export function factEvidence(facts: BrandFact[], brandName: string | null): Evid
       ...(field === "website" ? { url: value, label: websiteHost(value) } : {}),
       ...(field === "logo" ? { url: value, image_url: value } : {}),
     };
-    out.push(item(field, value, src(f.evidence_urls[0] ?? null), confidence, extra));
+    out.push(item(field, value, src(f.evidence_urls[0] ?? null, f.mandate), confidence, extra));
   }
   return out;
 }

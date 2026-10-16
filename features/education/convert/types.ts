@@ -198,6 +198,8 @@ export interface LineageOutcome {
 
 /** Context handed to a generator — the Redux plumbing + resolved identity. */
 export interface ConvertContext {
+  /** Who started this conversion: "user" only where a person's click starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   dispatch: AppDispatch;
   store: AppStore;
   /** Resolved org id for the writes (personal org by default). */

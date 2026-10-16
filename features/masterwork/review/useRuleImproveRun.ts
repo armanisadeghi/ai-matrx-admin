@@ -100,7 +100,7 @@ export function useRuleImproveRun(
         sections,
         fallbackSection: request.fallbackSection,
       });
-    return live.run<T>({
+    return live.run<T>({ initiation: "user",
       mandateKey: MASTERWORK_RULE_IMPROVER_MANDATE,
       surfaceKey: request.surfaceKey,
       sourceFeature: "masterwork",

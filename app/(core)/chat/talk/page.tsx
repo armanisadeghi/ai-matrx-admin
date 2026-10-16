@@ -1,27 +1,19 @@
 import { redirect } from "next/navigation";
-import { resolveMandateSeed } from "@/features/mandates/seed.server";
+import { mandateDisplaySeed } from "@ai-matrx/agents/mandates";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
+import { getServerAuth } from "@/utils/supabase/getServerAuth";
 
 /**
- * `/chat/talk` — start talking with whichever agent owns new chats for THIS
- * user (system default → their own `chat.default_new_chat` binding), the same
- * mandate `/chat/new` resolves. No hardcoded agent, no silent fallback: if the
- * mandate cannot resolve we send the user to `/chat/new`, which surfaces the
- * failure in its own loud error state rather than inventing an agent here.
+ * `/chat/talk` — start talking with the agent that owns new chats, the same
+ * `chat.default_new_chat` mandate `/chat/new` paints. ZERO LOOKUPS (Arman,
+ * 2026-10-16): its system Holder is the GENERATED seed (`MANDATE_DISPLAY_SEEDS`,
+ * release-checked against the live binding) — the same system-rung answer the
+ * old SSR read gave, with no read. A signed-out guest, or a key with no seed,
+ * goes to `/chat/new`, which resolves in the browser and fails loudly there.
  */
 export default async function VoiceChatEntryPage() {
-  // BOUNDED, and the redirect now lives OUTSIDE the failure handling: `redirect()`
-  // throws by design, so the old shape had to recognise its own digest to avoid
-  // swallowing it. `resolveMandateSeed` never throws and gives up at its
-  // deadline (see seed.server.ts — an unbounded await here is a 504, not a
-  // slow page).
-  const seed = await resolveMandateSeed(DEFAULT_NEW_CHAT_MANDATE_KEY);
-  if (!seed.agentId) {
-    console.error(
-      `[chat/talk] mandate "${DEFAULT_NEW_CHAT_MANDATE_KEY}" failed to resolve:`,
-      seed.unavailable,
-    );
-    redirect("/chat/new");
-  }
+  const seed = mandateDisplaySeed(DEFAULT_NEW_CHAT_MANDATE_KEY);
+  const auth = await getServerAuth();
+  if (!seed || (!auth.isAuthenticated && !auth.authUnavailable)) redirect("/chat/new");
   redirect(`/chat/talk/a/${encodeURIComponent(seed.agentId)}`);
 }

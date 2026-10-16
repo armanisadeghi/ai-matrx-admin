@@ -1199,11 +1199,11 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "agent_prompt_block": {
   "label": "Prompt Block",
-  "family": "Other"
+  "family": "Agents"
  },
  "agent_prompt_block_variant": {
   "label": "Prompt Block Variant",
-  "family": "Other"
+  "family": "Agents"
  },
  "agent_prompt_remediation": {
   "label": "Agent Prompt Remediation",
@@ -1467,7 +1467,7 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "billing_held_run": {
   "label": "Held run",
-  "family": "Other"
+  "family": "Billing"
  },
  "billing_plan": {
   "label": "Billing plan",
@@ -1491,11 +1491,11 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "billing_spend_alarm": {
   "label": "Spend alarm",
-  "family": "Other"
+  "family": "Billing"
  },
  "billing_spend_alarm_occurrence": {
   "label": "Spend alarm occurrence",
-  "family": "Other"
+  "family": "Billing"
  },
  "billing_spend_approval": {
   "label": "Spend Approval",
@@ -2719,7 +2719,7 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "hr_goal": {
   "label": "Goal",
-  "family": "Other"
+  "family": "HR"
  },
  "hr_holiday": {
   "label": "Holiday",
@@ -2935,7 +2935,7 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "hr_review_peer_nomination": {
   "label": "Peer feedback nomination",
-  "family": "Other"
+  "family": "HR"
  },
  "hr_review_response": {
   "label": "Performance review response",
@@ -3087,7 +3087,7 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "iam_access_setup": {
   "label": "Access setup",
-  "family": "Other"
+  "family": "Access & Identity"
  },
  "iam_api_key": {
   "label": "API Key",
@@ -3107,7 +3107,7 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "iam_record_seat_change": {
   "label": "Record seat change",
-  "family": "Other"
+  "family": "Access & Identity"
  },
  "idempotency": {
   "label": "Idempotency",
@@ -4359,7 +4359,7 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "social_own_post_metric": {
   "label": "Own post metrics",
-  "family": "Other"
+  "family": "Social"
  },
  "soft_delete_cascade_job": {
   "label": "Soft-delete cascade job",

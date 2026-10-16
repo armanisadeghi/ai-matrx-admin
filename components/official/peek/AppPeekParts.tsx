@@ -8,7 +8,8 @@
  *     when the record's table takes none), the section every record view shows;
  *   - `access` — the honest state when the record could not be read (`AccessGate`);
  *   - `media` — a stored file's thumbnail (`MediaThumbnail`);
- *   - `markdown` — formatted text through THE rich-content renderer (`RichContent`, level standard).
+ *   - `markdown` — formatted text through THE rich-content renderer (`RichContent`, level standard;
+ *     `RichContentPreview` when the section has a line limit).
  * Mounted once, app-wide, inside `MatrxDataTableHost`, so every peek on every page gets them. Each
  * part loads on first use — the peek's parts never ride the root bundle.
  */
@@ -27,6 +28,10 @@ const AccessGate = dynamic(() => import("@/features/access-gate/components/Acces
 const RichContent = dynamic(() => import("@ai-matrx/rich-content/levels/RichContent").then((m) => m.RichContent), {
   ssr: false,
 });
+const RichContentPreview = dynamic(
+  () => import("@ai-matrx/rich-content/levels/RichContentPreview").then((m) => m.RichContentPreview),
+  { ssr: false },
+);
 const MediaThumbnail = dynamic(() => import("@ai-matrx/media/react").then((m) => m.MediaThumbnail), { ssr: false });
 
 function renderPeekPart(part: PeekPart): ReactNode {
@@ -46,7 +51,12 @@ function renderPeekPart(part: PeekPart): ReactNode {
         />
       );
     case "markdown":
-      return <RichContent source={part.text} level="standard" />;
+      // A line limit is a short preview (inline, a shape as one line); otherwise the full formatted text.
+      return part.clamp ? (
+        <RichContentPreview source={part.text} lines={part.clamp} />
+      ) : (
+        <RichContent source={part.text} level="standard" />
+      );
   }
 }
 

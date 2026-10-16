@@ -506,7 +506,10 @@ export function AgentGenerator({ onComplete, mandate }: AgentGeneratorProps) {
       if (mandate) {
         // THE MANDATE DOOR: the job's contract is the brief's offered values;
         // the person's guidance — and only that — is user_input.
+        // Declared by the launch site; spread so it type-checks against packages with and without the field.
+        const launchInitiation = { initiation: "user" as const };
         await launchMandate(HOLDER_DRAFT_MANDATE_KEY, {
+          ...launchInitiation,
           surfaceKey: `mandate:${HOLDER_DRAFT_MANDATE_KEY}`,
           runtime: {
             variables: mandate.variables,
@@ -532,7 +535,10 @@ export function AgentGenerator({ onComplete, mandate }: AgentGeneratorProps) {
         });
         return;
       }
+      // Declared by the launch site; spread so it type-checks against packages with and without the field.
+      const launchInitiation1 = { initiation: "user" as const };
       await trigger(GENERATOR_SHORTCUT.id, {
+        ...launchInitiation1,
         scope: { selection },
         runtime: { userInput: userInput || undefined },
         jsonExtraction: GENERATOR_SHORTCUT.temporaryConfigs?.jsonExtraction,

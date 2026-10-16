@@ -80,7 +80,7 @@ export function KitGenerateRun({
         kit,
         request,
         orgId,
-        ctx: { dispatch, store, orgId },
+        ctx: { initiation: "user", dispatch, store, orgId },
         maxCards,
         coverage,
         recover: () =>
@@ -91,7 +91,7 @@ export function KitGenerateRun({
         settle,
       }),
     );
-    await gen.commit();
+    await gen.commit({ initiation: "user" });
     setCard({
       phase: "done",
       line: outcome.summary,

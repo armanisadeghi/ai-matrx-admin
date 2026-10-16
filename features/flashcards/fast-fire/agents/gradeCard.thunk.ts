@@ -213,7 +213,7 @@ export function gradeCard(args: GradeCardArgs) {
       //    model execution if that contract is ever incomplete.
       let unusableSentence: string | null = null;
       const grade = await dispatch(
-        runSpokenGrader({
+        runSpokenGrader({ initiation: "user",
           mandateKey: FC_MANDATES.gradeSpoken,
           surfaceKey: `fastfire-grade-${cardId}`,
           sourceFeature: "education-fastfire",

@@ -253,6 +253,8 @@ export function coerceSubCards(raw: unknown): ExpandedSubCard[] {
  * launch/timeout failure.
  */
 export function enrichCard(args: {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   card: CardWithDetails;
   depth: Depth;
   /**
@@ -283,7 +285,7 @@ export function enrichCard(args: {
     const { card, depth } = args;
     try {
       const existing = card.details.map((d) => ({ kind: d.kind, text: d.text }));
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey: FC_MANDATES.enrichCard,
         surfaceKey: "flashcards-enrich-card",
         sourceFeature: "education-flashcards",
@@ -348,6 +350,8 @@ export function enrichCard(args: {
  * caller's job via `fcService.addSubCards`.
  */
 export function expandCard(args: {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   card: CardWithDetails;
   depth: Depth;
   /** See `enrichCard` — the live-render handle; the caller owns cleanup. */
@@ -361,7 +365,7 @@ export function expandCard(args: {
   ): Promise<ExpandedSubCard[] | null> => {
     const { card, depth } = args;
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey: FC_MANDATES.expandCard,
         surfaceKey: "flashcards-expand-card",
         sourceFeature: "education-flashcards",

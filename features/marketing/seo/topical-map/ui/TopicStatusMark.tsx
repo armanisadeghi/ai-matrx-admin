@@ -49,6 +49,16 @@ const KNOWN = {
   },
 } as const;
 
+/** The word and the sentence a status mark carries (null for a live topic): for a peek that cannot draw the mark. */
+export function topicStatusWords(status: string): { label: string; title: string } | null {
+  if (status === "active") return null;
+  const known = KNOWN[status as keyof typeof KNOWN];
+  return {
+    label: known?.label ?? status,
+    title: known?.title ?? `Status "${status}" — this app does not know this state.`,
+  };
+}
+
 export function TopicStatusMark({ status, compact }: TopicStatusMarkProps) {
   if (status === "active") return null;
 

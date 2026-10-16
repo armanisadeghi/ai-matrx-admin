@@ -36,6 +36,8 @@ export interface AiWatchRecord {
   workflowNodeId: string | null;
   conversationId: string | null;
   workflowRunId: string | null;
+  /** Who started the call (`chat.user_request.origin_class`). */
+  originClass: string | null;
   inputTokens: number | null;
   outputTokens: number | null;
   cachedTokens: number | null;
@@ -65,10 +67,12 @@ export interface AiWatchRunSummary {
   nodeId: string | null;
   /** The workflow run this call belongs to (`chat.user_request.workflow_run_id`). */
   workflowRunId: string | null;
+  /** Who started the call (`chat.user_request.origin_class`) — names the group outside a run. */
+  originClass: string | null;
 }
 
 const USER_REQUEST_COLUMNS =
-  "id, status, source_app, source_feature, agent_id, agent_version_id, conversation_id, workflow_run_id, total_input_tokens, total_output_tokens, total_cached_tokens, total_cost, total_duration_ms, api_duration_ms, iterations, total_tool_calls, finish_reason, error, created_at, completed_at, metadata";
+  "id, status, source_app, source_feature, agent_id, agent_version_id, conversation_id, workflow_run_id, origin_class, total_input_tokens, total_output_tokens, total_cached_tokens, total_cost, total_duration_ms, api_duration_ms, iterations, total_tool_calls, finish_reason, error, created_at, completed_at, metadata";
 
 type Row = Record<string, unknown>;
 
@@ -107,6 +111,7 @@ function toRecord(row: Row, snapshots: AiWatchSnapshot[]): AiWatchRecord {
     workflowNodeId: str(metadata.workflow_node_id),
     conversationId: str(row.conversation_id),
     workflowRunId: str(row.workflow_run_id),
+    originClass: str(row.origin_class),
     inputTokens: num(row.total_input_tokens),
     outputTokens: num(row.total_output_tokens),
     cachedTokens: num(row.total_cached_tokens),
@@ -174,7 +179,7 @@ export async function fetchAiWatchRuns(scope: {
       let query = supabase
         .schema("chat")
         .from("user_request")
-        .select("id, status, source_feature, workflow_run_id, created_at, metadata")
+        .select("id, status, source_feature, workflow_run_id, origin_class, created_at, metadata")
         .is("deleted_at", null);
       query = runIds.length
         ? query.in("workflow_run_id", runIds)
@@ -206,6 +211,7 @@ export async function fetchAiWatchRuns(scope: {
       createdAt: String(row.created_at ?? ""),
       nodeId: str(metadata.workflow_node_id),
       workflowRunId: str(row.workflow_run_id),
+      originClass: str(row.origin_class),
     };
   });
 }

@@ -60,7 +60,7 @@ export const useAiChat = (): UseAiChat => {
       release();
       try {
         const result = await dispatch(
-          helpLive({
+          helpLive({ initiation: "user",
             front: flashcard.front,
             back: flashcard.back,
             cardId: flashcardId,

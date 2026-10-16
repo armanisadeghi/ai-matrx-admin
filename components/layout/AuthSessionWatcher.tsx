@@ -65,8 +65,6 @@ import { clearContext } from "@/lib/redux/slices/appContextSlice";
 import { scopesActions } from "@/features/scopes/redux/scopesSlice";
 import { contextValuesActions } from "@/features/scopes/redux/contextValuesSlice";
 import { clearUserAuth } from "@/lib/redux/slices/userAuthSlice";
-import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 import { mediaFilesClient } from "@/features/files/media-client/client";
 import {
@@ -229,35 +227,17 @@ export default function AuthSessionWatcher() {
   // session recovery); only a real identity change may redo sign-in work.
   const lastAuthUserIdRef = useRef<string | null | undefined>(undefined);
   const userAuthId = useAppSelector((state) => state.userAuth.id);
-  // App context hydrates after the first client render, and the file-session
-  // mint is organization-admitted: minting before it lands is refused at the
-  // server gate. The client waits for hydration on its own; re-running here
-  // when the selection arrives (or changes) covers a bootstrap slower than
-  // that wait and an in-session organization switch.
-  const organizationId = useAppSelector(selectOrganizationId);
-  const filesSessionLateRef = useRef(false);
+  // The durable-file-URL session cookie (POST /files/session on both hosts) is NOT minted at load.
+  // First-paint contract (V7): nothing at first paint needs it. A private media render that loads
+  // without the cookie recovers through `recoverLoadError` -> `session.ensure({ force: true })`
+  // (features/files/media-client/client.ts), which mints on that first failed render, behind the
+  // organization-admission transport. Only a REAL identity switch in a live tab re-mints at once
+  // (the auth-event branch below), because a cookie from the previous person must not outlive her.
   useEffect(() => {
     if (!bootedIdRef.current && userAuthId) {
       bootedIdRef.current = userAuthId;
     }
-    if (!userAuthId) return;
-    // Establish the durable-file-URL session cookie (POST /files/session on both hosts) once
-    // this tab has an authenticated identity. At app load it waits for the late idle tier —
-    // nothing at first paint needs it: a private media render that loads before it recovers
-    // through `recoverLoadError` → `ensureSession({ force: true })`. A later identity or
-    // organization change mints at once. Fire and forget.
-    if (filesSessionLateRef.current) {
-      void mediaFilesClient.ensureSession();
-      return;
-    }
-    const controller = new AbortController();
-    void whenLateIdle(undefined, controller.signal).then((ok) => {
-      if (!ok) return;
-      filesSessionLateRef.current = true;
-      void mediaFilesClient.ensureSession();
-    });
-    return () => controller.abort();
-  }, [userAuthId, organizationId]);
+  }, [userAuthId]);
 
   // Mirrors of the overlay state for callbacks that must not re-subscribe.
   const blockedRef = useRef<"expired" | "identity-changed" | null>(null);
@@ -430,7 +410,8 @@ export default function AuthSessionWatcher() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       const eventUserId = session?.user?.id ?? null;
-      const identityChanged = eventUserId !== lastAuthUserIdRef.current;
+      const previousUserId = lastAuthUserIdRef.current;
+      const identityChanged = eventUserId !== previousUserId;
       lastAuthUserIdRef.current = eventUserId;
       // A SIGNED_IN for the person already signed in is the tab-return echo,
       // not a sign-in: re-running sign-in work on it force-reloaded both kind
@@ -520,8 +501,12 @@ export default function AuthSessionWatcher() {
       }
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setSessionExpired(false);
-        // Fresh sign-in → establish the file-session cookie for this identity.
-        void mediaFilesClient.ensureSession({ force: event === "SIGNED_IN" && identityChanged });
+        // A different person signing in to a tab that already had an identity → replace the
+        // file-session cookie now. A first event in a fresh tab (undefined/null before) mints
+        // nothing: the first private render recovers through `recoverLoadError`.
+        if (event === "SIGNED_IN" && identityChanged && previousUserId) {
+          void mediaFilesClient.ensureSession({ force: true });
+        }
         const booted = bootedIdRef.current;
         const current = session?.user;
         if (booted && current && current.id !== booted) {

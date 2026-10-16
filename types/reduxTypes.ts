@@ -21,6 +21,8 @@ import type { UsageSnapshot } from "@/features/entitlements/usage-gate/usageStat
  * do NOT depend on the legacy entity system (~95% of the app). Contains no
  * `globalCache` and no entity slices.
  */
+import type { CoreBootSeed } from "@/lib/boot/coreBootSeedShape";
+
 export interface BaseReduxState {
   user: UserData;
   /**
@@ -35,6 +37,15 @@ export interface BaseReduxState {
    * rule 9). Absent → the boot effect reads it off the request path.
    */
   usageSnapshot?: UsageSnapshot | null;
+  /**
+   * THE CORE BOOT SEED (first-paint fetch contract): the account row, the
+   * organization memberships, their organization rows and member counts, read
+   * by the (core) layout in its one parallel round. Not a slice: `makeStore`
+   * hands it to the shared reads the boot consumers already use
+   * (`lib/boot/coreBootSeed.ts`), so their first boot read makes no request.
+   * Absent (a slow or failed read) → the boot reads run as before.
+   */
+  coreBootSeed?: CoreBootSeed | null;
   // Preferences are no longer fetched server-side; the
   // `userPreferencesPolicy` warm-cache cold-boot path (IDB → LS → remote.fetch)
   // owns hydration entirely on the client. `resolveStoreBootstrapState` falls

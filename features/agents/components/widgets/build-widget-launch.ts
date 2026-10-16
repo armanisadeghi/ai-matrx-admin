@@ -136,6 +136,7 @@ export function buildWidgetLaunchDraft(
   return {
     ok: true,
     draft: {
+      initiation: "user",
       sourceFeature: "agents-other",
       apiEndpointMode: state.apiEndpointMode,
       autoClearConversation: state.autoClearConversation,

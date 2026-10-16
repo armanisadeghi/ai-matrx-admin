@@ -229,7 +229,7 @@ function FaceRow({
       }
       const result = lanePayload?.result;
       if (result?.attached) {
-        (lane === "find" ? source : generate).commit();
+        (lane === "find" ? source : generate).commit({ initiation: "user" });
         toast.success(lane === "find" ? "Expert image attached" : "Verified image attached");
         onChanged();
       } else {

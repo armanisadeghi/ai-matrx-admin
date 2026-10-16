@@ -90,6 +90,7 @@ export function HeldRunView({ id }: { id: string }) {
     setStarting(true);
     const plan = replayLaunch(run, "current");
     const options = {
+      initiation: "user" as const,
       surfaceKey: `held-run:${run.id}`,
       sourceFeature: "billing" as const,
       config: { displayMode: "floating-chat" as const, autoRun: true, allowChat: true },

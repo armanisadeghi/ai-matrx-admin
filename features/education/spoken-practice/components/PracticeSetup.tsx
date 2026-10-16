@@ -174,7 +174,7 @@ export function PracticeSetup({
       await guard.guard(async () => {
         // Meter only a session that actually started; a failed start (bad
         // design, mic denied, save error) returns false and burns nothing.
-        if (await start(config)) await guard.commit();
+        if (await start(config)) await guard.commit({ initiation: "user" });
       });
     } finally {
       setBusy(false);

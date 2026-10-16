@@ -255,7 +255,7 @@ export function KindRequestDialog({
     // Fire-and-observe: we do NOT await the whole run and then reveal — the
     // running phase subscribes to the live stream and renders options as they
     // arrive. `run()` still resolves/rejects for error handling.
-    void run({
+    void run({ initiation: "user",
       ...(mandateKey !== undefined
         ? { mandateKey }
         : agentId !== undefined

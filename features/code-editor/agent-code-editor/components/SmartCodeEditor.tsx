@@ -402,7 +402,7 @@ export function SmartCodeEditor({
       const agent = agents.find((a) => a.mandateKey === mandateKey);
       if (!agent) return;
       try {
-        const result = await launchMandate(mandateKey, {
+        const result = await launchMandate(mandateKey, { initiation: "user",
           surfaceKey: SMART_CODE_EDITOR_SURFACE_KEY,
           sourceFeature: "code-editor",
           apiEndpointMode: "agent",

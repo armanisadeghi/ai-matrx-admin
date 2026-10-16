@@ -40,11 +40,13 @@ export interface UseSourceResolvers {
   /** Scrape a URL, then run the Web Content Extractor agent. Returns cleaned text. */
   resolveWebsite: (
     url: string,
+    initiation: "user" | "auto",
     onProgress?: (text: string) => void,
   ) => Promise<string>;
   /** Run the YouTube Transcription & Research agent on a YouTube URL. */
   resolveYouTube: (
     url: string,
+    initiation: "user" | "auto",
     onProgress?: (text: string) => void,
   ) => Promise<string>;
   /**
@@ -114,7 +116,7 @@ export function useSourceResolvers(): UseSourceResolvers {
   );
 
   const resolveWebsite = useCallback(
-    async (url: string, onProgress?: (text: string) => void) => {
+    async (url: string, initiation: "user" | "auto", onProgress?: (text: string) => void) => {
       const scraped = await scrapeUrl(url);
       const raw = scraped?.textContent?.trim();
       if (!raw) {
@@ -133,7 +135,7 @@ export function useSourceResolvers(): UseSourceResolvers {
       }
       const feed = progressFeed(onProgress);
       try {
-        const cleaned = await run<string>({
+        const cleaned = await run<string>({ initiation: initiation,
           mandateKey: WEB_EXTRACTOR_MANDATE_KEY,
           surfaceKey: "podcast-source:web-extractor",
           sourceFeature: "podcasts",
@@ -157,11 +159,11 @@ export function useSourceResolvers(): UseSourceResolvers {
   );
 
   const resolveYouTube = useCallback(
-    async (url: string, onProgress?: (text: string) => void) => {
+    async (url: string, initiation: "user" | "auto", onProgress?: (text: string) => void) => {
       const feed = progressFeed(onProgress);
       let text: string;
       try {
-        text = await run<string>({
+        text = await run<string>({ initiation: initiation,
           mandateKey: YOUTUBE_RESEARCH_MANDATE_KEY,
           surfaceKey: "podcast-source:youtube-research",
           sourceFeature: "podcasts",

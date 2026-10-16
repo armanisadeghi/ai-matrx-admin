@@ -21,6 +21,8 @@ import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAge
 import { KIND_KEY } from "@ai-matrx/content-ir";
 
 export interface KindRequestInput {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   /** Exact agent to run. Mutually exclusive with `mandateKey`. */
   agentId?: string;
   /**
@@ -94,7 +96,7 @@ export function useKindRequest(): UseKindRequest {
   async function run(input: KindRequestInput): Promise<KindRequestResult> {
     // The underlying thunk enforces exactly-one-of; this hook just forwards
     // whichever identity the caller declared.
-    return runHeadless<KindRequestResult>({
+    return runHeadless<KindRequestResult>({ initiation: input.initiation,
       ...(input.mandateKey !== undefined
         ? { mandateKey: input.mandateKey }
         : input.agentId !== undefined

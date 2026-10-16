@@ -246,7 +246,7 @@ function MakePracticeTestDialog({
             batchId: newBatchId(),
             targetKind: config.kind,
             surfaceKey: "education-class-test-practice-test",
-            ctx: {
+            ctx: { initiation: "user",
               dispatch,
               store,
               orgId,
@@ -317,7 +317,7 @@ function MakePracticeTestDialog({
             await recordLineageForSources(result, linkSources, orgId),
             () => recordLineageForSources(result, linkSources, orgId),
           );
-          await generation.commit();
+          await generation.commit({ initiation: "user" });
           recordToast.success(
             { type: "assessment", id: assessment.id, title: assessment.title },
             `Made ${assessment.title} with ${questionCount(made.questions.length)}.`,

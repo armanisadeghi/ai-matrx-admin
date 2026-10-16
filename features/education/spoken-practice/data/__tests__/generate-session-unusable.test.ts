@@ -26,7 +26,7 @@ describe("generateSession — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing prompts",
     });
     const onUnusable = jest.fn();
-    const out = await generateSession({
+    const out = await generateSession({ initiation: "user",
       mode: "recall" as never,
       focus: "topic",
       difficulty: "medium",

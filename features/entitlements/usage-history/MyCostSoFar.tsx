@@ -27,13 +27,14 @@ import {
   fetchMyCostRecords,
   periodFor,
   MY_COST_RECORDS_PAGE,
+  type MyCostBucket,
   type MyCostGroup,
   type MyCostGroupRow,
   type MyCostPeriod,
   type MyCostPeriodKey,
   type MyCostRecord,
 } from "./myCostService";
-import { NO_DRILL, chargeLink, costDisplay, dayWindow, drillInto, levelFor, type MyCostDrill, type MyCostTab } from "./myCostShaping";
+import { BUCKETS, NO_DRILL, chargeLink, costDisplay, dayWindow, drillInto, levelFor, originLabel, type MyCostDrill, type MyCostTab } from "./myCostShaping";
 
 const PERIODS: { key: Exclude<MyCostPeriodKey, "custom">; label: string }[] = [
   { key: "today", label: "Today" },
@@ -87,6 +88,8 @@ export function MyCostSoFar() {
   const [rows, setRows] = useState<MyCostGroupRow[] | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [retry, setRetry] = useState(0);
+  const [bucket, setBucket] = useState<MyCostBucket>("own");
+  const [origins, setOrigins] = useState<MyCostGroupRow[] | null>(null);
 
   const orgId = org?.id ?? null;
   const admin = (summary.all ?? []).some((x) => x.costUsd !== null);
@@ -96,19 +99,28 @@ export function MyCostSoFar() {
   useEffect(() => {
     let live = true;
     setError(null);
-    const scope = { organizationId: orgId };
+    const scope = { organizationId: orgId, bucket };
     const keys = ["all", "month", "today"] as const;
     const periods = { all: periodFor("all"), month: periodFor("month"), today: periodFor("today") };
     void Promise.all(keys.map((k) => fetchMyCostBreakdown(periods[k], "feature", scope)))
       .then((res) => live && setSummary({ all: res[0], month: res[1], today: res[2] }))
       .catch((e: unknown) => live && setError(e));
     return () => { live = false; };
-  }, [orgId, retry]);
+  }, [orgId, bucket, retry]);
+  // Who started the spend: every origin in the chosen period, so the three readings and the by-origin split agree.
   useEffect(() => {
     let live = true;
-    void fetchMyCostBreakdown(periodFor("all"), "organization").then((r) => live && setOrgOptions(r)).catch(() => undefined);
+    const window: MyCostPeriod = drill.day ? { key: "custom", ...dayWindow(drill.day) } : period;
+    void fetchMyCostBreakdown(window, "origin", { organizationId: orgId, feature: drill.feature?.key ?? null })
+      .then((r) => live && setOrigins(r))
+      .catch(() => live && setOrigins([]));
     return () => { live = false; };
-  }, [retry]);
+  }, [period, orgId, drill.day, drill.feature, retry]);
+  useEffect(() => {
+    let live = true;
+    void fetchMyCostBreakdown(periodFor("all"), "organization", { bucket }).then((r) => live && setOrgOptions(r)).catch(() => undefined);
+    return () => { live = false; };
+  }, [bucket, retry]);
 
   // Admin only: costs with no person on them, so the totals reconcile (the door refuses everyone else).
   useEffect(() => {
@@ -126,11 +138,11 @@ export function MyCostSoFar() {
   useEffect(() => {
     let live = true;
     setRows(null);
-    void fetchMyCostBreakdown(period, level, { organizationId: orgId, feature: drill.feature?.key ?? null })
+    void fetchMyCostBreakdown(period, level, { organizationId: orgId, feature: drill.feature?.key ?? null, bucket })
       .then((r) => live && setRows(r))
       .catch((e: unknown) => live && setError(e));
     return () => { live = false; };
-  }, [period, level, orgId, drill.feature, retry]);
+  }, [period, level, orgId, drill.feature, bucket, retry]);
 
   const total = useMemo(() => sumRows(rows), [rows]);
   const showUnattr = Boolean(admin && unattr && unattr.length > 0);
@@ -227,6 +239,23 @@ export function MyCostSoFar() {
         </Select>
       </div>
 
+      <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label="Who started it">
+        {BUCKETS.map((b) => {
+          const t = sumRows((origins ?? []).filter((o) => o.bucket === b.key));
+          return (
+            <Button key={b.key} variant={bucket === b.key ? "primary" : "outline"} onClick={() => { setBucket(b.key); setDrill(NO_DRILL); setUnattributed(false); }}>
+              {b.label}{origins ? <> <Money usd={t.usd} points={t.points} /></> : null}
+            </Button>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex min-h-6 flex-wrap items-center gap-x-3 gap-y-1 type-secondary" aria-label="By origin">
+        {(origins ?? []).filter((o) => o.bucket === bucket && (bucket !== "own" || o.key === "human")).map((o) => (
+          <span key={o.key}>{originLabel(o.key)} · <Money usd={o.costUsd} points={o.points} /></span>
+        ))}
+        {origins && !origins.some((o) => o.bucket === bucket) ? <span>Nothing in this period.</span> : null}
+      </div>
+
       <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label="Break down by">
         {TABS.map((g) => (
           <Button key={g.key} variant={tab === g.key ? "primary" : "outline"} onClick={() => { setTab(g.key); setDrill(NO_DRILL); }}>{g.label}</Button>
@@ -279,12 +308,12 @@ export function MyCostSoFar() {
           )}
         </div>
       ) : null}
-      <MyCostRecords period={period} orgId={orgId} drill={drill} admin={admin} unattributed={unattributedOn} knownTotal={knownTotal} />
+      <MyCostRecords period={period} orgId={orgId} drill={drill} admin={admin} unattributed={unattributedOn} knownTotal={knownTotal} bucket={bucket} />
     </SettingsSection>
   );
 }
 
-function MyCostRecords({ period, orgId, drill, admin, unattributed, knownTotal }: { period: MyCostPeriod; orgId: string | null; drill: MyCostDrill; admin: boolean; unattributed: boolean; knownTotal: number | null }) {
+function MyCostRecords({ period, orgId, drill, admin, unattributed, knownTotal, bucket }: { period: MyCostPeriod; orgId: string | null; drill: MyCostDrill; admin: boolean; unattributed: boolean; knownTotal: number | null; bucket: MyCostBucket }) {
   const [records, setRecords] = useState<MyCostRecord[]>([]);
   const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -304,6 +333,7 @@ function MyCostRecords({ period, orgId, drill, admin, unattributed, knownTotal }
         activity: drill.activity?.key ?? null,
         organizationId: unattributed ? null : orgId,
         scope: unattributed ? "unattributed" : "mine",
+        bucket,
         before: before ? { at: before.createdAt, id: before.id } : null,
       });
       setRecords((prev) => (before ? [...prev, ...page] : page));
@@ -313,13 +343,14 @@ function MyCostRecords({ period, orgId, drill, admin, unattributed, knownTotal }
     } finally {
       setLoading(false);
     }
-  }, [effective, drill.feature, drill.activity, orgId, unattributed]);
+  }, [effective, drill.feature, drill.activity, orgId, unattributed, bucket]);
 
   useEffect(() => { void load(null); }, [load]);
 
   const columns = useMemo<MatrxColumnDef<MyCostRecord>[]>(() => [
     { id: "at", header: "When", accessorFn: (r) => r.createdAt, filter: "date", width: 170, cell: (r) => when(r.createdAt) },
     { id: "activity", header: "Activity", accessorFn: (r) => r.featureLabel, filter: "select", width: 150, mobileHidden: true },
+    { id: "origin", header: "Started by", accessorFn: (r) => originLabel(r.origin), filter: "select", width: 130, mobileHidden: true },
     { id: "detail", header: "What it was for", accessorFn: (r) => r.detail, width: 200 },
     { id: "org", header: "Organization", accessorFn: (r) => r.organizationName ?? "—", filter: "select", width: 170, mobileHidden: true },
     { id: "cost", header: admin ? "Cost" : "Points used", accessorFn: (r) => r.costUsd ?? r.points, filter: "number", width: 190, align: "right", cell: (r) => <Money usd={r.costUsd} points={r.points} /> },
@@ -328,9 +359,10 @@ function MyCostRecords({ period, orgId, drill, admin, unattributed, knownTotal }
   ], [admin]);
 
   const title = unattributed ? "Unattributed charges (no person on them)" : drill.activity ? `Charges: ${drill.activity.label}` : drill.feature ? `Charges: ${drill.feature.label}` : drill.day ? `Charges on ${drill.day}` : "Every charge, newest first";
+  const bucketTitle = BUCKETS.find((b) => b.key === bucket)?.label ?? "";
   return (
     <div className="mt-4">
-      <div className="mb-1 type-secondary font-medium text-muted-foreground">{title}</div>
+      <div className="mb-1 type-secondary font-medium text-muted-foreground">{title} · {bucketTitle}</div>
       {error ? (
         <p className="flex items-center gap-1 type-body text-muted-foreground">We couldn’t load the charges.<ErrorAlchemyMenu error={error} operation="load my charges" /></p>
       ) : (

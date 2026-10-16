@@ -31,6 +31,8 @@ const EXTRACTION_TIMEOUT_MS = 90_000;
 const POLL_INTERVAL_MS = 250;
 
 export interface VerifyAgainstSourceArgs {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   front: string;
   back: string;
   /** The cited passage(s) to verify against — usually the citations' excerpts. */
@@ -120,7 +122,7 @@ export function useVerifyAgainstSource(): UseVerifyAgainstSource {
       return unverifiable;
     }
     try {
-      const verdict = await run<VerifyResult | null>({
+      const verdict = await run<VerifyResult | null>({ initiation: args.initiation,
         mandateKey: FC_MANDATES.verifyAgainstSource,
         label: "Verifying against the source",
         surfaceKey: "education-trust-verify",

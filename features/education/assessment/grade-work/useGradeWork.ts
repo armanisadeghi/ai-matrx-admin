@@ -89,7 +89,7 @@ export function useGradeWork(
       // Float FIRST, before the launch — the read-and-grade is the whole wait.
       const live = liveWindow.start("Reading your work");
       const graded = await dispatch(
-        gradeAnswerImage({
+        gradeAnswerImage({ initiation: "user",
           onConversationCreated: live.bind,
           question: input.problem,
           expected: input.expected.trim() || NO_MODEL_ANSWER,

@@ -85,7 +85,7 @@ export function useCloudComputer() {
     startedAt.current = Date.now();
     setPressed(true);
     try {
-      setMachine(await wakeCloudComputer());
+      setMachine(await wakeCloudComputer("user"));
     } catch (e) {
       setPressed(false);
       setError(plainError(e));

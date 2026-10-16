@@ -73,7 +73,9 @@ import dynamic from "next/dynamic";
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { MeetHostContext } from "@ai-matrx/meet/host-slot";
 import type { MeetDiagnostic, MeetHost as MeetHostValue } from "@ai-matrx/meet/react";
-import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
+import { usePathname } from "next/navigation";
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useMeetHostDemanded } from "./meetHostDemand";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import {
@@ -141,13 +143,24 @@ const MeetHostCore = dynamic(() => import("./MeetHostCore"), { ssr: false, loadi
 export function MeetHost({ children }: MeetHostProps) {
   const identity = useMeetMemberIdentity();
   const organizationId = useAppSelector(selectActiveOrganizationId);
-  const idle = useIdleReady();
+  // FIRST-PAINT CONTRACT (V2). An incoming call is SERVER-INITIATED: nothing the person does can
+  // engage it, so its listener (`meet_pending_call_invites` + the call-invite channel, inside
+  // MeetHostCore) cannot wait for an engagement and must exist for a call to ring. TRADE-OFF
+  // CHOSEN: attach it in the LATE tier (after first paint, the idle flush, and a few more seconds)
+  // instead of at idle, accepting that a call placed in the first seconds of a page load is
+  // caught by the pending-invites read when the listener attaches (that read is what finds an
+  // invite sent before the channel was up). It loads at once when something DOES engage: a /meet
+  // route, or a DM thread opened (its call chips need the runtime).
+  const lateIdle = useLateIdleReady();
+  const demanded = useMeetHostDemanded();
+  const onMeetRoute = (usePathname() ?? "").startsWith("/meet");
+  const ready = lateIdle || demanded || onMeetRoute;
   const [host, setHost] = useState<MeetHostValue | null>(null);
 
   return (
     <MeetHostContext.Provider value={host}>
       {/* A signed-out visitor (no organization) never loads the engine. */}
-      {idle && organizationId ? <MeetHostCore identity={identity} organizationId={organizationId} onHost={setHost} /> : null}
+      {ready && organizationId ? <MeetHostCore identity={identity} organizationId={organizationId} onHost={setHost} /> : null}
       {children}
     </MeetHostContext.Provider>
   );

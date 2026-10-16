@@ -1070,7 +1070,10 @@ export function useImageStudio(
         // An explicit surfaceName suppresses the launch thunk's provider
         // auto-adoption, so the live scope must travel WITH the name — a
         // name-only launch would bind against baseline values only.
+        // Declared by the launch site; spread so it type-checks against packages with and without the field.
+        const launchInitiation = { initiation: "auto" as const };
         const launchResult = await trigger(DESCRIBE.id, {
+          ...launchInitiation,
           sourceFeature: "image-studio",
           // `background` renders no interface, so autoRun has nothing to
           // control here — it used to say `false`, which meant the thunk

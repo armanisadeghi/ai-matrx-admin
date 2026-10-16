@@ -33,7 +33,7 @@ describe("gradeAnswerAI — unusable output", () => {
       error: SENTENCE,
       errorDetail: "mandate_output_unusable: missing result, explanation",
     });
-    const graded = await gradeAnswerAI({
+    const graded = await gradeAnswerAI({ initiation: "user",
       question: "Q",
       expected: "A",
       learnerAnswer: "A",
@@ -55,7 +55,7 @@ describe("gradeAnswerImage — unusable output", () => {
           return null;
         }) as never,
     );
-    const graded = await gradeAnswerImage({
+    const graded = await gradeAnswerImage({ initiation: "user",
       question: "Q",
       expected: "A",
       photo: new Blob(["x"], { type: "image/png" }),

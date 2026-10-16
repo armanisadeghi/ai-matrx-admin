@@ -14,14 +14,10 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { useWarmup } from "@ai-matrx/agents/react";
-import { useIdleTask } from "@ai-matrx/kit/idle-scheduler";
-import { whenPrimaryContentShown } from "@/lib/boot/primaryContent";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
-import OverlayController from "@/features/overlays/OverlayController";
-import { PersonPeekHost } from "@/features/data-tables/records-ui-host/PersonPeekHost";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import PersonTimeZoneCapture from "@/components/layout/PersonTimeZoneCapture";
 import VendorNameRuntimeGuard from "@/components/dev/VendorNameRuntimeGuard";
@@ -37,10 +33,9 @@ import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProd
 import AiTestModeDock from "@/features/ai-test-mode/AiTestModeDock";
 import SupportSessionPill from "@/features/admin/users/support-sessions/SupportSessionPill";
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
-import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
-import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
-import { registerBlobCacheServiceWorker } from "@/features/files/cache/register-service-worker";
+import { registerBlobCacheOnFirstFileFetch } from "@/features/files/cache/registerOnFirstFileFetch";
 import { resolveBaseUrl } from "@/lib/python-client";
+import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { forgetEntitlementSnapshot } from "@/features/entitlements/service";
 import { UsageGateBridge } from "@/features/entitlements/usage-gate/UsageGateBridge";
 import {
@@ -64,12 +59,16 @@ export default function DeferredSingletonCore() {
   // so it never re-warms (the same before/after rule as
   // features/mandates/redux/org-switch-cache-middleware.ts). The primitive
   // dedupes per person+org for 60s and is silent when the server says no.
+  // ENGAGEMENT, NOT IDLE (owner rule, 2026-10-16): the first warm waits for the page's first real
+  // engagement (pointer/key press or composer focus — lib/boot/firstEngagement.ts), once per page
+  // load; an org change after that re-warms.
+  const engaged = useHasEngaged();
   const warmup = useWarmup();
   const warmedFor = useRef<{ userId: string; organizationId: string } | null>(
     null,
   );
   useEffect(() => {
-    if (!warmup || !user?.id || !organizationId) return;
+    if (!engaged || !warmup || !user?.id || !organizationId) return;
     const before = warmedFor.current;
     if (before?.userId === user.id && before.organizationId === organizationId)
       return;
@@ -82,52 +81,30 @@ export default function DeferredSingletonCore() {
     } else {
       warmup.warm([{ key: "core" }], "session");
     }
-  }, [warmup, user?.id, organizationId]);
+  }, [engaged, warmup, user?.id, organizationId]);
 
   // NOTE: global error capture + persistence install live in the WRAPPER
   // (DeferredSingletonWrapper.tsx), not here — they must be running during
   // the boot window, before this deferred core has loaded.
 
-  // Pre-warm the scope tree (features/scopes) on idle. This is the ONLY
-  // boot-time fetch in the scope/context system. `ensureScopeTree` is
-  // idempotent — status === "ready" short-circuits and in-flight is
-  // deduped inside the thunk.
-  // THE PAGED TREE (lane SCOPES-TREE-PAGED): the skeleton first (organizations, projects, scope
-  // types — what every first paint draws), then the whole tree at idle for the readers that still
-  // read every scope. Read switch OFF: the skeleton IS the whole tree and the second task is a no-op.
-  // Both wait for the page's own rows (`lib/boot/primaryContent`, lane PAGE-BUNDLE-2): the tree's
-  // `custom.context_tree` is ~1.2 s of database work that competed with a table page's first page.
-  useIdleTask("ensure-scope-tree", 1, async () => {
-    if (!user?.id) return;
-    await whenPrimaryContentShown();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await dispatch(ensureScopeSkeleton() as any);
-  });
-  useIdleTask("ensure-scope-tree-whole", 5, async () => {
-    if (!user?.id) return;
-    await whenPrimaryContentShown();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dispatch(ensureScopeTree() as any);
-  });
+  // The scope tree is NOT loaded here: it loads on its first read anywhere
+  // (features/scopes/redux/scopeTreeDemand.ts — the store-level demand), never at idle.
 
-  // Register the blob-cache Service Worker — Layer 2½ of the 3-tier byte
-  // cache. Intercepts cloud-files byte URLs (and registered CDN /
-  // share-link URLs) and serves them from IndexedDB. Disabled by default
-  // in dev (set localStorage.matrx_dev_sw=1 to opt-in for local testing).
-  // See features/files/cache/service-worker/src/sw.ts for the SW body.
-  useIdleTask("register-blob-cache-sw", 5, async () => {
+  // The blob-cache Service Worker — Layer 2½ of the 3-tier byte cache — registers on the page's
+  // FIRST cloud-file byte fetch, never at idle (features/files/cache/registerOnFirstFileFetch.ts).
+  // Disabled by default in dev (localStorage.matrx_dev_sw=1 opts in); see
+  // features/files/cache/service-worker/src/sw.ts for the SW body.
+  useEffect(() => {
     if (!user?.id) return;
+    let backendUrl: string;
     try {
-      const backendUrl = resolveBaseUrl();
-      void registerBlobCacheServiceWorker({
-        backendUrl,
-        userId: user.id,
-      });
+      backendUrl = resolveBaseUrl();
     } catch {
-      // No backend URL configured (rare boot order) — skip silently;
-      // the cache still works in-memory + IDB tiers.
+      // No backend URL configured (rare boot order) — the in-memory + IDB tiers still work.
+      return;
     }
-  });
+    return registerBlobCacheOnFirstFileFetch({ backendUrl, userId: user.id });
+  }, [user?.id]);
 
   // Entitlement state is DEMAND-DRIVEN: nothing reads `billing.entitlement_snapshot` at boot. The
   // first mounted consumer (useEntitlement / EducationPricing → useEnsureEntitlementSnapshot)
@@ -150,9 +127,8 @@ export default function DeferredSingletonCore() {
   return (
     <>
       <PersistentDOMConnector />
-      <OverlayController />
-      {/* A person a table names opens in place (records-ui `openPerson`). */}
-      <PersonPeekHost />
+      {/* OverlayController + PersonPeekHost are NOT here: they are the overlay world
+          (app/DeferredOverlayWorld.tsx), loaded by the wrapper on the first open. */}
       {/* G1: files any `__kind` drawn as raw text (never-raw law). */}
       <KindLeakSentinel />
       {/* Dev only: a mounted surface with no ui.ui_surface row screams in the console. */}

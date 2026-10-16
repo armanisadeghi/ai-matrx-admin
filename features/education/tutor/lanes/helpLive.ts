@@ -29,6 +29,8 @@ import {
 } from "@/features/education/trust/types";
 
 export interface HelpLiveContext {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   front: string;
   back: string;
   /** The learner's question; defaults to a generic "I'm confused" prompt. */
@@ -143,7 +145,7 @@ export function helpLive(ctx: HelpLiveContext) {
     const mandateKey = ctx.mandateKey ?? FC_MANDATES.helpLive;
 
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: ctx.initiation,
         mandateKey,
         surfaceKey: "flashcards-help-live",
         // NOT ephemeral (see /Users/armanisadeghi/code/common-docs/systems/architecture/execution-runtime/EPHEMERAL-RUNS.md); kept out of

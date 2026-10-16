@@ -156,7 +156,7 @@ export function gradeSpokenAnswer(args: GradeSpokenAnswerArgs) {
 
       let unusableSentence: string | null = null;
       const grade = await dispatch(
-        runSpokenGrader({
+        runSpokenGrader({ initiation: "user",
           mandateKey: FC_MANDATES.gradeSpoken,
           front: args.front,
           back: args.back,

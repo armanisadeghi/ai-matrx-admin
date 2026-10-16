@@ -89,7 +89,7 @@ export async function askTableByMandate(args: {
 }): Promise<TableAskOutcome> {
   const { launchMandate, organizationId, ask, readCostUsd, pointsRate, zone, now } = args;
   try {
-    const launched = await launchMandate(TABLE_ASK_MANDATE_KEY, {
+    const launched = await launchMandate(TABLE_ASK_MANDATE_KEY, { initiation: "user",
       surfaceKey: `data:${ask.tableId}`,
       ...(organizationId ? { organizationId } : {}),
       sourceFeature: "udt",

@@ -31,13 +31,10 @@ import {
   fetchAckedSuggestionIds,
 } from "@/features/kg-suggestions/service/kgSuggestionAckService";
 import { isLowConfidence } from "@/features/kg-suggestions/constants";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { shellSectionFailed, useShellCounts } from "@/lib/boot/shellCounts";
 
 const TOAST_ID = "kg-new-suggestion";
-// Let the user land and orient before interrupting. Nothing is READ before this either: the
-// suggestion list and the ack set are fetched when the delay (counted from the page's idle flush)
-// ends, and the toast shows as soon as they arrive — never a startup read for a toast 9 s away.
-const SHOW_DELAY_MS = 9000;
+// Nothing is READ for this toast until the shell's count says a suggestion is pending.
 
 // The three reads (two suggestion tables + the ack set) run at most once per 30 minutes per
 // browser. The stamp is localStorage; where storage is unavailable, once per tab (module memory).
@@ -74,7 +71,11 @@ function releaseCheckSlot(userId: string): void {
 export default function KgNewSuggestionNotifier() {
   const user = useAppSelector(selectUser);
   const userId = user?.id ?? null;
-  const lateReady = useLateIdleReady(SHOW_DELAY_MS);
+  // The shell's ONE count read (after the page settles) says whether any suggestion is pending; the
+  // three reads below (both ledgers + the ack set) run only then, at most once per 30 minutes.
+  const shell = useShellCounts();
+  // This section failing runs the check anyway (the old read); the other sections never do.
+  const lateReady = shellSectionFailed(shell, "kgPending") || (shell.data?.kgPending ?? 0) > 0;
   // `due` = the late tier opened AND this browser has not looked in the last 30 minutes.
   const [due, setDue] = useState(false);
   const claimedRef = useRef<string | null>(null);

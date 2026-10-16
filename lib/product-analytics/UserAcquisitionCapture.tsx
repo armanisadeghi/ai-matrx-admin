@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { whenPageIdle } from "@ai-matrx/kit/idle-scheduler";
+import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { getFingerprint } from "@/lib/services/fingerprint-service";
 import {
   ACQUISITION_STORAGE_KEY,
@@ -23,11 +23,13 @@ const firstTouchKey = defineClientKey({
   legacyKey: ACQUISITION_STORAGE_KEY,
 });
 
+// ONCE PER BROWSER: it is the FIRST touch. A visitor filed once is never re-filed from this browser
+// (localStorage, not the old per-tab sessionStorage — every new tab used to POST again).
 const enrichedVisitors = defineClientKeyFamily({
-  id: "acquisition.first-touch-filed",
-  area: "session",
+  id: "acquisition.first-touch-filed.browser",
+  area: "local",
   kind: "handoff",
-  reason: "This tab already filed the first touch for a visitor; a repeat is harmless but wasted.",
+  reason: "This browser already filed the first touch for a visitor; a repeat is harmless but wasted.",
 });
 
 function readStored(): FirstTouchPayload | null {
@@ -116,11 +118,14 @@ export function UserAcquisitionCapture() {
     let cancelled = false;
     const retryDelaysMs = [750, 2_500];
     // The landing URL (its UTM parameters) and referrer are read NOW; the fingerprint and the
-    // first-touch POST wait for the page's idle flush — analytics never competes with paint.
+    // first-touch POST wait for the page to fully settle (late tier) — analytics never competes
+    // with paint, and a visitor this browser already filed costs nothing at all.
     const landing: LandingSnapshot = { href: window.location.href, referrer: document.referrer };
     const controller = new AbortController();
     void (async () => {
-      if (!(await whenPageIdle(controller.signal)) || cancelled) return;
+      const cookieVisitor = acquisitionVisitorId();
+      if (cookieVisitor && enrichedVisitors.get(cookieVisitor)) return;
+      if (!(await whenLateIdle(undefined, controller.signal)) || cancelled) return;
       const guestFingerprint = await getFingerprint();
       if (cancelled) return;
       const visitorId = acquisitionVisitorId() ?? guestFingerprint;

@@ -191,7 +191,7 @@ export function EnhanceSetDialog({
     };
     if (mode === "enrich") {
       const details = await dispatch(
-        enrichCard({ card, depth, onConversationCreated, onUnusable }),
+        enrichCard({ initiation: "user", card, depth, onConversationCreated, onUnusable }),
       );
       if (!details) {
         toast.error(
@@ -216,10 +216,10 @@ export function EnhanceSetDialog({
       // usage regardless of whether the user later saves or discards the
       // preview; the AI call already happened. Failed/empty branches above
       // return first, so a failed generation never burns quota.
-      await enrichGuard.commit();
+      await enrichGuard.commit({ initiation: "user" });
     } else {
       const subCards = await dispatch(
-        expandCard({ card, depth, onConversationCreated, onUnusable }),
+        expandCard({ initiation: "user", card, depth, onConversationCreated, onUnusable }),
       );
       if (!subCards) {
         toast.error(
@@ -241,7 +241,7 @@ export function EnhanceSetDialog({
         preview: { mode: "deepen", subCards },
       });
       // Same one-model-call-per-card metering as the enrich branch above.
-      await enrichGuard.commit();
+      await enrichGuard.commit({ initiation: "user" });
     }
   };
 

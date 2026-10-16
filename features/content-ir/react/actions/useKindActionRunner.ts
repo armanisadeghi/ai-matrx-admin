@@ -172,7 +172,10 @@ export function useKindActionRunner(
 
       try {
         const openShortcut = async (request: KindShortcutRequest) => {
+          // Declared by the launch site; spread so it type-checks against packages with and without the field.
+          const launchInitiation = { initiation: "user" as const };
           const launched = await triggerShortcut(dispatch, {
+            ...launchInitiation,
             shortcutId: request.shortcutId,
             scope: request.scope,
             surfaceKey: `kind-action:run_shortcut:${request.shortcutId}`,

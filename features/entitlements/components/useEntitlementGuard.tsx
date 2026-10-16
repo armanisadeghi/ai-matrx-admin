@@ -90,7 +90,7 @@ export function useEntitlementGuard(
 
   const commit = useCallback<EntitlementCommit>(
     (opts) => {
-      const checkId = opts?.checkId ?? lastCheckIdRef.current;
+      const checkId = opts.checkId ?? lastCheckIdRef.current;
       lastCheckIdRef.current = null; // one check → one consume
       return consume({ ...opts, checkId });
     },

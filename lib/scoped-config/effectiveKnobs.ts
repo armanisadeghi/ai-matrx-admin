@@ -49,6 +49,7 @@ import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegis
 import { getWebDeviceId } from "./deviceId";
 import { defineClientKey } from "@/lib/sync/client-storage";
 import { noteKnobReadOnce } from "@/lib/config-attestation/readLedger";
+import { drainBootSeeds, STREAMED_KNOB_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
 
 const TTL_MS = 60_000;
 
@@ -212,6 +213,7 @@ export function peekEffectiveKnob(
   ref: KnobRef,
   scopes?: readonly KnobScope[],
 ): unknown {
+  drainBootSeeds();
   const snapshot = snapshots.get(snapshotAddr(organizationId ?? null, userId ?? null, scopes));
   if (!snapshot) return undefined;
   const value = snapshot.resolved[fullKeyOf(ref)];
@@ -297,6 +299,12 @@ let defaultsInFlight: Promise<DefaultsEntry> | null = null;
 
 /** What the last answer for an address was, kept ACROSS invalidations: the etag is a content hash, so a stale one is merely a miss. */
 const lastAnswers = new Map<string, { etag: string; resolved: Record<string, unknown> }>();
+
+/** What each held etag was asked with, so the catch-up below can ask the same question again. */
+const heldAsks = new Map<
+  string,
+  { organizationId: string | null; userId: string | null; scopes: readonly KnobScope[] | undefined; deviceId: string | null }
+>();
 
 function readStoredDefaults(): DefaultsEntry | null {
   const parsed = storedDefaultsKey.getJSON<DefaultsEntry>();
@@ -420,7 +428,10 @@ async function fetchKnobSnapshot(
   }
   const defaults = await (defaultsEarly ?? ensureDefaults(rpc, payload.defaults_version ?? null));
   const resolved = { ...defaults.values, ...(payload.overrides ?? {}) };
-  if (payload.etag) lastAnswers.set(addr, { etag: payload.etag, resolved });
+  if (payload.etag) {
+    lastAnswers.set(addr, { etag: payload.etag, resolved });
+    heldAsks.set(addr, { organizationId, userId, scopes, deviceId });
+  }
   return { resolved, stamp: payload.etag ?? null, at: Date.now() };
 }
 
@@ -434,6 +445,7 @@ export function ensureKnobSnapshot(
   userId: string | null,
   scopes?: readonly KnobScope[],
 ): Promise<Snapshot> {
+  drainBootSeeds(); // a streamed boot snapshot that has arrived answers first
   const id = snapshotAddr(organizationId, userId, scopes);
   const hit = snapshots.get(id);
   if (hit && Date.now() - hit.at < TTL_MS) return Promise.resolve(hit);
@@ -506,6 +518,70 @@ export function ensureKnobSnapshot(
   return run;
 }
 
+/** What `platform.knob_snapshot_delta` answered, read by the (core) layout for this page load. */
+export interface KnobSnapshotSeed {
+  organizationId: string | null;
+  userId: string;
+  /** The device rung the server addressed (this browser's id, from its cookie mirror). */
+  deviceId: string | null;
+  payload: { etag?: string; defaults_version?: string; overrides?: Record<string, unknown> };
+}
+
+/**
+ * 🚨 THE BOOT SEED (first-paint fetch contract G2). The (core) layout already asked
+ * `knob_snapshot_delta` for the organization the load ladder predicts; when this tab lands on that
+ * same (organization, person, device) address the answer is installed with no request. Any other
+ * address — another organization chosen by this tab or a link, another device id — is not touched,
+ * and its readers fetch as before. A snapshot or fetch already present wins; an invalidation since
+ * (a knob write, the server-bus `settings_changed` directive) drops it exactly like a fetched one.
+ * The platform values come from this browser's stored copy when its version matches; otherwise the
+ * one `knob_defaults` read runs (a cold browser), and `knob_snapshot_delta` still does not.
+ */
+export function primeKnobSnapshot(seed: KnobSnapshotSeed): void {
+  if (typeof window === "undefined") return;
+  if ((seed.deviceId ?? null) !== (getWebDeviceId() ?? null)) return;
+  const id = snapshotAddr(seed.organizationId, seed.userId, undefined);
+  if (snapshots.has(id) || inFlight.has(id)) return;
+  const askedAt = generation;
+  const build = (defaults: DefaultsEntry): Snapshot => {
+    const resolved = { ...defaults.values, ...(seed.payload.overrides ?? {}) };
+    if (seed.payload.etag) {
+      lastAnswers.set(id, { etag: seed.payload.etag, resolved });
+      heldAsks.set(id, { organizationId: seed.organizationId, userId: seed.userId, scopes: undefined, deviceId: seed.deviceId });
+    }
+    return { resolved, stamp: seed.payload.etag ?? null, at: Date.now() };
+  };
+  const want = seed.payload.defaults_version ?? null;
+  const warm = defaultsCache ?? readStoredDefaults();
+  if (warm && (want === null || warm.version === want)) {
+    defaultsCache = warm;
+    snapshots.set(id, build(warm));
+    // Deferred: a prime can run inside a read that a render started; readers re-render after it.
+    queueMicrotask(notify);
+    return;
+  }
+  const mine: { promise?: Promise<Snapshot> } = {};
+  const run = ensureDefaults(platformRpc(createClient()), want).then(
+    (defaults) => {
+      const snapshot = build(defaults);
+      if (generation === askedAt) {
+        snapshots.set(id, snapshot);
+        notify();
+      }
+      return snapshot;
+    },
+    (error: unknown) => {
+      throw error instanceof Error ? error : new Error(String(error));
+    },
+  );
+  const retire = () => {
+    if (inFlight.get(id) === mine.promise) inFlight.delete(id);
+  };
+  mine.promise = run;
+  run.then(retire, retire);
+  inFlight.set(id, run);
+}
+
 // Opt in to the platform client-directive channel (Lane E, 2026-09-11): an
 // `instant` key changed somewhere — another tab, another admin, the server —
 // so forget it here and let every mounted reader re-resolve. Module-level
@@ -514,6 +590,41 @@ if (typeof window !== "undefined") {
   registerDirectiveHandler("settings_changed", (payload) => {
     invalidateEffectiveKnob(`${payload.feature}.${payload.key}`);
   });
+}
+
+/**
+ * CATCH-UP FOR A DIRECTIVE THAT FIRED BEFORE THE ROOMS JOINED. The server-bus rooms join after late
+ * idle, so a `settings_changed` sent in the first seconds is lost. The page's own boot read holds two
+ * versions — the platform defaults' content version and each snapshot's etag — and both questions are
+ * conditional: "unchanged" answers carry no payload. Returns true (after dropping the held snapshots)
+ * only when one of them moved. No held version = nothing to compare = no read at all.
+ */
+export async function catchUpKnobsSinceBoot(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const defaults = defaultsCache ?? readStoredDefaults();
+  if (!defaults && heldAsks.size === 0) return false;
+  const rpc = platformRpc(createClient());
+  let moved = false;
+  if (defaults?.version) {
+    const { data, error } = await rpc("knob_defaults", { p_known_version: defaults.version });
+    if (!error && (data as { unchanged?: boolean } | null)?.unchanged !== true) moved = true;
+  }
+  for (const [addr, ask] of heldAsks) {
+    if (moved) break;
+    const prior = lastAnswers.get(addr);
+    if (!prior) continue;
+    const { data, error } = await rpc("knob_snapshot_delta", {
+      p_organization_id: ask.organizationId ?? null,
+      p_user_id: ask.userId ?? undefined,
+      p_scopes: buildScopes(ask.deviceId, ask.scopes),
+      p_etag: prior.etag,
+    });
+    if (error) continue;
+    const answer = (data ?? {}) as { unchanged?: boolean; etag?: string };
+    if (answer.unchanged !== true || answer.etag !== prior.etag) moved = true;
+  }
+  if (moved) invalidateEffectiveKnob();
+  return moved;
 }
 
 /**
@@ -530,6 +641,8 @@ export function invalidateEffectiveKnob(_ref?: KnobRef): void {
   // in-flight entries as well means a reader arriving after this point starts
   // its own fetch rather than joining one that began before the write.
   generation += 1;
+  // A streamed boot seed that has not drained yet predates this write: it is never installed.
+  if (typeof window !== "undefined") delete (window as unknown as Record<string, unknown>)[STREAMED_KNOB_SEED_GLOBAL];
   snapshots.clear();
   inFlight.clear();
   notify();

@@ -485,7 +485,7 @@ export function AssessmentEdit({ assessmentId }: { assessmentId: string }) {
                     );
                     let unusableSentence: string | null = null;
                     const deeper = await dispatch(
-                      deepenItem({
+                      deepenItem({ initiation: "user",
                         item,
                         examType: assessment.exam_type,
                         onConversationCreated: live.bind,

@@ -31,9 +31,14 @@ const waitFor = async (check: () => void) => {
 };
 
 let minimum: string | undefined;
+const readAppConfigKey = jest.fn(async () => ({ value: minimum, found: true, error: null }));
 jest.mock("@/lib/config-attestation/appConfig", () => ({
-  readAppConfigKey: async () => ({ value: minimum, found: true, error: null }),
+  readAppConfigKey: () => readAppConfigKey(),
 }));
+// The page "settles" when the test says so (V22: nothing is read on mount).
+let settle: (ok: boolean) => void = () => undefined;
+let settled: Promise<boolean> = Promise.resolve(true);
+jest.mock("@/lib/boot/lateIdle", () => ({ whenLateIdle: () => settled }));
 jest.mock("@/lib/toast", () => ({ toast: jest.fn() }));
 jest.mock("@/lib/diagnostics/hardNavigationTrace", () => ({ noteHardNavigationReason: jest.fn() }));
 
@@ -42,6 +47,8 @@ function setVersionMeta(v: string | null) {
 }
 
 beforeEach(() => {
+  settled = Promise.resolve(true);
+  readAppConfigKey.mockClear();
   __resetConfigReadLedger();
   jest.spyOn(console, "error").mockImplementation(() => undefined);
 });
@@ -71,4 +78,21 @@ test("both present: nothing counted", async () => {
   await mount();
   await new Promise((r) => setTimeout(r, 20));
   expect(configAttestationCounters.version_check_unusable).toBe(0);
+});
+
+test("V22: nothing is read on mount — the version reads wait for the page to settle", async () => {
+  settled = new Promise<boolean>((r) => (settle = r));
+  const fetchSpy = jest.fn();
+  (globalThis as { fetch?: unknown }).fetch = fetchSpy;
+  minimum = "0.4.0";
+  setVersionMeta("0.4.1");
+  const root = createRoot(document.createElement("div"));
+  await act(async () => root.render(<NewVersionWatcher deploymentId="dpl_1" />));
+  window.dispatchEvent(new Event("focus"));
+  await new Promise((r) => setTimeout(r, 20));
+  expect(readAppConfigKey).not.toHaveBeenCalled();
+  expect(fetchSpy).not.toHaveBeenCalled();
+  await act(async () => settle(true));
+  await waitFor(() => expect(readAppConfigKey).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(fetchSpy).toHaveBeenCalledWith("/api/version", { cache: "no-store" }));
 });

@@ -171,7 +171,7 @@ export const runModulePassThunk = createAsyncThunk<
 
   try {
     const result = (await dispatch(
-      launchAgentExecution({
+      launchAgentExecution({ initiation: "auto",
         shortcutId,
         surfaceKey: `studio:module:${session.moduleId}:${sessionId}`,
         sourceFeature: "transcription",

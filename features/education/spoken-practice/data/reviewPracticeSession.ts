@@ -35,6 +35,8 @@ import { SPOKEN_PRACTICE_MANDATES } from "../mandates";
 import type { SpokenPracticeMode } from "../types";
 
 export interface ReviewPracticeSessionArgs {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   sessionId: string | null;
   mode: SpokenPracticeMode;
   attempts: ReviewAttempt[];
@@ -77,7 +79,7 @@ export function reviewPracticeSession(args: ReviewPracticeSessionArgs) {
     if (args.attempts.length === 0) return null; // nothing to review
 
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey: SPOKEN_PRACTICE_MANDATES.reviewSession,
         surfaceKey: "education-spoken-practice-review",
         sourceFeature: "education-tutor",

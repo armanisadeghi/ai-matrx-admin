@@ -86,6 +86,8 @@ export type VideoMetadataOutcome =
   | { ok: false; message: string };
 
 export interface GenerateVideoMetadataArgs {
+  /** Who started this run: "user" only where a person's click starts it; the caller states it. */
+  initiation: "user" | "auto";
   /** Everything known about the video (URL/provider/pages/hints) as prose. */
   videoContext: string;
   /** Site + brand grounding (name, root URL, standards notes). */
@@ -107,7 +109,7 @@ export function generateVideoMetadata(args: GenerateVideoMetadataArgs) {
     try {
       const answer = await runHeadlessAgent(
         dispatch,
-        {
+        { initiation: args.initiation,
           mandateKey: VIDEO_METADATA_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {

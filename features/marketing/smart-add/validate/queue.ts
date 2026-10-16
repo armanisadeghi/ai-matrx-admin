@@ -20,6 +20,7 @@ import {
 } from "../evidence";
 import { webProfileAsAccount, withoutOwnAccountRows } from "../ownAccountRows";
 import { suggestKind, type SuggestContext, type WebChoice } from "../webKinds";
+import { EARLY_FACTS_MANDATE, PERSON_FACTS_MANDATE, WHATS_NEW_MANDATE } from "../factIdentity";
 
 // ── The trigger ──────────────────────────────────────────────────────────────────────
 
@@ -174,6 +175,13 @@ export interface BrandFact {
   conflict_with?: string | null;
   /** The round (workflow run) whose facts step found it: provenance for Create's writes (keptFacts.ts). */
   run_id?: string | null;
+  /** The mandate of the agent that produced it (facts, person facts, what's new): `found_by` on what Create writes. */
+  mandate?: string;
+}
+
+/** The facts tagged with the mandate that produced them (an untagged fact stays untagged). */
+function byMandate(facts: BrandFact[], mandate: string): BrandFact[] {
+  return facts.map((f) => (f.mandate ? f : { ...f, mandate }));
 }
 
 function str(v: unknown): string | null {
@@ -218,11 +226,11 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
   const o = payload as Record<string, unknown>;
   if (o.__kind === "brand_basics_fact" || o.__kind === "person_basics_fact" || o.__kind === "brand_whats_new_fact") {
     const one = parseFact(o);
-    return one ? [one] : [];
+    return one ? byMandate([one], o.__kind === "brand_basics_fact" ? EARLY_FACTS_MANDATE : o.__kind === "person_basics_fact" ? PERSON_FACTS_MANDATE : WHATS_NEW_MANDATE) : [];
   }
   if (o.__kind === "brand_whats_new_conflict") {
     const one = parseConflict(o);
-    return one ? [one] : [];
+    return one ? byMandate([one], WHATS_NEW_MANDATE) : [];
   }
   // The kind's list is `facts` (Arman's agent and the registered kind); `items` is read too.
   const list = (b: Record<string, unknown>): unknown[] | null =>
@@ -232,11 +240,14 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
   if (o.__kind === "brand_basics" || o.__kind === "person_basics" || o.__kind === "brand_whats_new") {
     const facts = (list(o) ?? []).map(parseFact);
     const conflicts = o.__kind === "brand_whats_new" && Array.isArray(o.conflicts) ? o.conflicts.map(parseConflict) : [];
-    return [...facts, ...conflicts].filter((f): f is BrandFact => Boolean(f));
+    const mandate = o.__kind === "brand_basics" ? EARLY_FACTS_MANDATE : o.__kind === "person_basics" ? PERSON_FACTS_MANDATE : WHATS_NEW_MANDATE;
+    return byMandate([...facts, ...conflicts].filter((f): f is BrandFact => Boolean(f)), mandate);
   }
   return Object.entries(o).flatMap(([k, v]) => {
     const block = (k === "brand_basics" || k === "person_basics") && typeof v === "object" && v !== null ? list(v as Record<string, unknown>) : null;
-    return block ? block.map(parseFact).filter((f): f is BrandFact => Boolean(f)) : factsFromPayload(v, depth + 1);
+    return block
+      ? byMandate(block.map(parseFact).filter((f): f is BrandFact => Boolean(f)), k === "brand_basics" ? EARLY_FACTS_MANDATE : PERSON_FACTS_MANDATE)
+      : factsFromPayload(v, depth + 1);
   });
 }
 

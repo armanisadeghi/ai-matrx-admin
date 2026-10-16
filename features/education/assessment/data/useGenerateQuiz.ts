@@ -61,6 +61,7 @@ export interface UseGenerateQuizResult {
   generate: (
     mandateKey: AnyMandateKey,
     vars: GenerateQuizVariables | GenerateFromSourceVariables,
+    initiation: "user" | "auto",
   ) => Promise<GeneratedQuiz>;
   isGenerating: boolean;
   error: string | null;
@@ -198,9 +199,10 @@ export function useGenerateQuiz(): UseGenerateQuizResult {
   async function generate(
     mandateKey: AnyMandateKey,
     vars: GenerateQuizVariables | GenerateFromSourceVariables,
+    initiation: "user" | "auto",
   ): Promise<GeneratedQuiz> {
     const fromSource = isFromSourceVars(vars);
-    return run<GeneratedQuiz>({
+    return run<GeneratedQuiz>({ initiation: initiation,
       mandateKey,
       surfaceKey: fromSource
         ? "assessment-generate-from-source"

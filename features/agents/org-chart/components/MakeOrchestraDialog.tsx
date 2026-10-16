@@ -103,7 +103,7 @@ function Body({
     }
     if (n > 0) {
       setStep("Teaching the leader its team…");
-      const sync = await dispatch(syncConductorPrompt({ conductorId, memberIds: request.memberIds }));
+      const sync = await dispatch(syncConductorPrompt({ initiation: "user", conductorId, memberIds: request.memberIds }));
       if (!sync.ok) warnings.push(`Its prompt still needs its team: ${sync.error ?? "sync failed"}. Use Sync agent listings in the Orchestra.`);
     }
     setStep(null);

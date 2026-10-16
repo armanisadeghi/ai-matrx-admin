@@ -310,7 +310,7 @@ function AddMoreQuestionsDialog({
             batchId,
             targetKind: config.kind,
             surfaceKey: `education-add-more-${config.base}`,
-            ctx: {
+            ctx: { initiation: "user",
               dispatch,
               store,
               orgId,
@@ -352,7 +352,7 @@ function AddMoreQuestionsDialog({
             await recordLineageForSources(result, linkSources, orgId),
             () => recordLineageForSources(result, linkSources, orgId),
           );
-          await generation.commit();
+          await generation.commit({ initiation: "user" });
           const addedIds = added.data.map((row) => row.id);
           toast.success(
             `Added ${questionCount(addedIds.length)}${made.gapNote ? ` — ${made.gapNote}` : ""}.`,

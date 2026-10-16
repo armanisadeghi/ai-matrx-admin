@@ -199,7 +199,7 @@ export function StudyPlanView({ seedTitle }: { seedTitle?: string }) {
   const draftFor = async (input: PlanInput): Promise<PlanDraft> => {
     const summary = await collectPlanSummary(input.itemType ?? "fc_card");
     try {
-      return await planner.generate(input, summary);
+      return await planner.generate(input, summary, "user");
     } catch (e) {
       console.warn(
         "[planner] AI generation failed — falling back to the offline planner:",

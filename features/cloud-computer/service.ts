@@ -57,7 +57,8 @@ export async function getCloudComputer(): Promise<CloudComputer> {
   return parseCloudComputer(data);
 }
 
-export async function wakeCloudComputer(): Promise<CloudComputer> {
-  const { data } = await postJson<unknown>("/browser-manager/cloud-computer/wake", {});
+/** `initiation` is required: "user" only when a person's click wakes the machine. */
+export async function wakeCloudComputer(initiation: "user" | "auto"): Promise<CloudComputer> {
+  const { data } = await postJson<unknown>("/browser-manager/cloud-computer/wake", { initiation });
   return parseCloudComputer(data);
 }

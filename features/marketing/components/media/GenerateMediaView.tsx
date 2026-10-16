@@ -166,6 +166,8 @@ export function GenerateMediaView({
       const result: PageImageResult = await Promise.race([
         dispatch(
           generatePageImageTwoStep({
+            // The person placed this order.
+            initiation: "user",
             spec,
             style: styleOverride.trim() || preset.style,
             surfaceKey: MARKETING_BRAND_ASSETS_SURFACE_NAME,

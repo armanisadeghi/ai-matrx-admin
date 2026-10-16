@@ -14,7 +14,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getJson, postJson } from "@/lib/python-client";
+import { postJson } from "@/lib/python-client";
+import { readNotionSyncState } from "./notionSyncState";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -104,8 +105,8 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
 
   useEffect(() => {
     let live = true;
-    getJson<SyncState>(`/notion-import/sync?table_id=${encodeURIComponent(tableId)}`, { ...opts, captureErrors: false })
-      .then((r) => live && setState(r.data))
+    readNotionSyncState(tableId)
+      .then((r) => live && setState(r as SyncState))
       .catch(() => live && setState({ connected: false }));
     return () => {
       live = false;

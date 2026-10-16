@@ -14,6 +14,7 @@ import type { BrandRelationKind, RelationStance } from "@/features/marketing/dat
 import { USAGE_GROUP_LABEL } from "@/features/marketing/data/relation-usage";
 import { websiteHost, type EvidenceItem } from "./evidence";
 import { isSocialPlatformPage } from "./validate/fold";
+import { BACKLINK_KIND, backlinkReason, type BacklinkCheck } from "./backlinks";
 
 /** Kinds that say "a listing site's page about us" — never a social platform's page. */
 const LISTING_KINDS = new Set(["review_site", "claimable_listing"]);
@@ -24,6 +25,27 @@ export type Sentiment = "positive" | "neutral" | "negative";
 export interface WebChoice {
   kind: string;
   sentiment: Sentiment | null;
+}
+
+/** The kind whose categories name what the server recognized the page as (a credential, membership, press, award, registry…), if any. */
+export function recognizedKind(item: EvidenceItem, kinds: BrandRelationKind[]): BrandRelationKind | undefined {
+  if (!item.siteKind || isSocialPlatformPage(item.url ?? item.value)) return undefined;
+  return kinds.find((k) => k.match.categories.includes(item.siteKind?.category ?? ""));
+}
+
+/**
+ * A page that links to the brand defaults to Backlink, unless the page was recognized as something MORE specific
+ * (a credential, membership, press mention, award, registry record): then that kind stays the suggestion and the
+ * link remains a badge and a matching signal. THE one place the two are ranked. Null = no backlink suggestion.
+ */
+export function backlinkSuggestion(
+  item: EvidenceItem,
+  kinds: BrandRelationKind[],
+  check: BacklinkCheck | undefined,
+): { kind: string; reason: string; evidence: string[]; by: string } | null {
+  if (check?.status !== "found" || !kinds.some((k) => k.key === BACKLINK_KIND)) return null;
+  if (recognizedKind(item, kinds)) return null;
+  return { kind: BACKLINK_KIND, reason: backlinkReason(check), evidence: check.backlinks.map((b) => b.matchedUrl), by: "Links to you" };
 }
 
 /** A rule-based suggestion and why. */
@@ -275,7 +297,7 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   }
   // The server recognized what kind of place it is (a certification body, a chamber, industry media…): the kind
   // whose categories name it — a credential, a membership, press coverage (VISION Part 22).
-  const recognized = item.siteKind && !social ? kinds.find((k) => k.match.categories.includes(item.siteKind?.category ?? "")) : undefined;
+  const recognized = recognizedKind(item, kinds);
   if (recognized && item.siteKind) return { kind: recognized.key, reason: `${item.siteKind.label}: ${item.siteKind.reason}` };
   if (item.field === "listing" && !social) {
     const key = has("review_site") ? "review_site" : "claimable_listing";
@@ -310,7 +332,11 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   if (nameOnPage && ourCity.length >= 3 && norm(pageSays).includes(ourCity) && has("mention")) {
     return { kind: "mention", reason: `Names ${ctx.name} in ${(ctx.place ?? "").split(",")[0]}` };
   }
-  if (ctx.name && sameName && !foundAccount && !articleAboutUs && has("not_us")) {
+  // A site whose own address IS the name, while we know of no website of ours yet (a name start), is most likely
+  // the brand's own site, never "someone else" (MKT-181): the rule only judges a same-name page on a site that
+  // is not named like us, or when we know our own site to compare with.
+  const hostOnly = !nameMatches(ctx.name ?? "", [lead, firstPart]);
+  if (ctx.name && sameName && !(hostOnly && !ctx.ourHosts.length) && !foundAccount && !articleAboutUs && has("not_us")) {
     return {
       kind: "not_us",
       reason: ctx.ourHosts.length
@@ -322,6 +348,16 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
     return { kind: "mention", reason: `Names ${ctx.name}` };
   }
   return null;
+}
+
+/**
+ * The rules fill in where the classifier is unsure (MKT-039), but never against it: when the classifier answered
+ * "needs a person" (`later`), a rule may not suggest the negative kinds (Not us, Irrelevant) — a suggestion never
+ * contradicts the classifier that looked at the page (MKT-181).
+ */
+export function ruleFillIn(classifierChoice: string | undefined, rule: WebSuggestion | null): WebSuggestion | null {
+  if (rule && classifierChoice === "later" && (rule.kind === "not_us" || rule.kind === "irrelevant")) return null;
+  return rule;
 }
 
 /** Results grouped by the kind the person chose, in vocabulary order (stance, then sort). */

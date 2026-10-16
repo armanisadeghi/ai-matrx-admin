@@ -111,7 +111,7 @@ export function MemoryNew() {
           source_content: resolved.content,
           title: resolved.source.title,
           focus: focus.trim(),
-        });
+        }, "user");
         const title = payload.title || resolved.source.title;
         const media = await studyMediaService.create({
           mediaKind: "memory_aid",
@@ -129,7 +129,7 @@ export function MemoryNew() {
         // Metered action SUCCEEDED — record real usage so the meter decrements
         // (honest even while enforced:false). Failed branches above return
         // first, so a failed generation never burns quota.
-        await gen.commit();
+        await gen.commit({ initiation: "user" });
         router.push(`/education/memory/${media.data.id}`);
       } catch (e) {
         toast.error(

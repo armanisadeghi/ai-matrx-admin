@@ -21,6 +21,7 @@
  */
 
 import { domainAddress, domainHost } from "@/lib/web-domains/registry";
+import { looksLikePostUrl, postOwnerFromUrl } from "@/features/marketing/social/link";
 import type { FocusItem } from "./queue";
 
 // ── What the brand already knows ─────────────────────────────────────────────────────
@@ -85,7 +86,15 @@ export function socialIdentity(url: string): { key: string | null; post: boolean
   if (!platform) return { key: null, post: false, person: false };
   const parts = addr.split("/").slice(1).filter(Boolean);
   if (!parts.length) return { key: null, post: false, person: false };
+  // THE post rule (features/marketing/social/link.ts, shared case table with matrx-social): a story.php, photo.php,
+  // permalink, reel, status, share or event link is never an account, whatever its first path segment looks like.
+  if (looksLikePostUrl(/^https?:\/\//i.test(url) ? url : `https://${url}`)) return { key: null, post: true, person: false };
   let head = parts[0];
+  // `facebook.com/p/<Page-Name>-<numeric id>` is a real page address; the numeric id is the account.
+  if (platform === "facebook" && head === "p") {
+    const id = /-(\d{8,})$/.exec(parts[1] ?? "")?.[1];
+    return id ? { key: `acct:facebook:${id}`, post: false, person: false } : { key: null, post: true, person: false };
+  }
   if (platform === "linkedin") {
     if (parts[0] === "posts" || parts[0] === "feed" || parts[0] === "pulse") return { key: null, post: true, person: false };
     if ((parts[0] === "company" || parts[0] === "in" || parts[0] === "school" || parts[0] === "showcase") && parts[1]) {
@@ -105,9 +114,10 @@ export function accountOfPost(url: string): string | null {
   const social = socialIdentity(url);
   if (!social.post) return null;
   const platform = SOCIAL_HOSTS[domainHost(url)];
-  const head = domainAddress(url).split("/").slice(1).filter(Boolean)[0];
-  if (!platform || !head || platform === "linkedin" || POST_HEADS.has(head)) return null;
-  return `acct:${platform}:${head.replace(/^@/, "")}`;
+  if (!platform || platform === "linkedin") return null;
+  // The owner comes from the shared post rule, so `story.php?id=<numeric>` and `<page>/posts/…` both name their account.
+  const owner = postOwnerFromUrl(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+  return owner ? `acct:${platform}:${owner.handle.toLowerCase()}` : null;
 }
 
 const PHONE_FIELDS = new Set(["phone", "toll_free_phone", "sms_number", "fax"]);

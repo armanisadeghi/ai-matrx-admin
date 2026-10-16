@@ -88,6 +88,8 @@ function isFromSourceVars(
 }
 
 export interface GenerateCardsRunOptions {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   /**
    * The run's conversation, as soon as it exists (before the stream). A
    * caller filling an EXISTING deck stamps that deck with it, so the stream's
@@ -101,7 +103,7 @@ export interface GenerateCardsResult {
   generate: (
     mandateKey: AnyMandateKey,
     vars: GenerateCardsVariables | GenerateFromSourceVariables,
-    opts?: GenerateCardsRunOptions,
+    opts: GenerateCardsRunOptions,
   ) => Promise<GeneratedCardSet>;
   isGenerating: boolean;
   error: string | null;
@@ -151,10 +153,10 @@ export function useGenerateCards(): GenerateCardsResult {
   async function generate(
     mandateKey: AnyMandateKey,
     vars: GenerateCardsVariables | GenerateFromSourceVariables,
-    opts: GenerateCardsRunOptions = {},
+    opts: GenerateCardsRunOptions,
   ): Promise<GeneratedCardSet> {
     const fromSource = isFromSourceVars(vars);
-    return run<GeneratedCardSet>({
+    return run<GeneratedCardSet>({ initiation: opts.initiation,
       mandateKey,
       surfaceKey: fromSource
         ? "flashcards-create-from-source"

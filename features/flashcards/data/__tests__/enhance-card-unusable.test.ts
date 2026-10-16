@@ -31,7 +31,7 @@ describe("enrichCard / expandCard — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing details",
     });
     const onUnusable = jest.fn();
-    const out = await enrichCard({ card, depth: "applied", onUnusable })(dispatch, getState);
+    const out = await enrichCard({ initiation: "user", card, depth: "applied", onUnusable })(dispatch, getState);
     expect(out).toBeNull();
     expect(onUnusable).toHaveBeenCalledWith(SENTENCE);
   });
@@ -45,7 +45,7 @@ describe("enrichCard / expandCard — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing sub_cards",
     });
     const onUnusable = jest.fn();
-    const out = await expandCard({ card, depth: "applied", onUnusable })(dispatch, getState);
+    const out = await expandCard({ initiation: "user", card, depth: "applied", onUnusable })(dispatch, getState);
     expect(out).toBeNull();
     expect(onUnusable).toHaveBeenCalledWith(SENTENCE);
   });
@@ -53,7 +53,7 @@ describe("enrichCard / expandCard — unusable output", () => {
   it("any other failure never calls onUnusable (existing toast stands)", async () => {
     runMock.mockResolvedValue({ success: false, data: null, fullResponse: "", error: "timed out" });
     const onUnusable = jest.fn();
-    await enrichCard({ card, depth: "applied", onUnusable })(dispatch, getState);
+    await enrichCard({ initiation: "user", card, depth: "applied", onUnusable })(dispatch, getState);
     expect(onUnusable).not.toHaveBeenCalled();
   });
 });

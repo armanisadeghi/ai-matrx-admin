@@ -15,7 +15,7 @@ import type { LaunchResult } from "@ai-matrx/chat/agents/redux/execution-system/
  */
 export type LaunchAgentFn = (
   agentId: string,
-  options?: ManagedAgentOptions,
+  options: ManagedAgentOptions,
 ) => Promise<LaunchResult>;
 
 /** How a run's product is read: the extracted JSON, the answer text, or the generated image. */

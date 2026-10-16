@@ -114,7 +114,7 @@ export function gradePracticeAnswer(args: GradePracticeAnswerArgs) {
 
       let unusableSentence: string | null = null;
       const grade = await dispatch(
-        runSpokenGrader({
+        runSpokenGrader({ initiation: "user",
           mandateKey: gradedByMandate,
           front: args.prompt,
           back: args.referenceAnswer,

@@ -26,7 +26,7 @@ describe("deepenItem — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing prompt",
     });
     const onUnusable = jest.fn();
-    const out = await deepenItem({
+    const out = await deepenItem({ initiation: "user",
       item: {
         prompt: "Q",
         correct_answer: "A",

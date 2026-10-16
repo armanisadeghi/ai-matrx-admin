@@ -22,6 +22,7 @@ import {
   selectRunStatus,
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
+import { BACKLINKS_STEP, backlinkChecksFrom, type BacklinkCheck } from "./backlinks";
 import { factsFromPayload, type BrandFact } from "./validate/queue";
 import { ratchetFacts, streamingFacts } from "./streamingFacts";
 import { selectLiveKindValue } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
@@ -200,14 +201,16 @@ function StepWatch({
   onStep: (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[], suggestions: Record<string, WeThinkSuggestion>) => void;
 }) {
   const aggregate = useAppSelector(selectNodeAggregate(runId, step));
+  const runStatus = useAppSelector(selectRunStatus(runId));
   const invocation = aggregate.invocations[aggregate.invocations.length - 1] ?? null;
   const output = invocation?.output ?? null;
   const notes = Array.isArray(output?.notes) ? output.notes.filter((n): n is string => typeof n === "string") : [];
   const errorNote = invocation?.error?.message ? [invocation.error.message] : [];
   const view: StepView = {
     step,
-    phase: aggregate.phase,
-    progress: invocation?.progress?.message ?? null,
+    // A step still "running" in a run that has ended was dropped with it: it reads as stopped, never as working (MKT-183).
+    phase: runStatus !== null && RUN_ENDED.includes(runStatus) && IN_FLIGHT.includes(aggregate.phase) ? "stopped" : aggregate.phase,
+    progress: runStatus !== null && RUN_ENDED.includes(runStatus) && IN_FLIGHT.includes(aggregate.phase) ? null : (invocation?.progress?.message ?? null),
     notes: [...notes, ...errorNote],
     costUsd: numberOr(output?.cost_usd, 0),
     // A step the run skipped (its facts were not there yet) reads as skipped, like one with nothing to do.
@@ -257,6 +260,7 @@ export function SmartAddRound({
   onPath,
   onNameStrength,
   onScreenshots,
+  onBacklinks,
   onView,
 }: {
   runId: string;
@@ -278,6 +282,8 @@ export function SmartAddRound({
   onNameStrength?: (strength: NameStrength) => void;
   /** The homepage pictured (aidream brand.identify.screenshots), desktop and mobile, once its frame lands. */
   onScreenshots?: (shots: BrandScreenshots) => void;
+  /** Which found pages link to the brand (aidream brand.identify.backlinks), as each lands; `checking` while the step works. */
+  onBacklinks?: (checks: Record<string, BacklinkCheck>, checking: boolean) => void;
   onView: (view: RoundView) => void;
 }) {
   useWorkflowRun(runId);
@@ -375,6 +381,17 @@ export function SmartAddRound({
   useEffect(() => {
     if (shotsKey) onScreenshots?.(JSON.parse(shotsKey) as BrandScreenshots);
   }, [shotsKey, onScreenshots]);
+  // Backlinks: each found page's answer streams as it lands; the step's output holds them all once it settles.
+  const linksAggregate = useAppSelector(selectNodeAggregate(runId, BACKLINKS_STEP));
+  const linksOut = linksAggregate.invocations[linksAggregate.invocations.length - 1]?.output ?? null;
+  const backlinkChecks = backlinkChecksFrom(linksOut, emissions.map((e) => e.payload));
+  const linksChecking =
+    status !== null && !RUN_ENDED.includes(status) && !["settled", "failed", "skipped"].includes(linksAggregate.phase);
+  const backlinksKey = JSON.stringify({ c: backlinkChecks, k: linksChecking });
+  useEffect(() => {
+    const { c, k } = JSON.parse(backlinksKey) as { c: Record<string, BacklinkCheck>; k: boolean };
+    onBacklinks?.(c, k);
+  }, [backlinksKey, onBacklinks]);
   const signalsKey = signals ? JSON.stringify(signals) : "";
   useEffect(() => {
     if (signalsKey) onSignals?.(JSON.parse(signalsKey) as PersonSignals);

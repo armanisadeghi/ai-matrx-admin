@@ -132,7 +132,7 @@ export default function ShapeTestTab({
 
   async function fillWithAi(): Promise<void> {
     try {
-      const seed = await aiFill.run<Record<string, unknown>>({
+      const seed = await aiFill.run<Record<string, unknown>>({ initiation: "user",
         mandateKey: KIND_CREATOR_MANDATE_KEY,
         surfaceKey: `shapes-test-fill:${kind}`,
         sourceFeature: "ai-results",

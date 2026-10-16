@@ -15,6 +15,7 @@
  * Each row says what hid it and when it comes back.
  */
 
+import { invalidateShellCounts } from "@/lib/boot/shellCountsKey";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckSquare, Lightbulb, Table2, VolumeX } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -169,7 +170,10 @@ export function HiddenElsewhere() {
       .catch((error: unknown) =>
         toast.error(error instanceof Error ? error.message : "That didn't save."),
       )
-      .then(() => queryClient.invalidateQueries({ queryKey: ["inbox"] }));
+      .then(() => {
+        invalidateShellCounts(queryClient);
+        return queryClient.invalidateQueries({ queryKey: ["inbox"] });
+      });
 
   if (hidden.isLoading) return null;
   if (items.length === 0 && workSnoozed === 0 && !partlyUnread) return null;

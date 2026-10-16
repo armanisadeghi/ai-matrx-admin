@@ -570,6 +570,7 @@ export function useSetupAgents(siteId: string | null) {
   const inFlight = useRef(false);
 
   async function run<T>(
+    initiation: "user" | "auto",
     mandateKey: AnyMandateKey,
     label: string,
     variables: Record<string, string>,
@@ -583,6 +584,7 @@ export function useSetupAgents(siteId: string | null) {
     // here rather than silently running the wrong agent. The round-trip itself
     // is the canonical headless primitive (useHeadlessAgentJson, D126).
     return runHeadless<T>({
+      initiation,
       mandateKey,
       surfaceKey: `content-plan-setup:${siteId ?? "none"}:${mandateKey}`,
       sourceFeature: "marketing",
@@ -599,6 +601,7 @@ export function useSetupAgents(siteId: string | null) {
   }
 
   async function recommendShape(
+    initiation: "user" | "auto",
     variables: Record<string, string>,
   ): Promise<ShapePlanResult> {
     if (inFlight.current) throw new Error("An agent run is already in progress");
@@ -606,6 +609,7 @@ export function useSetupAgents(siteId: string | null) {
     setShapeBusy(true);
     try {
       return await run(
+        initiation,
         SHAPE_PLANNER_MANDATE,
         "Recommending shape & counts",
         variables,
@@ -618,6 +622,7 @@ export function useSetupAgents(siteId: string | null) {
   }
 
   async function nameFamily(
+    initiation: "user" | "auto",
     familyKey: string,
     variables: Record<string, string>,
   ): Promise<FamilyNamesResult> {
@@ -626,6 +631,7 @@ export function useSetupAgents(siteId: string | null) {
     setNamingFamilyKey(familyKey);
     try {
       return await run(
+        initiation,
         FAMILY_NAMER_MANDATE,
         "Naming pages",
         variables,
@@ -638,6 +644,7 @@ export function useSetupAgents(siteId: string | null) {
   }
 
   async function curateEntities(
+    initiation: "user" | "auto",
     variables: Record<string, string>,
   ): Promise<EntityCurationResult> {
     if (inFlight.current) throw new Error("An agent run is already in progress");
@@ -645,6 +652,7 @@ export function useSetupAgents(siteId: string | null) {
     setEntitiesBusy(true);
     try {
       return await run(
+        initiation,
         ENTITY_CURATOR_MANDATE,
         "Curating entities",
         variables,

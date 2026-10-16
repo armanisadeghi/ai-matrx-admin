@@ -122,7 +122,7 @@ export function MindMapNew() {
           source_content: resolved.content,
           title: resolved.source.title,
           focus: focus.trim(),
-        });
+        }, "user");
         // Resolve nodes → source cards where we can (DoD item 3). Unmatched nodes
         // stay unlinked; a click still offers "ask the tutor about this idea".
         const { spec: linkedSpec, linkedCount } = linkDiagramToCards(spec, deckCards);
@@ -148,7 +148,7 @@ export function MindMapNew() {
         // Metered action SUCCEEDED — record real usage so the meter decrements
         // (honest even while enforced:false). Failed branches return first, so a
         // failed generation never burns quota.
-        await gen.commit();
+        await gen.commit({ initiation: "user" });
         router.push(`/education/mind-maps/${media.data.id}`);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't generate the mind map");

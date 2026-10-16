@@ -36,6 +36,16 @@ jest.mock("@/utils/supabase/client", () => ({
     schema: () => ({
       rpc: async (name: string) => {
         rpcCalls.push(name);
+        if (name === "shell_counts") {
+          return {
+            data: {
+              inbox: { unseen_needs_you: 2, unseen_direct: 1, unseen_updates: 0, unread: 3, inbox: 3, snoozed: 0, done: 0 },
+              work: [{ organization_id: "o1", organization_name: "Cedar Ridge", waiting: 3, snoozed: 0, overdue: 0 }],
+              assists: 0, needs_you: 0, kg_pending: 0,
+            },
+            error: null,
+          };
+        }
         if (name === "my_inbox_summary") {
           return { data: [{ unseen_needs_you: 2, unseen_direct: 1, unseen_updates: 0, unread: 3, inbox: 3, snoozed: 0, done: 0 }], error: null };
         }

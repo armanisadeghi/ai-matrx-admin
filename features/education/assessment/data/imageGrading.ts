@@ -69,6 +69,8 @@ export async function uploadWorkPhoto(
 }
 
 export interface RunVisionGraderArgs {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   /** The vision-grading MANDATE to run — resolved live to the DB-bound agent. */
   mandateKey: AnyMandateKey;
   /** The problem statement / question the learner was solving. */
@@ -105,7 +107,7 @@ export function runVisionGrader(args: RunVisionGraderArgs) {
       return null;
     }
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey: args.mandateKey,
         surfaceKey: args.surfaceKey,
         // Persisted (not ephemeral — that path 404s the v2 gate) but kept out

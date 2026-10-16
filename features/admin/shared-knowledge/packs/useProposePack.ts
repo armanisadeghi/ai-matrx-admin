@@ -152,7 +152,7 @@ export function useProposePack() {
         const textPromise = new Promise<string | null>((resolve) => {
           resolveRef.current.fn = resolve;
         });
-        await launchMandate(STARTER_PACK_PROPOSER_MANDATE_KEY, {
+        await launchMandate(STARTER_PACK_PROPOSER_MANDATE_KEY, { initiation: "user",
           surfaceKey: "shared-knowledge:propose-starter-pack",
           sourceFeature: "marketing",
           config: { autoRun: true, allowChat: false, showVariablePanel: false },

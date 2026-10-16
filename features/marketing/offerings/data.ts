@@ -122,10 +122,12 @@ export async function fetchOfferingItems(brandId: string): Promise<OfferingItem[
 }
 
 export async function fetchOfferingsVerdict(brandId: string): Promise<OfferingsVerdict> {
+  // The screen reads `coverage.screen` only: the capture's provision values stay on the server (aidream
+  // brand_offerings/run.py, the used-keys guarantee, 2026-10-16).
   const { data, error } = await supabase
     .schema("mandate")
     .from("provision_snapshot")
-    .select("id, created_at, coverage, provision_values")
+    .select("id, created_at, coverage")
     .eq("subject_id", brandId)
     .eq("point_key", "brand_offerings.after_core")
     .is("deleted_at", null)
@@ -133,19 +135,17 @@ export async function fetchOfferingsVerdict(brandId: string): Promise<OfferingsV
     .limit(1);
   if (error) throw new Error(`The coverage verdict could not be read: ${error.message}`);
   const row = data?.[0];
-  const values = new Map<string, unknown>(
-    (Array.isArray(row?.provision_values) ? row.provision_values : []).map((v) => [str(obj(v).name) ?? "", obj(v).value]),
-  );
-  const draft = obj(values.get("coverage_verdict_draft"));
-  const claims = obj(values.get("scope_claims"));
-  const checks = obj(values.get("reader_checks"));
+  const screen = obj(obj(row?.coverage).screen);
+  const draft = obj(screen.verdict);
+  const claims = Array.isArray(screen.scope_claims) ? screen.scope_claims : [];
+  const checks = obj(screen.checks);
   return {
     verdict: (str(draft.verdict) as OfferingsVerdict["verdict"]) ?? null,
     line: str(draft.line),
     actions: Array.isArray(draft.actions)
       ? draft.actions.map((a) => (typeof a === "string" ? a : str(obj(a).label) ?? "")).filter(Boolean)
       : [],
-    scopeClaims: (Array.isArray(claims.items) ? claims.items : []).map((c) => ({
+    scopeClaims: claims.map((c) => ({
       quote: str(obj(c).quote) ?? "",
       url: str(obj(c).url) ?? "",
       count: typeof obj(c).count === "number" ? (obj(c).count as number) : null,

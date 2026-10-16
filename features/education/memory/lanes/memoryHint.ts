@@ -22,6 +22,8 @@ import {
 } from "@/features/content-ir/kinds/memory-aid";
 
 export interface MemoryHintContext {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   front: string;
   back: string;
   topic?: string | null;
@@ -74,7 +76,7 @@ export function memoryHint(ctx: MemoryHintContext) {
     getState: () => RootState,
   ): Promise<MemoryHintPayload | null> => {
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: ctx.initiation,
         mandateKey: EDU_MEMORY_MANDATES.memoryHint,
         surfaceKey: "flashcards-memory-hint",
         // A background per-card study aid on a study surface — the exact

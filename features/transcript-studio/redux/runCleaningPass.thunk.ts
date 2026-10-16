@@ -131,7 +131,7 @@ export const runCleaningPassThunk = createAsyncThunk<
 
   try {
     const result = (await dispatch(
-      launchAgentExecution({
+      launchAgentExecution({ initiation: "auto",
         shortcutId,
         surfaceKey: `studio:cleanup:${sessionId}`,
         sourceFeature: "transcription",

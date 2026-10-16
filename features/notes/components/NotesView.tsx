@@ -344,15 +344,10 @@ export function NotesView({
     };
   }, [dispatch, userId]);
 
-  useEffect(() => {
-    // Keyed on the person, never the active org: the scope tree spans every org.
-    if (fetchedUserIdRef.current && userId) {
-      // Ensure the canonical scope tree is loaded so the new scope pickers
-      // (EntityScopeTagger / EntityTargetPicker) and the active-context
-      // surface have data. No-op if already `ready` (no refetch policy).
-      dispatch(ensureScopeTree());
-    }
-  }, [dispatch, userId]);
+  // The scope tree is NOT loaded here (first-paint contract: /notes reads only what it shows). The
+  // sidebar names its homes with one specific read (`platform.home_names`); a picker, the context
+  // field or the agent surface loads the tree when it opens (`useNoteHomes`, `ensureScopeTree`, or
+  // the store's demand read of `state.scopesTree`).
 
   // ── Single note mode: set active immediately ──────────────────────
   useEffect(() => {

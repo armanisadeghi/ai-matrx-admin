@@ -8,7 +8,8 @@
  *   · held by email only     → the contact (`crm.party`) with that email, as the `party` peek;
  *   · neither                → a small peek of what the table knows (their name and email), so the
  *                              chip is never a dead end.
- * `openPersonPeek` is called by the records host port; this component is mounted once, app-wide.
+ * `openPersonPeek` (personPeekStore) is called by the records host port; this component mounts with the
+ * overlay world (app/DeferredOverlayWorld.tsx) on the first request.
  */
 
 import React, { useEffect, useState, useSyncExternalStore } from "react";
@@ -16,24 +17,9 @@ import { UserRound } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { ResourcePeekHost } from "@/features/organizations/peek/ResourcePeekHost";
 import { PeekDialog, PeekField } from "@/features/organizations/peek/PeekDialog";
+import { getPersonPeekTarget, setPersonPeekTarget, subscribePersonPeek } from "./personPeekStore";
 
-export interface PersonTarget {
-  recordId: string;
-  userId?: string | null;
-  email?: string | null;
-  name?: string;
-}
-
-let current: PersonTarget | null = null;
-const listeners = new Set<() => void>();
-function set(next: PersonTarget | null) {
-  current = next;
-  for (const l of listeners) l();
-}
-
-export function openPersonPeek(target: PersonTarget): void {
-  set(target);
-}
+export { openPersonPeek, type PersonTarget } from "./personPeekStore";
 
 /** The contact (crm.party) holding this email, when one exists. */
 export async function findPartyIdByEmail(email: string): Promise<string | null> {
@@ -45,11 +31,7 @@ export async function findPartyIdByEmail(email: string): Promise<string | null> 
 }
 
 export function PersonPeekHost() {
-  const target = useSyncExternalStore(
-    (cb) => (listeners.add(cb), () => void listeners.delete(cb)),
-    () => current,
-    () => null,
-  );
+  const target = useSyncExternalStore(subscribePersonPeek, getPersonPeekTarget, () => null);
   const [partyId, setPartyId] = useState<{ email: string; id: string | null } | null>(null);
   const email = target && !target.userId ? (target.email?.trim() || null) : null;
 
@@ -65,7 +47,7 @@ export function PersonPeekHost() {
   }, [email]);
 
   if (!target) return null;
-  const close = () => set(null);
+  const close = () => setPersonPeekTarget(null);
   if (target.userId) return <ResourcePeekHost kind="user" id={target.userId} onClose={close} />;
   if (email && partyId?.email === email && partyId.id) return <ResourcePeekHost kind="party" id={partyId.id} onClose={close} />;
   if (email && partyId?.email !== email) return null;

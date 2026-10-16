@@ -103,7 +103,7 @@ export async function verifyGeneratedDeck(
         verdict = stored;
         shouldPersist = false;
       } else {
-        const extracted = await runAgentExtraction(dispatch, store, {
+        const extracted = await runAgentExtraction(dispatch, store, { initiation: "auto",
           mandateKey: FC_MANDATES.verifyAgainstSource,
           surfaceKey: "education-content-pipeline-verify",
           sourceFeature: "education-flashcards",

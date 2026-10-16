@@ -48,6 +48,8 @@ export interface EvidenceSource {
   kind: "website" | "social_profile" | "link_in_bio" | "typed" | "web_search";
   url: string | null;
   where: string | null;
+  /** The mandate of the agent that produced this finding, when an agent did (factIdentity.foundByForSource). */
+  mandate?: string;
 }
 
 export interface EvidenceItem {
@@ -99,7 +101,7 @@ export interface SiteKind {
   fields: Record<string, string>;
 }
 
-function parseSiteKind(raw: unknown): SiteKind | null {
+export function parseSiteKind(raw: unknown): SiteKind | null {
   if (typeof raw !== "object" || raw === null) return null;
   const r = raw as Record<string, unknown>;
   const category = asString(r.category);

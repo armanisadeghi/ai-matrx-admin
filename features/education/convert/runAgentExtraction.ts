@@ -12,6 +12,8 @@ import type { SourceFeature } from "@ai-matrx/chat/agents/types/instance.types";
 import type { AppDispatch, AppStore } from "@/lib/redux/store";
 
 export interface RunAgentExtractionOpts {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   /** The MANDATE to run — resolved live to the DB-bound generator agent. */
   mandateKey: AnyMandateKey;
   /** Stable surface key for this generation surface (telemetry + variable scope). */
@@ -112,7 +114,7 @@ export async function runAgentExtraction(
   // own; its outcome is no longer anyone's, so it must never surface unhandled.
   aborted.catch(() => {});
 
-  const run = runHeadlessAgentJson(dispatch, store.getState, {
+  const run = runHeadlessAgentJson(dispatch, store.getState, { initiation: opts.initiation,
     mandateKey: opts.mandateKey,
     surfaceKey: opts.surfaceKey,
     sourceFeature: opts.sourceFeature,

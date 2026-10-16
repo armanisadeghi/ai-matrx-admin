@@ -595,7 +595,7 @@ export function ConversationProvenancePanel({
         </PropertyRow>
         <PropertyRow label="Title source">{provenance.chip}</PropertyRow>
         <PropertyRow label="Conversation type">
-          {conversationTypeLabel(conversation.conversation_type)}
+          {conversationTypeLabel(conversation.conversation_type, conversation.origin_class)}
         </PropertyRow>
         <PropertyRow label="Origin">
           {originClassLabel(conversation.origin_class)}

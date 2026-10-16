@@ -31,12 +31,13 @@ import { DrillExplorer } from "@/components/official/drill-explorer/DrillExplore
 import { DrillOrList } from "@/components/official/drill-explorer/DrillOrList";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { usageNameResolver } from "@/features/admin/usage-drill/useUsageDrill";
-import { recentErrors } from "@ai-matrx/api/architecture";
-import { serverApi } from "@/lib/api/server-api";
+import {
+  fetchRecentSystemErrors,
+  type RecentSystemErrorsResponse,
+} from "./recentErrors";
 
 type SystemErrorRow = components["schemas"]["SystemErrorRecord"];
-type RecentResponse =
-  components["schemas"]["aidream__api__routers__admin_system_errors__SystemErrorListResponse"];
+type RecentResponse = RecentSystemErrorsResponse;
 
 const HOUR_PRESETS = [6, 24, 72, 168] as const;
 const SOURCE_PAGE_SIZE = 500;
@@ -172,9 +173,9 @@ function SystemErrorsList() {
     ],
     initialPageParam: INITIAL_PAGE_CURSOR,
     queryFn: async ({ pageParam }): Promise<RecentResponse> => {
-      const result = await recentErrors(serverApi, { query: {
-          // The server derives the cutoff from its issued snapshot, avoiding
-          // browser-clock gaps at the newest edge of the evidence window.
+      // Read straight from Supabase (ops.system_error); the first page issues
+      // the snapshot and every later page reuses it.
+      const result = await fetchRecentSystemErrors({
           since_hours: hours,
           limit: SOURCE_PAGE_SIZE,
           snapshot_at: pageParam.snapshotAt,
@@ -183,7 +184,7 @@ function SystemErrorsList() {
           kind: trimmedKind || undefined,
           request_id: requestId || undefined,
           unresolved_only: unresolvedOnly || undefined,
-        } });
+        });
       return result;
     },
     getNextPageParam: (lastPage): SystemErrorPageCursor | undefined =>

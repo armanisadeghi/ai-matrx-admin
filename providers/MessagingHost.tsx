@@ -50,7 +50,8 @@
 "use client";
 
 import { MessagingAttachment } from "@/features/messaging/components/MessagingAttachment";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { subscribeEngineStart } from "@/providers/messagingEngineStarted";
 import { useRouter } from "next/navigation";
 import {
   MessagingProvider,
@@ -66,7 +67,6 @@ import type { ActionHandler } from "@ai-matrx/messaging";
 // (the same chunk MeetHostCore loads) — a static import here would keep the whole Meet
 // engine (~650 KB source) in every route's first load. See providers/MeetHost.tsx.
 import { MeetHostContext } from "@ai-matrx/meet/host-slot";
-import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
 import type {
   EngineDiagnostic,
   IncomingMessageContext,
@@ -91,6 +91,7 @@ import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/ac
 import { withSharedRpcReads } from "@/lib/supabase/sharedRpcReads";
 import { getUserId } from "@/utils/auth/getUserId";
 import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
+import { demandMeetHost } from "@/providers/meetHostDemand";
 import { MESSAGE_ACTION_SURFACES } from "@/features/messaging/actions/messageActionSurfaces";
 import {
   MessagingConversationRowChrome,
@@ -149,27 +150,12 @@ export function MessagingHost({ children }: MessagingHostProps) {
   const archiveKnob = toMessagingArchiveFilter(
     useAppSelector(selectArchivedDefault),
   );
-  // People | Agents | All (agent messaging Phase 1c): which conversations the
-  // list opens on is the ORGANIZATION's knob `messaging.inbox/default_kind`
-  // (person-overridable). Until it answers the engine starts on the knob's own
-  // default, `people`, so hundreds of agent rooms never flood the header badge
-  // for the moment before the answer lands; `<MessagingKindKnob>` applies it.
-  const inboxKnobs = useScopedKnobs({
-    organizationId,
-    // One read, at the organization the ladder answered — not one org-less read and then another.
-    enabled: organizationResolved,
-    featurePrefix: MESSAGING_INBOX_KNOB_FEATURE,
-    ...(settingsScopeUserId ? { userId: settingsScopeUserId } : {}),
-  });
-  const kindKnob = toMessagingKindFilter(
-    inboxKnobs.knobs.find(
-      (knob) =>
-        knob.feature === MESSAGING_INBOX_KNOB_FEATURE &&
-        knob.key === MESSAGING_INBOX_DEFAULT_KIND_KEY &&
-        knob.origin !== "missing",
-    )?.effective_value,
-    "people",
-  );
+  // People | Agents | All (agent messaging Phase 1c): which conversations the list opens on is the
+  // ORGANIZATION's knob `messaging.inbox/default_kind` (person-overridable). The engine starts on the
+  // knob's own default, `people`, so hundreds of agent rooms never flood the header badge;
+  // `<MessagingKindKnob>` reads the knob and applies it, and it reads it only once the inbox is
+  // asked for (FIRST-PAINT CONTRACT V28: a settings read nothing on the page shows is not made at load).
+  const kindKnob: MessagingKindFilter = "people";
   const notifyIncoming = useIncomingMessageNotifier();
   const store = useAppStore();
 
@@ -250,10 +236,21 @@ export function MessagingHost({ children }: MessagingHostProps) {
   const meetHost = useContext(MeetHostContext);
   const meetCalls = meetHost?.calls ?? null;
   const meetRepository = meetHost?.repository ?? null;
-  const idleForMeet = useIdleReady();
+  // FIRST-PAINT CONTRACT (V3): the Meet package is large and nothing in a first paint needs it. It
+  // loads when a DM thread is first OPENED (`<MeetLoadOnThreadOpen>` below watches the engine's
+  // open conversation, passively). The handlers then arrive after the thread is on screen, and
+  // `<MessagingProvider>` re-renders its consumers when the handled kinds change, so an invite
+  // already drawn gains its chips the moment the package lands (guard: the messaging package's
+  // "a handler that arrives after the thread rendered still draws its chips").
+  const [threadOpened, setThreadOpened] = useState(false);
+  const onThreadOpened = useCallback(() => {
+    setThreadOpened(true);
+    // The call chips need the call runtime too (V2): ask the Meet host to attach now.
+    demandMeetHost();
+  }, []);
   const [meetApi, setMeetApi] = useState<typeof import("@ai-matrx/meet/react") | null>(null);
   useEffect(() => {
-    if (!idleForMeet) return;
+    if (!threadOpened) return;
     let live = true;
     void import("@ai-matrx/meet/react").then((api) => {
       if (live) setMeetApi(api);
@@ -261,7 +258,7 @@ export function MessagingHost({ children }: MessagingHostProps) {
     return () => {
       live = false;
     };
-  }, [idleForMeet]);
+  }, [threadOpened]);
   const actions = useMemo(() => {
     // Until the Meet package arrives no invite handler exists: an invitation renders no chips yet.
     if (meetApi === null) return [] as ActionHandler<never>[];
@@ -368,8 +365,13 @@ export function MessagingHost({ children }: MessagingHostProps) {
           return data.session !== null;
         }}
       >
+        <MeetLoadOnThreadOpen onOpened={onThreadOpened} />
         <MessagingArchiveKnob knob={archiveKnob} />
-        <MessagingKindKnob knob={kindKnob} />
+        <MessagingKindKnob
+          organizationId={organizationId}
+          resolved={organizationResolved}
+          userId={settingsScopeUserId}
+        />
         {children}
       </MessagingProvider>
     </MessagingAiDemandProvider>
@@ -377,6 +379,18 @@ export function MessagingHost({ children }: MessagingHostProps) {
 }
 
 export default MessagingHost;
+
+/**
+ * Tells the host that a DM thread has been opened, so the Meet package loads then and not before.
+ * Reads the engine PASSIVELY (it is mounted on every page and must never start the inbox).
+ */
+function MeetLoadOnThreadOpen({ onOpened }: { onOpened: () => void }) {
+  const opened = usePassiveMessagingSnapshot()?.activeConversationId != null;
+  useEffect(() => {
+    if (opened) onOpened();
+  }, [opened, onOpened]);
+  return null;
+}
 
 /**
  * THE LATE-KNOB PROBLEM, solved the way `AgentCatalogHost` solves it.
@@ -441,9 +455,43 @@ function MessagingArchiveKnob({ knob }: { knob: MessagingArchiveFilter }) {
  * then owns the axis for the session. The engine's seed is `people` (the knob's
  * own default) until the answer lands.
  */
-function MessagingKindKnob({ knob }: { knob: MessagingKindFilter }) {
+function MessagingKindKnob({
+  organizationId,
+  resolved,
+  userId,
+}: {
+  organizationId: string | null;
+  resolved: boolean;
+  userId: string | null | undefined;
+}) {
   const host = useMessagingHost();
-  const kindFilter = usePassiveMessagingSnapshot()?.kindFilter ?? "people";
+  const passive = usePassiveMessagingSnapshot();
+  const kindFilter = passive?.kindFilter ?? "people";
+  // The inbox has been asked for (started, or already read): only then does the default kind matter.
+  // `isStarted()` is not reactive, so the start itself is subscribed to: the knob is read at the
+  // first list open, not at the next unrelated store change.
+  const engineStarted = useSyncExternalStore(
+    (listener) => subscribeEngineStart(host?.engine ?? null, listener),
+    () => host?.engine.isStarted() ?? false,
+    () => false,
+  );
+  const inboxAsked = engineStarted || (passive?.hasLoadedConversations ?? false);
+  const inboxKnobs = useScopedKnobs({
+    organizationId,
+    // One read, at the organization the ladder answered — and only once the inbox is asked for.
+    enabled: resolved && inboxAsked,
+    featurePrefix: MESSAGING_INBOX_KNOB_FEATURE,
+    ...(userId ? { userId } : {}),
+  });
+  const knob = toMessagingKindFilter(
+    inboxKnobs.knobs.find(
+      (k) =>
+        k.feature === MESSAGING_INBOX_KNOB_FEATURE &&
+        k.key === MESSAGING_INBOX_DEFAULT_KIND_KEY &&
+        k.origin !== "missing",
+    )?.effective_value,
+    "people",
+  );
   const setKindFilter = (next: MessagingKindFilter) => void host?.engine.setKindFilter(next);
   const appliedRef = useRef<MessagingKindFilter | null>(null);
   const hostRef = useRef(host);

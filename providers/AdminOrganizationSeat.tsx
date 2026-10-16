@@ -35,9 +35,12 @@ export function AdminOrganizationSeat() {
   const dispatch = useAppDispatch();
   const onAdminPage = isAdminLanePath(pathname);
   const declared = useAppSelector(selectDeclaredAdminOrganizationId);
-  const verdict = useAppSelector((state) => membershipVerdict(state, declared));
+  // Reads the scope tree only when the seat is engaged (an admin page with a declared organization):
+  // the store treats ANY read of `state.scopesTree` as demand, and this seat is mounted on every route.
+  const engaged = onAdminPage && !!declared;
+  const verdict = useAppSelector((state) => (engaged ? membershipVerdict(state, declared) : "unknown"));
   const name = useAppSelector((state) =>
-    declared ? (state.scopesTree?.organizations?.[declared]?.name ?? null) : null,
+    engaged && declared ? (state.scopesTree?.organizations?.[declared]?.name ?? null) : null,
   );
 
   // The membership list names the organization and proves it is still theirs.

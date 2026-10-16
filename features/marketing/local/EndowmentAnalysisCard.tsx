@@ -90,7 +90,7 @@ export function EndowmentAnalysisCard({
     });
     try {
       await dispatch(
-        launchAgentExecution({
+        launchAgentExecution({ initiation: "user",
           mandateKey: ENDOWMENT_ANALYSIS_MANDATE,
           surfaceKey: `marketing-local:endowment:${brandId}`,
           sourceFeature: "marketing",
@@ -115,7 +115,7 @@ export function EndowmentAnalysisCard({
     if (!hasSubject()) return;
     setPortfolio(null);
     try {
-      const result = await portfolioRun.run<EndowmentPortfolio>({
+      const result = await portfolioRun.run<EndowmentPortfolio>({ initiation: "user",
         mandateKey: ENDOWMENT_PORTFOLIO_MANDATE,
         surfaceKey: `marketing-local:endowment-portfolio:${brandId}`,
         sourceFeature: "marketing",

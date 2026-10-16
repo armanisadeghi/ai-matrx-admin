@@ -24,7 +24,7 @@ const EXTRACTION_TIMEOUT_MS = 180_000;
 const POLL_INTERVAL_MS = 250;
 
 export interface PlannerAgentResult {
-  generate: (input: PlanInput, summary: PlanSummary) => Promise<PlanDraft>;
+  generate: (input: PlanInput, summary: PlanSummary, initiation: "user" | "auto") => Promise<PlanDraft>;
   isGenerating: boolean;
   error: string | null;
 }
@@ -35,8 +35,9 @@ export function usePlannerAgent(): PlannerAgentResult {
   async function generate(
     input: PlanInput,
     summary: PlanSummary,
+    initiation: "user" | "auto",
   ): Promise<PlanDraft> {
-    return run<PlanDraft>({
+    return run<PlanDraft>({ initiation: initiation,
       mandateKey: STUDY_MANDATES.planner,
       label: "Building your study plan",
       surfaceKey: "education-planner-generate",

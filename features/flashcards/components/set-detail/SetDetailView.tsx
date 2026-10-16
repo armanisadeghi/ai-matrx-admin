@@ -968,7 +968,7 @@ export function SetDetailView({
         selectedIds: selected,
         depth: "applied",
         onCardEnriched: async () => {
-          await enrichGuard.commit();
+          await enrichGuard.commit({ initiation: "user" });
         },
       });
       // Whatever landed is already in the DB — refetch so the deck's badges

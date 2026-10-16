@@ -59,7 +59,7 @@ import { CALENDAR_FEED_PORT } from "@/features/calendar-feed/calendarFeedPort";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { RECORDS_FILES } from "@/features/unified-data/recordsFiles";
 import { RECORDS_TEXT, recordsTextBox } from "@/features/unified-data/recordsCleanText";
-import { openPersonPeek, type PersonTarget } from "./PersonPeekHost";
+import { openPersonPeek, type PersonTarget } from "./personPeekStore";
 import { RECORDS_REFERENCES } from "@/features/unified-data/recordsReferences";
 import { RECORDS_AGENT_PORTS } from "@/features/data-tables/records-ui-host/recordsAgentPorts";
 import {
@@ -401,7 +401,7 @@ export function useRecordsUiPorts({
    */
   const onAskForOne = useCallback(
     (ask: AgentBuildAsk) => {
-      void launchMandate(MANDATE_KEYS.data__page_guidance, {
+      void launchMandate(MANDATE_KEYS.data__page_guidance, { initiation: "user",
         surfaceKey: `data:${ask.tableId}`,
         organizationId,
         sourceFeature: "udt",

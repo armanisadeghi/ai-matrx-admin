@@ -111,7 +111,7 @@ export function CardDetailLayers({
         }
         setAdded((prev) => [...prev, ...outcome.rows]);
         // The AI call happened and landed — record the metered unit.
-        await enrichGuard.commit();
+        await enrichGuard.commit({ initiation: "user" });
         toast.success(
           `Added ${outcome.rows.length} new layer${
             outcome.rows.length === 1 ? "" : "s"

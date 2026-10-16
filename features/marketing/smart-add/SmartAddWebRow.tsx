@@ -23,7 +23,8 @@ import type { EvidenceItem } from "./evidence";
 import { useState } from "react";
 import { webRow } from "./evidence";
 import type { WebMark } from "./runMemory";
-import { compareRelationKinds, relationGroupLabel, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
+import { reviewLinkCheck, withPageKind, type BacklinkCheck } from "./backlinks";
+import { backlinkSuggestion, compareRelationKinds, relationGroupLabel, ruleFillIn, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
 
 /** The one-click answers; every other kind is under "More". */
 const PINNED = new Set(["ours", "mention", "review_site", "competitor", "not_us", "irrelevant"]);
@@ -55,6 +56,7 @@ export function reviewResultOf(item: EvidenceItem): ReviewResult {
     key: item.key,
     result,
     hits: (item.hits ?? []).map((h) => ({ engine: h.engine, rank: h.rank, query: h.query, endpoint: h.endpoint })),
+    ...(item.siteKind ? { placeKind: { label: item.siteKind.label, reason: item.siteKind.reason } } : {}),
   };
 }
 
@@ -79,6 +81,8 @@ export function SmartAddWebRow({
   onChoose,
   marks: savedMarks,
   onMark: saveMark,
+  backlinks = {},
+  backlinksChecking = false,
 }: {
   items: EvidenceItem[];
   kinds: BrandRelationKind[];
@@ -88,13 +92,18 @@ export function SmartAddWebRow({
   /** Ask me later / Ignore: the person's place in the review, kept by the session so a reload returns to it. */
   marks?: Record<string, WebMark>;
   onMark?: (key: string, mark: WebMark | null) => void;
+  /** Which rows' pages link to the brand (aidream backlinks step), keyed by row. */
+  backlinks?: Record<string, BacklinkCheck>;
+  /** The backlinks step is still reading pages: unchecked rows shimmer. */
+  backlinksChecking?: boolean;
 }) {
   // Without a session (the lab) the marks live here.
   const [localMarks, setLocalMarks] = useState<Record<string, WebMark>>({});
   const marks = savedMarks ?? localMarks;
   const onMark = (key: string, mark: WebMark | null) =>
     saveMark ? saveMark(key, mark) : setLocalMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest));
-  const row = webRow(items);
+  // The backlinks step reads each page itself, so its recognition (schema.org markup included) completes the row's.
+  const row = webRow(items).map((i) => withPageKind(i, backlinks[i.key]));
   const byKey = new Map(row.map((i) => [i.key, i]));
   const answers: Record<string, ReviewAnswer> = {};
   for (const i of row) {
@@ -109,19 +118,25 @@ export function SmartAddWebRow({
     const byAgent = agent?.by === "agent";
     const agentKind = byAgent ? (agent.relation_key ?? (agent.choice === "ours" || agent.choice === "not_us" ? agent.choice : null)) : null;
     // The classifier's answer wins when it decided; when it is unsure or silent the rules fill in (MKT-039).
-    const s = agentKind ? null : suggestKind(i, kinds, ctx);
+    const s = agentKind ? null : ruleFillIn(byAgent ? agent?.choice : undefined, suggestKind(i, kinds, ctx));
     suggestions[i.key] = agentKind
       ? { kind: agentKind, sentiment: agent?.sentiment ?? null, probability: agent?.probability ?? null, reason: agent?.reason ?? "", evidence: agent?.evidence, by: "We think" }
       : s
         ? { kind: s.kind, reason: s.reason, by: "Rules" }
         : null;
+    // A page that links to the brand defaults to Backlink unless it was recognized as something more specific (a suggestion, never set).
+    const linkSuggestion = backlinkSuggestion(i, kinds, backlinks[i.key]);
+    if (linkSuggestion) suggestions[i.key] = linkSuggestion;
   }
   const sessionId = usePublishSearchReviewSession(
     row.length
       ? {
           title: ctx.name ? `On the web · ${ctx.name}` : "On the web",
           subject: { type: "brand", name: ctx.name ?? "This brand" },
-          results: row.map(reviewResultOf),
+          results: row.map((i) => {
+            const links = reviewLinkCheck(backlinks[i.key], backlinksChecking);
+            return links ? { ...reviewResultOf(i), links } : reviewResultOf(i);
+          }),
           choices: reviewChoicesOf(kinds),
           answers,
           suggestions,

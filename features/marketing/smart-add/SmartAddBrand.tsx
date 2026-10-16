@@ -16,6 +16,7 @@
  * Watch window when it is built.
  */
 
+import { promoteSmartAddFindings } from "./promote";
 import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,6 +31,7 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
 import { FACTS_FOUND_BY, mergeConfirmedIntoPlan, planKeptFacts, saveKeptFacts, type ConfirmedContactFact } from "./keptFacts";
+import { loadFactRules, NO_FACT_RULES } from "./factRules";
 import { foundByForSource } from "./factIdentity";
 import { probeFromDraft, type BrandMatch, type BrandProbe } from "./brandMatch";
 import { findMatchingBrands } from "./brandMatchLive";
@@ -37,7 +39,7 @@ import { gateCreate } from "./createGate";
 import { useExistingBrands } from "./useExistingBrands";
 import { ExistingBrandNotice } from "./ExistingBrandNotice";
 import { smartAddEnrichHref } from "./smartAddUrl";
-import { factSlotKey, typedWebsiteItem } from "./firstData";
+import { factSlotKey, typedWebsiteItem, wakesFacts, type FactsSaw } from "./firstData";
 import { categoriesFor, liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -52,7 +54,7 @@ import {
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
-import { roundFailed } from "./roundFailure";
+import { roundFailed, roundStopped } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
 import { typedItems, useRunMemory, type WebMark } from "./runMemory";
 import { withoutStaffFacts } from "./staff";
@@ -63,6 +65,8 @@ import { SmartAddHero, stageLogo, stageLogos, stageName, type PersonMore } from 
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
+import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import { useSocialSpend } from "@/features/marketing/social/cost";
 import { BrandCard, CustomAdd, situationOf } from "./SmartAddExtras";
 import { CompareDialog } from "./compare/CompareDialog";
@@ -153,6 +157,7 @@ import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { SmartAddWebRow } from "./SmartAddWebRow";
+import { withPageKind, type BacklinkCheck } from "./backlinks";
 import { captureProvision } from "@/features/provision-window/data";
 import { autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
 import { DEFAULT_INSTANCE_ID } from "@/lib/redux/slices/overlaySlice";
@@ -203,6 +208,10 @@ interface Round {
   runId: string | null;
   seeds: RoundSeeds;
   error: string | null;
+  /** How the round was started, so a stopped one can be run again as it was (MKT-183). */
+  redo?: { woken: ConfirmedFacts; firstData: boolean; find: boolean; email: string };
+  /** A stopped round the person ran again: its stopped notice is done. */
+  superseded?: boolean;
 }
 
 function accountSeedKey(seed: SocialSeed): string | null {
@@ -314,6 +323,10 @@ export function SmartAddBrand({
   // Person clues typed beside the city (Part 10): search clues only — they never ground the person.
   // An email typed in any box (VISION Part 19): rides the next round once (its free lookups run once).
   const emailPending = useRef("");
+  // What the facts agent has been given so far (firstData.wakesFacts): a round that brings more wakes it again.
+  const factsSaw = useRef<FactsSaw>({ site: false, social: false, name: false });
+  // An email typed with a name only: the round starts after the name is confirmed, so the facts agent has it (MKT-180).
+  const [emailKick, setEmailKick] = useState(0);
   const personMore = useRef<PersonMore>({ occupation: resumePerson?.occupation ?? "", company: resumePerson?.company ?? "", extra: "" });
   // Each round's path (brand.identify.path_decision), sent back as `path_history` so escalation fires live.
   const [pathByRun, setPathByRun] = useState<Record<string, RoundPath>>({});
@@ -340,6 +353,8 @@ export function SmartAddBrand({
   const [personSignals, setPersonSignals] = useState<PersonSignals | null>(null);
   // The homepage pictured on a real browser (desktop + mobile): the card swaps it in once it lands.
   const [screenshots, setScreenshots] = useState<BrandScreenshots | null>(null);
+  // Which found pages link to the brand, per round (aidream backlinks step): the answers and whether it is still checking.
+  const [backlinksByRun, setBacklinksByRun] = useState<Record<string, { checks: Record<string, BacklinkCheck>; checking: boolean }>>({});
   // "Person with a business" (a creator or solo professional): a person on the person path.
   const [kindBoth, setKindBoth] = useState(false);
   // The header label's default: the entity-kind step's answer, unless the person changed the label themselves.
@@ -374,8 +389,18 @@ export function SmartAddBrand({
     const nowGrounded = Boolean(typed) && (personAnchors.length > 0 || affiliations.length > 0);
     const groundedRound = !find && nowGrounded && !groundedSent.current;
     const email = emailPending.current;
+    // The facts agent runs on what is known: the first round from what was typed, and again when a round brings a
+    // website, an account or the name it never had (MKT-180).
+    const facts = wakesFacts(factsSaw.current, {
+      firstData,
+      website: Boolean(seeds.website),
+      accounts: seeds.socials.length > 0,
+      name: Boolean(confirmedFacts.name),
+    });
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound && !email) return;
     emailPending.current = "";
+    factsSaw.current = facts.saw;
+    firstData = facts.wake;
     if (groundedRound) groundedSent.current = true;
     // The person facts agent reads the anchors' profiles from THIS round's lookups (reused within the session):
     // a grounded round woken by a name alone still carries the confirmed accounts.
@@ -401,7 +426,7 @@ export function SmartAddBrand({
       : null;
     for (const k of seedKeys(seeds, accountSeedKey)) explored.current.add(k);
     const id = crypto.randomUUID();
-    setRounds((r) => [...r, { id, runId: null, seeds, error: null }]);
+    setRounds((r) => [...r, { id, runId: null, seeds, error: null, redo: { woken, firstData, find, email } }]);
     const exclude = [
       ...Object.entries(decisions)
         .filter(([key, d]) => d === "no" || !key.startsWith("social:"))
@@ -460,7 +485,13 @@ export function SmartAddBrand({
     }
   };
 
+  const runEmailRound = useEffectEvent(() => void startRound({ website: "", socials: [] }, {}, true));
+  useEffect(() => {
+    if (emailKick) runEmailRound();
+  }, [emailKick]);
+
   const resetAll = () => {
+    factsSaw.current = { site: false, social: false, name: false };
     setRounds([]);
     setViews({});
     viewSig.current = {};
@@ -911,7 +942,17 @@ export function SmartAddBrand({
     rounds.some((r) => !r.error && (!r.runId || !views[r.runId])) ||
     roundViews.some((v) => !!v && !TERMINAL.includes(v.status ?? ""));
   const failedRound =
-    rounds.some((r) => Boolean(r.error)) || roundViews.some((v) => roundFailed(v));
+    rounds.some((r) => Boolean(r.error)) || roundViews.some((v, i) => !rounds[i]?.superseded && roundFailed(v));
+  // A run ended from outside (its worker died, or it was cancelled): the screen says so and offers to run it again.
+  const stoppedRounds = rounds.filter((r, i) => !r.superseded && roundStopped(roundViews[i]));
+  const searchAgain = () => {
+    const again = stoppedRounds;
+    setRounds((rs) => rs.map((r) => (again.includes(r) ? { ...r, superseded: true } : r)));
+    for (const r of again) {
+      emailPending.current = r.redo?.email ?? "";
+      void startRound(r.seeds, r.redo?.woken ?? {}, r.redo?.firstData ?? false, r.redo?.find ?? false);
+    }
+  };
   // A round that never started says why (MKT-094): the screen names it beside its retry.
   const startFailure = rounds.find((r) => r.error)?.error ?? null;
   // A step that already said it could not open the site is not still "reading" it.
@@ -1018,6 +1059,11 @@ export function SmartAddBrand({
   const postsKnob = Number(useSessionKnob("social.smart_add_posts_default"));
   const postsPerAccount = Number.isFinite(postsKnob) && postsKnob >= 0 ? postsKnob : 30;
   const spendOrg = useAppSelector((st) => st.appContext?.organization_id ?? null);
+  // Provision values stay on the server: the inputs capture, its window and "Capture again" are an admin's
+  // debug view only (Arman, 2026-10-15/16).
+  const canSeeProvision = useAppSelector(
+    (st) => selectAdminFeature(st, "provision.open-any-snapshot") && Boolean(selectIsDebugMode(st)),
+  );
   const spend = useSocialSpend(spendOrg);
   const trackedAccounts = basics.accounts.filter((a) => a.platform);
   const postsPoints = postsPerAccount ? spend.postsTotalText(trackedAccounts.map((a) => a.platform ?? ""), postsPerAccount) : null;
@@ -1035,7 +1081,11 @@ export function SmartAddBrand({
       handles: [...basics.accounts.map((a) => a.handle ?? null), ...visible.filter((i) => i.field === "social").map((i) => i.handle)],
     },
   );
-  const webItems = visible.filter((i) => i.field === "listing" || i.field === "mention" || i.field === "web_page");
+  const allBacklinks = Object.assign({}, ...Object.values(backlinksByRun).map((b) => b.checks)) as Record<string, BacklinkCheck>;
+  // Confirmed rows keep the page kind the server recognized, including what it read off the page itself (schema.org markup).
+  const webItems = visible
+    .filter((i) => i.field === "listing" || i.field === "mention" || i.field === "web_page")
+    .map((i) => withPageKind(i, allBacklinks[i.key]));
   const webPersonRows = webItems.flatMap((item) => {
     const k = relationKinds.find((x) => x.key === webChoices[item.key]?.kind);
     return k && (k.routesTo === "owns" || k.routesTo === "key_person")
@@ -1143,10 +1193,17 @@ export function SmartAddBrand({
         .filter((u): u is string => Boolean(u) && !webCtx.ourHosts.includes(websiteHost(u as string)));
       // Every fact the facts agent found that the person did not say No to is kept (keptFacts.ts); the basics
       // Create had no confirmed value for are filled from it, and the gate later asks only about those.
+      // The filing rules (which kind a field is, which fields live on the profile) are the server's; unreachable means
+      // everything is filed as `other` and the server's promotion re-types it, said in the notes, never silent.
+      const ruleProblems: string[] = [];
+      const factRules = await loadFactRules().catch((error: unknown) => {
+        ruleProblems.push(`Fact kinds: ${extractErrorMessage(error)}`);
+        return NO_FACT_RULES;
+      });
       const factPlan = planKeptFacts(facts, (f) => {
         const k = factSlotKey(f);
         return k ? decisions[k] : undefined;
-      }, { description: basics.description, industry: basics.category, tagline: basics.tagline, brandName: basics.name });
+      }, factRules, { description: basics.description, industry: basics.category, tagline: basics.tagline, brandName: basics.name });
       const brand = await createBrand({
         organizationId,
         name: basics.name,
@@ -1165,6 +1222,8 @@ export function SmartAddBrand({
             basics_sources: factPlan.basicsSources,
             facts_kept: factPlan.rows.length,
             facts_runs: [...new Set(facts.map((f) => f.run_id).filter((id): id is string => Boolean(id)))],
+            // Every round of this session: a round still running lands its late findings on this brand (server).
+            runs: runIds,
           },
         },
         websiteUrl: basics.websiteUrl,
@@ -1186,7 +1245,7 @@ export function SmartAddBrand({
           ...(competitors.length ? { competitors } : {}),
         },
       });
-      const problems: string[] = [];
+      const problems: string[] = [...ruleProblems];
       const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
       for (const item of basics.accounts) {
         try {
@@ -1254,13 +1313,21 @@ export function SmartAddBrand({
       const contact: ConfirmedContactFact[] = basics.facts.map((f) => ({
         kind: f.field,
         value: f.value,
-        foundBy: foundByForSource(f.source.node, f.source.kind),
+        foundBy: foundByForSource(f.source.node, f.source.kind, f.source.mandate),
         typed: f.source.kind === "typed",
       }));
       if (basics.tagline) contact.push({ kind: "tagline", value: basics.tagline, foundBy: FACTS_FOUND_BY, typed: false });
       const merged = mergeConfirmedIntoPlan(factPlan, contact);
       problems.push(...(await saveKeptFacts(organizationId, brand.id, merged.plan)).problems);
       problems.push(...(await saveFacts(organizationId, brand.id, basics, merged.remaining)));
+      // What Create kept on the brand lands in its real home tables, once: the server holds the rules (promote.ts),
+      // and lands what the facts agent finds after this moment too (its round names this brand by `smart_add.runs`).
+      try {
+        const promoted = await promoteSmartAddFindings(brand.id);
+        problems.push(...promoted.problems);
+      } catch (error) {
+        problems.push(`Findings: ${extractErrorMessage(error)}`);
+      }
       setSaveNotes(problems);
       setCreated(brand);
       // Shift to the focus queue for everything else.
@@ -1309,7 +1376,7 @@ export function SmartAddBrand({
         }
       }
       // On the validation page the inputs are captured (Builder panel) but no window covers the queue.
-      await showProvision(brand, organizationId, "created", false);
+      if (canSeeProvision) await showProvision(brand, organizationId, "created", false);
     } catch (error) {
       setCreateError(extractErrorMessage(error));
     } finally {
@@ -1519,6 +1586,11 @@ export function SmartAddBrand({
     setSeparateIds(next);
     setReleased((n) => n + 1);
   };
+  /** Beside the Create bar, "Create a separate brand" creates it: the answer alone left the page sitting (MKT-182). */
+  const separateAndCreate = () => {
+    chooseSeparate();
+    if (canCreate) void create();
+  };
   /** Add what is new to an existing brand: the enrich flow, carrying the website and account this session has. */
   const addToExisting = (m: BrandMatch) => {
     const account = basics.accounts.find((a) => a.platform && isSocialPlatform(a.platform));
@@ -1573,6 +1645,12 @@ export function SmartAddBrand({
             onPath={(p) => onPath(r.runId as string, p)}
             onNameStrength={setNameStrength}
             onScreenshots={setScreenshots}
+            onBacklinks={(checks, checking) =>
+              setBacklinksByRun((cur) => {
+                const next = { checks, checking };
+                return JSON.stringify(cur[r.runId as string]) === JSON.stringify(next) ? cur : { ...cur, [r.runId as string]: next };
+              })
+            }
             onView={onView}
           />
         ) : null,
@@ -1606,7 +1684,7 @@ export function SmartAddBrand({
           onFindPerson={findPerson}
           onEmail={(email, startNow) => {
             emailPending.current = email;
-            if (startNow) void startRound({ website: "", socials: [] }, {}, true);
+            if (startNow) setEmailKick((k) => k + 1);
           }}
           initial={url ? (fresh ? url.address.prefill : (resume?.address.prefill ?? url.address.prefill)) : undefined}
           via={url ? url.address.viaParam : undefined}
@@ -1745,6 +1823,17 @@ export function SmartAddBrand({
             </span>
             <span className="truncate">{progressLines[0] ?? "Identifying"}</span>
           </>
+        ) : stoppedRounds.length ? (
+          <span className="flex min-w-0 items-center gap-1.5 truncate" data-testid="smart-add-round-stopped">
+            <TriangleAlert className="size-3 shrink-0 text-warning" />
+            <span className="truncate">
+              The search stopped before it finished{items.size ? `, so ${items.size} findings are all there is` : ""}
+            </span>
+            <Button variant="quiet" className="shrink-0" onClick={searchAgain} data-testid="smart-add-search-again">
+              <RotateCcw className="size-3.5" />
+              Search again
+            </Button>
+          </span>
         ) : rounds.length ? (
           <span className="truncate">{items.size ? `${items.size} findings` : "Nothing found yet"}</span>
         ) : (
@@ -1904,13 +1993,15 @@ export function SmartAddBrand({
         }
         marks={webMarks}
         onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}
+        backlinks={allBacklinks}
+        backlinksChecking={Object.values(backlinksByRun).some((b) => b.checking)}
       />
       <WebPersonAsk rows={webPersonRows} names={Object.fromEntries(webPersonRows.map((r) => [r.item.key, webPersonNames[r.item.key] ?? r.guess ?? ""]))} onName={(key, name) => setWebPersonNames((cur) => ({ ...cur, [key]: name }))} />
       <SmartAddBioLinks items={visible} />
 
       {/* Create: the confirmed basics, one row. */}
       <div className="sticky bottom-3 z-10">
-      {created ? null : <ExistingBrandNotice placement="above" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={chooseSeparate} />}
+      {created ? null : <ExistingBrandNotice placement="above" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={separateAndCreate} />}
       <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
         {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
         <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 sm:basis-0">
@@ -2015,7 +2106,7 @@ export function SmartAddBrand({
         </div>
       ) : null}
 
-      {created ? (
+      {created && canSeeProvision ? (
         <section className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-xs" data-testid="smart-add-provision" aria-label="Brand analysis inputs">
           <span className="font-semibold">Brand analysis</span>
           <span className="text-muted-foreground">Not running · inputs only</span>
@@ -2063,6 +2154,7 @@ export function SmartAddBrand({
 
 const STEP_PHASE_LABEL: Record<string, string> = {
   idle: "Waiting",
+  stopped: "Stopped",
   running: "Working",
   retrying: "Retrying",
   settled: "Done",

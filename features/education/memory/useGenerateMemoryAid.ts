@@ -29,7 +29,7 @@ export interface MemoryAidVariables {
 }
 
 export interface GenerateMemoryAidResult {
-  generate: (vars: MemoryAidVariables) => Promise<MemoryAidPayload>;
+  generate: (vars: MemoryAidVariables, initiation: "user" | "auto") => Promise<MemoryAidPayload>;
   isGenerating: boolean;
   error: string | null;
 }
@@ -37,8 +37,8 @@ export interface GenerateMemoryAidResult {
 export function useGenerateMemoryAid(): GenerateMemoryAidResult {
   const { run, isRunning, error } = useFloatingAgentRun();
 
-  async function generate(vars: MemoryAidVariables): Promise<MemoryAidPayload> {
-    return run<MemoryAidPayload>({
+  async function generate(vars: MemoryAidVariables, initiation: "user" | "auto"): Promise<MemoryAidPayload> {
+    return run<MemoryAidPayload>({ initiation: initiation,
       mandateKey: EDU_MEMORY_MANDATES.memoryAid,
       label: "Building your memory aids",
       surfaceKey: "education-memory-create",

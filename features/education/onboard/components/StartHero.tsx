@@ -260,7 +260,7 @@ export function StartHero({
         count: Number.isFinite(requested) && requested > 0 ? requested : undefined,
       }, runOrgId);
       if (ok) {
-        await ingestGuard.commit();
+        await ingestGuard.commit({ initiation: "user" });
         // The kit holds the material now; the input starts empty next time.
         for (const card of set.sources) set.remove(card.id);
       }
@@ -283,12 +283,12 @@ export function StartHero({
   // after a reload it continues by itself — the person pressed Build, and the
   // same kit picks up where it was (nothing saved is made again). Found later
   // (a tab closed yesterday), it is offered with one Continue.
-  const continueKit = useEffectEvent(async () => {
+  const continueKit = useEffectEvent(async (initiation: "user" | "auto") => {
     if (kit.busy) return;
     await ingestGuard.guard(async () => {
       const ok = await kit.continueStopped();
       if (ok) {
-        await ingestGuard.commit();
+        await ingestGuard.commit({ initiation });
         for (const card of set.sources) set.remove(card.id);
       }
     });
@@ -298,7 +298,7 @@ export function StartHero({
     stoppedAt !== null && Date.now() - stoppedAt < AUTO_CONTINUE_WITHIN_MS;
   useEffect(() => {
     if (!autoContinue || kit.phase !== "idle") return;
-    queueMicrotask(() => void continueKit());
+    queueMicrotask(() => void continueKit("auto"));
   }, [autoContinue, kit.phase]);
 
   // "Wait for the clean version" on a Source: the press is held, visibly, and
@@ -529,7 +529,7 @@ export function StartHero({
                   : `${kit.stopped.title ?? "Your kit"} stopped`
               }
               redoLabel={kit.stopped.building ? "Show" : "Continue"}
-              onRedo={() => void continueKit()}
+              onRedo={() => void continueKit("user")}
               onDismiss={kit.dismissStopped}
             />
           )}

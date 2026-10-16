@@ -911,7 +911,7 @@ export function SetupView() {
     if (!researchReport || !site) return;
     setAiError(null);
     try {
-      const plan = await agents.recommendShape(
+      const plan = await agents.recommendShape("user", 
         shapePlannerVariables(researchReport),
       );
       const { recommendedCounts } = stageShapePlan(plan);
@@ -951,7 +951,7 @@ export function SetupView() {
         headline:
           "Drafting the work order — reading the report, picking the shape…",
       });
-      const plan = await agents.recommendShape(
+      const plan = await agents.recommendShape("user", 
         shapePlannerVariables(report, guidance, targetPageCount),
       );
       const { recommendedCounts, conceptNameMap } = stageShapePlan(plan);
@@ -1000,7 +1000,7 @@ export function SetupView() {
             kind: "names",
             headline: `Drafting — naming the ${family.label.toLowerCase()} pages…`,
           });
-          const outcome = await agents.nameFamily(family.key, {
+          const outcome = await agents.nameFamily("user", family.key, {
             ...commonVariables,
             existing_names: (planDerivedNames[family.key] ?? []).join("\n"),
             guidance,
@@ -1026,7 +1026,7 @@ export function SetupView() {
             kind: "names",
             headline: `Drafting — planning the ${family.label.toLowerCase()} topics…`,
           });
-          const outcome = await agents.nameFamily(family.key, {
+          const outcome = await agents.nameFamily("user", family.key, {
             ...commonVariables,
             existing_names: "",
             guidance:
@@ -1108,7 +1108,7 @@ export function SetupView() {
     if (!family) return;
     setAiError(null);
     try {
-      const outcome = await agents.nameFamily(familyKey, {
+      const outcome = await agents.nameFamily("user", familyKey, {
         research_report: researchReport,
         site_domain: site.domain ?? site.name ?? "",
         family_key: family.key,
@@ -1256,7 +1256,7 @@ export function SetupView() {
     if (!family) return;
     setAiError(null);
     try {
-      const outcome = await agents.nameFamily(familyKey, {
+      const outcome = await agents.nameFamily("user", familyKey, {
         research_report: researchReport,
         site_domain: site.domain ?? site.name ?? "",
         family_key: family.key,

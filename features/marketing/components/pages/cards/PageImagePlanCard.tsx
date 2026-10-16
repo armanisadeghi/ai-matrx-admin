@@ -192,6 +192,8 @@ export function PageImagePlanCard({ page }: { page: MarketingPage }) {
         }
         const fileId = await dispatch(
           generatePageImage({
+            // The person pressed Generate on this plan entry.
+            initiation: "user",
             agentId: imageAgentId,
             prompt: buildSpec(entry),
             surfaceKey: MARKETING_PAGE_SURFACE_NAME,
@@ -212,6 +214,8 @@ export function PageImagePlanCard({ page }: { page: MarketingPage }) {
       }
 
       const args = {
+        // The person pressed Generate on this plan entry.
+        initiation: "user" as const,
         spec: buildSpec(entry),
         style: entry.style ?? "",
         surfaceKey: MARKETING_PAGE_SURFACE_NAME,

@@ -35,7 +35,7 @@ export interface DiagramSpecEnvelope {
 }
 
 export interface GenerateMindMapResult {
-  generate: (vars: MindMapVariables) => Promise<DiagramSpecEnvelope>;
+  generate: (vars: MindMapVariables, initiation: "user" | "auto") => Promise<DiagramSpecEnvelope>;
   isGenerating: boolean;
   error: string | null;
 }
@@ -52,8 +52,8 @@ function isDiagramSpec(v: unknown): v is DiagramSpecEnvelope {
 export function useGenerateMindMap(): GenerateMindMapResult {
   const { run, isRunning, error } = useFloatingAgentRun();
 
-  async function generate(vars: MindMapVariables): Promise<DiagramSpecEnvelope> {
-    return run<DiagramSpecEnvelope>({
+  async function generate(vars: MindMapVariables, initiation: "user" | "auto"): Promise<DiagramSpecEnvelope> {
+    return run<DiagramSpecEnvelope>({ initiation: initiation,
       mandateKey: EDU_MEDIA_MANDATES.mindMap,
       label: "Mapping your material",
       surfaceKey: "education-mindmap-create",

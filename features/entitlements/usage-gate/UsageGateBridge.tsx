@@ -28,7 +28,8 @@ import {
 import { setUsageRefusal } from "../state/entitlementsSlice";
 import { applyServerUsageState, refreshUsageInBackground } from "./usageGate";
 import { resetSubject, usageNoticeKey } from "./usageState";
-import { supabase } from "@/utils/supabase/client";
+import { ensureEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
+import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectUsageGateFreePeriod } from "../state/selectors";
 import {
   FREE_PERIOD_WARNING_DAYS_FALLBACK,
@@ -154,24 +155,22 @@ export function UsageGateBridge() {
     void (async () => {
       let warningDays = FREE_PERIOD_WARNING_DAYS_FALLBACK;
       if (freePeriod.status === "active") {
-        const { data, error } = await supabase
-          .schema("platform")
-          .rpc("knob_resolve", {
-            p_feature: "billing",
-            p_key: "free_period_warning_days",
-            // A platform-wide knob: no organization rung. The generator types
-            // every param without a SQL default as non-null; the function
-            // takes NULL here (the server's own call does the same).
-            p_organization_id: null as unknown as string,
-            p_user_id: userId,
-          });
-        if (error) {
+        // From the person's ONE knob snapshot for this organization (the boot
+        // seed's, when the layout read it) — never its own `knob_resolve` round
+        // trip. A platform-wide knob: no organization override exists, so any
+        // organization's snapshot carries the platform value.
+        try {
+          const data = await ensureEffectiveKnob(
+            selectOrganizationId(store.getState()),
+            userId,
+            { feature: "billing", key: "free_period_warning_days" },
+          );
+          if (typeof data === "number" && data > 0) warningDays = data;
+        } catch (error) {
           console.warn(
             "[usage-gate] free_period_warning_days unreadable; using the fallback.",
-            error.message,
+            error instanceof Error ? error.message : error,
           );
-        } else if (typeof data === "number" && data > 0) {
-          warningDays = data;
         }
       }
       if (!live) return;
@@ -203,7 +202,7 @@ export function UsageGateBridge() {
     return () => {
       live = false;
     };
-  }, [userId, freePeriod]);
+  }, [userId, freePeriod, store]);
 
   if (!refusal) return null;
   return (

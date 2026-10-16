@@ -115,7 +115,7 @@ export function useKindAgentLaunch(
               "This page has not registered its live values — the agent still runs, with less context.",
           });
         }
-        await launchAgent(agentId, {
+        await launchAgent(agentId, { initiation: "user",
           surfaceKey: `surface-role:${surfaceName}:${roleName}`,
           sourceFeature:
             sourceFeatureFromSurfaceName(surfaceName) ?? "ai-results",

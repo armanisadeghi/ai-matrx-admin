@@ -26,7 +26,7 @@ describe("makeQuizItems — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing distractors",
     });
     const onUnusable = jest.fn();
-    const out = await makeQuizItems({
+    const out = await makeQuizItems({ initiation: "user",
       front: "Q",
       back: "A",
       distractorCount: 3,
@@ -43,7 +43,7 @@ describe("makeQuizItems — unusable output", () => {
       fullResponse: "{}",
     });
     const onUnusable = jest.fn();
-    const out = await makeQuizItems({ front: "Q", back: "A", distractorCount: 2, onUnusable })(
+    const out = await makeQuizItems({ initiation: "user", front: "Q", back: "A", distractorCount: 2, onUnusable })(
       dispatch,
       getState,
     );

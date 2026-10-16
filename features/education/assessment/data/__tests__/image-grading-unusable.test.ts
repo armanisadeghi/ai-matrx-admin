@@ -26,7 +26,7 @@ describe("runVisionGrader — unusable output", () => {
       errorDetail: "mandate_output_unusable: missing steps",
     });
     const onUnusable = jest.fn();
-    const out = await runVisionGrader({
+    const out = await runVisionGrader({ initiation: "user",
       mandateKey: "education.grade_handwritten" as never,
       question: "Q",
       expected: "A",

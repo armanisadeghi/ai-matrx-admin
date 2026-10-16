@@ -3,6 +3,11 @@ import { factsFromPayload } from "../validate/queue";
 import { factSlotKey } from "../firstData";
 import { planKeptFacts } from "../keptFacts";
 import type { Decision } from "../evidence";
+import { toFactRules } from "../factRules";
+import rulesSample from "./fixtures/fact_rules.json";
+
+// A sample of the server's GET /brand-intake/promote/rules (the only copy of the filing rules is the server's).
+const rules = toFactRules(rulesSample);
 
 // A stored round (ritualcoffee.com) → what Create writes. Before this, Create wrote none of these facts
 // (brand 5176c85e: 0 business facts, 0 offerings, profile {}).
@@ -12,7 +17,7 @@ function plan(decisions: Record<string, Decision> = {}, already = {}) {
   return planKeptFacts(facts, (f) => {
     const k = factSlotKey(f);
     return k ? decisions[k] : undefined;
-  }, { brandName: "Ritual Coffee Roasters", ...already });
+  }, rules, { brandName: "Ritual Coffee Roasters", ...already });
 }
 
 describe("Create keeps every fact the person did not say No to", () => {
@@ -43,7 +48,7 @@ describe("Create keeps every fact the person did not say No to", () => {
     expect(kinds["Mon - Sun: 4:00 am - 10:00 pm"]).toBe("hours");
     expect(kinds["Ritual Coffee Roasters"]).toBe("legal_name");
     expect(kinds["We're out to forever change the way people know coffee."]).toBe("tagline");
-    expect(kinds["2005"]).toBe("other");
+    expect(kinds["2005"]).toBe("founded");
     // A profile-home fact has no business_fact row (its home is web.brand.profile).
     expect(kinds["Sightglass Coffee"]).toBeNull();
   });

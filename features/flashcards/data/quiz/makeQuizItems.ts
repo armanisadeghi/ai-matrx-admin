@@ -19,6 +19,8 @@ import { FC_MANDATES } from "../mandates";
 import { QUIZ_ITEMS_KEY } from "./buildQuizQuestions";
 
 export interface MakeQuizItemsArgs {
+  /** Who started this run: "user" only where a person's click or typing starts it; "auto" otherwise. */
+  initiation: "user" | "auto";
   front: string;
   back: string;
   topic?: string | null;
@@ -75,7 +77,7 @@ export function makeQuizItems(args: MakeQuizItemsArgs) {
     const mandateKey = args.mandateKey ?? FC_MANDATES.makeQuizItems;
 
     try {
-      const result = await runHeadlessAgentJson(dispatch, getState, {
+      const result = await runHeadlessAgentJson(dispatch, getState, { initiation: args.initiation,
         mandateKey,
         surfaceKey: "flashcards-quiz-items",
         sourceFeature: "education-flashcards",

@@ -138,7 +138,7 @@ export function MemoryAidButton({
     // no window opens; the learner can open the conversation with the chat
     // button if they want to talk to the AI about it.
     const result = await dispatch(
-      memoryHint({
+      memoryHint({ initiation: "user",
         front,
         back,
         topic,

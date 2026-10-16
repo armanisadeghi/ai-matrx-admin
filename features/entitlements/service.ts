@@ -167,9 +167,12 @@ function warnConsumeFailed(capability: Capability, err: unknown): void {
  * (caller should fall back to a full snapshot refresh). Fails soft — a metered
  * action that already succeeded must never surface a metering error to the user.
  */
+/** Who started a metered action; sent as `x-matrx-initiation` (user = a person's gesture, auto = the app on its own). */
+export type EntitlementInitiation = "user" | "auto";
+
 export async function consumeEntitlement(
   capability: Capability,
-  opts?: { quantity?: number; checkId?: string | null },
+  opts: { initiation: EntitlementInitiation; quantity?: number; checkId?: string | null },
 ): Promise<EntitlementConsumeResult | null> {
   // 🚨 THE METER NAMES THE ORGANIZATION IT IS CHARGING (2026-09-19 ruling;
   // added in the 2026-09-19 review). This used to call the THREE-argument
@@ -223,12 +226,14 @@ export async function consumeEntitlement(
       .schema("billing")
       .rpc("entitlement_consume", {
         p_capability: capability,
-        p_quantity: opts?.quantity ?? 1,
+        p_quantity: opts.quantity ?? 1,
         // Omit when absent (the RPC defaults it to NULL); the generated arg type
         // is `string | undefined`, so undefined — not null — is the "no id" value.
-        p_check_id: opts?.checkId ?? undefined,
+        p_check_id: opts.checkId ?? undefined,
         p_org: organizationId,
-      });
+      })
+      // The ledger stamps the spend's origin from this header (user -> human, auto -> client_auto).
+      .setHeader("x-matrx-initiation", opts.initiation);
     if (error || !data) {
       warnConsumeFailed(capability, error);
       return null;

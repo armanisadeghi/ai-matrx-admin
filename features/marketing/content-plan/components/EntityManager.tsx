@@ -322,7 +322,7 @@ export function EntityManager({
         );
         return;
       }
-      const outcome = await agents.curateEntities({
+      const outcome = await agents.curateEntities("user", {
         research_report: report,
         site_domain: fresh.domain ?? fresh.name ?? "",
         existing_entities: [

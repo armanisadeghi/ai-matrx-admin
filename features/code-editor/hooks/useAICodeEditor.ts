@@ -209,7 +209,7 @@ export function useAICodeEditor({
     // The mandate resolves INSIDE the launch funnel (agent + config_overrides).
     // An unresolvable mandate rejects loudly — the error state below is the
     // only "fallback".
-    launchMandate(selectedMandateKey, {
+    launchMandate(selectedMandateKey, { initiation: "user",
       sourceFeature: "code-editor",
       surfaceKey: `code-editor:${selectedMandateKey}`,
       config: {

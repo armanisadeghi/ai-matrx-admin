@@ -209,6 +209,23 @@ jest.mock("@/lib/toast", () => ({
   toastErrorAlreadyCaptured: jest.fn(),
 }));
 
+// First-paint contract V3: the Meet package (the invite handlers) must not be fetched until a DM
+// thread is opened. The factory runs on the FIRST import, so it counts loads.
+(globalThis as { __meetLoads?: number }).__meetLoads = 0;
+jest.mock("@ai-matrx/meet/react", () => {
+  (globalThis as { __meetLoads?: number }).__meetLoads = ((globalThis as { __meetLoads?: number }).__meetLoads ?? 0) + 1;
+  const handler = (kind: string) => ({
+    kind,
+    versions: [1],
+    choices: () => [{ id: "join", label: "Join", tone: "primary" }],
+    execute: async () => ({}),
+  });
+  return {
+    createMeetingInviteHandler: () => handler("meeting_invite"),
+    createCallInviteHandler: () => handler("call_invite"),
+  };
+});
+
 /** Every user id this app's messaging put on the wire, in order. */
 function idsOnTheWire(): string[] {
   const ids: string[] = [];
@@ -394,5 +411,41 @@ describe("MessagingHost identity comes from the session, never from Redux (DD-24
     });
     expect(inboxReaders()).toEqual([]);
     expect(idsOnTheWire()).toEqual([]);
+  });
+});
+
+describe("the Meet package loads when a DM thread is opened, not before (first-paint contract V3)", () => {
+  it("is not fetched with the host, and is fetched once a thread opens", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { MessagingHost } = require("./MessagingHost") as typeof import("./MessagingHost");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { useMessagingHost } = require("@ai-matrx/messaging/react") as typeof import("@ai-matrx/messaging/react");
+    let engine: { openConversation: (id: string) => Promise<unknown> } | null = null;
+    function EngineProbe(): null {
+      engine = useMessagingHost()?.engine ?? null;
+      return null;
+    }
+    const loads = () => (globalThis as { __meetLoads?: number }).__meetLoads ?? 0;
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    await act(async () => {
+      root?.render(
+        <MessagingHost>
+          <EngineProbe />
+        </MessagingHost>,
+      );
+    });
+    await until(() => engine !== null, "the messaging engine never came up");
+    // Host up, page settled: nothing has opened a thread, so nothing fetched the package.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    });
+    expect(loads()).toBe(0);
+
+    await act(async () => {
+      void engine!.openConversation("77777777-7777-4777-8777-777777777777");
+    });
+    await until(() => loads() === 1, "opening a thread never fetched the Meet package");
   });
 });

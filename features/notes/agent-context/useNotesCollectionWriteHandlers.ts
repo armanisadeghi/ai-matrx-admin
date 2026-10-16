@@ -95,8 +95,8 @@ interface DeletePlan {
 
 export interface NotesCollectionWriteOptions {
   instanceId: string;
-  /** The homes the page offers (the home picker's list, by displayed label). */
-  homes: NotesWriteHome[];
+  /** The homes the page offers (the home picker's list, by displayed label); a getter is read when a write resolves a home. */
+  homes: NotesWriteHome[] | (() => NotesWriteHome[]);
   /** The open note. */
   activeNoteId: string;
   activeOrganizationId: string | null;
@@ -111,7 +111,8 @@ export function useNotesCollectionWriteHandlers(
   const store = useAppStore();
 
   return () => {
-    const { instanceId, homes, activeNoteId, activeOrganizationId, readOnly } = options;
+    const { instanceId, activeNoteId, activeOrganizationId, readOnly } = options;
+    const homes = typeof options.homes === "function" ? options.homes() : options.homes;
     const notes = () => (store.getState() as RootState).notes.notes as Record<string, NoteRecord>;
 
     const noteFor = (target: string, id: unknown): NoteRecord => {

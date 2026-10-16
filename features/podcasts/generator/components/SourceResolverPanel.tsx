@@ -114,8 +114,8 @@ function FetchResolver({
     try {
       const text =
         resolveKind === "youtube"
-          ? await resolveYouTube(target, (t) => onChange(t))
-          : await resolveWebsite(target, (t) => onChange(t));
+          ? await resolveYouTube(target, "user", (t) => onChange(t))
+          : await resolveWebsite(target, "user", (t) => onChange(t));
       onChange(text);
       setResolved(true);
       setStatus("");
