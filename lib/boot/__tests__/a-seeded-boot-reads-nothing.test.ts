@@ -224,3 +224,45 @@ it("streamed: a seed that missed the first byte arrives as a window global and a
   expect(calls).toEqual({});
   expect((window as unknown as Record<string, unknown>).__matrxCoreBootSeed).toBeUndefined();
 });
+
+describe("a seed answers the boot's first read, never a later one (review findings 1-3)", () => {
+  afterEach(() => jest.restoreAllMocks());
+  const later = (ms: number) => {
+    const now = Date.now();
+    jest.spyOn(Date, "now").mockReturnValue(now + ms);
+  };
+
+  it("a write that lands BEFORE the first boot read drops the unread seed too", async () => {
+    primeCoreBootSeed(seed());
+    forgetMemberOrganizationRows();
+    await getUserOrganizations();
+    expect(calls["iam.organizations"]).toBe(1);
+  });
+
+  it("an organization write within the first minute makes the next membership read hit the database", async () => {
+    primeCoreBootSeed(seed());
+    await bootReadsWithoutKnobs();
+    expect(total()).toBe(0);
+    later(10_000); // still inside the seed's 60 s life
+    forgetMemberOrganizationRows(); // createOrganization / acceptInvitation / leaveOrganization
+    await getUserOrganizations();
+    expect(calls.mbr_for_user).toBe(1);
+  });
+
+  it("the preferences focus revalidation after boot reads the database", async () => {
+    primeCoreBootSeed(seed());
+    await bootReadsWithoutKnobs();
+    expect(total()).toBe(0);
+    later(10_000);
+    await readAccountPreferencesRow(USER);
+    expect(calls["users.user_preferences"]).toBe(1);
+  });
+
+  it("a knob invalidation before the streamed seed drains discards that seed", async () => {
+    warmStoredDefaults();
+    (window as unknown as Record<string, unknown>).__matrxKnobBootSeed = [knobSeed];
+    invalidateEffectiveKnob("chat.x"); // a settings directive lands before any read drained it
+    await ensureKnobSnapshot(ORG_A, USER);
+    expect(calls.knob_snapshot_delta).toBe(1);
+  });
+});

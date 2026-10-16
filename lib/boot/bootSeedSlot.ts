@@ -22,6 +22,18 @@ export function drainBootSeeds(): void {
   }
 }
 
+const forgets: Array<() => void> = [];
+
+/** A module holding an unread seed of its own registers how to drop it. */
+export function registerBootSeedForget(forget: () => void): void {
+  forgets.push(forget);
+}
+
+/** A write or refresh changed the answers: no seed that is still unread may outlive it. */
+export function dropUnreadBootSeeds(): void {
+  for (const forget of forgets) forget();
+}
+
 /** The window globals the streamed scripts write (`BootSeedScript`). */
 export const STREAMED_CORE_SEED_GLOBAL = "__matrxCoreBootSeed";
 export const STREAMED_KNOB_SEED_GLOBAL = "__matrxKnobBootSeed";

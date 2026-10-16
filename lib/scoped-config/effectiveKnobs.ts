@@ -49,7 +49,7 @@ import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegis
 import { getWebDeviceId } from "./deviceId";
 import { defineClientKey } from "@/lib/sync/client-storage";
 import { noteKnobReadOnce } from "@/lib/config-attestation/readLedger";
-import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
+import { drainBootSeeds, STREAMED_KNOB_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
 
 const TTL_MS = 60_000;
 
@@ -641,6 +641,8 @@ export function invalidateEffectiveKnob(_ref?: KnobRef): void {
   // in-flight entries as well means a reader arriving after this point starts
   // its own fetch rather than joining one that began before the write.
   generation += 1;
+  // A streamed boot seed that has not drained yet predates this write: it is never installed.
+  if (typeof window !== "undefined") delete (window as unknown as Record<string, unknown>)[STREAMED_KNOB_SEED_GLOBAL];
   snapshots.clear();
   inFlight.clear();
   notify();

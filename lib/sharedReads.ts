@@ -32,6 +32,9 @@ export interface SharedReads {
 /** A seeded boot answer serves the boot's reads for this long after the page load, then expires. */
 export const SEED_MAX_AGE_MS = 60_000;
 
+/** After its first read a seed is shared this long (the boot's other readers), like a fetched answer. */
+export const SEED_SHARE_MS = 5_000;
+
 interface Held {
   at: number; // 0 while in flight
   read: Promise<unknown>;
@@ -51,7 +54,14 @@ export function createSharedReads(ttlMs: number): SharedReads {
       const id = addr(person, key);
       const hit = held.get(id);
       if (hit?.seededAt !== undefined) {
-        if (Date.now() - hit.seededAt < SEED_MAX_AGE_MS) return hit.read as Promise<never>;
+        // A seed answers the FIRST read of its key and is then just an ordinary held read: it
+        // ages from that read like a fetched answer (`ttlMs`), so the boot's other readers of
+        // the same key share it, and any later read (revalidation, focus, refresh) asks the database.
+        if (Date.now() - hit.seededAt < SEED_MAX_AGE_MS) {
+          hit.seededAt = undefined;
+          hit.at = Date.now();
+          return hit.read as Promise<never>;
+        }
         held.delete(id);
       } else if (hit && (hit.at === 0 || Date.now() - hit.at < ttlMs)) return hit.read as Promise<never>;
       const entry: Held = { at: 0, read: Promise.resolve() };
@@ -85,7 +95,7 @@ export function createSharedReads(ttlMs: number): SharedReads {
 
 /**
  * ONE server-read boot answer held for a module cache that is not a `SharedReads` (same contract as
- * `prime`): `take()` answers for `SEED_MAX_AGE_MS` after `put`, and `drop()` forgets it (a write, a
+ * `prime`): `take()` answers from the first read for `SEED_SHARE_MS` (like a fetched answer), within `SEED_MAX_AGE_MS` after `put`, and `drop()` forgets it (a write, a
  * sign-out).
  */
 export interface SeedHold<T> {
@@ -95,14 +105,22 @@ export interface SeedHold<T> {
 }
 
 export function createSeedHold<T>(): SeedHold<T> {
-  let held: { answer: T; seededAt: number } | null = null;
+  let held: { answer: T; seededAt: number; firstReadAt?: number } | null = null;
   return {
     put(answer) {
       held = { answer, seededAt: Date.now() };
     },
     take() {
       if (!held) return undefined;
-      if (Date.now() - held.seededAt >= SEED_MAX_AGE_MS) {
+      // Answers the first read, then only the boot's other readers for SEED_SHARE_MS from it.
+      const now = Date.now();
+      if (held.firstReadAt === undefined) {
+        if (now - held.seededAt >= SEED_MAX_AGE_MS) {
+          held = null;
+          return undefined;
+        }
+        held.firstReadAt = now;
+      } else if (now - held.firstReadAt >= SEED_SHARE_MS) {
         held = null;
         return undefined;
       }

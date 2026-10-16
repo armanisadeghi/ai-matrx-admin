@@ -31,8 +31,10 @@ let memo: string | null = null;
 /** Mirror the id into its cookie (deviceIdCookie.ts) once per tab, so the server can address the rung. */
 function mirrorToCookie(id: string): string {
   try {
-    if (!document.cookie.includes(`${WEB_DEVICE_ID_COOKIE}=${id}`)) {
-      document.cookie = `${WEB_DEVICE_ID_COOKIE}=${id}; path=/; max-age=31536000; samesite=lax`;
+    const present = document.cookie.split(";").some((part) => part.trim() === `${WEB_DEVICE_ID_COOKIE}=${id}`);
+    if (!present) {
+      const secure = window.location.protocol === "https:" ? "; Secure" : "";
+      document.cookie = `${WEB_DEVICE_ID_COOKIE}=${id}; path=/; max-age=31536000; SameSite=Lax${secure}`;
     }
   } catch {
     // Cookies blocked: the server simply reads no snapshot for first paint.

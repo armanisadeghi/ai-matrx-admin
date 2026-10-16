@@ -17,7 +17,7 @@ import { readInChunks } from "@/features/scopes/service/inChunks";
 import { isRecordsErr } from "@ai-matrx/records";
 import type { Database } from "@/types/database.types";
 import { SEED_MAX_AGE_MS } from "@/lib/sharedReads";
-import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
+import { drainBootSeeds, dropUnreadBootSeeds } from "@/lib/boot/bootSeedSlot";
 
 export type MemberOrganizationRow = Database["iam"]["Tables"]["organizations"]["Row"];
 
@@ -68,7 +68,12 @@ export function readMemberOrganizationRows(): Promise<MemberOrganizationRows> {
   drainBootSeeds(); // a streamed boot seed that has arrived answers first
   const held = shared;
   if (held?.seededAt !== undefined) {
-    if (held.userId === userId && Date.now() - held.seededAt < SEED_MAX_AGE_MS) return held.read;
+    // The first read turns the seed into an ordinary held read (aging from now, `SHARED_MS`).
+    if (held.userId === userId && Date.now() - held.seededAt < SEED_MAX_AGE_MS) {
+      held.seededAt = undefined;
+      held.at = Date.now();
+      return held.read;
+    }
     shared = null;
   } else if (held && held.userId === userId && (held.at === 0 || Date.now() - held.at < SHARED_MS)) return held.read;
   const entry: { userId: string; at: number; read: Promise<MemberOrganizationRows> } = { userId, at: 0, read: Promise.resolve({ ok: true, roleByOrgId: new Map(), joinedAtByOrgId: new Map(), rows: [] }) };
@@ -100,4 +105,5 @@ export function primeMemberOrganizationRows(userId: string, answer: MemberOrgani
 /** A write that changed her organizations, or a refresh: the next read asks again. */
 export function forgetMemberOrganizationRows(): void {
   shared = null;
+  dropUnreadBootSeeds(); // no boot seed outlives a write or refresh
 }

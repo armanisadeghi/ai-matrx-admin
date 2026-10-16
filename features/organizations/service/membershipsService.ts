@@ -26,7 +26,7 @@ import { err, ok } from "@/features/scopes/service/rpcResult";
 import type { RecordsResult } from "@ai-matrx/records";
 import type { Json } from "@/types/database.types";
 import { createSeedHold } from "@/lib/sharedReads";
-import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
+import { drainBootSeeds, registerBootSeedForget } from "@/lib/boot/bootSeedSlot";
 
 // ─── Module-scoped in-flight dedup + short TTL cache ──────────────────
 //
@@ -93,6 +93,12 @@ export function primeOrganizationMembershipReads(
   organizationMembershipsSeed.put(memberships);
   organizationCountsSeed.put(new Map(counts.map((c) => [c.container_id, Number(c.member_count)])));
 }
+
+// A write or refresh (`forgetMemberOrganizationRows`) drops whatever of these is still unread.
+registerBootSeedForget(() => {
+  organizationMembershipsSeed.drop();
+  organizationCountsSeed.drop();
+});
 
 /** Drop cached membership reads for `containerType` (e.g. after a write). */
 function invalidateForUserCache(containerType?: string): void {
