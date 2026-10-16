@@ -10,7 +10,12 @@ import { peekOutputFeedback, subscribeOutputFeedback } from "@/lib/output-feedba
 import { loadOutputFeedback } from "@/lib/output-feedback/batchLoader";
 
 registerMessageActionFeedbackStore({
-  peek: (subject) => peekOutputFeedback(subject),
+  // A "mixed" verdict (written by surfaces with more than two choices) lights neither thumb.
+  peek: (subject) => {
+    const record = peekOutputFeedback(subject);
+    if (!record) return record;
+    return { verdict: record.verdict === "mixed" ? null : record.verdict };
+  },
   subscribe: (listener) => subscribeOutputFeedback(listener),
   load: (subject) => loadOutputFeedback(subject.subjectType, subject.subjectId),
   toggle: async (subject, verdict, extras) => {

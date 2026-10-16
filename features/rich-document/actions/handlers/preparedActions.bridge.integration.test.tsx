@@ -45,7 +45,7 @@ import { HtmlPreviewBridge } from "@ai-matrx/chat/ui/html-preview/HtmlPreviewBri
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-import "./edit";
+// Edit actions now register from @ai-matrx/chat through ensureWebRichDocumentRegistrations() below.
 import "./export";
 import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 
