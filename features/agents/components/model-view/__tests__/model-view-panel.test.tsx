@@ -141,6 +141,23 @@ describe("ModelViewPanel", () => {
     expect(row.textContent).toContain("Latest models");
   });
 
+  it("says a tool-bound block is off when its tool is not in the run", async () => {
+    requestModelView.mockResolvedValue({
+      provider: "anthropic",
+      model: "claude-haiku-5-5",
+      request: anthropic,
+      notices: [],
+      prompt_blocks: [
+        { name: "web_rules", level: "organization", block_id: "b2", variant_id: null, bound_tool: "web_search", chars: 0, off: "tool not in run" },
+      ],
+    });
+    await mount();
+    const row = host.querySelector('[data-testid="model-view-block-web_rules"]')!;
+    expect(row.textContent).toContain("Off: tool not in run");
+    expect(row.textContent).not.toContain("Default text");
+    expect(row.querySelector('[title="Needs web_search"]')).not.toBeNull();
+  });
+
   it("asks again when the inputs change", async () => {
     await mount();
     expect(requestModelView).toHaveBeenCalledTimes(1);

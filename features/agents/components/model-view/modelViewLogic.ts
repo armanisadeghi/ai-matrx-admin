@@ -38,6 +38,8 @@ export interface PreviewBlock {
   source_kind?: string | null;
   bound_tool?: string | null;
   chars?: number | null;
+  /** Why the block sends nothing (e.g. "tool not in run"); absent or null when it is on. */
+  off?: string | null;
 }
 
 export interface ModelViewPreview {

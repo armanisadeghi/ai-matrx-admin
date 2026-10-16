@@ -309,9 +309,15 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
                 <span className="truncate font-mono">{b.name}</span>
                 <span className="flex shrink-0 items-center gap-1">
                   <Badge>{blockLevelLabel(b.level)}</Badge>
-                  <Badge tone={b.variant_id ? "info" : "neutral"}>
-                    {b.variant_id ? (variantLabels[b.variant_id] ?? "Variant") : "Default text"}
-                  </Badge>
+                  {b.off ? (
+                    <Badge tone="warning" title={b.bound_tool ? `Needs ${b.bound_tool}` : undefined}>
+                      {`Off: ${b.off}`}
+                    </Badge>
+                  ) : (
+                    <Badge tone={b.variant_id ? "info" : "neutral"}>
+                      {b.variant_id ? (variantLabels[b.variant_id] ?? "Variant") : "Default text"}
+                    </Badge>
+                  )}
                 </span>
               </li>
             ))}
