@@ -4,8 +4,8 @@
  *
  * Owner ruling 2026-10-15 (CONFIG-ATTEST-ROLLOUT): web, chrome-extension and server installs register
  * app_instances rows (config attestation needs a device row). A query that lists computers without
- * `onlyComputers()` (lib/app-instances/computers.ts) would offer a browser tab as a compute target. A read
- * that is not a computer list carries `app-instances: not-a-computer-list (<why>)` on one of the 3 lines above.
+ * `onlyComputers()` (lib/app-instances/computers.ts) — or, for a single-row read, `computerQuery()` /
+ * `computerFilter()` — would offer a browser tab as a compute target. A read that is not a computer list carries `app-instances: not-a-computer-list (<why>)` on one of the 3 lines above.
  *
  *   pnpm check:app-instances-computer-only
  *   pnpm check:app-instances-computer-only --self-test   # prove it can fail
@@ -21,6 +21,8 @@ const ROOT = process.cwd();
 const SKIP = /(^|\/)(node_modules|\.next|\.wt|\.git|types|migrations|docs|coverage|dist)(\/|$)|\.test\.tsx?$|__tests__/;
 const READ = /\.from\(\s*["'`]app_instances["'`]\s*\)/;
 const MARK = "app-instances: not-a-computer-list";
+/** The computer filters (lib/app-instances/computers.ts): a list read, a single-row read, the raw filter. */
+const FILTERS = ["onlyComputers(", "computerQuery(", "computerFilter("];
 
 function walk(dir: string, out: string[]): void {
   for (const name of readdirSync(dir)) {
@@ -47,7 +49,7 @@ export function offenders(files: string[], base = ROOT): string[] {
     lines.forEach((line, i) => {
       if (!READ.test(line)) return;
       const window = lines.slice(Math.max(0, i - 3), i + 1).join("\n");
-      if (window.includes("onlyComputers(") || window.includes(MARK)) return;
+      if (FILTERS.some((f) => window.includes(f)) || window.includes(MARK)) return;
       bad.push(`${relative(base, f)}:${i + 1}: ${line.trim()}`);
     });
   }
@@ -67,6 +69,16 @@ if (process.argv.includes("--self-test")) {
     writeFileSync(f, 'const { data } = await onlyComputers(\n  supabase\n  .from("app_instances")\n  .select("id"), supabase);\n');
     if (offenders([f], dir).length !== 0) {
       console.error("SELF-TEST FAILED: a filtered read was flagged");
+      process.exit(1);
+    }
+    writeFileSync(f, 'const { query } = await computerQuery(\n  supabase\n  .from("app_instances")\n  .select("id"), supabase);\n');
+    if (offenders([f], dir).length !== 0) {
+      console.error("SELF-TEST FAILED: a single-row computerQuery read was flagged");
+      process.exit(1);
+    }
+    writeFileSync(f, 'const filter = await computerFilter(supabase);\nconst query = supabase\n  .from("app_instances")\n  .select("id");\n');
+    if (offenders([f], dir).length !== 0) {
+      console.error("SELF-TEST FAILED: a computerFilter read was flagged");
       process.exit(1);
     }
     console.log("check:app-instances-computer-only self-test: can fail and can pass");

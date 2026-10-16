@@ -7,7 +7,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { DeviceRow } from "../types";
-import { computerFilter, onlyComputers } from "@/lib/app-instances/computers";
+import { computerQuery, onlyComputers } from "@/lib/app-instances/computers";
 
 /** Only what the console renders — never `select("*")`. */
 export const CONSOLE_DEVICE_COLUMNS = "id, instance_name, hostname, platform, os_version, app_version, last_seen, is_active, created_at, organization_id";
@@ -29,14 +29,16 @@ export async function fetchConsoleDevices(client: SupabaseClient, userId: string
 
 /** One device, if it is this person's and active; null otherwise (the page shows the access gate). */
 export async function fetchConsoleDevice(client: SupabaseClient, userId: string, deviceId: string): Promise<DeviceRow | null> {
-  const filter = await computerFilter(client);
-  const query = client
-    .from("app_instances")
-    .select(CONSOLE_DEVICE_COLUMNS)
-    .eq("id", deviceId)
-    .eq("user_id", userId)
-    .is("deleted_at", null);
-  const { data, error } = await (filter === null ? query : query.or(filter)).maybeSingle();
+  const { query } = await computerQuery(
+    client
+      .from("app_instances")
+      .select(CONSOLE_DEVICE_COLUMNS)
+      .eq("id", deviceId)
+      .eq("user_id", userId)
+      .is("deleted_at", null),
+    client,
+  );
+  const { data, error } = await query.maybeSingle();
   if (error) throw error;
   return (data ?? null) as unknown as DeviceRow | null;
 }

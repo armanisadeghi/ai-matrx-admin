@@ -74,6 +74,7 @@ async function registerWebInstall(userId: string, organizationId: string, appVer
     log("error", "web_install_no_device_id", { why: "localStorage unavailable; this browser cannot be one install" });
     return null;
   }
+  // app-instances: not-a-computer-list (registers this browser install; a write, not a list)
   const { data, error } = await createClient()
     .from("app_instances")
     .upsert(
