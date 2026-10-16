@@ -50,7 +50,6 @@ import {
   getJson,
   postJson,
   postNdjson,
-  putJson,
   type RequestOptions,
 } from "@/lib/python-client";
 // Every request about one file carries THAT file's organization (read from the file, never
@@ -60,6 +59,10 @@ import type { components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { activePagesEndpoint, bulkFromCandidatesEndpoint, createAnnotationEndpoint, createEntityEndpoint, escrowRecover, escrowWrappingKey, excludePageEndpoint, extractAtBboxEndpoint, extractRegionEndpoint, fetchAnalysis, fetchLabelCatalog, findSimilarEndpoint, getPageEndpoint, keyFindingsEndpoint, listEntitiesEndpoint, listOverridesEndpoint, listPagesEndpoint, manifestEndpoint, overridePageTextEndpoint, redactMask, redactRestore, renderPageWithOverlayEndpoint, snapBboxEndpoint, updateAnnotationEndpoint, updateEntityEndpoint } from "@ai-matrx/api/files";
 import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
+import { createClient } from "@/utils/supabase/client";
+import { requireUserId } from "@/utils/auth/getUserId";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { operationFailed } from "@/utils/errors";
 
 // ─── Type re-exports (named locally for callers) ────────────────────────────
 
@@ -353,23 +356,64 @@ export interface AnalysisPreferences {
   default_redaction_mode: string;
 }
 
-/** Detector preferences — exposed 2026-06-11 (the prefs system was
- *  write-only server-side before; audit intent-gap #7). */
-export function getAnalysisPreferences(
-  opts: RequestOptions = {},
+/** Detector preferences — read and written straight in Postgres
+ *  (`users.user_analysis_preferences`, row-level security = the caller's own row).
+ *  The Python server is not involved. */
+const DEFAULT_PREFS: AnalysisPreferences = {
+  per_detector_enabled: {},
+  default_tier_per_detector: {},
+  default_redaction_mode: "reversible",
+};
+
+export async function getAnalysisPreferences(
+  _opts: RequestOptions = {},
 ): Result<AnalysisPreferences> {
-  return getJson<AnalysisPreferences>(`/files/analysis/preferences`, opts);
+  const { data, error } = await createClient()
+    .schema("users")
+    .from("user_analysis_preferences")
+    .select("per_detector_enabled, default_tier_per_detector, default_redaction_mode")
+    .eq("user_id", requireUserId())
+    .is("deleted_at", null)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw operationFailed("load your detector preferences", error);
+  if (!data) return { data: { ...DEFAULT_PREFS } };
+  return {
+    data: {
+      per_detector_enabled: (data.per_detector_enabled ?? {}) as Record<string, boolean>,
+      default_tier_per_detector: (data.default_tier_per_detector ?? {}) as Record<string, string>,
+      default_redaction_mode: data.default_redaction_mode || "reversible",
+    },
+  };
 }
 
-export function putAnalysisPreferences(
+export async function putAnalysisPreferences(
   body: AnalysisPreferences,
-  opts: RequestOptions = {},
+  _opts: RequestOptions = {},
 ): Result<AnalysisPreferences & { status: string }> {
-  return putJson<AnalysisPreferences & { status: string }, AnalysisPreferences>(
-    `/files/analysis/preferences`,
-    body,
-    opts,
-  );
+  const userId = requireUserId();
+  const table = createClient().schema("users").from("user_analysis_preferences");
+  const updates = {
+    per_detector_enabled: body.per_detector_enabled,
+    default_tier_per_detector: body.default_tier_per_detector,
+    default_redaction_mode: body.default_redaction_mode,
+  };
+  const existing = await table.select("id").eq("user_id", userId).is("deleted_at", null).limit(1).maybeSingle();
+  if (existing.error) throw operationFailed("save your detector preferences", existing.error);
+  if (existing.data) {
+    const { error } = await table.update(updates).eq("id", existing.data.id);
+    if (error) throw operationFailed("save your detector preferences", error);
+  } else {
+    // Every insert names its organization; nothing chooses one for it.
+    const { error } = await table.insert({
+      ...updates,
+      user_id: userId,
+      created_by: userId,
+      organization_id: await ensureOrgId(null),
+    } as never);
+    if (error) throw operationFailed("save your detector preferences", error);
+  }
+  return { data: { ...updates, status: "saved" } };
 }
 
 export function getLabelCatalog(
