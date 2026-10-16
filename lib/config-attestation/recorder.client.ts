@@ -66,8 +66,24 @@ function browserLabel(): string {
   return "browser";
 }
 
-/** Upsert this browser profile's install row; its id is the report's device. */
+const installRowKey = defineClientKey({
+  id: "config-attestation.install-row.v1",
+  area: "session",
+  kind: "cache",
+  reason: "This tab session already upserted its app_instances row; reloads reuse the id (once per session).",
+});
+
+/** Upsert this browser profile's install row (once per tab session); its id is the report's device. */
 async function registerWebInstall(userId: string, organizationId: string, appVersion: string): Promise<string | null> {
+  const sessionTag = `${userId}:${organizationId}:${appVersion}`;
+  const cached = installRowKey.getJSON<{ tag: string; id: string }>();
+  if (cached && cached.tag === sessionTag && typeof cached.id === "string") return cached.id;
+  const id = await upsertWebInstall(userId, organizationId, appVersion);
+  if (id) installRowKey.setJSON({ tag: sessionTag, id });
+  return id;
+}
+
+async function upsertWebInstall(userId: string, organizationId: string, appVersion: string): Promise<string | null> {
   const deviceId = getWebDeviceId();
   if (!deviceId) {
     configAttestationCounters.register_failures += 1;

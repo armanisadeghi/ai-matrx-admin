@@ -2,7 +2,11 @@
 
 // Starts the config-read recorder once this tab is signed in (lib/config-attestation/recorder.client.ts).
 // Renders nothing. Polls cheaply for sign-in because the root layout sits above the Redux provider.
+// LATE TIER (owner rule, 2026-10-16): telemetry nobody waits for starts only after the page has
+// fully settled (lib/boot/lateIdle). Config reads made before then wait in the ledger's capped
+// pre-attach queue (lib/config-attestation/readLedger.ts), so nothing is lost by waiting.
 import { useEffect } from "react";
+import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { startConfigAttestation } from "@/lib/config-attestation/recorder.client";
 
 const RETRY_MS = 5_000;
@@ -18,9 +22,13 @@ export function ConfigAttestationBoot() {
         })
         .catch((error: unknown) => console.error("[config-attestation] start failed", error));
     };
-    attempt();
+    const controller = new AbortController();
+    void whenLateIdle(undefined, controller.signal).then((ok) => {
+      if (ok && !stopped) attempt();
+    });
     return () => {
       stopped = true;
+      controller.abort();
       if (timer) clearTimeout(timer);
     };
   }, []);
