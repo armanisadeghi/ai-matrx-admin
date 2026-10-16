@@ -23,7 +23,9 @@ function readSource(): string {
 }
 
 /** Slices out the `<MenuGroup id="admin" ...>...</MenuGroup>` block. */
-function adminGroupBlock(source: string): string {
+function adminGroupBlock(_panelSource: string): string {
+  // The group lives behind the admin gate's dynamic edge (AdminMenuGroupImpl).
+  const source = readFileSync(path.join(__dirname, "AdminMenuGroupImpl.tsx"), "utf8");
   const start = source.indexOf('id="admin"');
   expect(start).toBeGreaterThan(-1);
   const openTagStart = source.lastIndexOf("<MenuGroup", start);
@@ -59,5 +61,24 @@ describe("UserMenuPanel — Intelligence is a person-level destination", () => {
     const anchor = source.indexOf('href="/intelligence"');
     expect(anchor).toBeGreaterThan(-1);
     expect(adminGroupBlock(source)).not.toContain('href="/intelligence"');
+  });
+});
+
+describe("UserMenuPanel — the admin group never shifts the menu (no layout shift)", () => {
+  it("reserves the group's row while its chunk loads, from the same row primitive", () => {
+    const source = readSource();
+    expect(source).toMatch(/loading: \(\) => \(/);
+    expect(source).toContain("MenuGroupSkeleton");
+    const group = readFileSync(path.join(__dirname, "MenuGroup.tsx"), "utf8");
+    expect(group).toContain("MENU_GROUP_ROW_CLASS");
+    // the real label and the skeleton share the one row class
+    expect(group.match(/MENU_GROUP_ROW_CLASS/g)!.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("starts the chunk on trigger hover/focus/press, with no static admin import", () => {
+    const source = readSource();
+    expect(source).toMatch(/"pointerenter"/);
+    expect(source).toMatch(/"focus"/);
+    expect(source).not.toMatch(/^import .*AdminMenuGroupImpl/m);
   });
 });

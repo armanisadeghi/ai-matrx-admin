@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { getMenuIcon, type MenuIconKey } from "./menuIconRegistry";
 
+/** The group's header row. Shared with the loading skeleton so both are the same height. */
+export const MENU_GROUP_ROW_CLASS =
+  "flex items-center gap-2 w-full px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground rounded-full select-none";
+
 interface MenuGroupProps {
   id: string;
   icon: MenuIconKey;
@@ -41,7 +45,7 @@ export function MenuGroup({
 
       <label
         htmlFor={inputId}
-        className="flex items-center gap-2 w-full px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground rounded-full cursor-pointer select-none transition-colors hover:bg-[var(--matrx-glass-bg-hover)]"
+        className={`${MENU_GROUP_ROW_CLASS} cursor-pointer transition-colors hover:bg-[var(--matrx-glass-bg-hover)]`}
       >
         <span className={iconClassName}>
           <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -98,6 +102,20 @@ export function MenuGroup({
           <div className="pl-2 pt-0.5">{children}</div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * A collapsed group's header while its chunk loads: same row, same height, so
+ * nothing below it moves when the real group arrives (no layout shift).
+ */
+export function MenuGroupSkeleton({ label }: Pick<MenuGroupProps, "label">) {
+  return (
+    <div className={MENU_GROUP_ROW_CLASS} aria-hidden="true" data-menu-group-skeleton>
+      <span className="w-3.5 h-3.5 shrink-0" />
+      <span className="flex-1 text-left">{label}</span>
+      <span className="w-3 h-3 shrink-0" />
     </div>
   );
 }
