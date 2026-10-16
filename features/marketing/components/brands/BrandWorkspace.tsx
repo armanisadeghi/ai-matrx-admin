@@ -198,15 +198,15 @@ function factValueText(fact: BusinessFact): string {
  * never the browser's broken-image alt text.
  */
 function AssetTileImage({ src, label }: { src: string; label: string }) {
-  const [failed, setFailed] = useState(false);
+  // The failure belongs to one src: a new src starts clean without an effect resetting state.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const failed = failedSrc === src;
+  const setFailed = (value: boolean) => setFailedSrc(value ? src : null);
   const ref = useRef<HTMLImageElement | null>(null);
-  useEffect(() => {
-    setFailed(false);
-  }, [src]);
   useEffect(() => {
     // A cached failure can settle before React attaches onError.
     const img = ref.current;
-    if (img && img.complete && img.naturalWidth === 0) setFailed(true);
+    if (img && img.complete && img.naturalWidth === 0) setFailedSrc(src);
   }, [src]);
   if (failed) {
     return (
