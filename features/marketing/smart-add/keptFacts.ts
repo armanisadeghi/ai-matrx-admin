@@ -24,6 +24,7 @@ import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { extractErrorMessage } from "@/utils/errors";
+import { factDisplayLabel } from "@/features/marketing/lib/factLabel";
 import type { BrandFact } from "./validate/queue";
 import type { Decision } from "./evidence";
 import { EARLY_FACTS_MANDATE, factIdentity } from "./factIdentity";
@@ -243,7 +244,7 @@ export async function saveKeptFacts(
           organization_id: organizationId,
           brand_id: brandId,
           kind: r.kind as string,
-          label: r.fact.field_label,
+          label: factDisplayLabel(r.fact.field_label, r.fact.value) || r.fact.field_label,
           value: factValue(r.fact.value),
           source: "discovered",
           metadata: r.metadata as Json,
