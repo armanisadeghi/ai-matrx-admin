@@ -198,3 +198,28 @@ export async function readHostedCapacity(): Promise<SandboxCapacityRefusal | nul
   const data = await hostedRuntimeStatus(serverApi, {});
   return capacityFromReadiness(data);
 }
+
+/**
+ * Why a hosted run may not start yet, in the words the Run row shows — or
+ * null when nothing stands in the way. The ONE reader of "is the payer
+ * ready": the composer's Run button and its hint both come from here.
+ *
+ * On the person's own plan, only a server-reported `signed_in` lets Run go;
+ * `signed_in_not_plan` (an API-key sign-in, not a subscription) never does.
+ * A Codex run also needs its model named (`CodexManagedRequest.model`).
+ */
+export function hostedRunBlocker(
+  provider: OwnPlanProvider,
+  billing: HostedBilling,
+  status: OwnPlanStatus | null,
+  codexModel: string | null,
+): string | null {
+  const vendor = provider === "codex" ? "ChatGPT" : "Claude";
+  if (billing === "own_plan" && status?.state !== "signed_in") {
+    return status?.state === "signed_in_not_plan"
+      ? `Sign in with a ${vendor} plan, or use AI Matrx credits.`
+      : `Connect your ${vendor} account first.`;
+  }
+  if (provider === "codex" && !codexModel) return "Choose a Codex model first.";
+  return null;
+}
