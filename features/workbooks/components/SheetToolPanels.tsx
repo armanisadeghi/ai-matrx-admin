@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "@/lib/toast";
 import type { SheetPanel } from "@/features/workbooks/chrome/sheet-commands";
 import { hasHeaderRow } from "@/features/workbooks/chrome/sheet-extras";
+import { csvLinkMessage, readCsvLink, writeRowsGrowing, type GrowableSheet } from "@/features/workbooks/chrome/sheet-csv-link";
 import {
   EXTRACTORS,
   RECALCULATION_OPTIONS,
@@ -22,14 +23,11 @@ import {
   applyFilterView,
   buildTimeline,
   captureFilterView,
-  csvCell,
   extractFields,
   formatDay,
   lambdaFormula,
   namedFunctionNameProblem,
   namedFunctionsFrom,
-  parseCsv,
-  sniffDelimiter,
   type ExtractorId,
   type FilterLike,
   type FilterView,
@@ -46,7 +44,7 @@ interface PanelRange {
   setValues(values: unknown[][]): unknown;
   activate?(): unknown;
 }
-interface PanelSheet {
+interface PanelSheet extends GrowableSheet {
   getSheetId(): string;
   getFilter(): FilterLike | null;
   getSheetName(): string;
@@ -376,24 +374,6 @@ function ExtractionPanel({ api, onClose, editable }: SheetToolPanelsProps) {
 
 // ─── Data connectors ───
 
-async function fetchCsv(url: string): Promise<unknown[][]> {
-  const res = await fetch(`/api/workbooks/fetch-csv?url=${encodeURIComponent(url)}`);
-  if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? "The link could not be read");
-  }
-  const text = await res.text();
-  return parseCsv(text, sniffDelimiter(text)).map((row) => row.map(csvCell));
-}
-
-/** Write rows at a cell, clearing nothing else; returns how many rows went in. */
-function writeRows(sheet: PanelSheet, row: number, col: number, values: unknown[][]): number {
-  const width = values.reduce((w, r) => Math.max(w, r.length), 0);
-  if (!values.length || !width) return 0;
-  sheet.getRange(row, col, values.length, width).setValues(values.map((r) => Array.from({ length: width }, (_, i) => r[i] ?? null)));
-  return values.length;
-}
-
 function ConnectorsPanel({ api, connectors, onConnectors, editable, linkedTableId, makeTable }: SheetToolPanelsProps) {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -405,13 +385,13 @@ function ConnectorsPanel({ api, connectors, onConnectors, editable, linkedTableI
     const col = anchor?.startColumn ?? 0;
     setBusy(true);
     try {
-      const rows = await fetchCsv(url.trim());
-      const n = writeRows(sheet, row, col, rows);
+      const rows = await readCsvLink(url.trim());
+      const n = writeRowsGrowing(sheet, row, col, rows);
       onConnectors([...connectors, { id: newId(), kind: "csv-url", label: url.trim(), source: url.trim(), sheetId: sheet.getSheetId(), row, column: col, refreshedAt: new Date().toISOString() }]);
       toast.success(`${n} rows from the link are in the sheet`);
       setUrl("");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "The link could not be read");
+      toast.error(csvLinkMessage(e));
     } finally {
       setBusy(false);
     }
@@ -425,11 +405,11 @@ function ConnectorsPanel({ api, connectors, onConnectors, editable, linkedTableI
     }
     setBusy(true);
     try {
-      const n = writeRows(target, c.row, c.column, await fetchCsv(c.source));
+      const n = writeRowsGrowing(target, c.row, c.column, await readCsvLink(c.source));
       onConnectors(connectors.map((x) => (x.id === c.id ? { ...x, refreshedAt: new Date().toISOString() } : x)));
       toast.success(`Refreshed: ${n} rows`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "The link could not be read");
+      toast.error(csvLinkMessage(e));
     } finally {
       setBusy(false);
     }

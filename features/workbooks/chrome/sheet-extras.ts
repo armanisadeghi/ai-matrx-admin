@@ -36,6 +36,13 @@ export function hasHeaderRow(values: unknown[][]): boolean {
   return filled.length > 0 && filled.every((v) => typeof v === "string" && asNumber(v) === null);
 }
 
+/** The used part of a block: trailing rows where every cell is blank are dropped (a blank sheet is 100 rows tall; those are not "blank cells" of the data). */
+export function trimTrailingBlankRows(values: unknown[][]): unknown[][] {
+  let end = values.length;
+  while (end > 0 && values[end - 1]!.every(isBlank)) end -= 1;
+  return values.slice(0, end);
+}
+
 /** Counts, distribution and common values for every column of a block of cells. */
 export function columnStats(values: unknown[][], opts: { topN?: number } = {}): ColumnStats[] {
   const topN = opts.topN ?? 5;

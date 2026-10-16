@@ -9,6 +9,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { LocaleService } from "@univerjs/core";
+
 import { toast } from "@/lib/toast";
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import type { SheetChromeHost, SheetPanel } from "@/features/workbooks/chrome/sheet-commands";
@@ -20,9 +22,11 @@ import {
   normalizeFilterViews,
   normalizeMacros,
   normalizePrefs,
+  protectPanelTitle,
   normalizeSettings,
   recalcIntervalMs,
   type FilterSheetLike,
+  type ProtectTarget,
   type FilterView,
   type SheetConnector,
   type SheetMacro,
@@ -30,6 +34,8 @@ import {
   type SheetSettings,
 } from "@/features/workbooks/chrome/sheet-row-extras";
 import { cancelMacroRecording, finishMacroRecording, isRecording, replayMacro, startMacroRecording } from "@/features/workbooks/chrome/sheet-macros";
+import { installColumnAutocomplete } from "@/features/workbooks/chrome/sheet-autocomplete";
+import { installFormulaPopupControls } from "@/features/workbooks/chrome/sheet-formula-popups";
 import { installViewOverlays, type ViewOverlayState } from "@/features/workbooks/chrome/sheet-view-overlays";
 import { readAllSheetExtras, writeSheetExtra, type SheetExtraKey } from "@/features/workbooks/sheet-extras-service";
 
@@ -45,9 +51,9 @@ interface ApiLike {
 
 const newId = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-/** Command ids of the two popups that open while a formula is typed. */
-export const FORMULA_SEARCH_OPERATION = "formula-ui.operation.search-function";
-export const FORMULA_HELP_OPERATION = "formula-ui.operation.help-function";
+/** Opens the Protect sheets and ranges side panel (every entry point goes through it). */
+export const PERMISSION_PANEL_OPERATION = "sheet-permission.operation.openPanel";
+const PROTECT_TITLE_KEY = ["sheets-ui", "permission", "panel", "title"];
 
 export function useSheetExtras({
   apiRef,
@@ -127,16 +133,55 @@ export function useSheetExtras({
     [apiRef],
   );
 
-  // Tools → Autocomplete / Suggestion controls: the popups Univer opens while a formula is typed are cancelled.
+  // Tools → Suggestion controls: the formula popups read the live setting (see sheet-formula-popups.ts).
+  useEffect(() => {
+    const inj = injector();
+    if (!ready || !inj) return undefined;
+    try {
+      return installFormulaPopupControls(inj, () => prefsRef.current);
+    } catch (err) {
+      console.warn("[workbook] Suggestion controls unavailable", err);
+      return undefined;
+    }
+    // injector() reads a ref; the instance is fixed per workbook.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, workbookId]);
+  // Tools → Autocomplete: a column value is offered as text is typed.
+  useEffect(() => {
+    const api = apiRef.current as ApiLike | null;
+    if (!ready || !api) return undefined;
+    try {
+      return installColumnAutocomplete(api as never, () => prefsRef.current.columnAutocomplete);
+    } catch (err) {
+      console.warn("[workbook] Autocomplete unavailable", err);
+      return undefined;
+    }
+  }, [apiRef, ready, workbookId]);
+  // Protect panel: Univer titles it "Protect Rows and Columns" whatever is protected; say what it is.
+  const retitleProtectPanel = (params?: { rule?: { unitType?: number; ranges?: ProtectTarget["range"][] } }) => {
+    try {
+      const locales = injector()?.get<LocaleService>(LocaleService)?.getLocales() as Record<string, unknown> | undefined;
+      let node = locales;
+      for (const key of PROTECT_TITLE_KEY.slice(0, -1)) node = node?.[key] as Record<string, unknown> | undefined;
+      if (!node) return;
+      const rule = params?.rule;
+      const selected = (apiRef.current as { getActiveWorkbook(): { getActiveSheet(): { getSelection(): { getActiveRange(): { getRange(): ProtectTarget["range"] } | null } | null } | null } | null } | null)
+        ?.getActiveWorkbook()?.getActiveSheet()?.getSelection()?.getActiveRange()?.getRange();
+      node.title = protectPanelTitle({ unitType: rule?.unitType, range: rule ? rule.ranges?.[0] ?? null : selected });
+    } catch (err) {
+      console.warn("[workbook] Protect panel title unavailable", err);
+    }
+  };
+  // Protect panel title: see retitleProtectPanel.
   useEffect(() => {
     const api = apiRef.current as ApiLike | null;
     if (!ready || !api) return undefined;
     const d = api.addEvent(api.Event.BeforeCommandExecute, (e) => {
-      if (!e.params?.visible) return;
-      if (e.id === FORMULA_SEARCH_OPERATION && !prefsRef.current.autocomplete) e.cancel = true;
-      if (e.id === FORMULA_HELP_OPERATION && !prefsRef.current.formulaHints) e.cancel = true;
+      if (e.id === PERMISSION_PANEL_OPERATION) retitleProtectPanel(e.params as { rule?: { unitType?: number; ranges?: ProtectTarget["range"][] } } | undefined);
     });
     return () => d.dispose();
+    // retitleProtectPanel reads refs only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiRef, ready, workbookId]);
   const togglePref = useCallback(
     (key: keyof SheetPrefs) => {
