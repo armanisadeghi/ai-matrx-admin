@@ -298,6 +298,10 @@ if $STRICT; then
         # registration import (lane AE, 2026-10-08) — heavy modules stay out of the shell's eager set.
         "Heavy module in the shell's eager client set|pnpm check:shell-eager-graph"
         "Shell-eager-graph guard self-test|pnpm check:shell-eager-graph:self-test"
+        # One import() per item (263 surfaces, 2,118 icons) cost GBs of build memory and doubled
+        # the build twice in October 2026 — a set that loads together gets ONE lazy module.
+        "One file fans out too many lazy import() targets|pnpm check:import-fanout"
+        "Import-fanout guard self-test|pnpm check:import-fanout:self-test"
         # A server-only module calling a "use client" export throws when the page renders, failing
         # the build after compile (rich-content 0.2.20 cn(), v0.4.2937-2940, 2026-10-07).
         "Server-only module calls a \"use client\" export|pnpm check:server-calls-client"
@@ -1263,6 +1267,10 @@ else
         # registration import (lane AE, 2026-10-08) — heavy modules stay out of the shell's eager set.
         "Heavy module in the shell's eager client set|pnpm check:shell-eager-graph"
         "Shell-eager-graph guard self-test|pnpm check:shell-eager-graph:self-test"
+        # One import() per item (263 surfaces, 2,118 icons) cost GBs of build memory and doubled
+        # the build twice in October 2026 — a set that loads together gets ONE lazy module.
+        "One file fans out too many lazy import() targets|pnpm check:import-fanout"
+        "Import-fanout guard self-test|pnpm check:import-fanout:self-test"
         # A server-only module calling a "use client" export throws when the page renders, failing
         # the build after compile (rich-content 0.2.20 cn(), v0.4.2937-2940, 2026-10-07).
         "Server-only module calls a \"use client\" export|pnpm check:server-calls-client"
