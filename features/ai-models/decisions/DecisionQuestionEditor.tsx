@@ -133,8 +133,8 @@ function QuestionCard({
           title="Change question type"
         />
         <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="ml-1 truncate text-sm font-medium text-foreground">{kind.label}</span>
-        <span className="text-sm text-muted-foreground">· Question {index + 1}</span>
+        <span className="ml-1 shrink-0 text-sm font-medium text-foreground">{kind.label}</span>
+        <span className="hidden shrink-0 text-sm text-muted-foreground sm:inline">· Question {index + 1}</span>
         <span className="ml-auto flex items-center gap-1">
           <Button
             icon={<SlidersHorizontal />}
@@ -142,8 +142,9 @@ function QuestionCard({
             type="button"
             onClick={() => setAdvanced((open) => !open)}
             aria-pressed={advanced}
+            aria-label="Advanced"
           >
-            Advanced
+            <span className="hidden sm:inline">Advanced</span>
           </Button>
           <Button icon={<Trash2 />} variant="quiet" type="button" onClick={onRemove} aria-label={`Delete question ${index + 1}`} />
         </span>
@@ -183,8 +184,8 @@ function QuestionCard({
           )}
 
           {advanced && (
-            <div className="grid gap-3 rounded-lg bg-muted/40 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-              <div className="space-y-1.5">
+            <div className="flex flex-col gap-3 rounded-lg bg-muted/40 p-3 sm:flex-row sm:items-end">
+              <div className="min-w-0 flex-1 space-y-1.5">
                 <span className={FIELD_LABEL}>Answer name</span>
                 <ProInput
                   value={question.name}
@@ -235,10 +236,21 @@ function CriteriaJson({ question, onChange }: { question: DecisionQuestion; onCh
 
 // Every option row is the same three columns, so names, descriptions and
 // remove buttons line up down the card.
-const ROW = "grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_2.25rem] items-center gap-2";
+// Each row: a fixed-width first cell, the description taking the rest, then a
+// remove slot of the same width on every row.
+const ROW = "flex items-center gap-2";
+const FIRST_CELL = "w-28 shrink-0 sm:w-36";
+// Fixed labels (Yes / No, True / False) are one short word: a narrow first cell.
+const FIXED_CELL = "w-12 shrink-0 text-sm font-medium text-foreground";
+const REST = "min-w-0 flex-1";
+const END_CELL = "flex w-9 shrink-0 justify-center";
 
 function RemoveRow({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
-  return <Button icon={<X />} type="button" variant="quiet" disabled={disabled} onClick={onClick} aria-label={label} />;
+  return (
+    <span className={END_CELL}>
+      <Button icon={<X />} type="button" variant="quiet" disabled={disabled} onClick={onClick} aria-label={label} />
+    </span>
+  );
 }
 
 function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onChange: (question: DecisionQuestion) => void }) {
@@ -248,13 +260,14 @@ function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onCh
         <span className={FIELD_LABEL}>What true and false mean (optional)</span>
         {(["true", "false"] as const).map((side) => (
           <div key={side} className={ROW}>
-            <span className="text-sm font-medium text-foreground">{side === "true" ? "True" : "False"}</span>
+            <span className={FIXED_CELL}>{side === "true" ? "True" : "False"}</span>
             <ProInput
               value={question.criteria[side]}
               onChange={(event) => onChange({ ...question, criteria: { ...question.criteria, [side]: event.target.value } })}
               placeholder={side === "true" ? "e.g. They say they are unhappy" : "e.g. They sound satisfied"}
               aria-label={`${side === "true" ? "True" : "False"} means`}
               showCopyButton={false}
+              wrapperClassName={REST}
             />
           </div>
         ))}
@@ -268,8 +281,8 @@ function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onCh
       <div className="space-y-1.5">
         <span className={FIELD_LABEL}>Levels, lowest first</span>
         {question.criteria.map((level, levelIndex) => (
-          <div key={`${question.id}-${levelIndex}`} className="grid grid-cols-[1.5rem_minmax(0,1fr)_2.25rem] items-center gap-2">
-            <span className="text-right text-sm tabular-nums text-muted-foreground">{levelIndex + 1}</span>
+          <div key={`${question.id}-${levelIndex}`} className={ROW}>
+            <span className="w-6 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{levelIndex + 1}</span>
             <ProInput
               value={level}
               onChange={(event) =>
@@ -278,6 +291,7 @@ function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onCh
               placeholder={placeholders[levelIndex] ?? "Next level"}
               aria-label={`Level ${levelIndex + 1}`}
               showCopyButton={false}
+              wrapperClassName={REST}
             />
             <RemoveRow
               label={`Remove level ${levelIndex + 1}`}
@@ -301,7 +315,7 @@ function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onCh
       {question.criteria.map((criterion, optionIndex) => (
         <div key={`${question.id}-${optionIndex}`} className={ROW}>
           {fixed ? (
-            <span className="text-sm font-medium capitalize text-foreground">{criterion.key}</span>
+            <span className={cn(FIXED_CELL, "capitalize")}>{criterion.key}</span>
           ) : (
             <ProInput
               value={criterion.key}
@@ -312,6 +326,7 @@ function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onCh
               placeholder={keyPlaceholders[optionIndex] ?? "Option"}
               enableVoice={false}
               showCopyButton={false}
+              wrapperClassName={FIRST_CELL}
             />
           )}
           <ProInput
@@ -322,10 +337,9 @@ function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onCh
             aria-label={`When to pick ${criterion.key || `option ${optionIndex + 1}`}`}
             placeholder="When to pick it (optional)"
             showCopyButton={false}
+            wrapperClassName={REST}
           />
-          {fixed ? (
-            <span />
-          ) : (
+          {fixed ? null : (
             <RemoveRow
               label={`Remove option ${optionIndex + 1}`}
               disabled={question.criteria.length <= 2}
