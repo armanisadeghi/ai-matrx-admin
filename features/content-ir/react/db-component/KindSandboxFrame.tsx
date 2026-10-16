@@ -266,13 +266,16 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
     const [heard, setHeard] = React.useState(false);
     const heardRef = React.useRef(false);
     const [loaded, setLoaded] = React.useState(false);
-    const [silent, setSilent] = React.useState(false);
     const [frameAttempt, setFrameAttempt] = React.useState(0);
+    // Silence belongs to one attempt: a new attempt or a load clears it by
+    // changing the key, never by a setState inside the effect.
+    const attemptKey = `${frameAttempt}:${loaded ? 1 : 0}`;
+    const [silentKey, setSilentKey] = React.useState<string | null>(null);
+    const silent = silentKey === attemptKey;
     React.useEffect(() => {
         if (heard) return;
-        setSilent(false);
         const timer = window.setTimeout(() => {
-            setSilent(true);
+            setSilentKey(attemptKey);
             // 🚨 A FRAME THAT NEVER SPEAKS IS A FAILURE THE ERROR INSPECTOR HEARS (2026-10-14).
             // The screen said "This view did not load" while the inspector read "No errors
             // captured" — a reviewer took the notice for the inspector itself failing. One
@@ -288,7 +291,7 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
             });
         }, loaded ? SILENT_FRAME_MS : NEVER_LOADED_MS);
         return () => window.clearTimeout(timer);
-    }, [heard, loaded, frameAttempt, kind]);
+    }, [heard, loaded, frameAttempt, kind, attemptKey]);
     /** Channels offered to the frame and not yet answered on (see INIT_RETRY_MS). */
     const offeredPorts = React.useRef<MessagePort[]>([]);
     const initRetryTimer = React.useRef<number | null>(null);
