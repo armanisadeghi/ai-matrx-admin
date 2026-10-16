@@ -471,7 +471,7 @@ function BusinessFactRow({
   return (
     <li className="flex min-h-9 min-w-0 items-center gap-3 px-3 py-0.5 hover:bg-accent/40" data-fact-id={fact.id}>
       {showLabel ? (
-        <span className="w-40 shrink-0 truncate type-label" title={subLabel || undefined}>
+        <span className="w-24 shrink-0 truncate type-label sm:w-40" title={subLabel || undefined}>
           {subLabel}
         </span>
       ) : null}
