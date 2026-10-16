@@ -19,8 +19,9 @@
  *
  * FRESHNESS. `communication.notification` is not in the realtime publication
  * and its select policy has no recipient arm (`pnpm check:realtime-publication`).
- * The badge reads once after settle, then on focus (≤ once a minute) and after every write;
- * the open list also refreshes every `INBOX_POLL_INTERVAL_MS`.
+ * The badge reads once after settle, then on focus (≤ once a minute), after every write, and
+ * every `INBOX_BADGE_POLL_MS` while the tab is visible (a notice that arrives while the tab
+ * stays focused would otherwise never show); the open list also refreshes every `INBOX_POLL_INTERVAL_MS`.
  * The broadcast on insert is the named follow-up in ./FEATURE.md.
  */
 
@@ -60,11 +61,21 @@ import type {
 /** How often the badge re-reads while the tab is open (ms). */
 export const INBOX_POLL_INTERVAL_MS = 60_000;
 /**
- * The always-mounted bell BADGE never polls (owner, 2026-10-15: nothing the page does not show
- * leaves on a timer). It reads once after the page settles, then on window focus — at most once
- * per this window — and after every write. The open bell's list keeps its own interval.
+ * The always-mounted bell BADGE reads once after the page settles (its queries are `enabled`
+ * only then, so no timer runs at first paint), then on window focus — at most once per this
+ * window — after every write, and every `INBOX_BADGE_POLL_MS` while the tab is visible.
+ * The open bell's list keeps its own interval.
  */
 export const INBOX_BADGE_STALE_MS = 60_000;
+/** Visible-tab badge refresh (ms). Hidden tabs never poll. */
+export const INBOX_BADGE_POLL_MS = 5 * 60_000;
+
+/** react-query `refetchInterval`: every 5 minutes, but only while the tab is visible. */
+export function badgeRefetchInterval(): number | false {
+  return typeof document !== "undefined" && document.visibilityState === "visible"
+    ? INBOX_BADGE_POLL_MS
+    : false;
+}
 /** Notices per page read. */
 export const INBOX_PAGE_SIZE = 50;
 
@@ -84,7 +95,9 @@ export function useWorkWaiting(enabled: boolean) {
     queryKey: workKey(userId),
     queryFn: fetchMyWorkWaiting,
     enabled: userId !== null && enabled,
-    // No interval: the badge re-reads on window focus, at most once a minute (the load law).
+    // Focus re-reads at most once a minute; a still-focused tab re-reads every 5 minutes.
+    refetchInterval: badgeRefetchInterval,
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
     staleTime: INBOX_BADGE_STALE_MS,
     retry: 1,
@@ -126,7 +139,9 @@ export function useInboxCounts(): InboxCounts {
     queryKey: summaryKey(userId),
     queryFn: fetchInboxSummary,
     enabled: userId !== null && idleReady,
-    // No interval: the badge re-reads on window focus, at most once a minute (the load law).
+    // Focus re-reads at most once a minute; a still-focused tab re-reads every 5 minutes.
+    refetchInterval: badgeRefetchInterval,
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
     staleTime: INBOX_BADGE_STALE_MS,
   });
