@@ -16,7 +16,7 @@
  * Watch window when it is built.
  */
 
-import { livePromoteDeps, promoteSmartAddFindings } from "./promote";
+import { promoteSmartAddFindings } from "./promote";
 import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -1214,6 +1214,8 @@ export function SmartAddBrand({
             basics_sources: factPlan.basicsSources,
             facts_kept: factPlan.rows.length,
             facts_runs: [...new Set(facts.map((f) => f.run_id).filter((id): id is string => Boolean(id)))],
+            // Every round of this session: a round still running lands its late findings on this brand (server).
+            runs: runIds,
           },
         },
         websiteUrl: basics.websiteUrl,
@@ -1310,11 +1312,13 @@ export function SmartAddBrand({
       const merged = mergeConfirmedIntoPlan(factPlan, contact);
       problems.push(...(await saveKeptFacts(organizationId, brand.id, merged.plan)).problems);
       problems.push(...(await saveFacts(organizationId, brand.id, basics, merged.remaining)));
-      // What Create kept on the brand (competitors…) lands in its real home tables, once (promote.ts).
+      // What Create kept on the brand lands in its real home tables, once: the server holds the rules (promote.ts),
+      // and lands what the facts agent finds after this moment too (its round names this brand by `smart_add.runs`).
       try {
-        await promoteSmartAddFindings(livePromoteDeps, brand.id);
+        const promoted = await promoteSmartAddFindings(brand.id);
+        problems.push(...promoted.problems);
       } catch (error) {
-        problems.push(`Competitors: ${extractErrorMessage(error)}`);
+        problems.push(`Findings: ${extractErrorMessage(error)}`);
       }
       setSaveNotes(problems);
       setCreated(brand);

@@ -19,6 +19,9 @@
  */
 
 import { foundByForSource } from "../factIdentity";
+import { toast } from "@/lib/toast";
+import { extractErrorMessage } from "@/utils/errors";
+import { promotedHomes, promoteSmartAddFindings, undoPromotion } from "../promote";
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
@@ -510,12 +513,40 @@ export async function persistAnswer(
   opts: { relationKey?: string | null; value?: string } = {},
 ): Promise<Persisted> {
   const slot = `${ctx.getBrand().id}:${item.key}`;
-  const turn = (saving.get(slot) ?? Promise.resolve()).catch(() => undefined).then(() => persistAnswerOnce(ctx, item, answer, opts));
+  const turn = (saving.get(slot) ?? Promise.resolve())
+    .catch(() => undefined)
+    .then(() => persistAnswerOnce(ctx, item, answer, opts))
+    .then((persisted) => (CONFIRMED.has(answer) ? withPromotion(ctx, persisted) : persisted));
   saving.set(slot, turn);
   try {
     return await turn;
   } finally {
     if (saving.get(slot) === turn) saving.delete(slot);
+  }
+}
+
+/**
+ * A confirmed answer lands in the brand's home tables through the server's ONE promotion (promote.ts): the person
+ * linked, the location added, the listing, the keyword, the rival. Undo removes exactly the rows that promotion
+ * created, then the answer. The answer is already saved, so a promotion that fails is said, never thrown.
+ */
+async function withPromotion(ctx: PersistContext, persisted: Persisted): Promise<Persisted> {
+  try {
+    const promoted = await promoteSmartAddFindings(ctx.getBrand().id);
+    for (const problem of promoted.problems) toast.error(problem);
+    const homes = promotedHomes(promoted);
+    if (!homes.length) return persisted;
+    return {
+      ...persisted,
+      homes: [...persisted.homes, ...homes],
+      undo: async () => {
+        await undoPromotion(promoted.createdIds);
+        await persisted.undo();
+      },
+    };
+  } catch (error) {
+    toast.error(`Saved, but not added to the brand's pages yet: ${extractErrorMessage(error)}`);
+    return persisted;
   }
 }
 
