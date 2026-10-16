@@ -191,12 +191,10 @@ export default function ShapeActivationControl({
 
   // Advice only — turning a shape on is never refused (Arman, 2026-10-13).
   const blockers = verdict?.reasons ?? [];
-  // A kind with an ACTIVE component must never be told "no component is
-  // required" — if the gate says n/a while a real component exists, the flag
-  // is the thing that's wrong, and this says so loudly rather than repeating
-  // the gate's own claim.
+  // A kind with an ACTIVE component must never be told "never shown on
+  // screen" — it is shown. Say both true things instead.
   const hasActiveComponent = (verdict?.componentPlatforms.length ?? 0) > 0;
-  const dataOnlyLooksWrong =
+  const hasViewAnyway =
     verdict !== null && !verdict.renderLegApplicable && hasActiveComponent;
 
   return (
@@ -292,13 +290,14 @@ export default function ShapeActivationControl({
       ) : null}
 
       {verdict && !verdict.renderLegApplicable ? (
-        dataOnlyLooksWrong ? (
-          <div className="mt-2 space-y-2 border-t border-border pt-2">
-            <p className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-300">
-              <CircleAlert className="mt-0.5 h-3 w-3 shrink-0" />
-              <span>Marked as data only, yet it has its own view.</span>
-            </p>
-          </div>
+        hasViewAnyway ? (
+          // A data-only family member that still has a view (the family's
+          // shared view, or one built for it) is not a defect — the old amber
+          // "Marked as data only, yet it has its own view." told every member
+          // of a family something was wrong (2026-10-15 review B2).
+          <p className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">
+            Has a view, though none is required.
+          </p>
         ) : (
           <p className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">
             Data only — never shown on screen, so it needs no view.

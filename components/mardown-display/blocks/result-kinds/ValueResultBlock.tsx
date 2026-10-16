@@ -49,6 +49,7 @@ import {
   StillArriving,
   isRecord,
   kindLabel,
+  printsResidualFacts,
   readBool,
   readKindValue,
   readNumber,
@@ -218,9 +219,11 @@ const ValueResultBlock: React.FC<ResultKindBlockProps> = ({
         >
           <ResultValue value={rawValue} density="full" />
         </Section>
-      ) : stats.length === 0 ? (
-        // No value and no counters — say which kind produced nothing rather
-        // than render an empty box.
+      ) : stats.length === 0 && !printsResidualFacts(value, shown) ? (
+        // No value, no counters AND nothing else printed below — only then
+        // did the step return nothing. An any-value payload (`json` carrying
+        // `{ anything, nested }`) has no `value` key but its fields ARE the
+        // value; "returned no value" above them was a lie (2026-10-15 B2).
         <div className="text-sm text-muted-foreground">
           {kindLabel(kind) || "This step"} returned no value.
         </div>

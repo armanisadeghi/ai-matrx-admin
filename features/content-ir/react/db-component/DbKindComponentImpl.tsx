@@ -41,6 +41,7 @@ import {
 import { DbKindComponentErrorBoundary } from "./DbKindComponentErrorBoundary";
 import { KindHtmlFrame } from "./KindHtmlFrame";
 import { KindSandboxFrame } from "./KindSandboxFrame";
+import { ReportKindDraw } from "./kind-draw-report";
 import {
   sandboxForResolution,
   useKindSandboxSettings,
@@ -293,10 +294,13 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
       resolveLoadingSlugForKind(kind).slug,
     );
     return (
-      <Loader
-        {...earlyKeysFromValue(loadingValue, kind)}
-        value={loadingValue}
-      />
+      <>
+        <ReportKindDraw state="waiting" />
+        <Loader
+          {...earlyKeysFromValue(loadingValue, kind)}
+          value={loadingValue}
+        />
+      </>
     );
   }
 
@@ -308,7 +312,12 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
     !resolution.componentSource
   ) {
     screamRouteDefect(kind, "resolver no longer answers with an active db row");
-    return generic;
+    return (
+      <>
+        <ReportKindDraw state="failed" />
+        {generic}
+      </>
+    );
   }
 
   // ── html/js flavor (the user's OPTION, config.flavor === "html") ──────────
@@ -349,7 +358,12 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
   const compiled = getOrCompileDbKindComponent(kind, resolution);
   if (!compiled.ok) {
     // Already screamed (cache screams once per key, captures every attempt).
-    return generic;
+    return (
+      <>
+        <ReportKindDraw state="failed" />
+        {generic}
+      </>
+    );
   }
 
   const data = applyPropsTransform(kind, compiled.compiled, value);
@@ -359,7 +373,12 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
     <DbKindComponentErrorBoundary
       kind={kind}
       resetSignal={resolution.updatedAt}
-      fallback={generic}
+      fallback={
+        <>
+          <ReportKindDraw state="failed" />
+          {generic}
+        </>
+      }
     >
       <Component
         data={data}
@@ -370,6 +389,8 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
         uiOptions={uiOptions}
         itemState={stableImageState(itemState, itemStateImages, "url") ?? EMPTY_STATE}
       />
+      {/* Commits only after the component above rendered without throwing. */}
+      <ReportKindDraw state="drew" />
     </DbKindComponentErrorBoundary>
   );
 };

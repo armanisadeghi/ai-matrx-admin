@@ -163,18 +163,44 @@ describe("the owner's Live line", () => {
 
 describe("the sentences", () => {
   it("Preview verdict: a layered view rendering is not 'this shape's own component'", () => {
-    const base = { reached: true, sharedHasComponent: false };
-    expect(describeRenderVerdict({ ...base, layerScope: "user" })).toContain("Your view rendered");
-    expect(describeRenderVerdict({ ...base, layerScope: "organization" })).toContain(
-      "Your organization's view rendered",
-    );
-    expect(describeRenderVerdict({ ...base, layerScope: null })).toContain("generic key/value");
-    expect(describeRenderVerdict({ reached: true, sharedHasComponent: true, layerScope: "user" })).toBe(
+    const base = { reached: true, sharedHasComponent: false, draw: "drew" as const };
+    const t = (input: Parameters<typeof describeRenderVerdict>[0]) => describeRenderVerdict(input).text;
+    expect(t({ ...base, layerScope: "user" })).toContain("Your view rendered");
+    expect(t({ ...base, layerScope: "organization" })).toContain("Your organization's view rendered");
+    expect(t({ ...base, layerScope: null })).toContain("generic key/value");
+    expect(t({ reached: true, sharedHasComponent: true, layerScope: "user", draw: "drew" })).toBe(
       "This shape's own component rendered.",
     );
-    expect(describeRenderVerdict({ reached: false, sharedHasComponent: true, layerScope: null })).toContain(
+    expect(t({ reached: false, sharedHasComponent: true, layerScope: null, draw: "drew" })).toContain(
       "generic key/value",
     );
+  });
+
+  // B0 (2026-10-15): with the sandbox frame blocked the verdict said "rendered"
+  // in green beside the frame's own "This view did not load."
+  it("Preview verdict: 'rendered' only once the component DREW", () => {
+    const own = { reached: true, sharedHasComponent: true, layerScope: null };
+    const waiting = describeRenderVerdict({ ...own, draw: "waiting" });
+    expect(waiting.tone).toBe("pending");
+    expect(waiting.text).not.toMatch(/rendered/);
+    for (const draw of ["failed", "late"] as const) {
+      const v = describeRenderVerdict({ ...own, draw });
+      expect(v.tone).toBe("fail");
+      expect(v.text).not.toMatch(/rendered/);
+    }
+    expect(describeRenderVerdict({ ...own, draw: "failed" }).text).toContain("did not load");
+    expect(describeRenderVerdict({ ...own, draw: "drew" })).toEqual({
+      tone: "pass",
+      text: "This shape's own component rendered.",
+    });
+    const mine = describeRenderVerdict({
+      reached: true,
+      sharedHasComponent: false,
+      layerScope: "user",
+      draw: "failed",
+    });
+    expect(mine.tone).toBe("fail");
+    expect(mine.text).not.toMatch(/rendered/);
   });
 
   it("Deactivate dialog: names the measured fall-through, never an unmeasured generic fall-back", () => {

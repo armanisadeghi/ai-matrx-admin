@@ -176,8 +176,11 @@ export interface EntityBulkAction<TRow> {
    * Why this action cannot run on a selection of `count` rows right now
    * (e.g. "Select exactly one note to share"), or null when it can. The bar
    * greys the button and shows the reason as its tooltip.
+   *
+   * `selection` lets a verb say it would do NOTHING here (every selected row
+   * is already in the state it sets) — the shell never offers a no-op click.
    */
-  disabledReason?: (count: number) => string | null;
+  disabledReason?: (count: number, selection: EntityBulkSelection<TRow>) => string | null;
   /**
    * Stop and name the consequence first. REQUIRED in spirit for anything
    * destructive or expensive; returning a confirm is how an action opts in.

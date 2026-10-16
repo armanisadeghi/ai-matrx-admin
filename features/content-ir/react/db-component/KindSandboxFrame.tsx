@@ -61,6 +61,7 @@ import { reportKindComponentIncident } from "./kindComponentIncident";
 import type { KindSandboxCeilings } from "./useKindSandboxKnob";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useReportKindDraw } from "./kind-draw-report";
 
 /** The sandbox document. Same origin; the `sandbox` attribute opaques it. */
 export const KIND_SANDBOX_ROUTE = "/kind-sandbox";
@@ -305,6 +306,14 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
         }
         offeredPorts.current = [];
     }
+    // WHAT THE FRAME DREW (2026-10-15 review B0): a verdict that says
+    // "rendered" waits for the frame's first measured content, and a frame that
+    // never answers or whose body throws reports a failure — never "resolved".
+    const [drawn, setDrawn] = React.useState(false);
+    const [bodyFailed, setBodyFailed] = React.useState(false);
+    useReportKindDraw(
+        bodyFailed || (silent && !heard) ? "failed" : drawn ? "drew" : "waiting",
+    );
     const [contentHeight, setContentHeight] = React.useState(INITIAL_HEIGHT);
     const [oversize, setOversize] = React.useState<string | null>(null);
     /**
@@ -404,12 +413,21 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                     Math.ceil(message.contentHeight ?? message.height),
                 );
                 setContentHeight(measured);
+                setDrawn(true);
                 break;
             }
             case "matrx:sandbox:resolve":
                 latest.current.onResolve?.(message.value);
                 break;
             case "matrx:sandbox:error":
+                // A transform or a refused picture still leaves the component
+                // drawn; a throw, a failed compile or a refused start does not.
+                if (
+                    message.errorType !== "transform_error" &&
+                    message.errorType !== "blocked_resource"
+                ) {
+                    setBodyFailed(true);
+                }
                 captureError({
                     source: "content-ir",
                     message: `[kind-sandbox] ${latest.current.kind}: ${message.message}`,
@@ -750,6 +768,8 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                                 heardRef.current = false;
                                 setHeard(false);
                                 setLoaded(false);
+                                setDrawn(false);
+                                setBodyFailed(false);
                                 setFrameAttempt((n) => n + 1);
                             }}
                             className="rounded-md border border-border px-2 py-1 font-medium text-foreground hover:bg-accent"

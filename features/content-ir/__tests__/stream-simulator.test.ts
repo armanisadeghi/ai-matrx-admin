@@ -11,6 +11,7 @@ import {
   chunkWireText,
   deriveStreamVerdicts,
   recordFromUpsert,
+  streamVerdictOutcome,
   withKindFirst,
   type StreamTickRecord,
 } from "@/features/content-ir/studio/stream-simulator";
@@ -119,5 +120,18 @@ describe("verdict derivation (unit)", () => {
     expect(verdicts.rawTextFlash).toBe(true);
     expect(verdicts.detectedWhileStreaming).toBe(false);
     expect(verdicts.completedAsKind).toBe(false);
+  });
+});
+
+describe("streamVerdictOutcome — a verdict about the end waits for the end (B1, 2026-10-15)", () => {
+  it("never reports a completion failure while the stream is still running", () => {
+    expect(streamVerdictOutcome({ ok: false, ended: false })).toBe("pending");
+    expect(streamVerdictOutcome({ ok: false, ended: true })).toBe("fail");
+    expect(streamVerdictOutcome({ ok: true, ended: false })).toBe("pass");
+  });
+  it("a measured defect is final at once; its absence passes only at the end", () => {
+    expect(streamVerdictOutcome({ ok: false, ended: false, sense: "defect" })).toBe("fail");
+    expect(streamVerdictOutcome({ ok: true, ended: false, sense: "defect" })).toBe("pending");
+    expect(streamVerdictOutcome({ ok: true, ended: true, sense: "defect" })).toBe("pass");
   });
 });

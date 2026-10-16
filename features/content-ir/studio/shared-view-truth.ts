@@ -110,21 +110,61 @@ export function describeLiveRender(state: SharedViewState): string {
   }
 }
 
-/** The Preview verdict's headline — what the route returned, against the SHARED truth. */
+/**
+ * What the screen actually did with the component the route chose — reported
+ * by the drawing mount itself (`react/db-component/kind-draw-report.tsx`),
+ * never inferred from the route. "late" = still waiting past the deadline.
+ */
+export type ComponentDrawOutcome = "waiting" | "drew" | "failed" | "late";
+
+export type RenderVerdictTone = "pass" | "pending" | "fail" | "generic";
+
+/**
+ * The Preview verdict — what the route returned, against the SHARED truth, and
+ * 🚨 ONLY "rendered" ONCE IT DREW (2026-10-15 review B0): a component that
+ * resolved but whose frame never drew said "rendered" in green beside the
+ * frame's own "This view did not load."
+ */
 export function describeRenderVerdict(input: {
   reached: boolean;
   sharedHasComponent: boolean;
   layerScope: "user" | "organization" | null;
-}): string {
-  if (!input.reached) return "The reader gets the generic key/value view here.";
-  if (input.sharedHasComponent) return "This shape's own component rendered.";
-  if (input.layerScope === "user") return "Your view rendered. The shared view is the generic viewer.";
-  if (input.layerScope === "organization") {
-    return "Your organization's view rendered. The shared view is the generic viewer.";
-  }
+  draw: ComponentDrawOutcome;
+}): { tone: RenderVerdictTone; text: string } {
+  const generic = { tone: "generic" as const, text: "The reader gets the generic key/value view here." };
+  if (!input.reached) return generic;
   // No shared component and no layered view of the viewer's: nothing of the
   // shape's own can have drawn it, whatever marker the route carried.
-  return "The reader gets the generic key/value view here.";
+  const whose = input.sharedHasComponent
+    ? "shape"
+    : input.layerScope === "user"
+      ? "user"
+      : input.layerScope === "organization"
+        ? "organization"
+        : null;
+  if (whose === null) return generic;
+  const name =
+    whose === "shape"
+      ? "This shape's own component"
+      : whose === "user"
+        ? "Your view"
+        : "Your organization's view";
+  switch (input.draw) {
+    case "waiting":
+      return { tone: "pending", text: `${name} is loading…` };
+    case "late":
+      return { tone: "fail", text: `${name} hasn't drawn yet.` };
+    case "failed":
+      return { tone: "fail", text: `${name} did not load.` };
+    case "drew":
+      return {
+        tone: "pass",
+        text:
+          whose === "shape"
+            ? "This shape's own component rendered."
+            : `${name} rendered. The shared view is the generic viewer.`,
+      };
+  }
 }
 
 /**

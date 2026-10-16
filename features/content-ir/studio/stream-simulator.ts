@@ -321,3 +321,33 @@ export function deriveStreamVerdicts(
     completedAsKind,
   };
 }
+
+/**
+ * 🚨 A STREAM VERDICT IS PENDING UNTIL THE STREAM ENDS (2026-10-15 review B1).
+ * The Stream tab showed a red "Did not complete as this kind" from the first
+ * chunk until the stream finished ~55s later, then flipped green: a judgement
+ * about the END painted before the end existed. Each row now reads through
+ * this one rule:
+ *  - a "good thing happened" verdict (detected, completed, grew) is `pass` the
+ *    moment it is measured, `pending` while the stream runs, `fail` only once
+ *    the stream has ended without it;
+ *  - a "bad thing happened" verdict (raw-JSON flash) is `fail` the moment it is
+ *    measured, `pending` while the stream runs, `pass` only once it ended clean.
+ */
+export type StreamVerdictOutcome = "pass" | "fail" | "pending";
+
+export function streamVerdictOutcome(input: {
+  /** The measured good outcome so far (for a defect verdict: "no defect seen"). */
+  ok: boolean;
+  /** True once the stream finished (finalize ran). */
+  ended: boolean;
+  /** "defect": a measured failure is final at once; absence passes only at the end. */
+  sense?: "achievement" | "defect";
+}): StreamVerdictOutcome {
+  if (input.sense === "defect") {
+    if (!input.ok) return "fail";
+    return input.ended ? "pass" : "pending";
+  }
+  if (input.ok) return "pass";
+  return input.ended ? "fail" : "pending";
+}

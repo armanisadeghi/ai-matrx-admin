@@ -22,8 +22,8 @@
  * question that let every broken kind report healthy.
  */
 
-import { useMemo, useState } from "react";
-import { CircleCheck, CircleX, Info, TriangleAlert } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CircleCheck, CircleDashed, CircleX, Info, TriangleAlert } from "lucide-react";
 import { SafeBlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/SafeBlockRenderer";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import KindInputForm from "@/features/content-ir/input/KindInputForm";
@@ -35,11 +35,17 @@ import { KindRenderHarness } from "@ai-matrx/rich-content/kinds/react/render-har
 import { RENDER_PATHS, type RenderPathId, type RenderPathSpec } from "./paths";
 import { readKindSchemaState, runRenderPath } from "./run-path";
 import { useBoundedKindCheck, useKindCheckAnswers } from "./use-bounded-kind-check";
+import {
+  KindDrawReportHost,
+  useKindDrawCollector,
+} from "@/features/content-ir/react/db-component/kind-draw-report";
+import { SHAPE_LOAD_DEADLINE_MS } from "@/features/content-ir/studio/bounded-load";
 import { Button } from "@ai-matrx/design-system/controls";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { useEngineeringDetail } from "@/features/content-ir/studio/use-engineering-detail";
 import {
   describeRenderVerdict,
+  type ComponentDrawOutcome,
+  type RenderVerdictTone,
   readSharedResolution,
   readViewerLayerScope,
   readViewerViewKey,
@@ -61,12 +67,12 @@ export interface KindRenderPathsProps {
 /**
  * The one line that matters: did the kind's own component render?
  *
- * Deliberately blunt. A green here means the route returned the component; a
- * red means the reader got the generic key/value floor, and the reason says
- * which repair it needs.
+ * Deliberately blunt. A green here means the component DREW (the drawing mount
+ * said so); neutral while it is still drawing; amber when it failed to load or
+ * the reader got the generic key/value floor.
  */
 function VerdictStrip({
-  reached,
+  tone,
   resolvedAs,
   kindState,
   fallbackReason,
@@ -77,7 +83,7 @@ function VerdictStrip({
   /** Admin debugging only: the route's block type, state and fallback code. */
   debug: boolean;
   headline: string;
-  reached: boolean;
+  tone: RenderVerdictTone;
   resolvedAs: string;
   kindState: string | null;
   fallbackReason: string | null;
@@ -85,15 +91,20 @@ function VerdictStrip({
 }) {
   return (
     <div
+      data-render-verdict={tone}
       className={`rounded-md border px-3 py-2 text-xs ${
-        reached
+        tone === "pass"
           ? "border-emerald-500/30 bg-emerald-500/5"
-          : "border-amber-500/40 bg-amber-500/5"
+          : tone === "pending"
+            ? "border-border"
+            : "border-amber-500/40 bg-amber-500/5"
       }`}
     >
       <div className="flex flex-wrap items-center gap-2">
-        {reached ? (
+        {tone === "pass" ? (
           <CircleCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        ) : tone === "pending" ? (
+          <CircleDashed className="h-4 w-4 shrink-0 text-muted-foreground" />
         ) : (
           <CircleX className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
         )}
@@ -152,7 +163,8 @@ export default function KindRenderPaths({
   initialPath = "chat_bare",
 }: KindRenderPathsProps) {
   const [pathId, setPathId] = useState<RenderPathId>(initialPath);
-  const debug = useAppSelector(selectIsAdminDebugger);
+  // Engineering detail: an admin with the debug switch on, never by default.
+  const debug = useEngineeringDetail();
   // THE PREVIEW ASKS FOR WHAT IT JUDGES (defect 2026-10-14). The schema is
   // fetched lazily per kind, and this screen used to read it synchronously on
   // first paint and subscribe only to the COMPONENT registry — so a shape with
@@ -196,6 +208,29 @@ export default function KindRenderPaths({
   const componentsChecked = useSharedViewState(kind) !== "checking";
   const settled = schemaState !== "pending" && componentsChecked;
   const check = useBoundedKindCheck(kind, settled);
+
+  // WHAT ACTUALLY DREW (2026-10-15 review B0). The verdict says "rendered" only
+  // once the drawing mount reports it drew; until then it is pending, and past
+  // the deadline it says so in words — whatever keeps the frame from drawing.
+  const draw = useKindDrawCollector();
+  const waitKey = `${kind}:${pathId}:${viewKey}`;
+  const [lateKey, setLateKey] = useState<string | null>(null);
+  useEffect(() => {
+    if (draw.state !== "waiting") return;
+    const timer = setTimeout(() => setLateKey(waitKey), SHAPE_LOAD_DEADLINE_MS);
+    return () => clearTimeout(timer);
+  }, [draw.state, waitKey]);
+  const drawOutcome: ComponentDrawOutcome =
+    draw.state === "waiting" && lateKey === waitKey ? "late" : draw.state;
+
+  const verdict = run
+    ? describeRenderVerdict({
+        reached: run.verdict.reachedRealComponent,
+        sharedHasComponent: sharedComponent,
+        layerScope,
+        draw: drawOutcome,
+      })
+    : null;
 
   // A harness, not a reader: generic frames inside never file a sighting.
   return (
@@ -258,15 +293,11 @@ export default function KindRenderPaths({
         </div>
       )}
 
-      {run && settled && (
+      {run && settled && verdict && (
         <VerdictStrip
           debug={debug}
-          headline={describeRenderVerdict({
-            reached: run.verdict.reachedRealComponent,
-            sharedHasComponent: sharedComponent,
-            layerScope,
-          })}
-          reached={run.verdict.reachedRealComponent}
+          headline={verdict.text}
+          tone={verdict.tone}
           resolvedAs={run.verdict.resolvedAs}
           kindState={run.verdict.kindState}
           fallbackReason={run.verdict.fallbackReason}
@@ -278,6 +309,7 @@ export default function KindRenderPaths({
           which routes each block ITSELF — the verdict above describes that
           same decision rather than substituting for it. */}
       <div className="rounded-md border border-border bg-card p-3">
+        <KindDrawReportHost report={draw.report}>
         {run ? (
           run.blocks.map((block, index) => (
             <SafeBlockRenderer
@@ -314,6 +346,7 @@ export default function KindRenderPaths({
         ) : pathId === "input" ? (
           <KindInputForm kind={kind} onSubmit={async () => {}} />
         ) : null}
+        </KindDrawReportHost>
       </div>
     </div>
     </KindRenderHarness>

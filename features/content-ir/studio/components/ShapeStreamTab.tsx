@@ -21,6 +21,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CircleAlert,
   CircleCheck,
+  CircleDashed,
   CircleX,
   Gauge,
   Play,
@@ -42,6 +43,7 @@ import {
   chunkWireText,
   deriveStreamVerdicts,
   recordFromUpsert,
+  streamVerdictOutcome,
   type StreamTickRecord,
   type StreamVerdicts,
   type WireMode,
@@ -70,21 +72,26 @@ const noop = () => {};
 function VerdictRow({
   ok,
   warn,
+  pending,
   title,
   detail,
 }: {
   ok: boolean;
   /** Soft outcome — expected for some kinds, shown amber instead of red. */
   warn?: boolean;
+  /** Not measurable yet (the stream is still running) — neutral, never red. */
+  pending?: boolean;
   title: string;
   detail: string;
 }) {
-  const Icon = ok ? CircleCheck : warn ? CircleAlert : CircleX;
-  const tone = ok
-    ? "text-emerald-600 dark:text-emerald-400"
-    : warn
-      ? "text-amber-600 dark:text-amber-400"
-      : "text-destructive";
+  const Icon = pending ? CircleDashed : ok ? CircleCheck : warn ? CircleAlert : CircleX;
+  const tone = pending
+    ? "text-muted-foreground"
+    : ok
+      ? "text-emerald-600 dark:text-emerald-400"
+      : warn
+        ? "text-amber-600 dark:text-amber-400"
+        : "text-destructive";
   return (
     <div className="flex items-start gap-2 py-1.5">
       <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
@@ -203,6 +210,29 @@ export default function ShapeStreamTab({
   // generic, or still being read — the one measured answer every surface reads
   // (it re-reads when the schema lands, so tab order cannot change it).
   const resolvedLoading = useLoadingSlugForKind(kind);
+  // Pending until the stream ENDS — never a red verdict about the end before it.
+  const ended = runState === "done";
+  const detectedOutcome = streamVerdictOutcome({
+    ok: verdicts?.detectedWhileStreaming ?? false,
+    ended,
+  });
+  const resolvedOutcome = streamVerdictOutcome({
+    ok: verdicts?.kindResolvedWhileStreaming ?? false,
+    ended,
+  });
+  const flashOutcome = streamVerdictOutcome({
+    ok: !(verdicts?.rawTextFlash ?? false),
+    ended,
+    sense: "defect",
+  });
+  const growthOutcome = streamVerdictOutcome({
+    ok: (verdicts?.growthSteps ?? 0) > 1,
+    ended,
+  });
+  const completedOutcome = streamVerdictOutcome({
+    ok: verdicts?.completedAsKind ?? false,
+    ended,
+  });
   const isStreamActive = runState === "playing";
 
   return (
@@ -366,45 +396,60 @@ export default function ShapeStreamTab({
           {verdicts && (
             <>
               <VerdictRow
-                ok={verdicts.detectedWhileStreaming}
+                ok={detectedOutcome === "pass"}
+                pending={detectedOutcome === "pending"}
                 title={
                   verdicts.detectedAtChunk !== null
                     ? `Structured region detected at chunk ${verdicts.detectedAtChunk}`
-                    : "Region never detected while streaming"
+                    : detectedOutcome === "pending"
+                      ? "Watching for the structured region"
+                      : "Region never detected while streaming"
                 }
-                detail="The parser must recognize the region mid-stream — that is what puts a loading state (not raw text) on screen instantly."
+                detail="Spotted mid-stream, it shows a loading view, not raw text."
               />
               <VerdictRow
-                ok={verdicts.kindResolvedWhileStreaming}
+                ok={resolvedOutcome === "pass"}
+                pending={resolvedOutcome === "pending"}
                 title={
-                  verdicts.kindResolvedWhileStreaming
+                  resolvedOutcome === "pass"
                     ? "Kind identified while streaming"
-                    : "Kind only resolved at the end"
+                    : resolvedOutcome === "pending"
+                      ? "Watching for the kind"
+                      : "Kind only resolved at the end"
                 }
-                detail="Identifying the kind mid-stream selects THIS kind's loading component and lets the route engage early."
+                detail="Knowing the kind early picks its own loading view."
               />
               <VerdictRow
-                ok={!verdicts.rawTextFlash}
+                ok={flashOutcome === "pass"}
+                pending={flashOutcome === "pending"}
                 title={
-                  verdicts.rawTextFlash
+                  flashOutcome === "fail"
                     ? "Raw JSON flashed as text"
-                    : "No raw-JSON flash"
+                    : flashOutcome === "pending"
+                      ? "No raw-JSON flash so far"
+                      : "No raw-JSON flash"
                 }
-                detail='A streaming block typed text/code exposing "__kind" with no envelope is the classic convert-only-when-done defect.'
+                detail="Raw data text must never show while it streams."
               />
               <VerdictRow
-                ok={verdicts.growthSteps > 1}
+                ok={growthOutcome === "pass"}
+                pending={growthOutcome === "pending"}
                 title={`Progressive snapshots: ${verdicts.growthSteps}`}
-                detail="More than one growing streaming snapshot means the value fills in bit by bit instead of snapping in at the end."
+                detail="The value should fill in bit by bit, not all at the end."
               />
               <VerdictRow
-                ok={verdicts.completedAsKind}
+                ok={completedOutcome === "pass"}
+                pending={completedOutcome === "pending"}
                 title={
-                  verdicts.completedAsKind
+                  completedOutcome === "pass"
                     ? `Completed as ${kind}`
-                    : "Did not complete as this kind"
+                    : completedOutcome === "pending"
+                      ? runState === "error"
+                        ? "Stopped before the end"
+                        : "Waiting for the stream to end"
+                      : "Did not complete as this kind"
                 }
-                detail="The final block must carry a complete envelope for this kind so the real component renders the finished value."
+                detail="The last block must carry this shape's finished data."
               />
             </>
           )}
