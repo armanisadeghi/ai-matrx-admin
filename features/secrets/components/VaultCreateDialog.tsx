@@ -58,7 +58,7 @@ import {
   AuthenticatorSetupDialog,
   authenticatorName,
 } from "./authenticator/AuthenticatorSetupDialog";
-import { sanitizeFieldName } from "@/features/data-tables/field-name-key";
+import { sanitizeFieldName } from "@ai-matrx/records/core";
 import {
   Credenza,
   CredenzaBody,

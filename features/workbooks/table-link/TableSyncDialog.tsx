@@ -17,8 +17,8 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/lib/toast";
-import { saveSnapshot } from "@/features/workbooks/workbook-service";
-import { isServiceFailure } from "@/features/data-tables/types";
+import { saveSnapshot } from "@ai-matrx/office/sheets";
+import { isServiceFailure } from "@ai-matrx/records/core";
 
 import { RECORD_ID_HEADER, displayText, linkStyles, parseSheet, type ParsedSheet, type TableLink } from "./link-model";
 import { describeIssue, offListCells, planToSheet, planToTable, resolveOffList, type CellWrite, type ListDecision, type ToSheetPlan, type ToTablePlan } from "./sync-plan";

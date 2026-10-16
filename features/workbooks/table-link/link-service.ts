@@ -11,7 +11,7 @@ import { mergeJsonColumn } from "@ai-matrx/data/db";
 
 import { supabase } from "@/utils/supabase/client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { createWorkbook, saveSnapshot } from "@/features/workbooks/workbook-service";
+import { createWorkbook, saveSnapshot } from "@ai-matrx/office/sheets";
 import {
   addChoicesToColumn,
   addTableColumn,
@@ -19,9 +19,7 @@ import {
   getCompleteTable,
   readRelationWords,
 } from "@/features/data-tables/service";
-import { inferDataType } from "@/features/data-tables/type-inference";
-import { sanitizeFieldName } from "@/features/data-tables/field-name-key";
-import { isBulkOpError, isServiceFailure, type BulkOp, type DatasetField } from "@/features/data-tables/types";
+import { inferDataType, isBulkOpError, isServiceFailure, sanitizeFieldName, type BulkOp, type DatasetField } from "@ai-matrx/records/core";
 
 import {
   RECORD_ID_HEADER,

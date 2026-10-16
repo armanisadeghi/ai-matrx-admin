@@ -11,7 +11,7 @@ import { InlineMediaRef } from "@ai-matrx/media/react";
 
 import { cn } from "@/lib/utils";
 import type { TemplateSummary } from "../types";
-import { snapshotPreviewSvg } from "../thumbnail/snapshot-preview-svg";
+import { snapshotPreviewSvg } from "@ai-matrx/office/sheets";
 import { getTemplateSnapshot } from "../template-service";
 // A presentation template's tile is its first slide, drawn live by the deck renderer.
 import { DeckFirstSlide } from "@/features/presentations/components/DeckFirstSlide";

@@ -65,6 +65,7 @@ import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost
 import { isSkipped, slideTextStyleOf } from "../deck-slide-ops";
 import { getDeckA11y, setDeckA11y, useDeckA11y } from "../deck-a11y";
 import { plainTextOf } from "../deck-slide-ops";
+import { createDeckSaver, listenToDeckPage } from "../deck-autosave";
 import { AccessibilityDialog, BackgroundDialog, CommentsDialog, FindReplaceDialog, ImportSlidesDialog, MotionDialog, SpecialCharsDialog, ThemeBuilderDialog } from "./DeckPanels";
 import { DeckGridView } from "./DeckGridView";
 import { deckDownloads, downloadDeckAsOdp, downloadDeckAsText, downloadSlideAsImage, printDeck } from "../deck-export";
@@ -117,7 +118,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const notesRef = useRef<ProTextareaElement | null>(null);
   /** The last slide text or notes box the caret was in: Insert → Special characters and Paste as text land there. */
   const lastEditable = useRef<HTMLElement | null>(null);
-  const savedRevision = useRef(0);
+  const presentationIdRef = useRef(presentationId);
   const uploadRef = useRef<HTMLInputElement>(null);
   const menuBar = useMenuBarState();
 
@@ -131,7 +132,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
       return;
     }
     setRow(res.data);
-    savedRevision.current = 0;
+    saver.markSaved(0);
     dispatchHist({ type: "reset", deck: res.data.deck });
     setSaveState("saved");
   };
@@ -150,50 +151,49 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   }, [presentationId]);
 
   // Autosave: every content change (revision) is saved after a short pause; each save is one version.
+  // Saves run one at a time (an older whole-deck write can never land last) and leaving the page
+  // flushes and asks while anything is unwritten (deck-autosave).
   const deckRef = useRef(deck);
   const currentRef = useRef(current);
+  const revisionRef = useRef(hist.revision);
+  const canEditRef = useRef(canEdit);
   useEffect(() => {
     deckRef.current = deck;
     currentRef.current = current;
-  }, [deck, current]);
-  const saveNow = async () => {
-    const revision = hist.revision;
-    if (!canEdit || revision === savedRevision.current) return;
-    setSaveState("saving");
-    const res = await savePresentationDeck(presentationId, deckRef.current);
-    if (isServiceFailure(res)) {
-      setSaveState("error");
-      toast.error("Could not save the presentation", { description: res.error });
-      return;
-    }
-    savedRevision.current = revision;
-    setSaveState(revision === hist.revision ? "saved" : "dirty");
-  };
-  const saveNowRef = useRef(saveNow);
-  useEffect(() => {
-    saveNowRef.current = saveNow;
-  });
-  useEffect(() => {
-    if (hist.revision === savedRevision.current || !canEdit) return undefined;
-    setSaveState("dirty");
-    const t = setTimeout(() => void saveNowRef.current(), AUTOSAVE_MS);
-    return () => clearTimeout(t);
-  }, [hist.revision, canEdit]);
-  // Leaving the page (or the editor) never drops the last edits.
-  const revisionRef = useRef(hist.revision);
-  useEffect(() => {
     revisionRef.current = hist.revision;
-  }, [hist.revision]);
+    canEditRef.current = canEdit;
+    presentationIdRef.current = presentationId;
+  }, [deck, current, hist.revision, canEdit, presentationId]);
+  const [saver] = useState(() =>
+    createDeckSaver({
+      current: () => ({ revision: revisionRef.current, deck: deckRef.current }),
+      write: async (d) => {
+        if (!canEditRef.current) return false;
+        const res = await savePresentationDeck(presentationIdRef.current, d);
+        if (isServiceFailure(res)) {
+          toast.error("Could not save the presentation", { description: res.error });
+          return false;
+        }
+        return true;
+      },
+      onState: setSaveState,
+    }),
+  );
+  const saveNow = () => saver.save();
   useEffect(() => {
-    const flush = () => {
-      if (revisionRef.current !== savedRevision.current) void saveNowRef.current();
-    };
-    window.addEventListener("pagehide", flush);
+    if (!saver.hasUnsaved() || !canEdit) return undefined;
+    setSaveState("dirty");
+    const t = setTimeout(() => void saver.save(), AUTOSAVE_MS);
+    return () => clearTimeout(t);
+  }, [hist.revision, canEdit, saver]);
+  // Leaving the page (or the editor) never drops the last edits.
+  useEffect(() => {
+    const stop = listenToDeckPage(saver);
     return () => {
-      window.removeEventListener("pagehide", flush);
-      flush();
+      stop();
+      if (canEditRef.current && saver.hasUnsaved()) void saver.save();
     };
-  }, []);
+  }, [saver]);
 
   // A collaborator's (or an agent's) rename shows here live.
   useLiveFileName({ table: "presentation", column: "name", id: presentationId }, (name) => {

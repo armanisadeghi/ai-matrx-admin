@@ -15,7 +15,7 @@
  *   2. Is the first row column names or data? — a GUESS, shown as a guess, and
  *      the person can flip it (the Google Sheets / Airtable import behaviour).
  */
-import { inferDataType } from "./type-inference";
+import { inferDataType } from "@ai-matrx/records/core";
 
 export type Grid = string[][];
 

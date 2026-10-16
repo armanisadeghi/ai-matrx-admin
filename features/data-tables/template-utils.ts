@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { FieldDefinition, normalizeDataType } from './table-shapes';
-import { sanitizeFieldName, validateFieldName } from './field-name-key';
+import { sanitizeFieldName, validateFieldName } from '@ai-matrx/records/core';
 
 export interface SchemaTemplate {
   id: string;

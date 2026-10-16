@@ -34,8 +34,8 @@ import {
   getLatestSnapshot,
   listSnapshots,
   saveSnapshot,
-} from "@/features/workbooks/workbook-service";
-import { isServiceFailure } from "@/features/data-tables/types";
+} from "@ai-matrx/office/sheets";
+import { isServiceFailure } from "@ai-matrx/records/core";
 import { type WorkbookSnapshot } from "@ai-matrx/office/core";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorNotice } from "@ai-matrx/design-system";

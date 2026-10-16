@@ -9,7 +9,8 @@ jest.mock("@/features/files/handler/utils/python-base", () => ({
 }));
 jest.mock("@ai-matrx/rich-content/levels/RichContentStandardImpl", () => ({ __esModule: true, default: () => null }));
 jest.mock("@/features/documents/univer-doc-to-markdown", () => ({ univerDocToMarkdown: () => "" }));
-jest.mock("@/features/workbooks/univer-snapshot-rows", () => ({ univerSnapshotToRows: () => [] }));
+jest.mock("@ai-matrx/office/sheets", () => ({
+  ...jest.requireActual("@ai-matrx/office/sheets"), univerSnapshotToRows: () => [] }));
 
 import { sharedImageUrl } from "../file-record-lens";
 

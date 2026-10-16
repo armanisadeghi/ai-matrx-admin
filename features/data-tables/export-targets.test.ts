@@ -8,7 +8,8 @@ jest.mock("@/features/documents/document-service", () => ({
   createDocument: jest.fn(),
   saveDocumentSnapshot: jest.fn(),
 }));
-jest.mock("@/features/workbooks/workbook-service", () => ({
+jest.mock("@ai-matrx/office/sheets", () => ({
+  ...jest.requireActual("@ai-matrx/office/sheets"),
   createWorkbook: jest.fn(),
   saveSnapshot: jest.fn(),
 }));
@@ -22,7 +23,7 @@ jest.mock("@/features/documents/markdown-to-univer-doc", () => ({
 }));
 
 import { createDocument, saveDocumentSnapshot } from "@/features/documents/document-service";
-import { createWorkbook, saveSnapshot } from "@/features/workbooks/workbook-service";
+import { createWorkbook, saveSnapshot } from "@ai-matrx/office/sheets";
 import { pushMarkdownToDocument, pushTableToWorkbook } from "./export-targets";
 
 describe("export targets partial creation", () => {

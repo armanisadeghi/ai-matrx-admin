@@ -7,7 +7,7 @@ import { workbookSeeds } from "../seeds/workbook-templates";
 import { documentSeeds } from "../seeds/document-templates";
 import { presentationSeeds } from "../seeds/presentation-templates";
 import { normalizeDeck } from "@/features/presentations/deck-model";
-import { snapshotPreviewSvg } from "../thumbnail/snapshot-preview-svg";
+import { snapshotPreviewSvg } from "@ai-matrx/office/sheets";
 import { TEMPLATE_CATEGORIES } from "../types";
 
 const sheets = workbookSeeds();

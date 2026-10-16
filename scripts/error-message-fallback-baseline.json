@@ -423,7 +423,6 @@
   "features/documents/document-service.ts": 1,
   "features/data-tables/save-to-table.ts": 2,
   "features/data-tables/service.ts": 2,
-  "features/workbooks/workbook-service.ts": 1,
   "features/directive-catalog/components/DirectiveBuilderPanel.tsx": 2,
   "features/directive-catalog/components/DirectiveCatalogClient.tsx": 1,
   "features/directive-catalog/hooks/useDirectiveCatalog.ts": 1,

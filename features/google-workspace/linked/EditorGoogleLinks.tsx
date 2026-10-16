@@ -15,7 +15,7 @@ import type { IDocumentData, IWorkbookData } from "@univerjs/core";
 import type { FUniver } from "@univerjs/presets";
 
 import { isServiceFailure } from "@/features/data-tables/types";
-import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
+import { getLatestSnapshot, saveSnapshot } from "@ai-matrx/office/sheets";
 import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@/features/documents/document-service";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";

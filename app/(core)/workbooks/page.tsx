@@ -20,7 +20,7 @@ import {
   listAccessibleWorkbooks,
   listTrashedWorkbooks,
   workbookSourceLabel,
-} from "@/features/workbooks/workbook-service";
+} from "@ai-matrx/office/sheets";
 import type { FileScope } from "@/features/file-actions/FileScopeBar";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 import { FileHome } from "@/features/file-actions/home/FileHome";
@@ -47,7 +47,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
+import { importWorkbookFile, unsupportedFileReason } from "@ai-matrx/office/sheets/xlsx";
 import { useGoogleWorkspaceConnection } from "@/features/google-workspace/linked/useGoogleWorkspaceConnection";
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
 import { googleLinkIn } from "@/features/google-workspace/linked/link-store";

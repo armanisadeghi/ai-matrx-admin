@@ -9,7 +9,7 @@
  */
 
 import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
-import { snapshotToGridSheets } from "@/features/workbooks/snapshot-grid";
+import { snapshotToGridSheets } from "@ai-matrx/office/sheets";
 import { SharedSheetView } from "./SharedSheetView";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { shareChildFileUrls } from "@/features/files/handler/utils/python-base";

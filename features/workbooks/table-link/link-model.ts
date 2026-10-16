@@ -15,7 +15,7 @@
  */
 
 import { readFieldFormatConfig, type FieldFormatConfig } from "@ai-matrx/design-system/field-formats";
-import type { DatasetField } from "@/features/data-tables/types";
+import type { DatasetField } from "@ai-matrx/records/core";
 
 /** The hidden column that carries each row's record id. Found by this exact header. */
 export const RECORD_ID_HEADER = "Record ID";

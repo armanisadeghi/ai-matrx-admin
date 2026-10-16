@@ -17,7 +17,7 @@ import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { loadDbEnvFrom } from "../lib/direct-db-env";
 import { SYSTEM_ORGANIZATION_ID } from "@/features/templates/files/types";
-import { THUMB_HEIGHT, THUMB_WIDTH, snapshotPreviewSvg } from "@/features/templates/files/thumbnail/snapshot-preview-svg";
+import { THUMB_HEIGHT, THUMB_WIDTH, snapshotPreviewSvg } from "@ai-matrx/office/sheets";
 
 const FILES_URL = process.env.NEXT_PUBLIC_FILES_URL ?? "https://files.matrxserver.com";
 

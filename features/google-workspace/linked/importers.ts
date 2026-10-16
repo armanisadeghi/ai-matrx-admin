@@ -9,7 +9,7 @@
 import { pickGoogleWorkspaceFile } from "@/lib/googlePicker";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { isServiceFailure } from "@/features/data-tables/types";
-import { createWorkbook, saveSnapshot, deleteWorkbook } from "@/features/workbooks/workbook-service";
+import { createWorkbook, saveSnapshot, deleteWorkbook } from "@ai-matrx/office/sheets";
 import { createDocument, saveDocumentSnapshot, deleteDocument } from "@/features/documents/document-service";
 import { deriveDocumentName, markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";

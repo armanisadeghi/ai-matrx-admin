@@ -29,7 +29,7 @@ import {
 } from "@/features/data-tables/table-shapes";
 import { whereANewTableIsBorn } from "./data-source/where-a-table-is-born";
 import { getUserOrganizations } from "@/features/organizations/service";
-import { sanitizeFieldName } from "@/features/data-tables/field-name-key";
+import { sanitizeFieldName } from "@ai-matrx/records/core";
 import type {
   BulkOp,
   BulkWriteResponse,

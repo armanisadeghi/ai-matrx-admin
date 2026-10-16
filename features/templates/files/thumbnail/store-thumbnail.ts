@@ -5,7 +5,7 @@
  */
 import { mediaClient } from "@/features/files/media-client/client";
 import type { TemplateKind, TemplateLane } from "../types";
-import { THUMB_HEIGHT, THUMB_WIDTH, snapshotPreviewSvg } from "./snapshot-preview-svg";
+import { THUMB_HEIGHT, THUMB_WIDTH, snapshotPreviewSvg } from "@ai-matrx/office/sheets";
 
 const PIXEL_RATIO = 2;
 

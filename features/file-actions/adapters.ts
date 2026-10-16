@@ -13,7 +13,7 @@ import {
   moveWorkbook,
   renameWorkbook,
   restoreWorkbook,
-} from "@/features/workbooks/workbook-service";
+} from "@ai-matrx/office/sheets";
 import {
   copyDocument,
   deleteDocument,
@@ -22,7 +22,7 @@ import {
   renameDocument,
   restoreDocument,
 } from "@/features/documents/document-service";
-import { downloadSheetAsCsv, downloadSheetAsPdf } from "@/features/workbooks/sheet-output";
+import { downloadSheetAsCsv, downloadSheetAsPdf } from "@ai-matrx/office/sheets";
 import {
   copyPresentation,
   deletePresentation,
@@ -68,7 +68,7 @@ export const WORKBOOK_ADAPTER: FileKindAdapter<Workbook> = {
       run: async () => {
         const snapshot = await latestWorkbookSnapshot(id);
         const [{ downloadUniverAsXlsx }, { resolveExportImage }] = await Promise.all([
-          import("@/features/workbooks/univer-to-xlsx"),
+          import("@ai-matrx/office/sheets/xlsx"),
           import("@/lib/univer-host").then(async () => import("@ai-matrx/office/univer")),
         ]);
         await downloadUniverAsXlsx(snapshot as Parameters<typeof downloadUniverAsXlsx>[0], { filename: name, resolveImage: resolveExportImage });
@@ -85,7 +85,7 @@ export const WORKBOOK_ADAPTER: FileKindAdapter<Workbook> = {
       label: "PDF (first sheet)",
       run: async () => {
         const snapshot = await latestWorkbookSnapshot(id);
-        const { readSheetPageSetup } = await import("@/features/workbooks/sheet-page-setup-service");
+        const { readSheetPageSetup } = await import("@ai-matrx/office/sheets");
         const saved = await readSheetPageSetup(id);
         if (!saved.ok) throw new Error(saved.error);
         // No live selection from a list: "selected cells" prints the first sheet.

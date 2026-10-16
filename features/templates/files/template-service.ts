@@ -12,7 +12,7 @@ import {
   createWorkbook,
   getLatestSnapshot,
   saveSnapshot,
-} from "@/features/workbooks/workbook-service";
+} from "@ai-matrx/office/sheets";
 import {
   createDocument,
   getLatestDocumentSnapshot,

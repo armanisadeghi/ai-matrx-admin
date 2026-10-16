@@ -11,7 +11,8 @@ const ensureOrgId = jest.fn();
 jest.mock("@/lib/organizations/ensureOrgId", () => ({
   ensureOrgId: (...a: unknown[]) => ensureOrgId(...a),
 }));
-jest.mock("@/features/workbooks/workbook-service", () => ({
+jest.mock("@ai-matrx/office/sheets", () => ({
+  ...jest.requireActual("@ai-matrx/office/sheets"),
   createWorkbook: (...a: unknown[]) => createWorkbook(...a),
   saveSnapshot: jest.fn(),
 }));
