@@ -235,6 +235,7 @@ RELEASE_ORIGINAL_ARGS=("$@")
 BUMP_TYPE="patch"
 CUSTOM_MESSAGE=""
 DRY_RUN=false
+FORCE_RELEASE=false
 NO_MIGRATE=false
 NO_GATES=false
 NO_WATCH=false
@@ -253,6 +254,7 @@ while [[ $# -gt 0 ]]; do
             else early_warning "--message had no text — released without a note"; shift; fi ;;
         --ship) SHIP_MODE=true; shift ;;
         --dry-run) DRY_RUN=true; shift ;;
+        --force-release) FORCE_RELEASE=true; shift ;;
         --no-migrate) NO_MIGRATE=true; shift ;;
         --no-gates) NO_GATES=true; shift ;;
         --no-watch) NO_WATCH=true; shift ;;
@@ -610,6 +612,33 @@ if $DRY_RUN; then
     preview "Dirty paths in this checkout are never touched: $(git status --porcelain --untracked-files=all | wc -l | tr -d ' ')"
     preview "Dry run complete. No changes made."
     exit 0
+fi
+
+# ══ OVERNIGHT QUIET WINDOW (Arman ruling 2026-10-15) ═════════════════════════
+# 23:00-07:00 America/Los_Angeles the train releases AT MOST ONCE (03:00). Knob: .github/quiet-window.json
+# (enabled=false = off). Held means: no version bump, no tag, no Vercel build; every commit (the --ship
+# commit above included) is already made and ship.sh's sync still pushes the code to main. Never blocks
+# an urgent release: --force-release, MATRX_RELEASE_FORCE=1 and --dry-run bypass. Outside the window
+# nothing changes. Guard: scripts/test_quiet_window.py in aidream (same script, same knob).
+QW_MARKED_KIND=""
+if ! $FORCE_RELEASE && [[ "${MATRX_RELEASE_FORCE:-}" != "1" ]] && [[ -f "$REPO_ROOT/scripts/quiet_window.py" ]] \
+    && [[ "$RELEASE_PHASE" == "ship" ]]; then
+    if QW_OUT="$(python3 "$REPO_ROOT/scripts/quiet_window.py" decide --repo matrx-frontend 2>/dev/null)"; then
+        eval "$QW_OUT"
+        if [[ "$QW_PROCEED" != "1" ]]; then
+            echo "release.sh: HELD — $QW_REASON. Urgent? ./scripts/release.sh --force-release (or MATRX_RELEASE_FORCE=1)."
+            exit 0
+        fi
+        if [[ "$QW_STATE" == "release" ]]; then
+            python3 "$REPO_ROOT/scripts/quiet_window.py" mark --repo matrx-frontend --kind release && QW_MARKED_KIND=release
+            qw_exit() {
+                local rc=$?
+                [[ $rc -ne 0 ]] && python3 "$REPO_ROOT/scripts/quiet_window.py" unmark --repo matrx-frontend --kind release 2>/dev/null
+                release_lock_cleanup
+            }
+            trap qw_exit EXIT
+        fi
+    fi
 fi
 
 # ══ THE SHIP PATH ════════════════════════════════════════════════════════════

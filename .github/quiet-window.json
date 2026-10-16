@@ -1,0 +1,10 @@
+{
+  "about": "Overnight release quiet window (Arman ruling 2026-10-15; same knob as aidream). While Arman is not active, the train releases at most once (release_at): a release inside the window is held until the 03:00 slot (the code itself still commits and pushes; Vercel builds only release commits). scripts/quiet_window.py reads this. release.sh --force-release (or MATRX_RELEASE_FORCE=1) always runs.",
+  "enabled": true,
+  "timezone": "America/Los_Angeles",
+  "quiet_start": "23:00",
+  "quiet_end": "07:00",
+  "release_at": "03:00",
+  "release_slot_minutes": 60,
+  "flush_workflow": null
+}
