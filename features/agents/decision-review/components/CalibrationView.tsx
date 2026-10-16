@@ -10,11 +10,10 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, Tabs } from "@ai-matrx/design-system/controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { METHOD_LABELS, type DecisionMethod } from "@ai-matrx/agents/presentation/decision-answers";
 import {
   loadCalibration,
@@ -26,9 +25,12 @@ import {
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ReliabilityCurve } from "./ReliabilityCurve";
+import { ReferenceCheck } from "./ReferenceCheck";
+import { readReferenceGroups } from "../reference";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const ALL = "__all__";
+type View = "human" | "reference";
 type Signal = "probability" | "confidence";
 
 function pct(v: number | null | undefined): string {
@@ -129,28 +131,44 @@ function calibrationColumns(
 
 export function CalibrationView({ agentId }: { agentId: string }) {
   const dispatch = useAppDispatch();
+  const [reloadKey, setReloadKey] = useState(0);
   const [signal, setSignal] = useState<Signal>("probability");
   const [model, setModel] = useState<string | null>(null);
   const [method, setMethod] = useState<string | null>(null);
-  const [report, setReport] = useState<DecisionCalibrationReport | null>(null);
+  // The report and its failure remember which read they answer; a stale one shows as loading.
+  const readKey = `${model ?? ""}|${method ?? ""}|${reloadKey}`;
+  const [loaded, setLoaded] = useState<{
+    key: string;
+    report: DecisionCalibrationReport | null;
+    error: string | null;
+  } | null>(null);
+  const report = loaded?.key === readKey ? loaded.report : null;
+  const error = loaded?.key === readKey ? loaded.error : null;
   const [facets, setFacets] = useState<QueueFacets | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  // The agent's own organization scopes its calibration (the page used to die
-  // on "Choose the organization you're working in" with no way to choose).
-  const agentOrganizationId = useAppSelector(
-    (state) => selectAgentById(state, agentId)?.organizationId ?? null,
-  );
+  const [view, setView] = useState<View>("human");
+
+  // Filter values: their own read, so a refused calibration never empties the
+  // reference check's question and version pickers.
+  useEffect(() => {
+    let cancelled = false;
+    loadFacets({ agentId })
+      .then((f) => {
+        if (!cancelled) setFacets(f);
+      })
+      .catch((err: unknown) => console.error("[decision-review] facets load failed", err));
+    return () => {
+      cancelled = true;
+    };
+  }, [agentId, reloadKey]);
 
   useEffect(() => {
     let cancelled = false;
-    setReport(null);
-    setError(null);
-    Promise.all([loadCalibration(dispatch, agentId, { model, method }, agentOrganizationId), loadFacets({ agentId })])
-      .then(([r, f]) => {
+    const key = `${model ?? ""}|${method ?? ""}|${reloadKey}`;
+    loadCalibration(dispatch, agentId, { model, method })
+      .then((r) => {
         if (cancelled) return;
-        setReport(r);
-        setFacets(f);
+        setLoaded({ key, report: r, error: null });
         const groups = r.groups ?? [];
         const first = groups.find((g) => (g.labeled ?? 0) > 0) ?? groups[0];
         setSelectedKey((k) =>
@@ -159,21 +177,47 @@ export function CalibrationView({ agentId }: { agentId: string }) {
       })
       .catch((err: unknown) => {
         console.error("[decision-review] calibration load failed", err);
-        if (!cancelled)
-          setError(err instanceof Error ? err.message : "Calibration could not be computed.");
+        if (!cancelled) {
+          setLoaded({
+            key,
+            report: null,
+            error: err instanceof Error ? err.message : "Calibration could not be computed.",
+          });
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [dispatch, agentId, model, method, agentOrganizationId]);
+  }, [dispatch, agentId, model, method, reloadKey]);
 
   const selected = report?.groups?.find((g) => groupKey(g) === selectedKey) ?? null;
   const measure = selected ? selected[signal] : null;
   const threshold = measure?.recommended_threshold ?? null;
+  // Agreement with the reference model (AI) — a second opinion, never merged with the labels.
+  const referenceGroups = readReferenceGroups(report);
+  const selectedReference = selected
+    ? (referenceGroups.find((g) => g.version === selected.version && g.question === selected.question) ?? null)
+    : null;
+  const referenceBins = selectedReference
+    ? signal === "probability"
+      ? selectedReference.probabilityBins
+      : selectedReference.confidenceBins
+    : [];
 
   return (
     <div className="flex h-full min-h-0 flex-col pt-[var(--shell-header-h)]">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
+      <div className="px-3">
+        <Tabs
+          aria-label="Calibration view"
+          value={view}
+          onValueChange={(v) => setView(v as View)}
+          data={[
+            { value: "human", label: "Human labels" },
+            { value: "reference", label: "Reference check (AI)" },
+          ]}
+        />
+      </div>
+      <div className={cn("flex flex-wrap items-center gap-2 border-b border-border px-3 py-2", view !== "human" && "hidden")}>
         <SegmentedControl aria-label="Signal"
           value={signal}
           onValueChange={(v) => setSignal(v as Signal)}
@@ -215,7 +259,7 @@ export function CalibrationView({ agentId }: { agentId: string }) {
         )}
       </div>
 
-      {error && (
+      {error && view === "human" && (
         <p className="flex items-start gap-1.5 border-b border-destructive/40 bg-destructive/10 px-3 py-1.5 type-secondary text-destructive-ink">
           <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" />
           {error}
@@ -224,7 +268,14 @@ export function CalibrationView({ agentId }: { agentId: string }) {
       )}
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        {report == null && !error ? (
+        {view === "reference" ? (
+          <ReferenceCheck
+            agentId={agentId}
+            facets={facets}
+            referenceGroups={referenceGroups}
+            onRunSettled={() => setReloadKey((k) => k + 1)}
+          />
+        ) : report == null && !error ? (
           <Skeleton className="h-40 w-full" />
         ) : report && (report.groups ?? []).length === 0 ? (
           <p className="type-secondary text-muted-foreground">This agent has no recorded decision answers yet.</p>
@@ -256,6 +307,24 @@ export function CalibrationView({ agentId }: { agentId: string }) {
                     <ReliabilityCurve bins={measure.bins ?? []} threshold={threshold?.threshold ?? null} />
                   )}
                 </div>
+                {selectedReference && (
+                  <div>
+                    <div className="mb-1 type-secondary font-medium">
+                      vs reference (AI) · {selectedReference.n} checked · {pct(selectedReference.agreementRate)} agree
+                    </div>
+                    {referenceBins.length === 0 ? (
+                      <p className="type-secondary text-muted-foreground">Too few checks for a curve.</p>
+                    ) : (
+                      <ReliabilityCurve
+                        bins={referenceBins}
+                        threshold={null}
+                        yLabel="Agrees with reference"
+                        unit="checks"
+                        label="Agreement with the reference model"
+                      />
+                    )}
+                  </div>
+                )}
                 <table className="border-collapse self-start type-secondary">
                   <thead>
                     <tr className="text-left type-meta uppercase tracking-wide text-muted-foreground">
