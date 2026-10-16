@@ -282,8 +282,6 @@ export const defaultUserPreferences: UserPreferences = {
   reversible: { verbs: {}, pairs: {} },
   // The bell's source memory (features/notifications). Keep in sync with userPreferencesSlice.ts.
   inbox: { sourcesSeen: {}, sourcesSeenIds: {}, sourcesCleared: {}, sourcesClearedIds: {}, hiddenSources: [] },
-  // Smart Add answers per session. Keep in sync with userPreferencesSlice.ts.
-  smartAdd: { runs: {} },
   // Shared data tools (JSON truncator, server-log viewer); null = the tool's default.
   // Keep in sync with userPreferencesSlice.ts.
   dataTools: {

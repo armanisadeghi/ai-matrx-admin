@@ -1,4 +1,4 @@
-import { ANSWER_KINDS, emptyAnswers, isEmptyAnswers, prune, unpack, type RunAnswers } from "../runMemory";
+import { ANSWER_KINDS, emptyAnswers, isEmptyAnswers, unpack, type RunAnswers } from "../runMemory";
 import { customItem } from "../evidence";
 
 describe("Smart Add run memory", () => {
@@ -10,15 +10,6 @@ describe("Smart Add run memory", () => {
     expect(isEmptyAnswers(back!)).toBe(false);
     expect(unpack(null)).toBeNull();
     expect(isEmptyAnswers(unpack({ decisions: "x", namesakes: 3 })!)).toBe(true);
-  });
-
-  it("keeps only the 30 newest sessions", () => {
-    const runs: Record<string, Record<string, unknown>> = {};
-    for (let i = 0; i < 35; i++) runs[`r${i}`] = { at: `2026-10-14T00:00:${String(i).padStart(2, "0")}Z` };
-    const kept = Object.keys(prune(runs));
-    expect(kept).toHaveLength(30);
-    expect(kept).not.toContain("r0");
-    expect(kept).toContain("r34");
   });
 
   it("saves and restores EVERY kind of answer; a kind added to the screen cannot be missed", () => {
