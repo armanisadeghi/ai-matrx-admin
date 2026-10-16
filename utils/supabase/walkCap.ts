@@ -47,6 +47,10 @@ export interface WalkKnobs {
 export interface ActiveWalk {
   host: string;
   idleMs: number;
+  /** Since the host's last request of ANY kind (background polling included) — what keeps it busy. */
+  anyRequestIdleMs?: number;
+  /** A test run holds this host: it keeps its slot while it made any request within the idle window. */
+  held?: boolean;
 }
 
 export type WalkDecision =
@@ -158,7 +162,12 @@ export function decideWalkAdmission(
   }
   const active = (): ActiveWalk[] =>
     [...registry.admitted.entries()]
-      .map(([h, lastSeen]) => ({ host: h, idleMs: now - lastSeen }))
+      .map(([h, lastSeen]) => ({
+        host: h,
+        idleMs: now - lastSeen,
+        anyRequestIdleMs: now - Math.max(lastSeen, registry.lastRequest?.get(h) ?? 0),
+        held: isHeld(h),
+      }))
       .sort((a, b) => a.idleMs - b.idleMs);
 
   if (knobs.cap <= 0) {
@@ -314,7 +323,17 @@ function ago(ms: number): string {
 
 function refusalPage(host: string, active: ActiveWalk[], knobs: WalkKnobs): string {
   const list = active.length
-    ? active.map((w) => `<li><code>${escapeHtml(w.host)}</code> — last signed-in request ${ago(w.idleMs)}</li>`).join("")
+    ? active
+        .map((w) => {
+          const any = w.anyRequestIdleMs ?? w.idleMs;
+          const why = w.held
+            ? `held by a test run — keeps its slot until it makes no request for ${knobs.windowMinutes} minutes`
+            : any < WALK_BUSY_PROTECT_MS
+              ? "in use (a request in the last " + WALK_BUSY_PROTECT_MS / 1000 + " seconds)"
+              : "can be paused for you";
+          return `<li><code>${escapeHtml(w.host)}</code> — last page ${ago(w.idleMs)}, last request of any kind ${ago(any)}: ${why}</li>`;
+        })
+        .join("")
     : "<li>(none — the cap is 0, so no agent walk may sign in against production)</li>";
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -327,7 +346,7 @@ code{background:#f1f1f1;padding:1px 5px;border-radius:4px}
 <h1>This preview is over the live-database walk cap</h1>
 <p>${active.length} agent sessions are already signed in against production (the cap is ${knobs.cap}):</p>
 <ul>${list}</ul>
-<p>A session in use is never paused for another. Wait until one has been quiet for ${WALK_BUSY_PROTECT_MS / 1000} seconds (or idle for ${knobs.windowMinutes} minutes), then reload this page.</p>
+<p>A session in use is never paused for another. An unheld session frees after ${WALK_BUSY_PROTECT_MS / 1000} seconds with no request of any kind (background polling counts); a held one only after ${knobs.windowMinutes} minutes with no request — then reload this page.</p>
 <p><small>Host refused: <code>${escapeHtml(host)}</code>. Knobs: <code>${WALK_CAP_FEATURE}.${CAP_KEY}</code> and <code>${WALK_CAP_FEATURE}.${WINDOW_KEY}</code>. This check runs only in local development against the live database.</small></p>
 </body></html>`;
 }
