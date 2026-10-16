@@ -33,6 +33,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode as React_Node } from "react";
 import type { RecordChatContext } from "@ai-matrx/records-ui";
 import { AgentConversationColumn } from "@ai-matrx/chat/agents/components/shared/AgentConversationColumn";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
@@ -41,7 +42,50 @@ import { useCompactInputMaxHeight } from "@ai-matrx/chat/agents/components/input
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { createClient } from "@/utils/supabase/client";
 import { mayReadAsMember } from "@/features/organizations/organizationsIAmIn";
+import { selectMessageCount } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
+import { setContextEntries } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
+
+/**
+ * THE PANEL SIZES TO ITS CONTENT, AND NEVER MOVES UNDER A READER. `AgentConversationColumn` is
+ * built for a parent with a definite height (its transcript is `flex-1 min-h-0` + an absolutely
+ * placed scroller), so in a record page's auto-height panel the transcript collapsed to 0px, every
+ * message was clipped away, and the scroller's 25dvh bottom padding painted ~220px of blank.
+ * Empty, the panel is the composer alone (no blank). From the first message it takes ONE settled
+ * height — set in the same frame as the send, never grown by the stream — and the transcript
+ * scrolls inside it.
+ */
+export const RECORD_CHAT_EMPTY_FRAME = "flex min-h-0 flex-col";
+export const RECORD_CHAT_ACTIVE_FRAME = "flex min-h-0 flex-col h-[min(60dvh,32rem)] min-h-[18rem]";
+export const recordChatFrameClass = (hasMessages: boolean): string =>
+  hasMessages ? RECORD_CHAT_ACTIVE_FRAME : RECORD_CHAT_EMPTY_FRAME;
+
+/**
+ * THE FIRST TURN'S GROUNDING. A conversation's row exists only after its first message, so the
+ * server-side bind (`record_scope_block`) can only land AFTER turn one has already been built —
+ * turn one answered "I can't see any table data" while turn two knew the rental. The record's own
+ * facts, read through the read door by `RecordChat`, therefore ride as context entries from the
+ * moment the conversation opens; the bind keeps every later turn fresh.
+ */
+export function recordContextEntries(ctx: Pick<RecordChatContext, "entries" | "title" | "tableName">) {
+  return [
+    { key: "record_about", value: { content: `${ctx.title} (${ctx.tableName})`, type: "text", label: "This record" } },
+    ...ctx.entries.map((e) => ({
+      key: `record_fact_${e.key}`,
+      value: { content: typeof e.value === "string" ? e.value : JSON.stringify(e.value), type: "text", label: e.label },
+    })),
+  ];
+}
+
+function RecordChatFrame({ conversationId, children }: { conversationId: string; children: React_Node }) {
+  const count = useAppSelector(selectMessageCount(conversationId));
+  return (
+    <div data-record-chat-frame={count > 0 ? "active" : "empty"} className={recordChatFrameClass(count > 0)}>
+      {children}
+    </div>
+  );
+}
 
 /** The one door this file calls, exactly as the portals and forms services call theirs. */
 type DoorCaller = {
@@ -135,6 +179,11 @@ export function RecordScopedChat({ ctx, organizationId, className }: RecordScope
       cancelled = true;
     };
   }, [memberHere, ctx.surfaceKey, launchMandate, organizationId]);
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    if (!conversationId || !memberHere) return;
+    dispatch(setContextEntries({ conversationId, entries: recordContextEntries(ctx) as never }));
+  }, [conversationId, memberHere, ctx, dispatch]);
   const [launchRefused, setLaunchRefused] = useState<string | null>(null);
 
   const [bound, setBound] = useState<"pending" | "bound" | { refused: string }>("pending");
@@ -246,13 +295,15 @@ export function RecordScopedChat({ ctx, organizationId, className }: RecordScope
           the default-chat job's, bound to THIS record; switching it would be a second
           conversation that is not bound, so no agent switch is offered (a plain label). */}
       <div ref={measureRef} className="flex min-h-0 flex-1 flex-col">
-        <AgentConversationColumn
-          conversationId={conversationId}
-          surfaceKey={ctx.surfaceKey}
-          smartInputProps={{
-            composer: { size: "compact", mode: composerMode, placeholder: `Ask about ${ctx.title}`, maxInputHeightPx },
-          }}
-        />
+        <RecordChatFrame conversationId={conversationId}>
+          <AgentConversationColumn
+            conversationId={conversationId}
+            surfaceKey={ctx.surfaceKey}
+            smartInputProps={{
+              composer: { size: "compact", mode: composerMode, placeholder: `Ask about ${ctx.title}`, maxInputHeightPx },
+            }}
+          />
+        </RecordChatFrame>
       </div>
     </div>
   );
