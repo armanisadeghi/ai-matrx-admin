@@ -20,6 +20,53 @@ const HOSTS: ReadonlyArray<[RegExp, SocialPlatform]> = [
   [/(^|\.)snapchat\.com$/, "snapchat"],
 ];
 
+/**
+ * THE one alias rule for an account address (MKT-185): a host that serves the SAME account page as the platform's
+ * own account host. Mirror of matrx-social `PROFILE_HOST_ALIASES` (aidream packages/matrx-social/matrx_social/urls.py),
+ * pinned by the shared `same_account` pairs in `__tests__/profile_handle_cases.json`. Shorteners (youtu.be, lnkd.in,
+ * pin.it, redd.it, vm.tiktok.com, fb.watch) are never here: they name a post or a redirect, not an account.
+ */
+export const PROFILE_HOST_ALIASES: Readonly<Record<string, string>> = {
+  "twitter.com": "x.com", "www.twitter.com": "x.com", "mobile.twitter.com": "x.com", "m.twitter.com": "x.com",
+  "www.x.com": "x.com", "mobile.x.com": "x.com",
+  "fb.com": "www.facebook.com", "www.fb.com": "www.facebook.com", "facebook.com": "www.facebook.com",
+  "m.facebook.com": "www.facebook.com", "mobile.facebook.com": "www.facebook.com",
+  "web.facebook.com": "www.facebook.com", "touch.facebook.com": "www.facebook.com",
+  "mbasic.facebook.com": "www.facebook.com",
+  "instagr.am": "www.instagram.com", "www.instagr.am": "www.instagram.com", "instagram.com": "www.instagram.com",
+  "m.instagram.com": "www.instagram.com",
+  "youtube.com": "www.youtube.com", "m.youtube.com": "www.youtube.com",
+  "linkedin.com": "www.linkedin.com", "m.linkedin.com": "www.linkedin.com",
+  "tiktok.com": "www.tiktok.com", "m.tiktok.com": "www.tiktok.com",
+  "threads.net": "www.threads.com", "www.threads.net": "www.threads.com", "threads.com": "www.threads.com",
+  "pinterest.com": "www.pinterest.com",
+  "reddit.com": "www.reddit.com", "old.reddit.com": "www.reddit.com", "new.reddit.com": "www.reddit.com",
+  "m.reddit.com": "www.reddit.com",
+  "snapchat.com": "www.snapchat.com",
+};
+/** Country / language subdomains that serve the same account page (`es-la.facebook.com`, `uk.linkedin.com`). */
+const LOCALE_SUBDOMAIN = /^(?:[a-z]{2}(?:-[a-z]{2})?)\.(facebook\.com|linkedin\.com|pinterest\.com)$/;
+
+/** The platform's own account host for `host` (lower-cased); `host` itself when it has no alias. */
+export function profileHost(host: string): string {
+  const h = host.toLowerCase();
+  if (PROFILE_HOST_ALIASES[h]) return PROFILE_HOST_ALIASES[h];
+  const m = LOCALE_SUBDOMAIN.exec(h);
+  return m && !h.startsWith("www.") ? `www.${m[1]}` : h;
+}
+
+/** `address` on its platform's own account host (`twitter.com/a` -> `https://x.com/a`); unchanged when not a platform. */
+export function aliasProfileHost(address: string): string {
+  const url = parseUrl(address);
+  if (!url || !detectPlatform(address)) return address;
+  const host = url.hostname.toLowerCase();
+  const canon = profileHost(host);
+  if (canon === host) return address;
+  const rest = address.replace(/^[a-z]+:\/\//i, "");
+  const at = rest.toLowerCase().indexOf(host);
+  return `https://${canon}${at >= 0 ? rest.slice(at + host.length) : ""}`;
+}
+
 function parseUrl(text: string): URL | null {
   const trimmed = text.trim();
   if (!/^(https?:\/\/|www\.)/i.test(trimmed) && !/^[a-z0-9.-]+\.[a-z]{2,}\//i.test(trimmed)) {
