@@ -6,6 +6,7 @@
 import { useEffect } from "react";
 import { toast } from "@/lib/toast";
 import { readAppConfigKey } from "@/lib/config-attestation/appConfig";
+import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { noticeSchema } from "@/features/admin/applications/config/schema";
 import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 
@@ -19,7 +20,12 @@ const dismissed = defineClientKeyFamily({
 export function WebAppNotice() {
   useEffect(() => {
     let cancelled = false;
-    void readAppConfigKey("notice").then(({ value, error }) => {
+    // First-paint contract (2026-10-16): the notice is a toast, never part of the first paint —
+    // it is read once the page has settled, beside the minimum-version check.
+    const settle = new AbortController();
+    void whenLateIdle(undefined, settle.signal).then((ok) => (ok && !cancelled ? readAppConfigKey("notice") : null)).then((result) => {
+      if (!result) return;
+      const { value, error } = result;
       if (cancelled) return;
       if (error) {
         console.error("[app-notice] the app notice could not be read", error);
@@ -45,6 +51,7 @@ export function WebAppNotice() {
     });
     return () => {
       cancelled = true;
+      settle.abort();
     };
   }, []);
   return null;
