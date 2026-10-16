@@ -1,11 +1,3 @@
-/** A multi-line text as the lines a Peek section shows (`items`): line breaks kept, blank lines dropped. */
-export function peekLines(text: string): string[] {
-  return text
-    .split("\n")
-    .map((line) => line.trimEnd())
-    .filter((line) => line.trim().length > 0);
-}
-
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "—";
   const d = new Date(value);

@@ -21,9 +21,7 @@ import { ChevronRight } from "lucide-react";
 
 import {
   Checkbox,
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
+  PeekHoverCard,
 } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 
@@ -206,16 +204,9 @@ export function TopicTreeRow({
             onCancel={onRenameCancel}
           />
         ) : renderHover && hoverEnabled ? (
-          <HoverCard>
-            <HoverCardTrigger asChild>{label}</HoverCardTrigger>
-            <HoverCardContent
-              align="start"
-              side="right"
-              className="w-80 type-secondary"
-            >
-              {renderHover(row)}
-            </HoverCardContent>
-          </HoverCard>
+          <PeekHoverCard trigger={label} align="start" side="right" label={row.label}>
+            {renderHover(row)}
+          </PeekHoverCard>
         ) : (
           label
         )}
