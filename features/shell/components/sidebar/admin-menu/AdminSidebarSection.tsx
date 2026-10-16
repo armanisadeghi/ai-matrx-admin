@@ -18,7 +18,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
-import { rememberAdminFooterHeight } from "./admin-footer-reserve";
+import { ADMIN_FOOTER_ATTR, rememberAdminFooterHeight } from "./admin-footer-reserve";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAuthReady, selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
@@ -40,6 +40,17 @@ export default function AdminSidebarSection() {
   useEffect(() => {
     if (authReady && !isAdmin) rememberAdminFooterHeight(null);
   }, [authReady, isAdmin]);
+
+  // Marks the sidebar the moment the admin boolean is known (not when the Impl chunk
+  // mounts), so an open domain panel gives the footer its full width with labels at
+  // once (styles/shell.css § THE DOMAIN PANEL) and the panel width never jumps.
+  useEffect(() => {
+    if (!isAdmin) return undefined;
+    const sidebar = document.querySelector<HTMLElement>(".shell-sidebar");
+    if (!sidebar) return undefined;
+    sidebar.setAttribute(ADMIN_FOOTER_ATTR, "");
+    return () => sidebar.removeAttribute(ADMIN_FOOTER_ATTR);
+  }, [isAdmin]);
 
   if (!hydrated || !isAdmin) return null;
   return <AdminSidebarSectionImpl />;

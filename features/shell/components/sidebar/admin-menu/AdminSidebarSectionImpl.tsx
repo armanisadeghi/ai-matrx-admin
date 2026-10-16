@@ -46,15 +46,6 @@ export default function AdminSidebarSectionImpl() {
     return () => observer.disconnect();
   }, []);
 
-  // Marks the sidebar while the admin block is mounted, so an open domain panel gives
-  // the footer the panel's full width with labels (styles/shell.css § THE DOMAIN PANEL).
-  useEffect(() => {
-    const sidebar = sectionRef.current?.closest<HTMLElement>(".shell-sidebar");
-    if (!sidebar) return undefined;
-    sidebar.setAttribute("data-admin-footer", "");
-    return () => sidebar.removeAttribute("data-admin-footer");
-  }, []);
-
   return (
     <div ref={sectionRef} className="shell-admin-section">
       <AppLink
