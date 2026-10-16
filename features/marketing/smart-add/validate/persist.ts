@@ -323,6 +323,27 @@ async function addSite(ctx: PersistContext, url: string): Promise<{ id: string |
   return { id: site.id, undo: async () => deleteSite(site.id) };
 }
 
+/** A live web.business_fact on the brand of this finding's kind with the same text (case and spacing ignored). */
+async function sameFactOnBrand(ctx: PersistContext, item: FocusItem, value: string): Promise<string | null> {
+  const field = item.fact?.field ?? item.evidence?.field;
+  if (!field) return null;
+  const norm = (v: string) => v.trim().replace(/\s+/g, " ").toLowerCase();
+  const wanted = new Set([value, item.fact?.value ?? ""].filter(Boolean).map(norm));
+  const { data, error } = await (await db())
+    .from("business_fact")
+    .select("id, kind, value")
+    .eq("brand_id", ctx.getBrand().id)
+    .is("deleted_at", null);
+  if (error) throw new Error(error.message);
+  const kind = factKind(field);
+  const hit = (data ?? []).find((row) => {
+    if (row.kind !== kind) return false;
+    const v = isJsonRecord(row.value) ? (row.value.text ?? row.value.url) : row.value;
+    return typeof v === "string" && wanted.has(norm(v));
+  });
+  return hit?.id ?? null;
+}
+
 /**
  * The web.business_fact Create kept for this finding (keptFacts.ts; its discovered_item's resolved_fact_id), settled in
  * place: Correct confirms it (and takes an edit), Wrong soft-deletes it. Returns false when Create kept none.
@@ -349,7 +370,9 @@ async function settleKeptFact(
     .limit(1)
     .maybeSingle();
   if (link.error) throw new Error(link.error.message);
-  const factId = link.data?.resolved_fact_id;
+  // No link (the card came from another round or step): the same fact already on the brand is the one to settle,
+  // so a Yes never writes it twice (MKT-179: a tagline Create kept was written again by the validate Yes).
+  const factId = link.data?.resolved_fact_id ?? (await sameFactOnBrand(ctx, item, value));
   if (!factId) return false;
   const current = await w
     .from("business_fact")

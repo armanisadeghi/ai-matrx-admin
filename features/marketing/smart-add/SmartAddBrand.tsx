@@ -1526,6 +1526,11 @@ export function SmartAddBrand({
     setSeparateIds(next);
     setReleased((n) => n + 1);
   };
+  /** Beside the Create bar, "Create a separate brand" creates it: the answer alone left the page sitting (MKT-182). */
+  const separateAndCreate = () => {
+    chooseSeparate();
+    if (canCreate) void create();
+  };
   /** Add what is new to an existing brand: the enrich flow, carrying the website and account this session has. */
   const addToExisting = (m: BrandMatch) => {
     const account = basics.accounts.find((a) => a.platform && isSocialPlatform(a.platform));
@@ -1917,7 +1922,7 @@ export function SmartAddBrand({
 
       {/* Create: the confirmed basics, one row. */}
       <div className="sticky bottom-3 z-10">
-      {created ? null : <ExistingBrandNotice placement="above" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={chooseSeparate} />}
+      {created ? null : <ExistingBrandNotice placement="above" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={separateAndCreate} />}
       <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
         {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
         <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 sm:basis-0">
