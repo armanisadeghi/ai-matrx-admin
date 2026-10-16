@@ -142,11 +142,9 @@ BUSY_GUARD_MIN="${MATRX_PREVIEW_BUSY_GUARD_MIN:-2}"
 #   RESTART_BUDGET restarts per RESTART_WINDOW_SEC; past it the watchdog stops restarting and says
 #                  "crash loop" — a server that dies on every boot is a code defect to read, not retry.
 KEEP_SMALL_GB="${MATRX_PREVIEW_KEEP_SMALL_GB:-16}"
-# HELD HEADROOM (2026-10-15): the server grows ~1–2 GB a minute under shared use, so the 48 GB cap
-# landed mid-run every 30–45 min (the week's biggest stop reason: 40 cap stops in 12 sessions). While
-# a run holds it, the cap is HELD_MAX_GB instead; the moment the hold ends, the 48 GB cap applies and
-# restarts it. Runaways measured before reached 100+ GB; this host has 256 GB. Review by 2026-11-15.
-HELD_MAX_GB="${MATRX_PREVIEW_HELD_MAX_GB:-64}"
+# NO HELD HEADROOM (MKT-176, 2026-10-16): a 64 GB cap for held runs let the shared preview reach
+# 58.8 GB with no recycle. The cap is MAX_RSS_GB for every state, held or not; a hold only blocks
+# the softer idle/recycle reasons. The stop line below says "while held" so it is never silent.
 RESTART_BUDGET="${MATRX_PREVIEW_RESTART_BUDGET:-3}"
 RESTART_WINDOW_SEC="${MATRX_PREVIEW_RESTART_WINDOW_SEC:-900}"
 HOLD_MAX_MIN=180
@@ -1049,9 +1047,8 @@ preview_stop_reason() {
   label="$(memory_label "$source")"
   idle_min="$(( idle / 60 ))"
   local cap_gb="$MAX_RSS_GB"
-  (( is_held )) && cap_gb="$HELD_MAX_GB"
   if (( kb >= $(gb_to_kb "$cap_gb") )); then
-    printf 'preview restarted at %s %s (cap %s GB%s) — a fresh one starts and warms at once\n' "$gb" "$label" "$cap_gb" "$( (( is_held )) && printf ', held' )"
+    printf 'preview restarted at %s %s (cap %s GB%s) — a fresh one starts and warms at once\n' "$gb" "$label" "$cap_gb" "$( (( is_held )) && printf ', stopped even though a test run holds it' )"
   elif (( is_held )); then
     return 0 # a test run holds it
   elif (( ! was_used )); then
