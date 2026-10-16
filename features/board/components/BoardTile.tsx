@@ -23,7 +23,7 @@
  * off-screen, an image swaps to a thumbnail…).
  */
 
-import { Activity, createContext, type ReactNode, useContext, useSyncExternalStore, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Activity, createContext, type ReactNode, Suspense, useContext, useSyncExternalStore, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Maximize2, Minimize2, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -585,7 +585,12 @@ export function BoardTile({
                     </div>
                   )}
                 >
-                  <AfterFirstPaint placeholder={<TileSkeleton typeLabel={typeLabel ?? ""} />}>{children(tier)}</AfterFirstPaint>
+                  {/* A body that suspends (a lazy block, a chunk) hides only itself behind its skeleton: with no boundary
+                      here the nearest one is the whole board's, which React hides (display: none) and reveals —
+                      every tile reflowing at once. */}
+                  <Suspense fallback={<TileSkeleton typeLabel={typeLabel ?? ""} />}>
+                    <AfterFirstPaint placeholder={<TileSkeleton typeLabel={typeLabel ?? ""} />}>{children(tier)}</AfterFirstPaint>
+                  </Suspense>
                 </ErrorBoundaryWithCapture>
               </TileNavigationBoundary>
             </Activity>
