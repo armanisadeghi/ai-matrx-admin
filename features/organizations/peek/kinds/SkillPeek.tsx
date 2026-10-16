@@ -1,32 +1,27 @@
 "use client";
 
-/**
- * SkillPeek — quick read-only preview of a skill definition.
- *
- * Same pattern as FilePeek / NotePeek: fetch one row from skill.definition,
- * drop fields into <PeekDialog> + <PeekField>.
- */
+/** SkillPeek — read-only preview of a skill definition. On THE peek (`Peek` in `PeekWindow`). */
 
 import React from "react";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { Puzzle } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
-import { ReadFailure } from "@ai-matrx/design-system";
 
-interface SkillRow {
+interface Row {
   label: string | null;
   description: string | null;
   created_at: string | null;
 }
 
 export default function SkillPeek({ id, open, onClose }: PeekProps) {
-  const [row, setRow] = React.useState<SkillRow | null>(null);
+  const [row, setRow] = React.useState<Row | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<unknown>(null);
   const [attempt, setAttempt] = React.useState(0);
+  const doors = useRecordPeekDoors({ token: "skill", id, href: peekHref("skill", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -41,7 +36,7 @@ export default function SkillPeek({ id, open, onClose }: PeekProps) {
         .maybeSingle();
       if (!cancelled) {
         setLoadError(error ?? null);
-        setRow((data as SkillRow) ?? null);
+        setRow((data as Row) ?? null);
         setLoading(false);
       }
     })();
@@ -50,34 +45,36 @@ export default function SkillPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id, attempt]);
 
+  const description = row?.description ?? "";
+  const body: PeekBlock[] = [];
+  if (row && !loadError) {
+    body.push(
+      description.trim()
+        ? { section: "Description", text: description, markdown: true }
+        : { section: "Description", text: "No description" },
+    );
+    body.push({ fact: `Added ${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}`, muted: true });
+    body.push({ part: "custom-fields", token: "skill", id });
+  } else if (!loading && !loadError) {
+    body.push({ fact: "Skill not found.", wrap: true });
+  }
+
+  const title = row?.label || "Skill";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "skill", id }}
-      onClose={onClose}
-      title={row?.label || "Skill"}
-      icon={<Puzzle className="h-4 w-4 text-violet-600 dark:text-violet-400" />}
-      href={peekHref("skill", id)}
-      loading={loading}
-    >
-      {loadError ? (
-        <ReadFailure error={loadError} what="this skill" onRetry={() => setAttempt((n) => n + 1)} />
-      ) : row ? (
-        <>
-          <PeekField label="Description">
-            {row.description ? (
-              <div className="text-sm break-words text-muted-foreground rounded-md border border-border bg-muted/20 p-3 max-h-72 overflow-y-auto"><RichContent source={row.description ?? ""} level="standard" /></div>
-            ) : (
-              <span className="text-muted-foreground italic">No description</span>
-            )}
-          </PeekField>
-          <PeekField label="Added">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Skill not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek
+        size="lg"
+        record={{
+          kind: "Skill",
+          id,
+          title,
+          glyph: Puzzle,
+          body,
+          ...(loadError ? { failure: { what: "this skill", error: loadError, onRetry: () => setAttempt((n) => n + 1) } } : {}),
+          ...doors,
+        }}
+        loading={loading}
+      />
+    </PeekWindow>
   );
 }

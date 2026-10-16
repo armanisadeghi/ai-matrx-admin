@@ -16,21 +16,20 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  * It is NOT a second Person renderer: the read is the canonical
  * `fetchPartyDetail` (the same bundle the record page loads, org-scoped through
  * RLS on `crm.*`), the contact value and its reachability come from the same
- * helpers the record page's Contact card uses, and the chrome is the shared
- * `PeekDialog`, whose footer resolves the full record's route from the entity
+ * helpers the record page's Contact card uses, and the chrome is THE peek (`Peek` in `PeekWindow`), whose doors resolve the full record's route from the entity
  * registry. The 360° workspace stays at `/crm/<id>`; the in-place window/docked
  * dossier is the Detail primitive (`features/item-presentation/registry.tsx`).
  */
 
 import React from "react";
 import { Building2, Contact, User } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock, type PeekRow } from "@ai-matrx/design-system";
 import { formatAbsoluteDate } from "@ai-matrx/kit/format";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { fetchPartyDetail } from "@/features/crm/service";
 import { describeBlocks, mediumBlocks } from "@/features/crm/reachability";
 import { partyKindWord } from "@/features/crm/party-words";
 import type { PartyDetail } from "@/features/crm/types";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 
 /** The employer line: the current affiliation, else the denormalised employer. */
@@ -52,6 +51,7 @@ function channelWords(code: string | null | undefined): string {
 export default function PartyPeek({ id, open, onClose }: PeekProps) {
   const [detail, setDetail] = React.useState<PartyDetail | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "party", id, onClose });
   // A read that FAILED is not a record that is not there — the gate below says
   // which, and never reports an empty Person for data we could not read.
   // 🚨 The thrown error OBJECT is kept, never flattened to its `.message`:
@@ -96,77 +96,56 @@ export default function PartyPeek({ id, open, onClose }: PeekProps) {
   const points = detail?.contactPoints ?? [];
   const lastInteraction = detail?.interactions[0] ?? null;
 
+  const body: PeekBlock[] = [];
+  if (party) {
+    body.push({
+      section: kindWord,
+      text:
+        employer ??
+        party.job_title?.trim() ??
+        party.headline?.trim() ??
+        party.primary_domain?.trim() ??
+        "No title or employer recorded here",
+    });
+    if (points.length > 0) {
+      const rows: PeekRow[] = points.map((point) => {
+        const value = point.medium.display_value ?? point.medium.value_raw;
+        const blocks = describeBlocks(mediumBlocks(point.medium));
+        return {
+          text: value,
+          ...(point.channel ? { detail: point.channel } : {}),
+          ...(blocks ? { status: { text: blocks, tone: "warning" as const } } : {}),
+        };
+      });
+      body.push({ section: "Contact", rows });
+    } else {
+      body.push({ section: "Contact", text: "No email, phone or handle is recorded here yet." });
+    }
+    if (party.do_not_contact) {
+      body.push({
+        section: "Do not contact",
+        tone: "warning",
+        text: party.do_not_contact_reason?.trim() || "Marked do-not-contact here — no outreach may be sent.",
+      });
+    }
+    body.push({
+      section: "Last activity",
+      text: lastInteraction
+        ? `${channelWords(lastInteraction.channel_code)} · ${formatAbsoluteDate(
+            lastInteraction.occurred_at ?? lastInteraction.created_at,
+          )}`
+        : "Nothing logged with this record yet.",
+    });
+    body.push({ part: "custom-fields", token: "party", id });
+  } else if (!loading) {
+    // Denied / deleted / missing / transient each render their TRUE state.
+    body.push({ part: "access", token: "party", id, error });
+  }
+
+  const title = party?.display_name || kindWord;
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "party", id }}
-      onClose={onClose}
-      title={party?.display_name || kindWord}
-      icon={<KindIcon className="h-4 w-4 text-teal-600 dark:text-teal-400" />}
-      token="party"
-      id={id}
-      loading={loading}
-    >
-      {party ? (
-        <>
-          <PeekField label={kindWord}>
-            <span className="text-muted-foreground">
-              {employer ??
-                party.job_title?.trim() ??
-                party.headline?.trim() ??
-                party.primary_domain?.trim() ??
-                "No title or employer recorded here"}
-            </span>
-          </PeekField>
-          <PeekField label="Contact">
-            {points.length > 0 ? (
-              <ul className="space-y-1">
-                {points.map((point) => {
-                  const value = point.medium.display_value ?? point.medium.value_raw;
-                  const blocks = describeBlocks(mediumBlocks(point.medium));
-                  return (
-                    <li key={point.id} className="flex flex-wrap items-baseline gap-x-2">
-                      <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                        {point.channel}
-                      </span>
-                      <span className="break-all">{value}</span>
-                      {blocks ? (
-                        <span className="text-[11px] text-amber-600 dark:text-amber-400">
-                          {blocks}
-                        </span>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <span className="italic text-muted-foreground">
-                No email, phone or handle is recorded here yet.
-              </span>
-            )}
-          </PeekField>
-          {party.do_not_contact && (
-            <PeekField label="Do not contact">
-              <span className="text-amber-600 dark:text-amber-400">
-                {party.do_not_contact_reason?.trim() ||
-                  "Marked do-not-contact here — no outreach may be sent."}
-              </span>
-            </PeekField>
-          )}
-          <PeekField label="Last activity">
-            <span className="text-muted-foreground">
-              {lastInteraction
-                ? `${channelWords(lastInteraction.channel_code)} · ${formatAbsoluteDate(
-                    lastInteraction.occurred_at ?? lastInteraction.created_at,
-                  )}`
-                : "Nothing logged with this record yet."}
-            </span>
-          </PeekField>
-        </>
-      ) : (
-        // Denied / deleted / missing / transient each render their TRUE state.
-        <AccessGate token="party" id={id} error={error} />
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: kindWord, id, title, glyph: KindIcon, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }

@@ -11,7 +11,7 @@ import { createRoot } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn() }) }));
+jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn() }), usePathname: () => "/" }));
 jest.mock("@/components/ui/dialog", () => ({
   Dialog: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -35,8 +35,13 @@ async function renderPeek(id: string): Promise<HTMLElement> {
   await act(async () => {
     await new Promise((r) => setTimeout(r, 0));
   });
-  return el;
+  // The peek is a floating window drawn in a portal, so read the whole document.
+  return document.body;
 }
+
+afterEach(() => {
+  document.body.innerHTML = "";
+});
 
 beforeEach(() => {
   resolveVisiblePerson.mockReset();
@@ -54,14 +59,14 @@ it("shows someone sharing ANY organization with the viewer, email as a secondary
   const el = await renderPeek("u-dana");
   expect(resolveVisiblePerson).toHaveBeenCalledWith("u-dana");
   expect(el.textContent).toContain("Glaze co-op");
-  expect(el.querySelector("h1")?.textContent).toContain("Dana Ruiz");
+  expect(el.querySelector(".matrx-peek-title")?.textContent).toContain("Dana Ruiz");
   expect(el.querySelector('a[href="mailto:dana@kilnworks.example"]')).not.toBeNull();
-  expect(el.textContent).toContain("member");
-  expect(el.querySelector("[data-footer]")).toBeNull();
+  expect(el.textContent).toMatch(/member/i);
+  expect([...el.querySelectorAll("button")].some((b) => b.textContent === "Open")).toBe(false);
 });
 
 it("someone the viewer shares no organization with is not revealed", async () => {
   const el = await renderPeek("u-stranger");
-  expect(el.querySelector("[data-user-peek-unavailable]")?.textContent).toMatch(/share an organization/);
+  expect(el.textContent).toMatch(/share an organization/);
   expect(el.textContent).not.toContain("dana@");
 });

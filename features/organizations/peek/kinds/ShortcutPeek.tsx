@@ -1,19 +1,13 @@
 "use client";
 
-/**
- * ShortcutPeek — quick read-only preview of an agent shortcut.
- *
- * Same pattern as FilePeek / NotePeek: fetch the row by id, fill <PeekDialog>.
- * Agent shortcuts have no standalone route, so href is omitted and the footer
- * is hidden by PeekDialog.
- */
+/** ShortcutPeek — quick read-only preview of an agent shortcut (description as formatted text, created date, custom fields, doors, not-found notice). On THE peek (`Peek` in `PeekWindow`). */
 
 import React from "react";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { Zap } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 import { shortcutTable } from "@/lib/supabase/shortcutStorage";
 
@@ -26,6 +20,7 @@ interface Row {
 export default function ShortcutPeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<Row | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "agent_shortcut", id, href: peekHref("agent_shortcut", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -46,32 +41,23 @@ export default function ShortcutPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id]);
 
+  const body: PeekBlock[] = [];
+  if (row) {
+    body.push(
+      row.description
+        ? { section: "Description", text: row.description, markdown: true }
+        : { section: "Description", text: "—" },
+    );
+    body.push({ fact: `Created ${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}`, muted: true });
+    body.push({ part: "custom-fields", token: "agent_shortcut", id });
+  } else if (!loading) {
+    body.push({ fact: "Shortcut not found.", wrap: true });
+  }
+
+  const title = row?.label || "Shortcut";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "agent_shortcut", id }}
-      onClose={onClose}
-      title={row?.label || "Shortcut"}
-      icon={<Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
-      href={peekHref("agent_shortcut", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          <PeekField label="Description">
-            {row.description ? (
-              <div className="text-sm break-words text-muted-foreground rounded-md border border-border bg-muted/20 p-3 max-h-72 overflow-y-auto"><RichContent source={row.description ?? ""} level="standard" /></div>
-            ) : (
-              <span className="text-muted-foreground italic">—</span>
-            )}
-          </PeekField>
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Shortcut not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "Shortcut", id, title, glyph: Zap, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }
