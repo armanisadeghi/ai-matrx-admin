@@ -24,19 +24,19 @@ const QUESTION_TYPES: Array<{
   {
     type: "choice",
     label: "Choice",
-    helper: "Pick one answer from options you name",
+    helper: "Pick one of your options",
     icon: ListChecks,
   },
   {
     type: "score",
     label: "Score",
-    helper: "Rate it on a scale of levels you define",
+    helper: "Rate it on your scale",
     icon: Gauge,
   },
   {
     type: "noul",
     label: "Noul",
-    helper: "How true a statement is, from 0 to 100%",
+    helper: "How true, from 0 to 100%",
     icon: ToggleRight,
   },
 ];
@@ -82,10 +82,12 @@ export function DecisionQuestionEditor({ questions, onChange }: Props) {
               return (
                 <Tile
                   key={option.type}
-                  layout="adaptive"
-                  hero
-                  icon={<Icon />}
-                  title={option.label}
+                  title={
+                    <span className="flex items-center gap-2">
+                      <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      {option.label}
+                    </span>
+                  }
                   line={option.helper}
                   onClick={() => add(option.type)}
                 />
