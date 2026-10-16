@@ -6,7 +6,7 @@
  * The server's run record (not a clock) says whether a run is already going.
  */
 import { useEffect } from "react";
-import { isDocCleaned } from "../service/cleanOutcome";
+import { canAiClean, isDocCleaned } from "../service/cleanOutcome";
 import type { PdfDocument } from "./usePdfExtractor";
 
 const handledDocIds = new Set<string>();
@@ -58,8 +58,9 @@ export function needsAutoClean(
   // The server's clean verdict, mirrored (`isDocCleaned`): a partially cleaned
   // doc is NOT cleaned and resumes; `clean_content` beside unmarked, uncleaned
   // pages is a legacy raw-text row and is NOT cleaned either.
-  const cleaned = isDocCleaned(opts.pages ?? [], doc.cleanContent, doc.cleanMode);
-  return hasText && !cleaned;
+  const cleaned = isDocCleaned(opts.pages ?? [], doc.cleanContent);
+  // No page rows: the server answers /pdf/clean-content with 422, so never auto-run.
+  return hasText && !cleaned && canAiClean(opts.pages?.length ?? 0);
 }
 
 export function useAutoCleanOnOpen(args: {

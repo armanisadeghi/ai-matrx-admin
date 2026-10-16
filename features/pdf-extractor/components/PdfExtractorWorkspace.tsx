@@ -57,6 +57,7 @@ import { PdfAiContent } from "./PdfAiContent";
 import { LineageTreeView } from "./LineageTreeView";
 import { ManipulationPanel } from "./ManipulationPanel";
 import { DataStoreBindPanel } from "@/features/rag/components/data-stores/DataStoreBindPanel";
+import { NO_PAGES_TO_CLEAN_REASON, canAiClean } from "../service/cleanOutcome";
 import { useProcessedDocumentPages } from "../hooks/useProcessedDocumentPages";
 import { CopyPagesOverlay } from "./CopyPagesOverlay";
 import { buildPdfExtractorScope } from "@/features/pdf-extractor/lib/pdf-extractor-scope";
@@ -670,6 +671,11 @@ function ExtractionTabContent({
   const [subTab, setSubTab] = useState<ContentSubTab>("text");
   const [copyPagesOpen, setCopyPagesOpen] = useState(false);
   const reprocessing = tab.status === "cleaning";
+  const { pages: tabPages, loading: tabPagesLoading } = useProcessedDocumentPages({
+    processedDocumentId: tab.id,
+    enabled: true,
+  });
+  const cleanable = canAiClean(tabPages.length);
 
   if (tab.status === "extracting") {
     return (
@@ -1123,12 +1129,14 @@ function AiCleanView({
           icon={<Zap />}
           variant="primary"
           onClick={() => onClean(tab.id)}
+          disabled={!cleanable}
+          title={cleanable || tabPagesLoading ? undefined : NO_PAGES_TO_CLEAN_REASON}
         >
           {hasError ? "Re-run Cleanup" : "Run AI Cleanup"}
         </Button>
         <IntelligenceIndicator
           feature="pdf"
-          mandateKeys={[MANDATE_KEYS.pdf__content_cleaner, MANDATE_KEYS.rag__pdf_page_cleaner]}
+          mandateKeys={[MANDATE_KEYS.rag__pdf_page_cleaner]}
           label="AI text cleanup"
         />
         {hasError && (

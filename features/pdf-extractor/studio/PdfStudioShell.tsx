@@ -21,7 +21,7 @@
  */
 
 import Link from "next/link";
-import { USAGE_LIMIT_MESSAGE, isDocCleaned } from "../service/cleanOutcome";
+import { USAGE_LIMIT_MESSAGE, canAiClean, isDocCleaned } from "../service/cleanOutcome";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import React, {
   useCallback,
@@ -554,7 +554,7 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
     if (
       opts?.force !== false &&
       !(await confirmRecleanIfCleaned(
-        isDocCleaned(pages, activeDoc.cleanContent, activeDoc.cleanMode),
+        isDocCleaned(pages, activeDoc.cleanContent),
       ))
     ) {
       cleanInFlight.current = false;
@@ -942,6 +942,7 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
           pipelineRunning={pipelineRunning}
           onRunAiClean={handleRunAiClean}
           aiCleanRunning={aiCleanRunning}
+          canRunAiClean={canAiClean(pages.length)}
           onOpenKnowledgeAssets={knowledgeAssets.toggle}
           onOpenCopyPages={() => setCopyPagesOpen(true)}
           onRefresh={() => void handleRefresh()}
