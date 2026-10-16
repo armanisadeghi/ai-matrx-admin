@@ -1,18 +1,17 @@
 "use client";
 
 /**
- * MessageTemplatePeek — quick read-only preview for a message_template row.
- *
- * Same pattern as FilePeek: fetch the row by id, fill <PeekDialog>.
- * The message_template table uses "label" as its title column.
+ * MessageTemplatePeek — quick read-only preview for a message_template row, on THE peek.
+ * The message_template table uses "label" as its title column. Content keeps its line breaks, first
+ * 4,000 characters then "…", "Empty template" when blank; tags as chips; the access notice when unreadable.
  */
 
 import React from "react";
-import { LayoutTemplate } from "lucide-react";
+import { LayoutTemplate, Tag } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 
 interface MessageTemplateRow {
@@ -27,6 +26,7 @@ const MAX_PREVIEW = 4000;
 export default function MessageTemplatePeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<MessageTemplateRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "message_template", id, href: peekHref("message_template", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -50,44 +50,24 @@ export default function MessageTemplatePeek({ id, open, onClose }: PeekProps) {
   }, [id]);
 
   const content = (row?.content ?? "").trim();
-  const preview = content.slice(0, MAX_PREVIEW);
+  const body: PeekBlock[] = [];
+  if (row) {
+    body.push(
+      content
+        ? { section: "Content", text: `${content.slice(0, MAX_PREVIEW)}${content.length > MAX_PREVIEW ? "…" : ""}`, breaks: true }
+        : { section: "Content", text: "Empty template" },
+    );
+    if (row.tags && row.tags.length > 0) body.push({ section: "Tags", glyph: Tag, tags: row.tags });
+    body.push({ property: "Created", value: row.created_at ? new Date(row.created_at).toLocaleString() : "—" });
+    body.push({ part: "custom-fields", token: "message_template", id });
+  } else if (!loading) {
+    body.push({ part: "access", token: "message_template", id });
+  }
 
+  const title = row?.label || "Message Template";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "message_template", id }}
-      onClose={onClose}
-      title={row?.label || "Message Template"}
-      icon={
-        <LayoutTemplate className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-      }
-      href={peekHref("message_template", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          <PeekField label="Content">
-            {content ? (
-              <div className="max-h-96 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
-                {preview}
-                {content.length > MAX_PREVIEW && "…"}
-              </div>
-            ) : (
-              <span className="italic text-muted-foreground">
-                Empty template
-              </span>
-            )}
-          </PeekField>
-          {row.tags && row.tags.length > 0 && (
-            <PeekField label="Tags">{row.tags.join(", ")}</PeekField>
-          )}
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <AccessGate token="message_template" id={id} />
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "Message template", id, title, glyph: LayoutTemplate, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }
