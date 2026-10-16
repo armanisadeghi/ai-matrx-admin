@@ -37,7 +37,7 @@ import SupportSessionPill from "@/features/admin/users/support-sessions/SupportS
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
-import { registerBlobCacheServiceWorker } from "@/features/files/cache/register-service-worker";
+import { registerBlobCacheOnFirstFileFetch } from "@/features/files/cache/registerOnFirstFileFetch";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { forgetEntitlementSnapshot } from "@/features/entitlements/service";
@@ -113,24 +113,21 @@ export default function DeferredSingletonCore() {
     dispatch(ensureScopeTree() as any);
   });
 
-  // Register the blob-cache Service Worker — Layer 2½ of the 3-tier byte
-  // cache. Intercepts cloud-files byte URLs (and registered CDN /
-  // share-link URLs) and serves them from IndexedDB. Disabled by default
-  // in dev (set localStorage.matrx_dev_sw=1 to opt-in for local testing).
-  // See features/files/cache/service-worker/src/sw.ts for the SW body.
-  useIdleTask("register-blob-cache-sw", 5, async () => {
+  // The blob-cache Service Worker — Layer 2½ of the 3-tier byte cache — registers on the page's
+  // FIRST cloud-file byte fetch, never at idle (features/files/cache/registerOnFirstFileFetch.ts).
+  // Disabled by default in dev (localStorage.matrx_dev_sw=1 opts in); see
+  // features/files/cache/service-worker/src/sw.ts for the SW body.
+  useEffect(() => {
     if (!user?.id) return;
+    let backendUrl: string;
     try {
-      const backendUrl = resolveBaseUrl();
-      void registerBlobCacheServiceWorker({
-        backendUrl,
-        userId: user.id,
-      });
+      backendUrl = resolveBaseUrl();
     } catch {
-      // No backend URL configured (rare boot order) — skip silently;
-      // the cache still works in-memory + IDB tiers.
+      // No backend URL configured (rare boot order) — the in-memory + IDB tiers still work.
+      return;
     }
-  });
+    return registerBlobCacheOnFirstFileFetch({ backendUrl, userId: user.id });
+  }, [user?.id]);
 
   // Entitlement state is DEMAND-DRIVEN: nothing reads `billing.entitlement_snapshot` at boot. The
   // first mounted consumer (useEntitlement / EducationPricing → useEnsureEntitlementSnapshot)
