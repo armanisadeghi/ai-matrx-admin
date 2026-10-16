@@ -96,7 +96,7 @@ export function CellDetail({
             {cell.output != null && (
               <details className="mt-2">
                 <summary className="cursor-pointer text-sm font-semibold text-foreground">Answer</summary>
-                <pre className="mt-1 max-h-72 overflow-auto rounded-md bg-muted p-2 text-xs text-foreground">
+                <pre data-kind-source="explicit" className="mt-1 max-h-72 overflow-auto rounded-md bg-muted p-2 text-xs text-foreground">
                   {JSON.stringify(cell.output, null, 2)}
                 </pre>
               </details>

@@ -36,7 +36,7 @@ export function ResultGrid({
 
   return (
     <>
-      <div className="overflow-x-auto pb-1">
+      <div className="shrink-0 overflow-x-auto pb-1">
         <div className="grid min-w-max gap-2" style={columns}>
           <div className="flex items-end pb-1 text-xs font-medium text-muted-foreground">
             <Clock className="mr-1 size-3.5" />

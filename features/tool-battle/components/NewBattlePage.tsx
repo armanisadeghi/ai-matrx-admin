@@ -137,7 +137,7 @@ export function NewBattlePage() {
         record={{ name: "New battle" }}
         actions={[{ label: lookups ? `Run ${lookups} lookups` : "Run", icon: Swords, primary: true, showLabel: true, disabled: !canRun, onPress: () => void run() }]}
       />
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-6 overflow-y-auto px-[var(--matrx-page-gutter)] pb-10 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-6 overflow-y-auto [&>*]:shrink-0 px-[var(--matrx-page-gutter)] pb-10 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
         <BypassStrip />
         <Section n={1} title="Job">
           {jobsError ? (

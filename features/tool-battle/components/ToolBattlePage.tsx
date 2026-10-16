@@ -141,7 +141,7 @@ export function ToolBattlePage({ battleId }: { battleId: string }) {
         status={STATUS[battle.status]}
         actions={actions}
       />
-      <div className="flex h-full min-h-0 flex-col gap-5 overflow-y-auto px-[var(--matrx-page-gutter)] pb-8 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
+      <div className="flex h-full min-h-0 flex-col gap-5 overflow-y-auto [&>*]:shrink-0 px-[var(--matrx-page-gutter)] pb-8 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <BypassStrip />
           <div className="flex items-center gap-2 text-sm text-muted-foreground" aria-live="polite">
