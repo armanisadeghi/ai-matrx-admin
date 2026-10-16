@@ -190,14 +190,6 @@ const DELETED = [
     "windowTrayLayout.test.ts",
   ].map((f) => `features/window-panels/__tests__/${f}`),
   "features/overlays/__tests__/pageBoundOverlaysCloseOnNavigation.test.ts",
-  // App hydrator tests written against the deleted url-sync internals (getHydrator / parseParams /
-  // initUrlHydration); the grammar and door are covered by the package's url tests.
-  "features/review-walk/__tests__/reviewWalkAddress.test.ts",
-  "features/review-walk/__tests__/walkTitleSurvivesReload.test.ts",
-  "features/window-panels/__tests__/aWindowIdentityIsNeverAResourceId.test.ts",
-  "features/window-panels/__tests__/detailDeepLink.test.ts",
-  "features/window-panels/detail/__tests__/a-deep-link-says-what-it-closed.test.ts",
-  "features/window-panels/detail/__tests__/a-refreshed-window-keeps-its-list.test.ts",
   "components/errors/__tests__/chunk-load-recovery.test.ts",
 ];
 const isDeleted = (rel: string): boolean =>
@@ -460,7 +452,7 @@ function emitDefinitions(): void {
     const names = [...new Set(entries.map(([, n]) => n))].sort();
     write(
       `${DEFS}/trayPreviews.ts`,
-      `/**\n * The app's minimized-window previews (the components stay in the app; the package draws them\n * in the tray chip). Imported for its side effect by the overlay world host.\n */\nimport { registerTrayPreview } from "@ai-matrx/overlays/window";\nimport {\n${names.map((n) => `  ${n},`).join("\n")}\n} from "@/features/window-panels/registry/tray-previews";\n\n${entries.map(([id, n]) => `registerTrayPreview("${id}", { Preview: ${n} });`).join("\n")}\n`,
+      `/**\n * The app's minimized-window previews (the components stay in the app; the package draws them\n * in the tray chip). Imported for its side effect by the overlay world host.\n */\nimport { registerTrayPreview } from "@ai-matrx/overlays/window-host";\nimport {\n${names.map((n) => `  ${n},`).join("\n")}\n} from "@/features/window-panels/registry/tray-previews";\n\n${entries.map(([id, n]) => `registerTrayPreview("${id}", { Preview: ${n} });`).join("\n")}\n`,
     );
     resolve(`tray previews: ${entries.length} registry rows → registerTrayPreview in ${DEFS}/trayPreviews.ts (components kept in features/window-panels/registry/tray-previews.tsx)`);
   }
@@ -574,7 +566,7 @@ export function createAppOverlayPorts(store: StoreLike) {
     `"use client";
 
 /**
- * The app's OverlaysProvider: the ONE app store (overlaysReducers + createOverlaysMiddleware are
+ * The app's OverlaysProvider + WindowsProvider: the ONE app store (overlaysReducers + createOverlaysMiddleware are
  * mounted in lib/redux), the app's ports, every rendered overlay inside the chat surface layer
  * boundary, and the admin "Copy for AI" report in the error card.
  */
@@ -583,9 +575,14 @@ import dynamic from "next/dynamic";
 import { locationRouter, type RouterPort } from "@ai-matrx/overlays";
 import { OverlaysProvider, type OverlayErrorExtrasContext } from "@ai-matrx/overlays/react";
 import { useNextRouterPort } from "@ai-matrx/overlays/next";
+import { WindowsProvider, WindowTraySync } from "@ai-matrx/overlays/window-host";
 import { SurfaceLayerBoundary } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useAppStore } from "@/lib/redux/hooks";
+import { AppWindowSelectionSurface } from "./AppWindowSelectionSurface";
 import { createAppOverlayPorts } from "./ports";
+
+/** Escape belongs to the organization gate (and anything marked to yield) before any window. */
+const ESCAPE_YIELD = "[data-organization-gate], [data-overlay-escape-yield]";
 
 // Shown only when an overlay crashes; never in the provider's static graph.
 const OverlayErrorCopyForAi = dynamic(() => import("./OverlayErrorCopyForAi"), { ssr: false });
@@ -615,7 +612,12 @@ export function AppOverlaysProvider({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <RouterPortBridge onPort={setRouter} />
       </Suspense>
-      {children}
+      {/* Window host options + viewport/tray sync for every WindowPanel, page-local ones included
+          (the light window-host section: never loads WindowPanel). */}
+      <WindowsProvider selectionSurface={AppWindowSelectionSurface} escapeYieldSelector={ESCAPE_YIELD}>
+        <WindowTraySync />
+        {children}
+      </WindowsProvider>
     </OverlaysProvider>
   );
 }
@@ -673,25 +675,16 @@ export function AppWindowSelectionSurface({ children }: { children: ReactNode })
     `"use client";
 
 /**
- * The overlay world: every app overlay rendered by its definition (one subscriber per overlay),
- * inside the window desktop's host options. Loaded only through app/DeferredOverlayWorld.tsx.
+ * The overlay world: every app overlay rendered by its definition (one subscriber per overlay).
+ * Loaded only through app/DeferredOverlayWorld.tsx; window options and tray sync are mounted at
+ * the app root (AppOverlaysProvider).
  */
 import { OverlayHost } from "@ai-matrx/overlays/react";
-import { WindowsProvider, WindowTraySync } from "@ai-matrx/overlays/window";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 import "@/features/overlays/definitions/trayPreviews";
-import { AppWindowSelectionSurface } from "./AppWindowSelectionSurface";
-
-/** Escape belongs to the organization gate (and anything marked to yield) before any window. */
-const ESCAPE_YIELD = "[data-organization-gate], [data-overlay-escape-yield]";
 
 export function OverlayWorldHost() {
-  return (
-    <WindowsProvider selectionSurface={AppWindowSelectionSurface} escapeYieldSelector={ESCAPE_YIELD}>
-      <WindowTraySync />
-      <OverlayHost definitions={APP_OVERLAYS} />
-    </WindowsProvider>
-  );
+  return <OverlayHost definitions={APP_OVERLAYS} />;
 }
 `,
   );
@@ -820,7 +813,7 @@ function wireHost(): void {
     t = t.replace(/\n\s*\{\/\* Window geometry must listen[\s\S]*?\*\/\}\n\s*<WindowTraySync \/>/, "").replace(/\n\s*<WindowTraySync \/>/, "");
     if (t.includes("WindowTraySync")) throw new Error("[switch] DeferredIslands.tsx: WindowTraySync still referenced");
     if (!/\bdynamic\(/.test(t)) t = t.replace(/^import dynamic from "next\/dynamic";\n/m, "");
-    resolve("WindowTraySync: moved from the shell's deferred islands into the overlay world host (windows exist only once it has loaded)");
+    resolve("WindowTraySync: moved from the shell's deferred islands to the app root (AppOverlaysProvider, @ai-matrx/overlays/window-host)");
     return t;
   });
   // extension bridge → the package's one link door
@@ -1173,6 +1166,25 @@ function catalogueViewForTest(rel: string, t: string): string {
   return out;
 }
 
+/**
+ * The app's link tests, ported from the deleted url-sync internals onto the package link door and
+ * the definitions' link.hydrate. Templates live beside this script (.tpl, so the real tree never
+ * type-checks them before the switch).
+ */
+const PORTED_TESTS: Record<string, string> = {
+  "linkKit.ts.tpl": `${DEFS}/__tests__/linkKit.ts`,
+  "reviewWalkAddress.test.ts.tpl": "features/review-walk/__tests__/reviewWalkAddress.test.ts",
+  "walkTitleSurvivesReload.test.ts.tpl": "features/review-walk/__tests__/walkTitleSurvivesReload.test.ts",
+  "aWindowIdentityIsNeverAResourceId.test.ts.tpl": "features/window-panels/__tests__/aWindowIdentityIsNeverAResourceId.test.ts",
+  "detailDeepLink.test.ts.tpl": "features/window-panels/__tests__/detailDeepLink.test.ts",
+  "a-deep-link-says-what-it-closed.test.ts.tpl": "features/window-panels/detail/__tests__/a-deep-link-says-what-it-closed.test.ts",
+  "a-refreshed-window-keeps-its-list.test.ts.tpl": "features/window-panels/detail/__tests__/a-refreshed-window-keeps-its-list.test.ts",
+};
+function emitPortedTests(): void {
+  for (const [tpl, dest] of Object.entries(PORTED_TESTS)) write(dest, fs.readFileSync(path.join(SCRIPT_DIR, "ported-tests", tpl), "utf8"));
+  resolve("6 app link tests (2 review-walk, aWindowIdentityIsNeverAResourceId, detailDeepLink, 2 detail deep-link) ported onto hydrateLinkToken / the grammar via definitions/__tests__/linkKit.ts");
+}
+
 // ── B. importers ─────────────────────────────────────────────────────────────────────────────
 
 const CORE = "@ai-matrx/overlays";
@@ -1333,6 +1345,7 @@ function adaptWindowPanelUsers(): void {
     if (!text.includes("WindowPanel")) continue;
     const sf = parse(rel, text);
     const edits: Array<{ start: number; end: number; text: string }> = [];
+    let baseProps = false;
     walk(sf, (n) => {
       if (ts.isJsxAttribute(n) && REMOVED_WINDOW_PROPS.has(n.name.getText())) {
         const el = n.parent.parent;
@@ -1348,19 +1361,23 @@ function adaptWindowPanelUsers(): void {
         (ts.isExpressionWithTypeArguments(n) && n.expression.getText() === "Omit" && n.typeArguments) ||
         undefined;
       if (omitArgs && omitArgs.length === 2 && omitArgs[0]!.getText() === "WindowPanelProps" && /\{\.\.\.\w+\}/.test(text)) {
-        const keys = omitArgs[1]!;
-        const kt = keys.getText();
-        const add: string[] = [];
-        if (!kt.includes('"boundToOverlay"')) add.push('"boundToOverlay"');
-        if (!kt.includes('"overlayId"') && !/\boverlayId=\{/.test(text) && /\bonClose=\{/.test(text)) add.push('"overlayId"');
-        if (add.length) edits.push({ start: keys.getStart(), end: keys.getEnd(), text: `${kt} | ${add.join(" | ")}` });
+        edits.push({ start: omitArgs[0]!.getStart(), end: omitArgs[0]!.getEnd(), text: "WindowPanelBaseProps" });
+        baseProps = true;
       }
     });
     if (!edits.length) continue;
     let out = text;
     for (const e of edits.sort((a, b) => b.start - a.start)) out = out.slice(0, e.start) + e.text + out.slice(e.end);
+    if (baseProps) {
+      // the window's own props extend the props WITHOUT the close binding (it binds its own close)
+      const stillUsed = /\bWindowPanelProps\b/.test(out.replace(/import[^;]*;/g, ""));
+      out = out.replace(/(import \{[^}]*?)\btype WindowPanelProps\b([^}]*\} from "@ai-matrx\/overlays\/window";)/, (_m, a, b) =>
+        stillUsed ? `${a}type WindowPanelProps, type WindowPanelBaseProps${b}` : `${a}type WindowPanelBaseProps${b}`,
+      );
+      if (!/\bWindowPanelBaseProps\b[^;]*from "@ai-matrx\/overlays\/window"/.test(out)) throw new Error(`[switch] ${rel}: could not import WindowPanelBaseProps`);
+    }
     write(rel, out);
-    resolve(`${rel}: WindowPanel removed props dropped / Omit<WindowPanelProps> leaves out overlayId|boundToOverlay`);
+    resolve(`${rel}: WindowPanel removed props dropped / Omit<WindowPanelProps, …> → Omit<WindowPanelBaseProps, …>`);
   }
 }
 
@@ -1461,9 +1478,11 @@ if (preSwitch) {
   emitDefinitions();
   emitHost();
   wireHost();
+  emitPortedTests();
 } else {
   console.log("[switch] A/C: OverlayController.tsx is gone — definitions and host wiring already in place");
   emitHost();
+  emitPortedTests();
 }
 rewriteImporters();
 adaptWindowPanelUsers();

@@ -93,7 +93,11 @@ if diff -q "$W/hash1.txt" "$W/hash2.txt" > /dev/null; then echo "  second run ch
 tail -2 "$W/run2.log"
 
 # jest: the overlay / window-panels suites plus every suite the switch edits, on both trees
-JEST_PATHS="features/overlays features/window-panels features/connectors/__tests__ features/ai-watch/__tests__ components/agent-copy/copy-subset features/marketing/content-plan/components/__tests__/node-measure-window-boundary lib/extension-bridge features/notifications"
+JEST_PATHS="features/overlays features/window-panels features/review-walk features/connectors/__tests__ features/ai-watch/__tests__ components/agent-copy/copy-subset features/marketing/content-plan/components/__tests__/node-measure-window-boundary lib/extension-bridge features/notifications"
+# suites that scan ../aidream or `git grep` need both: a read-only aidream link beside the exports
+# and a throwaway git repo in each export (after the codemod runs; it never reads git).
+[ -e "$W/aidream" ] || ln -s "$APP/../aidream" "$W/aidream"
+for d in base sw; do [ -d "$W/$d/.git" ] || git -C "$W/$d" init -q; done
 for d in base sw; do
   cat > "$W/$d/jest.scratch.config.ts" <<'JEST'
 import base from "./jest.config.ts";
