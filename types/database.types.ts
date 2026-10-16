@@ -10823,6 +10823,10 @@ export type Database = {
         Args: { p_org_id?: string }
         Returns: number
       }
+      run_origin_class: {
+        Args: { p_context_origin: string; p_request_origin: string }
+        Returns: string
+      }
       run_volume_sweep: {
         Args: never
         Returns: {
@@ -83437,6 +83441,7 @@ export type Database = {
         }
         Returns: string
       }
+      core_boot_seed: { Args: never; Returns: Json }
       derive_organization_abbreviation: {
         Args: { p_name: string }
         Returns: string
@@ -92092,6 +92097,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      brief_run_history: { Args: { p_node_id: string }; Returns: Json }
       status_flow: {
         Args: never
         Returns: {
