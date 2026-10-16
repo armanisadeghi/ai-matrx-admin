@@ -25,10 +25,13 @@ export const CERTAIN_AT = 2;
 const OWN_SITE = "own-site";
 const TYPED = "typed";
 
+/** A complete host name (a mid-stream fact can carry a cut-off address such as "https" or "www.example."). */
+const HOST = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
+
 function hostOf(url: string | null | undefined): string | null {
   if (!url) return null;
-  const h = websiteHost(url);
-  return h ? h.toLowerCase() : null;
+  const h = websiteHost(url).toLowerCase();
+  return HOST.test(h) ? h : null;
 }
 
 /** One raw evidence item → the host it witnesses from (null: no witness — a guess, the facts agent, the typed address echoed). */
@@ -58,6 +61,11 @@ export function addWitnesses(current: Map<string, Set<string>>, incoming: readon
 
 const SURE = new Set(["confirmed", "likely"]);
 const norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+/** A business name without its legal suffix: "Eudora Brewing Co." and "Eudora Brewing Company, LLC" are one name. */
+export const nameKey = (s: string) =>
+  norm(s)
+    .replace(/^the /, "")
+    .replace(/( (co|company|inc|incorporated|llc|ltd|limited|corp|corporation|pllc|lp))+$/, "");
 
 const NAME_FIELDS = ["official_name", "brand_legal_name", "legal_entity_name", "dba_name"];
 const CITY_FIELDS = ["headquarters_location", "city"];
@@ -110,9 +118,9 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
   const resolve = (h: string) => (h === OWN_SITE ? (ownHost ?? OWN_SITE) : h);
   const sure = facts.filter((f) => SURE.has(f.certainty) && decisions[f.key] !== "no");
   /** The hosts the facts agent cites for this value in these fields (each host once; no citation = no witness). */
-  const factHosts = (fields: readonly string[], value: string): { hosts: string[]; facts: BrandFact[] } => {
-    const v = norm(value);
-    const hit = v ? sure.filter((f) => fields.includes(f.field) && norm(f.value) === v) : [];
+  const factHosts = (fields: readonly string[], value: string, key: (s: string) => string = norm): { hosts: string[]; facts: BrandFact[] } => {
+    const v = key(value);
+    const hit = v ? sure.filter((f) => fields.includes(f.field) && key(f.value) === v) : [];
     return { hosts: hit.flatMap((f) => f.evidence_urls.map(hostOf).filter((h): h is string => Boolean(h))), facts: hit };
   };
   const hostsOf = (i: EvidenceItem) => [...(witnesses.get(i.key) ?? [])].map(resolve);
@@ -129,7 +137,18 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
       .filter((x) => certain(x.hosts, decisions[x.i.key]))
       .sort((a, b) => b.hosts.size - a.hosts.size || b.i.confidence - a.i.confidence)[0]?.i ?? null;
 
-  const name = pick(of("name"), NAME_FIELDS);
+  // A name is one name however it is spelled with its legal suffix: every spelling's hosts count for it.
+  const names = of("name");
+  const name =
+    names
+      .map((i) => {
+        const k = nameKey(i.value);
+        const hosts = new Set([...names.filter((n) => nameKey(n.value) === k).flatMap(hostsOf), ...factHosts(NAME_FIELDS, i.value, nameKey).hosts]);
+        return { i, hosts };
+      })
+      .filter((x) => certain(x.hosts, decisions[x.i.key]))
+      .sort((a, b) => b.hosts.size - a.hosts.size || Number(b.i.source.kind === "website") - Number(a.i.source.kind === "website") || b.i.confidence - a.i.confidence)[0]?.i ??
+    null;
   // The brand's own words about itself ride under a certain name: read off its site, or two hosts agreeing.
   const description = name
     ? (of("description")
@@ -151,7 +170,11 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
   const logo = declaredLogo
     ? { url: declaredLogo.image_url ?? declaredLogo.value, item: declaredLogo }
     : accounts[0]?.item.image_url
-      ? { url: accounts[0].item.image_url, item: accounts[0].item }
+      ? {
+          url: accounts[0].item.image_url,
+          // The account photo is also a Logo & images row: that row is what "Looks right" answers.
+          item: of("logo").find((l) => (l.image_url ?? l.value) === accounts[0].item.image_url) ?? accounts[0].item,
+        }
       : null;
 
   // A name the site gives itself (title, og:site_name, schema name) never doubles as "what you do".

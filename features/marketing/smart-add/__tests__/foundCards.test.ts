@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { mergeEvidence, parseEvidenceItem, type EvidenceItem } from "../evidence";
-import { addWitnesses, foundAnswers, foundCards, foundCoreReady, witnessOf } from "../found/foundCards";
+import { addWitnesses, foundAnswers, foundCards, foundCoreReady, nameKey, witnessOf } from "../found/foundCards";
 import type { BrandFact } from "../validate/queue";
 import { parseSmartAddDoor, parseSmartAddPath, smartAddFoundHref } from "../smartAddUrl";
 
@@ -63,6 +63,23 @@ describe("found-first door: only what two independent hosts agree on gets a card
     expect(cardsWith([fact("business_category", "Recruiter", "likely", ["https://fullspecstaff.com/"])]).category?.text).toBe("Recruiter");
     // A possible fact adds nothing.
     expect(cardsWith([fact("business_category", "Recruiter", "possible", ["https://fullspecstaff.com/"])]).category).toBeNull();
+  });
+
+  it("a name is one name with or without its legal suffix (Co. / Company / LLC)", () => {
+    expect(nameKey("Eudora Brewing Co.")).toBe(nameKey("Eudora Brewing Company"));
+    expect(nameKey("Eudora Brewing Company, LLC")).toBe("eudora brewing");
+    const site = { ...raw.find((i) => i.key === "name:healthcare executive search for senior care")!, key: "name:eudora brewing company", value: "Eudora Brewing Company" };
+    const insta = { ...site, key: "name:eudora brewing co.", value: "Eudora Brewing Co.", source: { node: "avatars", kind: "social_profile" as const, url: "https://www.instagram.com/eudorabrewingcompany/", where: "instagram profile" } };
+    const named = foundCards({ items: [site, insta], witnesses: addWitnesses(new Map(), [site, insta]), facts: [], decisions: {}, typedWebsiteKey: "website:eudorabrewing.com" });
+    // The site's own spelling leads.
+    expect(named.name?.value).toBe("Eudora Brewing Company");
+  });
+
+  // eudorabrewing.com, run 4fe04c35 (2026-10-16): mid-stream the facts agent's evidence_urls held cut-off addresses
+  // ("https", "https://www.eudorabrewing.") beside the full ones, and each counted as another host.
+  it("a cut-off address from a streaming fact is no host", () => {
+    const partial = fact("industry", "Executive search", "confirmed", ["https", "https://www.fullspecstaff.", "https://www.fullspecstaff.com/about"]);
+    expect(cardsWith([partial]).category).toBeNull();
   });
 
   it("two hosts that disagree (Recruiter vs Staffing and Recruiting) make no category card", () => {

@@ -111,7 +111,7 @@ function AccountPicture({ account, size }: { account: FoundAccount; size: string
   const item = account.item;
   const fallback = <PlatformMark platform={account.platform} size={28} />;
   return (
-    <span className={`flex ${size} shrink-0 items-center justify-center overflow-hidden rounded-full bg-background`}>
+    <span className={`relative flex ${size} shrink-0 items-center justify-center overflow-hidden rounded-full bg-background`}>
       {item.profile_id ? (
         <SocialImage door={profileAvatarDoor(item.profile_id)} url={item.image_url} fallback={fallback} className="size-full object-cover" />
       ) : item.image_url ? (
