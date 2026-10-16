@@ -616,13 +616,14 @@ export async function getActiveSandboxBinding(
           typeof payload.sandbox_id !== "string" || !payload.sandbox_id ||
           typeof payload.base_url !== "string" || !payload.base_url ||
           typeof payload.access_token !== "string" || !payload.access_token ||
-          typeof payload.root_path !== "string" || !payload.root_path.trim()) {
+          typeof payload.root_path !== "string" || !payload.root_path.trim() ||
+          typeof payload.device_id !== "string" || !payload.device_id) {
         throw new Error("Local-PC resolver returned an invalid machine binding");
       }
       DEAD_SANDBOXES.delete(ref.rowId);
       return { sandbox_id: payload.sandbox_id, base_url: payload.base_url,
         access_token: payload.access_token, root_path: payload.root_path,
-        target_kind: "local_machine" };
+        device_id: payload.device_id, target_kind: "local_machine" };
     } catch (err) {
       console.error(
         `${LOG} ❌ local-PC resolve THREW for device ${ref.rowId}.`,
@@ -662,6 +663,7 @@ export async function getActiveSandboxBinding(
     base_url: baseUrl,
     access_token: token.token,
     root_path: "/home/agent",
+    device_id: null,
     target_kind: "sandbox",
   };
 }

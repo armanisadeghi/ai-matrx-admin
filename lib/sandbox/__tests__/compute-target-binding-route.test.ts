@@ -8,6 +8,11 @@ const mockQuery = {
   eq: jest.fn().mockReturnThis(),
   maybeSingle: jest.fn(async () => ({ data: mockRow, error: null })),
 };
+const mockKnobQuery = {
+  select: () => mockKnobQuery,
+  eq: () => mockKnobQuery,
+  is: async () => ({ data: [{ value: [] }], error: null }),
+};
 jest.mock("@/utils/supabase/server", () => ({
   createClient: async () => ({
     auth: jest.requireActual("@/test-utils/supabase-auth").withClaims({
@@ -15,6 +20,8 @@ jest.mock("@/utils/supabase/server", () => ({
       getSession: async () => ({ data: { session: { access_token: "user-jwt" } } }),
     }),
     from: () => mockQuery,
+    // The computers-only knob read (lib/app-instances/computers.ts): nothing excluded.
+    schema: () => ({ from: () => mockKnobQuery }),
   }),
 }));
 jest.mock("@/lib/sandbox/orchestrator-routing", () => ({
@@ -31,7 +38,7 @@ test("local binding declares its machine namespace and reported Windows home", a
     method: "POST", body: JSON.stringify({ kind: "local-pc", id: "device" }),
   }));
   expect(response.status).toBe(200);
-  expect(await response.json()).toMatchObject({ target_kind: "local_machine", root_path: "C:\\Users\\Owner" });
+  expect(await response.json()).toMatchObject({ target_kind: "local_machine", root_path: "C:\\Users\\Owner", device_id: "device" });
 });
 
 test("local binding refuses an unreported home instead of inventing a root", async () => {

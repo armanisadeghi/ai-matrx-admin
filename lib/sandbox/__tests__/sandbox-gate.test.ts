@@ -63,6 +63,7 @@ const LIVE_MINT = {
   base_url: "https://orch/sandboxes/sbx-1",
   access_token: "tok-live",
   root_path: "/home/agent",
+  device_id: null,
   target_kind: "sandbox",
 } satisfies SandboxBindingPayload;
 

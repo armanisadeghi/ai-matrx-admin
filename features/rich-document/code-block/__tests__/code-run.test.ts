@@ -26,11 +26,11 @@ describe("runCommandFor", () => {
 
 describe("runnableSandboxId", () => {
   it("returns the bound orchestrator sandbox row id", () => {
-    expect(runnableSandboxId({ rowId: "row-1", proxyUrl: "x", kind: "ec2" })).toBe("row-1");
-    expect(runnableSandboxId({ rowId: "row-2", proxyUrl: "x" })).toBe("row-2");
+    expect(runnableSandboxId({ rowId: "row-1", kind: "ec2" })).toBe("row-1");
+    expect(runnableSandboxId({ rowId: "row-2" })).toBe("row-2");
   });
   it("is absent without a binding or for a local PC target", () => {
     expect(runnableSandboxId(null)).toBeNull();
-    expect(runnableSandboxId({ rowId: "row-3", proxyUrl: "", kind: "local-pc" })).toBeNull();
+    expect(runnableSandboxId({ rowId: "row-3", kind: "local-pc" })).toBeNull();
   });
 });

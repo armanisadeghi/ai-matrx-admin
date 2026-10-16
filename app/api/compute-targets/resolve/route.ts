@@ -145,6 +145,7 @@ export async function POST(request: Request) {
       base_url: data.base_url,
       access_token: data.access_token,
       root_path: data.root_path,
+      device_id: null,
       target_kind: "sandbox",
     };
     return NextResponse.json(payload);
@@ -188,6 +189,7 @@ export async function POST(request: Request) {
       base_url: baseUrl,
       access_token: accessToken,
       root_path: row.home_dir.trim(),
+      device_id: String(row.id),
       target_kind: "local_machine",
     };
     return NextResponse.json(payload);
