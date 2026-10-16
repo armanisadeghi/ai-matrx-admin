@@ -21,8 +21,8 @@ import { Shared } from "../stage/Shared";
 import { shownHost, type FoundAccount, type FoundCards } from "./foundCards";
 import styles from "./found.module.css";
 
-const href = (url: string) => withReferral(/^https?:\/\//i.test(url) ? url : `https://${url}`);
-const compact = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
+export const href = (url: string) => withReferral(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+export const compact = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
 const RISE = { duration: 0.45, ease: [0.4, 0, 0.2, 1] as const };
 
 /**
@@ -30,7 +30,7 @@ const RISE = { duration: 0.45, ease: [0.4, 0, 0.2, 1] as const };
  * sweep while the run works, shows its card once certain, or settles into a quiet "Not sure" in the same box, so
  * nothing already shown ever moves.
  */
-function Slot({
+export function Slot({
   id,
   filled,
   working,
@@ -93,7 +93,7 @@ function LogoTile({ url }: { url: string }) {
   );
 }
 
-function CardBody({ label, icon, value, sub, art, dark }: { label: string; icon?: ReactNode; value: ReactNode; sub?: ReactNode; art?: ReactNode; dark?: boolean }) {
+export function CardBody({ label, icon, value, sub, art, dark }: { label: string; icon?: ReactNode; value: ReactNode; sub?: ReactNode; art?: ReactNode; dark?: boolean }) {
   return (
     <div className={`${dark ? styles.lead : styles.card} flex h-full min-h-[8.5rem] flex-col justify-end gap-1 rounded-3xl p-5 sm:p-6`}>
       {art ? <div className="mb-auto pb-4">{art}</div> : null}
@@ -107,7 +107,7 @@ function CardBody({ label, icon, value, sub, art, dark }: { label: string; icon?
   );
 }
 
-function AccountPicture({ account, size }: { account: FoundAccount; size: string }) {
+export function AccountPicture({ account, size }: { account: FoundAccount; size: string }) {
   const item = account.item;
   const fallback = <PlatformMark platform={account.platform} size={28} />;
   return (
@@ -123,7 +123,7 @@ function AccountPicture({ account, size }: { account: FoundAccount; size: string
   );
 }
 
-const handleOf = (a: FoundAccount) => (a.handle ? `@${a.handle.replace(/^@/, "")}` : platformLabel(a.platform));
+export const handleOf = (a: FoundAccount) => (a.handle ? `@${a.handle.replace(/^@/, "")}` : platformLabel(a.platform));
 
 export function FoundStage({
   cards,

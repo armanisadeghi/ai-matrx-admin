@@ -19,6 +19,14 @@
 import { promoteSmartAddFindings } from "./promote";
 import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
+import { PersonFoundStage } from "./found/PersonFoundStage";
+import { personAnswers, personCards, personCoreReady } from "./found/personCards";
+import { loginSeed as readLoginSeed, provenWebsite, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
+import { peopleGroups, type PersonGroup } from "./welcome/peopleGroups";
+import { PersonPickCards } from "./welcome/PersonPickCards";
+import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
+import { saveWelcomeProfile } from "./welcome/saveWelcomeProfile";
+import { fetchKnownDomainRules } from "@/lib/web-domains/service";
 import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -46,7 +54,7 @@ import { factSlotKey, typedWebsiteItem, wakesFacts, type FactsSaw } from "./firs
 import { categoriesFor, liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
-import { startSystemRun } from "@/features/education/kits/systemRuns";
+import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
 import { withoutOwnAccountRows } from "./ownAccountRows";
 import {
   createBrand,
@@ -242,14 +250,21 @@ export function SmartAddBrand({
   enrich = null,
   url = null,
   door = null,
+  loginSeed = null,
+  onWelcomeDone,
 }: {
   onCreated?: (brand: MarketingBrand) => void;
   /** Create settled the core and the validation stage is up: the page moves the address to the brand's validate route. */
   onValidating?: (brand: MarketingBrand) => void;
   enrich?: SmartAddEnrich | null;
   url?: SmartAddAddressBinding | null;
-  /** "found": the found-first door (VISION Part 23) — the certain facts as a calm grid first, then this same page. */
-  door?: "found" | null;
+  /** "found": the found-first door (VISION Part 23) — the certain facts as a calm grid first, then this same page.
+   *  "welcome": the sign-up welcome (SIGNUP-WELCOME.md) — a person, seeded from their login (`loginSeed`). */
+  door?: "found" | "welcome" | null;
+  /** door="welcome": who signed in (or an admin's test login) and the session's stable subject. */
+  loginSeed?: WelcomeLogin | null;
+  /** door="welcome": "Looks right" created their person brand and filled their profile. */
+  onWelcomeDone?: (done: WelcomeDone) => void;
 }) {
   const dispatch = useAppDispatch();
   const { format } = useCostDisplay();
@@ -266,7 +281,7 @@ export function SmartAddBrand({
   const parsed = resolveAccountInput({ text: socialText, picked });
 
   // A personal brand: a headshot instead of a logo, and expertise.
-  const [personLocal, setPersonLocal] = useState(enrich?.snapshot.brand.kind === "person");
+  const [personLocal, setPersonLocal] = useState(enrich?.snapshot.brand.kind === "person" || door === "welcome");
   // On the Smart Add page the address IS the kind (/person or /company; a push, so Back flips it back).
   // The address leaves /company|/person for /validate/<brand> after Create; the kind it had stays.
   const lastMode = useRef(url?.address.mode ?? null);
@@ -355,6 +370,8 @@ export function SmartAddBrand({
   const sweepFeed = useRef<{ sweep: SweepFeed | null; focus: Record<string, FocusState> }>({ sweep: null, focus: {} });
   const [pageAnchors, setPageAnchors] = useState<string[]>([]);
   const anchorRunId = useRef<string | null>(resumePerson ? (resume?.address.runs[0] ?? null) : null);
+  // Sign-up welcome: every round's subject is stable (`signup_welcome:<user id>`, then `…:2`…), so a reload finds it.
+  const welcomeRoundCount = useRef(0);
   const groundedSent = useRef(false);
   const [affiliations, setAffiliations] = useState<string[]>([]);
   // Anchor cards answered "Namesake" (a different person with my name): web.brand_relation_kind `namesake`.
@@ -452,7 +469,7 @@ export function SmartAddBrand({
         dispatch,
         WORKFLOW_KEY,
         {
-          subject: `smart_add:${id}`,
+          subject: door === "welcome" && loginSeed ? roundSubject(loginSeed.subject, welcomeRoundCount.current++) : `smart_add:${id}`,
           organizationId,
           sourceFeature: "marketing",
           // `confirmed` = every fact the person confirmed; `woken` = the ones new this round, which wake
@@ -643,7 +660,7 @@ export function SmartAddBrand({
   // What the person typed is their own word: its findings are confirmed on arrival.
   const onEvidence = (incoming: EvidenceItem[]) => {
     setItems((prev) => mergeEvidence(prev, incoming));
-    if (door === "found") setWitnesses((prev) => addWitnesses(prev, incoming));
+    if (door === "found" || door === "welcome") setWitnesses((prev) => addWitnesses(prev, incoming));
     const own = incoming.filter(
       (i) =>
         (i.field === "website" && i.source.kind === "website" && typedKeys.current.website === `website:${websiteHost(i.value)}`) ||
@@ -1682,6 +1699,192 @@ export function SmartAddBrand({
       )}
     </>
   );
+  // ── sign-up welcome (door="welcome"; SIGNUP-WELCOME.md) ─────────────────────
+  // The login's proven values are typed answers from the first moment; one stable subject per round, so a reload
+  // resumes the rounds already paid for. A proven anchor (a site, a GitHub account, a certain email finding) goes
+  // straight to the person grid; otherwise the anchor round's people ask "Which one is you?" first.
+  const welcomeOn = door === "welcome" && Boolean(loginSeed);
+  const [welcomeSeed, setWelcomeSeed] = useState<LoginSeed | null>(null);
+  const [welcomeKick, setWelcomeKick] = useState(0);
+  const [welcomeNarrowKick, setWelcomeNarrowKick] = useState(0);
+  const [welcomeHanded, setWelcomeHanded] = useState(false);
+  const [welcomeConfirming, setWelcomeConfirming] = useState(false);
+  const [welcomeCreateKick, setWelcomeCreateKick] = useState(0);
+  const [welcomeBootError, setWelcomeBootError] = useState<string | null>(null);
+  const welcomeBooted = useRef(false);
+  const welcomeDoneSent = useRef(false);
+  const welcomeFirstSeeds = (seed: LoginSeed): RoundSeeds => ({
+    website: provenWebsite(seed) ?? "",
+    socials: seed.githubLogin ? [{ handle_or_url: `https://github.com/${seed.githubLogin}`, platform: "github" }] : [],
+  });
+  const bootWelcome = useEffectEvent(async () => {
+    if (!loginSeed) return;
+    // The domain registry first: whether the email's domain is free mail decides whether it is a website.
+    const rules = await fetchKnownDomainRules().catch(() => liveKnownDomainRules());
+    const seed = readLoginSeed(loginSeed.user, rules);
+    const proven = seedEvidence(seed);
+    addCustom([...(seed.name ? [customItem("name", seed.name)] : []), ...proven]);
+    const first = welcomeFirstSeeds(seed);
+    for (const k of seedKeys(first, accountSeedKey)) explored.current.add(k);
+    if (first.website) typedKeys.current = { ...typedKeys.current, website: `website:${websiteHost(first.website)}` };
+    if (seed.name) {
+      personTyped.current = { name: seed.name, city: "" };
+      wokenSent.current.add(`name:${seed.name}`);
+    }
+    try {
+      const organizationId = await ensureOrgId(null);
+      const found: string[] = [];
+      for (let n = 0; n < MAX_WELCOME_ROUNDS; n++) {
+        const run = await lookupSystemRun(dispatch, WORKFLOW_KEY, roundSubject(loginSeed.subject, n), organizationId, "This session could not be read.");
+        if (!run) break;
+        found.push(run.runId);
+      }
+      setWelcomeSeed(seed);
+      if (!found.length) {
+        setWelcomeKick(1);
+        return;
+      }
+      // A reload: the rounds already run come back; none is started again.
+      welcomeRoundCount.current = found.length;
+      anchorRunId.current = found[0];
+      if (found.length > 1) groundedSent.current = true;
+      setRounds(found.map((runId, n) => ({ id: `resume:${runId}`, runId, seeds: n === 0 ? first : { website: "", socials: [] }, error: null })));
+    } catch (error) {
+      setWelcomeSeed(seed);
+      setWelcomeBootError(extractErrorMessage(error));
+    }
+  });
+  useEffect(() => {
+    if (!welcomeOn || welcomeBooted.current) return;
+    welcomeBooted.current = true;
+    void bootWelcome();
+  }, [welcomeOn]);
+  // The first round: proven values as confirmed inputs, the person by name (find), the email's free lookups.
+  const runWelcomeFirst = useEffectEvent(() => {
+    const seed = welcomeSeed;
+    if (!seed) return;
+    emailPending.current = seed.emailProven && seed.email ? seed.email : "";
+    void startRound(welcomeFirstSeeds(seed), seed.name ? { name: seed.name } : {}, true, Boolean(seed.name));
+  });
+  useEffect(() => {
+    if (welcomeKick) runWelcomeFirst();
+  }, [welcomeKick]);
+  // A proven anchor and no grounded round yet: one round grounded on it (Part 9), once.
+  const welcomeGround =
+    welcomeOn && Boolean(welcomeSeed) && !working && rounds.length > 0 && personAnchors.length > 0 && !groundedSent.current && !created;
+  const runWelcomeGround = useEffectEvent(() => void startRound({ website: "", socials: [] }));
+  useEffect(() => {
+    if (welcomeGround) runWelcomeGround();
+  }, [welcomeGround]);
+  // "None of these" / "Not me": the people shown are namesakes; the typed city or company narrows the next round.
+  const welcomeNarrow = (text: string, shown: PersonGroup[]) => {
+    for (const p of shown) for (const a of p.accounts) answerAnchor(a, "namesake");
+    const as = narrowAs(text);
+    if ("city" in as) {
+      personTyped.current = { name: personTyped.current?.name ?? welcomeSeed?.name ?? "", city: as.city };
+      addCustom(customItem("address", as.city));
+      wokenSent.current.add(`location:${as.city}`);
+    } else personMore.current = { ...personMore.current, company: as.company };
+    setWelcomeNarrowKick((k) => k + 1);
+  };
+  const runWelcomeNarrow = useEffectEvent(() => {
+    const city = personTyped.current?.city ?? "";
+    void startRound({ website: "", socials: [] }, city ? { location: city } : {}, false, true);
+  });
+  useEffect(() => {
+    if (welcomeNarrowKick) runWelcomeNarrow();
+  }, [welcomeNarrowKick]);
+  /** One click on a person: their accounts are "me", exactly as an AnchorCards answer (the next round grounds on them). */
+  const welcomePick = (p: PersonGroup) => {
+    for (const a of p.accounts) answerAnchor(a, "me");
+  };
+
+  const welcomeName = welcomeSeed?.name ?? personTyped.current?.name ?? "";
+  const welcomeCards = personCards({
+    items: visible,
+    witnesses,
+    facts,
+    decisions,
+    typedWebsiteKey: typedKeys.current.website,
+    name: welcomeName,
+    avatarUrl: welcomeSeed?.avatarUrl ?? null,
+  });
+  const anchorView = anchorRunId.current ? views[anchorRunId.current] : undefined;
+  const anchorDone = Boolean(anchorView && TERMINAL.includes(anchorView.status ?? ""));
+  const welcomeCandidates = visible.filter((i) => i.anchor && decisions[i.key] !== "no" && !namesakes.has(i.key));
+  const welcomePeople = welcomeName ? peopleGroups(welcomeCandidates, welcomeName) : { people: [], more: 0 };
+  const welcomePicked = visible.some((i) => i.anchor && (decisions[i.key] === "yes" || decisions[i.key] === "preferred"));
+  const welcomeSeedAnchor = Boolean(welcomeSeed && (provenWebsite(welcomeSeed) || welcomeSeed.githubLogin));
+  const welcomeAnchored = welcomeSeedAnchor || welcomePicked || Boolean(welcomeCards.website) || welcomeCards.accounts.length > 0;
+  // The people are asked only once the anchor round settled: cards never pop in one by one.
+  const welcomeAsks = !welcomeAnchored && anchorDone && welcomePeople.people.length > 0;
+
+  /** "Looks right": a Yes for every card shown, then the existing Create path (their person brand). */
+  const welcomeLooksRight = () => {
+    const answers = personAnswers(welcomeCards, decisions);
+    for (const a of answers) delete restoredDecisions.current[a.key];
+    setDecisions((d) => answers.reduce((acc, a) => (acc[a.key] ? acc : applyDecision(acc, items, a.key, a.decision)), d));
+    setWelcomeConfirming(true);
+    setWelcomeCreateKick((k) => k + 1);
+  };
+  const runWelcomeCreate = useEffectEvent(() => void create());
+  useEffect(() => {
+    if (welcomeCreateKick) runWelcomeCreate();
+  }, [welcomeCreateKick]);
+  // Created through "Looks right": their plain profile gets what they confirmed, then the welcome page takes over.
+  const finishWelcome = useEffectEvent(async (brand: MarketingBrand) => {
+    const factOf = (fields: string[]) =>
+      facts.find((f) => fields.includes(f.field) && (decisions[f.key] === "yes" || new Set(f.evidence_urls.map(websiteHost)).size >= 2))?.value ?? null;
+    try {
+      await saveWelcomeProfile({
+        name: basics.name ?? welcomeName,
+        websiteUrl: basics.websiteUrl,
+        accounts: basics.accounts.map((a) => ({ platform: a.platform, handle: a.handle, url: a.url })),
+        company: personMore.current.company || factOf(["employer", "company", "current_company", "organization"]),
+        jobTitle: factOf(["job_title", "occupation", "profession", "role"]),
+      });
+    } catch (error) {
+      toast.error(`Your profile was not updated: ${extractErrorMessage(error)}`);
+    }
+    const host = basics.websiteUrl ? websiteHost(basics.websiteUrl) : null;
+    onWelcomeDone?.({ brand, paidHost: paidCardsHost(host, liveKnownDomainRules()), test: Boolean(loginSeed?.test) });
+  });
+  useEffect(() => {
+    if (!welcomeConfirming || !created || welcomeDoneSent.current) return;
+    welcomeDoneSent.current = true;
+    void finishWelcome(created);
+  }, [welcomeConfirming, created]);
+
+  if (welcomeOn && !welcomeHanded) {
+    if (created && welcomeConfirming) return <>{listeners}</>;
+    const confirming = welcomeConfirming && !createError;
+    return (
+      <div className="flex w-full flex-col gap-4" data-smart-add-stage="welcome">
+        {welcomeAsks ? (
+          <PersonPickCards
+            people={welcomePeople.people}
+            more={welcomePeople.more}
+            onPick={welcomePick}
+            onNarrow={(text) => welcomeNarrow(text, welcomePeople.people)}
+          />
+        ) : (
+          <PersonFoundStage
+            cards={welcomeCards}
+            working={!welcomeSeed || working}
+            ready={Boolean(welcomeSeed) && (personCoreReady(welcomeCards) || !working)}
+            confirming={confirming || creating}
+            error={createError ?? welcomeBootError ?? startFailure}
+            onLooksRight={welcomeLooksRight}
+            onSomethingOff={() => {
+              setWelcomeHanded(true);
+              setStructured(true);
+            }}
+          />
+        )}
+        {listeners}
+      </div>
+    );
+  }
   // Enrich finish: nothing is written until the person confirms the Changes review.
   const enrichDiff = enrich ? computeEnrichDiff({ known: enrich.known, items, decisions, broken: brokenKeys.current, seeded: enrich.checked }) : null;
   if (enrich && reviewing && enrichDiff) {

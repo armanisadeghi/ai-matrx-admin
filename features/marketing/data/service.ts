@@ -3820,12 +3820,6 @@ export async function renameSiteSlug(
 }
 
 /**
- * Soft-delete a brand. Refuses while live sites or properties still point at
- * it — deleting the anchor out from under its children would orphan them
- * silently. These preflights give friendly copy; the DB trigger
- * `web.brand_soft_delete_guard` enforces the same rule atomically.
- */
-/**
  * What archiving a brand takes with it (live rows): websites, accounts, tracked accounts, captured posts,
  * findings, facts, assets, offerings, exclusions, crawled pages, crawls, running setup jobs.
  * `web.brand_archive_preview` — the same counts the archive returns.

@@ -73,6 +73,30 @@ const ASSERT: Record<string, Array<[string, (x: Obs) => boolean]>> = {
       return o(x.commit).status === "done" && a.brand === TARGET && a.asset === TARGET && a.persona === TARGET && a.file === TARGET && a.brand2 === SOURCE;
     }],
   ],
+  "brand-move-durable-job.sql": [
+    ["a move above the inline budget runs as a durable job", (x) => x.preview_mode === "durable" && o(x.commit).status === "running" && o(x.commit).rows_estimate === 3],
+    ["step 1 moves the brand; its parts wait for the job", (x) => o(x.after_step1).brand === TARGET && o(x.after_step1).asset === SOURCE],
+    ["one advance moves every part, the logo with its asset", (x) => {
+      const a = o(x.after);
+      return o(x.advance).state === "done" && o(x.advance).rows_done === 3 && a.asset === TARGET && a.persona === TARGET && a.file === TARGET;
+    }],
+  ],
+  "copy-note-and-contact.sql": [
+    ["a note copies into another organization with the target's General home; the original stays", (x) => {
+      const n = o(x.note_copy);
+      return !x.error && n.org === TARGET && n.home === x.target_general && n.content === "Bring the settlement range." && x.note_original_org === SOURCE;
+    }],
+    ["a contact duplicates with its address (deep copy)", (x) => o(x.party_copy).rows === 2 && o(x.party_copy).addresses === 1 && o(x.party_copy).original_addresses === 1],
+    ["a type with no copy_mode is a named refusal", (x) => x.not_copyable === "not_copyable"],
+  ],
+  "undo-move.sql": [
+    ["undoing a note's move brings back its organization, its case-scope home and its cut scope link", (x) => {
+      const n = o(x.note_after);
+      return o(x.note_undo).status === "done" && n.org === SOURCE && n.home === "2645730c-97a9-4080-9471-2546d0ce2b66" && x.edge_live === true;
+    }],
+    ["a move is undone once", (x) => x.undo_twice === "This move was already undone."],
+    ["a part added in the target after the move follows the brand back", (x) => o(x.brand_undo).rows === 3 && o(x.brand_after).brand === SOURCE && o(x.brand_after).personas_in_source === 2],
+  ],
   "contact-and-shared-file.sql": [
     ["a contact's delete takes its address", (x) => o(x.party_delete).addr_deleted === true],
     ["restore brings contact and address back", (x) => o(x.party_restore).party_live === true && o(x.party_restore).addr_live === true],

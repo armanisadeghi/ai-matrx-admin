@@ -6,8 +6,10 @@ const accountKeys = (p: { accounts: { key: string }[] }) => p.accounts.map((a) =
 describe("peopleGroups on real anchor rounds", () => {
   it("Nicole Long: six distinct people, strongest first, four shown and two more", () => {
     const all = peopleGroups(NICOLE_LONG.items, NICOLE_LONG.searchedName, 10);
-    expect(all.people).toHaveLength(6);
-    expect(all.more).toBe(0);
+    // Six people; the one with neither a line nor a place is no card, only counted.
+    expect(all.people).toHaveLength(5);
+    expect(all.more).toBe(1);
+    expect(all.people.every((p) => p.line || p.place)).toBe(true);
     // The LinkedIn and Instagram accounts that share the handle `nicoleslong` are one person.
     expect(accountKeys(all.people[0])).toEqual(["social:instagram:nicoleslong", "social:linkedin:nicoleslong"]);
     expect(all.people[0].line).toBe("Liberty Classical Schools");

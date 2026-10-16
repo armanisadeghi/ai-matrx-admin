@@ -19,6 +19,7 @@ import {
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { ONBOARDING_METADATA_KEY } from "@/utils/onboarding";
+import { WelcomeDoor } from "@/features/marketing/smart-add/welcome/WelcomeDoor";
 
 interface WelcomeOption {
   label: string;
@@ -95,7 +96,7 @@ const OPTIONS: WelcomeOption[] = [
   },
 ];
 
-export function WelcomeClient({ firstName }: { firstName: string | null }) {
+export function WelcomeClient({ firstName, newUser }: { firstName: string | null; newUser: boolean }) {
   const router = useRouter();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [isNavPending, startNav] = useTransition();
@@ -136,7 +137,10 @@ export function WelcomeClient({ firstName }: { firstName: string | null }) {
   return (
     <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
       <div className="h-full overflow-y-auto">
-        <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center px-5 py-10">
+        <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-center px-5 py-10">
+          {/* A new account: "here's what we found" from the login alone, the tiles below it. */}
+          <WelcomeDoor showDoor={newUser}>
+          <div className="mx-auto w-full max-w-3xl">
           <header className="text-center">
             <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">
               {firstName ? `Welcome, ${firstName}` : "Welcome to AI Matrx"}
@@ -180,6 +184,8 @@ export function WelcomeClient({ firstName }: { firstName: string | null }) {
               );
             })}
           </div>
+          </div>
+          </WelcomeDoor>
         </div>
       </div>
     </div>

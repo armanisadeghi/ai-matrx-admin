@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import HeaderIconTitle from "@/features/shell/components/header/variants/variants/HeaderIconTitle";
+import { isNewUser } from "@/utils/onboarding";
 import { WelcomeClient } from "./WelcomeClient";
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default async function WelcomePage() {
       <PageHeader>
         <HeaderIconTitle icon="Sparkles" title="Welcome" />
       </PageHeader>
-      <WelcomeClient firstName={firstName} />
+      <WelcomeClient firstName={firstName} newUser={isNewUser(user)} />
     </>
   );
 }
