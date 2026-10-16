@@ -1,4 +1,4 @@
-import { roundFailed } from "../roundFailure";
+import { roundFailed, roundStopped } from "../roundFailure";
 
 const step = (over: Record<string, unknown> = {}) => ({ step: "probe", phase: "settled", progress: null, notes: [], costUsd: 0, skipped: false, ...over });
 
@@ -13,5 +13,18 @@ describe("roundFailed", () => {
   it("a failed run did not finish; no view yet is not a failure", () => {
     expect(roundFailed({ status: "failed", steps: [] })).toBe(true);
     expect(roundFailed(undefined)).toBe(false);
+  });
+});
+
+describe("a run ended from outside is told, never shown as working (MKT-183)", () => {
+  it("a cancelled or stopped run is stopped, and counts as not finished", () => {
+    expect(roundStopped({ status: "cancelled" })).toBe(true);
+    expect(roundStopped({ status: "stopped" })).toBe(true);
+    expect(roundFailed({ status: "cancelled", steps: [step({ phase: "stopped" })] })).toBe(true);
+  });
+  it("a running or completed run is not stopped", () => {
+    expect(roundStopped({ status: "running" })).toBe(false);
+    expect(roundStopped({ status: "completed" })).toBe(false);
+    expect(roundStopped(undefined)).toBe(false);
   });
 });

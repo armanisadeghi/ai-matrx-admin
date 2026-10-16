@@ -23,7 +23,7 @@ import type { EvidenceItem } from "./evidence";
 import { useState } from "react";
 import { webRow } from "./evidence";
 import type { WebMark } from "./runMemory";
-import { compareRelationKinds, relationGroupLabel, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
+import { compareRelationKinds, relationGroupLabel, ruleFillIn, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
 
 /** The one-click answers; every other kind is under "More". */
 const PINNED = new Set(["ours", "mention", "review_site", "competitor", "not_us", "irrelevant"]);
@@ -110,7 +110,7 @@ export function SmartAddWebRow({
     const byAgent = agent?.by === "agent";
     const agentKind = byAgent ? (agent.relation_key ?? (agent.choice === "ours" || agent.choice === "not_us" ? agent.choice : null)) : null;
     // The classifier's answer wins when it decided; when it is unsure or silent the rules fill in (MKT-039).
-    const s = agentKind ? null : suggestKind(i, kinds, ctx);
+    const s = agentKind ? null : ruleFillIn(byAgent ? agent?.choice : undefined, suggestKind(i, kinds, ctx));
     suggestions[i.key] = agentKind
       ? { kind: agentKind, sentiment: agent?.sentiment ?? null, probability: agent?.probability ?? null, reason: agent?.reason ?? "", evidence: agent?.evidence, by: "We think" }
       : s

@@ -200,14 +200,16 @@ function StepWatch({
   onStep: (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[], suggestions: Record<string, WeThinkSuggestion>) => void;
 }) {
   const aggregate = useAppSelector(selectNodeAggregate(runId, step));
+  const runStatus = useAppSelector(selectRunStatus(runId));
   const invocation = aggregate.invocations[aggregate.invocations.length - 1] ?? null;
   const output = invocation?.output ?? null;
   const notes = Array.isArray(output?.notes) ? output.notes.filter((n): n is string => typeof n === "string") : [];
   const errorNote = invocation?.error?.message ? [invocation.error.message] : [];
   const view: StepView = {
     step,
-    phase: aggregate.phase,
-    progress: invocation?.progress?.message ?? null,
+    // A step still "running" in a run that has ended was dropped with it: it reads as stopped, never as working (MKT-183).
+    phase: runStatus !== null && RUN_ENDED.includes(runStatus) && IN_FLIGHT.includes(aggregate.phase) ? "stopped" : aggregate.phase,
+    progress: runStatus !== null && RUN_ENDED.includes(runStatus) && IN_FLIGHT.includes(aggregate.phase) ? null : (invocation?.progress?.message ?? null),
     notes: [...notes, ...errorNote],
     costUsd: numberOr(output?.cost_usd, 0),
     // A step the run skipped (its facts were not there yet) reads as skipped, like one with nothing to do.

@@ -231,7 +231,7 @@ export function mergeConfirmedIntoPlan(
 
 function provenance(fact: BrandFact, decision: FactDecision): Record<string, Json> {
   return {
-    found_by: FACTS_FOUND_BY,
+    found_by: fact.mandate ?? FACTS_FOUND_BY,
     agent_kind: "brand_basics",
     run_id: fact.run_id ?? null,
     step: "facts",
@@ -307,7 +307,7 @@ export async function saveKeptFacts(
           where: "research",
           found_on: r.fact.evidence_urls[0] ?? null,
           step: "facts",
-          found_by: FACTS_FOUND_BY,
+          found_by: r.fact.mandate ?? FACTS_FOUND_BY,
           run_id: r.fact.run_id ?? null,
           decision: r.decision,
           ...(r.profileHome ? { home: `web.brand.profile.${r.profileHome}` } : {}),

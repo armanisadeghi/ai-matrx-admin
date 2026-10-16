@@ -10,6 +10,9 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 /** The mandate behind the facts agent's findings (keptFacts.ts re-exports the same key). */
 export const EARLY_FACTS_MANDATE = "brand_intake.early_facts";
+/** The mandate behind a person's facts, and behind what the what's-new agent reads from a new source. */
+export const PERSON_FACTS_MANDATE = "brand_intake.person_facts";
+export const WHATS_NEW_MANDATE = "brand_intake.whats_new";
 /** The mandate behind the first read of the site, search listing and the address itself. */
 export const FIRST_DATA_MANDATE = "brand_intake.first_data";
 /** A value the person typed themselves has no mandate. */
@@ -37,7 +40,10 @@ export function factIdentity(kind: string, value: string): string {
 }
 
 /** The mandate key for a finding made by a workflow node (the node's own name is never stored). */
-export function foundByForSource(node: string, kind: string): string {
+export function foundByForSource(node: string, kind: string, mandate?: string): string {
   if (kind === "typed") return TYPED_BY_PERSON;
+  // A finding that names the agent which really produced it keeps that mandate (MKT-180): a fact the what's-new agent
+  // read is never credited to the facts agent, which may have returned nothing.
+  if (mandate) return mandate;
   return node === "facts" ? EARLY_FACTS_MANDATE : FIRST_DATA_MANDATE;
 }

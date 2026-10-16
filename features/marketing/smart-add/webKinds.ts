@@ -310,7 +310,11 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   if (nameOnPage && ourCity.length >= 3 && norm(pageSays).includes(ourCity) && has("mention")) {
     return { kind: "mention", reason: `Names ${ctx.name} in ${(ctx.place ?? "").split(",")[0]}` };
   }
-  if (ctx.name && sameName && !foundAccount && !articleAboutUs && has("not_us")) {
+  // A site whose own address IS the name, while we know of no website of ours yet (a name start), is most likely
+  // the brand's own site, never "someone else" (MKT-181): the rule only judges a same-name page on a site that
+  // is not named like us, or when we know our own site to compare with.
+  const hostOnly = !nameMatches(ctx.name ?? "", [lead, firstPart]);
+  if (ctx.name && sameName && !(hostOnly && !ctx.ourHosts.length) && !foundAccount && !articleAboutUs && has("not_us")) {
     return {
       kind: "not_us",
       reason: ctx.ourHosts.length
@@ -322,6 +326,16 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
     return { kind: "mention", reason: `Names ${ctx.name}` };
   }
   return null;
+}
+
+/**
+ * The rules fill in where the classifier is unsure (MKT-039), but never against it: when the classifier answered
+ * "needs a person" (`later`), a rule may not suggest the negative kinds (Not us, Irrelevant) — a suggestion never
+ * contradicts the classifier that looked at the page (MKT-181).
+ */
+export function ruleFillIn(classifierChoice: string | undefined, rule: WebSuggestion | null): WebSuggestion | null {
+  if (rule && classifierChoice === "later" && (rule.kind === "not_us" || rule.kind === "irrelevant")) return null;
+  return rule;
 }
 
 /** Results grouped by the kind the person chose, in vocabulary order (stance, then sort). */

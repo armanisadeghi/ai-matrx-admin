@@ -37,3 +37,11 @@ describe("one fact, however it is formatted (MKT-172)", () => {
     expect(foundByForSource("probe", "website")).not.toBe("probe");
   });
 });
+
+describe("a finding keeps the mandate of the agent that produced it (MKT-180)", () => {
+  it("a what's-new fact is never credited to the facts agent", () => {
+    expect(foundByForSource("facts", "web_search", "brand_intake.whats_new")).toBe("brand_intake.whats_new");
+    expect(foundByForSource("facts", "web_search")).toBe("brand_intake.early_facts");
+    expect(foundByForSource("facts", "typed", "brand_intake.whats_new")).toBe("typed_by_person");
+  });
+});

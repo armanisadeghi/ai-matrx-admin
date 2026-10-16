@@ -1,5 +1,5 @@
 import { mergeEvidence } from "../evidence";
-import { brandNameFromPayload, factEvidence, factSlotKey, typedWebsiteItem, webFirstData } from "../firstData";
+import { brandNameFromPayload, factEvidence, factSlotKey, typedWebsiteItem, wakesFacts, webFirstData } from "../firstData";
 import type { BrandFact } from "../validate/queue";
 
 // Recorded live on 2026-10-14 (run 363ea8bb, fullspecstaff.com): the site answers a bot wall, so the quick
@@ -159,5 +159,32 @@ describe("the facts agent's statements and accounts reach their slots", () => {
     // A post address is never an account; every account row's key is the fact's slot key (answers reach Create).
     expect(factSlotKey(facts[3] as BrandFact)).toBeNull();
     expect(factSlotKey(facts[0] as BrandFact)).toBe("social:instagram:silverliningcreamerysd");
+  });
+});
+
+describe("the facts agent runs on what is known and again when evidence arrives (MKT-180)", () => {
+  const NONE = { site: false, social: false, name: false };
+  const round = (over: Partial<{ firstData: boolean; website: boolean; accounts: boolean; name: boolean }> = {}) => ({
+    firstData: false, website: false, accounts: false, name: false, ...over,
+  });
+  it("the round started from what was typed wakes it", () => {
+    const r = wakesFacts(NONE, round({ firstData: true, name: true }));
+    expect(r.wake).toBe(true);
+    expect(r.saw).toEqual({ site: false, social: false, name: true });
+  });
+  it("a website found after a name-only run wakes it again", () => {
+    const first = wakesFacts(NONE, round({ firstData: true, name: true }));
+    const later = wakesFacts(first.saw, round({ website: true, name: true }));
+    expect(later.wake).toBe(true);
+    expect(later.saw.site).toBe(true);
+  });
+  it("the same evidence twice does not wake it twice", () => {
+    const first = wakesFacts(NONE, round({ firstData: true, website: true, name: true }));
+    expect(wakesFacts(first.saw, round({ website: true, name: true })).wake).toBe(false);
+    expect(wakesFacts(first.saw, round({ name: true })).wake).toBe(false);
+  });
+  it("a name confirmed later wakes a run that had nothing else to go on", () => {
+    const blind = wakesFacts(NONE, round({ firstData: true }));
+    expect(wakesFacts(blind.saw, round({ name: true })).wake).toBe(true);
   });
 });

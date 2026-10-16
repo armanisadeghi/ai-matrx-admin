@@ -763,7 +763,7 @@ async function persistAnswerOnce(
         ? {
             source: "discovered" as const,
             metadata: {
-              found_by: "brand_intake.early_facts",
+              found_by: item.fact.mandate ?? "brand_intake.early_facts",
               field: item.fact.field,
               field_label: item.fact.field_label,
               found_value: item.fact.value,
@@ -773,7 +773,7 @@ async function persistAnswerOnce(
             },
           }
         : ev
-          ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind), where: ev.source.where, url: ev.source.url } }
+          ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind, ev.source.mandate), where: ev.source.where, url: ev.source.url } }
           : // Still a validation-queue item (it lands in web.discovered_item below): found, then confirmed.
             { source: "discovered" as const }),
     });

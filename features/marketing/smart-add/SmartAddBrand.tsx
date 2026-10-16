@@ -38,7 +38,7 @@ import { gateCreate } from "./createGate";
 import { useExistingBrands } from "./useExistingBrands";
 import { ExistingBrandNotice } from "./ExistingBrandNotice";
 import { smartAddEnrichHref } from "./smartAddUrl";
-import { factSlotKey, typedWebsiteItem } from "./firstData";
+import { factSlotKey, typedWebsiteItem, wakesFacts, type FactsSaw } from "./firstData";
 import { categoriesFor, liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -53,7 +53,7 @@ import {
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
-import { roundFailed } from "./roundFailure";
+import { roundFailed, roundStopped } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
 import { typedItems, useRunMemory, type WebMark } from "./runMemory";
 import { withoutStaffFacts } from "./staff";
@@ -204,6 +204,10 @@ interface Round {
   runId: string | null;
   seeds: RoundSeeds;
   error: string | null;
+  /** How the round was started, so a stopped one can be run again as it was (MKT-183). */
+  redo?: { woken: ConfirmedFacts; firstData: boolean; find: boolean; email: string };
+  /** A stopped round the person ran again: its stopped notice is done. */
+  superseded?: boolean;
 }
 
 function accountSeedKey(seed: SocialSeed): string | null {
@@ -315,6 +319,10 @@ export function SmartAddBrand({
   // Person clues typed beside the city (Part 10): search clues only — they never ground the person.
   // An email typed in any box (VISION Part 19): rides the next round once (its free lookups run once).
   const emailPending = useRef("");
+  // What the facts agent has been given so far (firstData.wakesFacts): a round that brings more wakes it again.
+  const factsSaw = useRef<FactsSaw>({ site: false, social: false, name: false });
+  // An email typed with a name only: the round starts after the name is confirmed, so the facts agent has it (MKT-180).
+  const [emailKick, setEmailKick] = useState(0);
   const personMore = useRef<PersonMore>({ occupation: resumePerson?.occupation ?? "", company: resumePerson?.company ?? "", extra: "" });
   // Each round's path (brand.identify.path_decision), sent back as `path_history` so escalation fires live.
   const [pathByRun, setPathByRun] = useState<Record<string, RoundPath>>({});
@@ -375,8 +383,18 @@ export function SmartAddBrand({
     const nowGrounded = Boolean(typed) && (personAnchors.length > 0 || affiliations.length > 0);
     const groundedRound = !find && nowGrounded && !groundedSent.current;
     const email = emailPending.current;
+    // The facts agent runs on what is known: the first round from what was typed, and again when a round brings a
+    // website, an account or the name it never had (MKT-180).
+    const facts = wakesFacts(factsSaw.current, {
+      firstData,
+      website: Boolean(seeds.website),
+      accounts: seeds.socials.length > 0,
+      name: Boolean(confirmedFacts.name),
+    });
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound && !email) return;
     emailPending.current = "";
+    factsSaw.current = facts.saw;
+    firstData = facts.wake;
     if (groundedRound) groundedSent.current = true;
     // The person facts agent reads the anchors' profiles from THIS round's lookups (reused within the session):
     // a grounded round woken by a name alone still carries the confirmed accounts.
@@ -402,7 +420,7 @@ export function SmartAddBrand({
       : null;
     for (const k of seedKeys(seeds, accountSeedKey)) explored.current.add(k);
     const id = crypto.randomUUID();
-    setRounds((r) => [...r, { id, runId: null, seeds, error: null }]);
+    setRounds((r) => [...r, { id, runId: null, seeds, error: null, redo: { woken, firstData, find, email } }]);
     const exclude = [
       ...Object.entries(decisions)
         .filter(([key, d]) => d === "no" || !key.startsWith("social:"))
@@ -461,7 +479,13 @@ export function SmartAddBrand({
     }
   };
 
+  const runEmailRound = useEffectEvent(() => void startRound({ website: "", socials: [] }, {}, true));
+  useEffect(() => {
+    if (emailKick) runEmailRound();
+  }, [emailKick]);
+
   const resetAll = () => {
+    factsSaw.current = { site: false, social: false, name: false };
     setRounds([]);
     setViews({});
     viewSig.current = {};
@@ -912,7 +936,17 @@ export function SmartAddBrand({
     rounds.some((r) => !r.error && (!r.runId || !views[r.runId])) ||
     roundViews.some((v) => !!v && !TERMINAL.includes(v.status ?? ""));
   const failedRound =
-    rounds.some((r) => Boolean(r.error)) || roundViews.some((v) => roundFailed(v));
+    rounds.some((r) => Boolean(r.error)) || roundViews.some((v, i) => !rounds[i]?.superseded && roundFailed(v));
+  // A run ended from outside (its worker died, or it was cancelled): the screen says so and offers to run it again.
+  const stoppedRounds = rounds.filter((r, i) => !r.superseded && roundStopped(roundViews[i]));
+  const searchAgain = () => {
+    const again = stoppedRounds;
+    setRounds((rs) => rs.map((r) => (again.includes(r) ? { ...r, superseded: true } : r)));
+    for (const r of again) {
+      emailPending.current = r.redo?.email ?? "";
+      void startRound(r.seeds, r.redo?.woken ?? {}, r.redo?.firstData ?? false, r.redo?.find ?? false);
+    }
+  };
   // A round that never started says why (MKT-094): the screen names it beside its retry.
   const startFailure = rounds.find((r) => r.error)?.error ?? null;
   // A step that already said it could not open the site is not still "reading" it.
@@ -1255,7 +1289,7 @@ export function SmartAddBrand({
       const contact: ConfirmedContactFact[] = basics.facts.map((f) => ({
         kind: f.field,
         value: f.value,
-        foundBy: foundByForSource(f.source.node, f.source.kind),
+        foundBy: foundByForSource(f.source.node, f.source.kind, f.source.mandate),
         typed: f.source.kind === "typed",
       }));
       if (basics.tagline) contact.push({ kind: "tagline", value: basics.tagline, foundBy: FACTS_FOUND_BY, typed: false });
@@ -1618,7 +1652,7 @@ export function SmartAddBrand({
           onFindPerson={findPerson}
           onEmail={(email, startNow) => {
             emailPending.current = email;
-            if (startNow) void startRound({ website: "", socials: [] }, {}, true);
+            if (startNow) setEmailKick((k) => k + 1);
           }}
           initial={url ? (fresh ? url.address.prefill : (resume?.address.prefill ?? url.address.prefill)) : undefined}
           via={url ? url.address.viaParam : undefined}
@@ -1757,6 +1791,17 @@ export function SmartAddBrand({
             </span>
             <span className="truncate">{progressLines[0] ?? "Identifying"}</span>
           </>
+        ) : stoppedRounds.length ? (
+          <span className="flex min-w-0 items-center gap-1.5 truncate" data-testid="smart-add-round-stopped">
+            <TriangleAlert className="size-3 shrink-0 text-warning" />
+            <span className="truncate">
+              The search stopped before it finished{items.size ? `, so ${items.size} findings are all there is` : ""}
+            </span>
+            <Button variant="quiet" className="shrink-0" onClick={searchAgain} data-testid="smart-add-search-again">
+              <RotateCcw className="size-3.5" />
+              Search again
+            </Button>
+          </span>
         ) : rounds.length ? (
           <span className="truncate">{items.size ? `${items.size} findings` : "Nothing found yet"}</span>
         ) : (
@@ -2075,6 +2120,7 @@ export function SmartAddBrand({
 
 const STEP_PHASE_LABEL: Record<string, string> = {
   idle: "Waiting",
+  stopped: "Stopped",
   running: "Working",
   retrying: "Retrying",
   settled: "Done",
