@@ -215,8 +215,10 @@ sink.
 
 ## 4. The runner
 
-- A **fresh agent** with no part in the change. Lane `quick` (Sonnet) by default; raise it only when
-  a baseline run is INCONCLUSIVE for reasons of the runner, never of the product.
+- A **fresh agent** with no part in the change, on **Claude Haiku 5.5** (`quick` lane, `model: haiku`) by
+  default (Arman, 2026-10-15: "use a much cheaper model, like Haiku, who will do this job just as well").
+  Raise it to Sonnet only when a run is INCONCLUSIVE for reasons of the runner, never of the product.
+  The agents under test default to Haiku 5.5 too, unless the playbook tests a specific model.
 - **Gets:** the STEPS half, its own localhost hostname and the dev-login route, signed in as `admin@admin.com`, plus the
   read queries the steps name. **Never gets:** the checks, the markers' expected placement,
   whether a fault is planted, the diff, or the change's purpose.
@@ -244,7 +246,7 @@ sink.
   the fresh runner (2026-10-15, npm campaign).
 
 **The fix loop is cheap or it does not happen.** After the first run that reaches the end, the runner's own
-transcript is the script: a browser-only `quick` agent replays the same sheet for every fix and every fault
+transcript is the script: a browser-only Haiku `quick` agent replays the same sheet for every fix and every fault
 run, and the owner grades from captures without re-reading the product. A fresh, unscripted runner is used
 twice only: the baseline (or check run) and the final after-run. Never let the expensive owner model drive the browser.
 

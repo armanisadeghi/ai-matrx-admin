@@ -24,6 +24,8 @@ row says otherwise, it passes when the answer uses the hidden fact.
 | SB-03 | A pinned agent version is not the version that runs | The pinned version's instructions require a closing phrase older versions lack; passes only if the phrase is there |
 | SB-04 | The active organization is ignored | Two organizations each hold a same-named item with different facts; passes only if the active one's fact appears and the other's never does |
 | SB-05 | An empty variable reaches the instructions as text ("None", "null") | Instructions say the code is `{{prefix}}7740` with prefix left empty; passes only on 7740 exactly |
+| SB-06 | A called agent receives the caller's context | A fact given only to the calling agent; passes only if the called agent's input and reply never contain it |
+| SB-07 | One way of starting the agent changes what it receives | The same chain started from the run page, chat and the AI Dream connector; passes only if the answer is identical on every door |
 
 ## Test concepts
 
