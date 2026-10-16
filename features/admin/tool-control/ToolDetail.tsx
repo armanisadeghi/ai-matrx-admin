@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { readOf } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
@@ -80,7 +81,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
       const result = await turnOnEndpoint(ep.id);
       if (result.changed) return void toast.success("Turned on");
       if (isCheckRequired(result.refusal)) {
-        toast.info("Run a check first", { description: result.message });
+        toast.info("Run a check first", { description: "A source is turned on only after a real call succeeds." });
         return;
       }
       toast.error(result.message);
@@ -136,7 +137,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
               </Button>
             ) : (
               <Button variant={state === "live" ? "outline" : "primary"} disabled={working} onClick={() => void verify(r.ep, r.name, state !== "live")}>
-                {working && busy?.startsWith("verify") ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {working && busy?.startsWith("verify") ? <Spinner size="xs" /> : null}
                 {state === "live" ? "Check" : "Check and turn on"}
               </Button>
             )}
@@ -208,7 +209,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
             </Button>
           ) : null}
           <Button variant="outline" onClick={() => void query.refetch()} disabled={query.isFetching} aria-label="Refresh">
-            {query.isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {query.isFetching ? <Spinner size="xs" /> : <RefreshCw className="h-4 w-4" />}
           </Button>
         </div>
       </div>

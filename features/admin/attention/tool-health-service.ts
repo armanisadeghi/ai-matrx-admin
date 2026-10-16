@@ -12,6 +12,7 @@ type LooseRpc = {
 /** Every Tool source (or vendor account) the breaker switched off that no verification run has put back on yet. */
 export async function fetchToolHealth(): Promise<ToolHealthRow[]> {
   const { data, error } = await (createClient().schema("tool") as unknown as LooseRpc).rpc("control_for_attention");
+  // access-errors: ok — a super-admin read; the dock source reports a failed read loudly (loud: true)
   if (error) throw new Error(error.message);
   return (data ?? []) as ToolHealthRow[];
 }

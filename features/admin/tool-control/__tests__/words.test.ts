@@ -1,5 +1,5 @@
 import type { EndpointRow, EntryRow, ProviderRow, ScorecardRow, StripRow } from "../types";
-import { mergeHistory, reasonWords, rollupTools, speedLabel, stateWords, stripCells, successLabel } from "../words";
+import { historyLine, mergeHistory, reasonWords, rollupTools, speedLabel, stateWords, stripCells, successLabel } from "../words";
 
 const card = (over: Partial<ScorecardRow>): ScorecardRow => ({
   endpoint_id: "e1", window_days: 7, samples: 20, decided: 19, hits: 15, unexpected_errors: 1, hit_rate: 0.79,
@@ -15,8 +15,8 @@ test("the success rate always carries its sample size, and a quiet source says s
 });
 
 test("speed reads in ms under a second and seconds above", () => {
-  expect(speedLabel(320)).toBe("320 ms");
-  expect(speedLabel(1500)).toBe("1.5 s");
+  expect(speedLabel(320)).toBe("320ms");
+  expect(speedLabel(1500)).toBe("1.5s");
   expect(speedLabel(null)).toBe("—");
 });
 
@@ -69,4 +69,11 @@ test("history merges the Tool, its sources and accounts, newest first, naming wh
   expect(lines[0].subject).toBe("Moz");
   expect(lines[0].line).toBe("The guard: switched off — 5 unexpected errors in a row");
   expect(lines).toHaveLength(2);
+});
+
+
+test("a check's history line says whether it changed anything", () => {
+  expect(historyLine({ at: "t", from: "verifying", to: "auto_off", actor: "admin", reason: "verification_failed" })).toBe("An admin ran a check — it did not pass, stays off");
+  expect(historyLine({ at: "t", from: "verifying", to: "live", actor: "upkeep", reason: "verification_passed" })).toBe("Upkeep ran a check — it passed, now on");
+  expect(historyLine({ at: "t", from: "live", to: "paused", actor: "admin", reason: "manual", note: "vendor maintenance" })).toBe("An admin: paused — By hand: vendor maintenance");
 });

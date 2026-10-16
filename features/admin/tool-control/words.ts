@@ -5,6 +5,7 @@
  * what state it is in and why, in as few words as a label allows.
  */
 
+import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
 import type {
   AccountState,
   ControlLogEntry,
@@ -41,12 +42,11 @@ export function stateWords(state: ToolState | SourceState | AccountState): { lab
 export function successLabel(card: Pick<ScorecardRow, "samples" | "decided"> | undefined): string {
   if (!card || card.samples === 0) return "No calls yet";
   const pct = Math.round((card.decided / card.samples) * 100);
-  return `${pct}% · ${card.samples.toLocaleString()} ${card.samples === 1 ? "call" : "calls"}`;
+  return `${pct}% · ${formatCount(card.samples)} ${card.samples === 1 ? "call" : "calls"}`;
 }
 
 export function speedLabel(ms: number | null | undefined): string {
-  if (ms == null) return "—";
-  return ms < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toFixed(1)} s`;
+  return formatDurationMs(ms, { style: "compact", fallback: "—" });
 }
 
 /** Why a log line happened, in words. */
@@ -147,6 +147,15 @@ export function stripCells(rows: readonly StripRow[], now: number = Date.now(), 
   });
 }
 
+/** One log entry as a sentence. A check says whether it changed anything; a state change says to what. */
+export function historyLine(e: ControlLogEntry): string {
+  if (e.reason === "verification_passed") return `${actorWords(e)} ran a check — it passed, now on`;
+  if (e.reason === "verification_failed") return `${actorWords(e)} ran a check — it did not pass, stays off`;
+  const label = stateWords(e.to as ToolState).label.toLowerCase();
+  const why = reasonWords(e);
+  return `${actorWords(e)}: ${label}${why ? ` — ${why}` : ""}`;
+}
+
 export interface HistoryLine {
   at: string;
   subject: string;
@@ -163,9 +172,7 @@ export function mergeHistory(
   const add = (subject: string, log: ControlLogEntry[] | undefined) => {
     for (const e of log ?? []) {
       if (e.to === "verifying") continue;
-      const label = stateWords(e.to as ToolState).label;
-      const why = reasonWords(e);
-      lines.push({ at: e.at, subject, line: `${actorWords(e)}: ${label.toLowerCase()}${why ? ` — ${why}` : ""}` });
+      lines.push({ at: e.at, subject, line: historyLine(e) });
     }
   };
   add(entry.display_name, entry.metadata?.control_log);
