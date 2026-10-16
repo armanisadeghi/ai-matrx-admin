@@ -20,6 +20,7 @@ import {
   type BenchState,
   type Engine,
   type RelationKind,
+  type SystemAnswer,
   type Truth,
 } from "./model";
 
@@ -96,13 +97,17 @@ export async function loadRelationKinds(): Promise<RelationKind[]> {
   }));
 }
 
-/** Create the battle (a matrix set carrying the bench) and run every needed cell on the server. */
+/**
+ * Create the battle (a matrix set carrying the bench) and start every needed cell on the server.
+ * Resolves as soon as the battle exists; `finished` settles when the server's run stream ends —
+ * the cells keep running on the server even if the page goes away, and the page reads them by poll.
+ */
 export async function createAndRun(
   dispatch: AppDispatch,
   bench: BenchState,
   userId: string,
   organizationId: string,
-): Promise<{ setId: string; error: string | null }> {
+): Promise<{ setId: string; finished: Promise<string | null> }> {
   const kinds = await loadRelationKinds();
   const stances = Object.fromEntries(kinds.map((k) => [k.key, k.stance ?? ""]));
   const frozen: BenchState = { ...bench, stances, ranAt: new Date().toISOString() };
@@ -113,12 +118,48 @@ export async function createAndRun(
     organizationId,
     metadata: { ...setupToMetadata(setup), [BENCH_KEY]: frozen as unknown as Record<string, unknown> },
   });
-  const outcome = await runMatrixCells(dispatch, set.id, organizationId, {
+  const finished = runMatrixCells(dispatch, set.id, organizationId, {
     cells: cellsToRun(setup, bench.systems),
     scope: "all",
-  });
-  const error = outcome.error ?? (outcome.streamErrors.join(" · ") || null);
-  return { setId: set.id, error };
+  }).then((outcome) => outcome.error ?? (outcome.streamErrors.join(" · ") || null));
+  return { setId: set.id, finished };
+}
+
+/**
+ * Jev's answers, read from the decision answer store (one `platform.judge_verdict` row per
+ * question per run) by run conversation — the same rows a truth mark labels. A matrix cell's own
+ * `answer` was empty for decision agents until the server fix of 2026-10-16, so the store is
+ * the reader that works for every cell, old and new.
+ */
+export async function loadJevAnswers(conversationIds: string[]): Promise<Map<string, SystemAnswer>> {
+  const out = new Map<string, SystemAnswer>();
+  const kinds = new Map<string, string>();
+  for (let i = 0; i < conversationIds.length; i += 80) {
+    const chunk = conversationIds.slice(i, i + 80);
+    const { data, error } = await createClient()
+      .schema("platform")
+      .from("judge_verdict")
+      .select("question, verdict, metadata")
+      .eq("subject_kind", "decision_answer")
+      .in("metadata->>conversation_id", chunk);
+    if (error) throw new Error(`Could not read Jev's answers: ${error.message}`);
+    for (const row of data ?? []) {
+      const md = (row.metadata ?? {}) as Record<string, unknown>;
+      const conv = String(md.conversation_id ?? "");
+      if (!conv) continue;
+      if (row.question === "kind") kinds.set(conv, String(row.verdict ?? ""));
+      if (row.question !== "stance") continue;
+      const v = String(row.verdict ?? "");
+      const p = Number(md.p_answer);
+      out.set(conv, {
+        stance: v === "ours" || v === "about_us" || v === "not_us" ? v : "cant_tell",
+        label: null,
+        probability: Number.isFinite(p) ? p : null,
+      });
+    }
+  }
+  for (const [conv, a] of out) a.label = kinds.get(conv) ?? null;
+  return out;
 }
 
 /** Save one truth mark (null clears it) and, when Jev answered that result, label its answer. */

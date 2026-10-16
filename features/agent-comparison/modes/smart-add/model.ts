@@ -272,10 +272,16 @@ export function buildSetup(bench: BenchState, kinds: RelationKind[]): MatrixSetu
   };
 }
 
-/** The cells a run needs: Jev on every result, the holder (and the reference) on every batch. */
+/**
+ * The cells a run needs: Jev on every result, the holder (and the reference) on every batch.
+ * The slow batch calls queue first, so they run beside Jev instead of after it.
+ */
 export function cellsToRun(setup: MatrixSetup, systems: SystemKey[]): { row_id: string; column_id: string; repeat: number }[] {
   const out: { row_id: string; column_id: string; repeat: number }[] = [];
-  for (const row of setup.rows.variants) {
+  const rows = [...setup.rows.variants].sort(
+    (a, b) => Number(b.id.startsWith(BATCH_ROW_PREFIX)) - Number(a.id.startsWith(BATCH_ROW_PREFIX)),
+  );
+  for (const row of rows) {
     const batch = row.id.startsWith(BATCH_ROW_PREFIX);
     for (const s of systems) {
       if ((s === "jev") !== batch) out.push({ row_id: row.id, column_id: COLUMN_ID[s], repeat: 0 });
@@ -358,7 +364,16 @@ export interface SystemRun {
   conversations: Map<string, string>;
 }
 
-export function readRuns(cells: MatrixCell[], bench: BenchState): Record<SystemKey, SystemRun> {
+/**
+ * Every system's answers, timings and costs from the battle's cells. `jevStore` holds Jev's
+ * answers read from the decision answer store by run conversation, for cells whose own answer
+ * text is empty (a decision turn has no text).
+ */
+export function readRuns(
+  cells: MatrixCell[],
+  bench: BenchState,
+  jevStore: Map<string, SystemAnswer> = new Map(),
+): Record<SystemKey, SystemRun> {
   const empty = (): SystemRun => ({ answers: new Map(), durations: [], cost: 0, calls: 0, done: 0, failed: 0, conversations: new Map() });
   const runs: Record<SystemKey, SystemRun> = { holder: empty(), jev: empty(), reference: empty() };
   for (const cell of cells) {
@@ -374,7 +389,7 @@ export function readRuns(cells: MatrixCell[], bench: BenchState): Record<SystemK
     if (typeof cell.result.duration_ms === "number") run.durations.push(cell.result.duration_ms);
     if (typeof cell.result.cost === "number") run.cost += cell.result.cost;
     if (system === "jev") {
-      const a = readJevCell(cell.result.answer);
+      const a = readJevCell(cell.result.answer) ?? jevStore.get(cell.conversationId) ?? null;
       if (a) run.answers.set(cell.rowId, a);
       run.conversations.set(cell.rowId, cell.conversationId);
     } else {

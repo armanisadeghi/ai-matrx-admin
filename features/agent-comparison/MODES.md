@@ -20,6 +20,7 @@ conversations + telemetry + feedback for whatever the mode hands it.
 | **Tools** ✅ | source agent, version, variables, message, system prompt, settings | tools list (built-in + custom + MCP) | `/agents/battle/tools` | `agentComparisonTools` |
 | **Request Modification** ✅ | agent, version | per-column variables + user message | `/agents/battle/request-mod` | `agentComparisonRequestMod` |
 | **Matrix** ✅ | a base patch | a patch per ROW and per COLUMN (agent, version, model, settings, message, variables, tools, surface); every cell is a server run | `/agents/battle/matrix` | `agentComparisonMatrix` |
+| **Smart Add** ✅ | a brand the person knows + its search results | which system judges each result (today's holder, its Jev decision version, a reference model); scored against the person's blind truth — `modes/smart-add/FEATURE.md` | `/agents/battle/smart-add` | none (matrix runner + page state) |
 
 ### Model vs Tuning vs Settings — when to use which
 

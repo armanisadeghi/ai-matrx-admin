@@ -5,11 +5,12 @@
  * result, mark the truth blind, read the scoreboard. FEATURE.md beside the mode folder.
  */
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AlertTriangle, ExternalLink, ListChecks, Search } from "lucide-react";
 import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
+import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -36,10 +37,11 @@ import {
   score,
   type BenchResult,
   type BenchState,
+  type SystemAnswer,
   type SystemKey,
   type Truth,
 } from "../model";
-import { castNet, createAndRun, saveTruth, type NetProgress } from "../service";
+import { castNet, createAndRun, loadJevAnswers, saveTruth, type NetProgress } from "../service";
 
 const POLL_MS = 2000;
 const SYSTEMS: SystemKey[] = ["holder", "jev", "reference"];
@@ -50,16 +52,6 @@ const SYSTEM_HINT: Record<SystemKey, string> = {
 };
 
 type View = "truth" | "score";
-
-function secs(ms: number | null): string {
-  if (ms == null) return "–";
-  return ms < 10_000 ? `${(ms / 1000).toFixed(2)} s` : `${(ms / 1000).toFixed(1)} s`;
-}
-
-function money(v: number): string {
-  if (!v) return "$0";
-  return v < 0.01 ? `$${v.toFixed(5)}` : `$${v.toFixed(3)}`;
-}
 
 export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const dispatch = useAppDispatch();
@@ -120,7 +112,23 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     return () => clearInterval(t);
   }, [setId, live, busy]);
 
-  const runs = useMemo(() => readRuns(cells, bench), [cells, bench]);
+  // Jev's answers from the decision answer store, for finished cells that carry no answer text.
+  const [jevStore, setJevStore] = useState<Map<string, SystemAnswer>>(new Map());
+  const missingJev = cells
+    .filter((c) => c.columnId === "jev" && c.status === "completed" && !c.result?.answer && !jevStore.has(c.conversationId))
+    .map((c) => c.conversationId);
+  const missingKey = missingJev.join(",");
+  useEffect(() => {
+    if (!missingKey) return;
+    let alive = true;
+    loadJevAnswers(missingKey.split(","))
+      .then((found) => alive && setJevStore((prev) => new Map([...prev, ...found])))
+      .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)));
+    return () => {
+      alive = false;
+    };
+  }, [missingKey]);
+  const runs = readRuns(cells, bench, jevStore);
   const ran = Boolean(setId);
   const brand = bench.brand;
   const patchBrand = (p: Partial<BenchState["brand"]>) => setBench((b) => ({ ...b, brand: { ...b.brand, ...p } }));
@@ -153,8 +161,8 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     try {
       // write-target: the bench is filed in the organization the person works in
       const organizationId = await ensureOrgId(null);
-      const { setId: id, error } = await createAndRun(dispatch, { ...bench, queries }, userId, organizationId);
-      if (error) setRunError(`Run: ${error}`);
+      const { setId: id, finished } = await createAndRun(dispatch, { ...bench, queries }, userId, organizationId);
+      void finished.then((error) => error && toast.error(`The run stopped: ${error}`));
       startTransition(() => router.replace(`/agents/battle/smart-add/${id}`));
     } catch (err) {
       setRunError(err instanceof Error ? err.message : String(err));
@@ -347,7 +355,7 @@ function SetupPanel({
             data={["1", "2", "3", "5"].map((v) => ({ value: v, label: v }))}
           />
           <span className="type-caption text-muted-foreground">
-            {calls ? `${calls} searches on Google and Brave` : "Google and Brave, every search"}
+            {calls ? `${calls} searches across two engines` : "Two engines, every search"}
           </span>
           <Button className="ml-auto" onClick={onCast} disabled={!canSearch} icon={<Search className="w-4 h-4" />}>
             {busy && net ? `Searching ${net.done}/${net.total}` : "Cast the net"}
@@ -478,10 +486,10 @@ function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeo
                 <td className="p-2 text-right">{sc.cantTell}</td>
                 <td className="p-2 text-right">{sc.falseOurs}</td>
                 <td className="p-2 text-right">{sc.missedUs}</td>
-                <td className="p-2 text-right">{secs(sc.p50)}</td>
-                <td className="p-2 text-right">{secs(sc.p90)}</td>
+                <td className="p-2 text-right">{formatDurationMs(sc.p50)}</td>
+                <td className="p-2 text-right">{formatDurationMs(sc.p90)}</td>
                 <td className="p-2 text-right">{sc.calls}</td>
-                <td className="p-2 text-right">{money(sc.cost)}</td>
+                <td className="p-2 text-right">{formatUsd(sc.cost, { digits: "adaptive" })}</td>
               </tr>
             ))}
           </tbody>
