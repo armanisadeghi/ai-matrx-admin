@@ -11,7 +11,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import type { Deck } from "../deck-model";
 import { PaperSlide } from "../slide-paper";
-import { isSkipped, slideTransitionOf } from "../deck-slide-ops";
+import { isSkipped, showPosition, slideTransitionOf } from "../deck-slide-ops";
 import { useDeckA11y } from "../deck-a11y";
 
 export function DeckPresenter({ deck, start, onClose }: { deck: Deck; start: number; onClose: (at: number) => void }) {
@@ -38,6 +38,8 @@ export function DeckPresenter({ deck, start, onClose }: { deck: Deck; start: num
     return next ?? from;
   };
   const last = play.length ? play[play.length - 1]! : deck.slides.length - 1;
+  // The counter counts the show, not the deck: a skipped slide is not "one of" anything.
+  const { shown, total } = showPosition(deck.slides, at);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -91,7 +93,7 @@ export function DeckPresenter({ deck, start, onClose }: { deck: Deck; start: num
       </div>
       {a11y.announceSlides ? (
         <span className="sr-only" aria-live="polite" data-deck-announce="">
-          {`Slide ${at + 1} of ${deck.slides.length}${deck.slides[at]?.title ? `: ${deck.slides[at]!.title}` : ""}`}
+          {`Slide ${shown} of ${total}${deck.slides[at]?.title ? `: ${deck.slides[at]!.title}` : ""}`}
         </span>
       ) : null}
       <div
@@ -100,7 +102,7 @@ export function DeckPresenter({ deck, start, onClose }: { deck: Deck; start: num
       >
         <Button variant="quiet" icon={<ChevronLeft />} aria-label="Previous slide" className="text-white" disabled={step(at, -1) === at} onClick={() => setAt((n) => step(n, -1))} />
         <span className="min-w-14 text-center text-xs tabular-nums" aria-live="polite">
-          {at + 1} / {deck.slides.length}
+          {shown} / {total}
         </span>
         <Button variant="quiet" icon={<ChevronRight />} aria-label="Next slide" className="text-white" disabled={step(at, 1) === at} onClick={() => setAt((n) => step(n, 1))} />
         <Button variant="quiet" icon={<X />} aria-label="Exit presentation" className="text-white" onClick={() => onClose(atRef.current)} />

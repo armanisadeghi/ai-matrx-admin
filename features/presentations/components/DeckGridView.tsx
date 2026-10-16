@@ -22,17 +22,22 @@ function Cell({ deck, index, id, selected, canEdit, onOpen }: { deck: Deck; inde
       <button
         type="button"
         data-clickable
-        aria-label={`Slide ${index + 1}${slide?.title ? `: ${slide.title}` : ""}`}
+        aria-label={`Slide ${index + 1}${slide?.title ? `: ${slide.title}` : ""}${isSkipped(slide) ? " (skipped)" : ""}`}
+        data-skipped={isSkipped(slide) ? "" : undefined}
         onClick={() => onOpen(index)}
         className={cn("relative block w-full overflow-hidden rounded-md border-2 bg-white outline-none", selected ? "border-amber-500" : "border-transparent ring-1 ring-border hover:ring-amber-400")}
         style={{ aspectRatio: slideAspect(slideSizeOf(deck)) }}
         {...attributes}
         {...listeners}
       >
-        <span className="pointer-events-none absolute inset-0">
+        <span className={cn("pointer-events-none absolute inset-0", isSkipped(slide) && "opacity-40")}>
           <PaperSlide deck={deck} slide={slide} slideNumber={index + 1} className="h-full w-full" />
         </span>
-        {isSkipped(slide) ? <EyeOff className="absolute right-1 top-1 size-4 text-muted-foreground" aria-label="Skipped" /> : null}
+        {isSkipped(slide) ? (
+          <span className="pointer-events-none absolute right-1 top-1 rounded bg-background/90 p-0.5" title="Skipped in the slideshow">
+            <EyeOff className="size-3.5 text-muted-foreground" aria-hidden />
+          </span>
+        ) : null}
       </button>
       <div className="mt-1 text-center text-xs tabular-nums text-muted-foreground">{index + 1}</div>
     </div>

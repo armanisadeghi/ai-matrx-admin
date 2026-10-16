@@ -65,6 +65,8 @@ import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost
 import { isSkipped, slideTextStyleOf } from "../deck-slide-ops";
 import { getDeckA11y, setDeckA11y, useDeckA11y } from "../deck-a11y";
 import { plainTextOf } from "../deck-slide-ops";
+import { createDeckSaver, listenToDeckPage, type DeckSaver } from "../deck-autosave";
+import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { AccessibilityDialog, BackgroundDialog, CommentsDialog, FindReplaceDialog, ImportSlidesDialog, MotionDialog, SpecialCharsDialog, ThemeBuilderDialog } from "./DeckPanels";
 import { DeckGridView } from "./DeckGridView";
 import { deckDownloads, downloadDeckAsOdp, downloadDeckAsText, downloadSlideAsImage, printDeck } from "../deck-export";
@@ -102,7 +104,10 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const [sizeOpen, setSizeOpen] = useState(false);
   const openFeedback = useOpenFeedbackWindow();
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [canEdit, setCanEdit] = useState(false);
+  const [mayEdit, setMayEdit] = useState(false);
+  // Nothing is editable (or saved) until the stored deck has loaded: the blank deck shown while
+  // loading must never take an edit, and never be written over the real one.
+  const canEdit = mayEdit && row !== null;
   const [hist, dispatchHist] = useReducer(historyReducer, initialHistory(blankDeck()));
   const [saveState, setSaveState] = useState<EditorSaveState>("saved");
   const [notesShown, setNotesShown] = useState(true);
@@ -117,13 +122,33 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const notesRef = useRef<ProTextareaElement | null>(null);
   /** The last slide text or notes box the caret was in: Insert → Special characters and Paste as text land there. */
   const lastEditable = useRef<HTMLElement | null>(null);
-  const savedRevision = useRef(0);
+  const presentationIdRef = useRef(presentationId);
   const uploadRef = useRef<HTMLInputElement>(null);
   const menuBar = useMenuBarState();
 
   const { deck, current } = hist.present;
   const slide = deck.slides[current];
 
+  const deckRef = useRef(deck);
+  const currentRef = useRef(current);
+  const revisionRef = useRef(hist.revision);
+  const canEditRef = useRef(canEdit);
+  // Built on first use (from an effect or a handler, never during render).
+  const saverRef = useRef<DeckSaver | null>(null);
+  const saverFor = (): DeckSaver =>
+    (saverRef.current ??= createDeckSaver({
+      current: () => ({ revision: revisionRef.current, deck: deckRef.current }),
+      write: async (d) => {
+        if (!canEditRef.current) return false;
+        const res = await savePresentationDeck(presentationIdRef.current, d);
+        if (isServiceFailure(res)) {
+          toast.error("Could not save the presentation", { description: res.error });
+          return false;
+        }
+        return true;
+      },
+      onState: setSaveState,
+    }));
   const load = async () => {
     const res = await getPresentation(presentationId);
     if (isServiceFailure(res)) {
@@ -131,7 +156,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
       return;
     }
     setRow(res.data);
-    savedRevision.current = 0;
+    saverFor().markSaved(0);
     dispatchHist({ type: "reset", deck: res.data.deck });
     setSaveState("saved");
   };
@@ -143,55 +168,37 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   useEffect(() => {
     let live = true;
     void loadRef.current();
-    void canActOn("presentation", presentationId, "editor").then((ok) => live && setCanEdit(ok));
+    void canActOn("presentation", presentationId, "editor").then((ok) => live && setMayEdit(ok));
     return () => {
       live = false;
     };
   }, [presentationId]);
 
   // Autosave: every content change (revision) is saved after a short pause; each save is one version.
-  const deckRef = useRef(deck);
-  const currentRef = useRef(current);
+  // Saves run one at a time (an older whole-deck write can never land last) and leaving the page
+  // flushes and asks while anything is unwritten (deck-autosave).
   useEffect(() => {
     deckRef.current = deck;
     currentRef.current = current;
-  }, [deck, current]);
-  const saveNow = async () => {
-    const revision = hist.revision;
-    if (!canEdit || revision === savedRevision.current) return;
-    setSaveState("saving");
-    const res = await savePresentationDeck(presentationId, deckRef.current);
-    if (isServiceFailure(res)) {
-      setSaveState("error");
-      toast.error("Could not save the presentation", { description: res.error });
-      return;
-    }
-    savedRevision.current = revision;
-    setSaveState(revision === hist.revision ? "saved" : "dirty");
-  };
-  const saveNowRef = useRef(saveNow);
+    revisionRef.current = hist.revision;
+    canEditRef.current = canEdit;
+    presentationIdRef.current = presentationId;
+  }, [deck, current, hist.revision, canEdit, presentationId]);
+  const saveNow = () => saverFor().save();
   useEffect(() => {
-    saveNowRef.current = saveNow;
-  });
-  useEffect(() => {
-    if (hist.revision === savedRevision.current || !canEdit) return undefined;
+    const saver = saverFor();
+    if (!saver.hasUnsaved() || !canEdit) return undefined;
     setSaveState("dirty");
-    const t = setTimeout(() => void saveNowRef.current(), AUTOSAVE_MS);
+    const t = setTimeout(() => void saver.save(), AUTOSAVE_MS);
     return () => clearTimeout(t);
   }, [hist.revision, canEdit]);
   // Leaving the page (or the editor) never drops the last edits.
-  const revisionRef = useRef(hist.revision);
   useEffect(() => {
-    revisionRef.current = hist.revision;
-  }, [hist.revision]);
-  useEffect(() => {
-    const flush = () => {
-      if (revisionRef.current !== savedRevision.current) void saveNowRef.current();
-    };
-    window.addEventListener("pagehide", flush);
+    const saver = saverFor();
+    const stop = listenToDeckPage(saver);
     return () => {
-      window.removeEventListener("pagehide", flush);
-      flush();
+      stop();
+      if (canEditRef.current && saver.hasUnsaved()) void saver.save();
     };
   }, []);
 
@@ -552,9 +559,17 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
         }
       >
         <div className={cn("flex min-h-0 flex-1", isPhone ? "flex-col" : "flex-row")} data-presentation-editor={presentationId}>
-          {!isPhone && rail}
-          {canvas}
-          {isPhone && rail}
+          {row ? (
+            <>
+              {!isPhone && rail}
+              {canvas}
+              {isPhone && rail}
+            </>
+          ) : (
+            <div className="flex flex-1 items-center justify-center text-sm" data-deck-loading="">
+              <ShimmerText text="Opening your presentation…" />
+            </div>
+          )}
           <SlideSizeDialog open={sizeOpen} onOpenChange={setSizeOpen} initial={slideSizeOf(deck)} onApply={(size) => dispatch({ type: "setSlideSize", size })} />
           <EditorDetailsDialog
             open={detailsOpen}
