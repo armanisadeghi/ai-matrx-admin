@@ -1,7 +1,6 @@
 "use client";
 
 import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
-import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
 import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useEffect, useRef, useState } from "react";
