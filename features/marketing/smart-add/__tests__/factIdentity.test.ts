@@ -1,0 +1,39 @@
+import { factIdentity, foundByForSource, normalizePhone } from "../factIdentity";
+import { mergeConfirmedIntoPlan, planKeptFacts } from "../keptFacts";
+import type { BrandFact } from "../validate/queue";
+
+const fact = (field: string, value: string, key: string): BrandFact =>
+  ({ key, field, field_label: field, value, certainty: "likely", reason: "", evidence_urls: [], run_id: "r1" }) as unknown as BrandFact;
+
+describe("one fact, however it is formatted (MKT-172)", () => {
+  it("phones compare as E.164", () => {
+    expect(normalizePhone("(415) 604-2165")).toBe("+14156042165");
+    expect(normalizePhone("+1-415-604-2165")).toBe("+14156042165");
+    expect(factIdentity("email", " Hi@Ex.com ")).toBe(factIdentity("email", "hi@ex.com"));
+  });
+
+  it("a confirmed phone the facts agent also found is ONE row, confirmed, with the mandate key", () => {
+    const plan = planKeptFacts([fact("phone", "(415) 604-2165", "phone:4156042165")], () => undefined);
+    const { plan: merged, remaining } = mergeConfirmedIntoPlan(plan, [
+      { kind: "phone", value: "+1-415-604-2165", foundBy: "brand_intake.early_facts", typed: false },
+    ]);
+    expect(remaining).toHaveLength(0);
+    expect(merged.rows).toHaveLength(1);
+    expect(merged.rows[0].decision).toBe("confirmed");
+    expect(merged.rows[0].metadata.found_by).toBe("brand_intake.early_facts");
+  });
+
+  it("the facts agent's same phone under two field names is one row", () => {
+    const plan = planKeptFacts([fact("phone", "(415) 604-2165", "a"), fact("toll_free_phone", "415-604-2165", "b")], () => undefined);
+    expect(plan.rows).toHaveLength(1);
+  });
+
+  it("a confirmed fact nobody planned is returned once, and the node name never becomes found_by", () => {
+    const plan = planKeptFacts([], () => undefined);
+    const c = { kind: "phone", value: "(212) 555-0100", foundBy: foundByForSource("facts", "web_search"), typed: false };
+    const { remaining } = mergeConfirmedIntoPlan(plan, [c, { ...c, value: "212-555-0100" }]);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].foundBy).toBe("brand_intake.early_facts");
+    expect(foundByForSource("probe", "website")).not.toBe("probe");
+  });
+});

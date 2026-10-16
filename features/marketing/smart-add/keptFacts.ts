@@ -27,9 +27,10 @@ import { extractErrorMessage } from "@/utils/errors";
 import { isBusinessFactKind } from "@/features/marketing/types";
 import type { BrandFact } from "./validate/queue";
 import type { Decision } from "./evidence";
+import { EARLY_FACTS_MANDATE, factIdentity } from "./factIdentity";
 
 /** The mandate that produces these facts (Arman's Brand Basics Fact Finder). */
-export const FACTS_FOUND_BY = "brand_intake.early_facts";
+export const FACTS_FOUND_BY = EARLY_FACTS_MANDATE;
 
 /** The facts agent's fields that are a web.business_fact kind under another name (validate/persist.ts agrees). */
 const FIELD_KIND: Record<string, string> = {
@@ -99,6 +100,7 @@ export function planKeptFacts(
   already: { description?: string | null; industry?: string | null; tagline?: string | null; brandName?: string | null } = {},
 ): KeptFactPlan {
   const seen = new Set<string>();
+  const seenIdentity = new Set<string>();
   const rows: KeptFactRow[] = [];
   for (const fact of facts) {
     if (fact.conflict_with) continue; // a conflict asks which is right on the validation page; nothing is kept yet
@@ -106,8 +108,14 @@ export function planKeptFacts(
     if (d === "no") continue;
     if (seen.has(fact.key)) continue;
     seen.add(fact.key);
-    const decision: FactDecision = d ? "confirmed" : "kept";
     const profileHome = PROFILE_HOME[fact.field.toLowerCase()] ?? null;
+    // The same fact in another format (or under another field name) is one row, never two.
+    const identity = profileHome ? null : factIdentity(factKindFor(fact.field), fact.value);
+    if (identity) {
+      if (seenIdentity.has(identity)) continue;
+      seenIdentity.add(identity);
+    }
+    const decision: FactDecision = d ? "confirmed" : "kept";
     rows.push({
       fact,
       decision,
@@ -185,6 +193,42 @@ export function planKeptFacts(
   };
 }
 
+/** A contact fact (phone / email / address) or the tagline the person confirmed on the slots. */
+export interface ConfirmedContactFact {
+  kind: string;
+  value: string;
+  /** Mandate key that found it (factIdentity.foundByForSource). */
+  foundBy: string;
+  typed: boolean;
+}
+
+/**
+ * Create writes each confirmed fact ONCE through saveKeptFacts: a confirmed value the facts agent also found
+ * (same fact, however formatted) upgrades that planned row to `confirmed`; only the rest is returned to be
+ * written by the caller, each with its found-by mandate.
+ */
+export function mergeConfirmedIntoPlan(
+  plan: KeptFactPlan,
+  confirmed: ConfirmedContactFact[],
+): { plan: KeptFactPlan; remaining: ConfirmedContactFact[] } {
+  const rows = plan.rows.map((r) => ({ ...r }));
+  const remaining: ConfirmedContactFact[] = [];
+  const claimed = new Set<string>();
+  for (const c of confirmed) {
+    const id = factIdentity(c.kind, c.value);
+    const hit = rows.find((r) => r.kind && factIdentity(r.kind, r.fact.value) === id);
+    if (hit) {
+      hit.decision = "confirmed";
+      hit.metadata = { ...hit.metadata, decision: "confirmed" };
+      continue;
+    }
+    if (claimed.has(id)) continue;
+    claimed.add(id);
+    remaining.push(c);
+  }
+  return { plan: { ...plan, rows }, remaining };
+}
+
 function provenance(fact: BrandFact, decision: FactDecision): Record<string, Json> {
   return {
     found_by: FACTS_FOUND_BY,
@@ -212,13 +256,11 @@ export async function saveKeptFacts(
   organizationId: string,
   brandId: string,
   plan: KeptFactPlan,
-  /** `kind|value` (lower case) already written by Create's own contact facts — never written twice. */
-  written: Set<string>,
 ): Promise<{ problems: string[]; factIds: string[]; offeringIds: string[] }> {
   const problems: string[] = [];
   const db = await authenticatedWebDb(supabase);
   const now = new Date().toISOString();
-  const factRows = plan.rows.filter((r) => r.kind && !written.has(`${r.kind}|${r.fact.value.trim().toLowerCase()}`));
+  const factRows = plan.rows.filter((r) => r.kind);
   const factIdByKey = new Map<string, string>();
   if (factRows.length) {
     const res = await db

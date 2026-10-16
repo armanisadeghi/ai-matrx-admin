@@ -29,7 +29,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
-import { planKeptFacts, saveKeptFacts } from "./keptFacts";
+import { FACTS_FOUND_BY, mergeConfirmedIntoPlan, planKeptFacts, saveKeptFacts, type ConfirmedContactFact } from "./keptFacts";
+import { foundByForSource } from "./factIdentity";
 import { probeFromDraft, type BrandMatch, type BrandProbe } from "./brandMatch";
 import { findMatchingBrands } from "./brandMatchLive";
 import { gateCreate } from "./createGate";
@@ -1248,13 +1249,18 @@ export function SmartAddBrand({
           withoutStaffFacts(items.values(), person).filter((i) => !decisions[i.key] && !relatedSaved.keys.has(i.key) && !brokenKeys.current.has(i.key)),
         )),
       );
-      problems.push(...(await saveFacts(organizationId, brand.id, basics)));
-      // Create's own contact facts above are never written twice.
-      const written = new Set([
-        ...basics.facts.map((f) => `${f.field}|${f.value.trim().toLowerCase()}`),
-        ...(basics.tagline ? [`tagline|${basics.tagline.trim().toLowerCase()}`] : []),
-      ]);
-      problems.push(...(await saveKeptFacts(organizationId, brand.id, factPlan, written)).problems);
+      // One path: each confirmed fact is written once, as the facts agent's row when it found it (any format),
+      // else on its own; every row carries the mandate that found it (MKT-172).
+      const contact: ConfirmedContactFact[] = basics.facts.map((f) => ({
+        kind: f.field,
+        value: f.value,
+        foundBy: foundByForSource(f.source.node, f.source.kind),
+        typed: f.source.kind === "typed",
+      }));
+      if (basics.tagline) contact.push({ kind: "tagline", value: basics.tagline, foundBy: FACTS_FOUND_BY, typed: false });
+      const merged = mergeConfirmedIntoPlan(factPlan, contact);
+      problems.push(...(await saveKeptFacts(organizationId, brand.id, merged.plan)).problems);
+      problems.push(...(await saveFacts(organizationId, brand.id, basics, merged.remaining)));
       setSaveNotes(problems);
       setCreated(brand);
       // Shift to the focus queue for everything else.
@@ -2072,31 +2078,27 @@ function plainStartError(error: unknown): string {
     : message;
 }
 
-/** Confirmed phone / email / address → the brand's business facts and its primary location. */
+/** Confirmed facts nobody planned (typed, or read from the site) → one business fact each, then the primary location. */
 async function saveFacts(
   organizationId: string,
   brandId: string,
   basics: ReturnType<typeof confirmedBasics>,
+  remaining: ConfirmedContactFact[],
 ): Promise<string[]> {
   const problems: string[] = [];
-  if (basics.tagline) {
-    try {
-      await createBusinessFact({ organizationId, brandId, kind: "tagline", label: null, value: basics.tagline });
-    } catch (error) {
-      problems.push(`tagline: ${extractErrorMessage(error)}`);
-    }
-  }
-  for (const fact of basics.facts) {
+  for (const fact of remaining) {
     try {
       await createBusinessFact({
         organizationId,
         brandId,
-        kind: fact.field as "phone" | "email" | "address",
+        kind: fact.kind as "phone" | "email" | "address" | "tagline",
         label: null,
         value: fact.value,
+        source: fact.typed ? "manual" : "discovered",
+        metadata: { found_by: fact.foundBy, decision: "confirmed", written_by: "smart_add.create" },
       });
     } catch (error) {
-      problems.push(`${fact.field}: ${extractErrorMessage(error)}`);
+      problems.push(`${fact.kind}: ${extractErrorMessage(error)}`);
     }
   }
   const first = (field: string) => basics.facts.find((f) => f.field === field)?.value ?? null;

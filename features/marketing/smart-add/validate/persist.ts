@@ -18,6 +18,7 @@
  *   Ask me later            → nothing (stays pending)
  */
 
+import { foundByForSource } from "../factIdentity";
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
@@ -726,7 +727,7 @@ async function persistAnswerOnce(
             },
           }
         : ev
-          ? { source: "discovered" as const, metadata: { found_by: ev.source.node, where: ev.source.where, url: ev.source.url } }
+          ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind), where: ev.source.where, url: ev.source.url } }
           : {}),
     });
     resolved.resolved_fact_id = fact.id;
