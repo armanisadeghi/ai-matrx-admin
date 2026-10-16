@@ -3,7 +3,8 @@
  *
  * `rag.fn_list_library_chunks` is a SECURITY INVOKER function, so row-level
  * security decides what the caller may see; the Python server is not involved.
- * Same response shape the old `GET /rag/library/{id}/chunks` returned.
+ * Same response shape the old `GET /rag/library/{id}/chunks` returned. Soft-deleted
+ * pieces (`deleted_at`) are hidden by the function itself, as the server did.
  */
 import { createClient } from "@/utils/supabase/client";
 import { ragDb } from "@/utils/supabase/ragDb";
