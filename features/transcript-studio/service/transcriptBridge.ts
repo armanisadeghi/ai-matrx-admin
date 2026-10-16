@@ -174,6 +174,7 @@ export async function promoteTranscriptToStudio(
           : tStart + 10;
       return {
         session_id: sessionId,
+        organization_id: transcriptScope.organization_id,
         chunk_index: i,
         t_start: tStart,
         t_end: tEnd,
