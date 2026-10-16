@@ -4,7 +4,7 @@
  */
 import type { WatchableRun } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import type { AiWatchRunSummary } from "../ai-watch-records";
-import { autoSelection, buildRail, focusKey, railGroupHeading, UNRECORDED_GROUP } from "../watch-rail";
+import { autoSelection, buildRail, callKindTitle, focusKey, railGroupHeading, UNRECORDED_GROUP } from "../watch-rail";
 
 const rec = (
   id: string,
@@ -91,5 +91,15 @@ describe("watch rail", () => {
     expect(heading("k1")).toBe("Scheduled calls");
     expect(heading("u2")).toBe("This run");
     expect(new Set(groups.map((g) => g.id)).size).toBe(groups.length);
+  });
+
+  // The selected call's transcript section was titled "Chat" for every call (2026-10-16).
+  it("titles a call's transcript by its starter; only a person's call is a Chat", () => {
+    expect(callKindTitle("human", null)).toBe("Chat");
+    expect(callKindTitle("workflow", "run-1")).toBe("Workflow step");
+    expect(callKindTitle(null, "run-1")).toBe("Workflow step");
+    expect(callKindTitle("system", null)).toBe("System call");
+    expect(callKindTitle("api", null)).toBe("API call");
+    expect(callKindTitle(null, null)).toBe("Call");
   });
 });

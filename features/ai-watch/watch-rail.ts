@@ -145,3 +145,20 @@ export function railGroupHeading(group: RailGroup, currentRunId: string | null):
   if (group.workflowRunId) return group.workflowRunId === currentRunId ? "This run" : "Earlier run";
   return ORIGIN_HEADINGS[group.originClass ?? ""] ?? "Other calls";
 }
+
+const CALL_TITLES: Record<string, string> = {
+  human: "Chat",
+  delegated_member: "Chat",
+  client_auto: "App call",
+  api: "API call",
+  child_agent: "Subagent call",
+  workflow: "Workflow step",
+  scheduled: "Scheduled call",
+  system: "System call",
+};
+
+/** The selected call's transcript title: who started it. Only a person's own call is a "Chat". */
+export function callKindTitle(originClass: string | null, workflowRunId: string | null): string {
+  if (workflowRunId) return "Workflow step";
+  return CALL_TITLES[originClass ?? ""] ?? "Call";
+}

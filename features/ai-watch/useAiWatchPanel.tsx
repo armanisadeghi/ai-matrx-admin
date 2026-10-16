@@ -57,7 +57,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { AI_WATCH_PAGE_INSTANCE } from "@/features/overlays/openers/aiWatchWindow";
-import { autoSelection, buildRail, focusKey, railGroupHeading, UNRECORDED_GROUP } from "@/features/ai-watch/watch-rail";
+import { autoSelection, buildRail, callKindTitle, focusKey, railGroupHeading, UNRECORDED_GROUP } from "@/features/ai-watch/watch-rail";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
@@ -353,6 +353,7 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
       {(!latest || liveDone) && runError ? <ErrorNotice title="The run did not finish" message={runError} /> : null}
 
       <ChatSection
+        title={callKindTitle(record?.originClass ?? null, record?.workflowRunId ?? null)}
         calls={request.calls}
         liveRequestId={latestId && latest && liveHasOutput ? latestId : null}
         live={Boolean((latest && !liveDone) || (!latest && (!record || record.status === "pending" || record.status === "running")))}
@@ -422,10 +423,13 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
  * `MarkdownStream`. Never hand-rendered.
  */
 function ChatSection({
+  title,
   calls,
   liveRequestId,
   live,
 }: {
+  /** Who started the call — only a person's own call is titled "Chat". */
+  title: string;
   calls: WatchCall[];
   liveRequestId: string | null;
   live: boolean;
@@ -435,7 +439,7 @@ function ChatSection({
   const turns = last?.body ? chatTurns(splitProviderRequest(last.body)) : [];
   const recorded = answered.map((c) => responseText(c.response)).filter(Boolean).join("\n\n");
   return (
-    <Section title="Chat">
+    <Section title={title}>
       <div className="flex flex-col gap-2">
         {turns.length === 0 ? (
           <div className="text-muted-foreground">{live ? "Waiting for the request" : "No request on record"}</div>
