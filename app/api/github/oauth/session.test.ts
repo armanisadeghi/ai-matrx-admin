@@ -1,4 +1,7 @@
-import { parseGitHubOAuthSession, safeReturnUrl } from "./session";
+import { parseGitHubOAuthSession } from "./session";
+import { safeRelativePath } from "@/utils/auth/safe-redirect";
+
+const safeReturnUrl = (v: string) => safeRelativePath(v, "/code");
 
 describe("GitHub OAuth session", () => {
   test("accepts only local return paths", () => {

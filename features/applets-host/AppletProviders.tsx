@@ -23,8 +23,7 @@
 // one day needs one of these adds it HERE, by name — never by going back to the whole app's list.
 
 import React from "react";
-import "@/lib/coming-soon/registry";
-import "@/lib/coming-soon/announce";
+import { ComingSoonClient } from "@/lib/coming-soon/ComingSoonClient";
 
 import { RichContentHostProvider } from "@/providers/RichContentHostProvider";
 import StoreProvider from "@/providers/StoreProvider";
@@ -86,6 +85,7 @@ export function AppletProviders({ children }: { children: React.ReactNode }) {
                                           {children}
                                           <DeferredSingletonWrapper />
                                           <ConfirmDialogHost />
+                                          <ComingSoonClient />
                                           <ClipboardFallbackHost />
                                           <ValuePromptsDialogHost />
                                           <AgentPeekHost />
