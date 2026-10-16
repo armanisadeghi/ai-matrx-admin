@@ -47,12 +47,27 @@ import { clearStashedRetraction, restoreRetraction, type RetractionSummary } fro
 import type { MarketingBrand } from "@/features/marketing/types";
 import { linkPersonToBrand } from "@/features/marketing/smart-add/relations";
 
-type GroupKey = "names" | "people" | "related" | "competitors" | "about" | "kept" | "not_us";
+type GroupKey =
+  | "names"
+  | "people"
+  | "related"
+  | "credentials"
+  | "memberships"
+  | "awards"
+  | "press"
+  | "competitors"
+  | "about"
+  | "kept"
+  | "not_us";
 
 const GROUP_TITLES: Record<GroupKey, string> = {
   names: "Other names",
   people: "People",
   related: "Related companies",
+  credentials: "Credentials",
+  memberships: "Memberships",
+  awards: "Awards",
+  press: "Press",
   competitors: "Competitors",
   about: "Listings, reviews, mentions",
   kept: "Kept for matching",
@@ -62,7 +77,35 @@ const GROUP_TITLES: Record<GroupKey, string> = {
 const ALIAS = "__alias";
 
 /** Each group's fixed column: names / people / related, then competitors / listings, then not-us. */
-const COLUMNS: GroupKey[][] = [["names", "people", "related"], ["competitors", "about"], ["kept", "not_us"]];
+const COLUMNS: GroupKey[][] = [
+  ["names", "people", "related", "credentials", "memberships"],
+  ["awards", "press", "competitors", "about"],
+  ["kept", "not_us"],
+];
+
+/** A recognized page's typed fact (web.brand_relation_kind metadata.fact) → its own section (VISION Part 22). */
+const FACT_GROUP: Partial<Record<string, GroupKey>> = {
+  credential: "credentials",
+  membership: "memberships",
+  award: "awards",
+  press_mention: "press",
+};
+
+/** The fact's own fields, compact: "AAA-12345 · to Jan 5, 2026", "since 2011", "OC Register · Mar 3, 2025", "2024". */
+function factDetail(fact: string | null | undefined, fields: Record<string, string>): string | null {
+  const parts =
+    fact === "credential"
+      ? [fields.number, fields.valid_until ? `to ${fields.valid_until}` : undefined]
+      : fact === "membership"
+        ? [fields.member_since ? `since ${fields.member_since}` : undefined]
+        : fact === "press_mention"
+          ? [fields.outlet, fields.date]
+          : fact === "award"
+            ? [fields.year]
+            : [];
+  const text = parts.filter(Boolean).join(" · ");
+  return text || null;
+}
 const COLUMN_PLACE = ["", "", "md:col-start-2 xl:col-start-3 xl:row-start-1"];
 
 interface Row {
@@ -201,6 +244,8 @@ function groupOf(kind: BrandRelationKind | undefined, key: string): GroupKey {
   if (!isMarketingUsage(kind.usage)) return "kept";
   if (kind.routesTo === "owns" || kind.routesTo === "key_person") return "people";
   if (kind.stance === "competitor") return "competitors";
+  const factGroup = kind.fact ? FACT_GROUP[kind.fact] : undefined;
+  if (factGroup) return factGroup;
   if (kind.stance === "about_us" || kind.stance === "ours") return "about";
   return "related";
 }
@@ -236,7 +281,19 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
     await refresh();
   };
 
-  const groups: Record<GroupKey, Row[]> = { names: [], people: [], related: [], competitors: [], about: [], kept: [], not_us: [] };
+  const groups: Record<GroupKey, Row[]> = {
+    names: [],
+    people: [],
+    related: [],
+    credentials: [],
+    memberships: [],
+    awards: [],
+    press: [],
+    competitors: [],
+    about: [],
+    kept: [],
+    not_us: [],
+  };
   for (const alias of profileAliases(brand.profile)) {
     groups.names.push({
       id: `alias:${alias}`,
@@ -261,11 +318,15 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
   });
   for (const r of relations.data ?? []) {
     const kind = kindByKey.get(r.relationKey);
-    groups[groupOf(kind, r.relationKey)].push({
+    const group = groupOf(kind, r.relationKey);
+    const typed = Boolean(kind?.fact && FACT_GROUP[kind.fact] === group);
+    const fields = r.siteKind?.fields ?? {};
+    groups[group].push({
       id: r.id,
-      label: r.label,
+      // A typed fact reads as itself: the credential's or award's name, the association, the headline.
+      label: (typed && (fields.name ?? fields.association ?? fields.headline)) || r.label,
       url: r.url,
-      kindLabel: kind?.label ?? r.relationKey,
+      kindLabel: typed ? factDetail(kind?.fact, fields) : (kind?.label ?? r.relationKey),
       sentiment: kind?.hasSentiment ? r.sentiment : null,
       grounding: { where: r.where, reason: r.reason, confidence: r.confidence, by: r.answeredBy },
       remove: async () => {

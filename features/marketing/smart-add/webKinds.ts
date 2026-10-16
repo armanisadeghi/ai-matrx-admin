@@ -273,6 +273,10 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   if (ruled && !(social && LISTING_KINDS.has(ruled.kind.key))) {
     return { kind: ruled.kind.key, reason: `${ruled.rule}: ${ruled.kind.label.toLowerCase()}` };
   }
+  // The server recognized what kind of place it is (a certification body, a chamber, industry media…): the kind
+  // whose categories name it — a credential, a membership, press coverage (VISION Part 22).
+  const recognized = item.siteKind && !social ? kinds.find((k) => k.match.categories.includes(item.siteKind?.category ?? "")) : undefined;
+  if (recognized && item.siteKind) return { kind: recognized.key, reason: `${item.siteKind.label}: ${item.siteKind.reason}` };
   if (item.field === "listing" && !social) {
     const key = has("review_site") ? "review_site" : "claimable_listing";
     if (has(key)) return { kind: key, reason: `${item.label ?? host} page` };

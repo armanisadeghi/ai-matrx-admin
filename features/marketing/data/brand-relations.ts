@@ -30,6 +30,8 @@ export interface BrandRelationRow {
   reason: string | null;
   answeredBy: string | null;
   source: string;
+  /** A recognized page (credential, membership, press…): its category and the fact's fields as read off the result. */
+  siteKind?: { category: string | null; fields: Record<string, string> } | null;
 }
 
 export interface BrandExclusionRow {
@@ -83,8 +85,17 @@ export async function listBrandRelations(brandId: string): Promise<BrandRelation
       reason: str(suggested.reason),
       answeredBy: str(answer.by),
       source: row.source,
+      siteKind: siteKindOf(value.site_kind),
     };
   });
+}
+
+function siteKindOf(raw: unknown): BrandRelationRow["siteKind"] {
+  const r = rec(raw);
+  if (!Object.keys(r).length) return null;
+  const fields: Record<string, string> = {};
+  for (const [k, v] of Object.entries(rec(r.fields))) if (typeof v === "string" && v.trim()) fields[k] = v.trim();
+  return { category: str(r.category), fields };
 }
 
 export async function listBrandExclusions(brandId: string): Promise<BrandExclusionRow[]> {

@@ -55,6 +55,7 @@ export function reviewResultOf(item: EvidenceItem): ReviewResult {
     key: item.key,
     result,
     hits: (item.hits ?? []).map((h) => ({ engine: h.engine, rank: h.rank, query: h.query, endpoint: h.endpoint })),
+    ...(item.siteKind ? { placeKind: { label: item.siteKind.label, reason: item.siteKind.reason } } : {}),
   };
 }
 

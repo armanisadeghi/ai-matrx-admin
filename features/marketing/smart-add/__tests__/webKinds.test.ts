@@ -178,3 +178,47 @@ describe("a common-name business: other cities and strangers (MKT-039)", () => {
     expect(kindOf("https://www.spokeo.com/Elite-Plumbing", "Elite Plumbing - Spokeo")).toBe("irrelevant");
   });
 });
+
+describe("recognized pages (VISION Part 22)", () => {
+  const credential = {
+    id: "k-cred",
+    key: "credential",
+    label: "Our credential",
+    routesTo: null,
+    isKnown: true,
+    stance: "ours" as const,
+    description: null,
+    hasSentiment: false,
+    usage: "use" as const,
+    match: { hosts: [], paths: [], categories: ["certification_body", "professional_registry"] },
+    fact: "credential",
+  };
+  const item = (url: string, category: string | null) =>
+    ({
+      key: `web:${url}`,
+      field: "web_page",
+      value: url,
+      url,
+      label: "Acme Shred",
+      image_url: null,
+      platform: null,
+      handle: null,
+      followers: null,
+      verified: null,
+      profile_id: null,
+      source: { node: "n", kind: "web_search", url, where: null },
+      confidence: 0.5,
+      ...(category
+        ? { siteKind: { category, label: "Certification body", signal: "page_address", reason: "certification page", fact: "credential", fields: {} } }
+        : {}),
+    }) as EvidenceItem;
+  const ctx = { ourHosts: ["acmeshred.com"], ourAccounts: [], name: "Acme Shred" };
+
+  it("suggests the kind whose categories name the recognized category", () => {
+    expect(suggestKind(item("https://unknown-certifier.org/certified/acme", "certification_body"), [credential], ctx)?.kind).toBe("credential");
+  });
+
+  it("an unrecognized page gets no credential suggestion", () => {
+    expect(suggestKind(item("https://unknown-certifier.org/about", null), [credential], ctx)?.kind).not.toBe("credential");
+  });
+});

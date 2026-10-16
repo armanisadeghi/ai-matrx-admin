@@ -194,6 +194,15 @@ function ResultCard({
         <div className="min-w-0 flex-1">
           <SearchKindNested value={toWebResultValue(result)} />
         </div>
+        {result.placeKind ? (
+          <span
+            className="shrink-0 rounded-sm border border-border px-1.5 text-xs leading-5 text-muted-foreground"
+            title={result.placeKind.reason}
+            data-testid="search-review-place-kind"
+          >
+            {result.placeKind.label}
+          </span>
+        ) : null}
         <FoundPopover result={result} position={position} showEngines={showEngines} />
       </div>
       <div className="flex flex-wrap items-center gap-1.5" aria-busy={busy}>

@@ -27,6 +27,14 @@ export interface ReviewResult {
   tier?: string | null;
   /** Why it sits there — admin debuggers only, on the rank hover. */
   adminNote?: string | null;
+  /** What kind of place the page is (certification body, trade association, industry media…); absent = unrecognized. */
+  placeKind?: ReviewPlaceKind | null;
+}
+
+/** A recognized page's kind: a short label, and why (hover). */
+export interface ReviewPlaceKind {
+  label: string;
+  reason: string;
 }
 
 /** A quality tier: shown best first, one tier at a time ("Show next"). */

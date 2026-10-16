@@ -82,6 +82,34 @@ export interface EvidenceItem {
   suggestion?: unknown;
   /** Person anchor stage only: a "Which of these is you?" candidate (aidream brand_identify_person.anchor_item). */
   anchor?: AnchorInfo | null;
+  /** Web-found pages: what kind of place it is (aidream web_domains/recognize.py, rules, no AI); absent = unrecognized. */
+  siteKind?: SiteKind | null;
+}
+
+/** A recognized page: its category (web.domain_category slug), why, and the typed fact it would make once confirmed. */
+export interface SiteKind {
+  category: string;
+  label: string;
+  /** known_site | page_markup | page_address | page_text | site_name | news_search */
+  signal: string;
+  reason: string;
+  /** credential | membership | award | press_mention | registry_record | appearance | sponsorship | null */
+  fact: string | null;
+  /** The fact's fields as read off the result (issuer, number, valid_until, outlet, headline, year…). */
+  fields: Record<string, string>;
+}
+
+function parseSiteKind(raw: unknown): SiteKind | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const r = raw as Record<string, unknown>;
+  const category = asString(r.category);
+  const label = asString(r.label);
+  if (!category || !label) return null;
+  const fields: Record<string, string> = {};
+  if (typeof r.fields === "object" && r.fields !== null) {
+    for (const [k, v] of Object.entries(r.fields as Record<string, unknown>)) if (typeof v === "string" && v) fields[k] = v;
+  }
+  return { category, label, signal: asString(r.signal) ?? "", reason: asString(r.reason) ?? "", fact: asString(r.fact), fields };
 }
 
 /** One person-anchor candidate's rule score and its privacy-safe profile basics (no AI). */
@@ -258,6 +286,7 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
       : {}),
     ...(r.suggestion !== undefined && r.suggestion !== null ? { suggestion: r.suggestion } : {}),
     ...(r.anchor ? { anchor: parseAnchor(r.anchor) } : {}),
+    ...(parseSiteKind(r.site_kind) ? { siteKind: parseSiteKind(r.site_kind) } : {}),
   };
 }
 
