@@ -364,20 +364,13 @@ const nextConfig = {
     // scripts/build-cache.mjs does (S3, 2026-10-10). ON only for the profiles in
     // scripts/build-cache-policy.cjs, and never for a [no-cache] release.
     turbopackFileSystemCacheForBuild: require("./scripts/build-cache-policy.cjs").buildCacheDecision().on,
-    // ON again (2026-10-15, trial with the watchdog's crash-loop budget as the net). It was turned
-    // off 2026-09-14 for a dev "snapshot-coordinator panic"; with it off, Turbopack's memory
-    // eviction is off too (eviction only runs with this cache), so the shared preview grew ~2 GB a
-    // minute to the 48 GB cap — the week's biggest single stop reason (40 cap stops in 12 sessions)
-    // — and every restart was a cold compile of minutes under load. If the panic returns
-    // ("panic" / "snapshot" in the preview log), set this back to false and say so here.
-    turbopackFileSystemCacheForDev: true,
-    // Eviction OFF (2026-10-15, measured): with the cache on, the default 'auto' eviction dropped
-    // Turbopack's hot-reload version state, and the server told EVERY open page to "restart" the
-    // client entry every ~2 s with byte-identical chunks — 15 reloads of one tab in 50 s, every
-    // agent's page in a reload storm. That is very likely the 2026-09-14 "drops active review
-    // pages". Memory is bounded by the preview watchdog's recycle and cap restarts, which the
-    // cache now makes warm.
-    turbopackMemoryEviction: false,
+    // OFF (2026-10-15, measured twice). It was off since 2026-09-14 for a dev "snapshot-coordinator
+    // panic that drops active review pages"; a same-day trial turned it on for warm restarts. With it
+    // on, after a restart the server kept sending "restart" for the client entry chunk list (24 in
+    // 30 s, byte-identical chunks), so every open page reloaded about once a second and never
+    // finished loading — test runs could not walk any page. Eviction off did not cure it. Cold
+    // restarts are the price; the preview watchdog keeps restarts rare and warms the sign-in path.
+    turbopackFileSystemCacheForDev: false,
     // ON (2026-08-11): enables `forbidden()` / `unauthorized()` from
     // next/navigation and their `forbidden.tsx` / `unauthorized.tsx`
     // boundaries. Required by `requireAccess(..., { forbid: true })` —
