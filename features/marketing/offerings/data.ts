@@ -2,6 +2,7 @@
  * Products & services — reads and writes (PRODUCTS.md § 4–§ 6, aidream `services/brand_offerings`).
  *
  * Reads, direct to Supabase:
+ * - `web.brand_offering` (status active): the kept offerings — always on the list as confirmed, whoever wrote them.
  * - `web.discovered_item` (category `offering`): one row per (item, url) the run staged; `value.key` is the item,
  *   `context` holds the candidate, its verbatim quotes with source family, the computed certainty and the group
  *   the grouping step filed it under.
@@ -64,18 +65,45 @@ type Obj = Record<string, unknown>;
 const obj = (v: unknown): Obj => (v && typeof v === "object" && !Array.isArray(v) ? (v as Obj) : {});
 const str = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
 
-export async function fetchOfferingItems(brandId: string): Promise<OfferingItem[]> {
-  const { data, error } = await supabase
-    .schema("web")
-    .from("discovered_item")
-    .select("id, guessed_kind, url, value, context, status, source, resolved_offering_id")
-    .eq("brand_id", brandId)
-    .eq("category", "offering")
-    .is("deleted_at", null)
-    .limit(5000);
-  if (error) throw new Error(`Products and services could not be read: ${error.message}`);
+export interface DiscoveredOfferingRow {
+  id: string;
+  value: unknown;
+  context: unknown;
+  status: string | null;
+  resolved_offering_id: string | null;
+}
+
+export interface KeptOfferingRow {
+  id: string;
+  name: string;
+  kind: string;
+  price_note: string | null;
+  metadata: unknown;
+}
+
+/** One spelling for "the same item": case, punctuation and a plural ending never split it. */
+export function offeringMatchKey(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(" ")
+    .map((w) => (w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w))
+    .join(" ");
+}
+
+const CERTAINTY_RANK: Record<Certainty, number> = { confirmed: 3, likely: 2, possible: 1 };
+
+/**
+ * The screen's one list: the run's staged findings (`web.discovered_item`) merged with the brand's kept
+ * offerings (`web.brand_offering`). A kept offering is always shown as confirmed — the facts step and the
+ * promotion write offerings straight to `brand_offering`, so a screen reading only the staged rows showed
+ * "Found 0" beside kept, confirmed products (Creativity Warehouse, 2026-10-16).
+ */
+export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOfferingRow[]): OfferingItem[] {
   const byKey = new Map<string, OfferingItem>();
-  for (const row of data ?? []) {
+  for (const row of rows) {
     const key = str(obj(row.value).key);
     if (!key) continue;
     const ctx = obj(row.context);
@@ -113,12 +141,79 @@ export async function fetchOfferingItems(brandId: string): Promise<OfferingItem[
     else if (row.status === "dismissed" && item.status !== "confirmed") item.status = "dismissed";
     item.offeringId = item.offeringId ?? row.resolved_offering_id ?? null;
     item.byReader = item.byReader || quotes.some((q) => q.source.startsWith("reader_"));
-    const rank: Record<Certainty, number> = { confirmed: 3, likely: 2, possible: 1 };
     const c = (str(ctx.certainty) as Certainty) ?? "possible";
-    if (rank[c] > rank[item.certainty]) item.certainty = c;
+    if (CERTAINTY_RANK[c] > CERTAINTY_RANK[item.certainty]) item.certainty = c;
     byKey.set(key, item);
   }
-  return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+  const items = [...byKey.values()];
+  const byOfferingId = new Map(items.filter((i) => i.offeringId).map((i) => [i.offeringId as string, i]));
+  const byMatch = new Map<string, OfferingItem>();
+  for (const i of items) {
+    byMatch.set(offeringMatchKey(i.key), i);
+    byMatch.set(offeringMatchKey(i.name), i);
+  }
+  for (const o of kept) {
+    const linked = byOfferingId.get(o.id) ?? byMatch.get(offeringMatchKey(o.name));
+    const meta = obj(o.metadata);
+    if (linked) {
+      linked.status = "confirmed";
+      linked.offeringId = linked.offeringId ?? o.id;
+      linked.certainty = "confirmed";
+      continue;
+    }
+    const urls = Array.isArray(meta.evidence_urls) ? meta.evidence_urls.filter((u): u is string => typeof u === "string") : [];
+    const reason = str(meta.reason);
+    const family = str(meta.step) === "facts" ? "own_site" : (str(meta.found_by) ?? "kept");
+    const item: OfferingItem = {
+      key: `offering:${o.id}`,
+      name: o.name,
+      kind: o.kind === "product" ? "product" : "service",
+      priceText: o.price_note,
+      group: str(meta.group),
+      sourceGroups: [],
+      certainty: "confirmed",
+      families: [family],
+      quotes: (urls.length ? urls : [null]).map((url) => ({
+        source: str(meta.found_by) ?? "brand_offering",
+        family,
+        url,
+        quote: reason ?? o.name,
+        addressOnly: false,
+      })),
+      rowIds: [],
+      status: "confirmed",
+      offeringId: o.id,
+      byReader: false,
+    };
+    items.push(item);
+    byMatch.set(offeringMatchKey(o.name), item);
+  }
+  return items.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function fetchOfferingItems(brandId: string): Promise<OfferingItem[]> {
+  const [found, kept] = await Promise.all([
+    supabase
+      .schema("web")
+      .from("discovered_item")
+      .select("id, value, context, status, resolved_offering_id")
+      .eq("brand_id", brandId)
+      .eq("category", "offering")
+      .is("deleted_at", null)
+      .limit(5000),
+    supabase
+      .schema("web")
+      .from("brand_offering")
+      .select("id, name, kind, price_note, metadata")
+      .eq("brand_id", brandId)
+      .eq("status", "active")
+      .is("deleted_at", null)
+      .limit(5000),
+  ]);
+  if (found.error) throw new Error(`Products and services could not be read: ${found.error.message}`);
+  if (kept.error) throw new Error(`Kept products and services could not be read: ${kept.error.message}`);
+  return buildOfferingItems(found.data ?? [], kept.data ?? []);
 }
 
 export async function fetchOfferingsVerdict(brandId: string): Promise<OfferingsVerdict> {
@@ -223,6 +318,7 @@ export async function keepOffering(brand: { id: string; organizationId: string }
     if (error) throw new Error(`Could not keep "${item.name}": ${error.message}`);
     offeringId = data.id;
   }
+  if (!item.rowIds.length) return offeringId;
   const upd = await supabase
     .schema("web")
     .from("discovered_item")
@@ -245,12 +341,19 @@ export async function rejectOffering(brand: { id: string; organizationId: string
     context: { from: "brand_offerings.review", key: item.key, at: new Date().toISOString() } as unknown as Json,
   });
   if (ins.error && ins.error.code !== "23505") throw new Error(`Could not reject "${item.name}": ${ins.error.message}`);
+  if (item.offeringId) {
+    // A kept offering answered No leaves the brand's list (retired, never deleted).
+    const ret = await supabase.schema("web").from("brand_offering").update({ status: "retired" }).eq("id", item.offeringId);
+    if (ret.error) throw new Error(`Could not retire "${item.name}": ${ret.error.message}`);
+  }
+  if (!item.rowIds.length) return;
   const upd = await supabase.schema("web").from("discovered_item").update({ status: "dismissed" }).in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not mark "${item.name}" rejected: ${upd.error.message}`);
 }
 
 /** Undo a decision: back to undecided (a kept offering stays; its rows are pending again). */
 export async function clearDecision(item: OfferingItem): Promise<void> {
+  if (!item.rowIds.length) return;
   const upd = await supabase.schema("web").from("discovered_item").update({ status: "pending" }).in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not clear "${item.name}": ${upd.error.message}`);
 }
