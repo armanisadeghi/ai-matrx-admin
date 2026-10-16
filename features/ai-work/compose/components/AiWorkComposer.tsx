@@ -669,7 +669,9 @@ function ComposerBody({
       );
       if (result.error) {
         handle.close();
-        setLaunched(null);
+        // A continued session's conversation exists from its earlier run, so
+        // its door stays; only a brand-new start loses it.
+        setLaunched(continuing ? runConversationId : null);
         // The server's own sentence, verbatim. The composer stays usable.
         toast.error(`The hosted session could not start — ${result.error}`);
         return;
@@ -685,7 +687,7 @@ function ComposerBody({
       if (!continuing) await attachHomes(runConversationId);
     } catch (error) {
       handle.close();
-      setLaunched(null);
+      setLaunched(continuing ? runConversationId : null);
       console.error("[ai-work/new] hosted launch failed", error);
       toast.error(
         error instanceof Error
