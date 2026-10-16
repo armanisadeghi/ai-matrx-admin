@@ -1,8 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-// Rooms join after late idle; on join the subscriber catches up on what it missed, and drops the
-// feature-knob cache only when the boot versions moved. Never before the page settles.
+// Rooms join after late idle. The settings catch-up is NOT asked here (first-paint contract V28):
+// the settings screen asks it on mount (UniversalSettingsContext).
 import type React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -50,14 +50,10 @@ it("asks nothing before the page settles", async () => {
   expect(catchUp).not.toHaveBeenCalled();
 });
 
-it("catches up on join and drops the knob cache only when something moved", async () => {
+it("joining the rooms asks no settings question: the catch-up lives on the settings screen", async () => {
   mockSettled = true;
-  mockMoved = false;
-  await mount();
-  expect(catchUp).toHaveBeenCalledTimes(1);
-  expect(invalidate).not.toHaveBeenCalled();
-
   mockMoved = true;
   await mount();
-  expect(invalidate).toHaveBeenCalledTimes(1);
+  expect(catchUp).not.toHaveBeenCalled();
+  expect(invalidate).not.toHaveBeenCalled();
 });

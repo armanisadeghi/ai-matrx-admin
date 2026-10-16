@@ -30,7 +30,7 @@ import {
   type KnobScopeRef,
 } from "@/lib/scoped-config/service";
 import { getWebDeviceId } from "@/lib/scoped-config/deviceId";
-import { invalidateEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
+import { catchUpKnobsSinceBoot, invalidateEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
 import { invalidateFeatureKnobs } from "@/lib/knobs/featureKnobs";
 import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegistry";
 import type { KnobUiHints, ScopedKnob } from "@/lib/scoped-config/types";
@@ -428,6 +428,21 @@ export function UniversalSettingsProvider({
     setDeviceId(getWebDeviceId());
     setDeviceResolved(true);
   }, []);
+
+  // CATCH-UP (first-paint contract V28): a `settings_changed` directive sent before the server-bus
+  // rooms joined is lost (broadcast has no replay). The page holds a defaults version and a snapshot
+  // etag from its boot read; the settings screen — where a stale value is shown and editable — asks
+  // both once, conditionally, and drops the caches only if one moved. Nothing asks at load.
+  useEffect(() => {
+    if (!enabled) return;
+    void catchUpKnobsSinceBoot()
+      .then((moved) => {
+        if (moved) invalidateFeatureKnobs();
+      })
+      .catch((error: unknown) => {
+        console.warn("[settings] catch-up since boot could not ask:", error);
+      });
+  }, [enabled]);
 
   const [generation, setGeneration] = useState(0);
   const refresh = useCallback(() => setGeneration((n) => n + 1), []);

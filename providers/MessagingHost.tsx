@@ -149,27 +149,12 @@ export function MessagingHost({ children }: MessagingHostProps) {
   const archiveKnob = toMessagingArchiveFilter(
     useAppSelector(selectArchivedDefault),
   );
-  // People | Agents | All (agent messaging Phase 1c): which conversations the
-  // list opens on is the ORGANIZATION's knob `messaging.inbox/default_kind`
-  // (person-overridable). Until it answers the engine starts on the knob's own
-  // default, `people`, so hundreds of agent rooms never flood the header badge
-  // for the moment before the answer lands; `<MessagingKindKnob>` applies it.
-  const inboxKnobs = useScopedKnobs({
-    organizationId,
-    // One read, at the organization the ladder answered — not one org-less read and then another.
-    enabled: organizationResolved,
-    featurePrefix: MESSAGING_INBOX_KNOB_FEATURE,
-    ...(settingsScopeUserId ? { userId: settingsScopeUserId } : {}),
-  });
-  const kindKnob = toMessagingKindFilter(
-    inboxKnobs.knobs.find(
-      (knob) =>
-        knob.feature === MESSAGING_INBOX_KNOB_FEATURE &&
-        knob.key === MESSAGING_INBOX_DEFAULT_KIND_KEY &&
-        knob.origin !== "missing",
-    )?.effective_value,
-    "people",
-  );
+  // People | Agents | All (agent messaging Phase 1c): which conversations the list opens on is the
+  // ORGANIZATION's knob `messaging.inbox/default_kind` (person-overridable). The engine starts on the
+  // knob's own default, `people`, so hundreds of agent rooms never flood the header badge;
+  // `<MessagingKindKnob>` reads the knob and applies it, and it reads it only once the inbox is
+  // asked for (FIRST-PAINT CONTRACT V28: a settings read nothing on the page shows is not made at load).
+  const kindKnob: MessagingKindFilter = "people";
   const notifyIncoming = useIncomingMessageNotifier();
   const store = useAppStore();
 
@@ -381,7 +366,11 @@ export function MessagingHost({ children }: MessagingHostProps) {
       >
         <MeetLoadOnThreadOpen onOpened={onThreadOpened} />
         <MessagingArchiveKnob knob={archiveKnob} />
-        <MessagingKindKnob knob={kindKnob} />
+        <MessagingKindKnob
+          organizationId={organizationId}
+          resolved={organizationResolved}
+          userId={settingsScopeUserId}
+        />
         {children}
       </MessagingProvider>
     </MessagingAiDemandProvider>
@@ -465,9 +454,36 @@ function MessagingArchiveKnob({ knob }: { knob: MessagingArchiveFilter }) {
  * then owns the axis for the session. The engine's seed is `people` (the knob's
  * own default) until the answer lands.
  */
-function MessagingKindKnob({ knob }: { knob: MessagingKindFilter }) {
+function MessagingKindKnob({
+  organizationId,
+  resolved,
+  userId,
+}: {
+  organizationId: string | null;
+  resolved: boolean;
+  userId: string | null | undefined;
+}) {
   const host = useMessagingHost();
-  const kindFilter = usePassiveMessagingSnapshot()?.kindFilter ?? "people";
+  const passive = usePassiveMessagingSnapshot();
+  const kindFilter = passive?.kindFilter ?? "people";
+  // The inbox has been asked for (started, or already read): only then does the default kind matter.
+  const inboxAsked = (host?.engine.isStarted() ?? false) || (passive?.hasLoadedConversations ?? false);
+  const inboxKnobs = useScopedKnobs({
+    organizationId,
+    // One read, at the organization the ladder answered — and only once the inbox is asked for.
+    enabled: resolved && inboxAsked,
+    featurePrefix: MESSAGING_INBOX_KNOB_FEATURE,
+    ...(userId ? { userId } : {}),
+  });
+  const knob = toMessagingKindFilter(
+    inboxKnobs.knobs.find(
+      (k) =>
+        k.feature === MESSAGING_INBOX_KNOB_FEATURE &&
+        k.key === MESSAGING_INBOX_DEFAULT_KIND_KEY &&
+        k.origin !== "missing",
+    )?.effective_value,
+    "people",
+  );
   const setKindFilter = (next: MessagingKindFilter) => void host?.engine.setKindFilter(next);
   const appliedRef = useRef<MessagingKindFilter | null>(null);
   const hostRef = useRef(host);
