@@ -252,5 +252,20 @@ export function decisionQuestionPayload(
       },
     };
   }
-  return { type: question.type, instructions, criteria: question.criteria };
+  return {
+    type: question.type,
+    instructions,
+    // A blank level from "Add level" is dropped, never sent as "".
+    criteria: question.criteria.map((level) => level.trim()).filter(Boolean),
+  };
+}
+
+/** The rows as criteria JSON, so switching Rows → JSON shows what was typed. */
+export function criteriaRowsAsJson(question: DecisionQuestion): string {
+  const payload = decisionQuestionPayload({
+    ...question,
+    instructionsMode: "text",
+    criteriaMode: "rows",
+  });
+  return JSON.stringify(payload?.criteria ?? {}, null, 2);
 }

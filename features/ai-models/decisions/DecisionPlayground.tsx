@@ -88,7 +88,6 @@ export function DecisionPlayground() {
     if (!executionId || organizationState !== "ready") return;
     let active = true;
     const recover = async () => {
-      setBusy(true);
       setRecovering(true);
       setRecoverError(null);
       try {
@@ -103,7 +102,6 @@ export function DecisionPlayground() {
           );
       } finally {
         if (active) {
-          setBusy(false);
           setRecovering(false);
         }
       }
@@ -128,6 +126,9 @@ export function DecisionPlayground() {
             : "Choose a decision model.",
         ]),
     ...(parsedState.error ? [parsedState.error] : []),
+    ...(stateMode === "text" && !state.trim()
+      ? ["Describe the situation to evaluate."]
+      : []),
     ...questionErrors(questions),
   ]));
 

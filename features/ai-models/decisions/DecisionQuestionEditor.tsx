@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { cn } from "@/lib/utils";
-import { newQuestion, type DecisionQuestion } from "./decision-form";
+import { criteriaRowsAsJson, newQuestion, type DecisionQuestion } from "./decision-form";
 
 interface Props {
   questions: DecisionQuestion[];
@@ -190,7 +190,13 @@ function CriteriaEditor({ question, onChange }: { question: DecisionQuestion; on
         value={question.criteriaMode}
         textValue="rows"
         textLabel="Rows"
-        onChange={(mode) => onChange({ ...question, criteriaMode: mode })}
+        onChange={(mode) =>
+          onChange(
+            mode === "json"
+              ? { ...question, criteriaMode: mode, criteriaJson: criteriaRowsAsJson(question) }
+              : { ...question, criteriaMode: mode },
+          )
+        }
       />
     </div>
   );

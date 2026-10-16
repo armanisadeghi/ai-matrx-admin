@@ -1,6 +1,7 @@
 import {
   decisionQuestionPayload,
   newQuestion,
+  criteriaRowsAsJson,
   questionErrors,
   type DecisionQuestion,
 } from "./decision-form";
@@ -116,5 +117,20 @@ describe("adding questions", () => {
   });
   it("says a question is needed when there are none", () => {
     expect(questionErrors([])).toContain("Add at least one question.");
+  });
+});
+
+describe("score levels and the JSON view", () => {
+  it("drops a blank level instead of sending an empty string", () => {
+    const base = newQuestion("score");
+    if (base.type !== "score") throw new Error("expected a score question");
+    const score: DecisionQuestion = { ...base, instructions: "Rate it", criteria: ["low", "", "high"] };
+    expect(decisionQuestionPayload(score)?.criteria).toEqual(["low", "high"]);
+  });
+  it("shows the typed options when switching rows to JSON", () => {
+    const base = newQuestion("choice");
+    if (base.type !== "choice") throw new Error("expected a choice question");
+    const choice: DecisionQuestion = { ...base, criteria: [{ key: "approve", description: "" }, { key: "deny", description: "Not eligible" }] };
+    expect(JSON.parse(criteriaRowsAsJson(choice))).toEqual({ approve: null, deny: "Not eligible" });
   });
 });
