@@ -21,10 +21,13 @@ jest.mock("@ai-matrx/chat/agents/components/inputs/smart-input/composer/useCompa
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({ schema: () => ({ rpc: async () => ({ error: null }) }) }) }));
 jest.mock("@/features/organizations/organizationsIAmIn", () => ({ mayReadAsMember: async () => true }));
 
+jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => 0, useAppDispatch: () => jest.fn() }));
+jest.mock("@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors", () => ({ selectMessageCount: () => () => 0 }));
+
 import { RecordScopedChat } from "../RecordScopedChat";
 
 it("launches data.table_chat for the table page's chat", async () => {
-  const ctx = { surfaceKey: "table-chat-1", recordId: "r1", withheld: [] } as never;
+  const ctx = { surfaceKey: "table-chat-1", recordId: "r1", withheld: [], entries: [] } as never;
   const root = createRoot(document.createElement("div"));
   await act(async () => {
     root.render(<RecordScopedChat ctx={ctx} organizationId="org-1" />);
