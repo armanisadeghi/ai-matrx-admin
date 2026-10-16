@@ -111,7 +111,7 @@ export function FoundStage({
   const [lead, ...more] = cards.accounts;
   const name = cards.name;
   return (
-    <div className="relative px-4 pb-10 pt-[calc(var(--shell-header-h)+1.5rem)] sm:pt-[calc(var(--shell-header-h)+3rem)]" data-smart-add-stage="found">
+    <div className="relative px-4 pt-[calc(var(--shell-header-h)+1.5rem)] sm:pt-[calc(var(--shell-header-h)+3rem)]" data-smart-add-stage="found">
         <section className={`${styles.panel} mx-auto w-full max-w-4xl rounded-[2rem] p-4 sm:p-8`} data-testid="smart-add-found" aria-busy={working}>
           <h1 className="px-1 pb-5 text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:pb-7 sm:text-[2.25rem]">
             Here&apos;s what we found
@@ -167,10 +167,16 @@ export function FoundStage({
               <Slot key="location" id="location" filled={Boolean(cards.location)} working={working} className="sm:col-span-3">
                 {cards.location ? <CardBody icon={<MapPin className="size-4" />} label="Based in" value={cards.location.text} /> : null}
               </Slot>
-              <Slot key="category" id="category" filled={Boolean(cards.category)} working={working} className="sm:col-span-2">
-                {cards.category ? <CardBody icon={<Store className="size-4" />} label="What you do" value={cards.category.text} /> : null}
+              <Slot key="category" id="category" filled={Boolean(cards.category)} working={working} className={more.length || working ? "sm:col-span-3" : "sm:col-span-6"}>
+                {cards.category ? (
+                  <CardBody
+                    icon={<Store className="size-4" />}
+                    label="What you do"
+                    value={<span className={cards.category.text.length > 28 ? "text-[1.3rem] sm:text-[1.45rem]" : ""}>{cards.category.text}</span>}
+                  />
+                ) : null}
               </Slot>
-              <Slot key="more" id="more" filled={more.length > 0} working={working} className="sm:col-span-4">
+              <Slot key="more" id="more" filled={more.length > 0} working={working} className={cards.category || working ? "sm:col-span-3" : "sm:col-span-6"}>
                 {more.length ? (
                   <div className={`${styles.card} flex h-full min-h-[8.5rem] flex-col justify-end gap-3 rounded-3xl p-5 sm:p-6`}>
                     <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
@@ -215,13 +221,13 @@ export function FoundStage({
           <div className="mt-6 flex min-h-14 flex-wrap items-center justify-end gap-3 sm:mt-8">
             {ready ? (
               <>
-                <span className="mr-auto text-base font-medium text-foreground">Is this you?</span>
+                <span className="mr-auto text-base font-medium text-foreground max-sm:basis-full">Is this you?</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     {/* ui-exception: the flagship stage's way-out control sits beside a 56px confirm */}
                     <button
                       type="button"
-                      className="inline-flex h-12 items-center gap-1.5 rounded-2xl border border-border bg-card px-4 text-base font-medium text-foreground"
+                      className="inline-flex h-12 items-center gap-1.5 whitespace-nowrap rounded-2xl border border-border bg-card px-4 text-base font-medium text-foreground"
                       data-testid="smart-add-found-way-out"
                     >
                       Not quite
@@ -238,7 +244,7 @@ export function FoundStage({
                 <button
                   type="button"
                   onClick={onLooksRight}
-                  className={`${styles.confirm} inline-flex h-12 items-center rounded-2xl px-6 text-base font-semibold text-primary-foreground max-sm:flex-1 max-sm:justify-center`}
+                  className={`${styles.confirm} inline-flex h-12 items-center whitespace-nowrap rounded-2xl px-6 text-base font-semibold text-primary-foreground max-sm:flex-1 max-sm:justify-center`}
                   data-testid="smart-add-found-confirm"
                 >
                   Looks right
@@ -253,7 +259,7 @@ export function FoundStage({
               <button
                 type="button"
                 onClick={onReviewAll}
-                className={`${styles.confirm} inline-flex h-12 items-center rounded-2xl px-6 text-base font-semibold text-primary-foreground max-sm:flex-1 max-sm:justify-center`}
+                className={`${styles.confirm} inline-flex h-12 items-center whitespace-nowrap rounded-2xl px-6 text-base font-semibold text-primary-foreground max-sm:flex-1 max-sm:justify-center`}
                 data-testid="smart-add-found-review"
               >
                 Review everything
