@@ -93,6 +93,8 @@ jest.mock("@univerjs/core", () => ({
   createParagraphId: () => "p1",
   createSectionId: () => "s1",
 }));
+// @univerjs/ui drags in engine-render, which cannot load against the mocked @univerjs/core above; the glue only needs two names from it.
+jest.mock("@univerjs/ui", () => ({ IconManager: class {}, INotificationService: Symbol("INotificationService") }));
 jest.mock("@univerjs/themes", () => ({ defaultTheme: {} }));
 jest.mock("@univerjs/preset-docs-core", () => ({ UniverDocsCorePreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-core/locales/en-US", () => ({}));
@@ -118,6 +120,9 @@ jest.mock("@ai-matrx/office/univer", () => ({
 }));
 jest.mock("@/lib/univer-host", () => ({}));
 jest.mock("@univerjs/docs-find-replace", () => ({ UniverDocsFindReplacePlugin: class {} }));
+jest.mock("@univerjs/docs-toc", () => ({ UniverDocsTocPlugin: class {} }));
+jest.mock("@univerjs/docs-toc-ui", () => ({ UniverDocsTocUIPlugin: class {} }));
+jest.mock("@univerjs/docs-toc-ui/locale/en-US", () => ({}));
 jest.mock("@univerjs/find-replace/locale/en-US", () => ({}));
 jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({
   DocumentGoogleLink: () => null,
@@ -141,7 +146,7 @@ jest.mock("@/features/documents/components/DocumentPageReferenceCopyButton", () 
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/components/ui/use-toast", () => ({ toast: jest.fn() }));
 jest.mock("@/styles/themes/useThemeMode", () => ({ useThemeMode: () => "light" }));
-jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc: async () => ({ data: null, error: null }) } }));
 jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "user-potter" } } }),
 }))() }));

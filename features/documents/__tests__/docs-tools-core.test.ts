@@ -14,6 +14,17 @@ describe("building blocks", () => {
     for (const p of body.paragraphs) expect(p.startIndex).toBeLessThan(body.dataStream.length);
     for (const r of body.textRuns ?? []) expect(r.ed).toBeLessThanOrEqual(body.dataStream.length);
   });
+  it("a building block's markdown headings insert as real heading paragraphs, not plain text", () => {
+    const pros = BUILDING_BLOCKS.find((b) => b.id === "pros-cons")!;
+    const body = insertableBody(pros.markdown);
+    expect(body.dataStream).not.toContain("#");
+    const styleAt = (text: string) => {
+      const at = body.dataStream.indexOf(text) + text.length;
+      return body.paragraphs.find((p) => p.startIndex === at)?.paragraphStyle?.namedStyleType;
+    };
+    expect(styleAt("Pros and cons")).toBe(5); // HEADING_2
+    expect(styleAt("Verdict")).toBe(6); // HEADING_3
+  });
   it("the heading text is in the stream", () => {
     expect(insertableBody(BUILDING_BLOCKS[0]!.markdown).dataStream).toContain("Meeting notes");
   });

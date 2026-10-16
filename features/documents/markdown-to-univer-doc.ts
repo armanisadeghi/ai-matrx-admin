@@ -177,6 +177,9 @@ function buildTextStyle(
 
 // ─── document builder ────────────────────────────────────────────────────────
 
+/** Univer's numeric NamedStyleType.HEADING_1 (HEADING_2..5 follow). */
+const NAMED_HEADING_1 = 4;
+
 class DocBuilder {
   private parts: string[] = [];
   private cursor = 0;
@@ -284,6 +287,8 @@ class DocBuilder {
     this.paragraphs.push({
       startIndex: this.cursor,
       paragraphId: createParagraphId(this.paragraphIds),
+      // A heading is a real heading paragraph (outline, Format > Paragraph styles), not only big bold text.
+      ...(opts.heading ? { paragraphStyle: { namedStyleType: NAMED_HEADING_1 + Math.min(opts.heading, 5) - 1 } } : {}),
     });
     this.cursor += 1;
   }
