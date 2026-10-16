@@ -1,5 +1,5 @@
 /**
- * features/files/upload/UploadGuardHostImpl.tsx
+ * features/files/upload/UploadGuardHostBody.tsx
  *
  * The actual React host that wires `requestUpload(arg)` →
  * pre-flight duplicate scan → optional confirmation dialog →
@@ -70,7 +70,7 @@ interface ResolvedConflict {
   match: DuplicateMatch;
 }
 
-export default function UploadGuardHostImpl() {
+export default function UploadGuardHostBody() {
   const dispatch = useAppDispatch();
   const filesById = useAppSelector(selectAllFilesMap);
 

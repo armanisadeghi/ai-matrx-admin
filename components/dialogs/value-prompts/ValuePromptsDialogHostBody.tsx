@@ -1,5 +1,5 @@
 /**
- * components/dialogs/value-prompts/ValuePromptsDialogHostImpl.tsx
+ * components/dialogs/value-prompts/ValuePromptsDialogHostBody.tsx
  *
  * Heavy implementation of the global value-prompts dialog host. Mounted
  * lazily by `ValuePromptsDialogHost.tsx` via `next/dynamic({ ssr: false })`.
@@ -48,7 +48,7 @@ function initialAnswers(req: ValuePromptsRequest): Record<string, string> {
   return out;
 }
 
-export default function ValuePromptsDialogHostImpl() {
+export default function ValuePromptsDialogHostBody() {
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const { request, open, settle } = useOpenerHost(valuePromptsOpener, {
     onActivate: (next) => setAnswers(initialAnswers(next)),

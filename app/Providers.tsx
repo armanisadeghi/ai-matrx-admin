@@ -134,30 +134,22 @@ import { ExtensionBridgeSubscriber } from "@/lib/extension-bridge/ExtensionBridg
 import { PlatformDirectiveSubscriber } from "@/components/client-directives/PlatformDirectiveSubscriber";
 import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
-// Deep imports, NOT `@/features/files` — this file's own header (line 13) says
-// "never import from a barrel index.ts", and the barrel drags the entire Files UI
-// into every authenticated route to obtain these three hosts.
-import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
 // disaster
 import { CloudFilesRealtimeProvider } from "@/features/files/providers/CloudFilesRealtimeProvider";
 // ONE MediaProvider for @ai-matrx/media — the strangler MediaClient over the
 // universal file handler + host ports (next/image, audio session, actions).
 // See features/files/media-client/. Deep import, not a barrel.
 import { MediaHostProvider } from "@/features/files/media-client/MediaHostProvider";
-import { UploadGuardHost } from "@/features/files/upload/UploadGuardHost";
 import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { ClipboardFallbackHost } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackHost";
+// THE imperative dialog hosts (file pickers, upload guard, manual copy, sandbox gate, value
+// prompts, bulk Move/Share, scope mismatch, can't-remove, conversation rename) — ONE edge,
+// loaded on first engagement. See components/dialogs/host/DialogHosts.tsx.
+import { DialogHosts } from "@/components/dialogs/host/DialogHosts";
 // ONE auth sync for the whole app (authed session + guest fingerprint).
 // Guests are first-class users — without this mount their backend calls go
 // out with no X-Fingerprint-ID header and the server can't identify them.
 import { GlobalAuthSync } from "@/features/auth/components/GlobalAuthSync";
 import { GuestAiAllowanceBridge } from "@/components/guest/GuestAiAllowanceBridge";
-import { SandboxGateHost } from "@/components/dialogs/sandbox-gate/SandboxGateHost";
-import { ValuePromptsDialogHost } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
-import { RecordBulkDialogsHost } from "@/lib/entity-list/dialogs/RecordBulkDialogsHost";
-import { ScopeMismatchDialogHost } from "@/components/dialogs/scope-mismatch/ScopeMismatchDialogHost";
-import { CantRemoveDialogHost } from "@/features/access-gate/cant-remove/CantRemoveDialogHost";
-import { ConversationRenameDialogHost } from "@ai-matrx/chat/agents/components/conversation-actions/rename/ConversationRenameDialogHost";
 import { GoogleOAuthRedirectNotice } from "@/providers/google-provider/GoogleOAuthRedirectNotice";
 import { SandboxLifecycleObserver } from "@/lib/sandbox/SandboxLifecycleObserver";
 import { SandboxLifecycleController } from "@/lib/sandbox/SandboxLifecycleController";
@@ -253,55 +245,12 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   file-handling consolidation). See
                                   docs/FILE_HANDLING_CONSOLIDATION_PLAN.md. */}
                                           <CloudFilesRealtimeProvider />
-                                          {/* Cloud-files imperative pickers:
-                                  openFilePicker() / openFolderPicker() / openSaveAs()
-                                  are callable from anywhere in the app once this host
-                                  mounts. See features/files/components/pickers/. */}
-                                          <CloudFilesPickerHost />
-                                          {/* Upload guard — exposes the imperative
-                                  `requestUpload()` API. Hashes incoming
-                                  files, scans Redux for duplicates,
-                                  shows the resolution dialog when
-                                  needed, then dispatches the upload.
-                                  See features/files/upload/. */}
-                                          <UploadGuardHost />
                                           {/* Imperative confirm dialog host. Exposes
                                   `confirm({title, variant, ...})` — the
                                   global replacement for `window.confirm`.
                                   See components/dialogs/confirm/. */}
                                           <ConfirmDialogHost />
-                                          {/* Imperative manual-copy host. When
-                                  `navigator.clipboard` refuses to write
-                                  (embedded browser, permission policy),
-                                  `copyToClipboard` falls back to
-                                  `showManualCopy(...)` — the text opens
-                                  selected for a manual Cmd/Ctrl+C instead
-                                  of a dead "Copy failed" toast.
-                                  See components/dialogs/clipboard-fallback/. */}
-                                          <ClipboardFallbackHost />
-                                          {/* Imperative sandbox pre-send gate host.
-                                  Exposes `openSandboxGate({conversationId})` —
-                                  a bound-but-unreachable sandbox blocks the send
-                                  and lets the user attach / detach / cancel.
-                                  See components/dialogs/sandbox-gate/. */}
-                                          <SandboxGateHost />
-                                          <ValuePromptsDialogHost />
-                                          {/* The built-in bulk verbs' dialogs: `pickHome` (Move to…)
-                                  and `shareWithPeople` (Share…). See lib/entity-list/dialogs/. */}
-                                          <RecordBulkDialogsHost />
-                                          {/* Imperative chat↔scope mismatch dialog host.
-                                  Exposes `promptScopeMismatch({current, chat})` —
-                                  the 3-way pre-send ask (switch / combine / keep)
-                                  when the sidebar's active scopes differ from the
-                                  chat's durable tags. Dismiss cancels the send.
-                                  See components/dialogs/scope-mismatch/. */}
-                                          <ScopeMismatchDialogHost />
-                                          <CantRemoveDialogHost />
-                                          {/* The ONE rename-a-conversation dialog.
-                                  `openConversationRename(id, title)` from the
-                                  header menu and the answer menu's
-                                  Conversation section. */}
-                                          <ConversationRenameDialogHost />
+                                          <DialogHosts />
                                           {/* Agent quick-look host. `openAgentPeek(id)`
                                   from anywhere opens the canonical
                                   AgentPeekWindow; it is what fills the ONE

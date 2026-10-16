@@ -4,7 +4,7 @@
  * Slim client shell + public entry point for the global manual-copy
  * dialog — the exact sibling of `ConfirmDialogHost.tsx`. Statically
  * importable from anywhere without pulling the dialog markup into the
- * static graph; the heavy body lives in `ClipboardFallbackHostImpl.tsx`
+ * static graph; the heavy body lives in `ClipboardFallbackHostBody.tsx`
  * and loads via `next/dynamic({ ssr: false })`.
  *
  *   1. Re-exports the imperative API (`showManualCopy`) from
@@ -21,11 +21,11 @@ import dynamic from "next/dynamic";
 export { showManualCopy } from "./manualCopyOpener";
 export type { ManualCopyOptions } from "./manualCopyOpener";
 
-const ClipboardFallbackHostImpl = dynamic(
-  () => import("./ClipboardFallbackHostImpl"),
+const ClipboardFallbackHostBody = dynamic(
+  () => import("./ClipboardFallbackHostBody"),
   { ssr: false, loading: () => null },
 );
 
 export function ClipboardFallbackHost() {
-  return <ClipboardFallbackHostImpl />;
+  return <ClipboardFallbackHostBody />;
 }

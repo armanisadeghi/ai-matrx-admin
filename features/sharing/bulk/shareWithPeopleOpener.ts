@@ -8,6 +8,7 @@
 // Zero React: the dialog lives behind `<RecordBulkDialogsHost />`.
 
 import { createOpener } from "@ai-matrx/kit/opener";
+import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 import type { PermissionLevel, ResourceType, ShareActionResult } from "@/utils/permissions/types";
 
 export interface ShareWithPeopleRequest {
@@ -28,9 +29,10 @@ export interface ShareWithPeopleResponse {
 
 export const shareWithPeopleOpener = createOpener<ShareWithPeopleRequest, ShareWithPeopleResponse>(
   "matrx-frontend.share-with-people-opener-state",
-  { hostHint: "<RecordBulkDialogsHost /> (mounted once in app/Providers.tsx)" },
+  { hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)" },
 );
 
 export function shareWithPeople(request: ShareWithPeopleRequest): Promise<ShareWithPeopleResponse> {
+  requestDialogHosts();
   return shareWithPeopleOpener.open(request);
 }

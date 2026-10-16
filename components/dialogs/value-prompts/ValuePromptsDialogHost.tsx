@@ -25,11 +25,11 @@ export type {
   ValuePromptsRequest,
 } from "./valuePromptsOpener";
 
-const ValuePromptsDialogHostImpl = dynamic(
-  () => import("./ValuePromptsDialogHostImpl"),
+const ValuePromptsDialogHostBody = dynamic(
+  () => import("./ValuePromptsDialogHostBody"),
   { ssr: false, loading: () => null },
 );
 
 export function ValuePromptsDialogHost() {
-  return <ValuePromptsDialogHostImpl />;
+  return <ValuePromptsDialogHostBody />;
 }

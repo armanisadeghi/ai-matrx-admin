@@ -6,6 +6,7 @@
 // Resolves null when the person closes it without choosing.
 
 import { createOpener } from "@ai-matrx/kit/opener";
+import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 import type { ItemHome } from "./homeModel";
 
 export interface PickHomeRequest {
@@ -21,9 +22,10 @@ export type PickHomeResponse = { home: ItemHome; label: string } | null;
 
 export const homePickerOpener = createOpener<PickHomeRequest, PickHomeResponse>(
   "matrx-frontend.home-picker-opener-state",
-  { hostHint: "<RecordBulkDialogsHost /> (mounted once in app/Providers.tsx)" },
+  { hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)" },
 );
 
 export function pickHome(request: PickHomeRequest): Promise<PickHomeResponse> {
+  requestDialogHosts();
   return homePickerOpener.open(request);
 }

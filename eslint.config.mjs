@@ -77,7 +77,7 @@ const windowPanelsImportRestriction = {
         "@/features/files/upload/cloudUpload",
         "@/features/files/upload/tusUpload",
         "@/features/files/upload/UploadGuardHost",
-        "@/features/files/upload/UploadGuardHostImpl",
+        "@/features/files/upload/UploadGuardHostBody",
       ],
       message:
         "features/files/upload is internal. Use useFileUpload from @/features/files/handler/hooks/useFileUpload (or requestUpload from @/features/files/upload/uploadGuardOpeners for imperative call sites).",
@@ -1954,7 +1954,7 @@ export default [
     },
   },
   {
-    // ─── The Files feature's three sanctioned OUTSIDE entry points ──────
+    // ─── The Files feature's four sanctioned OUTSIDE entry points ──────
     //
     // `windowPanelsImportRestriction` ring-fences features/files/providers,
     // /cache and /upload against outside consumers. These three files are the
@@ -1963,17 +1963,18 @@ export default [
     //
     //   app/Providers.tsx           — the ONE global <CloudFilesRealtimeProvider>
     //                                 mount (the `providers` ban's own message
-    //                                 says the mount lives here) plus the
-    //                                 app-shell singleton <UploadGuardHost>,
-    //                                 whose dynamic wrapper IS the sanctioned
-    //                                 boundary (.claude/skills/code-splitting).
+    //                                 says the mount lives here).
+    //   components/dialogs/host/DialogHostsImpl
+    //                               — the body of the ONE engagement-gated edge
+    //                                 for the imperative dialog hosts; it renders
+    //                                 <UploadGuardHostBody> (code-splitting Method C).
     //   app/DeferredSingletonCore   — registers the blob-cache Service Worker
     //                                 once for the app; there is no hook form
     //                                 of a one-shot SW registration.
     //   the blob-cache admin page   — renders cache/admin/BlobCacheInspector,
     //                                 the inspector built for that route.
     //
-    // Scoped to these three files ONLY. Every other importer of
+    // Scoped to these four files ONLY. Every other importer of
     // features/files/{api,cache,providers,upload,services,virtual-sources}
     // stays banned. The sonner chokepoint is unaffected — its
     // `no-restricted-syntax` twin still runs here.
@@ -1981,6 +1982,7 @@ export default [
       "app/Providers.tsx",
       "app/DeferredSingletonCore.tsx",
       "app/(admin)/administration/utilities/blob-cache/page.tsx",
+      "components/dialogs/host/DialogHostsImpl.tsx",
     ],
     rules: {
       "no-restricted-imports": "off",

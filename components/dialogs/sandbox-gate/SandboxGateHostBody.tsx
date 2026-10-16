@@ -1,5 +1,5 @@
 /**
- * components/dialogs/sandbox-gate/SandboxGateHostImpl.tsx
+ * components/dialogs/sandbox-gate/SandboxGateHostBody.tsx
  *
  * Heavy body of the sandbox pre-send gate. Mounted lazily by SandboxGateHost via
  * next/dynamic({ ssr: false }) so this file — and the heavy SandboxPanel it
@@ -32,7 +32,7 @@ import { SandboxPanel } from "@ai-matrx/chat/agents/components/chat/SandboxPanel
 import { useOpenerHost } from "@ai-matrx/kit/opener-react";
 import { sandboxGateOpener } from "./sandboxGateOpener";
 
-export default function SandboxGateHostImpl() {
+export default function SandboxGateHostBody() {
   const { request, open, settle } = useOpenerHost(sandboxGateOpener);
 
   // Any dismiss (Esc / backdrop / X) is a cancel — never a silent send.
