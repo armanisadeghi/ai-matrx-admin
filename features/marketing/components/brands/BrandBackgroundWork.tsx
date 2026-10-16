@@ -10,19 +10,28 @@
  * canonical social door (`trackAccount` / `refreshProfile`), which reuses the stored profile, dedupes
  * posts and the tracked row, meters the spend, and honours `social.profile_posts_default` / `max`.
  * Plan: common-docs smart-add-brand/BRAND-PAGES-PLAN.md (G2, G3).
+ *
+ * ONE `MatrxDataTable`: a row per site crawl and per account's posts, one column per sortable /
+ * filterable value (status, what, source, fetched, updated, problem), the fetch in the table's own
+ * Actions column. What a fetch costs lives in the header's Cost popover, never on the rows.
  */
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, RefreshCw } from "lucide-react";
-import { Badge, Button } from "@ai-matrx/design-system/controls";
+import { AlertTriangle, CheckCircle2, Coins, ExternalLink, RefreshCw } from "lucide-react";
+import { Spinner } from "@/components/ui/loaders/Spinner";
+import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
+import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import type { MatrxColumnDef, MatrxDataTableMobileCardControls, MatrxTableIconAction } from "@ai-matrx/design-system/data-table/types";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { toast } from "@/lib/toast";
+import { recordToast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { lookupSystemRun } from "@/features/education/kits/systemRuns";
 import { runHref } from "@/features/workflow-runtime/run-doors";
@@ -35,6 +44,8 @@ import type { SocialPlatform } from "@/features/marketing/social/types";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { PropertyKindMark } from "@/features/marketing/components/shared/PropertyKindMark";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import type { MarketingBrand } from "@/features/marketing/types";
@@ -79,7 +90,7 @@ async function loadSites(brandId: string): Promise<SiteJob[]> {
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(200);
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return sites.map((s) => {
     const latest = (data ?? []).find((c) => c.site_id === s.id);
     return {
@@ -104,7 +115,7 @@ export async function loadAccounts(brandId: string): Promise<AccountJob[]> {
     .eq("role", "own")
     .is("deleted_at", null)
     .limit(200);
-  if (tracked.error) throw new Error(tracked.error.message);
+  if (tracked.error) throw tracked.error;
   const byProperty = new Map((tracked.data ?? []).filter((t) => t.property_id).map((t) => [t.property_id as string, t]));
   return Promise.all(
     properties.map(async (p) => {
@@ -143,15 +154,53 @@ export async function loadAccounts(brandId: string): Promise<AccountJob[]> {
   );
 }
 
-function StatusIcon({ state }: { state: "running" | "done" | "failed" | "todo" }) {
-  if (state === "running") return <Loader2 className="size-3.5 shrink-0 animate-spin text-primary" />;
+type WorkState = "running" | "done" | "failed" | "todo";
+const STATE_LABEL: Record<WorkState, string> = { running: "Working", done: "Done", failed: "Failed", todo: "To do" };
+
+/** One table row: a site's crawl or an account's posts. */
+interface WorkRow {
+  id: string;
+  site: SiteJob | null;
+  account: AccountJob | null;
+  kind: string;
+  name: string;
+  source: string;
+  href: string | null;
+  state: WorkState;
+  count: number | null;
+  unit: "pages" | "posts";
+  updatedAt: string | null;
+  problem: string;
+}
+
+function StatusIcon({ state }: { state: WorkState }) {
+  if (state === "running") return <Spinner size="xs" label="Working" className="shrink-0" />;
   if (state === "done") return <CheckCircle2 className="size-3.5 shrink-0 text-success" />;
   if (state === "failed") return <AlertTriangle className="size-3.5 shrink-0 text-destructive" />;
   return <span className="size-3.5 shrink-0 rounded-full border border-dashed border-muted-foreground" />;
 }
 
+/** A phone's row: status and what, the numbers, the problem, and the table's own actions. */
+function WorkCard({ row, controls }: { row: WorkRow; controls: MatrxDataTableMobileCardControls }) {
+  return (
+    <div className="flex flex-col gap-1.5 p-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="min-w-0 flex-1">{controls.renderCell("what")}</div>
+        <div className="shrink-0">{controls.actions}</div>
+      </div>
+      <div className="flex min-w-0 items-center gap-3 text-xs text-muted-foreground">
+        {controls.renderCell("state")}
+        <span className="tabular-nums">{controls.renderCell("fetched")}</span>
+        <span className="tabular-nums">{controls.renderCell("updated")}</span>
+      </div>
+      {row.problem ? <div className="min-w-0">{controls.renderCell("problem")}</div> : null}
+    </div>
+  );
+}
+
 export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand; canEdit: boolean }) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const seg = marketingSeg(brand);
   const spend = useSocialSpend(brand.organization_id);
@@ -228,7 +277,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
           opts,
         );
       }
-      toast.success(`Posts fetched for ${account.label}`);
+      recordToast.success({ type: "brand_property", id: account.propertyId, title: account.label }, `Posts fetched for ${account.label}`);
     } catch (error) {
       setErrors((e) => ({ ...e, [key]: socialErrorMessage(error, "The posts could not be fetched.") }));
     } finally {
@@ -242,24 +291,231 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
     for (const account of missing) await fetchPosts(account);
   };
 
+  const rows = ((): WorkRow[] => {
+    const siteRows = (sites.data ?? []).map((site): WorkRow => {
+      const key = `site:${site.id}`;
+      const active = Boolean(busy[key] || (site.crawl && ACTIVE.has(site.crawl.status)));
+      const problem = errors[key] || site.crawl?.error || (site.crawl?.status === "failed" ? "Failed" : "");
+      return {
+        id: key,
+        site,
+        account: null,
+        kind: "website",
+        name: site.name,
+        source: "Website",
+        href: marketingRoutes.website(seg, site.id, "/crawls"),
+        state: active ? "running" : problem ? "failed" : site.pages > 0 ? "done" : "todo",
+        count: site.pages,
+        unit: "pages",
+        updatedAt: site.crawl?.finishedAt ?? null,
+        problem: active ? "" : problem,
+      };
+    });
+    const accountRows = (accounts.data ?? []).map((account): WorkRow => {
+      const key = `acct:${account.propertyId}`;
+      const active = Boolean(busy[key]);
+      // A failed server walk counts until a later fetch lands posts (MKT-057).
+      const serverError = account.posts === 0 ? (historyNotes.data?.get(accountKey(account.handleOrUrl))?.error ?? null) : null;
+      const problem = errors[key] || serverError || "";
+      return {
+        id: key,
+        site: null,
+        account,
+        kind: account.kind,
+        name: account.label,
+        source: platformLabel(account.kind),
+        href: account.trackedId ? `${marketingRoutes.brandSocials(seg)}/accounts` : null,
+        state: active ? "running" : problem ? "failed" : account.trackedId ? "done" : "todo",
+        count: account.trackedId ? account.posts : null,
+        unit: "posts",
+        updatedAt: account.lastPostAt,
+        problem: active ? "" : problem,
+      };
+    });
+    return [...siteRows, ...accountRows];
+  })();
+
+  const columns: MatrxColumnDef<WorkRow>[] = [
+      {
+        id: "state",
+        label: "Status",
+        header: "Status",
+        width: 96,
+        accessorFn: (r) => STATE_LABEL[r.state],
+        filter: "select",
+        filterOptions: Object.values(STATE_LABEL).map((v) => ({ value: v, label: v })),
+        cell: (r) => (
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+            <StatusIcon state={r.state} />
+            <span className="text-xs">{STATE_LABEL[r.state]}</span>
+          </span>
+        ),
+      },
+      {
+        id: "what",
+        label: "Website or account",
+        header: "What",
+        width: 240,
+        minWidth: 160,
+        accessorFn: (r) => r.name,
+        filter: "text",
+        cell: (r) => {
+          const body = (
+            <span className="flex min-w-0 items-center gap-2">
+              <PropertyKindMark kind={r.kind} size={16} />
+              <span className="truncate text-sm" title={r.name}>{r.name}</span>
+            </span>
+          );
+          return r.href ? (
+            <Link href={r.href} className="block min-w-0 hover:text-primary" data-clickable="">
+              {body}
+            </Link>
+          ) : (
+            body
+          );
+        },
+      },
+      {
+        id: "source",
+        label: "Source",
+        header: "Source",
+        width: 96,
+        accessorFn: (r) => r.source,
+        filter: "select",
+      },
+      {
+        id: "fetched",
+        label: "Fetched",
+        header: "Fetched",
+        width: 100,
+        align: "right",
+        accessorFn: (r) => r.count,
+        copyValue: (r) => (r.count === null ? "" : `${r.count} ${r.unit}`),
+        filter: "number",
+        cell: (r) =>
+          r.count === null ? (
+            <span className="whitespace-nowrap text-muted-foreground">Not fetched</span>
+          ) : (
+            <span className="whitespace-nowrap tabular-nums">
+              {formatCount(r.count)} {r.unit}
+            </span>
+          ),
+      },
+      {
+        id: "updated",
+        label: "Updated",
+        header: "Updated",
+        width: 96,
+        accessorFn: (r) => r.updatedAt,
+        copyValue: (r) => when(r.updatedAt),
+        filter: "date",
+        cell: (r) => (
+          <span className="whitespace-nowrap tabular-nums text-muted-foreground" title={r.updatedAt ?? undefined}>
+            {when(r.updatedAt) || "—"}
+          </span>
+        ),
+      },
+      {
+        id: "problem",
+        label: "Problem",
+        header: "Problem",
+        width: 280,
+        minWidth: 120,
+        accessorFn: (r) => r.problem,
+        filter: "text",
+        cell: (r) =>
+          r.problem ? (
+            <span className="flex min-w-0 items-center gap-1 text-xs text-destructive">
+              <span className="truncate" title={r.problem}>{r.problem}</span>
+              <ErrorAlchemyMenu error={r.problem} />
+            </span>
+          ) : null,
+      },
+  ];
+
+  const rowActions = (r: WorkRow): MatrxTableIconAction[] => {
+    if (!canEdit) return [];
+    const active = r.state === "running";
+    if (r.site) {
+      const site = r.site;
+      return [
+        {
+          id: "crawl",
+          icon: RefreshCw,
+          label: active ? "Crawling" : r.state === "failed" ? "Retry crawl" : site.pages > 0 ? "Crawl again" : "Crawl",
+          loading: active,
+          disabled: active,
+          onClick: () => void crawl(site),
+        },
+      ];
+    }
+    const account = r.account;
+    if (!account) return [];
+    const label = active ? "Fetching" : r.state === "failed" ? "Retry fetch" : account.trackedId ? "Fetch new posts" : "Fetch posts";
+    return [
+      {
+        id: "fetch",
+        icon: RefreshCw,
+        label,
+        loading: active,
+        disabled: active,
+        onClick: () => void fetchPosts(account),
+      },
+    ];
+  };
+
+  const costRows = canEdit && defaultPosts ? (accounts.data ?? []).map((a) => ({ a, points: spend.postsText(a.kind, defaultPosts) })) : [];
+  const missingTotal = !accounts.isError && defaultPosts && missing.length > 1 ? spend.postsTotalText(missing.map((a) => a.kind), defaultPosts) : null;
+
   const run = setup.data;
-  const runState = !run ? null : run.active ? (run.status === "interrupted" ? "todo" : "running") : run.status === "completed" ? "done" : "failed";
+  const runState: WorkState | null = !run ? null : run.active ? (run.status === "interrupted" ? "todo" : "running") : run.status === "completed" ? "done" : "failed";
 
   return (
     <SectionCard
       title="Background work"
       anchor="background-work"
       headerExtra={
-        canEdit && missing.length > 1 ? (
-          <Button variant="outline" onClick={() => void fetchMissing()}>
-            Fetch all posts
-          </Button>
+        canEdit ? (
+          <>
+            {costRows.some((c) => c.points) ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="quiet" icon={<Coins />} aria-label="What fetching posts costs">
+                    Cost
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" width="md" padding="sm">
+                  <p className="px-1 pb-1.5 text-xs text-muted-foreground">{defaultPosts} posts per fetch</p>
+                  <ul className="flex flex-col">
+                    {costRows.map(({ a, points }) => (
+                      <li key={a.propertyId} className="flex min-w-0 items-center gap-2 px-1 py-1 text-sm">
+                        <PropertyKindMark kind={a.kind} size={16} />
+                        <span className="min-w-0 flex-1 truncate">{a.label}</span>
+                        <span className="shrink-0 tabular-nums text-muted-foreground">{points ?? "—"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {missingTotal && !accounts.isError ? (
+                    <p className="mt-1 flex items-center gap-2 border-t border-border px-1 pt-1.5 text-sm">
+                      <span className="flex-1">Fetch all posts ({missing.length})</span>
+                      <span className="tabular-nums">{missingTotal}</span>
+                    </p>
+                  ) : null}
+                </PopoverContent>
+              </Popover>
+            ) : null}
+            {!accounts.isError && missing.length > 1 ? (
+              <Button variant="outline" onClick={() => void fetchMissing()}>
+                Fetch all posts
+              </Button>
+            ) : null}
+          </>
         ) : undefined
       }
     >
-      <div className="grid gap-3 md:grid-cols-2" data-testid="brand-background-work">
+      <div className="flex flex-col" data-testid="brand-background-work">
         {run ? (
-          <div className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-sm">
             <StatusIcon state={runState ?? "todo"} />
             <span className="font-medium">Brand setup</span>
             <span className="text-muted-foreground">
@@ -270,103 +526,47 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
             </OutboundLink>
           </div>
         ) : null}
-
-        <section className="min-w-0">
-          <h4 className="mb-1 px-1 text-xs font-medium text-muted-foreground">Website crawls</h4>
-          {sites.error ? <p className="px-1 text-sm text-destructive">{extractErrorMessage(sites.error)}</p> : null}
-          {sites.isLoading ? <Loader2 className="size-3.5 animate-spin text-muted-foreground" /> : null}
-          {sites.data && !sites.data.length ? <p className="px-1 text-sm text-muted-foreground">No websites yet.</p> : null}
-          <ul className="grid min-w-0 grid-cols-1">
-            {(sites.data ?? []).map((site) => {
-              const key = `site:${site.id}`;
-              const active = Boolean(busy[key] || (site.crawl && ACTIVE.has(site.crawl.status)));
-              const failed = Boolean(errors[key] || site.crawl?.status === "failed" || site.crawl?.error);
-              const state = active ? "running" : failed ? "failed" : site.pages > 0 ? "done" : "todo";
-              return (
-                <li key={site.id} className="flex min-w-0 flex-wrap items-center gap-x-2 rounded-md px-1 py-1 hover:bg-muted/50 sm:flex-nowrap" data-testid="brand-work-site">
-                  <StatusIcon state={state} />
-                  <Link href={marketingRoutes.website(seg, site.id, "/crawls")} className="min-w-0 basis-[calc(100%-3.25rem)] break-all text-sm hover:text-primary sm:flex-1 sm:basis-0 sm:truncate sm:break-normal">
-                    {site.name}
-                  </Link>
-                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                    {formatCount(site.pages)} pages
-                    {site.crawl?.finishedAt ? ` · ${when(site.crawl.finishedAt)}` : ""}
-                  </span>
-                  {failed && !active ? (
-                    <span className="order-last basis-full truncate pl-6 text-xs text-destructive sm:order-none sm:basis-auto sm:pl-0" title={errors[key] || site.crawl?.error || ""}>
-                      {errors[key] || site.crawl?.error || "Failed"}
-                    </span>
-                  ) : null}
-                  {canEdit ? (
-                    <Button
-                      variant="quiet"
-                      icon={active ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                      disabled={active}
-                      onClick={() => void crawl(site)}
-                    >
-                      {active ? "Crawling" : failed ? "Retry" : site.pages > 0 ? "Crawl again" : "Crawl"}
-                    </Button>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-
-        <section className="min-w-0">
-          <h4 className="mb-1 px-1 text-xs font-medium text-muted-foreground">Account posts</h4>
-          {accounts.error ? <p className="px-1 text-sm text-destructive">{extractErrorMessage(accounts.error)}</p> : null}
-          {accounts.isLoading ? <Loader2 className="size-3.5 animate-spin text-muted-foreground" /> : null}
-          {accounts.data && !accounts.data.length ? <p className="px-1 text-sm text-muted-foreground">No accounts yet.</p> : null}
-          <ul className="grid min-w-0 grid-cols-1">
-            {(accounts.data ?? []).map((account) => {
-              const key = `acct:${account.propertyId}`;
-              const active = Boolean(busy[key]);
-              // A failed server walk counts until a later fetch lands posts (MKT-057).
-              const serverError = account.posts === 0 ? (historyNotes.data?.get(accountKey(account.handleOrUrl))?.error ?? null) : null;
-              const shownError = errors[key] || serverError || "";
-              const state = active ? "running" : shownError ? "failed" : account.trackedId ? "done" : "todo";
-              const points = defaultPosts ? spend.postsText(account.kind, defaultPosts) : null;
-              return (
-                <li key={account.propertyId} className="flex min-w-0 flex-wrap items-center gap-x-2 rounded-md px-1 py-1 hover:bg-muted/50 sm:flex-nowrap" data-testid="brand-work-account">
-                  <StatusIcon state={state} />
-                  <PropertyKindMark kind={account.kind} size={16} />
-                  {account.trackedId ? (
-                    <Link href={`${marketingRoutes.brandSocials(seg)}/accounts`} className="min-w-0 basis-[calc(100%-3.25rem)] break-all text-sm hover:text-primary sm:flex-1 sm:basis-0 sm:truncate sm:break-normal">
-                      {account.label}
-                    </Link>
-                  ) : (
-                    <span className="min-w-0 basis-[calc(100%-3.25rem)] break-all text-sm sm:flex-1 sm:basis-0 sm:truncate sm:break-normal">{account.label}</span>
-                  )}
-                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                    {account.trackedId ? `${account.posts.toLocaleString()} posts` : "Not fetched"}
-                    {account.lastPostAt ? ` · ${when(account.lastPostAt)}` : ""}
-                  </span>
-                  {shownError && !active ? (
-                    <span className="order-last basis-full truncate pl-6 text-xs text-destructive sm:order-none sm:basis-auto sm:pl-0" title={shownError}>
-                      {shownError}<ErrorAlchemyMenu error={shownError} />
-                    </span>
-                  ) : null}
-                  {canEdit ? (
-                    <span className="inline-flex shrink-0 items-center gap-1.5">
-                      {points && !active ? (
-                        <Badge tone="neutral">{points}</Badge>
-                      ) : null}
-                      <Button
-                        variant="quiet"
-                        icon={active ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                        disabled={active}
-                        onClick={() => void fetchPosts(account)}
-                      >
-                        {active ? "Fetching" : shownError ? "Retry" : account.trackedId ? "Fetch new" : "Fetch posts"}
-                      </Button>
-                    </span>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+        {sites.isError !== accounts.isError ? (
+          <p data-error-box className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-xs text-destructive">
+            <span className="truncate">
+              {sites.isError ? "Website crawls" : "Account posts"} couldn&apos;t load: {extractErrorMessage(sites.error ?? accounts.error)}
+            </span>
+            <Button variant="quiet" onClick={() => void (sites.isError ? sites.refetch() : accounts.refetch())}>
+              Retry
+            </Button>
+            <ErrorAlchemyMenu error={extractErrorMessage(sites.error ?? accounts.error)} />
+          </p>
+        ) : null}
+        <MatrxDataTable<WorkRow>
+          tableId="marketing-brand-background-work"
+          data={rows}
+          columns={columns}
+          getRowId={(r) => r.id}
+          appearance="embedded"
+          density="condensed"
+          viewTabs={false}
+          pageSize={0}
+          {...NO_RAW_ROW_WINDOW}
+          onRowOpen={(r) => {
+            if (r.href) router.push(r.href);
+          }}
+          mobileCardsBreakpoint="md"
+          mobileCards={(r, _i, controls) => <WorkCard row={r} controls={controls} />}
+          isLoading={sites.isLoading || accounts.isLoading}
+          isFetching={sites.isFetching || accounts.isFetching}
+          read={{
+            // One read failing never hides the other's rows: the failed half says so above the table.
+            status: sites.isError && accounts.isError ? "error" : sites.isLoading || accounts.isLoading ? "loading" : "ready",
+            error: sites.error ?? accounts.error ?? undefined,
+            onRetry: () => {
+              void sites.refetch();
+              void accounts.refetch();
+            },
+          }}
+          toolbar={{ searchPlaceholder: "Search work…", singleRow: true }}
+          rowActions={rowActions}
+          emptyState={{ title: "No websites or accounts yet" }}
+        />
       </div>
     </SectionCard>
   );
