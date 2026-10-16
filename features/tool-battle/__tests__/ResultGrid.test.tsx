@@ -12,7 +12,7 @@ const rollup = (over: Partial<LaneRollup>): LaneRollup => ({
 
 const battle = (blind: boolean): BattleView => ({
   id: "b", title: "Social profile", jobKey: "social_profile", toolId: "t", status: "completed", blind,
-  blindOrder: ["L2", "L1"], promotions: [], createdAt: "2026-10-16T10:00:00Z", startedAt: null, finishedAt: null,
+  blindOrder: ["L2", "L1"], leaseSeconds: 90, promotions: [], createdAt: "2026-10-16T10:00:00Z", startedAt: null, finishedAt: null,
   lanes: [
     { lane_id: "L1", endpoint_id: "e1", label: "ScrapeCreators", provider_slug: "scrapecreators", via: "direct" },
     { lane_id: "L2", endpoint_id: "e2", label: "Scraper dataset", provider_slug: "bright_data", via: "direct" },

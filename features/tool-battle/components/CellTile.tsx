@@ -19,16 +19,18 @@ export function CellTile({
   cell,
   hideCost,
   now,
+  leaseSeconds,
   onOpen,
 }: {
   cell: CellView | undefined;
   hideCost: boolean;
   now: number;
+  leaseSeconds: number | null;
   onOpen: (cell: CellView) => void;
 }) {
   if (!cell) return <div className="rounded-md border border-dashed border-border p-2 text-xs text-muted-foreground">—</div>;
   const filled = cell.answerFields.filter((f) => f.filled).length;
-  const stalled = isStalled(cell, now);
+  const stalled = isStalled(cell, now, leaseSeconds);
   const answered = cell.status === "succeeded" || cell.status === "empty";
   const line = answered
     ? [cell.status === "succeeded" ? `${filled} fields` : "nothing found", hideCost ? null : formatAdminUsd(cell.costUsd, { digits: "price" })]

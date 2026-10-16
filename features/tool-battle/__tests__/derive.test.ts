@@ -31,7 +31,7 @@ describe("formatMs", () => {
 
 const battle = (blind: boolean): BattleView => ({
   id: "b", title: "t", jobKey: "j", toolId: null, status: "completed", blind,
-  blindOrder: ["L2", "L1"], summary: null, promotions: [], createdAt: "", startedAt: null, finishedAt: null,
+  blindOrder: ["L2", "L1"], leaseSeconds: 90, summary: null, promotions: [], createdAt: "", startedAt: null, finishedAt: null,
   lanes: [
     { lane_id: "L1", endpoint_id: "e1", label: "Direct", provider_slug: null, via: "direct" },
     { lane_id: "L2", endpoint_id: "e2", label: "Broker", provider_slug: null, via: "treg" },

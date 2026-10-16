@@ -39,7 +39,7 @@ export function ToolBattlePage({ battleId }: { battleId: string }) {
   const now = useNow(5000);
 
   // A runner that died leaves cells under a lapsed lease: ask the server to pick them up once.
-  const stalled = read.state === "ready" && read.cells.some((c) => isStalled(c, now));
+  const stalled = read.state === "ready" && read.cells.some((c) => isStalled(c, now, read.battle.leaseSeconds));
   useEffect(() => {
     if (!stalled || resumed.current) return;
     resumed.current = true;
@@ -65,7 +65,7 @@ export function ToolBattlePage({ battleId }: { battleId: string }) {
   const { battle, cells } = read;
   const progress = progressOf(cells);
   const running = battle.status === "running" && progress.done < progress.total;
-  const unfinished = cells.some((c) => c.status === "queued" || (c.status === "running" && isStalled(c, now)));
+  const unfinished = cells.some((c) => c.status === "queued" || (c.status === "running" && isStalled(c, now, read.battle.leaseSeconds)));
   const lanes = shownLanes(battle, revealed);
 
   const act = async (fn: () => Promise<{ error: string | null }>, done?: string) => {

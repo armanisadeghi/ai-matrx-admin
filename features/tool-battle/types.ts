@@ -88,6 +88,8 @@ export interface BattleView {
   status: BattleStatus;
   blind: boolean;
   blindOrder: string[];
+  /** The server's cell lease (knob) when the battle was made; null on a battle made before it was recorded. */
+  leaseSeconds: number | null;
   lanes: Lane[];
   subjects: Subject[];
   summary: BattleSummary | null;

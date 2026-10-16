@@ -107,11 +107,10 @@ export function progressOf(cells: CellView[]): { done: number; total: number } {
   return { done: cells.filter((c) => SETTLED_CELL.has(c.status)).length, total: cells.length };
 }
 
-/** A running cell whose heartbeat is older than the server's lease lost its runner. */
-export const LEASE_MS = 90_000;
-export function isStalled(cell: CellView, now: number): boolean {
-  if (cell.status !== "running" || !cell.heartbeatAt) return false;
-  return now - Date.parse(cell.heartbeatAt) > LEASE_MS;
+/** A running cell whose heartbeat is older than the server's lease (`battle.leaseSeconds`) lost its runner. */
+export function isStalled(cell: CellView, now: number, leaseSeconds: number | null): boolean {
+  if (leaseSeconds === null || cell.status !== "running" || !cell.heartbeatAt) return false;
+  return now - Date.parse(cell.heartbeatAt) > leaseSeconds * 1000;
 }
 
 export function statusLabel(status: CellView["status"]): string {

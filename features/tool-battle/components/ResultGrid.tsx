@@ -70,6 +70,7 @@ export function ResultGrid({
                   cell={byKey.get(`${lane.lane_id}|${subject.subject_id}`)}
                   hideCost={hideCost}
                   now={now}
+                  leaseSeconds={battle.leaseSeconds}
                   onOpen={setOpen}
                 />
               ))}

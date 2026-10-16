@@ -81,6 +81,7 @@ export function toBattleView(row: BattleRow): BattleView {
     status: row.status as BattleStatus,
     blind: row.blind,
     blindOrder: list(meta.blind_order).map(String),
+    leaseSeconds: numOrNull(meta.lease_seconds),
     lanes: list(row.lanes).map(parseLane).filter((l): l is Lane => l !== null),
     subjects: list(row.subjects).map(parseSubject).filter((s): s is Subject => s !== null),
     summary: isJsonObject(row.summary) ? (row.summary as unknown as BattleSummary) : null,
