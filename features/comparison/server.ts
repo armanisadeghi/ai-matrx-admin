@@ -1,6 +1,7 @@
 /**
  * Compare — the compute door to aidream `/comparison`. Every call names the organization the
- * fetches run in and the raw tables land in (the cost lands there). Contract in `./contract.ts`.
+ * fetches run in and the raw tables land in (the cost lands there). Contract in `./contract.ts`;
+ * the drop-safe run reader in `./settle.ts`.
  */
 
 import { getJson, postJson, requestRaw } from "@/lib/python-client";
@@ -8,15 +9,18 @@ import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
 import {
   ComparisonRefusal,
-  consumeComparison,
   parseKinds,
+  parseLookup,
   parseQuote,
+  parseRunState,
   type ComparisonItemInput,
   type ComparisonKindInfo,
-  type ComparisonProgress,
   type ComparisonQuote,
   type ComparisonResult,
+  type ComparisonRunState,
+  type LookupResult,
 } from "./contract";
+import { pollRun, settleComparison, type RunWatch } from "./settle";
 
 const BASE = "/comparison";
 
@@ -31,33 +35,70 @@ function org(organizationId: string): string {
   return id;
 }
 
+/** An HTTP failure from the client as a refusal with the server's own sentence. */
+function asRefusal(err: unknown): unknown {
+  const e = err as { status?: number; userMessage?: string; message?: string; code?: string };
+  const status = typeof e?.status === "number" ? e.status : null;
+  if (status === null) return err;
+  if (status === 404 || status === 403) {
+    return new ComparisonRefusal("not_found", "That comparison is not open to you.");
+  }
+  if (status >= 400 && status < 500) {
+    return new ComparisonRefusal(typeof e.code === "string" ? e.code : `http_${status}`,
+      e.userMessage ?? e.message ?? "The comparison could not be read.");
+  }
+  return new ComparisonRefusal(`http_${status}`, "The server is busy. Trying again.");
+}
+
 export async function getKinds(opts: Ctx): Promise<ComparisonKindInfo[]> {
   const { data } = await getJson<unknown>(BASE, { organizationId: org(opts.organizationId), signal: opts.signal });
   return parseKinds(data);
 }
 
-function body(kind: string, items: ComparisonItemInput[], recordsPerItem?: number | null) {
+function itemBody(it: ComparisonItemInput) {
   return {
-    kind,
-    items: items.map((it) => ({
-      ...(it.label ? { label: it.label } : {}),
-      ...(it.url ? { url: it.url } : {}),
-      ...(it.inputs ? { inputs: it.inputs } : {}),
-    })),
-    ...(recordsPerItem ? { records_per_item: recordsPerItem } : {}),
+    ...(it.label ? { label: it.label } : {}),
+    ...(it.url ? { url: it.url } : {}),
+    ...(it.inputs ? { inputs: it.inputs } : {}),
+    ...(it.website ? { website: it.website } : {}),
+    ...(it.logo_url ? { logo_url: it.logo_url } : {}),
   };
 }
 
-export async function quoteComparison(
-  kind: string,
-  items: ComparisonItemInput[],
-  opts: Ctx & { recordsPerItem?: number | null },
-): Promise<ComparisonQuote> {
-  const { data } = await postJson<unknown>(`${BASE}/quote`, body(kind, items, opts.recordsPerItem), {
+function body(kind: string, items: ComparisonItemInput[]) {
+  return { kind, items: items.map(itemBody) };
+}
+
+/** "Here's what we found": each typed item matched to the real thing. Links are free. */
+export async function lookupItems(kind: string, items: ComparisonItemInput[], opts: Ctx): Promise<LookupResult> {
+  const { data } = await postJson<unknown>(`${BASE}/lookup`, body(kind, items), {
+    organizationId: org(opts.organizationId),
+    signal: opts.signal,
+  });
+  return parseLookup(data);
+}
+
+export async function quoteComparison(kind: string, items: ComparisonItemInput[], opts: Ctx): Promise<ComparisonQuote> {
+  const { data } = await postJson<unknown>(`${BASE}/quote`, body(kind, items), {
     organizationId: org(opts.organizationId),
     signal: opts.signal,
   });
   return parseQuote(data);
+}
+
+export async function getRun(runId: string, opts: Ctx): Promise<ComparisonRunState> {
+  let data: unknown;
+  try {
+    ({ data } = await getJson<unknown>(`${BASE}/runs/${encodeURIComponent(runId)}`, {
+      organizationId: org(opts.organizationId),
+      signal: opts.signal,
+    }));
+  } catch (err) {
+    throw asRefusal(err);
+  }
+  const state = parseRunState(data);
+  if (!state) throw new ComparisonRefusal("not_found", "That comparison is not open to you.");
+  return state;
 }
 
 async function refusalFromResponse(response: Response): Promise<ComparisonRefusal> {
@@ -75,17 +116,39 @@ async function refusalFromResponse(response: Response): Promise<ComparisonRefusa
   return new ComparisonRefusal(code, msg);
 }
 
+/** Start a run and settle it: the stream while it lasts, the durable run after any drop. */
 export async function runComparison(
   kind: string,
   items: ComparisonItemInput[],
-  opts: Ctx & { recordsPerItem?: number | null; onProgress?: (p: ComparisonProgress) => void },
+  opts: Ctx & RunWatch,
 ): Promise<ComparisonResult> {
   const response = await requestRaw(
     `${BASE}/run`,
-    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(kind, items, opts.recordsPerItem)) },
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(kind, items)) },
     { organizationId: org(opts.organizationId), signal: opts.signal, allowHttpError: true },
   );
   if (!response.ok) throw await refusalFromResponse(response);
-  const parsed = parseMatrxNdjsonResponse(response, opts.signal);
-  return consumeComparison(parsed.events, opts.onProgress);
+  const reader = new AbortController();
+  opts.signal?.addEventListener("abort", () => reader.abort(), { once: true });
+  const parsed = parseMatrxNdjsonResponse(response, reader.signal);
+  return settleComparison({
+    events: parsed.events,
+    onRunId: opts.onRunId,
+    onProgress: opts.onProgress,
+    onRunState: opts.onRunState,
+    signal: opts.signal,
+    stopStream: () => reader.abort(),
+    readRun: (runId, signal) => getRun(runId, { organizationId: opts.organizationId, signal }),
+  });
+}
+
+/** Follow a run by its id alone (a refresh, a new tab, a dropped connection): read until it ends. */
+export function followRun(runId: string, opts: Ctx & RunWatch & { signal: AbortSignal }): Promise<ComparisonResult> {
+  return pollRun(runId, {
+    signal: opts.signal,
+    immediate: true,
+    pollMs: 4000,
+    onRunState: opts.onRunState,
+    readRun: (id, signal) => getRun(id, { organizationId: opts.organizationId, signal }),
+  });
 }
