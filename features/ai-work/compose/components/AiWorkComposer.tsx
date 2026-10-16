@@ -83,7 +83,10 @@ import {
   readBridgeCapability,
   type CodingBridgeCapability,
 } from "@/features/ai-work/lib/codingBridgeCapability";
-import { startHostedRun } from "@/features/ai-work/lib/hostedSandboxRun";
+import {
+  startHostedRun,
+  type HostedProvider,
+} from "@/features/ai-work/lib/hostedSandboxRun";
 import {
   addHomesToFiling,
   deliverFromComputer,
@@ -107,7 +110,12 @@ import {
 import { ComposerSection } from "./ComposerSection";
 import { HostedRunControls } from "./HostedRunControls";
 import { HostedBillingStep } from "./HostedBillingStep";
-import type { HostedBilling, OwnPlanStatus } from "@/features/ai-work/lib/ownPlan";
+import { CodexModelStep, type CodexModelChoice } from "./CodexModelStep";
+import {
+  hostedRunBlocker,
+  type HostedBilling,
+  type OwnPlanStatus,
+} from "@/features/ai-work/lib/ownPlan";
 import { DestinationStep } from "./DestinationStep";
 import { ComputerConnection, RunsOnStep, type ComputerConnectionState, type ComputerPlan } from "./RunsOnStep";
 import { ErrorNotice } from "@ai-matrx/design-system";
@@ -216,6 +224,9 @@ function ComposerBody({
   const [destination, setDestination] = useState<WorkDestinationId>("ai-matrx");
   const [bridgeCapability, setBridgeCapability] =
     useState<CodingBridgeCapability>(INITIAL_BRIDGE_CAPABILITY);
+  // The bridge's verdict for Codex in a Matrx Sandbox: a verdict is per provider.
+  const [codexBridgeCapability, setCodexBridgeCapability] =
+    useState<CodingBridgeCapability>(INITIAL_BRIDGE_CAPABILITY);
   // Read only once "Claude Code on my Mac" is picked: no relay socket on every open of this page.
   const [localCapability, setLocalCapability] = useState<DoorCapability | null>(null);
   /** Starts on a Matrx 2 computer not yet filed under their homes (kept until filed). */
@@ -278,15 +289,44 @@ function ComposerBody({
   //    whatever the run's own stream reported — Cancel has no other source.
   const [hostedRunning, setHostedRunning] = useState(false);
   const [hostedRuntimeId, setHostedRuntimeId] = useState<string | null>(null);
+  /** Which coding agent the in-flight hosted run is (Stop needs its url). */
+  const [hostedRunProvider, setHostedRunProvider] =
+    useState<HostedProvider>("claude_code");
   const hostedConversationId = useRef<string | null>(null);
+  // ── The two hosted destinations share every control below; this names
+  //    which coding agent the chosen one runs.
+  const isHosted =
+    destination === "claude-code-hosted" || destination === "codex-hosted";
+  const hostedProvider: HostedProvider =
+    destination === "codex-hosted" ? "codex" : "claude_code";
   // ── Who pays for a hosted run. AI Matrx credits unless the person picks
-  //    their own Claude plan AND the server reports them signed in to it.
-  const [hostedBilling, setHostedBilling] = useState<HostedBilling>("platform");
-  const [ownPlanStatus, setOwnPlanStatus] = useState<OwnPlanStatus | null>(
-    null,
-  );
-  const ownPlanReady =
-    hostedBilling === "platform" || ownPlanStatus?.state === "signed_in";
+  //    their own plan AND the server reports them signed in to it. Payer and
+  //    sign-in are kept per provider: a Claude sign-in says nothing about
+  //    ChatGPT, and switching destination must never carry one to the other.
+  const [hostedBillingBy, setHostedBillingBy] = useState<
+    Record<HostedProvider, HostedBilling>
+  >({ claude_code: "platform", codex: "platform" });
+  const [ownPlanStatusBy, setOwnPlanStatusBy] = useState<
+    Record<HostedProvider, OwnPlanStatus | null>
+  >({ claude_code: null, codex: null });
+  const hostedBilling = hostedBillingBy[hostedProvider];
+  const ownPlanStatus = ownPlanStatusBy[hostedProvider];
+  const setHostedBilling = (billing: HostedBilling) =>
+    setHostedBillingBy((current) => ({ ...current, [hostedProvider]: billing }));
+  const setOwnPlanStatus = (status: OwnPlanStatus | null) =>
+    setOwnPlanStatusBy((current) => ({ ...current, [hostedProvider]: status }));
+  // ── The model a hosted Codex run uses. Required by the server; chosen by
+  //    the person from the platform model catalog (`CodexModelStep`).
+  const [codexModel, setCodexModel] = useState<CodexModelChoice | null>(null);
+  /** Why a hosted run cannot start yet (payer not signed in, no model), or null. */
+  const hostedBlocker = isHosted
+    ? hostedRunBlocker(
+        hostedProvider,
+        hostedBilling,
+        ownPlanStatus,
+        codexModel?.name ?? null,
+      )
+    : null;
 
   const skillSettings = useAppSelector(
     selectBuilderAdvancedSettings(conversationId ?? ""),
@@ -300,6 +340,9 @@ function ComposerBody({
     let cancelled = false;
     void readBridgeCapability("claude_code", "matrx_sandbox").then((next) => {
       if (!cancelled) setBridgeCapability(next);
+    });
+    void readBridgeCapability("codex", "matrx_sandbox").then((next) => {
+      if (!cancelled) setCodexBridgeCapability(next);
     });
     return () => {
       cancelled = true;
@@ -362,8 +405,10 @@ function ComposerBody({
   }, [savedRequestId, conversationId, agentId, dispatch, onAgentChange]);
 
   const hostedAvailability = destinationAvailability(
-    "claude-code-hosted",
+    destination === "codex-hosted" ? "codex-hosted" : "claude-code-hosted",
     bridgeCapability,
+    undefined,
+    codexBridgeCapability,
   );
 
   const canRun =
@@ -374,8 +419,10 @@ function ComposerBody({
       ? Boolean(conversationId)
       : destination === "claude-code"
         ? Boolean(localCapability?.available) && Boolean(localFolder)
-        : destination === "claude-code-hosted"
-          ? hostedAvailability.selectable && !hostedRunning && ownPlanReady
+        : isHosted
+          ? hostedAvailability.selectable &&
+            !hostedRunning &&
+            hostedBlocker === null
           : false);
 
   /**
@@ -565,6 +612,7 @@ function ComposerBody({
     setLaunching(true);
     setHostedRunning(true);
     setHostedRuntimeId(null);
+    setHostedRunProvider(hostedProvider);
     const handle = openLiveRun({
       conversationId: runConversationId,
       label: savedLabel.trim() || "Your request",
@@ -577,12 +625,21 @@ function ComposerBody({
     try {
       const result = await dispatch(
         startHostedRun(
-          {
-            conversationId: runConversationId,
-            prompt: requestText.trim(),
-            agentId,
-            billing: hostedBilling,
-          },
+          hostedProvider === "codex" && codexModel
+            ? {
+                provider: "codex",
+                conversationId: runConversationId,
+                prompt: requestText.trim(),
+                model: codexModel.name,
+                sandboxMode: "workspace-write",
+                billing: hostedBilling,
+              }
+            : {
+                conversationId: runConversationId,
+                prompt: requestText.trim(),
+                agentId,
+                billing: hostedBilling,
+              },
           {
             onAdopted: (ids) =>
               handle.update({ requestId: ids.requestId, pending: false }),
@@ -658,7 +715,7 @@ function ComposerBody({
       await handleRunOnMyMac();
       return;
     }
-    if (destination === "claude-code-hosted") {
+    if (isHosted) {
       await handleRunHosted();
       return;
     }
@@ -786,7 +843,9 @@ function ComposerBody({
               ? "Claude Code on my Mac"
               : destination === "claude-code-hosted"
                 ? "Claude Code (hosted)"
-                : undefined
+                : destination === "codex-hosted"
+                  ? "Codex (hosted)"
+                  : undefined
         }
         complete
         open={openStep === 1}
@@ -807,6 +866,7 @@ function ComposerBody({
             <DestinationStep
               value={destination}
               bridgeCapability={bridgeCapability}
+              codexBridgeCapability={codexBridgeCapability}
               localCapability={localCapability ?? undefined}
               onChange={setDestination}
             />
@@ -841,9 +901,15 @@ function ComposerBody({
             </p>
           </div>
         )}
-        {runsOnDevice === null && destination === "claude-code-hosted" &&
+        {runsOnDevice === null && destination === "codex-hosted" &&
+          hostedAvailability.selectable && (
+            <CodexModelStep value={codexModel} onChange={setCodexModel} />
+          )}
+        {runsOnDevice === null && isHosted &&
           hostedAvailability.selectable && (
             <HostedBillingStep
+              key={hostedProvider}
+              provider={hostedProvider}
               billing={hostedBilling}
               onBillingChange={setHostedBilling}
               status={ownPlanStatus}
@@ -1029,14 +1095,18 @@ function ComposerBody({
               ? `Claude Code on my Mac — ${localFolder || "no folder chosen"}`
               : destination === "claude-code-hosted"
                 ? "Claude Code in a Matrx Sandbox we start for you"
-                : "AI Matrx"}
+                : destination === "codex-hosted"
+                  ? `Codex in a Matrx Sandbox we start for you — ${codexModel?.name ?? "no model chosen"}`
+                  : "AI Matrx"}
           </dd>
-          {destination === "claude-code-hosted" && (
+          {isHosted && (
             <>
               <dt className="text-muted-foreground">Paid by</dt>
               <dd className="text-foreground">
                 {hostedBilling === "own_plan"
-                  ? "Your Claude plan"
+                  ? hostedProvider === "codex"
+                    ? "Your ChatGPT plan"
+                    : "Your Claude plan"
                   : "AI Matrx credits"}
               </dd>
             </>
@@ -1047,7 +1117,9 @@ function ComposerBody({
               ? "The coding app itself (that computer's own configuration)"
               : destination === "claude-code"
               ? "Claude Code itself (your Mac's own configuration)"
-              : (defaultAgentName ?? "The selected agent")}
+              : destination === "codex-hosted"
+                ? "Codex itself (the model you chose)"
+                : (defaultAgentName ?? "The selected agent")}
           </dd>
           <dt className="text-muted-foreground">Added skills</dt>
           <dd className="text-foreground">
@@ -1124,14 +1196,11 @@ function ComposerBody({
             <ErrorNotice size="inline" className="text-xs" message={computerRefusal} />
           </span>
         )}
-        {destination === "claude-code-hosted" && !ownPlanReady && (
-          <span className="text-xs text-muted-foreground">
-            {ownPlanStatus?.state === "signed_in_not_plan"
-              ? "Sign in with a Claude plan, or use AI Matrx credits."
-              : "Connect your Claude account first."}
-          </span>
+        {hostedBlocker && hostedAvailability.selectable && (
+          <span className="text-xs text-muted-foreground">{hostedBlocker}</span>
         )}
         <HostedRunControls
+          provider={hostedRunProvider}
           running={hostedRunning}
           runtimeId={hostedRuntimeId}
           onCancelled={() => setHostedRunning(false)}
@@ -1143,8 +1212,7 @@ function ComposerBody({
             // so the user loses the run they just started. Route mirrors to
             // the provider detail view, agent-backed runs to chat.
             href={
-              destination === "claude-code" ||
-              destination === "claude-code-hosted"
+              destination === "claude-code" || isHosted
                 ? `/work/conversations/${launched}`
                 : `/chat/${launched}`
             }
