@@ -1265,6 +1265,9 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           door: string
+          expect_refusal: boolean
+          fixture_group: string | null
+          fixtures: Json
           id: string
           input_contract_hash: string | null
           is_active: boolean
@@ -1277,6 +1280,7 @@ export type Database = {
           organization_id: string
           output_contract_hash: string | null
           position: number
+          preconditions: Json
           prompt_blocks: Json | null
           published_to_web: boolean
           published_to_web_at: string | null
@@ -1307,6 +1311,9 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           door?: string
+          expect_refusal?: boolean
+          fixture_group?: string | null
+          fixtures?: Json
           id?: string
           input_contract_hash?: string | null
           is_active?: boolean
@@ -1319,6 +1326,7 @@ export type Database = {
           organization_id: string
           output_contract_hash?: string | null
           position?: number
+          preconditions?: Json
           prompt_blocks?: Json | null
           published_to_web?: boolean
           published_to_web_at?: string | null
@@ -1349,6 +1357,9 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           door?: string
+          expect_refusal?: boolean
+          fixture_group?: string | null
+          fixtures?: Json
           id?: string
           input_contract_hash?: string | null
           is_active?: boolean
@@ -1361,6 +1372,7 @@ export type Database = {
           organization_id?: string
           output_contract_hash?: string | null
           position?: number
+          preconditions?: Json
           prompt_blocks?: Json | null
           published_to_web?: boolean
           published_to_web_at?: string | null
@@ -2371,10 +2383,14 @@ export type Database = {
           conversation_id: string | null
           created_at: string
           created_by: string | null
-          door: string | null
-          door_reason: string | null
+          door: string
+          door_pick_fn: string | null
+          door_reason: string
           duration_ms: number | null
+          eligible_doors: string[]
           error: Json | null
+          fixture_lock_key: string | null
+          fixture_restore: Json
           id: string
           identity_mode: string | null
           inputs: Json
@@ -2383,6 +2399,8 @@ export type Database = {
           metadata: Json
           organization_id: string
           origin_class: string | null
+          outcome: Json | null
+          parity_group: string
           repeat: number
           run_cost_cents: number | null
           saved_answer: boolean
@@ -2394,6 +2412,7 @@ export type Database = {
           updated_by: string | null
           user_request_ids: string[]
           verdict: string | null
+          verdict_reason: string | null
           version: number
           work_item_id: string | null
         }
@@ -2407,10 +2426,14 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           created_by?: string | null
-          door?: string | null
-          door_reason?: string | null
+          door: string
+          door_pick_fn?: string | null
+          door_reason: string
           duration_ms?: number | null
+          eligible_doors?: string[]
           error?: Json | null
+          fixture_lock_key?: string | null
+          fixture_restore?: Json
           id?: string
           identity_mode?: string | null
           inputs?: Json
@@ -2419,6 +2442,8 @@ export type Database = {
           metadata?: Json
           organization_id: string
           origin_class?: string | null
+          outcome?: Json | null
+          parity_group: string
           repeat?: number
           run_cost_cents?: number | null
           saved_answer?: boolean
@@ -2430,6 +2455,7 @@ export type Database = {
           updated_by?: string | null
           user_request_ids?: string[]
           verdict?: string | null
+          verdict_reason?: string | null
           version?: number
           work_item_id?: string | null
         }
@@ -2443,10 +2469,14 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           created_by?: string | null
-          door?: string | null
-          door_reason?: string | null
+          door?: string
+          door_pick_fn?: string | null
+          door_reason?: string
           duration_ms?: number | null
+          eligible_doors?: string[]
           error?: Json | null
+          fixture_lock_key?: string | null
+          fixture_restore?: Json
           id?: string
           identity_mode?: string | null
           inputs?: Json
@@ -2455,6 +2485,8 @@ export type Database = {
           metadata?: Json
           organization_id?: string
           origin_class?: string | null
+          outcome?: Json | null
+          parity_group?: string
           repeat?: number
           run_cost_cents?: number | null
           saved_answer?: boolean
@@ -2466,6 +2498,7 @@ export type Database = {
           updated_by?: string | null
           user_request_ids?: string[]
           verdict?: string | null
+          verdict_reason?: string | null
           version?: number
           work_item_id?: string | null
         }
@@ -2483,7 +2516,9 @@ export type Database = {
         Row: {
           agent_ids: string[]
           ai_test_mode: string
+          archived_at: string | null
           comparison_set_id: string | null
+          counts: Json
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -2491,6 +2526,7 @@ export type Database = {
           execution_id: string | null
           finished_at: string | null
           id: string
+          idempotency_key: string | null
           judge_policy: string
           mandate_id: string | null
           max_cost_cents: number
@@ -2502,8 +2538,10 @@ export type Database = {
           purpose: string
           rechecked_from_run_id: string | null
           repeats: number
+          seed: string
           setups: Json
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          spent_cents: number
           started_at: string | null
           status: string
           updated_at: string
@@ -2515,7 +2553,9 @@ export type Database = {
         Insert: {
           agent_ids?: string[]
           ai_test_mode?: string
+          archived_at?: string | null
           comparison_set_id?: string | null
+          counts?: Json
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -2523,6 +2563,7 @@ export type Database = {
           execution_id?: string | null
           finished_at?: string | null
           id?: string
+          idempotency_key?: string | null
           judge_policy?: string
           mandate_id?: string | null
           max_cost_cents?: number
@@ -2534,8 +2575,10 @@ export type Database = {
           purpose?: string
           rechecked_from_run_id?: string | null
           repeats?: number
+          seed?: string
           setups?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          spent_cents?: number
           started_at?: string | null
           status?: string
           updated_at?: string
@@ -2547,7 +2590,9 @@ export type Database = {
         Update: {
           agent_ids?: string[]
           ai_test_mode?: string
+          archived_at?: string | null
           comparison_set_id?: string | null
+          counts?: Json
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -2555,6 +2600,7 @@ export type Database = {
           execution_id?: string | null
           finished_at?: string | null
           id?: string
+          idempotency_key?: string | null
           judge_policy?: string
           mandate_id?: string | null
           max_cost_cents?: number
@@ -2566,8 +2612,10 @@ export type Database = {
           purpose?: string
           rechecked_from_run_id?: string | null
           repeats?: number
+          seed?: string
           setups?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          spent_cents?: number
           started_at?: string | null
           status?: string
           updated_at?: string
@@ -2577,6 +2625,13 @@ export type Database = {
           workflow_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "test_run_comparison_set_fk"
+            columns: ["comparison_set_id"]
+            isOneToOne: false
+            referencedRelation: "cmp_comparison_sets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "test_run_rechecked_from_fk"
             columns: ["rechecked_from_run_id"]
@@ -103809,6 +103864,20 @@ export type Database = {
         Args: { p_ans: Json }
         Returns: Record<string, unknown>
       }
+      decision_reference_item_meta: {
+        Args: {
+          p_item_confidence: number
+          p_item_judge_key: string
+          p_item_metadata: Json
+          p_item_model: string
+          p_item_verdict: string
+        }
+        Returns: Json
+      }
+      decision_reference_run_live: {
+        Args: { p_run_id: string }
+        Returns: boolean
+      }
       declare_custom_record_edge: {
         Args: { p_target_token: string }
         Returns: Json
@@ -104779,6 +104848,19 @@ export type Database = {
             }
             Returns: number
           }
+      mark_decision_reference: {
+        Args: {
+          p_context?: Json
+          p_item_ids: string[]
+          p_judge_key: string
+          p_model: string
+          p_reason?: string
+          p_replace?: boolean
+          p_status: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       materialize_library_rulebook: {
         Args: {
           p_actor: string
@@ -139317,6 +139399,191 @@ export type Database = {
   }
   tool: {
     Tables: {
+      battle: {
+        Row: {
+          blind: boolean
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          finished_at: string | null
+          id: string
+          job_key: string
+          lanes: Json
+          metadata: Json
+          organization_id: string
+          promotions: Json
+          run_token: string | null
+          started_at: string | null
+          status: string
+          subjects: Json
+          summary: Json | null
+          title: string
+          tool_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          blind?: boolean
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          finished_at?: string | null
+          id?: string
+          job_key: string
+          lanes?: Json
+          metadata?: Json
+          organization_id: string
+          promotions?: Json
+          run_token?: string | null
+          started_at?: string | null
+          status?: string
+          subjects?: Json
+          summary?: Json | null
+          title: string
+          tool_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          blind?: boolean
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          finished_at?: string | null
+          id?: string
+          job_key?: string
+          lanes?: Json
+          metadata?: Json
+          organization_id?: string
+          promotions?: Json
+          run_token?: string | null
+          started_at?: string | null
+          status?: string
+          subjects?: Json
+          summary?: Json | null
+          title?: string
+          tool_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      battle_cell: {
+        Row: {
+          answer_fields: Json | null
+          attempt: number
+          battle_id: string
+          call_id: string | null
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          endpoint_id: string | null
+          error_code: string | null
+          error_message: string | null
+          evidence: Json | null
+          finished_at: string | null
+          heartbeat_at: string | null
+          id: string
+          ignored_filters: Json | null
+          lane_id: string
+          metadata: Json
+          organization_id: string
+          output: Json | null
+          points: number | null
+          provider_slug: string | null
+          raw_fields: Json | null
+          started_at: string | null
+          status: string
+          subject_id: string
+          updated_at: string
+          updated_by: string | null
+          vendor_ms: number | null
+          version: number
+          via: string | null
+          wall_ms: number | null
+        }
+        Insert: {
+          answer_fields?: Json | null
+          attempt?: number
+          battle_id: string
+          call_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          endpoint_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          evidence?: Json | null
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          id?: string
+          ignored_filters?: Json | null
+          lane_id: string
+          metadata?: Json
+          organization_id: string
+          output?: Json | null
+          points?: number | null
+          provider_slug?: string | null
+          raw_fields?: Json | null
+          started_at?: string | null
+          status?: string
+          subject_id: string
+          updated_at?: string
+          updated_by?: string | null
+          vendor_ms?: number | null
+          version?: number
+          via?: string | null
+          wall_ms?: number | null
+        }
+        Update: {
+          answer_fields?: Json | null
+          attempt?: number
+          battle_id?: string
+          call_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          endpoint_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          evidence?: Json | null
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          id?: string
+          ignored_filters?: Json | null
+          lane_id?: string
+          metadata?: Json
+          organization_id?: string
+          output?: Json | null
+          points?: number | null
+          provider_slug?: string | null
+          raw_fields?: Json | null
+          started_at?: string | null
+          status?: string
+          subject_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          vendor_ms?: number | null
+          version?: number
+          via?: string | null
+          wall_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_cell_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battle"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       binding: {
         Row: {
           created_at: string
@@ -140574,6 +140841,88 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _breaker_evaluate: {
+        Args: { p_attempt: string; p_endpoint: string }
+        Returns: string
+      }
+      _breaker_trip: {
+        Args: {
+          p_attempt: string
+          p_endpoint: string
+          p_rule: string
+          p_scope: string
+          p_snapshot: Json
+        }
+        Returns: boolean
+      }
+      _control_assert_admin: { Args: never; Returns: undefined }
+      _control_close_alarm: {
+        Args: { p_kind: string; p_note: string; p_subject_key: string }
+        Returns: number
+      }
+      _control_knob: {
+        Args: { p_default: number; p_key: string }
+        Returns: number
+      }
+      _control_log: { Args: { p_entry: Json; p_meta: Json }; Returns: Json }
+      _control_open_alarm: {
+        Args: {
+          p_kind: string
+          p_payload: Json
+          p_subject_key: string
+          p_text: string
+        }
+        Returns: string
+      }
+      _recompute_tool_state: {
+        Args: { p_reason?: string; p_tool: string }
+        Returns: string
+      }
+      _verification_proof: {
+        Args: { p_call: string; p_endpoint: string }
+        Returns: string
+      }
+      catalog_off_notice: { Args: { p_tool: string }; Returns: string }
+      control_for_attention: {
+        Args: never
+        Returns: {
+          detail: string
+          facts: Json
+          item_key: string
+          kind: string
+          last_seen_at: string
+          record_href: string
+          sentence: string
+          severity: string
+          title: string
+        }[]
+      }
+      endpoint_begin_verification: {
+        Args: { p_actor?: string; p_endpoint: string }
+        Returns: Json
+      }
+      endpoint_finish_verification: {
+        Args: {
+          p_actor?: string
+          p_actor_kind?: string
+          p_call: string
+          p_endpoint: string
+        }
+        Returns: Json
+      }
+      endpoint_turn_off: {
+        Args: {
+          p_actor?: string
+          p_endpoint: string
+          p_note?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
+      endpoint_turn_on: {
+        Args: { p_actor?: string; p_endpoint: string }
+        Returns: Json
+      }
       executor_walk_parents: {
         Args: { p_name: string }
         Returns: {
@@ -140605,6 +140954,24 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      provider_set_state: {
+        Args: {
+          p_actor?: string
+          p_note?: string
+          p_slug: string
+          p_to: string
+        }
+        Returns: Json
+      }
+      tool_set_paused: {
+        Args: {
+          p_actor?: string
+          p_note?: string
+          p_paused: boolean
+          p_tool: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -140622,6 +140989,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           metadata: Json
+          organization_id: string | null
           pass_index: number
           processor_key: string
           recording_segment_id: string | null
@@ -140639,6 +141007,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           metadata?: Json
+          organization_id?: string | null
           pass_index: number
           processor_key?: string
           recording_segment_id?: string | null
@@ -140656,6 +141025,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           metadata?: Json
+          organization_id?: string | null
           pass_index?: number
           processor_key?: string
           recording_segment_id?: string | null
