@@ -1,19 +1,17 @@
 "use client";
 
 /**
- * WorkbookPeek — read-only preview of a single workbook resource.
- *
- * Same pattern as FilePeek: fetch the row by id, fill <PeekDialog> + <PeekField>.
- * Titled by `workbook_name` — the registry's title column. Until 2026-10-02 it
- * read `description`, so a workbook without one peeked as just "Workbook"
- * (G10A review). Guard: `__tests__/every-peek-shows-the-record-name.test.tsx`.
+ * WorkbookPeek — read-only preview of a workbook. On THE peek (`Peek` in `PeekWindow`).
+ * Titled by `workbook_name` — the registry's title column (guard:
+ * `__tests__/every-peek-shows-the-record-name.test.tsx`).
  */
 
 import React from "react";
 import { Sheet } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 
 interface WorkbookRow {
@@ -25,6 +23,7 @@ interface WorkbookRow {
 export default function WorkbookPeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<WorkbookRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "workbook", id, href: peekHref("workbook", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -47,28 +46,21 @@ export default function WorkbookPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id]);
 
+  const body: PeekBlock[] = [];
+  if (row) {
+    if (row.description && row.description !== row.workbook_name) {
+      body.push({ section: "Description", text: row.description });
+    }
+    body.push({ fact: `Created ${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}`, muted: true });
+    body.push({ part: "custom-fields", token: "workbook", id });
+  } else if (!loading) {
+    body.push({ part: "access", token: "workbook", id });
+  }
+
+  const title = row?.workbook_name || row?.description || "Workbook";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "workbook", id }}
-      onClose={onClose}
-      title={row?.workbook_name || row?.description || "Workbook"}
-      icon={<Sheet className="h-4 w-4 text-sky-600 dark:text-sky-400" />}
-      href={peekHref("workbook", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          {row.description && row.description !== row.workbook_name ? (
-            <PeekField label="Description">{row.description}</PeekField>
-          ) : null}
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Workbook not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "Workbook", id, title, glyph: Sheet, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }

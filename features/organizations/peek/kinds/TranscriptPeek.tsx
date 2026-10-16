@@ -1,32 +1,27 @@
 "use client";
 
-/**
- * TranscriptPeek — read-only preview of a transcript resource.
- *
- * Same pattern as FilePeek / NotePeek: fetch the row, fill <PeekDialog>.
- * Shows the transcript's description as a scrollable block when present.
- */
+/** TranscriptPeek — read-only preview of a transcript. On THE peek (`Peek` in `PeekWindow`). */
 
 import React from "react";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { AudioLines } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
-import { ReadFailure } from "@ai-matrx/design-system";
 
-interface TranscriptRow {
+interface Row {
   title: string | null;
   description: string | null;
   created_at: string | null;
 }
 
 export default function TranscriptPeek({ id, open, onClose }: PeekProps) {
-  const [row, setRow] = React.useState<TranscriptRow | null>(null);
+  const [row, setRow] = React.useState<Row | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<unknown>(null);
   const [attempt, setAttempt] = React.useState(0);
+  const doors = useRecordPeekDoors({ token: "transcript", id, href: peekHref("transcript", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -41,7 +36,7 @@ export default function TranscriptPeek({ id, open, onClose }: PeekProps) {
         .maybeSingle();
       if (!cancelled) {
         setLoadError(error ?? null);
-        setRow((data as TranscriptRow) ?? null);
+        setRow((data as Row) ?? null);
         setLoading(false);
       }
     })();
@@ -50,36 +45,36 @@ export default function TranscriptPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id, attempt]);
 
+  const description = row?.description ?? "";
+  const body: PeekBlock[] = [];
+  if (row && !loadError) {
+    body.push(
+      description.trim()
+        ? { section: "Description", text: description, markdown: true }
+        : { section: "Description", text: "No description" },
+    );
+    body.push({ fact: `Created ${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}`, muted: true });
+    body.push({ part: "custom-fields", token: "transcript", id });
+  } else if (!loading && !loadError) {
+    body.push({ fact: "Transcript not found.", wrap: true });
+  }
+
+  const title = row?.title || "Transcript";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "transcript", id }}
-      onClose={onClose}
-      title={row?.title || "Transcript"}
-      icon={<AudioLines className="h-4 w-4 text-sky-600 dark:text-sky-400" />}
-      href={peekHref("transcript", id)}
-      loading={loading}
-    >
-      {loadError ? (
-        <ReadFailure error={loadError} what="this transcript" onRetry={() => setAttempt((n) => n + 1)} />
-      ) : row ? (
-        <>
-          <PeekField label="Description">
-            {row.description ? (
-              <div className="text-sm break-words text-muted-foreground rounded-md border border-border bg-muted/20 p-3 max-h-72 overflow-y-auto"><RichContent source={row.description ?? ""} level="standard" /></div>
-            ) : (
-              <span className="text-muted-foreground italic">
-                No description
-              </span>
-            )}
-          </PeekField>
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Transcript not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek
+        size="lg"
+        record={{
+          kind: "Transcript",
+          id,
+          title,
+          glyph: AudioLines,
+          body,
+          ...(loadError ? { failure: { what: "this transcript", error: loadError, onRetry: () => setAttempt((n) => n + 1) } } : {}),
+          ...doors,
+        }}
+        loading={loading}
+      />
+    </PeekWindow>
   );
 }

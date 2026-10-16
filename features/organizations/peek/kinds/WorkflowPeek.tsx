@@ -1,18 +1,14 @@
 "use client";
 
-/**
- * WorkflowPeek — quick read-only preview of a workflow resource.
- *
- * Same pattern as FilePeek: fetch the row, fill <PeekDialog> + <PeekField>.
- */
+/** WorkflowPeek — quick read-only preview of a workflow. On THE peek (`Peek` in `PeekWindow`). */
 
 import React from "react";
 import { Workflow } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
-import { ReadFailure } from "@ai-matrx/design-system";
 
 interface WorkflowRow {
   name: string | null;
@@ -20,23 +16,18 @@ interface WorkflowRow {
   created_at: string | null;
 }
 
-const workflowIcon = (
-  <Workflow className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-);
-
 export default function WorkflowPeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<WorkflowRow | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<unknown>(null);
   const [attempt, setAttempt] = React.useState(0);
+  const doors = useRecordPeekDoors({ token: "workflow", id, href: peekHref("workflow", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      // `workflow.definition` is the live model; the old `public.workflow`
-      // this peek used to read is in `deprecated` and returned nothing, so the
-      // dialog always said "Workflow not found."
+      // `workflow.definition` is the live model; the old `public.workflow` is in `deprecated`.
       const { data, error } = await supabase
         .schema("workflow")
         .from("definition")
@@ -55,36 +46,31 @@ export default function WorkflowPeek({ id, open, onClose }: PeekProps) {
     };
   }, [id, attempt]);
 
+  const body: PeekBlock[] = [];
+  if (row && !loadError) {
+    body.push({ section: "Description", text: row.description ? row.description : "No description" });
+    body.push({ fact: `Created ${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}`, muted: true });
+    body.push({ part: "custom-fields", token: "workflow", id });
+  } else if (!loading && !loadError) {
+    body.push({ fact: "Workflow not found.", wrap: true });
+  }
+
+  const title = row?.name || "Workflow";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "workflow", id }}
-      onClose={onClose}
-      title={row?.name || "Workflow"}
-      icon={workflowIcon}
-      href={peekHref("workflow", id)}
-      loading={loading}
-    >
-      {loadError ? (
-        <ReadFailure error={loadError} what="this workflow" onRetry={() => setAttempt((n) => n + 1)} />
-      ) : row ? (
-        <>
-          <PeekField label="Description">
-            {row.description ? (
-              row.description
-            ) : (
-              <span className="text-muted-foreground italic">
-                No description
-              </span>
-            )}
-          </PeekField>
-          <PeekField label="Created">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Workflow not found.</p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek
+        size="lg"
+        record={{
+          kind: "Workflow",
+          id,
+          title,
+          glyph: Workflow,
+          body,
+          ...(loadError ? { failure: { what: "this workflow", error: loadError, onRetry: () => setAttempt((n) => n + 1) } } : {}),
+          ...doors,
+        }}
+        loading={loading}
+      />
+    </PeekWindow>
   );
 }

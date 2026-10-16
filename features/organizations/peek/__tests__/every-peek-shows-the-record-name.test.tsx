@@ -104,7 +104,7 @@ describe("every peek is titled by the record's name", () => {
       root.render(<WithStoreReads><Peek id="00000000-0000-4000-8000-000000000001" open onClose={() => {}} /></WithStoreReads>);
     });
     await settle();
-    const titles = [...document.body.querySelectorAll('[role="dialog"] h2')].map((h) => h.textContent);
+    const titles = [...document.body.querySelectorAll('[role="dialog"] h2, [role="dialog"] .matrx-peek-title')].map((h) => h.textContent);
     const title = titles[titles.length - 1] ?? "";
     expect(title).toBe(`G10A ${info!.titleColumn}`);
     act(() => root.unmount());

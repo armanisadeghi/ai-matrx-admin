@@ -32,11 +32,11 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { shownToLabel } from "@/lib/row-access";
 import React from "react";
 import { Boxes } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock, type PeekGlyph } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /** Fields worth showing under the title, in the order a reader wants them. */
 const DETAIL_FIELDS = [
@@ -70,6 +70,8 @@ export function RegistryPeek({
   const [row, setRow] = React.useState<Row | null>(null);
   const [failed, setFailed] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  const [attempt, setAttempt] = React.useState(0);
+  const doors = useRecordPeekDoors({ token, id, onClose });
 
   React.useEffect(() => {
     if (!info) {
@@ -104,62 +106,55 @@ export function RegistryPeek({
     return () => {
       cancelled = true;
     };
-  }, [info, id]);
+  }, [info, id, attempt]);
 
-  const Icon = info?.Icon ?? Boxes;
+  const Icon = (info?.Icon ?? Boxes) as PeekGlyph;
   const title =
     (info?.titleColumn ? asText(row?.[info.titleColumn]) : null) ??
     info?.label ??
     "Record";
+  const kindWord = info?.label?.toLowerCase() ?? "record";
+
+  const body: PeekBlock[] = [];
+  if (row && !failed) {
+    for (const field of DETAIL_FIELDS) {
+      const raw = asText(row[field]);
+      const value = field === "shown_to" && raw ? shownToLabel(raw) : raw;
+      if (value) body.push({ section: humanizeIdentifier(field) || field, text: value, breaks: true });
+    }
+    for (const field of DATE_FIELDS) {
+      const value = asText(row[field]);
+      if (value) body.push({ property: humanizeIdentifier(field) || field, value: new Date(value).toLocaleString() });
+    }
+    body.push({ part: "custom-fields", token, id });
+  } else if (!loading && !failed) {
+    body.push({ part: "access", token, id });
+  }
 
   return (
-    <PeekDialog
-      open={open}
-      record={{ token, id }}
-      onClose={onClose}
-      title={title}
-      icon={<Icon className="h-4 w-4 text-muted-foreground" />}
-      token={token}
-      id={id}
-      loading={loading}
-    >
-      {failed ? (
-        <p className="text-sm text-muted-foreground">
-          Couldn&apos;t read this {info?.label?.toLowerCase() ?? "record"} — it
-          may not be readable from the browser, or you may not have access.
-          <ErrorAlchemyMenu />
-        </p>
-      ) : row ? (
-        <>
-          {DETAIL_FIELDS.map((field) => {
-            const raw = asText(row[field]);
-            const value = field === "shown_to" && raw ? shownToLabel(raw) : raw;
-            return value ? (
-              <PeekField key={field} label={humanizeIdentifier(field) || field}>
-                <div className="max-h-72 overflow-y-auto whitespace-pre-wrap break-words text-sm text-muted-foreground">
-                  {value}
-                </div>
-              </PeekField>
-            ) : null;
-          })}
-          {DATE_FIELDS.map((field) => {
-            const value = asText(row[field]);
-            return value ? (
-              <PeekField key={field} label={humanizeIdentifier(field) || field}>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(value).toLocaleString()}
-                </span>
-              </PeekField>
-            ) : null;
-          })}
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          This {info?.label?.toLowerCase() ?? "record"} isn&apos;t available — it
-          may have been deleted, or it isn&apos;t shared with you.
-        </p>
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek
+        size="lg"
+        record={{
+          kind: info?.label ?? "Record",
+          id,
+          title,
+          glyph: Icon,
+          body,
+          ...(failed
+            ? {
+                failure: {
+                  what: `this ${kindWord}`,
+                  message: `Couldn't read this ${kindWord} — it may not be readable from the browser, or you may not have access.`,
+                  onRetry: () => setAttempt((n) => n + 1),
+                },
+              }
+            : {}),
+          ...doors,
+        }}
+        loading={loading}
+      />
+    </PeekWindow>
   );
 }
 

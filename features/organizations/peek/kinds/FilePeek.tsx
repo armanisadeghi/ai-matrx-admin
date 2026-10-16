@@ -1,25 +1,17 @@
 "use client";
 
 /**
- * FilePeek — canonical "data-driven" peek example.
- *
- * Pattern (copy this for new kinds):
- *   1. fetch the one row by id from the kind's table
- *   2. drop fields into <PeekDialog> + <PeekField>
- *   3. set href to the kind's detail route
- *
- * TODO(file-peek-media): for image/pdf mimes, render an inline preview through
- * the universal file handler (features/files) instead of metadata-only.
+ * FilePeek — a file's type, size and date, with its thumbnail. On THE peek (`Peek` in `PeekWindow`).
+ * The thumbnail is the stored file drawn by the app (`media.file`).
  */
 
 import React from "react";
 import { FileText } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { filesDb } from "@/features/files/filesDb";
 import { peekHref } from "../peekHref";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 import { formatFileSize } from "@ai-matrx/kit/format";
 
@@ -33,6 +25,7 @@ interface FileRow {
 export default function FilePeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<FileRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "file", id, href: peekHref("file", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -54,31 +47,32 @@ export default function FilePeek({ id, open, onClose }: PeekProps) {
     };
   }, [id]);
 
+  const body: PeekBlock[] = [];
+  if (row) {
+    body.push({ property: "Type", value: row.mime_type ?? "unknown" });
+    body.push({ property: "Size", value: formatFileSize(row.size_bytes) });
+    body.push({ property: "Added", value: row.created_at ? new Date(row.created_at).toLocaleString() : "—" });
+    body.push({ part: "custom-fields", token: "file", id });
+  } else if (!loading) {
+    body.push({ part: "access", token: "file", id });
+  }
+
+  const title = row?.file_name ?? "File";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "file", id }}
-      onClose={onClose}
-      title={row?.file_name ?? "File"}
-      icon={<FileText className="h-4 w-4 text-sky-600 dark:text-sky-400" />}
-      href={peekHref("file", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          <PeekField label="Type">
-            <Badge variant="secondary" className="text-xs font-mono">
-              {row.mime_type ?? "unknown"}
-            </Badge>
-          </PeekField>
-          <PeekField label="Size">{formatFileSize(row.size_bytes)}</PeekField>
-          <PeekField label="Added">
-            {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <AccessGate token="file" id={id} />
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek
+        size="lg"
+        record={{
+          kind: "File",
+          id,
+          title,
+          glyph: FileText,
+          ...(row ? { media: { alt: title, file: { id, ...(row.mime_type ? { mimeType: row.mime_type } : {}) } } } : {}),
+          body,
+          ...doors,
+        }}
+        loading={loading}
+      />
+    </PeekWindow>
   );
 }
