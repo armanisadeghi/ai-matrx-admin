@@ -62,7 +62,7 @@ function plainLabel(value: unknown): string | null {
 }
 
 /** Vendor names never reach a person ("our business, not the user's"); a label that somehow carries one is generalised. */
-const VENDOR_WORDS = /scrapecreators|dataforseo|serpapi|brave|twilio|\bxai\b|grok/i;
+const VENDOR_WORDS = /scrapecreators|dataforseo|serpapi|brave|twilio|\bxai\b|grok|brightdata|bright data|apify|firecrawl|\btreg\b|tikhub|justoneapi|adyntel|cloro|crawl4ai|litescrape/i;
 
 /**
  * What a usage row says happened. The server writes the full label for hard-cost rows
