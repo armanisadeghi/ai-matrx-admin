@@ -57,7 +57,8 @@ const CATALOG = `
 select n.nspname || '.' || p.proname, p.proname::text,
        (n.nspname = 'public' and p.proname ~ '${LIST_RPC}'),
        (l.lanname = 'sql' and not p.proretset and p.prokind = 'f' and p.provolatile in ('i', 's')
-        and p.prosrc !~* '\\m(from|join)\\M'),
+        -- comments stripped first: a helper whose comment says "from" still reads no table
+        and regexp_replace(p.prosrc, '--[^\\n]*', '', 'g') !~* '\\m(from|join)\\M'),
        p.proconfig is not null, p.prosrc
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace join pg_language l on l.oid = p.prolang
  where n.nspname not in ('pg_catalog', 'information_schema', 'extensions', 'graphql', 'auth', 'storage',
