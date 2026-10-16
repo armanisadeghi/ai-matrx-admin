@@ -21,7 +21,7 @@
  */
 
 import Link from "next/link";
-import { USAGE_LIMIT_MESSAGE } from "../service/cleanOutcome";
+import { USAGE_LIMIT_MESSAGE, isDocCleaned } from "../service/cleanOutcome";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import React, {
   useCallback,
@@ -44,7 +44,6 @@ import {
   type PdfDocument,
 } from "../hooks/usePdfExtractor";
 import { confirmRecleanIfCleaned } from "../service/confirmReclean";
-import { isDocCleaned } from "../service/cleanOutcome";
 import { usePdfDocRun, type PdfDocRunPhase } from "../hooks/usePdfDocRun";
 import { useProcessedDocumentPages } from "../hooks/useProcessedDocumentPages";
 import { useProcessedDocSync } from "../hooks/useProcessedDocSync";

@@ -147,6 +147,31 @@ export function choosePdfRunTarget(
 }
 
 const LOOKUP_SHARE_MS = 10_000;
+
+/**
+ * How often an open, visible doc re-asks whether a run started elsewhere (a
+ * second tab, another device). Longer than `LOOKUP_SHARE_MS`, so each tick is
+ * one real read; every shell on the doc shares it. A pure status read.
+ */
+export const PDF_RUN_POLL_MS = 15_000;
+
+const LIVE_OPERATION_STATUSES: ReadonlySet<string> = new Set([
+  "pending",
+  "running",
+  "paused",
+  "waiting_input",
+]);
+
+/** This doc has a run that is live right now (its own, not a batch root's). */
+export function hasLiveOwnRun(
+  operations: ReadonlyArray<MatrxRuntimeOperationView> | null | undefined,
+  docId: string,
+): boolean {
+  if (!operations) return false;
+  return operations.some(
+    (op) => countOwnRuns([op], docId) > 0 && !op.is_terminal && LIVE_OPERATION_STATUSES.has(op.status),
+  );
+}
 type LinkOps = ReadonlyArray<MatrxRuntimeOperationView>;
 const sharedLookups = new Map<string, { at: number; promise: Promise<LinkOps> }>();
 
@@ -313,6 +338,43 @@ export function usePdfDocRun(args: {
       await onSettled();
     },
   });
+
+  // A clean started in ANOTHER tab / device leaves no row the browser can
+  // subscribe to (the run record lives behind the server; the only published
+  // table, processed_documents, changes when a clean ENDS, not when it
+  // starts), so while the doc is open, visible and not already following a
+  // run, a cheap by-link status read notices it and the follow joins it.
+  const reconnectRef = useRef(job.reconnect);
+  reconnectRef.current = job.reconnect;
+  const followingLive = phaseOf(job.status) === "running";
+  useEffect(() => {
+    if (!docId || localStreaming || followingLive) return;
+    let stopped = false;
+    let busy = false;
+    const tick = async () => {
+      if (stopped || busy || document.visibilityState === "hidden") return;
+      busy = true;
+      try {
+        const ops = await readLinkOperations(docId);
+        if (!stopped && hasLiveOwnRun(ops, docId)) reconnectRef.current();
+      } catch {
+        // A failed status read is not news; the next tick asks again.
+      } finally {
+        busy = false;
+      }
+    };
+    const timer = setInterval(() => void tick(), PDF_RUN_POLL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- readLinkOperations closes over the stable store
+  }, [docId, localStreaming, followingLive, store]);
 
   // A lookup that fails retries with backoff; only after the retries are spent
   // does the screen say so ("unavailable" + Retry) — never a silent guess.
