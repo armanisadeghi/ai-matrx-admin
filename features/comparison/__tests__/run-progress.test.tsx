@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 
 import { parseRunState, stageOf } from "../contract";
-import { RunProgress } from "../components/RunProgress";
+import { RECONNECTED_MS, RunProgress } from "../components/RunProgress";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -40,5 +40,26 @@ describe("the stage key", () => {
     expect(stageOf("reading")).toBe("reading");
     const s = parseRunState({ run_id: "r", items: [{ index: 0, label: "A", stage: "waiting_for_provider" }] });
     expect(s?.items[0].stage).toBe("reading");
+  });
+});
+
+describe("Reconnected is shown briefly, then plain progress", () => {
+  it("clears after a few seconds without removing its line", async () => {
+    jest.useFakeTimers();
+    try {
+      const host = document.createElement("div");
+      document.body.appendChild(host);
+      const root = createRoot(host);
+      await act(async () => {
+        root.render(<RunProgress kind="companies_reviews" kindLabel="Companies" items={[item("", null)]}
+          identities={[{ name: "Acme" }]} startedAt={Date.now()} recovering />);
+      });
+      expect(host.textContent).toContain("Reconnected");
+      await act(async () => { jest.advanceTimersByTime(RECONNECTED_MS + 100); });
+      expect(host.textContent).not.toContain("Reconnected");
+      expect(host.querySelector(".h-4")).not.toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

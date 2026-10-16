@@ -65,7 +65,7 @@ export function FoundStep({
         <Button variant="quiet" icon={<ArrowLeft className="h-4 w-4" />} onClick={onBack}>Edit</Button>
       </div>
 
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="grid items-start gap-3 sm:grid-cols-2">
         {rows.map((row) => {
           const m = row.match;
           const others = row.candidates.length > 1;

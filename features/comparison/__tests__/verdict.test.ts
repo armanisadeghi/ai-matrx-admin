@@ -1,5 +1,5 @@
 import { parseResult, type ComparisonResult } from "../contract";
-import { barFraction, nameFromLink, verdictOf, whyLine } from "../verdict";
+import { barFraction, headlineOf, nameFromLink, verdictOf, whyLine } from "../verdict";
 
 const F = (key: string, type: string, direction = "higher_better", is_primary = false) =>
   ({ key, label: key, type, direction, is_primary, help: "" });
@@ -38,5 +38,22 @@ describe("the verdict reads the result in plain words", () => {
   it("a link reads as a name, never as a raw address", () => {
     expect(nameFromLink("https://www.trustpilot.com/review/www.hydroflask.com")).toBe("hydroflask.com");
     expect(nameFromLink("https://www.google.com/maps/place/Sparrow+Bakery/@44,-121")).toBe("Sparrow Bakery");
+  });
+});
+
+describe("the headline stays honest when another item leads as many fields", () => {
+  it("one clear leader keeps the short line", () => {
+    expect(headlineOf(result)).toEqual({ lead: "Beta", rest: "leads on 2 of 3" });
+  });
+  it("a tie on field count names both and what ranks first", () => {
+    const tied = parseResult({
+      kind: "companies_reviews", kind_label: "Companies", primary_field: "rating",
+      fields: [F("rating", "rating", "higher_better", true), F("reviews", "int"), F("pos", "percent"), F("recent", "rating")],
+      items: [
+        { item_id: "b", name: "Beta", rank: 1, values: { rating: V(4.6, "4.6", true), reviews: V(900, "900"), pos: V(0.9, "90%", true), recent: V(4, "4.0") } },
+        { item_id: "a", name: "Alpha", rank: 2, values: { rating: V(4.1, "4.1"), reviews: V(1200, "1,200", true), pos: V(0.7, "70%"), recent: V(4.2, "4.2", true) } },
+      ],
+    }) as ComparisonResult;
+    expect(headlineOf(tied)).toEqual({ lead: "Beta and Alpha", rest: "each lead 2 of 4 — Beta ranks first on rating" });
   });
 });
