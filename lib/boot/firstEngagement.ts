@@ -2,8 +2,9 @@
 //
 // Owner rule (Arman, 2026-10-16): nothing fetches until something engages with it. Work that only
 // pays off once the person acts (the AI warm-up, …) waits for the page's FIRST real engagement:
-// a pointer press, a key press, or focus landing in a text field (a composer). Idle is not
-// engagement. The listeners are installed once, at module evaluation, by the deferred-singleton
+// a pointer press, a key press, a touch, or focus landing in a text field (a composer) that follows
+// one. Only TRUSTED input counts (event.isTrusted): a programmatic focus, such as the composer's
+// autofocus on load, or a script-dispatched event, is never engagement. Idle is not engagement. The listeners are installed once, at module evaluation, by the deferred-singleton
 // wrapper (every signed-in route's boot bundle), so an engagement before the deferred core loads is
 // still seen. Once engaged, the page stays engaged for its lifetime.
 "use client";
@@ -28,15 +29,21 @@ function markEngaged(): void {
   for (const l of [...listeners]) l();
 }
 
-const onPress = () => markEngaged();
+const onPress = (event: Event) => {
+  if (event.isTrusted) markEngaged();
+};
+// A focus counts only while the browser says a real gesture is live (user activation), so the
+// composer's programmatic autofocus at load (no gesture) never does.
 const onFocus = (event: FocusEvent) => {
-  if (isTextField(event.target)) markEngaged();
+  if (!isTextField(event.target)) return;
+  if (typeof navigator !== "undefined" && navigator.userActivation?.isActive) markEngaged();
 };
 
 function uninstall(): void {
   if (typeof window === "undefined") return;
   window.removeEventListener("pointerdown", onPress, true);
   window.removeEventListener("keydown", onPress, true);
+  window.removeEventListener("touchstart", onPress, true);
   window.removeEventListener("focusin", onFocus, true);
 }
 
@@ -46,9 +53,8 @@ export function installFirstEngagementListeners(): void {
   installed = true;
   window.addEventListener("pointerdown", onPress, { capture: true, passive: true });
   window.addEventListener("keydown", onPress, { capture: true, passive: true });
+  window.addEventListener("touchstart", onPress, { capture: true, passive: true });
   window.addEventListener("focusin", onFocus, { capture: true, passive: true });
-  // A text field focused before this module evaluated (autofocus) is a composer focus.
-  if (isTextField(document.activeElement)) markEngaged();
 }
 
 export function hasEngaged(): boolean {
@@ -77,6 +83,11 @@ function subscribe(cb: () => void): () => void {
 /** `true` from the page's first engagement on. One re-render: false → true. */
 export function useHasEngaged(): boolean {
   return useSyncExternalStore(subscribe, hasEngaged, () => false);
+}
+
+/** Tests only: stands in for a trusted gesture (jsdom events are never trusted). */
+export function engageForTest(): void {
+  markEngaged();
 }
 
 /** Tests only. */
