@@ -125,9 +125,20 @@ function button(name: string): HTMLButtonElement {
 }
 
 function setValue(el: HTMLElement, value: string) {
-  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLSelectElement.prototype;
-  Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(el, value);
-  el.dispatchEvent(new Event(el instanceof HTMLTextAreaElement ? "input" : "change", { bubbles: true }));
+  Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(el, value);
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+/** Choose from the canonical Select the way a person does: open the trigger, click the option. */
+async function choose(label: string, optionText: string) {
+  await act(async () => {
+    byLabel(label).dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  });
+  const option = Array.from(document.querySelectorAll<HTMLElement>("[role=menuitemradio]")).find(
+    (o) => o.textContent === optionText,
+  );
+  if (!option) throw new Error(`no option ${optionText} in ${label}`);
+  await act(async () => option.click());
 }
 
 beforeEach(() => {
@@ -174,7 +185,7 @@ test("measuring needs five samples, then shows the triage and the confirm step",
   expect(text()).toContain("4 of 5–20 picked — pick 1 more to measure");
   expect(button("Measure voice").disabled).toBe(true);
   await act(async () => byLabel("Use Email 5").click());
-  await act(async () => setValue(byLabel("Kind of Email 5"), "email"));
+  await choose("Kind of Email 5", "email");
   expect(button("Measure voice").disabled).toBe(false);
 
   await act(async () => button("Measure voice").click());
@@ -211,7 +222,7 @@ test("confirming sends the person's choices and shows the brand's new voice line
     root.render(<VoicePage scope="brand" ownerId="b1" ownerName="Factory Playground" organizationId="org1" />);
   });
   await flush();
-  await act(async () => setValue(byLabel("Em dashes"), "rare"));
+  await choose("Em dashes", "rare");
   expect(text()).toContain("The samples never use one; allowing them is the most common way a draft reads as AI.");
   const robust = Array.from(container.querySelectorAll("label")).find((l) => l.textContent === "robust")!;
   await act(async () => (robust.querySelector("input") as HTMLInputElement).click());
