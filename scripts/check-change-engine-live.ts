@@ -40,6 +40,10 @@ const arr = (v: unknown): J[] => (Array.isArray(v) ? (v as J[]) : []);
 
 /** Each scenario's assertions: name -> predicate over the observations. */
 const ASSERT: Record<string, Array<[string, (x: Obs) => boolean]>> = {
+  "brand-archive-door.sql": [
+    ["web.brand_archive archives through the engine (a plan, the persona with it)", (x) => o(x.archive).archived === true && o(x.archive).has_plan === true && o(x.archive).persona_archived === true],
+    ["web.brand_restore brings back exactly that archive", (x) => o(x.restore).brand_live === true && o(x.restore).persona_live === true],
+  ],
   "brand-archive-restore.sql": [
     ["delete stamps brand, asset, persona and the logo file", (x) => Object.values(o(x.after_delete)).every((v) => v === true) && Object.keys(o(x.after_delete)).length === 4],
     ["delete is one inline plan of 4 rows", (x) => o(x.commit).status === "done" && o(x.commit).rows === 4],
