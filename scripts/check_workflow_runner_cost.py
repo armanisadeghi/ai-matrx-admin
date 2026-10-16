@@ -263,9 +263,25 @@ def _job_families(props: dict[str, tuple[str, list[str]]]) -> list[str]:
     text = "\n".join([runs_on_value, *runs_on_nested, *props.get("strategy", ("", []))[1], *with_nested])
     text = "\n".join("" if t.strip().startswith("#") else _strip_comment(t) for t in text.splitlines()).lower()
     fams = {f for f in ("macos", "windows") if re.search(rf"\b{f}-", text) or re.search(rf"\b{f}\b", text)}
+    if RUNNER_SWITCH in text:
+        # `runs-on: ${{ fromJSON(vars.LINUX_RUNNER || '"ubuntu-latest"') }}`: the repository variable names the
+        # self-hosted pool ($0 billed); its literal is only the one-step fallback, priced in the header.
+        return sorted(fams | {"self-hosted"})
     if re.search(r"\b(ubuntu|linux)\b|ubuntu-", text) or not fams:
         fams.add("self-hosted" if "self-hosted" in text and not re.search(r"ubuntu|linux", text) else "linux")
     return sorted(fams)
+
+
+#: The one-step switch (Arman approved self-hosted runners, 2026-10-15): a job whose runs-on reads this
+#: repository variable runs on the self-hosted pool while it is set, on GitHub-hosted Linux when unset.
+RUNNER_SWITCH = "vars.linux_runner"
+
+
+def self_hosted_fallback_usd(manifest: dict) -> float:
+    """What the self-hosted legs would bill per week if the switch were flipped back to GitHub-hosted Linux."""
+    linux = float({**PRICE_PER_MINUTE, **manifest.get("prices_usd_per_minute", {})}.get("linux", PRICE_PER_MINUTE["linux"]))
+    return round(sum(float(leg.get("runs_per_week", 0) or 0) * float(leg.get("minutes_per_run", 0) or 0) * linux
+                     for w in manifest.get("workflows", {}).values() for os_name, leg in w.get("legs", {}).items() if os_name == "self-hosted"), 2)
 
 
 STANDARD_RUNNER = re.compile(
@@ -461,6 +477,15 @@ def check_manifest(root: Path, shapes: dict[str, dict]) -> list[str]:
                 problems.append(f"{name}: its crons fire ~{fires:g} times a week but no leg in {MANIFEST} claims more than {most:g} runs")
         if abs(round(leg_sum, 2) - float(entry.get("usd_per_week", -1))) > 0.011 * max(1, len(legs)):
             problems.append(f"{name}: usd_per_week {entry.get('usd_per_week')} is not the sum of its legs ({leg_sum:.2f})")
+    if any("self-hosted" in shape["legs"] for shape in shapes.values()):
+        sh = manifest.get("self_hosted") or {}
+        fallback = self_hosted_fallback_usd(manifest)
+        if float(prices.get("self-hosted", 0) or 0) != 0:
+            problems.append(f"{MANIFEST}: self-hosted minutes are not billed by GitHub -- prices_usd_per_minute.self-hosted must be 0")
+        if not str(sh.get("host", "")).strip():
+            problems.append(f"{MANIFEST}: workflows run on self-hosted runners but the header's self_hosted.host does not name the machine")
+        if abs(float(sh.get("fallback_usd_per_week", -1)) - fallback) > 0.011 * max(1, len(entries)):
+            problems.append(f"{MANIFEST}: self_hosted.fallback_usd_per_week {sh.get('fallback_usd_per_week')} is not what the self-hosted legs bill on GitHub-hosted Linux (${fallback:.2f}/week) -- the price of flipping the switch back must be on record")
     total = manifest_total(manifest)
     if abs(total - float(manifest.get("total_usd_per_week", -1))) > 0.011 * max(1, len(entries)):
         problems.append(f"{MANIFEST}: total_usd_per_week {manifest.get('total_usd_per_week')} is not the sum of its workflows ({total:.2f})")
@@ -862,6 +887,19 @@ jobs:
 """
 
 
+SWITCH_WF = """\
+name: switch
+on:
+  push:
+jobs:
+  shot:
+    runs-on: ${{ fromJSON(vars.LINUX_RUNNER || '"ubuntu-latest"') }}
+    timeout-minutes: 20
+    steps:
+      - run: echo hi
+"""
+
+
 def money_self_test() -> int:
     """Billed-money model: public standard runner is $0, public larger runner is billed, visibility must match reality."""
     global VISIBILITY_PROBE
@@ -921,6 +959,38 @@ def money_self_test() -> int:
                 del os.environ["GITHUB_EVENT_PATH"]
     finally:
         VISIBILITY_PROBE = saved
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "app"
+        (root / ".github/workflows").mkdir(parents=True)
+        (root / ".github/workflows/capture.yml").write_text(SWITCH_WF)
+        def _private(_r: Path) -> str:
+            return "private"
+
+        VISIBILITY_PROBE = _private
+        try:
+            def sh_run(legs: dict, header: dict | None) -> tuple[list[str], float]:
+                manifest = _manifest({"capture.yml": _entry(["push"], [], legs)}, 0)
+                if header is not None:
+                    manifest["self_hosted"] = header
+                (root / MANIFEST).write_text(json.dumps(manifest))
+                return check_root(root), manifest_billed(manifest)
+
+            header = {"host": "box-1", "fallback_usd_per_week": 1.2}
+            problems, billed = sh_run({"self-hosted": _leg(["shot"], 20, 10, "self-hosted")}, header)
+            if problems or billed != 0:
+                print(f"SELF-TEST FAIL: a LINUX_RUNNER job on a self-hosted leg must bill $0 and pass a $0 share: {problems} billed={billed}")
+                return 1
+            problems, _ = sh_run({"linux": _leg(["shot"], 20, 10, "linux")}, header)
+            if not any("runs self-hosted" in p for p in problems):
+                print(f"SELF-TEST FAIL: a LINUX_RUNNER job priced as a GitHub-hosted linux leg slipped through: {problems}")
+                return 1
+            problems, _ = sh_run({"self-hosted": _leg(["shot"], 20, 10, "self-hosted")}, None)
+            if not any("self_hosted.host" in p for p in problems) or not any("fallback_usd_per_week" in p for p in problems):
+                print(f"SELF-TEST FAIL: self-hosted legs without the host and the flip-back price passed: {problems}")
+                return 1
+        finally:
+            VISIBILITY_PROBE = saved
+    print("money self-test ok: LINUX_RUNNER jobs bill $0 on a self-hosted leg, need the host and the flip-back price on record")
     print("money self-test ok: public standard runner bills $0; public larger runner and private repos bill in full; visibility mismatch and a missing header fail")
     return 0
 

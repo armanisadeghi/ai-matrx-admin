@@ -18,9 +18,10 @@ import { FlaskConical } from "lucide-react";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectIsAdmin, selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";
 import {
+  AI_TEST_MODES,
   captureAiTestModeFromUrl,
   readAiTestMode,
   setAiTestMode,
@@ -49,11 +50,26 @@ export function aiTestModeNotice(mode: AiTestMode, status: AiTestModeStatus): st
   return "Off: not allowed";
 }
 
+/** An admin in "real": the switch shows with no server verdict (none is needed until a switch). */
+const ADMIN_REAL_STATUS: AiTestModeStatus = {
+  requested: "real",
+  effective: "real",
+  reason: "",
+  available: true,
+  server_reason: "",
+  modes: [...AI_TEST_MODES],
+};
+
 /** The tab's mode and what the server says about it; `status` null = the switch is absent. */
 function useAiTestModeState() {
   const userId = useAppSelector(selectUserId);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const mode = useSyncExternalStore(subscribeAiTestMode, readAiTestMode, () => "real" as AiTestMode);
-  const cacheKey = userId ? `${userId}:${mode}` : null;
+  // ASK ONLY WHEN IT MATTERS (2026-10-15): the server's verdict is needed only once a tab has
+  // switched off "real". In "real" an admin sees the switch from the admin boolean alone and a
+  // switch to replay/stand-in asks then; everyone else never calls the server. The status
+  // request used to run on every route for every signed-in person.
+  const cacheKey = userId && mode !== "real" ? `${userId}:${mode}` : null;
   const [status, setStatus] = useState<AiTestModeStatus | null>(() =>
     cacheKey ? (statusCache.get(cacheKey) ?? null) : null,
   );
@@ -83,7 +99,8 @@ function useAiTestModeState() {
     return () => controller.abort();
   }, [cacheKey]);
 
-  const stillAsking = status != null && mode !== "real" && serverRefuses(status);
+  if (mode === "real") return { mode, status: isAdmin && userId ? ADMIN_REAL_STATUS : null };
+  const stillAsking = status != null && serverRefuses(status);
   const shown = status != null && (status.available || stillAsking);
   return { mode, status: shown ? status : null };
 }

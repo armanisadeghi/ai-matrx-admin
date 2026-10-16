@@ -13,7 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Loader2, Plus, X } from "lucide-react";
 import { Button, Input } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { toast } from "@/lib/toast";
@@ -121,15 +121,28 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
   return (
     <li className="group flex min-w-0 items-center gap-1 rounded-md px-1.5 py-1 hover:bg-muted/50" data-testid="brand-relation-row">
       {hasGrounding ? (
-        <HoverCard>
-          <HoverCardTrigger asChild>{body}</HoverCardTrigger>
-          <HoverCardContent className="w-72 space-y-1 text-xs">
-            {g?.reason ? <p>{g.reason}</p> : null}
-            {g?.where ? <p className="text-muted-foreground">{g.where}</p> : null}
-            {g?.confidence != null ? <p className="text-muted-foreground">{Math.round(g.confidence * 100)}% sure</p> : null}
-            {g?.by === "person" ? <p className="text-muted-foreground">Confirmed by a person</p> : null}
-          </HoverCardContent>
-        </HoverCard>
+        // Grounding (hover only): why we think so, where it was found, how sure.
+        <PeekHoverCard
+          trigger={body}
+          label={row.label}
+          side="bottom"
+          align="start"
+        >
+          <Peek
+            size="sm"
+            record={{
+              kind: "Relationship",
+              id: row.id,
+              title: row.label,
+              body: [
+                ...(g?.reason ? [{ section: "Why", text: g.reason }] : []),
+                ...(g?.where ? [{ property: "Found", value: g.where }] : []),
+                ...(g?.confidence != null ? [{ property: "Certainty", value: `${Math.round(g.confidence * 100)}% sure` }] : []),
+                ...(g?.by === "person" ? [{ fact: "Confirmed by a person", muted: true }] : []),
+              ],
+            }}
+          />
+        </PeekHoverCard>
       ) : (
         body
       )}

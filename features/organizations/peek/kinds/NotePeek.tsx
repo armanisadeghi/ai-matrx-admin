@@ -1,19 +1,22 @@
 "use client";
 
 /**
- * NotePeek — canonical "data-driven" peek example (content-heavy variant).
+ * NotePeek — the worked example of a record peek on THE peek (`Peek` in `PeekWindow`).
  *
- * Same pattern as FilePeek: fetch the row, fill <PeekDialog>. Shows the note's
- * content as a scrollable excerpt + tags.
+ * Fetch the row, describe it as a `PeekRecord`, hand it to `Peek`. Everything the old dialog drew is
+ * here: the note's name, its tags, its content (line breaks kept, first 2,000 characters, "…" past
+ * that, "Empty note" when blank), when it was updated, the organization's custom fields (part
+ * `custom-fields`), the access notice when it cannot be read (part `access`), Open (this tab) and Open
+ * in new tab (`useRecordPeekDoors`). The floating window closes on ✕ or Escape and is a bottom drawer
+ * on a phone.
  */
 
 import React from "react";
-import { NotebookText } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { NotebookText, Tag } from "lucide-react";
+import { Peek, PeekWindow, type PeekBlock } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { peekHref } from "../peekHref";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import { PeekDialog, PeekField } from "../PeekDialog";
+import { useRecordPeekDoors } from "../useRecordPeekDoors";
 import type { PeekProps } from "../types";
 
 interface NoteRow {
@@ -28,6 +31,7 @@ const MAX_PREVIEW = 2000;
 export default function NotePeek({ id, open, onClose }: PeekProps) {
   const [row, setRow] = React.useState<NoteRow | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const doors = useRecordPeekDoors({ token: "note", id, href: peekHref("note", id), onClose });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -50,48 +54,24 @@ export default function NotePeek({ id, open, onClose }: PeekProps) {
   }, [id]);
 
   const content = (row?.content ?? "").trim();
-  const preview = content.slice(0, MAX_PREVIEW);
+  const body: PeekBlock[] = [];
+  if (row) {
+    if (row.tags?.length) body.push({ section: "Tags", glyph: Tag, tags: row.tags });
+    body.push(
+      content
+        ? { section: "Content", text: content.length > MAX_PREVIEW ? `${content.slice(0, MAX_PREVIEW)}…` : content, breaks: true }
+        : { section: "Content", text: "Empty note" },
+    );
+    body.push({ fact: `Updated ${row.updated_at ? new Date(row.updated_at).toLocaleString() : "—"}`, muted: true });
+    body.push({ part: "custom-fields", token: "note", id });
+  } else if (!loading) {
+    body.push({ part: "access", token: "note", id });
+  }
 
+  const title = row?.label || "Note";
   return (
-    <PeekDialog
-      open={open}
-      record={{ token: "note", id }}
-      onClose={onClose}
-      title={row?.label || "Note"}
-      icon={<NotebookText className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
-      href={peekHref("note", id)}
-      loading={loading}
-    >
-      {row ? (
-        <>
-          {row.tags && row.tags.length > 0 && (
-            <PeekField label="Tags">
-              <div className="flex flex-wrap gap-1">
-                {row.tags.map((t) => (
-                  <Badge key={t} variant="outline" className="text-[10px]">
-                    {t}
-                  </Badge>
-                ))}
-              </div>
-            </PeekField>
-          )}
-          <PeekField label="Content">
-            {content ? (
-              <div className="text-sm whitespace-pre-wrap break-words text-muted-foreground rounded-md border border-border bg-muted/20 p-3 max-h-72 overflow-y-auto">
-                {preview}
-                {content.length > MAX_PREVIEW && "…"}
-              </div>
-            ) : (
-              <span className="text-muted-foreground italic">Empty note</span>
-            )}
-          </PeekField>
-          <PeekField label="Updated">
-            {row.updated_at ? new Date(row.updated_at).toLocaleString() : "—"}
-          </PeekField>
-        </>
-      ) : (
-        <AccessGate token="note" id={id} />
-      )}
-    </PeekDialog>
+    <PeekWindow open={open} onClose={onClose} label={title}>
+      <Peek size="lg" record={{ kind: "Note", id, title, glyph: NotebookText, body, ...doors }} loading={loading} />
+    </PeekWindow>
   );
 }

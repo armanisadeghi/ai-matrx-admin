@@ -1,24 +1,15 @@
 "use client";
 
 /**
- * Lightweight hover preview for a webpage URL reference. No fetch — shows
+ * Lightweight hover preview for a webpage URL reference, drawn by THE Peek. No fetch — shows
  * the URL, parsed domain, and an optional pre-resolved preview/title from the
  * caller (e.g. ManagedResource.preview when the input pipeline already
  * scraped it).
  */
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { useState } from "react";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Button } from "@/components/ui/button";
-import { Check, Copy, ExternalLink, Globe } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
+import { Globe } from "lucide-react";
+import { peekLines } from "./peek-lines";
 
 function parseDomain(url: string): string | null {
   try {
@@ -34,69 +25,35 @@ interface WebpagePreviewContentProps {
   title?: string | null;
   /** Optional pre-resolved snippet/preview text. */
   snippet?: string | null;
+  /** `surface` when this is the card itself (a hover), `bare` inside a panel that already frames it. */
+  frame?: "surface" | "bare";
 }
 
-export function WebpagePreviewContent({
-  url,
-  title,
-  snippet,
-}: WebpagePreviewContentProps) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
-  const [copied, setCopied] = useState(false);
+export function WebpagePreviewContent({ url, title, snippet, frame = "bare" }: WebpagePreviewContentProps) {
   const domain = parseDomain(url);
-
-  const handleCopyUrl = async () => {
-    if (!(await copyText(url, "URL copied"))) return;
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+  const trimmedTitle = title?.trim();
+  const trimmedSnippet = snippet?.trim() ? (snippet.length > 400 ? snippet.slice(0, 400).trimEnd() + "…" : snippet) : "";
+  const lines = peekLines(trimmedSnippet);
 
   return (
-    <div className="flex flex-col gap-2.5">
-      <div className="flex items-start gap-2">
-        <Globe className="w-3.5 h-3.5 text-teal-500 mt-0.5 shrink-0" />
-        <div className="flex-1 min-w-0">
-          {title?.trim() && (
-            <div className="type-title text-foreground line-clamp-2">
-              {title}
-            </div>
-          )}
-          {domain && (
-            <div className="type-meta text-muted-foreground truncate">
-              {domain}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="type-meta font-mono text-muted-foreground break-all bg-muted/40 rounded p-1.5">
-        {url}
-      </div>
-
-      {snippet?.trim() && (
-        <p className="type-secondary text-foreground whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
-          {snippet.length > 400 ? snippet.slice(0, 400).trimEnd() + "…" : snippet}
-        </p>
-      )}
-
-      <div className="flex items-center gap-1.5 pt-1 border-t border-border">
-        <Button
-          icon={copied ? <Check className="text-success" /> : <Copy />}
-          variant="quiet"
-          onClick={handleCopyUrl}
-        >
-          {copied ? "Copied" : "Copy URL"}
-        </Button>
-        <Button variant="primary" asChild className="ml-auto">
-          <OutboundLink href={url}>
-            <ExternalLink />
-            Open
-          </OutboundLink>
-        </Button>
-      </div>
-    </div>
+    <Peek
+      frame={frame}
+      record={{
+        kind: "Webpage",
+        id: url,
+        // With no title the domain (or, failing that, the address) is the name — never a blank header.
+        title: trimmedTitle || domain || url,
+        ...(trimmedTitle && domain ? { subtitle: domain } : {}),
+        glyph: Globe,
+        body: [
+          { property: "URL", value: url },
+          ...(lines.length > 0 ? [{ section: "Preview", items: lines }] : []),
+        ],
+        // The old Copy URL button copied the address; Open went through the outbound door.
+        copyData: url,
+        href: url,
+      }}
+    />
   );
 }
 
@@ -104,35 +61,16 @@ interface WebpageHoverPreviewProps {
   url: string;
   title?: string | null;
   snippet?: string | null;
-  children: React.ReactNode;
+  children: React.ReactElement;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   className?: string;
 }
 
-export function WebpageHoverPreview({
-  url,
-  title,
-  snippet,
-  children,
-  side = "top",
-  align = "start",
-  className,
-}: WebpageHoverPreviewProps) {
+export function WebpageHoverPreview({ url, title, snippet, children, side = "top", align = "start" }: WebpageHoverPreviewProps) {
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>{children}</HoverCardTrigger>
-      <HoverCardContent
-        side={side}
-        align={align}
-        sideOffset={8}
-        className={cn(
-          "w-80 p-3 bg-card border border-border shadow-lg",
-          className,
-        )}
-      >
-        <WebpagePreviewContent url={url} title={title} snippet={snippet} />
-      </HoverCardContent>
-    </HoverCard>
+    <PeekHoverCard trigger={children} side={side} align={align} label="Webpage">
+      <WebpagePreviewContent url={url} title={title} snippet={snippet} frame="surface" />
+    </PeekHoverCard>
   );
 }

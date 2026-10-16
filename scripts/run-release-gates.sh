@@ -330,6 +330,8 @@ if $STRICT; then
         "Archived-items law (every list has an archive control)|pnpm check:archived-items-law"
         "Brand archive + restore round-trips (live)|pnpm check:brand-archive-cascade"
         "Univer document page is legible in both themes|pnpm check:univer-doc-theme"
+        "Host configuration never imported by a server module|pnpm check:host-config-browser"
+        "Host-configuration guard proves it can fail|pnpm check:host-config-browser:self-test"
         "One agent-list read (package-owned)|pnpm check:agent-list-reads"
         # Aidream's chat check:package owns the package host-boundary gate and self-test;
         # this checkout verifies its own imports use published chat subpaths.
@@ -1275,6 +1277,8 @@ else
         "Archived-items law (every list has an archive control)|pnpm check:archived-items-law"
         "Brand archive + restore round-trips (live)|pnpm check:brand-archive-cascade"
         "Univer document page is legible in both themes|pnpm check:univer-doc-theme"
+        "Host configuration never imported by a server module|pnpm check:host-config-browser"
+        "Host-configuration guard proves it can fail|pnpm check:host-config-browser:self-test"
         "One agent-list read (package-owned)|pnpm check:agent-list-reads"
         # Aidream's chat check:package owns the package host-boundary gate and self-test;
         # this checkout verifies its own imports use published chat subpaths.
