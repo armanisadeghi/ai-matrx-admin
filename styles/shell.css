@@ -1319,8 +1319,14 @@ button.shell-nav-flyout-item {
     pointer-events: none;
   }
 
-  .shell-root[data-domain-panel] > #shell-sidebar-toggle ~ * :is(.shell-sidebar-main-nav, .shell-sidebar-footer) :is(.shell-nav-badge-expanded, .shell-nav-group-disclosure, .shell-nav-flyout-caret, .shell-env-details) {
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle ~ * :is(.shell-sidebar-main-nav, .shell-sidebar-footer) :is(.shell-nav-badge-expanded, .shell-nav-group-disclosure, .shell-nav-flyout-caret, .shell-env-details, .shell-nav-search-kbd) {
     display: none;
+  }
+
+  /* The strip's Search row is a plain icon row: no field ring. */
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle ~ * .shell-sidebar-main-nav .shell-nav-search,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle ~ * .shell-sidebar-main-nav .shell-nav-search:hover {
+    box-shadow: none;
   }
 
   .shell-root[data-domain-panel] > #shell-sidebar-toggle ~ * :is(.shell-sidebar-main-nav, .shell-sidebar-footer) .shell-nav-badge-collapsed {
