@@ -552,7 +552,9 @@ type EndpointAdminKey = "byok_secret_key" | "auth_ref" | "base_url";
 // The retiring row column is never read; the row words are (access ladder T-13).
 type EndpointPublicRow = Omit<AiEndpointRow, EndpointAdminKey | RetiredRowColumn>;
 type EndpointAdminColumns = Pick<AiEndpointRow, EndpointAdminKey>;
-type OfferingPublicRow = Omit<AiOfferingRow, "pricing" | RetiredRowColumn>;
+// `variant_id` carries no client SELECT grant (live column_privileges, 2026-10-16), so the
+// public read never names it.
+type OfferingPublicRow = Omit<AiOfferingRow, "pricing" | "variant_id" | RetiredRowColumn>;
 
 async function fetchEndpointAdminColumns(): Promise<Map<string, EndpointAdminColumns>> {
   const { data, error } = await supabase.schema("ai").rpc("endpoint_admin_columns");

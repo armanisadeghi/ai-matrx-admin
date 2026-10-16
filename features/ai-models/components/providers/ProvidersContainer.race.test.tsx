@@ -117,6 +117,7 @@ const provider = (name: string, version: number): AiProvider => ({
   models_link: null,
   website_url: null,
   logo_url: null,
+  logo_file_id: null,
   visibility: "public",
   shown_to: null,
   published_to_web: false,

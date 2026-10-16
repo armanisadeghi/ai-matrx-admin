@@ -2,7 +2,8 @@ import type { Database } from "@/types/database.types";
 
 type EndpointRow = Database["ai"]["Tables"]["endpoint"]["Row"];
 type ApiRow = Database["ai"]["Tables"]["api"]["Row"];
-type OfferingRow = Database["ai"]["Tables"]["offering"]["Row"];
+// What the client read returns: `variant_id` carries no client SELECT grant.
+type OfferingRow = Omit<Database["ai"]["Tables"]["offering"]["Row"], "variant_id">;
 
 type QueryCall = {
   table: string;

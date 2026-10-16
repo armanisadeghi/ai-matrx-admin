@@ -35,7 +35,8 @@ export type AiOfferingRow = Database["ai"]["Tables"]["offering"]["Row"];
  *  (`shown_to`, `published_to_web`) and never select it. */
 export type RetiredRowColumn = "visibility";
 export type AiEndpointReadRow = Omit<AiEndpointRow, RetiredRowColumn>;
-export type AiOfferingReadRow = Omit<AiOfferingRow, RetiredRowColumn>;
+// `variant_id` has no client SELECT grant on ai.offering — a read row never carries it.
+export type AiOfferingReadRow = Omit<AiOfferingRow, RetiredRowColumn | "variant_id">;
 export type AiOfferingInsert = Database["ai"]["Tables"]["offering"]["Insert"];
 export type AiOfferingUpdate = Database["ai"]["Tables"]["offering"]["Update"];
 

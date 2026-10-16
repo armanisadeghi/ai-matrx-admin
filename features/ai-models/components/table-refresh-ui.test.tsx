@@ -40,6 +40,7 @@ const provider = {
   documentation_link: "https://docs.anthropic.com",
   is_system: true,
   logo_url: null,
+  logo_file_id: null,
   metadata: {},
   models_link: "https://docs.anthropic.com/models",
   organization_id: "00000000-0000-4000-8000-000000000001",
