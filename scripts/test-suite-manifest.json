@@ -10,6 +10,7 @@
     "features/content-ir/__tests__/adversarial-structural-leg-required-kind.test.ts",
     "features/content-ir/__tests__/agent-input-kind-form.test.ts",
     "features/content-ir/__tests__/agent-result-content-channel.test.tsx",
+    "features/content-ir/__tests__/agent-result-markdown.test.ts",
     "features/content-ir/__tests__/all-surfaces-convergence.test.ts",
     "features/content-ir/__tests__/bare-json-pending-kind.test.ts",
     "features/content-ir/__tests__/cold-tab-verdict.test.ts",
