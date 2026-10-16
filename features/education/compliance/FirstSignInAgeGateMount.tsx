@@ -46,10 +46,21 @@
 // The suppression must not touch `markAskedThisSession` — a portal visit is not "asked".
 // Scope: exactly the `(portal)` route group's URL space, nothing wider.
 
+// WHEN THE GATE IS READ (owner rule, 2026-10-16: nothing fetches until it is needed). The prompt must
+// still appear UNPROMPTED after a first sign-in (Arman's ruling above), so the `edu_coppa_gate` read
+// runs ONCE, after the page has fully settled (lib/boot/lateIdle) — never at mount. Education AI never
+// depends on this read: every education run goes through the per-action `useAiComplianceGate` and
+// education routes through `EducationAgeGateMount`. A declared band never goes back to undeclared,
+// so once this browser has seen this person's band the read is never made again (localStorage,
+// per person) — previously every new tab re-read it.
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { coppaService } from "./coppaService";
 import { useAiComplianceGate } from "./useAiComplianceGate";
 
@@ -66,6 +77,26 @@ function alreadyAskedThisSession(): boolean {
   }
 }
 
+const DECLARED_KEY_PREFIX = "matrx.age_band_declared.v1:";
+
+function declaredInThisBrowser(userId: string | null | undefined): boolean {
+  if (!userId) return false;
+  try {
+    return localStorage.getItem(DECLARED_KEY_PREFIX + userId) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markDeclaredInThisBrowser(userId: string | null | undefined): void {
+  if (!userId) return;
+  try {
+    localStorage.setItem(DECLARED_KEY_PREFIX + userId, "1");
+  } catch {
+    /* storage disabled — the session mark still applies */
+  }
+}
+
 function markAskedThisSession(): void {
   try {
     sessionStorage.setItem(SESSION_KEY, "1");
@@ -79,10 +110,13 @@ export function FirstSignInAgeGateMount() {
   // The departed-member portal — see the header block. Deferred, never waived.
   const onPortal = pathname === "/portal" || pathname?.startsWith("/portal/");
   // Asked already this tab session (or on the portal): the `edu_coppa_gate` read is never made.
+  const userId = useAppSelector(selectUser)?.id ?? null;
   const [askedAtMount] = useState(alreadyAskedThisSession);
+  const settled = useLateIdleReady();
+  const declared = declaredInThisBrowser(userId);
   const gate = useAiComplianceGate({
     declarationVariant: "first_run",
-    enabled: !onPortal && !askedAtMount,
+    enabled: settled && !onPortal && !askedAtMount && !declared,
   });
   const { loading, gate: verdict, promptDeclarationIfNeeded, reload } = gate;
   // The silent signup-metadata apply is tried at most once per mount.
@@ -95,6 +129,7 @@ export function FirstSignInAgeGateMount() {
     // reload in this tab does not read the gate again.
     if (verdict && verdict.ageBand !== null) {
       markAskedThisSession();
+      markDeclaredInThisBrowser(userId);
       return;
     }
     // Signed-in AND undeclared is the only case this mount owns. A guest or a
@@ -130,7 +165,7 @@ export function FirstSignInAgeGateMount() {
     return () => {
       cancelled = true;
     };
-  }, [onPortal, loading, verdict, promptDeclarationIfNeeded, reload]);
+  }, [onPortal, loading, verdict, promptDeclarationIfNeeded, reload, userId]);
 
   if (onPortal) return null;
   return <gate.Gate />;
