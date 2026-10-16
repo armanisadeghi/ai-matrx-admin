@@ -40,6 +40,11 @@ export const scopeTreeDemandEnhancer: StoreEnhancer = (createStore) => (reducer,
   const demand = () => {
     if (scheduled || satisfied) return;
     scheduled = true;
+    // Who asked — the one question a "why did the tree load here?" hunt needs answered.
+    if (process.env.NODE_ENV !== "production") {
+      (window as { __matrxScopeTreeDemandStack?: string }).__matrxScopeTreeDemandStack =
+        new Error("scope tree demand").stack;
+    }
     queueMicrotask(() => {
       const dispatch = store.dispatch as unknown as ThunkDispatch<unknown, unknown, UnknownAction>;
       void (async () => {

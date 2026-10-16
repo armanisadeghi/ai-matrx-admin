@@ -51,7 +51,7 @@ jest.mock("@/features/agents/components/builder/message-builders/PromptAssist", 
   insertPromptText: () => undefined,
   PromptFormatButtons: () => null,
   goToBuilderSection: () => undefined,
-  usePromptInsertSources: () => ({ variables: [], kinds: null, kindSchema: () => null, contextItems: [], loadKinds: () => undefined }),
+  usePromptInsertSources: () => ({ variables: [], definitions: [], kinds: null, kindSchema: () => null, contextItems: [], loadKinds: () => undefined }),
 }));
 jest.mock("@/features/agents/components/builder/message-builders/AddBlockButton", () => ({
   BlockList: () => null,

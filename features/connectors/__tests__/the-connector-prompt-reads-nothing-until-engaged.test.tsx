@@ -39,7 +39,11 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectIsAuthenticated: () => true,
   selectUserId: () => "11111111-1111-4111-8111-111111111111",
 }));
-jest.mock("@/features/scopes/redux/selectors/tree", () => ({ selectOrganizationIds: () => [] }));
+// The scope tree (a ~1 s shared read) starts on the first `state.scopesTree` read: counted here.
+const mockSelectOrganizationIds = jest.fn(() => []);
+jest.mock("@/features/scopes/redux/selectors/tree", () => ({
+  selectOrganizationIds: () => mockSelectOrganizationIds(),
+}));
 jest.mock("@/features/overlays/openers/connectorConsentDialog", () => ({
   useOpenConnectorConsentDialog: () => jest.fn(),
 }));
@@ -76,6 +80,7 @@ it("reads nothing and draws nothing at first paint; one engagement reads once an
   await settle();
   expect(listInventory).not.toHaveBeenCalled();
   expect(listCapabilities).not.toHaveBeenCalled();
+  expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
   expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
 
   await act(async () => {
@@ -84,6 +89,8 @@ it("reads nothing and draws nothing at first paint; one engagement reads once an
   await settle();
   expect(listInventory).toHaveBeenCalledTimes(1);
   expect(listCapabilities).toHaveBeenCalledTimes(1);
+  // Only personal connections came back: the person's organizations (the scope tree) are never read.
+  expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
   expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
 
   // A second engagement is a no-op: the reads already happened.
@@ -118,5 +125,26 @@ it("a page nobody touches still settles: late idle opens the one read and the ca
   await settle();
   expect(listInventory).toHaveBeenCalledTimes(1);
   expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
+  await act(async () => root.unmount());
+});
+
+it("reads the person's organizations (the scope tree) only once an organization-owned connection came back", async () => {
+  mockSelectOrganizationIds.mockClear();
+  listInventory.mockImplementationOnce(async () => ({
+    connections: [{ id: "c1", owner_type: "organization", owner_user_id: null, organization_id: "o1" }],
+    resources: [],
+  }) as never);
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  mockLateIdle = false;
+  await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost /></QueryClientProvider>));
+  await settle();
+  expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
+  await act(async () => {
+    window.dispatchEvent(new Event("pointerdown"));
+  });
+  await settle();
+  expect(mockSelectOrganizationIds).toHaveBeenCalled();
   await act(async () => root.unmount());
 });

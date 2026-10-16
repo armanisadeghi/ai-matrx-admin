@@ -1188,8 +1188,14 @@ fs.writeFileSync(
   const appCfg = ts.readConfigFile(path.join(APP, "tsconfig.json"), ts.sys.readFile).config as { compilerOptions: { paths: Record<string, string[]> } };
   const paths: Record<string, string[]> = {};
   for (const [k, v] of Object.entries(appCfg.compilerOptions.paths)) paths[k] = v.map((p) => path.join(APP, p));
-  paths["@ai-matrx/summon"] = [path.join(PKG, "src/index.ts")];
-  paths["@ai-matrx/summon/*"] = [path.join(PKG, "src/*")];
+  // Type the generated code against the package AS PUBLISHED when the app has it installed: the
+  // bundled .d.ts merges the app's OverlayRegistry augmentation where the source tree's re-exports
+  // did not, so wire mismatches the source never showed are real against the shipped types (and
+  // must pick the untyped wire below). The source paths remain the fallback before a publish.
+  if (!fs.existsSync(path.join(APP, "node_modules/@ai-matrx/summon/package.json"))) {
+    paths["@ai-matrx/summon"] = [path.join(PKG, "src/index.ts")];
+    paths["@ai-matrx/summon/*"] = [path.join(PKG, "src/*")];
+  }
   // The scratch dir has no node_modules above it: link the app's install so bare imports (and
   // package.json "exports" subpaths like @ai-matrx/chat/…) resolve exactly as they do in the app.
   const nm = path.join(OUT, "node_modules");

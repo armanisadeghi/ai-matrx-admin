@@ -161,7 +161,7 @@ export function MessageItem({
   // Write view's editor, and the caret the Insert menu saw when it opened.
   const writeRef = useRef<RichEditorController | null>(null);
   const insertCaretRef = useRef<{ start: number; end: number } | null>(null);
-  const insertSources = usePromptInsertSources(agentId);
+  const insertSources = usePromptInsertSources(agentId, messageIndex);
   const contextMenuOpenRef = useRef(false);
   const textareaInitializedRef = useRef(false);
   const scrollLockRef = useRef<{ scrollTop: number; overflow: string } | null>(
@@ -852,6 +852,7 @@ export function MessageItem({
             controllerRef={writeRef}
             surfaceName="matrx-user/agent-builder"
             variableNames={variableNames}
+            variableDefinitions={insertSources.definitions}
             contextData={contextMenuData}
             promptBlocks={blockEditing.highlight}
               menuProps={blockEditing.menuProps}

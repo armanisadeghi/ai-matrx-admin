@@ -76,8 +76,8 @@ async function main(): Promise<void> {
   await signIn(page);
   await page.goto(`${BASE}${ROUTE}`, { waitUntil: "domcontentloaded" });
   // The hook arrives with the deferred singleton core (post-idle); wait for it.
-  await page.waitForFunction(() => !!(window as unknown as { __overlaysTest?: SummonTestHook }).__overlaysTest && hook().ids().length > 0, null, { timeout: 120_000 });
-  const ids: string[] = ONLY ?? (await page.evaluate(() => hook().ids()));
+  await page.waitForFunction(() => { const h = (window as unknown as { __overlaysTest?: SummonTestHook }).__overlaysTest; return !!h && h.ids().length > 0; }, null, { timeout: 120_000 });
+  const ids: string[] = ONLY ?? (await page.evaluate(() => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.ids()));
   console.log(`sweeping ${ids.length} overlays on ${ROUTE}`);
 
   let current: string[] = [];
@@ -91,9 +91,9 @@ async function main(): Promise<void> {
   for (const id of ids) {
     current = [];
     const t0 = Date.now();
-    const instanceId = await page.evaluate((x) => hook().open(x), id);
+    const instanceId = await page.evaluate((x) => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.open(x), id);
     await page.waitForTimeout(SETTLE);
-    const open = await page.evaluate(([x, inst]) => hook().isOpen(x, inst), [id, instanceId] as const);
+    const open = await page.evaluate(([x, inst]) => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.isOpen(x, inst), [id, instanceId] as const);
     const errorCard = await page
       .locator('[role="alert"]')
       .filter({ hasText: /Try again|could not load|went wrong/i })
@@ -103,7 +103,7 @@ async function main(): Promise<void> {
     const status: Row["status"] = errorCard ? "error-card" : open === false ? "not-open" : current.length ? "console-error" : "rendered";
     rows.push({ id, status, consoleErrors: current, ...(errorCard ? { errorCard: errorCard.slice(0, 300) } : {}), ms: Date.now() - t0 });
     console.log(`${status.padEnd(13)} ${id}${current.length ? `  (${current.length} console errors)` : ""}`);
-    await page.evaluate((x) => hook().close(x), id);
+    await page.evaluate((x) => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.close(x), id);
     await page.waitForTimeout(200);
   }
   await browser.close();
@@ -121,9 +121,8 @@ interface SummonTestHook {
   close(id: string): void;
   isOpen(id: string, instanceId: string): boolean;
 }
-function hook(): SummonTestHook {
-  return (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest;
-}
+// No helper function for the hook: page.evaluate serializes only the callback's own source, so a
+// Node-side helper called inside it is undefined in the browser.
 
 main().catch((e) => {
   console.error(e);

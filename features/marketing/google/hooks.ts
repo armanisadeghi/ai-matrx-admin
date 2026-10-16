@@ -47,25 +47,42 @@ export function useGoogleCapabilities(options: { enabled?: boolean } = {}) {
   });
 }
 
+/** No organization-owned connection came back: the person's organizations are not needed. */
+const NO_ORGANIZATION_IDS: readonly string[] = [];
+const selectNoOrganizationIds = () => NO_ORGANIZATION_IDS;
+
 export function useGoogleConnectionInventory(options: { enabled?: boolean } = {}) {
   const authReady = useAppSelector(selectAuthReady);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const userId = useAppSelector(selectUserId);
-  const organizationIds = useAppSelector(selectOrganizationIds);
-  return useQuery({
+  const base = {
     queryKey: [...googleConnectionKeys.inventory, userId],
-    queryFn: ({ signal }) => listGoogleConnectionInventory(signal),
+    queryFn: ({ signal }: { signal: AbortSignal }) => listGoogleConnectionInventory(signal),
     // `users.integration_connections` is deliberately unavailable to `anon`.
     // Core routes can mount before the Redux auth slice hydrates, so do not
     // issue the inventory read until the caller has an authenticated identity.
     enabled: (options.enabled ?? true) && authReady && isAuthenticated && Boolean(userId),
+    staleTime: 30_000,
+  };
+  // The person's organizations come from the scope tree (a ~1 s shared read that starts on the
+  // first `state.scopesTree` read). Only an organization-owned connection needs them, so they are
+  // read only once the inventory holds one — never at mount, never for a disabled caller
+  // (2026-10-16: the new-chat connector card read them on first paint and pulled the whole tree).
+  // Same key, same cache entry: this observer adds no second request.
+  const raw = useQuery(base);
+  const needsOrganizations =
+    raw.data?.connections.some((connection) => connection.owner_user_id === null) ?? false;
+  const organizationIds = useAppSelector(
+    needsOrganizations ? selectOrganizationIds : selectNoOrganizationIds,
+  );
+  return useQuery({
+    ...base,
     select: (inventory) =>
       filterGoogleConnectionInventoryForUser(
         inventory,
         userId,
         organizationIds,
       ),
-    staleTime: 30_000,
   });
 }
 

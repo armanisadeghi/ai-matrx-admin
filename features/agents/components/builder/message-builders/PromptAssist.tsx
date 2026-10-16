@@ -38,11 +38,19 @@ import {
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentContextPolicies,
+  selectAgentMessages,
   selectAgentVariableDefinitions,
 } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
+import type { DeclaredVariable } from "@ai-matrx/rich-content/editor/core/variables";
+import type { VariableDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
 
 export interface PromptInsertSources {
   variables: string[];
+  /**
+   * The agent's variable definitions as the prompt editor's pills and Peek read them: label, help,
+   * input, default, required, options, what fills it, and the OTHER prompt boxes that use it.
+   */
+  definitions: DeclaredVariable[];
   kinds: PromptInsertKind[] | null;
   kindSchema: (kind: string) => unknown;
   contextItems: PromptInsertContextItem[];
@@ -50,8 +58,71 @@ export interface PromptInsertSources {
   loadKinds: () => void;
 }
 
-export function usePromptInsertSources(agentId: string): PromptInsertSources {
+/** Which prompt box this is: the system instructions, or a message by its index in the messages array. */
+export type PromptPlace = "system" | number;
+
+/** What fills a bound variable, in words (the Peek's "Filled from"). */
+function filledFrom(definition: VariableDefinition): string | undefined {
+  if (definition.control) return `Model setting · ${definition.control.key}`;
+  const binding = definition.binding;
+  if (!binding) return undefined;
+  if (binding.kind === "merge_field") return "Your custom data";
+  return `Context · ${binding.itemKey}`;
+}
+
+/** The token forms that use `name`: `{{name}}` and its section markers. */
+function usesVariable(text: string, name: string): boolean {
+  return text.includes(`{{${name}}}`) || text.includes(`{{#${name}}}`) || text.includes(`{{^${name}}}`) || text.includes(`{{/${name}}}`);
+}
+
+/**
+ * The agent's definitions in the editor's shape, with where each one is used outside `place`
+ * ("System instructions", "User message 2"). The stored prompt is only read here, never written.
+ */
+export function promptVariableDefinitions(
+  definitions: readonly VariableDefinition[] | null | undefined,
+  messages: readonly { role: string; content?: unknown }[] | null | undefined,
+  place?: PromptPlace,
+): DeclaredVariable[] {
+  const boxes: { label: string; text: string; place: PromptPlace }[] = [];
+  let ordinal = 0;
+  (messages ?? []).forEach((message, index) => {
+    const text = JSON.stringify(message.content ?? "");
+    if (message.role === "system") {
+      boxes.push({ label: "System instructions", text, place: "system" });
+      return;
+    }
+    ordinal += 1;
+    const role = message.role === "assistant" ? "Assistant" : "User";
+    boxes.push({ label: `${role} message ${ordinal}`, text, place: index });
+  });
+  return (definitions ?? [])
+    .filter((definition) => Boolean(definition.name))
+    .map((definition) => {
+      const options = definition.customComponent?.options?.filter((option) => typeof option === "string" && option.trim() !== "");
+      const from = filledFrom(definition);
+      const usedIn = boxes.filter((box) => box.place !== place && usesVariable(box.text, definition.name)).map((box) => box.label);
+      return {
+        name: definition.name,
+        ...(definition.label ? { label: definition.label } : {}),
+        ...(definition.customComponent?.type ? { type: definition.customComponent.type } : {}),
+        ...(definition.helpText ? { helpText: definition.helpText } : {}),
+        ...(definition.defaultValue !== undefined ? { defaultValue: definition.defaultValue } : {}),
+        ...(definition.required !== undefined ? { required: definition.required } : {}),
+        ...(options && options.length ? { options } : {}),
+        ...(from ? { filledFrom: from } : {}),
+        ...(usedIn.length ? { usedIn } : {}),
+      };
+    });
+}
+
+export function usePromptInsertSources(agentId: string, place?: PromptPlace): PromptInsertSources {
   const variableDefinitions = useAppSelector((state) => selectAgentVariableDefinitions(state, agentId));
+  const messages = useAppSelector((state) => selectAgentMessages(state, agentId));
+  const definitions = useMemo(
+    () => promptVariableDefinitions(variableDefinitions, messages, place),
+    [variableDefinitions, messages, place],
+  );
   const contextPolicies = useAppSelector((state) => selectAgentContextPolicies(state, agentId));
   const [catalog, setCatalog] = useState<KindCatalogEntry[] | null>(null);
   const loading = useRef(false);
@@ -81,7 +152,7 @@ export function usePromptInsertSources(agentId: string): PromptInsertSources {
   const kindSchema = (kind: string) =>
     catalog ? (kindSchemaToJsonSchema(kind, catalogResolver(catalog))?.schema ?? null) : null;
 
-  return { variables, kinds, kindSchema, contextItems, loadKinds };
+  return { variables, definitions, kinds, kindSchema, contextItems, loadKinds };
 }
 
 export interface InsertPromptTextArgs {
@@ -145,6 +216,11 @@ export interface PromptWriteBoxProps {
   textClassName?: string;
   /** The agent's variable names: undeclared names are flagged, and a selection can become a section. */
   variableNames?: readonly string[];
+  /**
+   * The agent's full variable definitions (`usePromptInsertSources(...).definitions`): the pills read
+   * each one's label and input, and the hover Peek shows all of it. Wins over `variableNames`.
+   */
+  variableDefinitions?: readonly DeclaredVariable[];
   /** The surface scope the right-click menu acts on. */
   contextData?: Record<string, unknown>;
   /** Prompt blocks the agent declares / that resolve to nothing; `{{<name>}}` draws as a block chip. */
@@ -170,12 +246,16 @@ export function PromptWriteBox({
   placeholder,
   textClassName,
   variableNames,
+  variableDefinitions,
   contextData,
   promptBlocks = null,
   menuSections,
   menuProps,
 }: PromptWriteBoxProps) {
-  const declared = useMemo(() => variableNames?.map((name) => ({ name })) ?? null, [variableNames]);
+  const declared = useMemo(
+    () => variableDefinitions ?? variableNames?.map((name) => ({ name })) ?? null,
+    [variableDefinitions, variableNames],
+  );
   const box = (
     <div
       data-testid="prompt-write-box"
