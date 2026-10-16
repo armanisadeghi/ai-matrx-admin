@@ -21,8 +21,9 @@ function plainError(e: unknown): string {
 export function useCloudComputer() {
   const [machine, setMachine] = useState<CloudComputer | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [polling, setPolling] = useState(false);
-  const startedAt = useRef<number>(0);
+  const [pressed, setPressed] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const startedAt = useRef(0);
 
   const read = useCallback(async () => {
     try {
@@ -37,48 +38,59 @@ export function useCloudComputer() {
   }, []);
 
   useEffect(() => {
-    void read();
-  }, [read]);
+    let disposed = false;
+    void getCloudComputer().then(
+      (next) => {
+        if (!disposed) setMachine(next);
+      },
+      (e) => {
+        if (!disposed) setError(plainError(e));
+      },
+    );
+    return () => {
+      disposed = true;
+    };
+  }, []);
 
-  // A machine already coming up (another tab, an agent) is followed too.
-  useEffect(() => {
-    if (machine && isWaking(machine) && !polling) {
-      startedAt.current = Date.now();
-      setPolling(true);
-    }
-  }, [machine, polling]);
+  // Following a wake: the person pressed Wake, or the machine is already
+  // coming up (another tab, an agent). Ends when it is ready, failed or late.
+  const waking =
+    !timedOut && (pressed || (machine !== null && isWaking(machine))) && !machine?.ready;
 
   useEffect(() => {
-    if (!polling) return;
+    if (!waking) return;
+    if (!startedAt.current) startedAt.current = Date.now();
     let disposed = false;
     const timer = window.setInterval(async () => {
       if (disposed || document.hidden) return;
       const next = await read();
       if (disposed || !next) return;
-      if (next.ready || next.status === "failed" || next.status === "expired") {
-        setPolling(false);
-      } else if (Date.now() - startedAt.current > 5 * 60_000 /* past 5 min a wake is a failure with a button */) {
-        setPolling(false);
+      if (next.status === "failed" || next.status === "expired") {
+        setPressed(false);
+      } else if (!next.ready && Date.now() - startedAt.current > 5 * 60_000) {
+        setPressed(false);
+        setTimedOut(true);
         setError("The computer did not finish waking up.");
       }
-    }, 2000 /* ask again every 2 s while it wakes */);
+    }, 2000);
     return () => {
       disposed = true;
       window.clearInterval(timer);
     };
-  }, [polling, read]);
+  }, [waking, read]);
 
   const wake = useCallback(async () => {
     setError(null);
+    setTimedOut(false);
     startedAt.current = Date.now();
-    setPolling(true);
+    setPressed(true);
     try {
       setMachine(await wakeCloudComputer());
     } catch (e) {
-      setPolling(false);
+      setPressed(false);
       setError(plainError(e));
     }
   }, []);
 
-  return { machine, error, waking: polling, wake, retry: read };
+  return { machine, error, waking, wake, retry: read };
 }

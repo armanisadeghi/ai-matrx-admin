@@ -49,12 +49,13 @@ export function ComputerView({ conversationId }: { conversationId?: string }) {
     return error ? (
       <Centered>
         <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden />
-        <p role="alert" className="text-sm font-medium">{error}</p>
+        <p role="alert" className="text-sm font-medium">
+          {error} <ErrorAlchemyMenu error={error} />
+        </p>
         <div className="flex items-center gap-2">
           <Button icon={<RotateCw />} variant="outline" onClick={() => void retry()}>
             Try again
           </Button>
-          <ErrorAlchemyMenu error={error} />
         </div>
       </Centered>
     ) : (
@@ -97,12 +98,12 @@ export function ComputerView({ conversationId }: { conversationId?: string }) {
       )}
       <p className="text-sm font-medium" role={failed ? "alert" : undefined}>
         {failed ? (error ?? "The computer could not start.") : "Computer is off"}
+        {failed ? <ErrorAlchemyMenu error={error ?? "The computer could not start."} /> : null}
       </p>
       <div className="flex items-center gap-2">
         <Button icon={<Power />} variant="primary" onClick={() => void wake()}>
           {failed ? "Try again" : "Wake"}
         </Button>
-        {failed ? <ErrorAlchemyMenu error={error ?? undefined} /> : null}
       </div>
     </Centered>
   );
@@ -120,7 +121,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   const label = agentName ? `${agentName}'s screen` : "Agent's screen";
 
   const [large, setLarge] = useState(false);
-  const [ticket, setTicket] = useState<StreamTicketEnvelope | null>(null);
+  const [held, setTicket] = useState<{ ticket: StreamTicketEnvelope; revision: number } | null>(null);
   const [opening, setOpening] = useState(false);
   const [openError, setOpenError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -139,8 +140,12 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   const frame = shots.frames[0] ?? null;
   useEffect(() => {
     if (runReady && !inControl && !shots.active) shots.start();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runReady, inControl, shots.active]);
+
+  const revision = controller?.controlRevision ?? 0;
+  // A stream belongs to one control revision: once control ends or moves it is
+  // simply not the live one (no reset-in-effect needed).
+  const ticket = inControl && held?.revision === revision ? held.ticket : null;
 
   const open = useCallback(
     async (takeover: boolean) => {
@@ -148,7 +153,10 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
       setOpening(true);
       setOpenError(null);
       try {
-        setTicket(await mintStreamTicket(run.id, "control", takeover));
+        setTicket({
+          ticket: await mintStreamTicket(run.id, "control", takeover),
+          revision,
+        });
       } catch (e) {
         setTicket(null);
         setOpenError(
@@ -162,13 +170,8 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
         setOpening(false);
       }
     },
-    [run],
+    [run, revision],
   );
-
-  // Control ended (returned, timed out, taken elsewhere): drop the stale stream.
-  useEffect(() => {
-    if (!inControl && ticket) setTicket(null);
-  }, [inControl, ticket]);
 
   // Open the control stream once per control revision, so a refusal never loops.
   const attempted = useRef<string | null>(null);
@@ -236,12 +239,13 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     return (
       <Centered>
         <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden />
-        <p role="alert" className="text-sm font-medium">{message}</p>
+        <p role="alert" className="text-sm font-medium">
+          {message} <ErrorAlchemyMenu error={message} />
+        </p>
         <div className="flex items-center gap-2">
           <Button icon={<RotateCw />} variant="outline" onClick={() => void cb.retry()}>
             Try again
           </Button>
-          <ErrorAlchemyMenu error={message} />
         </div>
       </Centered>
     );
@@ -269,7 +273,6 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               interactive={large}
             />
           ) : !inControl && frame ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={frame.previewUrl}
               alt={label}
@@ -282,7 +285,9 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
             >
               {openError ? (
                 <>
-                  <p className="text-xs">{openError}</p>
+                  <p className="text-xs">
+                    {openError} <ErrorAlchemyMenu error={openError} />
+                  </p>
                   <Button variant="outline" onClick={() => void open(true)}>
                     Show it here
                   </Button>
