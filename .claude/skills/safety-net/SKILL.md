@@ -203,6 +203,9 @@ product's own API or the AI Dream connector, with no browser. Never repeat the p
 **Triggers are a slot, not a copy.** A playbook names the entry points that reach a DIFFERENT path for the
 same job (a server-side door, a mandate), and a run is one playbook through one trigger. Two UIs that call the
 same server path are one trigger, not two.
+Agent runs have several server doors (the Builder's manual door, the agent door behind the run page and chat,
+conversation continue): every baseline, fault and after-run picks its door AT RANDOM among the playbook's
+triggers, and the after-run covers every door (Arman, 2026-10-16: testing only in the Builder tests one API).
 
 **No screen.** When what is tested has no page (a server path, a package, an agent behind a mandate),
 the runner's tool is the product's own door as the person: the AI Dream MCP (`agent_run`, the mandate
