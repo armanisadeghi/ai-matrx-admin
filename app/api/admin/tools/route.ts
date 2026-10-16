@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
       .schema("tool").from("definition")
       .select("*")
       .is("deleted_at", null)
+      .neq("source_kind", "catalog") // catalog Tools: paged catalog search only (CONTRACT §4)
       .order("category", { ascending: true })
       .order("name", { ascending: true });
 

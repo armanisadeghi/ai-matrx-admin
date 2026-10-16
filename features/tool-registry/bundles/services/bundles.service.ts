@@ -325,6 +325,7 @@ export async function searchToolsForBundle(
     .schema("tool").from("definition")
     .select("id, name, description")
     .is("deleted_at", null)
+    .neq("source_kind", "catalog") // catalog Tools: paged catalog search only (CONTRACT §4)
     .eq("is_active", true);
   if (query.trim()) {
     q = q.or(buildSearchOr(query, ["name"]));

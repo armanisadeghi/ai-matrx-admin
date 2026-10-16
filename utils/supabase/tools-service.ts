@@ -34,6 +34,7 @@ export class ToolsService {
         .schema("tool").from("definition")
         .select("*")
         .is("deleted_at", null)
+        .neq("source_kind", "catalog") // catalog Tools: paged catalog search only (CONTRACT §4)
         .eq("is_active", true)
         .order("category", { ascending: true })
         .order("name", { ascending: true });
@@ -59,6 +60,7 @@ export class ToolsService {
         .schema("tool").from("definition")
         .select("*")
         .is("deleted_at", null)
+        .neq("source_kind", "catalog") // catalog Tools: paged catalog search only (CONTRACT §4)
         .eq("is_active", true)
         .eq("category", category)
         .order("name", { ascending: true });
@@ -146,6 +148,7 @@ export class ToolsService {
         .schema("tool").from("definition")
         .select("*")
         .is("deleted_at", null)
+        .neq("source_kind", "catalog") // catalog Tools: paged catalog search only (CONTRACT §4)
         .eq("is_active", true)
         .or(buildSearchOr(query, ["name", "description"]))
         .order("category", { ascending: true })

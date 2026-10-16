@@ -157,6 +157,6 @@ export async function listSkills(): Promise<SkillOption[]> {
 }
 
 export async function listToolNames(): Promise<string[]> {
-  const { data } = await supabase.schema("tool").from("definition").select("name").is("deleted_at", null).order("name").limit(1000);
+  const { data } = await supabase.schema("tool").from("definition").select("name").is("deleted_at", null).neq("source_kind", "catalog").order("name").limit(1000);
   return (data ?? []).map((t) => t.name);
 }

@@ -974,6 +974,8 @@ if $STRICT; then
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
+        "Catalog Tools hidden from whole-table tool reads|pnpm check:tool-catalog-readers"
+        "Catalog-readers guard self-test|pnpm check:tool-catalog-readers:self-test"
         # EVERY LINK LEAVING AI MATRX CARRIES OUR REFERRAL DATA (Arman, 2026-10-12: "We need sites to know
         # our referral traffic."). Raw <a target=_blank>, literal third-party anchors, window.open and
         # hand-rolled utm_source outside @ai-matrx/kit/outbound. Shrink-only baseline.
@@ -1733,6 +1735,8 @@ else
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
+        "Catalog Tools hidden from whole-table tool reads|pnpm check:tool-catalog-readers"
+        "Catalog-readers guard self-test|pnpm check:tool-catalog-readers:self-test"
         # EVERY LINK LEAVING AI MATRX CARRIES OUR REFERRAL DATA (Arman, 2026-10-12: "We need sites to know
         # our referral traffic."). Raw <a target=_blank>, literal third-party anchors, window.open and
         # hand-rolled utm_source outside @ai-matrx/kit/outbound. Shrink-only baseline.
