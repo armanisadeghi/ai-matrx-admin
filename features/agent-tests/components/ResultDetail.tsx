@@ -10,6 +10,7 @@ import {
   RegionSkeleton,
 } from "@ai-matrx/design-system/controls";
 import { Card, CardContent } from "@ai-matrx/design-system";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { conversationHref } from "@/features/hindsight/subject-doors";
 import { TestCaseInputs } from "@/features/agents/components/samples/TestCaseInputs";
 import type { AgentVariableDeclaration } from "@/features/agents/samples/service";
@@ -198,7 +199,7 @@ export function ResultDetail({
             value={
               result.durationMs === null
                 ? null
-                : `${(result.durationMs / 1000).toFixed(1)} s`
+                : formatDurationMs(result.durationMs)
             }
             missing="Not measured"
           />

@@ -24,6 +24,7 @@ import {
   type ArchiveFilterValue,
 } from "@ai-matrx/design-system";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
+import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import {
   fetchAgentContractHead,
@@ -232,7 +233,7 @@ function SelectedRun({
   if (resultsRead.state === "failed")
     return <ReadFailure what="test results" error={resultsRead.error} />;
   const run = runRead.data;
-  if (!run) return <EmptyState icon={<FlaskConical />} title="Run not found" />;
+  if (!run) return <AccessGate token="agent_test_run" id={runId} />;
 
   const results = resultsRead.data;
   const casesById = new Map(cases.map((c) => [c.id, c]));
