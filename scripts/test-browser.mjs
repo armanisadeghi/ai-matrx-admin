@@ -51,6 +51,7 @@ async function serve(name) {
   const logs = [];
   page.on('console', (m) => (logs.length > 5000 && logs.splice(0, 1000), logs.push({ type: m.type(), text: m.text().slice(0, 2000) })));
   page.on('pageerror', (e) => logs.push({ type: 'error', text: `pageerror: ${String(e.message).slice(0, 2000)}` }));
+  page.on('framenavigated', (f) => { if (f === page.mainFrame()) logs.push({ type: 'nav', text: f.url().replace(/nonce=[^&]*/, 'nonce=***') }); });
   let idle;
   const bump = () => { clearTimeout(idle); idle = setTimeout(() => shutdown(), IDLE_MS); };
   async function shutdown() {
