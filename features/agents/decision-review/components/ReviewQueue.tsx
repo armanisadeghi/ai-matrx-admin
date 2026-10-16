@@ -28,10 +28,8 @@ import {
   DEFAULT_FILTERS,
   labelItem,
   loadFacets,
-  loadJudgedState,
   loadQueue,
   reviewAnswersHref,
-  type JudgedState,
   type QueueFacets,
   type QueueFilters,
 } from "../service";
@@ -42,6 +40,7 @@ import {
   type DecisionSource,
   type ReviewItem,
 } from "../queue";
+import { JudgedStateText } from "./JudgedState";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
@@ -158,7 +157,6 @@ export function ReviewQueue({
   // panes show side by side. A 22rem list beside the detail left the detail
   // one letter wide at 375px.
   const [phoneDetail, setPhoneDetail] = useState(false);
-  const [state, setState] = useState<JudgedState | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // The queue read's own failure — said in the list, never as "no answers".
@@ -195,26 +193,6 @@ export function ReviewQueue({
 
   const selectedIndex = items?.findIndex((i) => i.id === selectedId) ?? -1;
   const selected = selectedIndex >= 0 && items ? items[selectedIndex] : null;
-
-  useEffect(() => {
-    if (!selected) {
-      setState(null);
-      return;
-    }
-    let cancelled = false;
-    setState(null);
-    loadJudgedState(selected)
-      .then((s) => {
-        if (!cancelled) setState(s);
-      })
-      .catch((err: unknown) => {
-        console.error("[decision-review] state load failed", err);
-        if (!cancelled) setState({ parts: [], visible: false });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selected]);
 
   const move = (delta: number) => {
     if (!items || items.length === 0) return;
@@ -461,17 +439,7 @@ export function ReviewQueue({
                   )}
                 </div>
                 <div className="max-h-[40vh] overflow-y-auto whitespace-pre-wrap px-3 py-2 type-secondary leading-relaxed">
-                  {state == null ? (
-                    <Skeleton className="h-16 w-full" />
-                  ) : !state.visible ? (
-                    <span className="text-muted-foreground">
-                      You can't open this conversation; only its answer shows
-                    </span>
-                  ) : state.parts.length === 0 ? (
-                    <span className="text-muted-foreground">The turn carried no text.</span>
-                  ) : (
-                    state.parts.join("\n\n")
-                  )}
+                  <JudgedStateText item={selected} />
                 </div>
               </section>
 

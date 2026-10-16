@@ -7,9 +7,11 @@
  * `platform.label_decision_conversations` — gated to members of the item's
  * organization, normalized by the ONE vocabulary
  * (`platform.normalize_decision_label`), so the queue and the battle verdict
- * column land identically. Only calibration goes to the server, because it is
- * computed by `matrx_ai.evaluators.calibration` (Cohen's kappa, reliability
- * curve, Brier). aidream `aidream/services/decision_review/FEATURE.md`.
+ * column land identically. Two things go to the server: calibration (computed
+ * by `matrx_ai.evaluators.calibration` — kappa, reliability curve, Brier) and
+ * reference runs (a model call per answer, priced first). Reference rows are
+ * read straight from the table like the items.
+ * aidream `aidream/services/decision_review/FEATURE.md`.
  */
 
 import { createClient } from "@/utils/supabase/client";
@@ -28,7 +30,18 @@ import {
   type JudgeVerdictRow,
   type ReviewItem,
 } from "./queue";
-import { idChunks } from "@/features/scopes/service/inChunks";
+import { idChunks, readInChunks } from "@/features/scopes/service/inChunks";
+import { openStream, type ApiStream, type NdjsonEvent, type OperationDescriptor } from "@ai-matrx/api";
+import { serverApi } from "@/lib/api/server-api";
+import {
+  REFERENCE_SUBJECT_KIND,
+  latestPerItem,
+  readReferenceQuote,
+  readReferenceVerdictRow,
+  type ReferenceQuote,
+  type ReferenceVerdict,
+  type ReferenceVerdictRow,
+} from "./reference";
 
 export type DecisionCalibrationReport =
   components["schemas"]["DecisionCalibrationReport"];
@@ -161,6 +174,8 @@ export interface QueueFacets {
   models: string[];
   methods: string[];
   versions: number[];
+  /** Agent version number → its `agent_version_id` (the reference run samples by id). */
+  versionIds: Record<number, string>;
   total: number;
   labeled: number;
 }
@@ -200,6 +215,7 @@ export async function loadFacets(scope: QueueScope): Promise<QueueFacets> {
   const models = new Set<string>();
   const methods = new Set<string>();
   const versions = new Set<number>();
+  const versionIds: Record<number, string> = {};
   let labeled = 0;
   for (const row of rows) {
     questions.add(row.question);
@@ -207,6 +223,10 @@ export async function loadFacets(scope: QueueScope): Promise<QueueFacets> {
     const method = isJsonObject(row.metadata) ? row.metadata.method : null;
     if (typeof method === "string") methods.add(method);
     versions.add(row.judge_version);
+    const versionId = isJsonObject(row.metadata) ? row.metadata.agent_version_id : null;
+    if (typeof versionId === "string" && !versionIds[row.judge_version]) {
+      versionIds[row.judge_version] = versionId;
+    }
     if (row.authority_verdict) labeled += 1;
   }
   return {
@@ -214,6 +234,7 @@ export async function loadFacets(scope: QueueScope): Promise<QueueFacets> {
     models: [...models].sort(),
     methods: [...methods].sort(),
     versions: [...versions].sort((a, b) => b - a),
+    versionIds,
     total: rows.length,
     labeled,
   };
@@ -234,7 +255,9 @@ const TRANSLATOR_PREAMBLE = "You are answering a fixed set of decision questions
  * the state; that block is the translator's wording, not the state, so it is
  * left out.
  */
-export async function loadJudgedState(item: ReviewItem): Promise<JudgedState> {
+export async function loadJudgedState(
+  item: Pick<ReviewItem, "messageId" | "conversationId">,
+): Promise<JudgedState> {
   if (!item.messageId || !item.conversationId) return { parts: [], visible: false };
   const client = createClient().schema("chat");
   const { data: answer, error: answerError } = await client
@@ -256,15 +279,8 @@ export async function loadJudgedState(item: ReviewItem): Promise<JudgedState> {
     .maybeSingle();
   if (error) throw error;
   if (!turn) return { parts: [], visible: true };
-  const content = Array.isArray(turn.content) ? turn.content : [];
-  const parts = content.flatMap((part) => {
-    if (!part || typeof part !== "object" || Array.isArray(part)) return [];
-    const text = (part as Record<string, unknown>).text;
-    if (typeof text !== "string" || !text.trim()) return [];
-    if (text.trimStart().startsWith(TRANSLATOR_PREAMBLE)) return [];
-    return [text];
-  });
-  return { parts, visible: true };
+  const content = turn.content;
+  return { parts: textParts(content), visible: true };
 }
 
 /** Record the person's true answer on one item, as them (RLS + the RPC's org-member gate). */
@@ -275,6 +291,7 @@ export async function labelItem(
   const { data, error } = await createClient()
     .schema("platform")
     .rpc("label_decision_item", { p_item_id: item.id, p_answer: answer });
+  // access-errors: ok — the RPC raises its own sentences (P0002 not yours, 22023 names the options)
   if (error) throw new Error(error.message);
   return readLabeledItem(data);
 }
@@ -292,6 +309,7 @@ export async function labelConversations(
       p_question: question,
       p_answer: answer,
     });
+  // access-errors: ok — the RPC raises its own sentences (not a member, not an answer)
   if (error) throw new Error(error.message);
   const labeled = isJsonObject(data) && Array.isArray(data.labeled) ? data.labeled : [];
   const skippedRaw = isJsonObject(data) && isJsonObject(data.skipped) ? data.skipped : {};
@@ -302,13 +320,17 @@ export async function labelConversations(
   return { labeled: labeled.map(readLabeledItem), skipped };
 }
 
+/**
+ * Calibration is a READ about this agent: it carries the viewer's active
+ * organization like every call (`ensureOrgId(null)` inside callApi), never
+ * the agent's — a super admin who is not a member of the agent's organization
+ * was refused "You are not a member of that organization" when the agent's
+ * organization rode `X-Organization-Id`.
+ */
 export async function loadCalibration(
   dispatch: AppDispatch,
   agentId: string,
   filters: { model?: string | null; method?: string | null },
-  /** The agent's own organization — calibration is a read about this record,
-   *  never about whichever organization the viewer happens to have active. */
-  organizationId?: string | null,
 ): Promise<DecisionCalibrationReport> {
   const queryParams: Record<string, string> = {};
   if (filters.model) queryParams.model = filters.model;
@@ -319,13 +341,186 @@ export async function loadCalibration(
       method: "GET",
       pathParams: { agent_id: agentId },
       queryParams,
-      ...(organizationId
-        ? { scopeOverrides: { organization_id: organizationId } }
-        : {}),
     }),
   );
   if (result.error) throw new Error(result.error.message);
   return result.data as DecisionCalibrationReport;
+}
+
+// ── Reference check ──────────────────────────────────────────────────────────
+
+/**
+ * The reference-run door. Hand-declared until `@ai-matrx/api` publishes the
+ * generated operation (aidream `aidream/api/routers/decision_review.py`); it
+ * rides the ONE client (`serverApi`), so auth, base URL, request id and the
+ * viewer's active organization are the package's, not this file's.
+ */
+const REFERENCE_RUN_QUOTE_OP: OperationDescriptor = {
+  m: "POST",
+  p: "/decision-review/agents/{agent_id}/reference-runs",
+  d: "aidream",
+  a: "user",
+  o: "required",
+  n: "intelligence.quote_decision_reference_run",
+};
+const REFERENCE_RUN_OP: OperationDescriptor = {
+  ...REFERENCE_RUN_QUOTE_OP,
+  s: "ndjson",
+  n: "intelligence.create_decision_reference_run",
+};
+
+export interface ReferenceSample {
+  n: number;
+  question?: string | null;
+  agent_version_id?: string | null;
+  model?: string | null;
+  only_unlabeled?: boolean;
+  only_without_reference?: boolean;
+}
+
+export interface ReferenceRunRequest {
+  item_ids?: string[];
+  sample?: ReferenceSample;
+}
+
+function referenceBody(request: ReferenceRunRequest, quoteOnly: boolean): Record<string, unknown> {
+  const body: Record<string, unknown> = {};
+  if (request.item_ids && request.item_ids.length > 0) body.item_ids = request.item_ids;
+  else if (request.sample) {
+    const sample: Record<string, unknown> = { n: request.sample.n };
+    if (request.sample.question) sample.question = request.sample.question;
+    if (request.sample.agent_version_id) sample.agent_version_id = request.sample.agent_version_id;
+    if (request.sample.model) sample.model = request.sample.model;
+    // Both flags always travel: the server defaults only_without_reference to true.
+    sample.only_unlabeled = request.sample.only_unlabeled ?? false;
+    sample.only_without_reference = request.sample.only_without_reference ?? true;
+    body.sample = sample;
+  }
+  if (quoteOnly) body.quote_only = true;
+  return body;
+}
+
+/** What a run would check and cost. Spends nothing. */
+export async function quoteReferenceRun(
+  agentId: string,
+  request: ReferenceRunRequest,
+): Promise<ReferenceQuote> {
+  const data = await serverApi.call<unknown>(REFERENCE_RUN_QUOTE_OP, {
+    path: { agent_id: agentId },
+    body: referenceBody(request, true),
+  });
+  return readReferenceQuote(data);
+}
+
+/** Start a run. The stream's `requestId` is the runtime operation id a rejoin follows. */
+export async function openReferenceRun(
+  agentId: string,
+  request: ReferenceRunRequest,
+  signal?: AbortSignal,
+): Promise<ApiStream<NdjsonEvent>> {
+  return openStream<NdjsonEvent>(
+    serverApi,
+    REFERENCE_RUN_OP,
+    { path: { agent_id: agentId }, body: referenceBody(request, false) },
+    { ...(signal ? { signal } : {}), totalTimeoutMs: null },
+  );
+}
+
+/** Decision items by id, read as the person (RLS). */
+export async function loadItemsByIds(ids: string[]): Promise<ReviewItem[]> {
+  const client = createClient();
+  const answer = await readInChunks<JudgeVerdictRow>(ids, (chunk) =>
+    client
+      .schema("platform")
+      .from("judge_verdict")
+      .select(ITEM_COLUMNS)
+      .eq("subject_kind", DECISION_SUBJECT_KIND)
+      .in("id", chunk)
+      .returns<JudgeVerdictRow[]>(),
+  );
+  if (answer.error) throw new Error(answer.error.message);
+  return (answer.data ?? []).map(readReviewItem);
+}
+
+/**
+ * Every reference verdict on this agent's answers, newest per item. The
+ * writer stamps `metadata.agent_id` on each row; complete (`readAllRows`),
+ * because the table's set of checked items depends on it.
+ */
+export async function loadReferenceVerdicts(agentId: string): Promise<ReferenceVerdict[]> {
+  const client = createClient();
+  const rows = await readAllRows(
+    ({ from, to }) =>
+      client
+        .schema("platform")
+        .from("judge_verdict")
+        .select("id, subject_ref_id, verdict, confidence, model, created_at, metadata", { count: "exact" })
+        .eq("subject_kind", REFERENCE_SUBJECT_KIND)
+        .contains("metadata", { agent_id: agentId })
+        .is("deleted_at", null)
+        .order("id", { ascending: true })
+        .range(from, to),
+    { label: "platform.judge_verdict (decision references)" },
+  );
+  const verdicts = (rows as ReferenceVerdictRow[]).flatMap((row) => {
+    const v = readReferenceVerdictRow(row);
+    return v ? [v] : [];
+  });
+  return [...latestPerItem(verdicts).values()];
+}
+
+function textParts(content: unknown): string[] {
+  const list = Array.isArray(content) ? content : [];
+  return list.flatMap((part) => {
+    if (!isJsonObject(part)) return [];
+    const text = part.text;
+    if (typeof text !== "string" || !text.trim()) return [];
+    if (text.trimStart().startsWith(TRANSLATOR_PREAMBLE)) return [];
+    return [text];
+  });
+}
+
+/**
+ * The judged state of many items at once (item id → text parts): the user
+ * turn just before each answer message. Unreadable conversations are absent.
+ */
+export async function loadJudgedStates(items: ReviewItem[]): Promise<Map<string, string[]>> {
+  const out = new Map<string, string[]>();
+  const withMessage = items.filter((i) => i.messageId && i.conversationId);
+  if (withMessage.length === 0) return out;
+  const client = createClient().schema("chat");
+  const answers = await readInChunks<{ id: string; position: number }>(
+    withMessage.map((i) => i.messageId as string),
+    (chunk) => client.from("message").select("id, position").in("id", chunk),
+  );
+  if (answers.error) throw new Error(answers.error.message);
+  const position = new Map((answers.data ?? []).map((m) => [m.id, m.position]));
+  const turns = await readInChunks<{ conversation_id: string; position: number; content: unknown }>(
+    [...new Set(withMessage.map((i) => i.conversationId as string))],
+    (chunk) =>
+      client
+        .from("message")
+        .select("conversation_id, position, content")
+        .in("conversation_id", chunk)
+        .eq("role", "user")
+        .is("deleted_at", null),
+  );
+  if (turns.error) throw new Error(turns.error.message);
+  const byConversation = new Map<string, Array<{ position: number; content: unknown }>>();
+  for (const t of turns.data ?? []) {
+    const list = byConversation.get(t.conversation_id) ?? [];
+    list.push(t);
+    byConversation.set(t.conversation_id, list);
+  }
+  for (const item of withMessage) {
+    const at = position.get(item.messageId as string);
+    if (at == null) continue;
+    const before = (byConversation.get(item.conversationId as string) ?? [])
+      .filter((t) => t.position < at)
+      .sort((a, b) => b.position - a.position)[0];
+    out.set(item.id, before ? textParts(before.content) : []);
+  }
+  return out;
 }
 
 export function reviewAnswersHref(agentId: string): string {

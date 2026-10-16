@@ -32,7 +32,21 @@ function pct(v: number): string {
   return `${Math.round(v * 100)}%`;
 }
 
-export function ReliabilityCurve({ bins, threshold }: { bins: CurveBin[]; threshold: number | null }) {
+export function ReliabilityCurve({
+  bins,
+  threshold,
+  yLabel = "Right this often",
+  unit = "labels",
+  label = "Reliability curve",
+}: {
+  bins: CurveBin[];
+  threshold: number | null;
+  /** The y axis: "Right this often" against human labels, "Agrees this often" against the reference. */
+  yLabel?: string;
+  /** What one counted thing is, in the hover ("labels", "checks"). */
+  unit?: string;
+  label?: string;
+}) {
   const [hover, setHover] = useState<number | null>(null);
   const maxCount = Math.max(1, ...bins.map((b) => b.count));
   const radius = (count: number) => 4 + 8 * Math.sqrt(count / maxCount);
@@ -40,7 +54,7 @@ export function ReliabilityCurve({ bins, threshold }: { bins: CurveBin[]; thresh
 
   return (
     <div className="relative w-full max-w-[22rem]">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Reliability curve">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={label}>
         {TICKS.map((t) => (
           <g key={t}>
             <line x1={x(0)} x2={x(1)} y1={y(t)} y2={y(t)} className="stroke-border" strokeWidth={1} />
@@ -62,7 +76,7 @@ export function ReliabilityCurve({ bins, threshold }: { bins: CurveBin[]; thresh
           transform={`rotate(-90 10 ${PAD.top + PH / 2})`}
           className="fill-muted-foreground type-meta"
         >
-          Right this often
+          {yLabel}
         </text>
         <line
           x1={x(0)}
@@ -116,10 +130,10 @@ export function ReliabilityCurve({ bins, threshold }: { bins: CurveBin[]; thresh
           }}
         >
           <div>
-            {pct(active.lower)}–{pct(active.upper)} · {active.count} labels
+            {pct(active.lower)}–{pct(active.upper)} · {active.count} {unit}
           </div>
           <div>
-            stated {pct(active.mean_predicted)} · right {pct(active.observed_accuracy)}
+            stated {pct(active.mean_predicted)} · {unit === "labels" ? "right" : "agrees"} {pct(active.observed_accuracy)}
           </div>
         </div>
       )}
