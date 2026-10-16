@@ -50,7 +50,8 @@
 "use client";
 
 import { MessagingAttachment } from "@/features/messaging/components/MessagingAttachment";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { subscribeEngineStart } from "@/providers/messagingEngineStarted";
 import { useRouter } from "next/navigation";
 import {
   MessagingProvider,
@@ -467,7 +468,14 @@ function MessagingKindKnob({
   const passive = usePassiveMessagingSnapshot();
   const kindFilter = passive?.kindFilter ?? "people";
   // The inbox has been asked for (started, or already read): only then does the default kind matter.
-  const inboxAsked = (host?.engine.isStarted() ?? false) || (passive?.hasLoadedConversations ?? false);
+  // `isStarted()` is not reactive, so the start itself is subscribed to: the knob is read at the
+  // first list open, not at the next unrelated store change.
+  const engineStarted = useSyncExternalStore(
+    (listener) => subscribeEngineStart(host?.engine ?? null, listener),
+    () => host?.engine.isStarted() ?? false,
+    () => false,
+  );
+  const inboxAsked = engineStarted || (passive?.hasLoadedConversations ?? false);
   const inboxKnobs = useScopedKnobs({
     organizationId,
     // One read, at the organization the ladder answered — and only once the inbox is asked for.
