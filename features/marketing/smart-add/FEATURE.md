@@ -95,6 +95,7 @@ A card needs two witnesses: the brand's own site (all its pages are one), each l
 
 ## Change Log
 
+- 2026-10-16 — Nothing dies: an enrich round is named on the brand as it starts (`registerBrandSmartAddRuns`), so the findings it makes later land and promote like Create's; the Discovery inbox starts every fact on its server-rule kind (never a dead Confirm), confirms a kept fact in place (no duplicate) and promotes after every confirm; products and services open the Offerings screen from the inbox.
 - 2026-10-16 — Found-first door (`/smart-add/found`, VISION Part 23): card grid of certain facts, one "Looks right" with a way out, then the full review in place on the same session.
 
 - 2026-10-16 — Promotion moved to the server, every census type: Create and every confirmed validation answer call aidream `POST /brand-intake/promote/{brandId}` (`promote.ts` is only its client + `undoPromotion`); the rules live once in aidream `services/brand_profile/promote.py` (competitor, person, location, listing, keyword, backlink, offering, industry, typed fact kinds; confirmed only, Not us / match-only / Maybe never). Create records `metadata.smart_add.runs`, so the round's facts step finishing after Create keeps the late facts on the brand and promotes them server-side (`brand.identify.land_late_findings`). Guards: `__tests__/promoteFindings.test.ts` (client holds no rule), aidream `brand_profile/tests/test_promote.py` (each type lands).

@@ -32,6 +32,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
+import { toast } from "@/lib/toast";
 import { FACTS_FOUND_BY, mergeConfirmedIntoPlan, planKeptFacts, saveKeptFacts, type ConfirmedContactFact } from "./keptFacts";
 import { loadFactRules, NO_FACT_RULES } from "./factRules";
 import { foundByForSource } from "./factIdentity";
@@ -53,6 +54,7 @@ import {
   createBusinessLocation,
   createProperty,
   createDiscoveredCandidates,
+  registerBrandSmartAddRuns,
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
@@ -570,6 +572,17 @@ export function SmartAddBrand({
     if (runKey) wroteRuns.current = true;
     writeAddress({ runs: runKey ? runKey.split(",") : [] });
   }, [runKey]);
+  // Enrich: the brand already exists, so each round is named on it as it starts — the facts the round finds after
+  // this moment land on the brand and reach their homes server-side, exactly like Create's (aidream land_late_facts).
+  const enrichBrandId = enrich?.snapshot.brand.id ?? null;
+  const nameRunsOnBrand = useEffectEvent((brandId: string, ids: string[]) => {
+    registerBrandSmartAddRuns(brandId, ids).catch((error: unknown) =>
+      toast.error(`This round's findings may not reach the brand: ${extractErrorMessage(error)}`),
+    );
+  });
+  useEffect(() => {
+    if (enrichBrandId && runKey) nameRunsOnBrand(enrichBrandId, runKey.split(","));
+  }, [enrichBrandId, runKey]);
 
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(

@@ -4,6 +4,9 @@ import type { HiddenView } from "@/features/access-gate/service/hiddenByMe";
 import { crawlActivityRefetchInterval } from "@/features/marketing/data/crawl-activity-refresh";
 import { useEffect, useMemo, useRef } from "react";
 import { followRemovalWithToast } from "@/features/trash/cascade";
+import { toast } from "@/lib/toast";
+import { extractErrorMessage } from "@/utils/errors";
+import { promoteSmartAddFindings } from "@/features/marketing/smart-add/promote";
 import {
   keepPreviousData,
   useMutation,
@@ -791,8 +794,26 @@ export function useConfirmDiscoveredProperty() {
   return useDiscoveryMutation(confirmDiscoveredProperty);
 }
 
+/**
+ * A confirmed discovery lands in its home table (competitor, person, location, listing, keyword…) through the
+ * server's ONE promotion — the same one Create and the validation page call. The confirm already saved, so a
+ * promotion that fails is said, never thrown.
+ */
+async function promoteConfirmed(brandId: string | null | undefined): Promise<void> {
+  if (!brandId) return;
+  try {
+    const promoted = await promoteSmartAddFindings(brandId);
+    for (const problem of promoted.problems) toast.error(problem);
+  } catch (error) {
+    toast.error(`Confirmed, but not added to the brand's pages yet: ${extractErrorMessage(error)}`);
+  }
+}
+
 export function useConfirmDiscoveredFact() {
-  return useDiscoveryMutation(confirmDiscoveredFact);
+  return useDiscoveryMutation(async (input: Parameters<typeof confirmDiscoveredFact>[0]) => {
+    await confirmDiscoveredFact(input);
+    await promoteConfirmed(input.item.brand_id);
+  });
 }
 
 export function useDismissDiscoveredItem() {
@@ -800,7 +821,11 @@ export function useDismissDiscoveredItem() {
 }
 
 export function useBulkConfirmDiscoveredItems() {
-  return useDiscoveryMutation(bulkConfirmDiscoveredItems);
+  return useDiscoveryMutation(async (input: Parameters<typeof bulkConfirmDiscoveredItems>[0]) => {
+    const result = await bulkConfirmDiscoveredItems(input);
+    if (result.confirmed > 0) await promoteConfirmed(input[0]?.item.brand_id);
+    return result;
+  });
 }
 
 export function useBulkDismissDiscoveredItems() {

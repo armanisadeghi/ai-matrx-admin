@@ -2,6 +2,8 @@
 
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import {
   AtSign,
   Check,
@@ -106,6 +108,7 @@ import { cn } from "@/lib/utils";
 import { describeDiscoveredSocialProfile } from "@/features/marketing/lib/discovery-promotion";
 import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { loadFactRules } from "@/features/marketing/smart-add/factRules";
 import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -114,6 +117,9 @@ const STATUS_TABS: Array<{ value: DiscoveredItemStatus; label: string }> = [
   { value: "confirmed", label: "Confirmed" },
   { value: "dismissed", label: "Dismissed" },
 ];
+
+/** Discovered products and services: managed on the Offerings screen. */
+const OFFERING_CATEGORY = "offering";
 
 const PAGE_SIZE_OPTIONS = [50, 100, 250] as const;
 const DEFAULT_PAGE_SIZE = 100;
@@ -202,7 +208,16 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
   const currentPage = Math.min(page, knownPageCount);
   const items = useDiscoveredItems(brandId, status, currentPage, pageSize);
 
-  const rows = useMemo(() => items.data?.rows ?? [], [items.data]);
+  // Products and services have their own screen (Yes / No / Other per item, the offering tree behind it): the inbox
+  // names them and opens it, and never shows rows it cannot confirm.
+  const rows = useMemo(() => (items.data?.rows ?? []).filter((item) => item.category !== OFFERING_CATEGORY), [items.data]);
+  const offeringCount = useMemo(
+    () => (items.data?.rows ?? []).filter((item) => item.category === OFFERING_CATEGORY).length,
+    [items.data],
+  );
+  // The server's field → kind rules: a fact the facts agent named already has its kind (never "Other fact").
+  const factRules = useQuery({ queryKey: ["marketing", "fact-rules"], queryFn: loadFactRules, staleTime: Infinity });
+  const fieldKind = factRules.data?.fieldKind;
   const total = items.data?.total ?? 0;
   if (items.data !== undefined && total !== knownTotal) setKnownTotal(total);
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -229,9 +244,11 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
   }, [rows]);
 
   const effectiveKind = (item: DiscoveredItem) =>
-    kindOverrides[item.id] ?? defaultKind(item);
+    kindOverrides[item.id] ?? defaultKind(item, fieldKind);
+  // A row filed under Other starts labelled by what the finder called it, so Confirm is never a dead button.
   const effectiveLabel = (item: DiscoveredItem) =>
-    labelOverrides[item.id] ?? "";
+    labelOverrides[item.id] ??
+    (effectiveKind(item) === LABEL_REQUIRED_KIND && item.guessed_kind ? humanizeIdentifier(item.guessed_kind) : "");
 
   // Selection is only meaningful against the rows actually on screen —
   // refetches can move ids out from under a stale selection.
@@ -799,6 +816,19 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
                 </div>
               ) : null}
             </div>
+          ) : null}
+
+          {offeringCount > 0 ? (
+            <section
+              className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2"
+              data-testid="discovery-offerings-door"
+            >
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Products &amp; services</h2>
+              <span className="text-[11px] tabular-nums text-muted-foreground">{offeringCount}</span>
+              <Button asChild variant="outline" className="ml-auto" icon={<ChevronRight />}>
+                <Link href={marketingRoutes.brandOfferings(brandId)}>Review in Offerings</Link>
+              </Button>
+            </section>
           ) : null}
 
           {grouped.length === 0 && status === "pending" && brandSites.isSuccess && (brandSites.data ?? []).length === 0 ? (
