@@ -8,7 +8,9 @@
  *     payload without re-snapshotting.
  *   - Settings spread FLAT at top level. There is no `config_overrides` field.
  *   - The wire `conversation_id` is fresh per call.
- *   - `state.instanceModelOverrides` is NOT read at all.
+ *   - Of `state.instanceModelOverrides`, only the one-turn model choice
+ *     (`turnOnlyByConversationId`, "use this model for this turn only") is
+ *     read; a persistent per-conversation override never changes the payload.
  *
  * If a future refactor re-introduces snapshotting, the override delta layer,
  * or wire-level conversation continuation, this file fails CI loudly.
@@ -25,6 +27,9 @@ jest.mock("uuid", () => ({
 jest.mock(
   "@ai-matrx/chat/agents/redux/execution-system/client-capabilities/desktop-presence",
   () => ({
+    ...jest.requireActual(
+      "@ai-matrx/chat/agents/redux/execution-system/client-capabilities/desktop-presence",
+    ),
     getLiveDesktopInstance: jest.fn().mockResolvedValue(null),
   }),
 );
@@ -73,6 +78,7 @@ function makeState(
     organizationId?: string | null;
     conversationOrganizationId?: string | null;
     cacheOnly?: boolean;
+    turnOnlyModel?: string;
     resourcePolicies?: Record<
       string,
       {
@@ -139,6 +145,8 @@ function makeState(
           contextPolicies: [],
           parentAgentId: partial.parentAgentId ?? null,
           isVersion: partial.isVersion ?? false,
+          // The live definition's variable definitions are only sent once loaded.
+          _loadedFields: { variableDefinitions: true },
         },
       },
     },
@@ -214,19 +222,21 @@ function makeState(
     // Desktop target routing is a real RootState slice. Derive defaults from
     // its reducer so this partial fixture cannot drift from production state.
     adminPreferences: adminPreferencesReducer(undefined, { type: "@@INIT" }),
-    // Deliberately omit instanceModelOverrides: this path MUST NOT read it.
-    // If a future refactor reaches into the slice, accessing it will throw
-    // and these tests will fail.
+    // Only the one-turn model choice is read from this slice; the
+    // persistent per-conversation overrides must never reach the payload.
+    instanceModelOverrides: {
+      byConversationId: {},
+      turnOnlyByConversationId: partial.turnOnlyModel
+        ? { [CONVERSATION_ID]: { on: true, model: partial.turnOnlyModel } }
+        : {},
+    },
   } as unknown as ChatRootState;
 }
 
 function makeStoredAssemblyState(
   partial: Parameters<typeof makeState>[0] = {},
 ): ChatRootState {
-  const state = makeState(partial) as ChatRootState & {
-    instanceModelOverrides: { byConversationId: Record<string, unknown> };
-  };
-  state.instanceModelOverrides = { byConversationId: {} };
+  const state = makeState(partial) as ChatRootState;
   state.userPreferences = userPreferencesReducer(undefined, { type: "@@INIT" });
   return state;
 }
@@ -456,29 +466,23 @@ describe("assembleManualRequest — live read contract", () => {
     expect(payload?.variable_resource_context).toEqual({ pdf_file: policy });
   });
 
-  test("messages[] appends prior committed history from the messages slice", async () => {
+  test("a stored conversation with a reply but no saved first turn refuses instead of resending history", async () => {
+    // The server holds a stored conversation's history; turn 2+ is sent as a
+    // continuation of the remembered wire conversation (is_new=false, new turn
+    // only). With a completed reply in the slice and nothing remembered, the
+    // Builder must refuse loudly rather than re-send history as a new turn.
     const state = makeState({
       history: [
-        {
-          id: "m1",
-          role: "user",
-          content: [{ type: "text", text: "prior user turn" }],
-        },
-        {
-          id: "m2",
-          role: "assistant",
-          content: [{ type: "text", text: "prior assistant reply" }],
-        },
+        { id: "m1", role: "user", content: [{ type: "text", text: "prior user turn" }] },
+        { id: "m2", role: "assistant", content: [{ type: "text", text: "prior assistant reply" }] },
       ],
       userInput: "new turn",
     });
-    const payload = await assembleManualRequest(state, CONVERSATION_ID);
-    const roles = payload!.messages!.map((m: { role: string }) => m.role);
-    expect(roles).toEqual(["user", "assistant", "user"]);
-    expect(
-      (payload!.messages![2] as { content: Array<{ text: string }> }).content[0]
-        .text,
-    ).toBe("new turn");
+    const errors = jest.spyOn(console, "error").mockImplementation(() => undefined);
+    await expect(assembleManualRequest(state, CONVERSATION_ID)).rejects.toThrow(
+      /first turn was not stored/,
+    );
+    errors.mockRestore();
   });
 
   test("agent.tools UUIDs map to tools_replace as RegisteredToolSpec wire shape", async () => {
@@ -629,19 +633,21 @@ describe("assembleManualRequest — live read contract", () => {
     expect(payload.is_version).toBe(true);
   });
 
-  test("does NOT read state.instanceModelOverrides", async () => {
-    // The test fixture omits instanceModelOverrides entirely. If
-    // assembleManualRequest tried to read it, the function would throw on
-    // property access of `undefined`. The fact that the previous tests pass
-    // proves the path doesn't reach into the overrides slice. This test
-    // documents that contract explicitly.
-    const state = makeState({ modelId: "m" });
-    expect(
-      (state as Record<string, unknown>).instanceModelOverrides,
-    ).toBeUndefined();
-    await expect(
-      assembleManualRequest(state, CONVERSATION_ID),
-    ).resolves.toBeDefined();
+  test("a persistent model override never reaches the payload; a one-turn choice does", async () => {
+    const state = makeState({ modelId: "model-A" }) as ChatRootState & {
+      instanceModelOverrides: { byConversationId: Record<string, unknown> };
+    };
+    state.instanceModelOverrides.byConversationId[CONVERSATION_ID] = {
+      overrides: { model: "persistent-override" },
+    };
+    const live = (await assembleManualRequest(state, CONVERSATION_ID))!;
+    expect(live.ai_model_id).toBe("model-A");
+
+    const turnOnly = (await assembleManualRequest(
+      makeState({ modelId: "model-A", turnOnlyModel: "model-this-turn" }),
+      CONVERSATION_ID,
+    ))!;
+    expect(turnOnly.ai_model_id).toBe("model-this-turn");
   });
 });
 
