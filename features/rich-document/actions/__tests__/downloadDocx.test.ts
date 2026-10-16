@@ -16,6 +16,7 @@ jest.mock("@/lib/toast", () => ({
   toast: { loading: jest.fn(), success: jest.fn(), error: jest.fn() },
 }));
 
+import "@/__tests__/helpers/configure-chat-fake-host";
 import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "../../test-utils/chatContext";

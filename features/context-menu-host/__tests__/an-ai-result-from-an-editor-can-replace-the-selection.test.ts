@@ -13,6 +13,7 @@
  * the launch handle carries no write-back.
  */
 
+import "@/__tests__/helpers/configure-chat-fake-host";
 import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction, resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "@/features/rich-document/test-utils/chatContext";

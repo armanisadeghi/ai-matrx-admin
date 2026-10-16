@@ -46,7 +46,7 @@ describe("outbound content", () => {
           const key = `${file}:${m[1] ?? "arg"}`;
           if (RAW_ALLOWED[key]) continue;
           // Home-bound writers (edit in place, compare against what is shown).
-          if (/^(edit|preparedEdit|fullscreen-editor|compare|listen)\.ts$/.test(file)) continue;
+          if (/^(edit|preparedEdit|host-edit-bodies|compare|listen)\.ts$/.test(file)) continue;
           const line = src.slice(0, m.index).split("\n").length;
           offenders.push(`${file}:${line} ${m[0]}`);
         }

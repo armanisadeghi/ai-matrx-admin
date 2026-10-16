@@ -47,9 +47,10 @@ import { HtmlPreviewBridge } from "@ai-matrx/chat/ui/html-preview/HtmlPreviewBri
 
 import "./edit";
 import "./export";
-import "./fullscreen-editor";
+import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 
 enableMapSet();
+ensureWebRichDocumentRegistrations();
 // The shared host registration loads the app's providers, which reach the supabase client mock above
 // (its factory reads the `mock*` consts) — so it registers once those consts exist, before any render.
 beforeAll(() => {

@@ -5,6 +5,7 @@
  * present or ABSENT (never dead) by what the source and its host can do.
  */
 
+import "@/__tests__/helpers/configure-chat-fake-host";
 import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
 import { getAction, resolveActions } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { parseFirstMarkdownTable, tableToDelimited } from "@ai-matrx/rich-content/rich-document/actions/markdownTable";
@@ -118,7 +119,7 @@ describe("the expanded action set", () => {
     expect(prose).not.toContain("save-table-as-data");
   });
 
-  it("ask-in-chat is offered only where a conversation exists, and quotes as CONTEXT", () => {
+  it("ask-in-chat is offered only where a conversation exists, and quotes as CONTEXT", async () => {
     expect(ids(noteContext())).not.toContain("quote-into-chat");
     const dispatch = jest.fn();
     const ctx = chatContext("assistant", {
@@ -131,7 +132,7 @@ describe("the expanded action set", () => {
       })) as never,
     });
     expect(ids(ctx)).toEqual(expect.arrayContaining(["ask-followup", "quote-into-chat"]));
-    void getAction("quote-into-chat")!.run(ctx);
+    await getAction("quote-into-chat")!.run(ctx);
     const action = dispatch.mock.calls[0][0];
     // THE USER-INPUT LAW: a context entry on the conversation, never composer text.
     expect(action.type).toMatch(/setContextEntries$/);
