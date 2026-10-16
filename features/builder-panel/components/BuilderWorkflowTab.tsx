@@ -27,7 +27,7 @@ const STATUS_TONE: Record<string, Tone> = {
   pending: "info",
   interrupted: "warning",
   failed: "destructive",
-  errored: "destructive",
+  errored: "warning",
   cancelled: "neutral",
 };
 

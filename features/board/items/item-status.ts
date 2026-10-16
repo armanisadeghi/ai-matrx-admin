@@ -101,6 +101,7 @@ export function useWorkflowRunStatus(source: NodeSource, basics?: ItemBasicValue
     case "awaiting_input":
       return { tone: "attention", label };
     case "errored":
+      return { tone: "attention", label };
     case "failed":
       return { tone: "danger", label };
     case "completed":

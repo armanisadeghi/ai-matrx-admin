@@ -182,8 +182,8 @@ export function runStateLabel(status: RunStatusOrPending): string {
     case "completed":
       return "Finished";
     case "errored":
-      return "Hit a problem";
+      return "Stopped · can resume";
     case "failed":
-      return "Didn't finish";
+      return "Failed";
   }
 }

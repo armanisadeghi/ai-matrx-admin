@@ -75,8 +75,8 @@ const STATUS_COPY: Record<
   cancelling: { label: "Stopping", tone: "hold" },
   cancelled: { label: "Stopped", tone: "bad" },
   completed: { label: "Done", tone: "good" },
-  failed: { label: "Stopped early", tone: "bad" },
-  errored: { label: "Stopped early", tone: "bad" },
+  failed: { label: "Failed", tone: "bad" },
+  errored: { label: "Stopped · can resume", tone: "hold" },
 };
 
 const TONE_DOT: Record<string, string> = {

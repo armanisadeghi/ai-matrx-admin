@@ -49,9 +49,9 @@ export const RUN_STATUS_LABEL: Record<string, string> = {
   paused: "Paused",
   interrupted: "Waiting for input",
   awaiting_input: "Needs your input",
-  errored: "Needs attention",
+  errored: "Stopped · can resume",
   completed: "Done",
-  failed: "Needs attention",
+  failed: "Failed",
   cancelled: "Stopped",
 };
 

@@ -81,8 +81,9 @@ export function marqueeSentence(
       return "Stopped before the finish";
     case "completed":
       return "Delivered";
-    case "failed":
     case "errored":
+      return "Stopped · can resume";
+    case "failed":
       return "It ran into a problem";
     default:
       return status;
