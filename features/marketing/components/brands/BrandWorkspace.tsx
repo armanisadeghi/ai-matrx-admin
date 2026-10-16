@@ -990,7 +990,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 size="sm"
                 showStatus={false}
               />
-              {pending.data ? (
+              {pending.isLoading ? (
+                // Holds the button's width while the count loads, so the header text never re-wraps.
+                <span aria-hidden="true" className="inline-block h-8 w-28" />
+              ) : pending.data ? (
                 <Button
                   asChild
                   variant="outline"

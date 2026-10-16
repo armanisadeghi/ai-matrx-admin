@@ -514,18 +514,26 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
       }
     >
       <div className="flex flex-col" data-testid="brand-background-work">
-        {run ? (
-          <div className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-sm">
-            <StatusIcon state={runState ?? "todo"} />
-            <span className="font-medium">Brand setup</span>
-            <span className="text-muted-foreground">
-              {run.status === "interrupted" ? "Waiting for you" : run.status === "completed" ? "Done" : run.active ? "Working" : "Stopped"}
-            </span>
-            <OutboundLink href={runHref(run.runId)} className="ml-auto inline-flex items-center gap-0.5 text-xs text-primary">
-              Watch <ExternalLink className="size-3" />
-            </OutboundLink>
-          </div>
-        ) : null}
+        {/* One fixed-height line from first paint (loading, no run, or a run), so the table never moves under the reader. */}
+        <div className="flex h-9 items-center gap-2 border-b border-border px-3 text-sm" data-testid="brand-setup-line">
+          {run ? (
+            <>
+              <StatusIcon state={runState ?? "todo"} />
+              <span className="font-medium">Brand setup</span>
+              <span className="text-muted-foreground">
+                {run.status === "interrupted" ? "Waiting for you" : run.status === "completed" ? "Done" : run.active ? "Working" : "Stopped"}
+              </span>
+              <OutboundLink href={runHref(run.runId)} className="ml-auto inline-flex items-center gap-0.5 text-xs text-primary">
+                Watch <ExternalLink className="size-3" />
+              </OutboundLink>
+            </>
+          ) : (
+            <>
+              <span className="font-medium">Brand setup</span>
+              <span className={setup.isLoading ? "h-3.5 w-24 animate-pulse rounded bg-muted" : "text-muted-foreground"}>{setup.isLoading ? "" : "No setup run"}</span>
+            </>
+          )}
+        </div>
         {sites.isError !== accounts.isError ? (
           <p data-error-box className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-xs text-destructive">
             <span className="truncate">
