@@ -24,6 +24,8 @@ import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { mapPlacesList } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 
 const MapCanvas = dynamic(() => import("./MapCanvas"), {
@@ -66,6 +68,7 @@ export const MapBlock: React.FC<MapBlockProps> = ({
     placesList === "side" || (placesList === "toggle" && listOpen);
 
   const host = useBlockHostSlot();
+  const controls = useBlockControls("map", content, useBlockEdit());
   const handleCopy = async () => {
     if (!(await copyText(content.trim()))) return;
     setCopied(true);
@@ -84,7 +87,9 @@ export const MapBlock: React.FC<MapBlockProps> = ({
         <div className="flex min-w-0 items-center gap-2">
           <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
           <span className="truncate text-sm font-medium text-foreground">
-            {spec?.title ?? "Map"}
+            <InlineControlText controls={controls} fieldKey="title" value={spec?.title ?? ""}>
+              {spec?.title ?? "Map"}
+            </InlineControlText>
           </span>
           {spec && (
             <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
@@ -109,6 +114,7 @@ export const MapBlock: React.FC<MapBlockProps> = ({
                 <Copy />
               )} aria-label={copied ? "Copied" : "Copy source"} title={copied ? "Copied" : "Copy source"} onClick={handleCopy} />
           )}
+          {!isStreamActive && spec && <BlockControlsButton controls={controls} title="Map controls" />}
           {host.actions}
         </div>
       </div>

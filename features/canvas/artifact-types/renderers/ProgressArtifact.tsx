@@ -59,6 +59,7 @@ export default function ProgressArtifact({
     <Suspense fallback={<MatrxMiniLoader />}>
       <ProgressTrackerBlock
         tracker={tracker}
+        source={typeof data === "string" ? data : raw}
         taskId={artifactDedupKey(taskId, artifactId)}
         artifactId={artifactId}
         conversationId={conversationId}

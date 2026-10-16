@@ -50,6 +50,8 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertProgressToTasks } from "@/features/tasks/utils/importConverters";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 
 
@@ -60,6 +62,8 @@ export interface ProgressTrackerState {
 
 interface ProgressTrackerBlockProps {
   tracker: ProgressTrackerData;
+  /** The block's own source text (the markdown the parser read): what its Controls edit. */
+  source?: string;
   taskId?: string; // Task ID for canvas deduplication
   artifactId?: string;
   conversationId?: string;
@@ -73,6 +77,7 @@ interface ProgressTrackerBlockProps {
 
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
   tracker,
+  source,
   taskId,
   artifactId,
   conversationId,
@@ -83,6 +88,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  const controls = useBlockControls("progress_tracker", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
@@ -405,7 +411,9 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                     </div>
                     <div className="flex-1">
                       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        {tracker.title}
+                        <InlineControlText controls={controls} fieldKey="title" value={tracker.title}>
+                          {tracker.title}
+                        </InlineControlText>
                       </h1>
                       {tracker.description && (
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
@@ -429,6 +437,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                       <Button variant="quiet" icon={<Maximize2 />} onClick={() => setIsFullScreen(true)}>
                         <span>Focus</span>
                       </Button>
+                      <BlockControlsButton controls={controls} title="Progress controls" />
                       {host.actions}
                     </div>
                   )}
