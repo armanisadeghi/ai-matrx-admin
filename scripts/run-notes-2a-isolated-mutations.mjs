@@ -79,7 +79,7 @@ const isIntendedRed = (record, mutation) => {
 manifest.baseline = run("baseline");
 writeManifest(manifest);
 const mutations = [
-  { name: "prepared-full-body", file: "features/rich-document/actions/handlers/edit.ts", from: "content: prepared.content", to: "content: ctx.content", testName: "prepares identity source before edit overlay", assertion: "authoritative full body" },
+  { name: "prepared-full-body", file: "features/rich-document/actions/handlers/host-edit-bodies.ts", from: "content: prepared.content", to: "content: ctx.content", testName: "prepares identity source before edit overlay", assertion: "authoritative full body" },
   { name: "missing-org", file: "features/rich-document/actions/sources/note.ts", from: "expectedOrganizationId: source.editBase.organizationId", to: "expectedOrganizationId: undefined", testName: "refuses a moved note", assertion: "Expected pattern: /different organization/i" },
   { name: "missing-base", file: "features/rich-document/actions/sources/note.ts", from: "expectedVersion: source.editBase.version", to: "expectedVersion: undefined", testName: "uses a dirty captured base", assertion: "version" },
   { name: "void-receipt", file: "features/rich-document/actions/sources/note.ts", from: "return persistNoteUpdate(source.noteId, { content: newContent }, {", to: "await persistNoteUpdate(source.noteId, { content: newContent }, {", testName: "prepares identity source before edit overlay", assertion: "acknowledgement receipt" },
