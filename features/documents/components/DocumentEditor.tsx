@@ -49,6 +49,7 @@ import {
   type PageSetupValues,
 } from "@ai-matrx/office/core";
 import { buildDocMenus, buildDocToolbar, type DocChromeHost, type DocsApiLike } from "@/features/documents/chrome/doc-commands";
+import { countStyledHeadings } from "@/features/documents/chrome/doc-outline";
 import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 import { bodyTextOf } from "@ai-matrx/office/docs";
 
@@ -693,6 +694,8 @@ export default function DocumentEditor({
           editable: editable && docMode === "editing",
           blockStart: () => editOps.toBlockStart(),
           unitId: () => unitId,
+          headingCount: () => countStyledHeadings(apiRef.current?.getActiveDocument()?.save() ?? null),
+          notice: (title) => notice.info(title, { id: "doc-command-notice" }),
           zoom: () => zoom,
           print: printDocument,
           wordCount: showWordCount,

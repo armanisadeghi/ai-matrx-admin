@@ -72,3 +72,18 @@ export function collectOutline(snapshot: unknown): OutlineItem[] {
   }
   return items;
 }
+
+/** Headings a table of contents lists: paragraphs carrying a heading style (never bold, sized runs). */
+export function countStyledHeadings(snapshot: unknown): number {
+  const body = (snapshot as { body?: BodyLike } | null)?.body;
+  const stream = body?.dataStream ?? "";
+  const paragraphs = [...(body?.paragraphs ?? [])].sort((a, b) => a.startIndex - b.startIndex);
+  let count = 0;
+  let start = 0;
+  for (const p of paragraphs) {
+    const text = stream.slice(start, p.startIndex).replace(/[\u0000-\u001f]/g, "").trim();
+    if (text && styleLevel(p)) count += 1;
+    start = p.startIndex + 1;
+  }
+  return count;
+}

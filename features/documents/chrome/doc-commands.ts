@@ -63,6 +63,10 @@ export interface DocChromeHost {
   blockStart?: () => Promise<boolean>;
   /** The open document's unit id (zoom needs it). */
   unitId: () => string | null;
+  /** How many headings the document has (a table of contents lists them; with none it would be empty). */
+  headingCount?: () => number;
+  /** Say why a command did nothing (a short notice). */
+  notice?: (title: string) => void;
   zoom: () => number;
   print: () => void;
   wordCount: () => void;
@@ -178,6 +182,9 @@ const lineSpacingEntries = (h: DocChromeHost): EditorMenuEntry[] => [
   { kind: "action", id: "format.line-spacing.remove-after", label: "Remove space after paragraph", keywords: ["paragraph spacing"], run: spacing(h, { spaceBelow: { v: 0 } }) },
 ];
 
+/** What Insert › Table of contents says on a document with no heading. */
+export const TOC_NEEDS_A_HEADING = "Add a heading first — the table lists your headings";
+
 const tocEntries = (h: DocChromeHost): EditorMenuEntry[] => [
   {
     kind: "action",
@@ -187,6 +194,11 @@ const tocEntries = (h: DocChromeHost): EditorMenuEntry[] => [
     run: async () => {
       // Univer inserts the table at the caret; inside a heading that splits it and the table then
       // lists the broken half. The table goes at its own paragraph instead.
+      // With no heading Univer inserts nothing at all; say so instead of a silent no-op.
+      if (h.headingCount && h.headingCount() === 0) {
+        h.notice?.(TOC_NEEDS_A_HEADING);
+        return false;
+      }
       if (h.blockStart && !(await h.blockStart())) return false;
       const unitId = h.unitId();
       return h.api.executeCommand("doc.command.insert-table-of-contents", {
