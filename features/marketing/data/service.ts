@@ -2747,6 +2747,8 @@ export interface BrandRelationKind {
    * beside any host/path rules the kind carries itself.
    */
   match: { hosts: string[]; paths: string[]; categories: string[] };
+  /** The typed brand fact a confirmed answer of this kind is (metadata.fact): credential, membership, award, press_mention… */
+  fact?: string | null;
 }
 
 const RELATION_ROUTES: readonly RelationRoute[] = ["owns", "key_person", "competitor", "brand_property", "exclusion"];
@@ -2782,6 +2784,7 @@ function toRelationKind(row: {
     hasSentiment: Boolean(row.has_sentiment),
     usage: toRelationUsage(row.usage),
     match: { hosts: stringList(match.hosts), paths: stringList(match.paths), categories: stringList(match.categories) },
+    fact: typeof meta.fact === "string" && meta.fact ? meta.fact : null,
   };
 }
 

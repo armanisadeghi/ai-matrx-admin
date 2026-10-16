@@ -212,7 +212,14 @@ export async function routeWebChoices(
         category: candidateCategory(i.field),
         guessedKind: i.field === "listing" || i.field === "mention" ? (i.platform ?? i.field) : i.field,
         url: i.url ?? i.value,
-        value: { text: i.value, label: i.label, host: i.handle, snippet: i.snippet ?? null } as Json,
+        value: {
+          text: i.value,
+          label: i.label,
+          host: i.handle,
+          snippet: i.snippet ?? null,
+          // The typed fact's fields (credential, membership, press…) ride the confirmed row (aidream brand_profile/recognitions.py).
+          ...(i.siteKind ? { site_kind: { ...i.siteKind } } : {}),
+        } as Json,
         context: {
           where: i.source.where,
           found_on: i.source.url,
