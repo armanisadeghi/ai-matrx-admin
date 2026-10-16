@@ -5,11 +5,11 @@ import { formatPoints } from "@ai-matrx/kit/format";
 
 import { useLibraryOrganizationId } from "../library/hooks";
 import type { AdvancedAllow, Quote } from "./contract";
-import { quoteAdvancedRead } from "./server";
+import { batchedQuote } from "./quoteBatcher";
 
 /**
  * The free quote for `urls`: which readers cover them and the most they can cost, BEFORE anything is
- * clicked. Cached per organization + addresses; nothing is billed.
+ * clicked. Every ask made in the same tick joins ONE request (see quoteBatcher); nothing is billed.
  */
 export function useAdvancedQuote(urls: readonly string[], allow: AdvancedAllow, enabled = true) {
   const organizationId = useLibraryOrganizationId();
@@ -19,7 +19,7 @@ export function useAdvancedQuote(urls: readonly string[], allow: AdvancedAllow, 
     enabled: enabled && Boolean(organizationId) && key.length > 0,
     staleTime: 5 * 60 * 1000,
     retry: false,
-    queryFn: ({ signal }) => quoteAdvancedRead({ organizationId: organizationId ?? "", urls: key, allow, signal }),
+    queryFn: () => batchedQuote({ organizationId: organizationId ?? "", urls: key, allow }),
   });
 }
 
