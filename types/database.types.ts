@@ -92097,7 +92097,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _ai_run_headline: {
+        Args: { p_kind: string; p_result: Json }
+        Returns: string
+      }
+      _ai_run_kind_label: { Args: { p_kind: string }; Returns: string }
       brief_run_history: { Args: { p_node_id: string }; Returns: Json }
+      site_ai_run: {
+        Args: { p_run_id: string; p_site_id: string }
+        Returns: Json
+      }
+      site_ai_runs: { Args: { p_site_id: string }; Returns: Json }
       status_flow: {
         Args: never
         Returns: {

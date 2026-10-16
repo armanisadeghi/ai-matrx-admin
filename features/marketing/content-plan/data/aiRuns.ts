@@ -16,3 +16,19 @@ export async function fetchBriefRunHistory(nodeId: string): Promise<unknown> {
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function fetchSiteAiRuns(siteId: string): Promise<unknown> {
+  const { data, error } = await supabase
+    .schema("plan")
+    .rpc("site_ai_runs", { p_site_id: siteId });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function fetchSiteAiRun(siteId: string, runId: string): Promise<unknown> {
+  const { data, error } = await supabase
+    .schema("plan")
+    .rpc("site_ai_run", { p_site_id: siteId, p_run_id: runId });
+  if (error) throw new Error(error.message);
+  return data;
+}
