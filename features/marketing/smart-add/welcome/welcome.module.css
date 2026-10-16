@@ -1,0 +1,41 @@
+/*
+ * Sign-up welcome — the person pick cards (smart-add VISION Part 29; flagship first-run screen, so the card skin
+ * lives here beside found/found.module.css). Theme tokens only; motion is transform/shadow and stops under reduced
+ * motion.
+ */
+
+.pick {
+  background: hsl(var(--muted));
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.pick:hover {
+  transform: translateY(-2px);
+  background: hsl(var(--card));
+  box-shadow:
+    0 0 0 1px hsl(var(--border)),
+    0 18px 40px -22px hsl(var(--foreground) / 0.45);
+}
+
+.pick:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+}
+
+.pick:active {
+  transform: translateY(0);
+}
+
+/* The one-person card: the same skin, never a press target by itself (its two buttons answer). */
+.single {
+  background: hsl(var(--muted));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pick,
+  .pick:hover,
+  .pick:active {
+    transition: none;
+    transform: none;
+  }
+}
