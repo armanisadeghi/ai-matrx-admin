@@ -12,7 +12,9 @@ const TERMINAL = new Set(["completed", "failed", "cancelled"]);
 /** Link kinds whose answer is the tree's root, whichever node carried the link. */
 const COLLAPSES_TO_ROOT = new Set(["conversation"]);
 
-const COLUMNS =
+// Widened to `string`: the JSON-path alias makes the PostgREST select parser exceed TS's
+// instantiation depth (TS2589); every read states its row shape with `.returns<>()`.
+const COLUMNS: string =
   "id, request_id, root_execution_id, parent_execution_id, type, status, cost, meters, link_kind, link_id, error, created_at, started_at, ended_at, stream_mode:context->stream_run->>mode";
 
 interface ExecutionRow {
@@ -140,14 +142,19 @@ async function withoutSupersededAutoRuns(rows: ExecutionRow[]): Promise<Executio
   const autos = rows.filter((r) => isAutoRoot(r) && r.request_id);
   if (!autos.length) return rows;
   const requestIds = [...new Set(autos.map((r) => r.request_id as string))];
+  // The JSON-path alias makes PostgREST's select parser recurse past TS's depth limit
+  // (TS2589); the select is widened to `string` and the row shape stated with `.returns<>()`.
+  const rootColumns: string =
+    "id, request_id, parent_execution_id, stream_mode:context->stream_run->>mode";
   const res = await runtime
     .from("global_execution")
-    .select("id, request_id, parent_execution_id, stream_mode:context->stream_run->>mode")
+    .select(rootColumns)
     .in("request_id", requestIds)
-    .is("parent_execution_id", null);
+    .is("parent_execution_id", null)
+    .returns<Pick<ExecutionRow, "id" | "request_id" | "parent_execution_id" | "stream_mode">[]>();
   if (res.error) throw operationFailed("look up this record's running work", res.error);
   const withOwnRoot = new Set<string>();
-  for (const r of (res.data ?? []) as unknown as ExecutionRow[]) {
+  for (const r of res.data ?? []) {
     if (r.request_id && r.stream_mode !== "auto") withOwnRoot.add(r.request_id);
   }
   return rows.filter((r) => !(isAutoRoot(r) && r.request_id && withOwnRoot.has(r.request_id)));
@@ -166,9 +173,10 @@ export async function fetchOperationsByLink(
     .eq("link_kind", linkKind)
     .eq("link_id", linkId)
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(200)
+    .returns<ExecutionRow[]>();
   if (error) throw operationFailed("look up this record's running work", error);
-  const fetched = (data ?? []) as unknown as ExecutionRow[];
+  const fetched = data ?? [];
   const cap = Math.max(1, limit);
 
   if (!COLLAPSES_TO_ROOT.has(linkKind)) {
@@ -179,9 +187,9 @@ export async function fetchOperationsByLink(
     ];
     const roots = new Map<string, ExecutionRow>(ordered.map((r) => [r.id, r]));
     if (rootIds.length) {
-      const rootRes = await runtime.from("global_execution").select(COLUMNS).in("id", rootIds);
+      const rootRes = await runtime.from("global_execution").select(COLUMNS).in("id", rootIds).returns<ExecutionRow[]>();
       if (rootRes.error) throw operationFailed("look up this record's running work", rootRes.error);
-      for (const r of (rootRes.data ?? []) as unknown as ExecutionRow[]) roots.set(r.id, r);
+      for (const r of rootRes.data ?? []) roots.set(r.id, r);
     }
     let operations = ordered.map((r) => view(r, roots.get(r.root_execution_id ?? r.id) ?? r));
     if (options.eventCursor) operations = await withEventCursors(operations);
@@ -193,9 +201,9 @@ export async function fetchOperationsByLink(
   let roots: ExecutionRow[] = linked.filter((r) => r.parent_execution_id == null);
   const missing = rootIds.filter((id) => !roots.some((r) => r.id === id));
   if (missing.length) {
-    const rootRes = await runtime.from("global_execution").select(COLUMNS).in("id", missing);
+    const rootRes = await runtime.from("global_execution").select(COLUMNS).in("id", missing).returns<ExecutionRow[]>();
     if (rootRes.error) throw operationFailed("look up this record's running work", rootRes.error);
-    roots = roots.concat((rootRes.data ?? []) as unknown as ExecutionRow[]);
+    roots = roots.concat(rootRes.data ?? []);
   }
   roots = [...new Map(roots.map((r) => [r.id, r])).values()].sort((a, b) =>
     (b.created_at ?? "").localeCompare(a.created_at ?? ""),

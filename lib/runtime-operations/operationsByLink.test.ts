@@ -18,6 +18,7 @@ jest.mock("@/utils/supabase/client", () => ({
           not: () => q,
           order: () => q,
           limit: () => q,
+          returns: () => q,
           then: (res: (v: unknown) => unknown) =>
             res(table === "global_execution_event"
               ? { data: events.filter((e) => e.root_execution_id === call.eq.root_execution_id).sort((a, b) => b.seq - a.seq).slice(0, 1), error: null }
