@@ -165,6 +165,13 @@ function chipLabel(label: string, url: string | null): { text: string; platform:
   }
 }
 
+/** The row's name is its own address written without the scheme ("www.instagram.com/acme" for https://www.instagram.com/acme). */
+function labelIsAddress(label: string, url: string | null): boolean {
+  if (!url) return false;
+  const bare = (s: string) => s.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "").toLowerCase();
+  return bare(label) === bare(url);
+}
+
 const SENTIMENT_DOT: Record<string, string> = {
   positive: "bg-success",
   neutral: "bg-muted-foreground",
@@ -176,10 +183,14 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
   const h = host(row.url);
   const chip = chipLabel(row.label, row.url);
   // A row whose name IS its address is that address, drawn as THE contact value (never for a match-only row).
-  const contact =
-    chip && !row.matchOnly
-      ? contactFactValue({ kind: chip.platform ? "social_profile" : "website", value: row.label, className: "inline-flex min-w-0 text-sm text-foreground" })
-      : null;
+  const address = !row.matchOnly ? (chip ? row.label : labelIsAddress(row.label, row.url) ? row.url : null) : null;
+  const contact = address
+    ? contactFactValue({
+        kind: SOCIAL_HOSTS[(host(address) ?? "").replace(/^www\./, "")] ? "social_profile" : "website",
+        value: address,
+        className: "inline-flex min-w-0 text-sm text-foreground",
+      })
+    : null;
   const g = row.grounding;
   const hasGrounding = Boolean(g && (g.where || g.reason || g.confidence != null));
   if (row.pending) {
@@ -200,14 +211,14 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
       ) : row.url && !contact ? (
         <Favicon hostname={h} size={16} />
       ) : null}
-      {contact ?? <span className="truncate text-sm text-foreground" title={row.label}>{chip ? chip.text : row.label}</span>}
+      {contact ? null : <span className="truncate text-sm text-foreground" title={row.label}>{chip ? chip.text : row.label}</span>}
       {chip?.platform && !contact ? <span className="shrink-0 text-xs text-muted-foreground">{chip.platform}</span> : null}
       {row.matchOnly ? (
         <span className="min-w-0 shrink truncate text-xs text-muted-foreground" data-testid="brand-relation-address">
           {row.url}
         </span>
       ) : null}
-      {h && !chip && !row.thumb && !row.matchOnly && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
+      {h && !chip && !contact && !row.thumb && !row.matchOnly && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
       {row.sentiment ? (
         <span className={`size-1.5 shrink-0 rounded-full ${SENTIMENT_DOT[row.sentiment] ?? ""}`} aria-label={row.sentiment} />
       ) : null}
@@ -219,6 +230,8 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
   );
   return (
     <li className="group flex min-w-0 items-center gap-1 rounded-md px-1.5 py-1 hover:bg-muted/50" data-testid="brand-relation-row">
+      {/* The address keeps its own peek; the grounding peek stays on the rest of the row, so the two never stack. */}
+      {contact}
       {hasGrounding ? (
         // Grounding (hover only): why we think so, where it was found, how sure.
         <PeekHoverCard

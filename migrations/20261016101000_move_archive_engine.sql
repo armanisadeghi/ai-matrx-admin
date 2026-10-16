@@ -1,6 +1,6 @@
--- draft: move-archive deep lane — not applied; door row for platform.change_records needs argument_rules.arguments.<name>.foreign (see platform.definer_two_id_population()); then apply and run the live tests
--- chair-step: REVOKEs close new engine internals to clients; the DELETEs live inside function bodies on the engine's own temp tables, marker and change log; the one replace adds an early return under the engine marker to platform._cascade_soft_delete.
+-- chair-step: REVOKEs close new engine internals to clients; the DELETEs live inside function bodies on the engine's own work rows, marker and change log; two replaces: platform._cascade_soft_delete steps aside under the engine marker, and platform.classify_relationships rules a soft-deletable part as deleted with its parent.
 -- based-on: platform._cascade_soft_delete() 49610b3490593796cb833e4e9f5ba87e19cee513694ebcbe2a05fcde58bda09b
+-- based-on: platform.classify_relationships() 833732a47477009229faaab114cb9035673a61af74a77833e37ffbb6f82a3d44
 -- =============================================================================
 -- MOVE AND ARCHIVE — steps 2-3: the one engine.
 --   platform.change_records(verb, type, ids, org, plan, answers, preview, fingerprint)
@@ -14,6 +14,81 @@
 -- the durable move job (§ 8.5) — a delete above the inline budget runs through the
 -- live trigger cascade instead (mode 'trigger').
 -- =============================================================================
+
+-- ------------------------------------------------------------- the work table
+-- The walk's scratch space. One permanent UNLOGGED table, every row keyed by the transaction that
+-- wrote it; seven views show a transaction only its own rows. Temporary tables were the first draft:
+-- every CREATE TEMP fires the DDL event triggers, which lock auth/storage/realtime relations until the
+-- transaction ends (incident 2026-09-27), so an engine call must never create anything.
+-- platform.change_records clears its transaction's rows before it returns; a rollback leaves none.
+create unlogged table if not exists entity_data_private.change_work (
+  xact      bigint not null default pg_catalog.txid_current(),
+  bucket    text not null,
+  rel       regclass,
+  id        uuid,
+  depth     integer,
+  rule_id   uuid,
+  pulled    boolean not null default false,
+  col       text,
+  qid       text,
+  kind      text,
+  edge_id   uuid,
+  other_rel regclass,
+  other_id  uuid,
+  prompt    text,
+  options   jsonb,
+  suggested text,
+  way_out   jsonb,
+  ord       integer,
+  ref_id    uuid,
+  pinned    boolean not null default false,
+  ids       uuid[]
+);
+revoke all on entity_data_private.change_work from public, anon, authenticated;
+alter table entity_data_private.change_work enable row level security;
+create index if not exists change_work_xact_bucket_idx on entity_data_private.change_work (xact, bucket);
+create unique index if not exists change_work_tree_key on entity_data_private.change_work (xact, rel, id) where bucket = 'tree';
+create unique index if not exists change_work_block_key on entity_data_private.change_work (xact, rel, id) where bucket = 'block';
+create unique index if not exists change_work_surv_key on entity_data_private.change_work (xact, rel, id) where bucket = 'surv';
+create unique index if not exists change_work_qmeta_key on entity_data_private.change_work (xact, qid) where bucket = 'qmeta';
+
+create or replace view entity_data_private.chg_tree with (security_invoker = true) as
+  select w.rel, w.id, w.depth, w.rule_id, w.pulled, w.bucket from entity_data_private.change_work w
+   where w.xact = pg_catalog.txid_current() and w.bucket = 'tree';
+create or replace view entity_data_private.chg_block with (security_invoker = true) as
+  select w.rel, w.id, w.bucket from entity_data_private.change_work w
+   where w.xact = pg_catalog.txid_current() and w.bucket = 'block';
+create or replace view entity_data_private.chg_surv with (security_invoker = true) as
+  select w.rel, w.id, w.rule_id, w.col, w.bucket from entity_data_private.change_work w
+   where w.xact = pg_catalog.txid_current() and w.bucket = 'surv';
+create or replace view entity_data_private.chg_q with (security_invoker = true) as
+  select w.qid, w.kind, w.rule_id, w.rel, w.id, w.col, w.edge_id, w.other_rel, w.other_id, w.bucket from entity_data_private.change_work w
+   where w.xact = pg_catalog.txid_current() and w.bucket = 'q';
+create or replace view entity_data_private.chg_qmeta with (security_invoker = true) as
+  select w.qid, w.kind, w.prompt, w.options, w.suggested, w.way_out, w.ord, w.bucket from entity_data_private.change_work w
+   where w.xact = pg_catalog.txid_current() and w.bucket = 'qmeta';
+create or replace view entity_data_private.chg_users with (security_invoker = true) as
+  select w.id, w.rel, w.ref_id, w.pinned, w.bucket from entity_data_private.change_work w
+   where w.xact = pg_catalog.txid_current() and w.bucket = 'users';
+create or replace view entity_data_private.chg_todo with (security_invoker = true) as
+  select w.depth, w.rel, w.ids, w.bucket from entity_data_private.change_work w
+   where w.xact = pg_catalog.txid_current() and w.bucket = 'todo';
+alter view entity_data_private.chg_tree alter column bucket set default 'tree';
+alter view entity_data_private.chg_block alter column bucket set default 'block';
+alter view entity_data_private.chg_surv alter column bucket set default 'surv';
+alter view entity_data_private.chg_q alter column bucket set default 'q';
+alter view entity_data_private.chg_qmeta alter column bucket set default 'qmeta';
+alter view entity_data_private.chg_users alter column bucket set default 'users';
+alter view entity_data_private.chg_todo alter column bucket set default 'todo';
+alter view entity_data_private.chg_tree alter column pulled set default false;
+alter view entity_data_private.chg_users alter column pinned set default false;
+revoke all on entity_data_private.chg_tree, entity_data_private.chg_block, entity_data_private.chg_surv, entity_data_private.chg_q,
+  entity_data_private.chg_qmeta, entity_data_private.chg_users, entity_data_private.chg_todo from public, anon, authenticated;
+
+insert into platform.entity_types (token, schema_name, table_name, label, audit_class, audit_class_reason, table_ref, type)
+values ('change_work', 'entity_data_private', 'change_work', 'Change work rows', 'machinery',
+        'Per-transaction scratch rows of platform.change_records; cleared before every call returns.', 'entity_data_private.change_work'::regclass, 'system')
+on conflict (token) do nothing;
 
 -- --------------------------------------------------------------------- helpers
 create or replace function platform._chg_token(p_rel regclass)
@@ -708,7 +783,7 @@ as $function$
 $function$;
 
 -- ------------------------------------------------------------------- the door
-create or replace function platform.change_records(
+create or replace function platform._chg_records(
   p_verb            text,
   p_entity_type     text,
   p_ids             uuid[],
@@ -1086,6 +1161,34 @@ begin
     'cut', (select count(*) from platform.change_item i where i.plan_id = v_plan and i.action in ('cut_edge', 'detached')));
 end $function$;
 
+-- The door: the engine, then its scratch rows cleared (a raise rolls them back with everything else).
+create or replace function platform.change_records(
+  p_verb            text,
+  p_entity_type     text,
+  p_ids             uuid[],
+  p_organization_id uuid    default null,
+  p_plan_id         uuid    default null,
+  p_answers         jsonb   default '{}'::jsonb,
+  p_preview         boolean default true,
+  p_fingerprint     text    default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_out jsonb;
+begin
+  if auth.uid() is null then
+    raise exception using errcode = '42501', message = 'Sign in to change records.';
+  end if;
+  -- the access decisions (iam.has_access per root, iam.has_org_access_for on the target) are taken
+  -- inside platform._chg_records before its first read of any row
+  v_out := platform._chg_records(p_verb, p_entity_type, p_ids, p_organization_id, p_plan_id, p_answers, p_preview, p_fingerprint);
+  delete from entity_data_private.change_work w where w.xact = pg_catalog.txid_current();
+  return v_out;
+end $function$;
+
 -- ---------------------------------------------------------------- access decisions
 insert into platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason,
   declared_by, non_client_lane, signed_in_callers, anonymous_callers, argument_rules)
@@ -1111,7 +1214,7 @@ select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid
            'null_rule', jsonb_build_object('means', 'the latest finished delete of these roots')))) end
   from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid = p.pronamespace
  where n.nspname = 'platform'
-   and p.proname in ('change_records', '_chg_items', '_chg_org_name', '_chg_walk', '_chg_outside_users', '_chg_build',
+   and p.proname in ('change_records', '_chg_records', '_chg_items', '_chg_org_name', '_chg_walk', '_chg_outside_users', '_chg_build',
                      '_chg_fk_value', '_chg_row_org', '_chg_log')
    and not exists (select 1 from platform.client_callable_door d where d.schema_name = n.nspname and d.function_name = p.proname
                      and d.identity_args = pg_catalog.pg_get_function_identity_arguments(p.oid));
@@ -1119,7 +1222,8 @@ select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid
 revoke all on function platform._chg_items(regclass, uuid[], integer), platform._chg_org_name(uuid), platform._chg_walk(text),
   platform._chg_outside_users(regclass, uuid[], boolean), platform._chg_build(text, jsonb, uuid),
   platform._chg_fk_value(regclass, uuid, text), platform._chg_row_org(regclass, uuid),
-  platform._chg_log(uuid, regclass, uuid, text, integer, jsonb, jsonb) from public, anon, authenticated;
+  platform._chg_log(uuid, regclass, uuid, text, integer, jsonb, jsonb),
+  platform._chg_records(text, text, uuid[], uuid, uuid, jsonb, boolean, text) from public, anon, authenticated;
 grant execute on function platform.change_records(text, text, uuid[], uuid, uuid, jsonb, boolean, text) to authenticated;
 
 -- ------------------------------------------- org-pinned file references are deferrable
@@ -1128,6 +1232,11 @@ grant execute on function platform.change_records(text, text, uuid[], uuid, uuid
 alter table web.brand_asset alter constraint brand_asset_file_org_fkey deferrable initially immediate;
 -- the covering index every foreign key needs (431 rows: a plain build is instant)
 create index if not exists brand_asset_file_org_idx on web.brand_asset (file_id, organization_id);
+-- re-declaring the key makes it new to the shape guard, which asks for the same-org check every nullable
+-- tenant reference carries (validation only; the composite key already enforces it)
+drop trigger if exists trg_same_org_web_brand_asset_file_id on web.brand_asset;
+create trigger trg_same_org_web_brand_asset_file_id before insert or update of file_id on web.brand_asset
+  for each row execute function platform.assert_same_org('file_id', 'files.files');
 
 -- ------------------------------------------------------- the one walker (§ 3)
 -- Under the engine's marker the row-trigger cascade steps aside: the engine stamped every row itself.
@@ -1146,7 +1255,33 @@ begin
   execute v_new;
 end $do$;
 
--- ------------------------------------------------- classifier: NOT NULL + ON DELETE CASCADE = part
+-- ------------------------------------------------- classifier: parts are deleted with their parent
+-- A composition or containment child that has deleted_at is stamped with its parent whatever the
+-- foreign key's hard-delete action says (RESTRICT guards hard deletes, not archives): brand personas,
+-- 86 such rules on 2026-10-16, were left live under an archived parent. And a NOT NULL ON DELETE
+-- CASCADE key is a part (seo.ai_visibility_*, web.temp_brand_* were read as references).
+do $do$
+declare v_def text; v_new text;
+begin
+  v_def := pg_catalog.pg_get_functiondef('platform.classify_relationships()'::pg_catalog.regprocedure);
+  v_new := replace(v_def,
+    $a$case when d.klass in ('composition', 'containment') and d.child_soft and d.deltype = 'c' then 'cascade' else 'keep' end$a$,
+    $a$case when d.klass in ('composition', 'containment') and d.child_soft then 'cascade' else 'keep' end$a$);
+  v_new := replace(v_new,
+    $a$or (f.fk_notnull and (f.has_assert or (f.deltype in ('c', 'r') and f.child_type in ('detail', 'ledger')))) then 'composition'$a$,
+    $a$or (f.fk_notnull and (f.has_assert or f.deltype = 'c' or (f.deltype = 'r' and f.child_type in ('detail', 'ledger')))) then 'composition'$a$);
+  if v_new = v_def or position($a$d.child_soft then 'cascade'$a$ in v_new) = 0 or position($a$f.deltype = 'c' or$a$ in v_new) = 0 then
+    raise exception 'platform.classify_relationships: an expected clause was not found; nothing changed';
+  end if;
+  execute v_new;
+end $do$;
+
+update platform.relationship_rule r
+   set on_delete = 'cascade', reason = r.reason || '; parts archive with their parent'
+ where r.declared_by = 'classifier' and r.source_kind = 'fk' and r.access in ('composition', 'containment')
+   and r.org_on_move = 'follow' and r.on_delete = 'keep'
+   and platform._chg_col_type(r.child_table, 'deleted_at') is not null;
+
 -- (seo.ai_visibility_*, web.temp_brand_* were read as references.) Declared rows untouched.
 update platform.relationship_rule r
    set access = 'composition', org_on_move = 'follow', on_purge = 'with_parent', on_copy = 'copy', detach = 'none',

@@ -1,0 +1,119 @@
+{
+ "searched_name": "Kehinde Wiley",
+ "run_id": "a0b99e94-ebdd-40eb-9775-e4100c770e75",
+ "node": "person_anchor_extract",
+ "evidence": [
+  {
+   "key": "social:instagram:kehindewiley",
+   "url": "https://www.instagram.com/kehindewiley/",
+   "hits": [
+    {
+     "rank": 1,
+     "query": "\"Kehinde Wiley\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    },
+    {
+     "rank": 9,
+     "query": "\"Kehinde Wiley\"",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Kehinde Wiley",
+   "value": "https://www.instagram.com/kehindewiley/",
+   "anchor": {
+    "kind": "account",
+    "score": 4.75,
+    "reasons": [
+     "named exactly \"Kehinde Wiley\"",
+     "found by 2 results, best rank 1"
+    ],
+    "bio_line": "Contemporary Artist",
+    "followers": 617256,
+    "display_name": "Kehinde Wiley",
+    "person_profile": false
+   },
+   "handle": "kehindewiley",
+   "source": {
+    "url": "https://www.instagram.com/kehindewiley/",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "instagram profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:instagram:416035898"
+   ],
+   "snippet": "616K seguidores 5,217 seguidos, 368 publicaciones - Kehinde Wiley (@kehindewiley) en Instagram: \"Contemporary Artist\"",
+   "platform": "instagram",
+   "verified": true,
+   "certainty": null,
+   "followers": 617256,
+   "image_url": "https://scontent-ord5-1.cdninstagram.com/v/t51.2885-19/11363677_1702394416649471_1814009354_a.jpg?_nc_cat=106&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xNTAuQzIifQ%3D%3D&_nc_ohc=cBA7df7myP8Q7kNvwF2esOY&_nc_oc=AdqJqPvXHXFAxRDmoI9wGQI0gS02VSh5t6GU-JyXL9OzPK0Qsd86wIqNytxiDBPCvBM&_nc_zt=24&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_ss=78a8c&oh=00_AQOB88aSwA6criP00pLix00_ZTM9psGuWjxRx6vAygxwuQ&oe=6AD84996",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "8ba1755e-71de-495c-93d1-6495d67117a5",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "website:kehindewiley.com",
+   "url": "https://kehindewiley.com",
+   "hits": [
+    {
+     "rank": 1,
+     "query": "\"Kehinde Wiley\"",
+     "engine": "brave",
+     "endpoint": "web"
+    },
+    {
+     "rank": 4,
+     "query": "\"Kehinde Wiley\"",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "website",
+   "label": "Kehinde Wiley Studio",
+   "value": "https://kehindewiley.com",
+   "anchor": {
+    "kind": "website",
+    "score": 3.5,
+    "reasons": [
+     "names \"Kehinde Wiley\"",
+     "found by 2 results, best rank 1"
+    ],
+    "person_profile": false
+   },
+   "handle": "kehindewiley.com",
+   "source": {
+    "url": "https://kehindewiley.com",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 1 for \"Kehinde Wiley\""
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Los Angeles native and New York based visual artist, Kehinde Wiley has firmly situated himself within art history’s portrait painting tradition. Launched in 2020 the Kehinde Wiley Shop began as a partnership between Kehinde Wiley and Black Rock Senegal to create limited-edition apparel and merchandise featuring a selection of the artist’s personal favorite compositions from his archive that would",
+   "platform": null,
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "names \"Kehinde Wiley\"",
+    "found by 2 results, best rank 1"
+   ]
+  }
+ ]
+}

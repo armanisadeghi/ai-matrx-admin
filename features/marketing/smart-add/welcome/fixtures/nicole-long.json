@@ -1,0 +1,474 @@
+{
+ "searched_name": "Nicole Long",
+ "run_id": "a2fb05d4-fec9-4710-af59-468066ec063c",
+ "node": "person_anchor_extract",
+ "evidence": [
+  {
+   "key": "social:linkedin:nicolelongg",
+   "url": "https://www.linkedin.com/in/nicolelongg",
+   "hits": [
+    {
+     "rank": 1,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    },
+    {
+     "rank": 2,
+     "query": "\"Nicole Long\"",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole Long",
+   "value": "https://www.linkedin.com/in/nicolelongg",
+   "anchor": {
+    "kind": "account",
+    "score": 5.25,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 2 results, best rank 1",
+     "a personal LinkedIn profile"
+    ],
+    "bio_line": "Nicole Long is an Anchor, Multimedia Journalist and Producer. She's previously worked in…",
+    "location": "Portland, Oregon, United States",
+    "followers": 207,
+    "display_name": "Nicole Long",
+    "person_profile": true
+   },
+   "handle": "nicolelongg",
+   "source": {
+    "url": "https://www.linkedin.com/in/nicolelongg",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:linkedin:handle:nicolelongg"
+   ],
+   "snippet": "Nicole Long is an Anchor, Multimedia Journalist and Producer. She's previously worked in… · Experience: KGW-TV · Education: Arizona State University - Walter Cronkite School of Journalism and Mass Communication · Location: Portland · 189 ...",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 207,
+   "image_url": "https://media.licdn.com/dms/image/v2/D4E03AQELhuPw4sSauA/profile-displayphoto-shrink_200_200/B4EZVe0rhlHUAY-/0/1741052623331?e=2147483647&v=beta&t=UPAwr6DDjlCi-HagTi_fOBWshOS-gDWDK1ZNDQixAu8",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "d571e49f-029a-4aae-9a0f-1b6915634a8a",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:instagram:nicole.long",
+   "url": "https://www.instagram.com/nicole.long/",
+   "hits": [
+    {
+     "rank": 2,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "nicole",
+   "value": "https://www.instagram.com/nicole.long/",
+   "anchor": {
+    "kind": "account",
+    "score": 3.9,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 1 result, best rank 2"
+    ],
+    "bio_line": "as seen on TV",
+    "followers": 545,
+    "display_name": "nicole",
+    "person_profile": false
+   },
+   "handle": "nicole.long",
+   "source": {
+    "url": "https://www.instagram.com/nicole.long/",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "instagram profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:instagram:262119130"
+   ],
+   "snippet": "545 Followers, 571 Following, 93 Posts - See Instagram photos and videos from nicole (@nicole.long) 545 Followers, 571 Following, 93 Posts - nicole (@nicole.long) on Instagram: \"as seen on TV\"",
+   "platform": "instagram",
+   "verified": false,
+   "certainty": null,
+   "followers": 545,
+   "image_url": "https://scontent.cdninstagram.com/v/t51.82787-19/703861504_18584410603039131_9215129000553111369_n.jpg?_nc_cat=111&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=DUL2Lk4y7foQ7kNvwGOSVDM&_nc_oc=AdrFRejPlVLeDOmRrJRKK4LnhctXi_ckV4_0GxXO12DT9V2mF4kRlC-WnqCYacwEduk&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=ZrAnf3rdTKf2eZK8xtPfyQ&_nc_ss=78a8c&oh=00_AQOq_5xe-KKtK8sZHVsMZ0MA5c-hHpvYmdl6SWu8N1HqDg&oe=6AD853F8",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "2637e309-88cd-40a4-84da-5e8f63d6a89f",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:linkedin:nicoleslong",
+   "url": "https://www.linkedin.com/in/nicoleslong",
+   "hits": [
+    {
+     "rank": 8,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole Long",
+   "value": "https://www.linkedin.com/in/nicoleslong",
+   "anchor": {
+    "kind": "account",
+    "score": 3.8,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 1 result, best rank 8",
+     "a personal LinkedIn profile"
+    ],
+    "bio_line": "I am a transformational, results-driven finance executive with more than 24 years of…",
+    "location": "Decatur, Georgia, United States",
+    "followers": 2012,
+    "display_name": "Nicole Long",
+    "person_profile": true
+   },
+   "handle": "nicoleslong",
+   "source": {
+    "url": "https://www.linkedin.com/in/nicoleslong",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:linkedin:handle:nicoleslong"
+   ],
+   "snippet": "I am a transformational, results-driven finance executive with more than 24 years of… · Experience: Liberty Classical Schools · Education: Florida Agricultural and Mechanical University · Location: Decatur · 500+ connections on LinkedIn. I am a transformational, results-driven finance executive with more than 24 years of… · Experience: Liberty Classical Schools · Education: Florida Agricultural an",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 2012,
+   "image_url": "https://media.licdn.com/dms/image/v2/D4E03AQHLXwrWLBX67g/profile-displayphoto-scale_200_200/B4EZudrTH8HcAY-/0/1767876933359?e=2147483647&v=beta&t=F8GaVd7w0JIQv9Qz_pNZ-y-yAZ3uhu334RcCVqAZka8",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "e8ebedb0-5ac0-4e5d-bede-7fd1f7274b26",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:linkedin:nicolelong98",
+   "url": "https://www.linkedin.com/in/nicolelong98",
+   "hits": [
+    {
+     "rank": 3,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole Long",
+   "value": "https://www.linkedin.com/in/nicolelong98",
+   "anchor": {
+    "kind": "account",
+    "score": 4.3,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 1 result, best rank 3",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "nicolelong98",
+   "source": {
+    "url": "https://www.linkedin.com/in/nicolelong98",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 3 for \"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "1 billion members | Manage your professional identity. Build and engage with your professional network. Access knowledge, insights and opportunities.",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Nicole Long\"",
+    "found by 1 result, best rank 3",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:nicole-long-44859671",
+   "url": "https://www.linkedin.com/in/nicole-long-44859671",
+   "hits": [
+    {
+     "rank": 5,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole Long",
+   "value": "https://www.linkedin.com/in/nicole-long-44859671",
+   "anchor": {
+    "kind": "account",
+    "score": 4.1,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 1 result, best rank 5",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "nicole-long-44859671",
+   "source": {
+    "url": "https://www.linkedin.com/in/nicole-long-44859671",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 5 for \"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "I have over 17 years experience in caring for women throughout their reproductive years… · Experience: WOMEN'S CARE OF COLORADO · Education: University of Colorado Health Sciences Center · Location: Commerce City · 159 connections on LinkedIn. I have over 17 years experience in caring for women throughout their reproductive years… · Experience: WOMEN'S CARE OF COLORADO · Education: University of C",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Nicole Long\"",
+    "found by 1 result, best rank 5",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:nicole-long-ab380664",
+   "url": "https://www.linkedin.com/in/nicole-long-ab380664",
+   "hits": [
+    {
+     "rank": 9,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole Long",
+   "value": "https://www.linkedin.com/in/nicole-long-ab380664",
+   "anchor": {
+    "kind": "account",
+    "score": 3.7,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 1 result, best rank 9",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "nicole-long-ab380664",
+   "source": {
+    "url": "https://www.linkedin.com/in/nicole-long-ab380664",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 9 for \"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "I’m a people-person who loves learning new things and meeting new people… · Experience: Smile Brands Inc. · Education: University of Wisconsin-Madison · Location: Franklin · 500+ connections on LinkedIn. View Nicole Long’s profile on LinkedIn, a professional community of 1 billion members. Let’s connect! I’m a people-person who loves learning new things and meeting new people… · Experience: Smile",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Nicole Long\"",
+    "found by 1 result, best rank 9",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:nicolebankslong",
+   "url": "https://www.linkedin.com/in/nicolebankslong",
+   "hits": [
+    {
+     "rank": 10,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole Long",
+   "value": "https://www.linkedin.com/in/nicolebankslong",
+   "anchor": {
+    "kind": "account",
+    "score": 3.6,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 1 result, best rank 10",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "nicolebankslong",
+   "source": {
+    "url": "https://www.linkedin.com/in/nicolebankslong",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 10 for \"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Enterprise service delivery and customer success executive with deep experience building… · Experience: STANICKI HOLDINGS LLC · Education: Tusculum University · Location: El Paso Metropolitan Area · 372 connections on LinkedIn. Enterprise service delivery and customer success executive with deep experience building… · Experience: STANICKI HOLDINGS LLC · Education: Tusculum University · Location: E",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Nicole Long\"",
+    "found by 1 result, best rank 10",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:instagram:nicoleslong",
+   "url": "https://www.instagram.com/nicoleslong",
+   "hits": [
+    {
+     "rank": 7,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole Long",
+   "value": "https://www.instagram.com/nicoleslong",
+   "anchor": {
+    "kind": "account",
+    "score": 3.4,
+    "reasons": [
+     "named exactly \"Nicole Long\"",
+     "found by 1 result, best rank 7"
+    ],
+    "person_profile": false
+   },
+   "handle": "nicoleslong",
+   "source": {
+    "url": "https://www.instagram.com/nicoleslong",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 7 for \"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "426 Followers, 1,041 Following, 567 Posts - Nicole Long (@nicoleslong) on Instagram: \"Grace is A SAVAGE🔥😻🔥~Grace👏🏼😍She is better then everyone else.\" 426 Followers, 1,041 Following, 567 Posts - See Instagram photos and videos from Nicole Long (@nicoleslong)",
+   "platform": "instagram",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Nicole Long\"",
+    "found by 1 result, best rank 7"
+   ]
+  },
+  {
+   "key": "social:linkedin:nicole-n-long-61461aa",
+   "url": "https://www.linkedin.com/in/nicole-n-long-61461aa",
+   "hits": [
+    {
+     "rank": 4,
+     "query": "\"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Nicole N. Long",
+   "value": "https://www.linkedin.com/in/nicole-n-long-61461aa",
+   "anchor": {
+    "kind": "account",
+    "score": 3.2,
+    "reasons": [
+     "names Nicole and Long",
+     "found by 1 result, best rank 4",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "nicole-n-long-61461aa",
+   "source": {
+    "url": "https://www.linkedin.com/in/nicole-n-long-61461aa",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 4 for \"Nicole Long\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Assistant Vice President, Student Experience and Belonging | University of Delaware · I have worked in higher education for nearly 20 years. I have substantial experience in higher education research and data analysis, student affairs ... Assistant Vice President, Student Experience and Belonging | University of Delaware · I have worked in higher education for nearly 20 years. I have substantial e",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "names Nicole and Long",
+    "found by 1 result, best rank 4",
+    "a personal LinkedIn profile"
+   ]
+  }
+ ]
+}

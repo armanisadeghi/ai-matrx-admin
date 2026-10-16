@@ -638,7 +638,9 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   // access-errors: ok — the hero's account icons; without it they fall back to the public link
   const socialAccounts = useBrandSocialAccounts(brandId);
 
-  if (brand.isLoading) {
+  // The sites and accounts lists load beside the brand and size the page's loading boxes (background work),
+  // so the page appears once they are known and nothing below ever moves.
+  if (brand.isLoading || (brand.data && (sites.isLoading || properties.isLoading))) {
     // The [brandId] layout's trail is the header for this whole tree — a
     // second per-page RouteHeader here would hide it (Arman, 2026-08-30).
     return <LoadingSurface label="Loading brand…" />;

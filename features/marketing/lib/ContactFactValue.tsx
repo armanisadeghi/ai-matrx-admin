@@ -9,6 +9,8 @@ import type { ReactNode } from "react";
 
 import { ContactValue, type ContactValueType } from "@ai-matrx/design-system";
 
+const SOCIAL_METRIC_WORDS = new Set(["followers", "following", "count", "posts", "engagement", "metrics"]);
+
 /** The contact value type a fact kind renders as; null = not a contact kind (plain text). */
 export function contactTypeOfKind(kind: string | null | undefined): ContactValueType | null {
   const k = (kind ?? "").trim().toLowerCase();
@@ -16,7 +18,8 @@ export function contactTypeOfKind(kind: string | null | undefined): ContactValue
   if (k === "phone" || k === "fax") return "phone";
   if (k === "address") return "address";
   if (k === "website" || k === "url") return "url";
-  if (k.startsWith("social_")) return "social";
+  // `social_profile` / `social_<platform>` is a profile; a multi-word `social_*` (social_follower_count) is a metric.
+  if (k.startsWith("social_") && /^social_[a-z0-9]+$/.test(k) && !SOCIAL_METRIC_WORDS.has(k.slice(7))) return "social";
   return null;
 }
 
