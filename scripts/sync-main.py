@@ -1592,6 +1592,9 @@ def _gh_runs():
 def wait_for_publish_train(now=time.time, sleep=time.sleep, runs=_gh_runs):
     """Block until every npm publish run that was in flight when this was called has finished, at
     most PUBLISH_WAIT_MAX_SECONDS. Returns one line for the report."""
+    if os.environ.get("MATRX_PUBLISH_TRAIN_WAITED") == "1":
+        # ship-all already waited for the runs aidream's push started (THE PACKAGE ORDER).
+        return "publish train: ship-all already waited"
     t0 = now()
     waited_for = set()
     last_shown = ""
