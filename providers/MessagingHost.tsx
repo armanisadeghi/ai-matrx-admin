@@ -66,7 +66,6 @@ import type { ActionHandler } from "@ai-matrx/messaging";
 // (the same chunk MeetHostCore loads) — a static import here would keep the whole Meet
 // engine (~650 KB source) in every route's first load. See providers/MeetHost.tsx.
 import { MeetHostContext } from "@ai-matrx/meet/host-slot";
-import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
 import type {
   EngineDiagnostic,
   IncomingMessageContext,
@@ -250,10 +249,17 @@ export function MessagingHost({ children }: MessagingHostProps) {
   const meetHost = useContext(MeetHostContext);
   const meetCalls = meetHost?.calls ?? null;
   const meetRepository = meetHost?.repository ?? null;
-  const idleForMeet = useIdleReady();
+  // FIRST-PAINT CONTRACT (V3): the Meet package is large and nothing in a first paint needs it. It
+  // loads when a DM thread is first OPENED (`<MeetLoadOnThreadOpen>` below watches the engine's
+  // open conversation, passively). The handlers then arrive after the thread is on screen, and
+  // `<MessagingProvider>` re-renders its consumers when the handled kinds change, so an invite
+  // already drawn gains its chips the moment the package lands (guard: the messaging package's
+  // "a handler that arrives after the thread rendered still draws its chips").
+  const [threadOpened, setThreadOpened] = useState(false);
+  const onThreadOpened = useCallback(() => setThreadOpened(true), []);
   const [meetApi, setMeetApi] = useState<typeof import("@ai-matrx/meet/react") | null>(null);
   useEffect(() => {
-    if (!idleForMeet) return;
+    if (!threadOpened) return;
     let live = true;
     void import("@ai-matrx/meet/react").then((api) => {
       if (live) setMeetApi(api);
@@ -261,7 +267,7 @@ export function MessagingHost({ children }: MessagingHostProps) {
     return () => {
       live = false;
     };
-  }, [idleForMeet]);
+  }, [threadOpened]);
   const actions = useMemo(() => {
     // Until the Meet package arrives no invite handler exists: an invitation renders no chips yet.
     if (meetApi === null) return [] as ActionHandler<never>[];
@@ -368,6 +374,7 @@ export function MessagingHost({ children }: MessagingHostProps) {
           return data.session !== null;
         }}
       >
+        <MeetLoadOnThreadOpen onOpened={onThreadOpened} />
         <MessagingArchiveKnob knob={archiveKnob} />
         <MessagingKindKnob knob={kindKnob} />
         {children}
@@ -377,6 +384,18 @@ export function MessagingHost({ children }: MessagingHostProps) {
 }
 
 export default MessagingHost;
+
+/**
+ * Tells the host that a DM thread has been opened, so the Meet package loads then and not before.
+ * Reads the engine PASSIVELY (it is mounted on every page and must never start the inbox).
+ */
+function MeetLoadOnThreadOpen({ onOpened }: { onOpened: () => void }) {
+  const opened = usePassiveMessagingSnapshot()?.activeConversationId != null;
+  useEffect(() => {
+    if (opened) onOpened();
+  }, [opened, onOpened]);
+  return null;
+}
 
 /**
  * THE LATE-KNOB PROBLEM, solved the way `AgentCatalogHost` solves it.
