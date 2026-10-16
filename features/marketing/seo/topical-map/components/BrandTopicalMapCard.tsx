@@ -21,7 +21,6 @@ import { topicalMapErrorText } from "../errors";
 import { startMapHref } from "./TopicalMapHome";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 
 export function BrandTopicalMapCard({
   brandId,
@@ -51,8 +50,9 @@ export function BrandTopicalMapCard({
       }}
     >
       {maps.isPending ? (
-        <div className="flex min-h-[2.75rem] items-center px-4 py-2.5">
-          <RegionSkeleton shape="rows" count={1} aria-label={`Loading ${title.toLowerCase()}s`} />
+        // Same box as one loaded map row (py-2.5 + a 20px text-sm line), so the card never changes height.
+        <div aria-busy="true" aria-label={`Loading ${title.toLowerCase()}s`} className="flex h-10 items-center px-4">
+          <div className="h-4 w-48 animate-pulse rounded bg-muted" />
         </div>
       ) : maps.isError ? (
         <ErrorNotice size="inline" className="p-4 text-xs" message={topicalMapErrorText(maps.error)} />

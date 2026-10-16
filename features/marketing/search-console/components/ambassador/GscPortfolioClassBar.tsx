@@ -58,10 +58,15 @@ export function GscPortfolioClassBar({
   if (isLoading) {
     return (
       <div
-        className={cn("flex h-[42px] items-center rounded-lg border border-border bg-card p-3", className)}
+        className={cn(
+          "rounded-lg border border-dashed border-border bg-muted/20 p-3",
+          className,
+        )}
       >
-        {/* Same height as the "no data" state it most often becomes, so the page below does not move. */}
-        <div className="h-3 w-44 animate-pulse rounded bg-muted" />
+        {/* The "no data" state's exact wrapper and line box (text-xs = 16px), so the page below does not move. */}
+        <div className="flex items-center gap-2 text-xs">
+          <div className="h-4 w-full animate-pulse rounded bg-muted" />
+        </div>
       </div>
     );
   }

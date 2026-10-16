@@ -1,0 +1,23 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = process.env.ORIGIN;
+const browser = await chromium.launch(); const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+await walkSignIn(page, ORIGIN);
+await page.goto(ORIGIN + "/data/a8bb1ef6-45a8-4022-9872-4bc622c91dd7", { waitUntil: "domcontentloaded", timeout: 180000 }); await page.waitForTimeout(8000);
+console.log(await page.evaluate(() => [...document.querySelectorAll("a[href]")].map((a) => a.getAttribute("href")).filter((h) => /\/r\//.test(h)).slice(0, 5)));
+await page.getByText("All Green Electronics Re", { exact: false }).first().click(); await page.waitForTimeout(3000); console.log(page.url());
+await page.mouse.move(150,153); await page.waitForTimeout(500); await page.getByText("Expand", { exact: true }).first().click(); await page.waitForTimeout(500);
+await page.waitForTimeout(9000);
+console.log(page.url());
+const sim=page.getByText(/^Similar/i).first(); if (await sim.count()) await sim.scrollIntoViewIfNeeded(); await page.waitForTimeout(1500); await page.screenshot({ path: process.env.OUT + "/rec1.png" });
+const info = await page.evaluate(() => {
+  const about = [...document.querySelectorAll("*")].find((e) => e.children.length === 0 && /^about$/i.test(e.textContent.trim()));
+  const sim = [...document.querySelectorAll("*")].find((e) => e.children.length === 0 && /^similar/i.test(e.textContent.trim()));
+  const scrollers = [...document.querySelectorAll("*")].filter((e) => e.scrollWidth > e.clientWidth + 2 && ["auto", "scroll"].includes(getComputedStyle(e).overflowX)).map((e) => e.tagName + "." + String(e.className).slice(0, 40) + " " + e.scrollWidth + ">" + e.clientWidth);
+  const labelOf = (e) => { let n = e; for (let i = 0; i < 8 && n; i++) { n = n.parentElement; const t = n && [...n.querySelectorAll("*")].find((x) => x.children.length === 0 && /^(employees|similar[a-z ]*|affiliated[a-z ]*)$/i.test(x.textContent.trim())); if (t) return t.textContent.trim(); } return "?"; };
+  const named = [...document.querySelectorAll("div.max-w-full")].filter((e) => getComputedStyle(e).overflowX === "auto").map((e) => labelOf(e) + " " + e.scrollWidth + ">" + e.clientWidth + " hdr:" + [...e.querySelectorAll("th")].map((t) => t.textContent.trim()).join("/"));
+  const r = (e) => e && (({ x, width }) => ({ x: Math.round(x), width: Math.round(width) }))(e.getBoundingClientRect());
+  return { about: r(about), aboutNext: about && r(about.parentElement?.nextElementSibling), sim: r(sim), scrollers, named, docScrollW: document.documentElement.scrollWidth };
+});
+console.log(JSON.stringify(info, null, 1));
+await browser.close();

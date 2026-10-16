@@ -1,0 +1,11 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = process.env.ORIGIN;
+const browser = await chromium.launch(); const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+await walkSignIn(page, ORIGIN);
+await page.goto(ORIGIN + "/data/b0f6960d-6ac2-4ca7-bb19-653dc8931d88", { waitUntil: "domcontentloaded", timeout: 180000 }); await page.waitForTimeout(8000);
+await page.locator("tbody, [role=row]").getByText("Score rent", { exact: true }).first().click();
+await page.waitForTimeout(40000);
+await page.screenshot({ path: process.env.OUT + "/btn.png" });
+console.log(await page.evaluate(() => [...document.querySelectorAll('[role=dialog],[data-radix-popper-content-wrapper],[data-slot*=popover]')].map((e) => e.innerText).join("\n---\n").slice(0, 600)));
+await browser.close();

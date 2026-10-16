@@ -12,8 +12,8 @@
 // both, and the same total is stated by both. A card grid with its own fetch
 // would be the second answer to one question.
 
+import { EmailValue, PhoneValue } from "@ai-matrx/design-system";
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
 
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import { Button } from "@/components/ui/button";
@@ -123,22 +123,14 @@ export function HrDirectoryCard({
 
       <div className="flex flex-wrap items-center gap-3 pt-0.5">
         {row.work_email ? (
-          <a
-            href={`mailto:${row.work_email}`}
-            className="inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-          >
-            <Mail className="h-3 w-3 shrink-0" aria-hidden />
-            <span className="truncate">{row.work_email}</span>
-          </a>
+          <span className="min-w-0 text-xs">
+            <EmailValue email={row.work_email} owner={row.display_name ?? undefined} />
+          </span>
         ) : null}
         {row.work_phone ? (
-          <a
-            href={`tel:${row.work_phone}`}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-          >
-            <Phone className="h-3 w-3 shrink-0" aria-hidden />
-            {row.work_phone}
-          </a>
+          <span className="text-xs">
+            <PhoneValue phone={row.work_phone} owner={row.display_name ?? undefined} />
+          </span>
         ) : null}
       </div>
 

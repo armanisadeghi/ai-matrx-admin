@@ -29,6 +29,7 @@
 // departments exist" from the current page would make the facet list a function
 // of the page you are on — the exact defect `lib/entity-list` was built to end.
 
+import { EmailValue } from "@ai-matrx/design-system";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 
 import { hrPeopleHref, hrStructureFocusHref, type HrOrgRef } from "../../routes";
@@ -314,12 +315,9 @@ export function buildHrDirectoryColumns(args: {
       filter: "text",
       cell: (row) =>
         row.work_email ? (
-          <a
-            href={`mailto:${row.work_email}`}
-            className="text-sm text-foreground underline-offset-2 hover:text-primary hover:underline"
-          >
-            {row.work_email}
-          </a>
+          <span className="text-sm" onClick={(e) => e.stopPropagation()}>
+            <EmailValue email={row.work_email} />
+          </span>
         ) : null,
       mobileHidden: true,
     },

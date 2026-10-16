@@ -111,7 +111,8 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
     staleTime: 60_000,
   });
   const uncrawled = (sites.data ?? []).filter((x) => x.pages === 0);
-  if (!r) return null;
+  // Nothing renders until everything that decides the buttons has answered, so a button never pushes "Watch".
+  if (!r || sites.isLoading || (waiting && postless.isLoading)) return null;
   const stopped = STOPPED.has(r.status);
   const missingWork = uncrawled.length > 0 || (postless.data?.length ?? 0) > 0;
   const canRunAgain =
@@ -214,7 +215,7 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
   };
 
   return (
-    <span className="inline-flex items-center gap-1" data-testid="smart-add-setup-status">
+    <span className="inline-flex h-7 items-center gap-1" data-testid="smart-add-setup-status">
       <Badge tone={stopped ? "warning" : r.status === "interrupted" ? "primary" : "neutral"}>
         {r.status === "completed" ? "Site not crawled" : stopped ? "Setup stopped" : r.status === "interrupted" ? "Waiting for you" : (
           <span className="inline-flex items-center gap-1">

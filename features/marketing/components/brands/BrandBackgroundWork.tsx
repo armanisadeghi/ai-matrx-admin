@@ -531,7 +531,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
             <>
               <span aria-hidden="true" className="size-3.5 shrink-0" />
               <span className="font-medium">Brand setup</span>
-              <span className={setup.isLoading ? "h-3.5 w-24 animate-pulse rounded bg-muted" : "text-muted-foreground"}>{setup.isLoading ? "" : "No setup run"}</span>
+              <span className={setup.isLoading ? "h-5 w-24 animate-pulse rounded bg-muted" : "text-muted-foreground"}>{setup.isLoading ? "" : "No setup run"}</span>
             </>
           )}
         </div>

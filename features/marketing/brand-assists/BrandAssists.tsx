@@ -12,9 +12,10 @@
  * Results — every brand assist I ran for this brand, from its ledger receipt, so the result stays visible
  * after the chip is gone. The data itself lives in its normal home (named on each row).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
+import { selectAssistsForSurface } from "@/features/assists/redux/assistsSlice";
 import { emitAssistTracked } from "@/features/assists/redux/emitTracked";
 import { listMyAssistsBySourcePrefix } from "@/features/assists/service";
 import { assistPriority, type Assist } from "@/features/assists/types";
@@ -40,6 +41,27 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUserId);
   const [history, setHistory] = useState<Assist[]>([]);
+  // This brand's pending chips. When one leaves the stack (run, declined, snoozed — `assistDecided` fires
+  // after the ledger write) the receipt is new, so the results re-read without a page reload.
+  const pendingHere = useAppSelector((state) =>
+    selectAssistsForSurface(state, BRAND_ASSIST_SURFACE).filter((a) => a.entityId === brandId).length,
+  );
+  const lastPending = useRef<number | null>(null);
+
+  useEffect(() => {
+    const before = lastPending.current;
+    lastPending.current = pendingHere;
+    if (!userId || before === null || pendingHere >= before) return;
+    let cancelled = false;
+    void listMyAssistsBySourcePrefix(userId, BRAND_ASSIST_SOURCE_PREFIX)
+      .then((mine) => {
+        if (!cancelled) setHistory(mine);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingHere, userId]);
 
   useEffect(() => {
     if (!userId) return;

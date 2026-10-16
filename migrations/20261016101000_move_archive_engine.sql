@@ -31,6 +31,20 @@ as $function$
    limit 1
 $function$;
 
+-- The table a registry token's rows live in. Scopes are custom-store records read through
+-- custom.context_scopes; the registry row for 'scope' still names its retired table.
+create or replace function platform._chg_rel(p_token text)
+returns regclass
+language sql
+stable
+set search_path to ''
+as $function$
+  select case when p_token = 'scope' then 'custom.context_scopes'::regclass
+              else (select et.table_ref from platform.entity_types et
+                     where et.token = p_token and et.table_ref is not null
+                     order by et.is_active desc limit 1) end
+$function$;
+
 create or replace function platform._chg_col_type(p_rel regclass, p_col text)
 returns text
 language sql
@@ -173,9 +187,7 @@ begin
                  where a.cascades_trash and a.is_active
                    and ((a.container_side = 'target' and a.target_type = t.tok)
                      or (a.container_side = 'source' and a.source_type = t.tok)) loop
-        select et.table_ref into v_item_rel from platform.entity_types et
-         where et.token = case when at.container_side = 'target' then at.source_type else at.target_type end
-           and et.is_active limit 1;
+        v_item_rel := platform._chg_rel(case when at.container_side = 'target' then at.source_type else at.target_type end);
         continue when v_item_rel is null or platform._chg_col_type(v_item_rel, v_need) is null;
         execute pg_catalog.format(
           'insert into pg_temp._chg_tree (rel, id, depth, rule_id)
@@ -258,9 +270,7 @@ begin
   if v_tok is not null then
     insert into pg_temp._chg_users
     select case when a.source_type = v_tok and a.source_id = any(p_ids) then a.source_id else a.target_id end,
-           (select et.table_ref from platform.entity_types et
-             where et.token = case when a.source_type = v_tok and a.source_id = any(p_ids) then a.target_type else a.source_type end
-             limit 1),
+           platform._chg_rel(case when a.source_type = v_tok and a.source_id = any(p_ids) then a.target_type else a.source_type end),
            case when a.source_type = v_tok and a.source_id = any(p_ids) then a.target_id else a.source_id end
       from platform.associations a
      where a.deleted_at is null
@@ -520,7 +530,7 @@ begin
              when not e.mine_is_source and e.side = 'target' then 'inbound_link_assoc'
              else 'peer_link' end,
            null, e.rel, e.my_id, e.edge_id,
-           (select et.table_ref from platform.entity_types et where et.token = e.other_type and et.is_active limit 1), e.other_id
+           platform._chg_rel(e.other_type), e.other_id
       from (select x.rel, x.id my_id, a.id edge_id,
                    (a.source_type = platform._chg_token(x.rel) and a.source_id = x.id) mine_is_source,
                    case when a.source_type = platform._chg_token(x.rel) and a.source_id = x.id then a.target_type else a.source_type end other_type,
@@ -540,7 +550,7 @@ begin
       v_general := platform.organization_general_scope(v_src_org);
       if v_tok is not null and v_tok::uuid is distinct from v_general then
         insert into pg_temp._chg_q (qid, kind, rule_id, rel, id, col, other_rel, other_id)
-        values ('scope_link:assoc:scope', 'scope_link', null, r.rel, r.id, 'home_scope_id', 'context.scopes'::regclass, v_tok::uuid);
+        values ('scope_link:assoc:scope', 'scope_link', null, r.rel, r.id, 'home_scope_id', 'custom.context_scopes'::regclass, v_tok::uuid);
       end if;
     end loop;
 
@@ -554,7 +564,7 @@ begin
           'message', pg_catalog.format('Filed in %s %s of %s. Moving removes it from all of them.', q.n,
                                        case when q.n = 1 then 'scope' else 'scopes' end, coalesce(v_src_name, 'this organization')),
           'count', q.n,
-          'items', (select platform._chg_items('context.scopes'::regclass, array_agg(distinct c.other_id), 50)
+          'items', (select platform._chg_items('custom.context_scopes'::regclass, array_agg(distinct c.other_id), 50)
                       from pg_temp._chg_q c where c.qid = q.qid));
         insert into pg_temp._chg_qmeta values (q.qid, 'scope_link',
           pg_catalog.format('Linked to %s %s in %s', q.n, case when q.n = 1 then 'scope' else 'scopes' end, coalesce(v_src_name, 'this organization')),
@@ -758,6 +768,9 @@ begin
       raise exception using errcode = '22023', message = 'Name the kind of record to restore.';
     end if;
     v_ids := coalesce(nullif(p_ids, '{}'), v_del_plan.root_ids);
+    if v_ids is null or cardinality(v_ids) = 0 then
+      perform platform.refuse_not_found('There is no deleted change with that id you can restore.');
+    end if;
     foreach v_id in array v_ids loop
       if not (v_super or platform._chg_fk_value(v_rel, v_id, 'created_by')::uuid is not distinct from v_me
               or iam.has_access(coalesce(v_del_plan.entity_type, p_entity_type), v_id, 'editor')) then
@@ -1052,15 +1065,27 @@ end $function$;
 
 -- ---------------------------------------------------------------- access decisions
 insert into platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason,
-  declared_by, non_client_lane, signed_in_callers, anonymous_callers)
-select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid), array(select unnest(p.proargtypes))::oid[],
+  declared_by, non_client_lane, signed_in_callers, anonymous_callers, argument_rules)
+select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid), platform.door_argtypes(p.proargtypes),
        case when p.proname = 'change_records'
             then 'p_ids: each root is checked with iam.has_access(p_entity_type, id) (viewer to preview; admin or creator to delete; editor or creator to restore; admin, creator or org admin to move) and p_organization_id with iam.has_org_access_for; NULL ids are refused.'
             else 'Move and archive engine internals; called only from platform.change_records, which checks every root first.' end,
        '20261016101000_move_archive_engine',
        case when p.proname = 'change_records' then null
             else 'server_only: the move-and-archive engine (platform.change_records) calls this; no client ever does.' end,
-       p.proname = 'change_records', false
+       p.proname = 'change_records', false,
+       case when p.proname = 'change_records' then jsonb_build_object('version', 1, 'arguments', jsonb_build_object(
+         'p_ids', jsonb_build_object('type', 'uuid[]', 'position', 3, 'optional', false,
+           'check', 'iam.has_access(p_entity_type, id, viewer) for every id before the preview walks; delete needs creator or admin, restore creator or editor, move creator, admin or organization admin',
+           'foreign', jsonb_build_object('bounded', true, 'note', 'A root the caller cannot open refuses as not found before anything is read; the walk starts only from roots that passed.')),
+         'p_organization_id', jsonb_build_object('type', 'uuid', 'position', 4, 'optional', true,
+           'check', 'iam.has_org_access_for(auth.uid(), p_organization_id) before a move preview is built',
+           'foreign', jsonb_build_object('bounded', true, 'note', 'An organization the caller is not a member of raises 42501 before the walk; it is only ever the move target.'),
+           'null_rule', jsonb_build_object('means', 'not a move')),
+         'p_plan_id', jsonb_build_object('type', 'uuid', 'position', 5, 'optional', true,
+           'check', 'the plan only supplies root ids; each root is then checked with creator or iam.has_access(type, id, editor)',
+           'foreign', jsonb_build_object('bounded', true, 'note', 'A foreign plan names roots the caller cannot edit, which refuse with 42501 before any row is restored.'),
+           'null_rule', jsonb_build_object('means', 'the latest finished delete of these roots')))) end
   from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid = p.pronamespace
  where n.nspname = 'platform'
    and p.proname in ('change_records', '_chg_items', '_chg_org_name', '_chg_walk', '_chg_outside_users', '_chg_build',

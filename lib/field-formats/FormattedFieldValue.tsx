@@ -13,7 +13,7 @@
  * column sees `n/a` in amber, not nothing.
  */
 import type { ReactNode } from "react";
-import { ExternalLink, Mail, MapPin, Phone, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { cn } from "@/utils/cn";
@@ -34,7 +34,7 @@ import {
 import { formatFieldValue } from "@ai-matrx/design-system/field-formats";
 import { getFieldFormat } from "@ai-matrx/design-system/field-formats";
 import type { FieldChoice, FieldFormatConfig } from "@ai-matrx/design-system/field-formats";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { AddressValue, EmailValue, PhoneValue, UrlValue } from "@ai-matrx/design-system";
 
 const MISMATCH_CLASS =
   "text-amber-600 dark:text-amber-400 decoration-amber-400/60 underline decoration-dotted underline-offset-2";
@@ -197,6 +197,15 @@ function matchChoice(
   return choices.find((c) => c.value.toLowerCase() === lowered);
 }
 
+/** A contact value inside a row or cell: the canonical component, its clicks kept off the row. */
+function contact(value: ReactNode, className?: string): ReactNode {
+  return (
+    <span className={cn("inline-flex min-w-0 max-w-full", className)} onClick={(e) => e.stopPropagation()}>
+      {value}
+    </span>
+  );
+}
+
 function renderRich(
   id: string,
   text: string,
@@ -204,48 +213,15 @@ function renderRich(
   config: FieldFormatConfig | null | undefined,
   className?: string,
 ): ReactNode | undefined {
-  const linkClass = cn(
-    "inline-flex items-center gap-1 text-primary hover:underline min-w-0",
-    className,
-  );
-
   switch (id) {
     case "email":
-      return (
-        <a
-          href={`mailto:${text}`}
-          className={linkClass}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Mail className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{text}</span>
-        </a>
-      );
+      return contact(<EmailValue email={text} />, className);
     case "url":
-      return (
-        <OutboundLink
-          href={text.includes("://") ? text : `https://${text}`}
-          className={linkClass}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{text}</span>
-        </OutboundLink>
-      );
+      return contact(<UrlValue url={text} />, className);
     case "attachment":
       return <AttachmentChips value={raw} className={className} />;
     case "address":
-      return (
-        <OutboundLink
-          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(text)}`}
-          className={linkClass}
-          title="Open in maps"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MapPin className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{text}</span>
-        </OutboundLink>
-      );
+      return contact(<AddressValue address={text} />, className);
     case "progress": {
       const n = Number(raw);
       if (!Number.isFinite(n)) return undefined;
@@ -278,16 +254,7 @@ function renderRich(
       );
     }
     case "phone":
-      return (
-        <a
-          href={`tel:${text.replace(/[^\d+]/g, "")}`}
-          className={linkClass}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Phone className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{text}</span>
-        </a>
-      );
+      return contact(<PhoneValue phone={text} />, className);
     case "color":
       return (
         <span className={cn("inline-flex items-center gap-1.5", className)}>

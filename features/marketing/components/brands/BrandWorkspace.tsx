@@ -993,20 +993,13 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 size="sm"
                 showStatus={false}
               />
-              {pending.isLoading ? (
-                // Holds the button's width while the count loads, so the header text never re-wraps.
-                <span aria-hidden="true" className="inline-block h-8 w-28" />
-              ) : pending.data ? (
-                <Button
-                  asChild
-                  variant="outline"
-                >
-                  <Link href={marketingRoutes.brandDiscovery(brandId)}>
-                    <Inbox className="h-3.5 w-3.5" />
-                    {pending.data.toLocaleString()} to review
-                  </Link>
-                </Button>
-              ) : null}
+              {/* Always the real button at one fixed minimum width, so the count arriving never resizes the row. */}
+              <Button asChild variant="outline" className="min-w-[8.5rem]">
+                <Link href={marketingRoutes.brandDiscovery(brandId)}>
+                  <Inbox className="h-3.5 w-3.5" />
+                  {pending.isLoading ? "…" : (pending.data ?? 0).toLocaleString()} to review
+                </Link>
+              </Button>
               {canEdit ? (
                 <>
                   <Button asChild variant="outline">

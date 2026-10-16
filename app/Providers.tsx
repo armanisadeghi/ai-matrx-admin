@@ -94,6 +94,7 @@ import { ChatHostAdapter } from "@/providers/ChatHostAdapter";
 import "@/providers/chat-surface-manifests";
 import { ChatSurfaceRegistrations } from "@/providers/ChatSurfaceRegistrations";
 import { MatrxDataTableHost } from "@/components/official/MatrxDataTableHost";
+import { ContactValuesHost } from "@/components/official/ContactValuesHost";
 // The live host for `openAgentPeek(agentId)` — the app service bound to the
 // picker's `openPeek` port. Slim shell; the WindowPanel body is lazy.
 import { AgentPeekHost } from "@/providers/AgentPeekHost";
@@ -194,6 +195,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
             <AgentCatalogHost>
             <ModelCatalogHost>
             <MatrxDataTableHost>
+            <ContactValuesHost>
               <WindowPersistenceManager>
                 <PersistentComponentProvider>
                   <ToastProvider>
@@ -283,6 +285,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                   </ToastProvider>
                 </PersistentComponentProvider>
               </WindowPersistenceManager>
+            </ContactValuesHost>
             </MatrxDataTableHost>
             </ModelCatalogHost>
             </AgentCatalogHost>
