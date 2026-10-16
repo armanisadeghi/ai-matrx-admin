@@ -241,7 +241,7 @@ export function DecisionPlayground() {
             </section>
             <section className="space-y-3 rounded-xl border border-border bg-card p-4">
               <StepLabel step={3}>Run it</StepLabel>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <ModelListDropdown
                   value={model}
                   onValueChange={(modelId) => {
@@ -262,7 +262,6 @@ export function DecisionPlayground() {
                   type="button"
                   onClick={run}
                   disabled={busy}
-                  className="ml-auto"
                 >
                   {busy ? "Running decision…" : "Run decision"}
                 </Button>

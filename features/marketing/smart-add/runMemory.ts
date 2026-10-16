@@ -118,7 +118,8 @@ export function unpack(raw: unknown): RunAnswers | null {
  * Nothing is written before the restore ran, so a reload can never wipe the saved answers. Nothing rides the
  * preferences boot seed: the state loads only when this screen engages with a session.
  */
-export function useRunMemory(sessionId: string | null, answers: RunAnswers, restore: (saved: RunAnswers) => void) {
+/** Returns true once this session's saved answers have been read and applied (or there is no session to read for). */
+export function useRunMemory(sessionId: string | null, answers: RunAnswers, restore: (saved: RunAnswers) => void): boolean {
   const userId = useAppSelector(selectUserId);
   const restored = useRef<string | null>(null);
   const lastSaved = useRef<string>("");
@@ -157,4 +158,5 @@ export function useRunMemory(sessionId: string | null, answers: RunAnswers, rest
       } else hasRow.current = true;
     })();
   }, [body, sessionId, userId, readyFor]);
+  return !sessionId || readyFor === sessionId;
 }

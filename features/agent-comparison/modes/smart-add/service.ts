@@ -6,6 +6,7 @@
  */
 
 import { createClient } from "@/utils/supabase/client";
+import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import { readAllRows } from "@ai-matrx/data/db";
 import type { AppDispatch } from "@/lib/redux/store";
 import { runKindSearch, type RunSearchArgs } from "@/features/search/service";
@@ -89,6 +90,9 @@ export async function castNet(
  */
 export async function resolveJudges(userId: string | null): Promise<{ holder: string | null; jev: string | null }> {
   const client = createClient();
+  // Prove the browser client carries the person's JWT first: a read sent before the session
+  // hydrates leaves as `anon` and comes back "permission denied" (seen 2026-10-16).
+  await requireAuthenticatedSupabaseSession(client);
   const { data: mandate, error } = await mandateDefinitions(client)
     .select("*")
     .eq("mandate_key", MANDATE_KEYS.brand_intake__web_result_classifier)

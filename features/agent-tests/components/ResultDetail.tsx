@@ -14,7 +14,12 @@ import { conversationHref } from "@/features/hindsight/subject-doors";
 import { TestCaseInputs } from "@/features/agents/components/samples/TestCaseInputs";
 import type { AgentVariableDeclaration } from "@/features/agents/samples/service";
 import { fetchJudgeVerdict } from "../service";
-import { OUTCOME_META, VERDICT_META, doorLabel } from "../verdicts";
+import {
+  OUTCOME_META,
+  OUTCOME_STATUS_LABEL,
+  VERDICT_META,
+  doorLabel,
+} from "../verdicts";
 import type {
   AgentTestSeat,
   CheckResultView,
@@ -23,6 +28,15 @@ import type {
   TestResultView,
 } from "../types";
 import { TestCost } from "./TestCost";
+
+/** Hidden text never reaches the page: its length and, when stored, the matched window. */
+function hiddenText(check: CheckResultView): string {
+  const size =
+    check.redactedChars === null
+      ? "Hidden"
+      : `Hidden (${check.redactedChars} characters)`;
+  return check.matchWindow ? `${size}: …${check.matchWindow}…` : size;
+}
 
 function CheckRow({ check }: { check: CheckResultView }) {
   const meta = OUTCOME_META[check.outcome];
@@ -44,14 +58,15 @@ function CheckRow({ check }: { check: CheckResultView }) {
       <div className="grid gap-3 md:grid-cols-2">
         <PropertyRow
           label="Expected"
-          value={check.expected}
-          missing={check.expected === null ? "Hidden" : undefined}
+          value={check.expectedRedacted ? hiddenText(check) : check.expected}
+          missing={check.expectedRedacted ? undefined : "Nothing"}
           meta={check.expectedSource || undefined}
         />
         <PropertyRow
           label="Actual"
-          value={check.observed}
-          missing={check.observedRedacted ? "Hidden" : "Nothing"}
+          value={check.observedRedacted ? hiddenText(check) : check.observed}
+          missing={check.observedRedacted ? undefined : "Nothing"}
+          meta={check.truncated ? "Shortened" : undefined}
         />
       </div>
       {check.reason ? (
@@ -158,7 +173,7 @@ export function ResultDetail({
           <PropertyRow
             label="Door"
             value={doorLabel(result.door)}
-            meta={result.doorReason ?? undefined}
+            meta={seat === "admin" ? result.doorReason : undefined}
           />
           <PropertyRow
             label="Cost"
@@ -194,6 +209,19 @@ export function ResultDetail({
           />
         </div>
 
+        {result.verdictReason ? (
+          <PropertyRow label="Why" value={result.verdictReason} />
+        ) : null}
+        {result.outcome && result.outcome.status !== "completed" ? (
+          <PropertyRow
+            label="Outcome"
+            value={
+              OUTCOME_STATUS_LABEL[result.outcome.status] ??
+              result.outcome.status
+            }
+            meta={result.outcome.message ?? undefined}
+          />
+        ) : null}
         {result.blockedBy ? (
           <PropertyRow
             label="Blocked by"

@@ -8,16 +8,30 @@
  * unknown value is shown as unknown, never guessed.
  */
 
-/** Per-result verdict (CONTRACT §2.6, plus `refused` from the contract attack B5). */
+/** Per-result verdict (CONTRACT v2 §2.6). A refusal is an `outcome`, scored by the checks. */
 export type TestVerdict =
   | "pass"
   | "pass_judged"
   | "fail"
   | "fail_format"
   | "inconclusive"
-  | "refused"
   | "blocked"
   | "error";
+
+/** How the door call ended (CONTRACT v2 §2.3). */
+export type OutcomeStatus =
+  | "completed"
+  | "refused_by_agent"
+  | "refused_by_platform"
+  | "refused_by_validation"
+  | "error";
+
+export interface OutcomeView {
+  status: OutcomeStatus | string;
+  message: string | null;
+  errorCode: string | null;
+  httpStatus: number | null;
+}
 
 /** One check's outcome on one result. */
 export type CheckOutcome = "pass" | "fail" | "undecided" | "not_applicable";
@@ -72,10 +86,15 @@ export interface CheckResultView {
   required: boolean;
   outcome: CheckOutcome;
   side: string;
-  /** Rendered text; `null` when the value was redacted for this viewer. */
+  /** Stored excerpt (≤ 2 KB); `null` when hidden text was redacted (CONTRACT v2 §2.8). */
   observed: string | null;
   expected: string | null;
   observedRedacted: boolean;
+  expectedRedacted: boolean;
+  /** For a redacted value: its length and the ≤120-char match window, when stored. */
+  redactedChars: number | null;
+  matchWindow: string | null;
+  truncated: boolean;
   expectedSource: string;
   reason: string;
   canFail: boolean | null;
@@ -101,10 +120,11 @@ export interface TestRunView {
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
-  /** Rollup counters kept on the run (attack S3); null until the drainer writes them. */
+  /** Rollup counters kept on the run by `refresh_run`; null while still `{}`. */
   counts: VerdictCounts | null;
-  /** Integer cents (attack S4). */
+  /** numeric(12,4) cents: Σ run + judge. */
   spentCents: number | null;
+  archivedAt: string | null;
   maxCostCents: number | null;
 }
 
@@ -115,14 +135,19 @@ export interface TestResultView {
   caseId: string;
   setupKey: string;
   repeat: number;
-  door: string | null;
-  doorReason: string | null;
+  /** One of the six doors, or `parity` for the row holding same-across-doors checks. */
+  door: string;
+  doorReason: string;
+  eligibleDoors: string[];
+  parityGroup: string;
   identityMode: string | null;
   originClass: string | null;
   conversationId: string | null;
   userRequestIds: string[];
   status: string;
   verdict: TestVerdict | null;
+  verdictReason: string | null;
+  outcome: OutcomeView | null;
   blockedBy: { gate?: string; kind?: string; approvalUrl?: string } | null;
   checks: CheckResultView[];
   judgeVerdictId: string | null;

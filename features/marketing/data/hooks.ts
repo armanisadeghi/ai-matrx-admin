@@ -1,6 +1,8 @@
 "use client";
 
 import type { HiddenView } from "@/features/access-gate/service/hiddenByMe";
+import { supabase } from "@/utils/supabase/client";
+import { commitChange } from "@ai-matrx/data/db";
 import { crawlActivityRefetchInterval } from "@/features/marketing/data/crawl-activity-refresh";
 import { useEffect, useMemo, useRef } from "react";
 import { followRemovalWithToast } from "@/features/trash/cascade";
@@ -53,11 +55,8 @@ import {
   createManualPage,
   createProperty,
   createSite,
-  archiveBrand,
   archiveBrandAssociatedItems,
   listBrandAssociatedItems,
-  previewBrandArchive,
-  restoreBrand,
   deleteBrandAsset,
   deleteBusinessFact,
   deleteCrawlSession,
@@ -988,32 +987,12 @@ export function useUpdateBrand() {
   });
 }
 
-/** What archiving this brand would take with it (live counts). */
-export function useBrandArchivePreview(brandId: string | null) {
-  return useQuery({
-    queryKey: [...marketingKeys.root, "brand", brandId, "archive-preview"] as const,
-    queryFn: () => previewBrandArchive(brandId as string),
-    enabled: Boolean(brandId),
-    staleTime: 0,
-  });
-}
-
-/** THE brand archive (cascade): web.brand_archive. */
-export function useArchiveBrand() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: archiveBrand,
-    onSuccess: () => {
-      // Lists only: the open brand page keeps its loaded record so the shared-items window can finish.
-      void queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "brands"] });
-    },
-  });
-}
-
+/** Restore an archived brand and exactly what its archive took (THE change engine; latest archive of it). */
 export function useRestoreBrand() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: restoreBrand,
+    mutationFn: (brandId: string) =>
+      commitChange(supabase, { verb: "restore", entityType: "web_brand", ids: [brandId] }, {}, ""),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: marketingKeys.root });
     },

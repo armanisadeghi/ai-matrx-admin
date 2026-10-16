@@ -48,6 +48,7 @@ import {
   Star,
   Trash2,
   Archive,
+  ArrowRightLeft,
   Type,
   SlidersHorizontal,
   ScanSearch,
@@ -95,6 +96,7 @@ import {
   useDeleteBrandAsset,
   useDeleteBusinessFact,
   usePendingDiscoveredCount,
+  marketingKeys,
 } from "@/features/marketing/data/hooks";
 import {
   LoadingSurface,
@@ -119,6 +121,7 @@ import { BrandBackgroundWork } from "@/features/marketing/components/brands/Bran
 import { factDisplayLabel } from "@/features/marketing/lib/factLabel";
 import { BrandOfferingsSummary } from "@/features/marketing/offerings/BrandOfferingsPanel";
 import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
+import { ChangeReviewWindow } from "@/features/trash/review/ChangeReviewWindow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
 import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -602,6 +605,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const [editorOpen, setEditorOpen] = useState(openForEdit);
   useFocusEditTarget("description", editorOpen);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [moving, setMoving] = useState(false);
   const [editingSite, setEditingSite] = useState<MarketingSite | null>(null);
   const [deletingSite, setDeletingSite] = useState<MarketingSite | null>(null);
   const [propertyEditor, setPropertyEditor] = useState<{
@@ -1023,6 +1027,14 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     onClick={() => setEditorOpen(true)}
                   >
                     Edit brand
+                  </Button>
+                  <Button
+                    icon={<ArrowRightLeft />}
+                    variant="quiet"
+                    onClick={() => setMoving(true)}
+                    data-testid="brand-move-organization"
+                  >
+                    Move
                   </Button>
                   <Button
                     icon={<Archive />}
@@ -1560,6 +1572,19 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           }
         }}
       />
+      {moving ? (
+        <ChangeReviewWindow
+          title={`Move ${current.name}`}
+          target={{ verb: "move", entityType: "web_brand", ids: [current.id] }}
+          currentOrganizationId={current.organization_id}
+          onClose={() => setMoving(false)}
+          onDone={(result) => {
+            setMoving(false);
+            void queryClient.invalidateQueries({ queryKey: marketingKeys.root });
+            toast.success(`Moved ${current.name} to ${result.organization?.name ?? "the other organization"}`);
+          }}
+        />
+      ) : null}
       <BrandArchiveFlow
         brand={confirmingDelete ? { id: current.id, name: current.name } : null}
         onCancel={() => setConfirmingDelete(false)}

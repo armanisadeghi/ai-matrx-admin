@@ -6,8 +6,9 @@
  * those keywords). Both through the domain page's own door (`useDomainSection`, seo_domain): each first asks for a
  * free stored result, and only then runs the paid read, through the organization's spend approval when it asks.
  * The host decides whether this mounts at all (welcomeSession.paidCardsHost).
- * "What buyers search" shows at most three terms that are not their own name (welcomeSession.buyerTerms); when every
- * term names them, it is not shown at all. It sits after the competitor so leaving it out moves nothing.
+ * "What buyers search" shows at most three terms that are not their own name (welcomeSession.buyerTerms). Both slots
+ * are there from the first frame: a card that ends with nothing to say settles into the quiet "Not sure" in the same
+ * box (the found grid's Slot does the same), so nothing below it ever moves.
  */
 
 import { useEffect, useRef } from "react";
@@ -16,6 +17,7 @@ import { KeyRound, Swords } from "lucide-react";
 import { useDomainSection } from "@/features/marketing/seo/domain-research/useDomainSection";
 import { seedKeywords } from "@/features/marketing/seo/domain-research/DomainResearchPage";
 import { CardBody } from "../found/FoundStage";
+import { FitText } from "../found/FitText";
 import { buyerTerms } from "./welcomeSession";
 import found from "../found/found.module.css";
 
@@ -32,12 +34,12 @@ function useAutoBuy(section: Section) {
   }, [notStored, section]);
 }
 
-function Card({ id, section, label, icon, value }: { id: string; section: Section; label: string; icon: React.ReactNode; value: string | null }) {
+function Card({ id, section, label, icon, value, domain }: { id: string; section: Section; label: string; icon: React.ReactNode; value: string | null; domain?: boolean }) {
   const waiting = section.state.kind === "loading" || section.state.kind === "idle" || (section.state.kind === "not_stored" && section.state.note === null);
   return (
     <div className="min-h-[8.5rem]" data-found-card={id} data-state={value ? "filled" : waiting ? "waiting" : "retired"}>
       {value ? (
-        <CardBody icon={icon} label={label} value={<span className="text-[1.3rem] sm:text-[1.45rem]">{value}</span>} />
+        <CardBody icon={icon} label={label} value={<span className="text-[1.3rem] sm:text-[1.45rem]">{domain ? <FitText text={value} /> : value}</span>} />
       ) : waiting ? (
         <div aria-hidden className={`${found.waiting} h-full min-h-[8.5rem] rounded-3xl`} />
       ) : (
@@ -77,10 +79,9 @@ export function WelcomeSearchCards({ host, names }: { host: string; names: reado
         label="A competitor"
         icon={<Swords className="size-4" />}
         value={rival}
+        domain
       />
-      {keywords.state.kind === "ready" && !top.length ? null : (
-        <Card id="buyers" section={keywords} label="What buyers search" icon={<KeyRound className="size-4" />} value={top.length ? top.join(" · ") : null} />
-      )}
+      <Card id="buyers" section={keywords} label="What buyers search" icon={<KeyRound className="size-4" />} value={top.length ? top.join(" · ") : null} />
       {keywords.approvalDialog}
       {competitors.approvalDialog}
     </section>

@@ -10,7 +10,7 @@
  * domain, GitHub login) that replaces the real seed for this session on a test subject. Nobody else sees it.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { FlaskConical } from "lucide-react";
 import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
@@ -36,6 +36,7 @@ import {
 } from "./welcomeSession";
 import { WelcomeSearchCards } from "./WelcomeSearchCards";
 import { resumeWelcomeProfiles } from "./saveWelcomeProfile";
+import { readTestLogin, writeTestLogin } from "./testLoginStore";
 
 const PROVIDERS: SelectOption<TestProvider>[] = [
   { value: "google", label: "Google" },
@@ -44,9 +45,9 @@ const PROVIDERS: SelectOption<TestProvider>[] = [
   { value: "email", label: "Email" },
 ];
 
-function TestLoginFields({ onUse }: { onUse: (t: TestLogin) => void }) {
+function TestLoginFields({ initial, onUse }: { initial: TestLogin | null; onUse: (t: TestLogin) => void }) {
   const [open, setOpen] = useState(false);
-  const [t, setT] = useState<TestLogin>(EMPTY_TEST_LOGIN);
+  const [t, setT] = useState<TestLogin>(initial ?? EMPTY_TEST_LOGIN);
   const set = (k: keyof TestLogin) => (e: React.ChangeEvent<HTMLInputElement>) => setT((cur) => ({ ...cur, [k]: e.target.value }));
   return (
     <div className="flex flex-col gap-2" data-testid="welcome-test-login">
@@ -83,6 +84,14 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
   const testable = useAppSelector(selectIsSuperAdminDebugger) && Boolean(useAppSelector(selectIsDebugMode));
   const [user, setUser] = useState<User | null>(null);
   const [test, setTest] = useState<TestLogin | null>(null);
+  // A reload keeps the admin's test login (this tab only): restored once debug mode confirms who may use it.
+  const restored = useRef(false);
+  useEffect(() => {
+    if (!testable || restored.current) return;
+    restored.current = true;
+    const saved = readTestLogin();
+    if (saved && testLoginUsable(saved)) setTest(saved);
+  }, [testable]);
   const [done, setDone] = useState<WelcomeDone | null>(null);
 
   // A "Looks right" whose profile write never finished (the page went away mid-way) is written now, door or not.
@@ -125,10 +134,17 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
   const doorOpen = Boolean(login) && !done;
   return (
     <div className="flex flex-col gap-8">
-      {testable ? <TestLoginFields onUse={(t) => {
-        setDone(null);
-        setTest(t);
-      }} /> : null}
+      {testable ? (
+        <TestLoginFields
+          key={test ? "restored" : "empty"}
+          initial={test}
+          onUse={(t) => {
+            writeTestLogin(t);
+            setDone(null);
+            setTest(t);
+          }}
+        />
+      ) : null}
       {doorOpen && login ? (
         <SmartAddBrand
           key={login.subject}

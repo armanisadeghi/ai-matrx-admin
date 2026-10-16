@@ -17,9 +17,14 @@ import { createClient } from "@/utils/supabase/client";
 import type { Database } from "@/types/database.types";
 import { isJsonObject } from "@/types/json";
 import { readAllRows } from "@ai-matrx/data/db";
+import {
+  DEFAULT_ARCHIVE_FILTER,
+  type ArchiveFilterValue,
+} from "@ai-matrx/design-system";
 import { isTestVerdict } from "./verdicts";
 import type {
   CheckOutcome,
+  OutcomeView,
   CheckResultView,
   JudgeVerdictView,
   TestCaseView,
@@ -62,9 +67,18 @@ function shown(value: unknown): string | null {
   return JSON.stringify(value);
 }
 
-/** True when the server marked a stored value as hidden from this viewer (contract attack S5). */
+/** True when the server stored a hidden value as `{redacted, chars, sha256}` (CONTRACT v2 §2.8). */
 function isRedacted(value: unknown): boolean {
   return isJsonObject(value) && value.redacted === true;
+}
+
+/** The ≤120-char match window a redacted value may carry, whatever key the writer used. */
+function redactedWindow(value: unknown): string | null {
+  if (!isJsonObject(value)) return null;
+  for (const key of ["window", "match", "match_window", "excerpt"]) {
+    if (typeof value[key] === "string") return value[key] as string;
+  }
+  return null;
 }
 
 export function parseCheckResults(raw: unknown): CheckResultView[] {
@@ -76,6 +90,12 @@ export function parseCheckResults(raw: unknown): CheckResultView[] {
       ? (entry.outcome as CheckOutcome)
       : "undecided";
     const observedRedacted = isRedacted(entry.observed);
+    const expectedRedacted = isRedacted(entry.expected);
+    const redactedSource = observedRedacted
+      ? entry.observed
+      : expectedRedacted
+        ? entry.expected
+        : null;
     out.push({
       id: str(entry.id),
       title: str(entry.title) || str(entry.id),
@@ -84,8 +104,14 @@ export function parseCheckResults(raw: unknown): CheckResultView[] {
       outcome,
       side: str(entry.side),
       observed: observedRedacted ? null : shown(entry.observed),
-      expected: isRedacted(entry.expected) ? null : shown(entry.expected),
+      expected: expectedRedacted ? null : shown(entry.expected),
       observedRedacted,
+      expectedRedacted,
+      redactedChars: isJsonObject(redactedSource)
+        ? num(redactedSource.chars)
+        : null,
+      matchWindow: redactedWindow(redactedSource),
+      truncated: entry.truncated === true,
       expectedSource: str(entry.expected_source),
       reason: str(entry.reason),
       canFail: typeof entry.can_fail === "boolean" ? entry.can_fail : null,
@@ -94,12 +120,11 @@ export function parseCheckResults(raw: unknown): CheckResultView[] {
   return out;
 }
 
-function parseCounts(row: RunRow): VerdictCounts | null {
-  const raw: unknown = (row as Record<string, unknown>).counts;
-  if (!isJsonObject(raw)) return null;
+/** `counts` = `{total, done, pass, pass_judged, fail, …}`; `{}` until the drainer's first refresh. */
+function parseCounts(raw: unknown): VerdictCounts | null {
+  if (!isJsonObject(raw) || Object.keys(raw).length === 0) return null;
   const byVerdict: Partial<Record<TestVerdict, number>> = {};
-  const source = isJsonObject(raw.by_verdict) ? raw.by_verdict : raw;
-  for (const [key, value] of Object.entries(source)) {
+  for (const [key, value] of Object.entries(raw)) {
     const n = num(value);
     if (isTestVerdict(key) && n !== null) byVerdict[key] = n;
   }
@@ -120,9 +145,10 @@ export function toRunView(row: RunRow): TestRunView {
     createdAt: row.created_at,
     startedAt: row.started_at,
     finishedAt: row.finished_at,
-    counts: parseCounts(row),
-    spentCents: num((row as Record<string, unknown>).spent_cents),
+    counts: parseCounts(row.counts),
+    spentCents: num(row.spent_cents),
     maxCostCents: num(row.max_cost_cents),
+    archivedAt: row.archived_at,
   };
 }
 
@@ -132,6 +158,16 @@ function errorText(raw: unknown): string | null {
   if (isJsonObject(raw))
     return str(raw.message) || str(raw.error) || JSON.stringify(raw);
   return JSON.stringify(raw);
+}
+
+function parseOutcome(raw: unknown): OutcomeView | null {
+  if (!isJsonObject(raw)) return null;
+  return {
+    status: str(raw.status) || "completed",
+    message: str(raw.message) || null,
+    errorCode: str(raw.error_code) || null,
+    httpStatus: num(raw.http_status),
+  };
 }
 
 export function toResultView(row: ResultRow): TestResultView {
@@ -144,12 +180,16 @@ export function toResultView(row: ResultRow): TestResultView {
     repeat: row.repeat,
     door: row.door,
     doorReason: row.door_reason,
+    eligibleDoors: row.eligible_doors ?? [],
+    parityGroup: row.parity_group,
     identityMode: row.identity_mode,
     originClass: row.origin_class,
     conversationId: row.conversation_id,
     userRequestIds: row.user_request_ids ?? [],
     status: row.status,
     verdict: isTestVerdict(row.verdict) ? row.verdict : null,
+    verdictReason: row.verdict_reason,
+    outcome: parseOutcome(row.outcome),
     blockedBy: blocked
       ? {
           gate: str(blocked.gate) || undefined,
@@ -205,7 +245,11 @@ export async function fetchTestCases(agentId: string): Promise<TestCaseView[]> {
 /** The most recent runs that include this agent (a battle run lists every setup agent). */
 export async function fetchAgentRuns(
   agentId: string,
-  options: { purpose?: "user" | "platform"; limit?: number } = {},
+  options: {
+    purpose?: "user" | "platform";
+    limit?: number;
+    archive?: ArchiveFilterValue;
+  } = {},
 ): Promise<TestRunView[]> {
   const supabase = createClient();
   let query = supabase
@@ -217,15 +261,21 @@ export async function fetchAgentRuns(
     .order("created_at", { ascending: false })
     .limit(options.limit ?? 50);
   if (options.purpose) query = query.eq("purpose", options.purpose);
+  const archive = options.archive ?? DEFAULT_ARCHIVE_FILTER;
+  if (archive === "active") query = query.is("archived_at", null);
+  else if (archive === "archived") query = query.not("archived_at", "is", null);
   const { data, error } = await query;
   if (error) throw error;
   return (data ?? []).map(toRunView);
 }
 
 /** Platform runs across every agent (admin page). */
-export async function fetchPlatformRuns(limit = 200): Promise<TestRunView[]> {
+export async function fetchPlatformRuns(
+  archive: ArchiveFilterValue = DEFAULT_ARCHIVE_FILTER,
+  limit = 200,
+): Promise<TestRunView[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .schema("agent")
     .from("test_run")
     .select("*")
@@ -233,6 +283,9 @@ export async function fetchPlatformRuns(limit = 200): Promise<TestRunView[]> {
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (archive === "active") query = query.is("archived_at", null);
+  else if (archive === "archived") query = query.not("archived_at", "is", null);
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []).map(toRunView);
 }

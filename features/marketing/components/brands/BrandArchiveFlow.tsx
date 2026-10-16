@@ -3,10 +3,10 @@
 /**
  * BrandArchiveFlow — THE brand archive, used by the brand page and the brands list (one canonical action).
  *
- * Smart Add fresh start (smart-add-brand VISION Part 11, 2026-10-14): one confirm archives the brand and
- * everything it owns (`web.brand_archive` → platform.soft_delete_edge cascade edges + the brand extras
- * trigger), so the same person or company can run through Smart Add again from zero. The confirm names the
- * consequence first, from live counts. Then a window panel lists the SHARED things the brand was linked to
+ * Smart Add fresh start (smart-add-brand VISION Part 11, 2026-10-14): the archive goes through THE change
+ * engine (`platform.change_records`, move-and-archive plan): a review window shows everything that goes with
+ * the brand and everything kept because something else uses it, each a door; the toast's Undo restores exactly
+ * what that archive took (by its plan). Then a window panel lists the SHARED things the brand was linked to
  * (people, other records) with checkboxes, so the person can archive those too.
  */
 
@@ -16,47 +16,20 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { restoreChange } from "@ai-matrx/data/db";
+import { supabase } from "@/utils/supabase/client";
+import { ChangeReviewWindow } from "@/features/trash/review/ChangeReviewWindow";
 import {
   marketingKeys,
-  useArchiveBrand,
   useArchiveBrandAssociatedItems,
-  useBrandArchivePreview,
   useBrandAssociatedItems,
 } from "@/features/marketing/data/hooks";
-import type { BrandArchiveCounts } from "@/features/marketing/data/service";
 import { extractErrorMessage } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
-import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
 import { useRemovalRights } from "@/features/access-gate/hooks/useHiddenByMe";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-
-const COUNT_LABELS: Array<[keyof BrandArchiveCounts, string, string]> = [
-  ["websites", "website", "websites"],
-  ["accounts", "account", "accounts"],
-  ["posts", "post", "posts"],
-  ["findings", "finding", "findings"],
-  ["facts", "fact", "facts"],
-  ["assets", "image", "images"],
-  ["offerings", "offering", "offerings"],
-  ["exclusions", "exclusion", "exclusions"],
-  ["pages", "crawled page", "crawled pages"],
-  ["running_jobs", "running job", "running jobs"],
-];
-
-/** "Archives this brand, 3 websites, 5 accounts, 210 posts, 40 findings." */
-export function brandArchiveConsequence(counts: BrandArchiveCounts | undefined): string {
-  if (!counts) return "Archives this brand and everything it owns.";
-  const parts = COUNT_LABELS.flatMap(([key, one, many]) => {
-    const n = Number(counts[key] ?? 0);
-    return n > 0 ? [`${n.toLocaleString()} ${n === 1 ? one : many}`] : [];
-  });
-  return parts.length
-    ? `Archives this brand, ${parts.join(", ")}. Restore brings it all back.`
-    : "Archives this brand. Restore brings it back.";
-}
 
 export interface BrandArchiveFlowProps {
   /** The brand to archive; null = closed. */
@@ -74,9 +47,9 @@ export function BrandArchiveFlow({ brand, onCancel, onDone }: BrandArchiveFlowPr
   // ask the owner, or hide it for themselves — instead of a confirm that can only fail.
   const rights = useRemovalRights("web_brand", brand && !archived ? brand.id : null);
   const refused = Boolean(brand) && (rights.data?.canRemove === false || refusedId === brand?.id);
-  const preview = useBrandArchivePreview(brand && !archived && !refused ? brand.id : null);
-  const archive = useArchiveBrand();
   const queryClient = useQueryClient();
+  // Lists only: the open brand page keeps its loaded record so the shared-items window can finish.
+  const refreshBrands = () => void queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "brands"] });
 
   return (
     <>
@@ -98,31 +71,30 @@ export function BrandArchiveFlow({ brand, onCancel, onDone }: BrandArchiveFlowPr
           onHidden={() => void queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "brands"] })}
         />
       ) : null}
-      <ConfirmDialog
-        open={Boolean(brand) && !archived && !refused}
-        onOpenChange={(open) => {
-          if (!open && !archive.isPending) onCancel();
-        }}
-        title={brand ? `Archive ${brand.name}?` : "Archive brand?"}
-        description={preview.isLoading ? "Counting what goes with it…" : brandArchiveConsequence(preview.data)}
-        variant="destructive"
-        confirmLabel="Archive brand"
-        busy={archive.isPending || rights.isLoading}
-        onConfirm={async () => {
-          if (!brand) return;
-          try {
-            await archive.mutateAsync(brand.id);
-            toast.success(`Archived ${brand.name}`);
+      {brand && !archived && !refused && !rights.isLoading ? (
+        <ChangeReviewWindow
+          title={`Archive ${brand.name}`}
+          target={{ verb: "delete", entityType: "web_brand", ids: [brand.id] }}
+          onClose={onCancel}
+          onDone={(result) => {
+            refreshBrands();
+            toast.success(`Archived ${brand.name}`, {
+              action: {
+                label: "Undo",
+                onClick: () => {
+                  restoreChange(supabase, result.plan_id)
+                    .then(() => {
+                      refreshBrands();
+                      toast.success(`Restored ${brand.name}`);
+                    })
+                    .catch((error: unknown) => toast.error("Could not restore", { description: extractErrorMessage(error) }));
+                },
+              },
+            });
             setArchived(brand);
-          } catch (error) {
-            if (isGovernedActionDenial(error)) {
-              setRefusedId(brand.id);
-              return;
-            }
-            toast.error("Could not archive brand", { description: extractErrorMessage(error) });
-          }
-        }}
-      />
+          }}
+        />
+      ) : null}
       {archived ? (
         <BrandSharedItemsWindow
           brand={archived}

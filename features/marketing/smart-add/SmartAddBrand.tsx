@@ -27,6 +27,7 @@ import { peopleGroups, type PersonGroup } from "./welcome/peopleGroups";
 import { PersonPickCards } from "./welcome/PersonPickCards";
 import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
 import { writeWelcomeProfile } from "./welcome/saveWelcomeProfile";
+import { findSessionBrand } from "./welcome/sessionBrand";
 import type { WelcomeConfirmed } from "./welcome/welcomeProfile";
 import { fetchKnownDomainRules } from "@/lib/web-domains/service";
 import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
@@ -604,7 +605,7 @@ export function SmartAddBrand({
   }, [enrichBrandId, runKey]);
 
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
-  useRunMemory(
+  const memoryReady = useRunMemory(
     // The welcome door has no address, but its rounds are stable (welcomeSession.roundSubject): answers ride them too.
     (url || door === "welcome") && !enrich && !created ? (runIds[0] ?? null) : null,
     { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items), skipped: [...skipped], taglines, webMarks, separated: [...separated], later: [] },
@@ -1189,9 +1190,43 @@ export function SmartAddBrand({
 
   const create = async () => {
     if (!basics.name) return;
+    // Sign-up welcome: the brand this session already made is theirs again (a reload, a second press); a second is never made.
+    if (door === "welcome" && loginSeed) {
+      setCreating(true);
+      setCreateError(null);
+      try {
+        const prior = await findSessionBrand(runIds);
+        if (prior) {
+          setCreated(prior);
+          onCreated?.(prior);
+          setCreating(false);
+          return;
+        }
+      } catch (error) {
+        // Unreadable means unknown, not "none": a second brand is worse than a retry.
+        setCreateError(`Your brand could not be checked: ${extractErrorMessage(error)}`);
+        setCreating(false);
+        setWelcomeConfirming(false);
+        return;
+      }
+      setCreating(false);
+    }
     // A brand they already have, found by the same site, account or name: ask once, then it is their call.
-    const gate = await gateCreate({ probe: confirmedProbe, find: findMatchingBrands, ask: confirm, answered: separateRef.current });
-    if (!gate.proceed) return;
+    // The welcome is a person (checkMatches is off for people), so it probes from what it confirmed, the same rules.
+    const welcomeProbe: BrandProbe | null =
+      door === "welcome"
+        ? {
+            domains: [basics.websiteUrl, ...basics.otherWebsites].filter((u): u is string => Boolean(u)).map(websiteHost),
+            accounts: basics.accounts.filter((a) => a.handle).map((a) => ({ platform: a.platform ?? null, handle: a.handle as string })),
+            name: basics.name,
+            place: basics.facts.find((f) => f.field === "address")?.value ?? null,
+          }
+        : null;
+    const gate = await gateCreate({ probe: confirmedProbe ?? welcomeProbe, find: findMatchingBrands, ask: confirm, answered: separateRef.current });
+    if (!gate.proceed) {
+      if (door === "welcome") setWelcomeConfirming(false);
+      return;
+    }
     if (gate.answered !== separateRef.current) {
       separateRef.current = gate.answered;
       setSeparateIds(gate.answered);
@@ -1777,7 +1812,7 @@ export function SmartAddBrand({
   }, [welcomeKick]);
   // A proven anchor and no grounded round yet: one round grounded on it (Part 9), once.
   const welcomeGround =
-    welcomeOn && Boolean(welcomeSeed) && !working && rounds.length > 0 && personAnchors.length > 0 && !groundedSent.current && !created;
+    welcomeOn && Boolean(welcomeSeed) && memoryReady && !working && rounds.length > 0 && personAnchors.length > 0 && !groundedSent.current && !created;
   const runWelcomeGround = useEffectEvent(() => void startRound({ website: "", socials: [] }));
   useEffect(() => {
     if (welcomeGround) runWelcomeGround();
@@ -1822,8 +1857,9 @@ export function SmartAddBrand({
   const welcomePicked = visible.some((i) => i.anchor && (decisions[i.key] === "yes" || decisions[i.key] === "preferred"));
   const welcomeSeedAnchor = Boolean(welcomeSeed && (provenWebsite(welcomeSeed) || welcomeSeed.githubLogin));
   const welcomeAnchored = welcomeSeedAnchor || welcomePicked || Boolean(welcomeCards.website) || welcomeCards.accounts.length > 0;
-  // The people are asked only once the anchor round settled: cards never pop in one by one.
-  const welcomeAsks = !welcomeAnchored && anchorDone && welcomePeople.people.length > 0;
+  // The people are asked only once the anchor round settled AND the session's saved answers are back: a reload must
+  // never ask "Which one is you?" (or lead with another account) before the pick already made has been restored.
+  const welcomeAsks = memoryReady && !welcomeAnchored && anchorDone && welcomePeople.people.length > 0;
 
   /** "Looks right": a Yes for every card shown, then the existing Create path (their person brand). */
   const welcomeLooksRight = () => {
@@ -1896,8 +1932,8 @@ export function SmartAddBrand({
         ) : (
           <PersonFoundStage
             cards={welcomeCards}
-            working={!welcomeSeed || working}
-            ready={Boolean(welcomeSeed) && (personCoreReady(welcomeCards) || !working)}
+            working={!welcomeSeed || working || !memoryReady}
+            ready={Boolean(welcomeSeed) && memoryReady && (personCoreReady(welcomeCards) || !working)}
             confirming={confirming || creating}
             error={createError ?? welcomeBootError ?? startFailure}
             onLooksRight={welcomeLooksRight}

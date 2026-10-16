@@ -19,6 +19,7 @@ import { avatarInitial } from "../avatarInitial";
 import { brightnessOf, LOGO_TILE_BG, shadeForBrightness } from "../logo-shade";
 import { Shared } from "../stage/Shared";
 import { shownHost, type FoundAccount, type FoundCards } from "./foundCards";
+import { FitText } from "./FitText";
 import styles from "./found.module.css";
 
 export const href = (url: string) => withReferral(/^https?:\/\//i.test(url) ? url : `https://${url}`);
@@ -187,7 +188,7 @@ export function FoundStage({
                       dark
                       art={<AccountPicture account={lead} size="size-14" />}
                       label={platformLabel(lead.platform)}
-                      value={<span className="text-[1.45rem] sm:text-[1.6rem]">{handleOf(lead)}</span>}
+                      value={<span className="text-[1.45rem] sm:text-[1.6rem]"><FitText text={handleOf(lead)} /></span>}
                       sub={lead.followers != null ? `${compact.format(lead.followers)} followers` : undefined}
                     />
                   </a>
@@ -196,7 +197,7 @@ export function FoundStage({
               <Slot key="website" id="website" label="Your site" icon={<Globe className="size-4" />} filled={Boolean(cards.website)} working={working} className="sm:col-span-3">
                 {cards.website ? (
                   <a href={href(cards.website.url ?? cards.website.value)} target="_blank" rel="noopener noreferrer" data-clickable className="block h-full">
-                    <CardBody icon={<Globe className="size-4" />} label="Your site" value={shownHost(cards.website)} />
+                    <CardBody icon={<Globe className="size-4" />} label="Your site" value={<FitText text={shownHost(cards.website)} />} />
                   </a>
                 ) : null}
               </Slot>

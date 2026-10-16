@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FlaskConical } from "lucide-react";
 import { EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
-import { ReadFailure } from "@ai-matrx/design-system";
+import {
+  ArchiveFilter,
+  DEFAULT_ARCHIVE_FILTER,
+  ReadFailure,
+  type ArchiveFilterValue,
+} from "@ai-matrx/design-system";
 import {
   MatrxDataTable,
   type MatrxColumnDef,
@@ -141,11 +146,14 @@ export function AgentTestsPlatformPage() {
     | { state: "failed"; error: unknown }
     | { state: "ready"; runs: TestRunView[]; names: Map<string, string> }
   >({ state: "loading" });
+  const [archive, setArchive] = useState<ArchiveFilterValue>(
+    DEFAULT_ARCHIVE_FILTER,
+  );
 
   useEffect(() => {
     let live = true;
     (async () => {
-      const runs = await fetchPlatformRuns();
+      const runs = await fetchPlatformRuns(archive);
       const names = await fetchAgentNames([
         ...new Set(runs.flatMap((r) => r.agentIds)),
       ]);
@@ -158,12 +166,19 @@ export function AgentTestsPlatformPage() {
     return () => {
       live = false;
     };
-  }, []);
+  }, [archive]);
 
   return (
     <>
       <RecordPageHeader record={{ name: "Agent tests" }} />
       <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto px-[var(--matrx-page-gutter)] pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
+        <div className="flex justify-end">
+          <ArchiveFilter
+            value={archive}
+            onValueChange={setArchive}
+            aria-label="Archived runs"
+          />
+        </div>
         {state.state === "loading" ? (
           <RegionSkeleton
             shape="rows"

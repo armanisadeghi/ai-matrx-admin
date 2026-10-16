@@ -15,7 +15,14 @@ import {
   RowGroup,
   Tile,
 } from "@ai-matrx/design-system/controls";
-import { Card, CardContent, ReadFailure } from "@ai-matrx/design-system";
+import {
+  ArchiveFilter,
+  Card,
+  CardContent,
+  DEFAULT_ARCHIVE_FILTER,
+  ReadFailure,
+  type ArchiveFilterValue,
+} from "@ai-matrx/design-system";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import {
@@ -287,12 +294,16 @@ export function AgentTestPage({
     () => fetchTestCases(agentId),
     `cases:${agentId}`,
   );
+  const [archive, setArchive] = useState<ArchiveFilterValue>(
+    DEFAULT_ARCHIVE_FILTER,
+  );
   const [runsRead] = useRead(
     () =>
       fetchAgentRuns(agentId, {
         purpose: seat === "admin" ? "platform" : "user",
+        archive,
       }),
-    `runs:${agentId}:${seat}`,
+    `runs:${agentId}:${seat}:${archive}`,
   );
   const [headRead] = useRead(
     () => fetchAgentContractHead(agentId),
@@ -340,6 +351,13 @@ export function AgentTestPage({
               caseCount={cases.length}
             />
           ) : null}
+          <div className="flex justify-end">
+            <ArchiveFilter
+              value={archive}
+              onValueChange={setArchive}
+              aria-label="Archived runs"
+            />
+          </div>
           {runsRead.state === "loading" ? (
             <RegionSkeleton
               shape="rows"

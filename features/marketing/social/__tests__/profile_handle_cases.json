@@ -1,5 +1,5 @@
 {
-  "_doc": "The ONE profile-link rule. Mirrored byte-for-byte in matrx-frontend features/marketing/social/__tests__/profile_handle_cases.json; both suites run it. [url, platform|null, handle|null, personal]",
+  "_doc": "The ONE profile-link rule. Mirrored byte-for-byte in matrx-frontend features/marketing/social/__tests__/profile_handle_cases.json; both suites run it. [url, platform|null, handle|null, personal] same_account: [a, b] pairs that are ONE account address (MKT-185: alias hosts such as twitter.com -> x.com); different_account: pairs that must stay two.",
   "cases": [
     [
       "https://www.instagram.com/allgreen_itad/?hl=en",
@@ -306,6 +306,120 @@
       "reddit",
       "spez",
       false
+    ],
+    [
+      "https://twitter.com/MichaelHyatt",
+      "x",
+      "MichaelHyatt",
+      false
+    ],
+    [
+      "https://mobile.twitter.com/MichaelHyatt",
+      "x",
+      "MichaelHyatt",
+      false
+    ],
+    [
+      "https://m.facebook.com/snowpeak/",
+      "facebook",
+      "snowpeak",
+      false
+    ],
+    [
+      "https://fb.com/snowpeak",
+      "facebook",
+      "snowpeak",
+      false
+    ],
+    [
+      "https://instagr.am/natgeo/",
+      "instagram",
+      "natgeo",
+      false
+    ],
+    [
+      "https://youtu.be/dQw4w9WgXcQ",
+      null,
+      null,
+      false
+    ],
+    [
+      "https://threads.net/@zuck",
+      "threads",
+      "zuck",
+      false
+    ]
+  ],
+  "same_account": [
+    [
+      "https://twitter.com/MichaelHyatt",
+      "https://x.com/MichaelHyatt"
+    ],
+    [
+      "http://www.twitter.com/MichaelHyatt/",
+      "https://x.com/MichaelHyatt"
+    ],
+    [
+      "https://mobile.twitter.com/MichaelHyatt?lang=en",
+      "https://x.com/MichaelHyatt"
+    ],
+    [
+      "https://fb.com/snowpeak",
+      "https://www.facebook.com/snowpeak"
+    ],
+    [
+      "https://m.facebook.com/snowpeak/",
+      "https://www.facebook.com/snowpeak"
+    ],
+    [
+      "https://web.facebook.com/snowpeak",
+      "https://facebook.com/snowpeak/"
+    ],
+    [
+      "https://es-la.facebook.com/snowpeak",
+      "https://www.facebook.com/snowpeak"
+    ],
+    [
+      "https://instagr.am/natgeo/",
+      "https://www.instagram.com/natgeo"
+    ],
+    [
+      "https://m.instagram.com/natgeo",
+      "https://instagram.com/natgeo/"
+    ],
+    [
+      "https://m.youtube.com/@MrBeast",
+      "https://www.youtube.com/@MrBeast"
+    ],
+    [
+      "https://uk.linkedin.com/company/acme",
+      "https://www.linkedin.com/company/acme"
+    ],
+    [
+      "https://m.tiktok.com/@cic_medspa",
+      "https://www.tiktok.com/@cic_medspa"
+    ],
+    [
+      "https://threads.net/@zuck",
+      "https://www.threads.com/@zuck"
+    ],
+    [
+      "https://old.reddit.com/user/spez",
+      "https://www.reddit.com/user/spez"
+    ]
+  ],
+  "different_account": [
+    [
+      "https://youtu.be/dQw4w9WgXcQ",
+      "https://www.youtube.com/@dQw4w9WgXcQ"
+    ],
+    [
+      "https://x.com/MichaelHyatt",
+      "https://x.com/MichaelHyattOfficial"
+    ],
+    [
+      "https://www.facebook.com/snowpeak",
+      "https://www.instagram.com/snowpeak"
     ]
   ]
 }

@@ -3822,27 +3822,6 @@ export async function renameSiteSlug(
   }
 }
 
-/**
- * What archiving a brand takes with it (live rows): websites, accounts, tracked accounts, captured posts,
- * findings, facts, assets, offerings, exclusions, crawled pages, crawls, running setup jobs.
- * `web.brand_archive_preview` — the same counts the archive returns.
- */
-export interface BrandArchiveCounts {
-  brand_id: string;
-  archived: boolean;
-  websites: number;
-  accounts: number;
-  tracked_accounts: number;
-  posts: number;
-  findings: number;
-  facts: number;
-  assets: number;
-  offerings: number;
-  exclusions: number;
-  pages: number;
-  crawls: number;
-  running_jobs: number;
-}
 
 /** A shared thing the brand was linked to (kept by the archive; the person may archive it too). */
 export interface BrandAssociatedItem {
@@ -3855,34 +3834,8 @@ export interface BrandAssociatedItem {
   why: string;
 }
 
-export async function previewBrandArchive(brandId: string): Promise<BrandArchiveCounts> {
-  const response = await (await authenticatedWebDb(supabase)).rpc("brand_archive_preview", {
-    p_brand_id: brandId,
-  });
-  return assertData(response.data, response.error) as unknown as BrandArchiveCounts;
-}
 
-/**
- * Archive a brand WITH CASCADE (Smart Add fresh start, VISION Part 11). THE one archive: `web.brand_archive`
- * stamps the brand, and every owned row follows in the same transaction (platform.soft_delete_edge cascade
- * edges + web._brand_cascade_softdelete_extras: sites and their crawls, properties, tracked accounts and their
- * captured posts, findings, facts, assets, offerings, exclusions, setup runs). Shared rows (people, other
- * records, the shared profile cache) are kept — `listBrandAssociatedItems` lists them. Never hard-deletes.
- */
-export async function archiveBrand(brandId: string): Promise<BrandArchiveCounts> {
-  const response = await (await authenticatedWebDb(supabase)).rpc("brand_archive", {
-    p_brand_id: brandId,
-  });
-  return assertData(response.data, response.error) as unknown as BrandArchiveCounts;
-}
 
-/** Restore an archived brand and exactly what its archive took. */
-export async function restoreBrand(brandId: string): Promise<BrandArchiveCounts> {
-  const response = await (await authenticatedWebDb(supabase)).rpc("brand_restore", {
-    p_brand_id: brandId,
-  });
-  return assertData(response.data, response.error) as unknown as BrandArchiveCounts;
-}
 
 export async function listBrandAssociatedItems(brandId: string): Promise<BrandAssociatedItem[]> {
   const response = await (await authenticatedWebDb(supabase)).rpc("brand_associated_items", {

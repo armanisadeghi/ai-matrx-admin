@@ -11,7 +11,6 @@ export const VERDICT_META: Record<
   fail: { label: "Fail", tone: "destructive", counted: "fail" },
   fail_format: { label: "Format", tone: "warning", counted: "fail" },
   inconclusive: { label: "Undecided", tone: "neutral", counted: "excluded" },
-  refused: { label: "Refused", tone: "info", counted: "excluded" },
   blocked: { label: "Blocked", tone: "warning", counted: "excluded" },
   error: { label: "Error", tone: "destructive", counted: "excluded" },
 };
@@ -22,7 +21,6 @@ export const VERDICT_ORDER: readonly TestVerdict[] = [
   "fail",
   "fail_format",
   "inconclusive",
-  "refused",
   "blocked",
   "error",
 ];
@@ -88,6 +86,15 @@ export const DOOR_LABEL: Record<string, string> = {
   mandates: "Mandate",
   mcp_agent_run: "MCP",
   agent_call: "Agent call",
+  parity: "Across doors",
+};
+
+export const OUTCOME_STATUS_LABEL: Record<string, string> = {
+  completed: "Completed",
+  refused_by_agent: "Agent refused",
+  refused_by_platform: "Platform refused",
+  refused_by_validation: "Refused before the model",
+  error: "Error",
 };
 
 export function doorLabel(door: string | null): string | null {
