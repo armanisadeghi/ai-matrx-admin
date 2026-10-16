@@ -293,6 +293,16 @@ function ComposerBody({
   const [hostedRunProvider, setHostedRunProvider] =
     useState<HostedProvider>("claude_code");
   const hostedConversationId = useRef<string | null>(null);
+  /**
+   * The last hosted session the person can continue: the next hosted run of
+   * the same coding agent resumes it in the same conversation, until they
+   * choose a new session.
+   */
+  const [hostedFollowUp, setHostedFollowUp] = useState<{
+    provider: HostedProvider;
+    conversationId: string;
+    sessionId: string;
+  } | null>(null);
   // ── The two hosted destinations share every control below; this names
   //    which coding agent the chosen one runs.
   const isHosted =
@@ -607,7 +617,15 @@ function ComposerBody({
    */
   const handleRunHosted = async () => {
     if (!canRun) return;
-    const runConversationId = crypto.randomUUID();
+    if (hostedProvider === "codex" && !codexModel) {
+      toast.error("Choose a Codex model before running.");
+      return;
+    }
+    const continuing =
+      hostedFollowUp && hostedFollowUp.provider === hostedProvider
+        ? hostedFollowUp
+        : null;
+    const runConversationId = continuing?.conversationId ?? crypto.randomUUID();
     hostedConversationId.current = runConversationId;
     setLaunching(true);
     setHostedRunning(true);
@@ -633,12 +651,14 @@ function ComposerBody({
                 model: codexModel.name,
                 sandboxMode: "workspace-write",
                 billing: hostedBilling,
+                threadId: continuing?.sessionId ?? null,
               }
             : {
                 conversationId: runConversationId,
                 prompt: requestText.trim(),
                 agentId,
                 billing: hostedBilling,
+                sessionId: continuing?.sessionId ?? null,
               },
           {
             onAdopted: (ids) =>
@@ -654,7 +674,15 @@ function ComposerBody({
         toast.error(`The hosted session could not start — ${result.error}`);
         return;
       }
-      await attachHomes(runConversationId);
+      if (result.sessionId) {
+        setHostedFollowUp({
+          provider: hostedProvider,
+          conversationId: runConversationId,
+          sessionId: result.sessionId,
+        });
+      }
+      // A continued session's conversation already carries its homes.
+      if (!continuing) await attachHomes(runConversationId);
     } catch (error) {
       handle.close();
       setLaunched(null);
@@ -1199,6 +1227,23 @@ function ComposerBody({
         {hostedBlocker && hostedAvailability.selectable && (
           <span className="text-xs text-muted-foreground">{hostedBlocker}</span>
         )}
+        {isHosted &&
+          !hostedRunning &&
+          hostedFollowUp?.provider === hostedProvider && (
+            <span
+              className="flex items-center gap-2 text-xs text-muted-foreground"
+              data-testid="hosted-follow-up"
+            >
+              Next run continues the last session.
+              <Button
+                type="button"
+                variant="quiet"
+                onClick={() => setHostedFollowUp(null)}
+              >
+                Start a new session
+              </Button>
+            </span>
+          )}
         <HostedRunControls
           provider={hostedRunProvider}
           running={hostedRunning}

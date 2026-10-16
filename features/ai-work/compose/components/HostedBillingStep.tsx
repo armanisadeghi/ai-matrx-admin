@@ -171,15 +171,23 @@ export function HostedBillingStep({
   // only way to learn it did is to ask again. Re-read while the box boots or
   // the browser step waits, never while a person-started step is in flight.
   // The loop re-arms after every answer — an unchanged answer included — and
-  // stops when the answer leaves those states or a read fails (with a toast).
+  // stops when the answer leaves those states. A failed read is said once and
+  // retried on the same beat, so one dropped request never strands the step.
   const polling =
     provider === "codex" &&
     billing === "own_plan" &&
     busy === null &&
     (state === "starting" || state === "awaiting_browser");
+  // The latest callback, read by the loop, so a parent re-render never
+  // restarts the timer.
+  const onStatusChangeRef = useRef(onStatusChange);
+  useEffect(() => {
+    onStatusChangeRef.current = onStatusChange;
+  }, [onStatusChange]);
   useEffect(() => {
     if (!polling) return;
     let stopped = false;
+    let failing = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const schedule = () => {
       timer = setTimeout(() => {
@@ -187,11 +195,15 @@ export function HostedBillingStep({
         readOwnPlanStatus(provider).then(
           (next) => {
             if (stopped || id !== latest.current) return;
-            onStatusChange(next);
+            failing = false;
+            onStatusChangeRef.current(next);
             schedule();
           },
           (error: unknown) => {
-            if (!stopped && id === latest.current) toast.error(getUserMessage(error));
+            if (stopped || id !== latest.current) return;
+            if (!failing) toast.error(getUserMessage(error));
+            failing = true;
+            schedule();
           },
         );
       }, OWN_PLAN_POLL_MS);
@@ -201,7 +213,7 @@ export function HostedBillingStep({
       stopped = true;
       clearTimeout(timer);
     };
-  }, [polling, provider, onStatusChange]);
+  }, [polling, provider]);
 
   return (
     <div className="mt-3 flex flex-col gap-2">

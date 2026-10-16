@@ -64,8 +64,7 @@ export const WORK_DESTINATIONS: readonly WorkDestinationDef[] = [
   {
     id: "claude-code-hosted",
     label: "Claude Code (hosted)",
-    summary:
-      "Claude Code runs in a Matrx Sandbox we start for you — nothing to install — and the session lands in a conversation in your account.",
+    summary: "Runs in a Matrx Sandbox we start for you.",
   },
   {
     id: "codex",
@@ -75,8 +74,7 @@ export const WORK_DESTINATIONS: readonly WorkDestinationDef[] = [
   {
     id: "codex-hosted",
     label: "Codex (hosted)",
-    summary:
-      "Codex runs in a Matrx Sandbox we start for you — nothing to install — and the session lands in a conversation in your account.",
+    summary: "Runs in a Matrx Sandbox we start for you.",
   },
   {
     id: "cursor",

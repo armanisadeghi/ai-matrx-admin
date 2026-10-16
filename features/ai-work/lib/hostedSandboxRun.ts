@@ -99,6 +99,12 @@ export interface HostedRunRequest {
    * signed-in vendor plan (`own_plan`).
    */
   billing?: HostedBilling;
+  /**
+   * Continues an earlier hosted session in the same conversation: the
+   * `session_id` that run's stream reported (`readHostedSessionId`). Turns the
+   * request into a `resume`; a start never carries one.
+   */
+  sessionId?: string | null;
 }
 
 /**
@@ -166,17 +172,20 @@ export function hostedRunWire(request: AnyHostedRunRequest): HostedRunWire {
       },
     };
   }
+  const sessionId = nonEmptyString(request.sessionId);
   return {
     path: HOSTED_STREAM_PATHS.claude_code,
     body: {
-      action: "start",
+      action: sessionId ? "resume" : "start",
       conversation: {
         conversation_id: request.conversationId,
-        is_new: true,
+        is_new: !sessionId,
         store: true,
       },
       prompt: request.prompt,
       workspace_root: workspaceRoot,
+      // Present ONLY on a resume: a start's session id is the server's to mint.
+      ...(sessionId ? { session_id: sessionId } : {}),
       max_turns: request.maxTurns ?? 20,
       model: request.model ?? null,
       agent_id: request.agentId ?? null,

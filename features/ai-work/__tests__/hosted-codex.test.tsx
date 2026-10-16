@@ -142,6 +142,25 @@ describe("the Codex request body", () => {
   });
 });
 
+describe("continuing a hosted Claude Code session", () => {
+  it("resumes the same conversation with the previous run's session id", async () => {
+    await dispatch(
+      startHostedRun({ conversationId: "c-9", prompt: "Keep going", sessionId: "sess-1" }),
+    );
+    const { body } = sent();
+    expect(body.action).toBe("resume");
+    expect(body.session_id).toBe("sess-1");
+    expect(body.conversation).toEqual({ conversation_id: "c-9", is_new: false, store: true });
+  });
+
+  it("never sends a session id on a start", async () => {
+    await dispatch(startHostedRun({ conversationId: "c-10", prompt: "Begin" }));
+    const { body } = sent();
+    expect(body.action).toBe("start");
+    expect("session_id" in body).toBe(false);
+  });
+});
+
 describe("the Run gate", () => {
   const blocker = (billing: HostedBilling, state: OwnPlanStatus["state"] | null, model: string | null = "gpt-5") =>
     hostedRunBlocker(
@@ -265,5 +284,37 @@ describe("the ChatGPT sign-in", () => {
       jest.advanceTimersByTime(OWN_PLAN_POLL_MS * 3);
     });
     expect(ownPlanStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("says a failed read once and keeps polling until signed_in", async () => {
+    const { toast } = jest.requireMock("@/lib/toast") as {
+      toast: { error: jest.Mock };
+    };
+    toast.error.mockReset();
+    ownPlanStatus
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce({ provider: "codex", state: "signed_in", signed_in: true } as OwnPlanStatus);
+
+    act(() => {
+      root.render(
+        <Host
+          initial={{
+            provider: "codex",
+            state: "awaiting_browser",
+            sign_in_url: "https://auth.openai.com/codex/device",
+            user_code: "ABCD-12345",
+          } as OwnPlanStatus}
+        />,
+      );
+    });
+    for (let i = 0; i < 3; i += 1) {
+      await act(async () => {
+        jest.advanceTimersByTime(OWN_PLAN_POLL_MS);
+      });
+    }
+    expect(ownPlanStatus).toHaveBeenCalledTimes(3);
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[data-testid="state"]')?.textContent).toBe("signed_in");
   });
 });
