@@ -41,6 +41,36 @@ describe("classifyTier", () => {
     expect(c.ruleId).toBe("next-transition-skipped");
   });
 
+  it("keeps the background warm-up's rollover blips local, and a warm-up 500 red", () => {
+    const network = classifyTier(
+      captured({
+        source: "api-network",
+        relation: "POST /ai/warm",
+        code: "network_error",
+        message: "Failed to fetch",
+      }),
+    );
+    expect(network.tier).toBe("yellow");
+    expect(network.persist).toBe(false);
+    const gateway = classifyTier(
+      captured({ source: "api-http", relation: "POST /ai/warm", status: 503, message: "HTTP 503" }),
+    );
+    expect(gateway.tier).toBe("yellow");
+    const serverBug = classifyTier(
+      captured({ source: "api-http", relation: "POST /ai/warm", status: 500, message: "HTTP 500" }),
+    );
+    expect(serverBug.tier).toBe("red");
+    const realCall = classifyTier(
+      captured({
+        source: "api-network",
+        relation: "POST /ai/agents/run",
+        code: "network_error",
+        message: "Failed to fetch",
+      }),
+    );
+    expect(realCall.tier).toBe("red");
+  });
+
   it("keeps other unhandled AbortErrors red", () => {
     const c = classifyTier(
       captured({

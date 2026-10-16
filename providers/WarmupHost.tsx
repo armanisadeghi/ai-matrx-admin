@@ -13,7 +13,9 @@
  * `createMatrxTransport` (same as every other package call). The warm-up asks
  * only when a person is signed in AND an organization is active — a warm-up
  * must never be the thing that opens the organization picker. The server not
- * knowing `/ai/warm` yet (404/405) is expected and stays out of the error log.
+ * knowing `/ai/warm` yet (404/405) is expected and stays out of the error log;
+ * a rollover blip (network error, 502–504) is retried by the package and kept
+ * local by the `warm-up-*` rules in `lib/diagnostics/errorTierRules.ts`.
  */
 
 import { useEffect, useState, type ReactNode } from "react";

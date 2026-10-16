@@ -163,6 +163,31 @@ export const DOWNGRADE_RULES: DowngradeRule[] = [
     },
   },
   {
+    id: "warm-up-transport-blip",
+    tier: "yellow",
+    persist: false,
+    reason:
+      "POST /ai/warm is a background, best-effort cache warm-up nobody waits on. A lost connection or a 502/503/504 there is almost always a server rollover (a release every ~30 min); @ai-matrx/api's warm-up retries it (2s, 8s, 30s) by itself. Logged here for the record, never filed — a real outage reds every call a person actually makes. A 500 or any other status from /ai/warm stays red.",
+    addedAt: "2026-10-15",
+    match: {
+      source: "api-network",
+      relation: "POST /ai/warm",
+    },
+  },
+  {
+    id: "warm-up-gateway-blip",
+    tier: "yellow",
+    persist: false,
+    reason:
+      "Same as warm-up-transport-blip: the load balancer answered 502/503/504 for the background warm-up while a server task was replaced. Retried by the package; never filed.",
+    addedAt: "2026-10-15",
+    match: {
+      source: "api-http",
+      relation: "POST /ai/warm",
+      statusRange: [502, 504],
+    },
+  },
+  {
     id: "handled-auth-token-refusal",
     tier: "yellow",
     persist: false,
