@@ -429,9 +429,8 @@ export function ReferenceReliability({ groups }: { groups: ReferenceGroup[] }) {
     { id: "agreement", header: "Agreement", accessorFn: (g) => g.agreementRate, filter: "number", width: 110, align: "right", cell: (g) => <span className="font-mono">{pct(g.agreementRate)}</span> },
     { id: "reference", header: "Reference model", accessorFn: (g) => g.referenceModel ?? "", filter: "select", width: 180, cell: (g) => <span className="font-mono">{g.referenceModel ?? "—"}</span> },
   ];
-  if (groups.length === 0) {
-    return <p className="type-secondary text-muted-foreground">No reference checks yet.</p>;
-  }
+  // Nothing checked yet: the results' own empty state already says so.
+  if (groups.length === 0) return null;
   return (
     <div className="flex flex-col gap-3">
       <MatrxDataTable<ReferenceGroup>
