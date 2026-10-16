@@ -957,6 +957,12 @@ export const adminCategoriesData: AdminCategory[] = [
         link: "/administration/agents/mcp-tools",
       },
       {
+        title: "Tool Control",
+        description: "Third-party Tools: state, success rates and switches.",
+        iconName: "ToggleRight",
+        link: "/administration/agents/tool-control",
+      },
+      {
         title: "MCP Servers",
         description:
           "Provision new servers (one-click 4-row insert: server + executor kind + system bundle + lister tool). Per-server tabs for tools / configs / connected users / metadata. Test connection probes the endpoint and persists health.",

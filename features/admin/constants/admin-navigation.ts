@@ -191,6 +191,7 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
             "/administration/agents/mcp-tools/[toolId]/incidents",
             "/administration/agents/mcp-tools/[toolId]/ui",
           ]),
+          destination("/administration/agents/tool-control"),
           destination("/administration/agents/mcp-servers"),
           destination("/administration/agents/bundles"),
           destination("/administration/agents/executor-surfaces"),
