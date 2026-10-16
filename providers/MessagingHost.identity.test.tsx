@@ -421,10 +421,10 @@ describe("the Meet package loads when a DM thread is opened, not before (first-p
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useMessagingHost } = require("@ai-matrx/messaging/react") as typeof import("@ai-matrx/messaging/react");
     let engine: { openConversation: (id: string) => Promise<unknown> } | null = null;
-    const seeEngine = (next: typeof engine) => {
-      engine = next;
+    const seeEngine = (next: unknown) => {
+      engine = next as typeof engine;
     };
-    function EngineProbe({ onEngine }: { onEngine: (next: typeof engine) => void }): null {
+    function EngineProbe({ onEngine }: { onEngine: (next: unknown) => void }): null {
       const current = useMessagingHost()?.engine ?? null;
       useEffect(() => {
         onEngine(current);
