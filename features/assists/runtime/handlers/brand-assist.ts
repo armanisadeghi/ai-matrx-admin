@@ -44,7 +44,7 @@ export const brandAssistAction: AssistActionDefinition = {
     }
     const outcome = await ctx.callServer(`/brand-assists/${action.brandId}/run`, {
       assist_id: action.assistId,
-    });
+    }, { timeoutMs: 90_000 });
     if (!outcome.ok) return { ok: false, error: outcome.error };
     const result = outcome.data as BrandAssistRunResult;
     // `sentence` is what the card's receipt toast says (AssistCard.run).

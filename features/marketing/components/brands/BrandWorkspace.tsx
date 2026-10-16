@@ -1033,9 +1033,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
           {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
 
-          {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
-          {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
-
           {/* Section jumps: the home is long, so every area is one click away; sub-pages sit at the end. */}
           <nav
             aria-label="Brand sections"

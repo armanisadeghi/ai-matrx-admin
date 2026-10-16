@@ -68,6 +68,8 @@ export interface AssistActionContext {
   callServer: (
     endpoint: string,
     body: unknown,
+    /** Long jobs (priced lookups run ~30 s) raise the default 15 s / 30 s caps; ceiling is the edge's 100 s. */
+    options?: { timeoutMs?: number },
   ) => Promise<{ ok: true; data: unknown } | { ok: false; error: string }>;
 }
 
