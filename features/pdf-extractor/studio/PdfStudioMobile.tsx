@@ -25,7 +25,7 @@
  * no Dialog, no tabs that try to fit side-by-side).
  */
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -52,6 +52,8 @@ import {
   usePdfExtractor,
   type PdfDocument,
 } from "../hooks/usePdfExtractor";
+import { confirmRecleanIfCleaned } from "../service/confirmReclean";
+import { isDocCleaned } from "../service/cleanOutcome";
 import { usePdfDocRun } from "../hooks/usePdfDocRun";
 import { useProcessedDocumentPages } from "../hooks/useProcessedDocumentPages";
 import { useProcessedDocSync } from "../hooks/useProcessedDocSync";
@@ -258,8 +260,23 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
 
   // AI Clean — desktop parity. Routes through `extractor.cleanContent` for
   // the same finalize sequence (invalidate cache → refetch → render).
+  const cleanInFlight = useRef(false);
   const handleRunAiClean = useCallback(async (opts?: { force?: boolean }) => {
     if (!activeDoc) return;
+    // One run at a time: a second click while a clean (or its question) is
+    // open sends nothing.
+    if (cleanInFlight.current) return;
+    cleanInFlight.current = true;
+    // Manual re-clean of an already-cleaned doc asks first (spends AI credits).
+    if (
+      opts?.force !== false &&
+      !(await confirmRecleanIfCleaned(
+        isDocCleaned(pages, activeDoc.cleanContent, activeDoc.cleanMode),
+      ))
+    ) {
+      cleanInFlight.current = false;
+      return;
+    }
     setAiCleanRunning(true);
     setLiveStatus("Starting AI cleanup…");
     setStreamingCleanText("");
@@ -288,11 +305,12 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "AI cleanup failed");
     } finally {
+      cleanInFlight.current = false;
       setAiCleanRunning(false);
       setLiveStatus(null);
       setStreamingCleanText(null);
     }
-  }, [activeDoc, extractor, docsState, refreshPages, toast]);
+  }, [activeDoc, extractor, docsState, refreshPages, toast, pages]);
 
   // The open doc's server run, reconnected (same hook as the desktop shell).
   const activeDocId = activeDoc?.id ?? null;
