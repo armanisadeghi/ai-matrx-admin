@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { UserData } from "@/utils/userDataMapper";
 import { useResetMenuGroupsOnOpen } from "./useResetMenuGroupsOnOpen";
 import { OverlayMenuItem } from "./OverlayMenuItem";
@@ -10,7 +10,7 @@ import { LinkMenuItem } from "./LinkMenuItem";
 import { CopyShortLinkMenuItem } from "./CopyShortLinkMenuItem";
 import { SignOutMenuItem } from "./SignOutMenuItem";
 import { UserProfileHeader } from "./UserProfileHeader";
-import { MenuGroup } from "./MenuGroup";
+import { MenuGroup, MenuGroupSkeleton } from "./MenuGroup";
 import {
   QUICK_ACCESS_ITEMS,
   COMMUNICATION_ITEMS,
@@ -19,14 +19,38 @@ import { USER_MENU_PANEL_CLASS } from "./menuItemClass";
 
 // The Admin group's items load only for an admin: the boolean below is the whole
 // gate, and the group sits behind this ONE edge (Arman, 2026-10-15).
-const AdminMenuGroup = dynamic(() => import("./AdminMenuGroupImpl"), {
-  ssr: false,
-  loading: () => null,
-});
+const loadAdminMenuGroup = () => import("./AdminMenuGroupImpl");
 
 const divider = (
   <div className="h-px my-1 mx-2 bg-[var(--matrx-glass-border-color)]" />
 );
+
+// While the chunk loads, the group's divider + header row hold its exact height,
+// so Copy link / Sign out never move when it arrives (no layout shift).
+const AdminMenuGroup = dynamic(loadAdminMenuGroup, {
+  ssr: false,
+  loading: () => (
+    <>
+      {divider}
+      <MenuGroupSkeleton label="Admin" />
+    </>
+  ),
+});
+
+/** Start the admin chunk when the account trigger is hovered, focused or pressed. */
+function useAdminGroupPreload(enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return undefined;
+    const trigger = document.querySelector<HTMLElement>("[data-shell-user-trigger]");
+    if (!trigger) return undefined;
+    const preload = () => void loadAdminMenuGroup();
+    const events = ["pointerenter", "pointerdown", "focus"] as const;
+    for (const e of events) trigger.addEventListener(e, preload, { once: true });
+    return () => {
+      for (const e of events) trigger.removeEventListener(e, preload);
+    };
+  }, [enabled]);
+}
 
 interface UserMenuPanelProps {
   userData: UserData;
@@ -44,6 +68,7 @@ export default function UserMenuPanel({
 }: UserMenuPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   useResetMenuGroupsOnOpen(panelRef, menuCheckboxId);
+  useAdminGroupPreload(Boolean(userData.isAdmin));
 
   return (
     <div ref={panelRef} className={USER_MENU_PANEL_CLASS}>
