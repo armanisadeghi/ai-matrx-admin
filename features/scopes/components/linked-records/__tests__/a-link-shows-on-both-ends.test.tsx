@@ -93,6 +93,9 @@ describe("a link shows on both ends", () => {
     expect(isLinkEdge("record", edge("outgoing", "party", "p1", "patient"))).toBe(true);
     expect(isLinkEdge("record", edge("outgoing", "record", "r2", "patient"))).toBe(false);
     expect(isLinkEdge("party", edge("outgoing", "project", "x", null))).toBe(false);
+    // A row's own page (its body Space) is the page being read, never a link of itself — either end.
+    expect(isLinkEdge("record", edge("outgoing", "document", "d1", "row_body"))).toBe(false);
+    expect(isLinkEdge("document", edge("incoming", "record", "r1", "row_body"))).toBe(false);
   });
 
   it("unlink: an incoming link is archived as other → this", async () => {

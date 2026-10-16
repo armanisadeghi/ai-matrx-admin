@@ -40,8 +40,17 @@ export interface LinkEdgeLike {
   role: string | null;
 }
 
+/**
+ * A row's OWN page — the Space a custom-table row's body is drawn from (`record → document`, role
+ * `row_body`, features/spaces/embed/RecordBodySpace.tsx `ROW_BODY_LABEL`). It is the page the person
+ * is reading, never a link: listed, the row page said "Linked 1 · <the row's own name>" (lane
+ * RECORD-PAGE-UI, 2026-10-15). Kept as a literal so this shared section never imports the editor shell.
+ */
+export const ROW_BODY = "row_body";
+
 /** Is this edge a link the Linked section lists, seen from `selfType`? */
 export function isLinkEdge(selfType: string, edge: LinkEdgeLike): boolean {
+  if (edge.role === ROW_BODY) return false;
   if (edge.role === ANCHORED_TO) return true;
   // A store record's entity-reference field: record → <token>, never record ↔ record.
   if (selfType === STORE_RECORD) return edge.direction === "outgoing" && edge.otherType !== STORE_RECORD;
