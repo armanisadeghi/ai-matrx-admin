@@ -154,8 +154,8 @@ function NavRow({
 /**
  * Scroll the active row into view once the menu is actually laid out. This
  * menu is portaled in while the sidebar may still show the main nav, so on
- * first paint it can sit inside a `display: none` subtree where scrollIntoView
- * silently does nothing — watch the container's size and scroll exactly once.
+ * first paint it can sit inside a `display: none` subtree where nothing has a
+ * size to scroll to — watch the container's size and scroll exactly once.
  */
 function useScrollActiveIntoView(activeHref: string | undefined) {
   const activeRef = useRef<HTMLAnchorElement | null>(null);
@@ -163,7 +163,15 @@ function useScrollActiveIntoView(activeHref: string | undefined) {
     const scrollToActive = () => {
       const el = activeRef.current;
       if (!el || el.clientHeight === 0) return false;
-      el.scrollIntoView({ block: "nearest" });
+      // Scroll the menu's OWN list, vertically only — scrollIntoView also
+      // scrolls every ancestor on both axes, and with the domain panel closed
+      // that dragged the whole sidebar sideways.
+      const scroller = el.closest<HTMLElement>(".shell-sidebar-route-nav");
+      if (!scroller) return true;
+      const row = el.getBoundingClientRect();
+      const box = scroller.getBoundingClientRect();
+      if (row.top < box.top) scroller.scrollTop -= box.top - row.top;
+      else if (row.bottom > box.bottom) scroller.scrollTop += row.bottom - box.bottom;
       return true;
     };
     if (scrollToActive()) return;

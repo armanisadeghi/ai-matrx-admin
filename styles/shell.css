@@ -535,7 +535,11 @@
     width var(--matrx-motion-duration-panel) var(--matrx-motion-ease-panel),
     background var(--shell-duration-normal) var(--shell-ease-smooth),
     border-color var(--shell-duration-normal) var(--shell-ease-smooth);
-  overflow: hidden;
+  /* `clip`, never `hidden`: a hidden box is still a scroll container, so a
+     scrollIntoView or a focus jump into the clipped domain panel scrolled the
+     whole sidebar sideways — the strip slid off and the panel's title showed
+     cut to "Mark" in the 44px rail (/marketing, 2026-10-16). Clip can't scroll. */
+  overflow: clip;
 }
 
 /* 🚨 PAGE-WIDE :has — NEVER ON body, html OR .shell-root WITH A DESCENDANT SUBJECT.
