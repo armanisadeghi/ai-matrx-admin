@@ -342,6 +342,8 @@ export function extractImagePrompt(answerText: string): string | null {
 }
 
 export interface GeneratePageImageArgs {
+  /** Who started this run: "user" only where a person's click starts it; the caller states it. */
+  initiation: "user" | "auto";
   /** The image_producer role's resolved agent (surface config). */
   agentId: string;
   /**
@@ -382,7 +384,7 @@ export function generatePageImage(args: GeneratePageImageArgs) {
     try {
       return await runHeadlessAgent(
         dispatch,
-        { initiation: "user",
+        { initiation: args.initiation,
           agentId: args.agentId,
           surfaceKey: args.surfaceKey,
           variables: { intent_or_content: args.prompt },
@@ -434,6 +436,8 @@ async function mandateGate(
 }
 
 export interface GeneratePageImageTwoStepArgs {
+  /** Who started this run: "user" only where a person's click starts it; the caller states it. */
+  initiation: "user" | "auto";
   /** The plan entry's built spec (description + alt + placement + page). */
   spec: string;
   /** Style preset (or custom style text) — empty string means unstyled. */
@@ -465,7 +469,7 @@ export function generatePageImageTwoStep(args: GeneratePageImageTwoStepArgs) {
     try {
       const answer = await runHeadlessAgent(
         dispatch,
-        { initiation: "user",
+        { initiation: args.initiation,
           mandateKey: IMAGE_PROMPT_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {
@@ -502,7 +506,7 @@ export function generatePageImageTwoStep(args: GeneratePageImageTwoStepArgs) {
     try {
       const fileId = await runHeadlessAgent(
         dispatch,
-        { initiation: "user",
+        { initiation: args.initiation,
           mandateKey: PAGE_IMAGE_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {
@@ -533,6 +537,8 @@ export function generatePageImageTwoStep(args: GeneratePageImageTwoStepArgs) {
 }
 
 export interface GeneratePageImageAllInOneArgs {
+  /** Who started this run: "user" only where a person's click starts it; the caller states it. */
+  initiation: "user" | "auto";
   spec: string;
   style: string;
   surfaceKey: string;
@@ -557,7 +563,7 @@ export function generatePageImageAllInOne(args: GeneratePageImageAllInOneArgs) {
     try {
       const fileId = await runHeadlessAgent(
         dispatch,
-        { initiation: "user",
+        { initiation: args.initiation,
           mandateKey: PAGE_IMAGE_ALL_IN_ONE_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {

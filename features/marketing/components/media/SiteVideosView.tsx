@@ -233,6 +233,8 @@ export function SiteVideosView({
   ): Promise<void> => {
     const outcome = await dispatch(
       generateVideoMetadata({
+        // Both callers are the person's own "write metadata" click.
+        initiation: "user",
         videoContext,
         siteContext,
         surfaceKey: MARKETING_SITE_SURFACE_NAME,

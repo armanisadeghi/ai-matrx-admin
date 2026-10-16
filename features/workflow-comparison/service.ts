@@ -166,10 +166,13 @@ export async function startComparison(
   body: StartComparisonBody,
 ): Promise<{ comparisonId: string | null; error: string | null }> {
   const captured: { text: string | null } = { text: null };
+  // The person pressed Start on the battle page; the server stamps their typed values `human`
+  // only when this attestation reaches it on a witnessed request.
+  const attested = { ...body, initiation: "user" };
   const config: ApiCallConfig<typeof START_PATH, "POST"> = {
     path: START_PATH,
     method: "POST",
-    body: body as never,
+    body: attested as never,
     stream: true,
     consumeStream: async (response: Response) => {
       captured.text = await response.text();
