@@ -27,8 +27,7 @@ import type {
   SourceOriginalFacts,
   StudioPortion,
 } from "@/features/source-studio/sourceStudioModel";
-import { listLibraryChunks } from "@ai-matrx/api/knowledge";
-import { serverApi } from "@/lib/api/server-api";
+import { fetchLibraryChunks } from "@/features/rag/api/libraryChunks";
 
 // ── The Source row ────────────────────────────────────────────────────────
 
@@ -214,9 +213,7 @@ export function useSourceChunks(documentId: string | null): UseSourceChunks {
     if (!documentId) return undefined;
     let cancelled = false;
     const k = `${documentId}:${tick}`;
-    listLibraryChunks(serverApi, { path: {
-        processed_document_id: documentId,
-      }, query: { limit: SOURCE_CHUNK_LIMIT } })
+    fetchLibraryChunks(documentId, { limit: SOURCE_CHUNK_LIMIT })
       .then((data) => {
         if (cancelled) return;
         setState({
