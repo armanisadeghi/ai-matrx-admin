@@ -30,7 +30,7 @@
 
 import { TRIAGE_DOORS_LIVE } from "./triage-live";
 import type { PostgrestError } from "@supabase/supabase-js";
-import { storeDoors } from "@ai-matrx/records/core";
+import { storeDoors } from "@ai-matrx/records/door-call";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { allowAbsentDoor, isAbsentDoorFailure } from "@/lib/diagnostics/supabaseErrorCapture";

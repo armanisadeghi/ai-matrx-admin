@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, SegmentedControl, Tile } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -181,29 +181,13 @@ function MediaLimitField({
           <p className="text-xs text-muted-foreground">{help}</p>
         </div>
       </div>
-      <div
-        role="group"
+      <SegmentedControl
         aria-label={`${label} count`}
-        className="flex shrink-0 overflow-hidden rounded-lg border border-border"
-      >
-        {MEDIA_LIMIT_MODES.map((m, i) => (
-          <button
-            key={m.value}
-            type="button"
-            aria-pressed={value === m.value}
-            onClick={() => onChange(m.value)}
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium transition-colors",
-              i > 0 && "border-l border-border",
-              value === m.value
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-muted-foreground hover:bg-accent/40",
-            )}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+        className="shrink-0"
+        value={value}
+        onValueChange={onChange}
+        data={MEDIA_LIMIT_MODES}
+      />
     </div>
   );
 }
@@ -575,39 +559,20 @@ export function GeneratorForm({
       {/* ── 1. SOURCE ─────────────────────────────────────────────────── */}
       <section className="space-y-2.5">
         <Label className={SECTION_LABEL}>What&apos;s your source?</Label>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <div className="grid gap-2.5 sm:grid-cols-4">
           {SOURCE_OPTIONS.map((opt) => {
             const Icon = opt.icon;
-            const selected = sourceKind === opt.kind;
             return (
-              <button
+              <Tile
                 key={opt.kind}
-                type="button"
+                layout="adaptive"
+                hero
+                icon={<Icon />}
+                title={opt.label}
+                line={opt.helper}
+                selected={sourceKind === opt.kind}
                 onClick={() => handleSourceChange(opt.kind)}
-                className={cn(
-                  "group relative flex h-full w-full flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-all",
-                  selected
-                    ? "border-primary/60 bg-primary/5 shadow-sm ring-1 ring-primary/30"
-                    : "border-border bg-card hover:border-primary/30 hover:bg-accent/40",
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
-                    selected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground group-hover:text-foreground",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="flex items-center gap-1.5 text-sm font-medium leading-tight text-foreground">
-                  {opt.label}
-                </span>
-                <span className="text-[11px] leading-snug text-muted-foreground">
-                  {opt.helper}
-                </span>
-              </button>
+              />
             );
           })}
         </div>
@@ -793,48 +758,22 @@ export function GeneratorForm({
       {/* ── 4. FORMAT ─────────────────────────────────────────────────── */}
       <section className="space-y-2.5">
         <Label className={SECTION_LABEL}>Format</Label>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
           {FORMAT_OPTIONS.map((opt) => {
             const Icon = opt.icon;
-            const selected = format === opt.value;
             return (
-              <button
+              <Tile
                 key={opt.value}
-                type="button"
+                layout="adaptive"
+                hero
+                icon={<Icon />}
+                title={opt.label}
+                line={opt.helper}
+                end={opt.enabled ? undefined : <ComingSoonBadge />}
+                selected={format === opt.value}
                 disabled={!opt.enabled}
-                onClick={() => opt.enabled && setFormat(opt.value)}
-                className={cn(
-                  "relative flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-all",
-                  selected
-                    ? "border-primary/60 bg-primary/5 shadow-sm ring-1 ring-primary/30"
-                    : opt.enabled
-                      ? "border-border bg-card hover:border-primary/30 hover:bg-accent/40"
-                      : "cursor-not-allowed border-dashed border-border bg-muted/20",
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "h-5 w-5",
-                    selected
-                      ? "text-primary"
-                      : opt.enabled
-                        ? "text-muted-foreground"
-                        : "text-muted-foreground/60",
-                  )}
-                />
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    opt.enabled ? "text-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {opt.label}
-                </span>
-                <span className="text-[11px] leading-snug text-muted-foreground">
-                  {opt.helper}
-                </span>
-                {!opt.enabled && <ComingSoonBadge className="mt-0.5" />}
-              </button>
+                onClick={() => setFormat(opt.value)}
+              />
             );
           })}
         </div>
@@ -856,36 +795,17 @@ export function GeneratorForm({
           <Users className="h-3.5 w-3.5" />
           Hosts
         </Label>
-        <div className="grid grid-cols-5 gap-2.5">
-          {HOST_COUNT_OPTIONS.map((opt) => {
-            const isLarge = opt.value === "5+";
-            const selected = isLarge
-              ? hostCount >= 5
-              : hostCount === Number(opt.value);
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setHostCount(isLarge ? Math.max(hostCount, 5) : Number(opt.value))}
-                className={cn(
-                  "relative flex flex-col items-center gap-1 rounded-xl border p-3 text-center transition-all",
-                  selected
-                    ? "border-primary/60 bg-primary/5 shadow-sm ring-1 ring-primary/30"
-                    : "border-border bg-card hover:border-primary/30 hover:bg-accent/40",
-                )}
-              >
-                <span className="text-base font-semibold text-foreground">
-                  {isLarge && hostCount >= 5 ? hostCount : opt.label}
-                </span>
-                {opt.helper && (
-                  <span className="text-[11px] text-muted-foreground">
-                    {opt.helper}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <SegmentedControl
+          aria-label="Number of hosts"
+          fill
+          value={hostCount >= 5 ? "5+" : String(hostCount)}
+          onValueChange={(v) => setHostCount(v === "5+" ? Math.max(hostCount, 5) : Number(v))}
+          data={HOST_COUNT_OPTIONS.map((opt) => ({
+            value: opt.value,
+            label: opt.value === "5+" && hostCount >= 5 ? String(hostCount) : opt.label,
+            title: opt.helper ?? undefined,
+          }))}
+        />
         {hostCount >= 5 && (
           <div className="flex items-center gap-2.5">
             <Label className="text-xs text-muted-foreground">Exact count</Label>

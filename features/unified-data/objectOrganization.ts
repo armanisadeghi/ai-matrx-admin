@@ -50,7 +50,7 @@ import {
   type ObjectKind,
   type ObjectOrganizationAnswer,
   type RecordOrganizationPort,
-} from "@ai-matrx/records/core";
+} from "@ai-matrx/records/door-call";
 export { readObjectOrganizationAnswer, resolveObjectOrganization };
 export type { ObjectKind, ObjectOrganizationAnswer };
 

@@ -12,7 +12,7 @@
  * into every page's first load. Import the seam from HERE; `check:shell-eager-graph` blocks the
  * records-ui root in any eager set.
  */
-import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
+import { recordsDataSource } from "@ai-matrx/records-ui/data-source";
 import { createClient } from "@/utils/supabase/client";
 
 export type RecordsDataSource = ReturnType<typeof recordsDataSource>;

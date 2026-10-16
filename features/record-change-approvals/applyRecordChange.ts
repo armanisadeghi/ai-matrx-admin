@@ -37,7 +37,7 @@
  */
 
 import { standingFromDecidedOnce, standingSentence } from "./approvalDecision";
-import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
+import { recordsDataSource } from "@ai-matrx/records-ui/data-source";
 
 import { createClient } from "@/utils/supabase/client";
 import { resolveObjectOrganization } from "@/features/unified-data/objectOrganization";

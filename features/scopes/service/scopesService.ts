@@ -34,7 +34,7 @@ import { mapThrownError } from "@ai-matrx/records/results";
 import { getOrganization } from "@/features/organizations/service";
 import { adoptProjectOrganization, listProjectSummariesInOrganizations } from "@/features/projects/service";
 import { adoptTaskOrganization, listProjectTaskIds, listTaskSummaries } from "@/features/tasks/services/taskService";
-import { readScopeFileText, scopeDoors, scopeRecordsClient } from "@/features/scopes/service/scopeDoors";
+import { readScopeFileText, scopeDoors } from "@/features/scopes/service/scopeDoors";
 import { placeTableInRecordStore } from "@/features/data-tables/data-source/table-home";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
@@ -134,7 +134,7 @@ async function provisionScopeTableInTheStore(
   contextItemId: string,
   scopeId: string,
 ): Promise<RecordsResult<string>> {
-  const made = await scopeRecordsClient().scopeTableProvision({ item_id: contextItemId, scope_id: scopeId });
+  const made = await scopeDoors().tableProvision({ organization_id: null, item_id: contextItemId, scope_id: scopeId });
   if (!made.ok) return made;
   placeTableInRecordStore(made.data, { organizationId, userId });
   return made;

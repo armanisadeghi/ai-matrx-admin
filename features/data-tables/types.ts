@@ -102,25 +102,24 @@ export const FIELD_DATA_TYPES: readonly FieldDataType[] = [
 // ─── Bulk-write op shapes (the seam's `bulkWrite`) ──────────────────────────
 
 // ─── Moved to their owners (re-exported so there is ONE definition) ──────────
-// Table logic belongs to `@ai-matrx/records` (/core); the snapshot-origin unions to `@ai-matrx/office/core`.
-export {
-  describeBulkFailures,
-  isBulkOpError,
-  isServiceFailure,
-  type BulkCellOp,
-  type BulkDeleteOp,
-  type BulkInsertOp,
-  type BulkMergeOp,
-  type BulkOp,
-  type BulkOpError,
-  type BulkOpResult,
-  type BulkUpdateOp,
-  type BulkWriteResponse,
-  type DatasetField,
-  type DatasetRow,
-  type ServiceErr,
-  type ServiceOk,
-  type ServiceResult,
+// Table logic belongs to `@ai-matrx/records` (/core, and its light /door-call for the helpers a shell
+// narrows with); the snapshot-origin unions to `@ai-matrx/office/core`.
+export { describeBulkFailures, isBulkOpError, isServiceFailure } from "@ai-matrx/records/door-call";
+export type {
+  BulkCellOp,
+  BulkDeleteOp,
+  BulkInsertOp,
+  BulkMergeOp,
+  BulkOp,
+  BulkOpError,
+  BulkOpResult,
+  BulkUpdateOp,
+  BulkWriteResponse,
+  DatasetField,
+  DatasetRow,
+  ServiceErr,
+  ServiceOk,
+  ServiceResult,
 } from "@ai-matrx/records/core";
 export type { DocumentSnapshotOrigin, WorkbookSnapshotOrigin } from "@ai-matrx/office/core";
 

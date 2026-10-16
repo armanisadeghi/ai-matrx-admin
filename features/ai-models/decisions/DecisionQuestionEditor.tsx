@@ -3,7 +3,7 @@
 import { Gauge, ListChecks, Plus, ToggleRight, Trash2, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, Tile } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -80,21 +80,15 @@ export function DecisionQuestionEditor({ questions, onChange }: Props) {
             {QUESTION_TYPES.map((option) => {
               const Icon = option.icon;
               return (
-                <button
+                <Tile
                   key={option.type}
-                  type="button"
-                  data-clickable
+                  layout="adaptive"
+                  hero
+                  icon={<Icon />}
+                  title={option.label}
+                  line={option.helper}
                   onClick={() => add(option.type)}
-                  className="group flex h-full w-full items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-accent/40 sm:flex-col sm:items-start sm:gap-2 sm:p-4"
-                >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="flex min-w-0 flex-col gap-1">
-                    <span className="text-sm font-medium text-foreground">{option.label}</span>
-                    <span className="text-xs leading-snug text-muted-foreground">{option.helper}</span>
-                  </span>
-                </button>
+                />
               );
             })}
           </div>

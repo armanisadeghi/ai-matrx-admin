@@ -26,6 +26,7 @@ import {
   Boxes,
   GitFork,
   Grid3x3,
+  ListChecks,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -111,6 +112,13 @@ const MODES: ModeEntry[] = [
     href: "/agents/battle/matrix",
     icon: Grid3x3,
     hint: "Prompts × arms; every cell a real server run",
+  },
+  {
+    id: "smart-add",
+    label: "Smart Add",
+    href: "/agents/battle/smart-add",
+    icon: ListChecks,
+    hint: "A brand you know; every system judges every result",
   },
 ];
 

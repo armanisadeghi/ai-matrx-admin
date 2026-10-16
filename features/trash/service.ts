@@ -17,7 +17,7 @@ import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { isRfc4122Uuid } from "@ai-matrx/kit/uuid";
 import { followRemovalWithToast } from "@/features/trash/cascade";
-import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
+import { recordsDataSource } from "@ai-matrx/records-ui/data-source";
 import { restoreTableIn } from "@/features/unified-data/hub/doors";
 
 export type TrashItem =

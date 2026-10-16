@@ -4,17 +4,15 @@
  * (`custom.pick_list_*`); no screen calls a public RPC for a pick list. The doors decide access on the
  * list's own id and organization, so the client here carries no organization of its own.
  */
-import { createRecordsClient, supabaseDataSource } from "@ai-matrx/records/core";
+import { lightPickListDoors } from "@ai-matrx/records/door-call";
 import type { PickListDocument } from "@ai-matrx/records";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+// The light door client (`@ai-matrx/records/door-call`): the same door call as the records client,
+// without the ~600 KB client — this module is reached from the shell.
+// The pick_list doors take the list's id and read its organization from the list itself.
 function doorsClient(client: SupabaseClient) {
-  return createRecordsClient({
-    // object-org-exempt: the pick_list doors take the list's id and read its organization from the list itself
-    dataSource: supabaseDataSource(client),
-    actor: { actor: "user" },
-    organizationId: null,
-  });
+  return lightPickListDoors(client);
 }
 
 /** The list with its choices grouped; null when there is none. Throws the door's refusal. */

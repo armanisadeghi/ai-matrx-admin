@@ -1,0 +1,538 @@
+"use client";
+
+/**
+ * Smart Add truth bench — name a brand you know, cast a wide net, let every system judge every
+ * result, mark the truth blind, read the scoreboard. FEATURE.md beside the mode folder.
+ */
+
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { AlertTriangle, ExternalLink, ListChecks, Search } from "lucide-react";
+import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
+import { ProInput } from "@/components/official/ProInput";
+import { ProTextarea } from "@/components/official/ProTextarea";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { useBackendApi } from "@/hooks/useBackendApi";
+import { toast } from "@/lib/toast";
+import { BattleHeader } from "@/features/agent-comparison/shared/BattleHeader";
+import { SearchReviewBody } from "@/features/search-review/SearchReviewBody";
+import type { ReviewAnswer, SearchReviewSession } from "@/features/search-review/types";
+import { loadComparisonSet } from "../../../service/comparisonSetsService";
+import { listMatrixEntries } from "../../matrix/service";
+import { entryToCell } from "../../matrix/model";
+import type { MatrixCell } from "../../matrix/types";
+import {
+  HOLDER_CLASSIFIER_AGENT_ID,
+  JEV_CLASSIFIER_AGENT_ID,
+  SYSTEM_LABEL,
+  TRUTH_LABEL,
+  defaultQueries,
+  emptyBench,
+  readBench,
+  readRuns,
+  score,
+  type BenchResult,
+  type BenchState,
+  type SystemKey,
+  type Truth,
+} from "../model";
+import { castNet, createAndRun, saveTruth, type NetProgress } from "../service";
+
+const POLL_MS = 2000;
+const SYSTEMS: SystemKey[] = ["holder", "jev", "reference"];
+const SYSTEM_HINT: Record<SystemKey, string> = {
+  holder: "Gemini 3.8 Flash, 25 results per call",
+  jev: "Jev 1.13, one result per call",
+  reference: "Opus 5.5 with today's instructions; costs most",
+};
+
+type View = "truth" | "score";
+
+function secs(ms: number | null): string {
+  if (ms == null) return "–";
+  return ms < 10_000 ? `${(ms / 1000).toFixed(2)} s` : `${(ms / 1000).toFixed(1)} s`;
+}
+
+function money(v: number): string {
+  if (!v) return "$0";
+  return v < 0.01 ? `$${v.toFixed(5)}` : `$${v.toFixed(3)}`;
+}
+
+export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const userId = useAppSelector(selectUserId);
+  const { post } = useBackendApi();
+  const [bench, setBench] = useState<BenchState>(emptyBench);
+  const [queriesText, setQueriesText] = useState("");
+  const [cells, setCells] = useState<MatrixCell[]>([]);
+  const [loading, setLoading] = useState(Boolean(setId));
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [net, setNet] = useState<NetProgress | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
+  const [view, setView] = useState<View>("truth");
+  const [, startTransition] = useTransition();
+  const lastChange = useRef(Date.now());
+
+  // Open a saved bench.
+  useEffect(() => {
+    if (!setId) return;
+    let alive = true;
+    setLoading(true);
+    loadComparisonSet(setId)
+      .then(({ set, entries }) => {
+        if (!alive) return;
+        const saved = readBench(set.metadata as Record<string, unknown> | null);
+        if (!saved) throw new Error("This saved battle is not a Smart Add bench.");
+        setBench(saved);
+        setQueriesText(saved.queries.join("\n"));
+        const now = Date.now();
+        setCells(entries.map((e) => entryToCell(e, now)).filter((c): c is MatrixCell => c !== null));
+      })
+      .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [setId]);
+
+  // Live while any cell is queued or running; stops after five quiet minutes.
+  const live = cells.some((c) => (c.status === "queued" || c.status === "running") && !c.stalled);
+  const signature = cells.map((c) => `${c.entryId}:${c.status}`).join("|");
+  useEffect(() => {
+    lastChange.current = Date.now();
+  }, [signature]);
+  useEffect(() => {
+    if (!setId || (!live && !busy)) return undefined;
+    const t = setInterval(() => {
+      if (Date.now() - lastChange.current > 5 * 60_000) return;
+      listMatrixEntries(setId)
+        .then((rows) => {
+          const now = Date.now();
+          setCells(rows.map((e) => entryToCell(e, now)).filter((c): c is MatrixCell => c !== null));
+        })
+        .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : String(err)));
+    }, POLL_MS);
+    return () => clearInterval(t);
+  }, [setId, live, busy]);
+
+  const runs = useMemo(() => readRuns(cells, bench), [cells, bench]);
+  const ran = Boolean(setId);
+  const brand = bench.brand;
+  const patchBrand = (p: Partial<BenchState["brand"]>) => setBench((b) => ({ ...b, brand: { ...b.brand, ...p } }));
+  const queries = queriesText.split("\n").map((q) => q.trim()).filter(Boolean);
+  const canSearch = !ran && !busy && Boolean(brand.name.trim() || brand.website.trim());
+
+  const onPlan = () => setQueriesText(defaultQueries(brand).join("\n"));
+
+  const onCast = async () => {
+    const plan = queries.length ? queries : defaultQueries(brand);
+    if (!queries.length) setQueriesText(plan.join("\n"));
+    setBusy(true);
+    setRunError(null);
+    try {
+      const { results, failures } = await castNet(post, plan, bench.pages, setNet);
+      setBench((b) => ({ ...b, queries: plan, results }));
+      if (failures.length) setRunError(`${failures.length} searches failed: ${failures.slice(0, 3).join(" · ")}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onJudge = async () => {
+    if (!userId) {
+      setRunError("Sign in to run the bench.");
+      return;
+    }
+    setBusy(true);
+    setRunError(null);
+    try {
+      // write-target: the bench is filed in the organization the person works in
+      const organizationId = await ensureOrgId(null);
+      const { setId: id, error } = await createAndRun(dispatch, { ...bench, queries }, userId, organizationId);
+      if (error) setRunError(`Run: ${error}`);
+      startTransition(() => router.replace(`/agents/battle/smart-add/${id}`));
+    } catch (err) {
+      setRunError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onAnswer = async (key: string, answer: ReviewAnswer | null) => {
+    if (!setId) return;
+    const truth = answer?.status === "answered" ? (answer.kind as Truth) : null;
+    setBench((b) => {
+      const next = { ...b.truth };
+      if (truth) next[key] = truth;
+      else delete next[key];
+      return { ...b, truth: next };
+    });
+    const { labelError } = await saveTruth(setId, key, truth, runs.jev.conversations.get(key) ?? null);
+    if (labelError) toast.error(labelError);
+  };
+
+  const session: SearchReviewSession = {
+    title: "Mark the truth",
+    subject: { type: "brand", name: brand.name || brand.website },
+    results: bench.results.map((r) => ({
+      key: r.key,
+      result: { url: r.url, title: r.title, description: r.description, extra_snippets: r.extraSnippets },
+      hits: r.hits.map((h) => ({ engine: h.engine, rank: h.rank, query: h.query })),
+    })),
+    choices: (["ours", "about_us", "not_us"] as Truth[]).map((k) => ({
+      key: k,
+      label: TRUTH_LABEL[k],
+      pinned: true,
+      description:
+        k === "ours" ? "The brand runs it" : k === "about_us" ? "About or tied to the brand" : "Someone or something else",
+    })),
+    answers: Object.fromEntries(
+      Object.entries(bench.truth).map(([k, t]) => [k, { status: "answered", kind: t, sentiment: null } as ReviewAnswer]),
+    ),
+    onAnswer,
+  };
+
+  const marked = Object.keys(bench.truth).length;
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden" style={{ paddingTop: "var(--shell-header-h)" }}>
+      <BattleHeader
+        battleName={ran ? `Smart Add bench · ${brand.name || brand.website}` : null}
+        fallbackTitle="Smart Add bench"
+        actions={[
+          {
+            icon: "SquarePlus",
+            label: "Start a new bench",
+            onPress: () => startTransition(() => router.push("/agents/battle/smart-add")),
+          },
+        ]}
+      />
+      {(runError || loadError) && (
+        <div role="alert" className="flex items-start gap-2 px-3 py-2 border-b border-border bg-destructive/10 type-body shrink-0">
+          <AlertTriangle className="w-4 h-4 mt-0.5 text-destructive shrink-0" />
+          <span className="min-w-0 flex-1 break-words">{runError ?? loadError}</span>
+        </div>
+      )}
+      <div className="flex-1 min-h-0 overflow-y-auto" data-matrx-page-scroll>
+        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-4">
+          {loading ? (
+            <RegionSkeleton />
+          ) : !ran ? (
+            <SetupPanel
+              bench={bench}
+              patchBrand={patchBrand}
+              setBench={setBench}
+              queriesText={queriesText}
+              setQueriesText={setQueriesText}
+              onPlan={onPlan}
+              onCast={onCast}
+              onJudge={onJudge}
+              canSearch={canSearch}
+              busy={busy}
+              net={net}
+            />
+          ) : (
+            <>
+              <ProgressStrip runs={runs} systems={bench.systems} results={bench.results.length} marked={marked} />
+              <div className="flex items-center gap-3">
+                <SegmentedControl<View>
+                  aria-label="Bench view"
+                  value={view}
+                  onValueChange={setView}
+                  data={[
+                    { value: "truth", label: "Mark the truth", count: bench.results.length - marked },
+                    { value: "score", label: "Scoreboard", count: marked },
+                  ]}
+                />
+                <span className="type-caption text-muted-foreground">
+                  Answers stay hidden until the scoreboard.
+                </span>
+              </div>
+              {view === "truth" ? (
+                <div className="rounded-lg border border-border bg-card min-h-[420px] flex flex-col">
+                  <SearchReviewBody session={session} />
+                </div>
+              ) : (
+                <Scoreboard bench={bench} runs={runs} />
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SetupPanel({
+  bench,
+  patchBrand,
+  setBench,
+  queriesText,
+  setQueriesText,
+  onPlan,
+  onCast,
+  onJudge,
+  canSearch,
+  busy,
+  net,
+}: {
+  bench: BenchState;
+  patchBrand: (p: Partial<BenchState["brand"]>) => void;
+  setBench: React.Dispatch<React.SetStateAction<BenchState>>;
+  queriesText: string;
+  setQueriesText: (v: string) => void;
+  onPlan: () => void;
+  onCast: () => void;
+  onJudge: () => void;
+  canSearch: boolean;
+  busy: boolean;
+  net: NetProgress | null;
+}) {
+  const brand = bench.brand;
+  const toggle = (s: SystemKey, on: boolean) =>
+    setBench((b) => ({ ...b, systems: on ? [...new Set([...b.systems, s])] : b.systems.filter((x) => x !== s) }));
+  const calls = queriesText.split("\n").filter((q) => q.trim()).length * 2 * bench.pages;
+  return (
+    <>
+      <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
+        <h2 className="type-section">A brand you know</h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="flex flex-col gap-1">
+            <span className="type-label">Website</span>
+            {/* ui-exception: a raw address, not prose */}
+            <Field value={brand.website} onChange={(e) => patchBrand({ website: e.target.value })} placeholder="ritualcoffee.com" aria-label="Website" />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="type-label">Name</span>
+            <ProInput value={brand.name} onChange={(e) => patchBrand({ name: e.target.value })} placeholder="Ritual Coffee Roasters" aria-label="Brand name" />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="type-label">Place</span>
+            <ProInput value={brand.place} onChange={(e) => patchBrand({ place: e.target.value })} placeholder="San Francisco, CA" aria-label="Place" />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="type-label">Accounts you know are theirs</span>
+            {/* ui-exception: raw addresses, comma separated */}
+            <Field value={brand.accounts} onChange={(e) => patchBrand({ accounts: e.target.value })} placeholder="instagram.com/ritualcoffee" aria-label="Known accounts" />
+          </label>
+        </div>
+        <p className="type-caption text-muted-foreground">Every system sees only these facts.</p>
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="type-section flex-1">The net</h2>
+          <Button variant="quiet" onClick={onPlan} disabled={!canSearch}>
+            Suggest searches
+          </Button>
+        </div>
+        <ProTextarea
+          value={queriesText}
+          onChange={(e) => setQueriesText(e.target.value)}
+          placeholder={'One search per line, e.g. "Ritual Coffee" San Francisco'}
+          aria-label="Searches, one per line"
+          rows={5}
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="type-label">Pages per search</span>
+          <SegmentedControl<string>
+            aria-label="Pages per search"
+            value={String(bench.pages)}
+            onValueChange={(v) => setBench((b) => ({ ...b, pages: Number(v) }))}
+            data={["1", "2", "3", "5"].map((v) => ({ value: v, label: v }))}
+          />
+          <span className="type-caption text-muted-foreground">
+            {calls ? `${calls} searches on Google and Brave` : "Google and Brave, every search"}
+          </span>
+          <Button className="ml-auto" onClick={onCast} disabled={!canSearch} icon={<Search className="w-4 h-4" />}>
+            {busy && net ? `Searching ${net.done}/${net.total}` : "Cast the net"}
+          </Button>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
+        <h2 className="type-section">Who judges</h2>
+        <div className="flex flex-col gap-2">
+          {SYSTEMS.map((s) => (
+            <label key={s} className="flex items-center gap-3">
+              <Switch checked={bench.systems.includes(s)} onCheckedChange={(v) => toggle(s, v)} aria-label={SYSTEM_LABEL[s]} />
+              <span className="type-body font-medium w-28">{SYSTEM_LABEL[s]}</span>
+              <span className="type-caption text-muted-foreground">{SYSTEM_HINT[s]}</span>
+            </label>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3 type-caption text-muted-foreground">
+          <Link href={`/agents/${JEV_CLASSIFIER_AGENT_ID}`} target="_blank" className="inline-flex items-center gap-1 underline">
+            Jev agent <ExternalLink className="w-3 h-3" />
+          </Link>
+          <Link href={`/agents/${HOLDER_CLASSIFIER_AGENT_ID}`} target="_blank" className="inline-flex items-center gap-1 underline">
+            Today's agent <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
+      </section>
+
+      {bench.results.length > 0 ? (
+        <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <h2 className="type-section flex-1">{bench.results.length} unique results</h2>
+            <Button onClick={onJudge} disabled={busy || bench.systems.length === 0} icon={<ListChecks className="w-4 h-4" />}>
+              {busy ? "Starting…" : `Judge all ${bench.results.length}`}
+            </Button>
+          </div>
+          <ol className="flex flex-col gap-1 max-h-80 overflow-y-auto">
+            {bench.results.map((r) => (
+              <ResultLine key={r.key} r={r} />
+            ))}
+          </ol>
+        </section>
+      ) : (
+        <EmptyState icon={<Search className="w-5 h-5" />} title="No results yet" line="Name a brand, then cast the net." />
+      )}
+    </>
+  );
+}
+
+function ResultLine({ r }: { r: BenchResult }) {
+  return (
+    <li className="flex items-baseline gap-2 min-w-0">
+      <span className="type-caption text-muted-foreground w-10 shrink-0 tabular-nums">{r.hits.length}×</span>
+      <a href={r.url} target="_blank" rel="noreferrer" className="type-body truncate hover:underline">
+        {r.title || r.url}
+      </a>
+      <span className="type-caption text-muted-foreground truncate">{r.url}</span>
+    </li>
+  );
+}
+
+function ProgressStrip({
+  runs,
+  systems,
+  results,
+  marked,
+}: {
+  runs: ReturnType<typeof readRuns>;
+  systems: SystemKey[];
+  results: number;
+  marked: number;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge tone="neutral">{results} results</Badge>
+      <Badge tone={marked ? "primary" : "neutral"}>{marked} marked</Badge>
+      {systems.map((s) => {
+        const r = runs[s];
+        const left = r.calls - r.done - r.failed;
+        return (
+          <Badge key={s} tone={r.failed ? "warning" : left > 0 ? "info" : "success"}>
+            {SYSTEM_LABEL[s]} {r.done}/{r.calls}
+            {r.failed ? ` · ${r.failed} failed` : ""}
+          </Badge>
+        );
+      })}
+    </div>
+  );
+}
+
+function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeof readRuns> }) {
+  const [onlySplit, setOnlySplit] = useState(true);
+  const scores = bench.systems.map((s) => ({ s, sc: score(runs[s], bench.truth) }));
+  const marked = Object.keys(bench.truth).length;
+  const rows = bench.results.filter((r) => bench.truth[r.key]);
+  const shown = onlySplit
+    ? rows.filter((r) => bench.systems.some((s) => runs[s].answers.get(r.key)?.stance !== bench.truth[r.key]))
+    : rows;
+  if (!marked) {
+    return <EmptyState icon={<ListChecks className="w-5 h-5" />} title="Nothing marked yet" line="Mark results first; the score counts only those." />;
+  }
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-lg border border-border bg-card overflow-x-auto">
+        <table className="w-full type-body tabular-nums">
+          <thead>
+            <tr className="border-b border-border text-left type-label text-muted-foreground">
+              <th className="p-2">System</th>
+              <th className="p-2 text-right">Right</th>
+              <th className="p-2 text-right">Wrong</th>
+              <th className="p-2 text-right">Can't tell</th>
+              <th className="p-2 text-right">Stranger marked ours</th>
+              <th className="p-2 text-right">Us marked not us</th>
+              <th className="p-2 text-right">Typical call</th>
+              <th className="p-2 text-right">Slow call</th>
+              <th className="p-2 text-right">Calls</th>
+              <th className="p-2 text-right">Cost, all results</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scores.map(({ s, sc }) => (
+              <tr key={s} className="border-b border-border last:border-0">
+                <td className="p-2 font-medium">{SYSTEM_LABEL[s]}</td>
+                <td className="p-2 text-right">
+                  {sc.right}/{sc.marked} ({Math.round((100 * sc.right) / Math.max(1, sc.marked))}%)
+                </td>
+                <td className="p-2 text-right">{sc.wrong}</td>
+                <td className="p-2 text-right">{sc.cantTell}</td>
+                <td className="p-2 text-right">{sc.falseOurs}</td>
+                <td className="p-2 text-right">{sc.missedUs}</td>
+                <td className="p-2 text-right">{secs(sc.p50)}</td>
+                <td className="p-2 text-right">{secs(sc.p90)}</td>
+                <td className="p-2 text-right">{sc.calls}</td>
+                <td className="p-2 text-right">{money(sc.cost)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center gap-2">
+        <Switch checked={onlySplit} onCheckedChange={setOnlySplit} aria-label="Only results a system got wrong" />
+        <span className="type-body">Only results a system got wrong</span>
+        <span className="type-caption text-muted-foreground ml-auto">{shown.length} shown</span>
+      </div>
+      <ol className="rounded-lg border border-border bg-card divide-y divide-border">
+        {shown.map((r) => (
+          <li key={r.key} className="p-3 grid gap-2 md:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,1fr))] items-start">
+            <div className="min-w-0">
+              <a href={r.url} target="_blank" rel="noreferrer" className="type-body font-medium hover:underline break-words">
+                {r.title || r.url}
+              </a>
+              <div className="type-caption text-muted-foreground break-all">{r.url}</div>
+              {r.description ? <div className="type-caption text-muted-foreground line-clamp-2">{r.description}</div> : null}
+            </div>
+            <div>
+              <div className="type-label text-muted-foreground">Truth</div>
+              <div className="type-body font-medium">{TRUTH_LABEL[bench.truth[r.key]]}</div>
+            </div>
+            {bench.systems.map((s) => {
+              const a = runs[s].answers.get(r.key);
+              const ok = a?.stance === bench.truth[r.key];
+              const conv = s === "jev" ? runs.jev.conversations.get(r.key) : null;
+              return (
+                <div key={s} className="min-w-0">
+                  <div className="type-label text-muted-foreground">{SYSTEM_LABEL[s]}</div>
+                  <div className={ok ? "type-body" : "type-body text-destructive font-medium"}>
+                    {a ? TRUTH_LABEL[a.stance] : "No answer"}
+                  </div>
+                  <div className="type-caption text-muted-foreground break-words">
+                    {[a?.label, a?.probability != null ? `${Math.round(a.probability * 100)}%` : null].filter(Boolean).join(" · ")}
+                    {conv ? (
+                      <>
+                        {" · "}
+                        <Link href={`/work/conversations/${conv}`} target="_blank" className="underline">
+                          run
+                        </Link>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}

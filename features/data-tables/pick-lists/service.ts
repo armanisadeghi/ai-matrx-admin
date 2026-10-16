@@ -4,8 +4,8 @@
  * answer from the store; a choice is written through the records client, in the list's own
  * organization and the person's own seat.
  */
-import { createRecordsClient, type RecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
+import type { RecordsClient } from "@ai-matrx/records/core";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/data-source";
 
 import { createClient, supabase } from "@/utils/supabase/client";
 import type {
@@ -44,7 +44,8 @@ export async function getListWithItems(
   const list = await readListWithItems(listId);
   if (list?.organization_id) {
     const ids = Object.values(list.items_grouped ?? {}).flatMap((items) => items.map((i) => i.id));
-    void choiceVersions.drew(clientFor(list.organization_id, await currentUserId()), ids);
+    const client = clientFor(list.organization_id, await currentUserId());
+    void client.then((c) => choiceVersions.drew(c, ids));
   }
   return list;
 }
@@ -63,7 +64,13 @@ async function currentUserId(): Promise<string | null> {
   return session.session?.user?.id ?? null;
 }
 
-function clientFor(organizationId: string, userId: string | null): RecordsClient {
+/**
+ * The full records client for a list's choices (record writes, version reads), loaded when a list is
+ * opened or written — never on first paint: this module is reached from the shell, and its door reads
+ * go through the light `./doors`.
+ */
+async function clientFor(organizationId: string, userId: string | null): Promise<RecordsClient> {
+  const { createRecordsClient } = await import("@ai-matrx/records/core");
   return createRecordsClient({
     dataSource: recordsDataSource(createClient()),
     actor: personActor(userId),

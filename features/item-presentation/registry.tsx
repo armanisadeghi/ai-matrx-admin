@@ -500,8 +500,13 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     },
     open: { kind: "scope_type" },
     enrich: async (_s, id) => {
-      const { scopeRecordsClient } = await import("@/features/scopes/service/scopeDoors");
-      const res = await scopeRecordsClient().tableRead({ table_id: id });
+      // A scope type is a Table: read it with the records client, loaded only when a scope type is enriched.
+      const [{ createRecordsClient, asRecordsDataSource }, { supabase }] = await Promise.all([
+        import("@ai-matrx/records/core"),
+        import("@/utils/supabase/client"),
+      ]);
+      const client = createRecordsClient({ dataSource: asRecordsDataSource(supabase), actor: { actor: "user" }, organizationId: null });
+      const res = await client.tableRead({ table_id: id });
       if (!res.ok) throw new Error(res.error.message);
       if (!res.data) return { notFound: true };
       return {
