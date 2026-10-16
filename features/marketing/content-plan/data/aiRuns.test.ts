@@ -5,7 +5,7 @@ const rpc = jest.fn();
 const schema = jest.fn((_name: string) => ({ rpc }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: { schema: (s: string) => schema(s) } }));
 
-import { fetchBriefRunHistory, fetchSiteAiRun, fetchSiteAiRuns } from "./aiRuns";
+import { fetchBriefRunHistory, fetchSiteAiRun, fetchSiteAiRuns, restoreBriefRun } from "./aiRuns";
 
 beforeEach(() => {
   rpc.mockReset();
@@ -35,6 +35,19 @@ describe("brief run history is one Supabase RPC, not a server call", () => {
     rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
     await expect(fetchSiteAiRuns("s1")).rejects.toThrow("boom");
     await expect(fetchSiteAiRun("s1", "r1")).rejects.toThrow("boom");
+  });
+
+  it("restoring a run is the plan.restore_brief_run RPC and reports its refusal", async () => {
+    rpc.mockResolvedValue({ data: { node_id: "n1", brief: ["a"] }, error: null });
+    await restoreBriefRun("n1", "r1");
+    expect(rpc).toHaveBeenCalledWith("restore_brief_run", { p_node_id: "n1", p_run_id: "r1" });
+    rpc.mockResolvedValue({ data: null, error: { message: "That run produced no brief to restore." } });
+    await expect(restoreBriefRun("n1", "r1")).rejects.toThrow("no brief to restore");
+  });
+
+  it("the restore call no longer goes to the server", () => {
+    const src = readFileSync(join(__dirname, "../hooks/useBriefWriter.ts"), "utf8");
+    expect(src).not.toMatch(/brief-runs\/restore/);
   });
 
   it("the AI-runs hooks no longer ask the server", () => {

@@ -32,3 +32,12 @@ export async function fetchSiteAiRun(siteId: string, runId: string): Promise<unk
   if (error) throw new Error(error.message);
   return data;
 }
+
+/** Make a past brief run the node's current proposal again (nothing is destroyed). */
+export async function restoreBriefRun(nodeId: string, runId: string): Promise<unknown> {
+  const { data, error } = await supabase
+    .schema("plan")
+    .rpc("restore_brief_run", { p_node_id: nodeId, p_run_id: runId });
+  if (error) throw new Error(error.message);
+  return data;
+}

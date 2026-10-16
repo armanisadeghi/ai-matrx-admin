@@ -92103,6 +92103,10 @@ export type Database = {
       }
       _ai_run_kind_label: { Args: { p_kind: string }; Returns: string }
       brief_run_history: { Args: { p_node_id: string }; Returns: Json }
+      restore_brief_run: {
+        Args: { p_node_id: string; p_run_id: string }
+        Returns: Json
+      }
       site_ai_run: {
         Args: { p_run_id: string; p_site_id: string }
         Returns: Json

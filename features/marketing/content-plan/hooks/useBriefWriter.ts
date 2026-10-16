@@ -31,7 +31,7 @@ import {
   clearRunSet,
 } from "@ai-matrx/chat/agents/redux/execution-system/run-sets/run-sets.thunks";
 import { callApi } from "@/lib/api/call-api";
-import { fetchBriefRunHistory } from "../data/aiRuns";
+import { fetchBriefRunHistory, restoreBriefRun } from "../data/aiRuns";
 import {
   describeBackendFailure,
   parseCallApiError,
@@ -379,23 +379,19 @@ export function useBriefWriter(args: { node: PlanNodeRow; siteId: string }) {
   const restore = useCallback(
     async (runId: string) => {
       setRestoringRunId(runId);
-      const result = await dispatch(
-        callApi({
-          path: "/content-plan/nodes/{node_id}/brief-runs/restore",
-          method: "POST",
-          pathParams: { node_id: nodeId },
-          body: { run_id: runId },
-        }),
-      );
+      let failure: Error | null = null;
+      try {
+        await restoreBriefRun(nodeId, runId);
+      } catch (error) {
+        failure = error instanceof Error ? error : new Error(String(error));
+      }
       if (mountedRef.current) setRestoringRunId(null);
       void queryClient.invalidateQueries({ queryKey: planKeys.nodes(siteId) });
       void queryClient.invalidateQueries({
         queryKey: briefRunKeys.list(nodeId),
       });
-      if (result.error) {
-        toast.error(
-          `Could not restore that run: ${describeBackendFailure(parseCallApiError(result.error)).headline}`,
-        );
+      if (failure) {
+        toast.error(`Could not restore that run: ${failure.message}`);
         return;
       }
       toast.success(
