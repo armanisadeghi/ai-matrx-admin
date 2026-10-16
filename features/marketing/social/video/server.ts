@@ -66,7 +66,7 @@ export async function createVariant(
 }
 
 export async function estimateProject(projectId: string, document: JsonDoc | null, o: CallOptions): Promise<EstimateAnswer> {
-  return (await postJson<EstimateAnswer>(`${BASE}/${projectId}/estimate`, { document }, opts(o))).data;
+  return (await postJson<EstimateAnswer>(`/video-generation/${projectId}/estimate`, { document }, opts(o))).data;
 }
 
 /** Word timings for the post's stored video (stored on the shared transcript; system-paid STT). */
