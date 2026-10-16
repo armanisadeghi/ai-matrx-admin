@@ -1,0 +1,266 @@
+{
+  "about": "Agent Evaluation manual-door parity. Each case is the pinned agent version + the test case inputs. The runner's build_manual_body (aidream) and the Builder's assembleManualRequest (@ai-matrx/chat) must both produce `expected` (conversation_id masked). Regenerate expected with: uv run python -m aidream.services.agent_tests.tests.manual_golden --write",
+  "organization_id": "00000000-0000-4000-8000-0000000000a1",
+  "agent_id": "00000000-0000-4000-8000-0000000000b2",
+  "masked": [
+    "conversation_id"
+  ],
+  "cases": [
+    {
+      "id": "turn1_variables_and_defaults",
+      "agent": {
+        "model_id": "model-golden",
+        "messages": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "text",
+                "text": "You help {{student_name}} with {{subject}}."
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Plan for {{student_name}}"
+              }
+            ]
+          }
+        ],
+        "settings": {
+          "temperature": 0.2,
+          "max_output_tokens": 800,
+          "model_id": "model-golden"
+        },
+        "variable_definitions": [
+          {
+            "name": "student_name",
+            "title": "Student",
+            "helpText": "",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "subject",
+            "title": "Subject",
+            "helpText": "",
+            "required": false,
+            "defaultValue": "algebra"
+          },
+          {
+            "name": "empty_one",
+            "title": "Empty",
+            "helpText": "",
+            "required": false
+          }
+        ],
+        "prompt_blocks": [
+          "tone_guide"
+        ]
+      },
+      "variables": {
+        "student_name": "Ines Okafor"
+      },
+      "user_text": "Keep it to three steps.",
+      "turn": 1,
+      "expected": {
+        "ai_model_id": "model-golden",
+        "messages": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "text",
+                "text": "You help {{student_name}} with {{subject}}."
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Plan for {{student_name}}"
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Keep it to three steps."
+              }
+            ]
+          }
+        ],
+        "stream": true,
+        "store": true,
+        "debug": false,
+        "max_iterations": 100,
+        "max_retries_per_iteration": 2,
+        "conversation_id": "<masked>",
+        "is_new": true,
+        "organization_id": "00000000-0000-4000-8000-0000000000a1",
+        "temperature": 0.2,
+        "max_output_tokens": 800,
+        "template_message_count": 2,
+        "output_kinds": [],
+        "agent_id": "00000000-0000-4000-8000-0000000000b2",
+        "is_version": false,
+        "prompt_blocks": [
+          "tone_guide"
+        ],
+        "variables": {
+          "student_name": "Ines Okafor",
+          "subject": "algebra",
+          "empty_one": null
+        },
+        "variable_definitions": [
+          {
+            "name": "student_name",
+            "title": "Student",
+            "helpText": "",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "subject",
+            "title": "Subject",
+            "helpText": "",
+            "required": false,
+            "defaultValue": "algebra"
+          },
+          {
+            "name": "empty_one",
+            "title": "Empty",
+            "helpText": "",
+            "required": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "turn1_no_variables",
+      "agent": {
+        "model_id": "model-golden",
+        "messages": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "text",
+                "text": "Answer briefly."
+              }
+            ]
+          }
+        ],
+        "settings": {},
+        "variable_definitions": []
+      },
+      "variables": {},
+      "user_text": "What is a prime number?",
+      "turn": 1,
+      "expected": {
+        "ai_model_id": "model-golden",
+        "messages": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "text",
+                "text": "Answer briefly."
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "What is a prime number?"
+              }
+            ]
+          }
+        ],
+        "stream": true,
+        "store": true,
+        "debug": false,
+        "max_iterations": 100,
+        "max_retries_per_iteration": 2,
+        "conversation_id": "<masked>",
+        "is_new": true,
+        "organization_id": "00000000-0000-4000-8000-0000000000a1",
+        "template_message_count": 1,
+        "output_kinds": [],
+        "agent_id": "00000000-0000-4000-8000-0000000000b2",
+        "is_version": false,
+        "variable_definitions": []
+      }
+    },
+    {
+      "id": "turn2_continuation",
+      "agent": {
+        "model_id": "model-golden",
+        "messages": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "text",
+                "text": "You help {{student_name}}."
+              }
+            ]
+          }
+        ],
+        "settings": {
+          "temperature": 0.2
+        },
+        "variable_definitions": [
+          {
+            "name": "student_name",
+            "title": "Student",
+            "helpText": "",
+            "required": true,
+            "defaultValue": null
+          }
+        ]
+      },
+      "variables": {
+        "student_name": "Ines Okafor"
+      },
+      "user_text": "And the second step?",
+      "turn": 2,
+      "expected": {
+        "ai_model_id": "model-golden",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "And the second step?"
+              }
+            ]
+          }
+        ],
+        "stream": true,
+        "store": true,
+        "debug": false,
+        "max_iterations": 100,
+        "max_retries_per_iteration": 2,
+        "conversation_id": "<masked>",
+        "is_new": false,
+        "organization_id": "00000000-0000-4000-8000-0000000000a1",
+        "temperature": 0.2,
+        "template_message_count": 0,
+        "output_kinds": [],
+        "agent_id": "00000000-0000-4000-8000-0000000000b2",
+        "is_version": false
+      }
+    }
+  ]
+}
