@@ -113,6 +113,7 @@ import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
 import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
+import { factDisplayLabel } from "@/features/marketing/lib/factLabel";
 import { BrandOfferingsSummary } from "@/features/marketing/offerings/BrandOfferingsPanel";
 import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
@@ -441,7 +442,7 @@ function foldFacts(facts: BusinessFact[]): FoldedFact[] {
 
 function factLabelOf(fact: BusinessFact): string {
   return (
-    fact.label ||
+    factDisplayLabel(fact.label, factValueText(fact)) ||
     (isBusinessFactKind(fact.kind)
       ? BUSINESS_FACT_KIND_LABELS[fact.kind]
       : (humanizeIdentifier(fact.kind) || fact.kind))
@@ -467,7 +468,8 @@ function BusinessFactRow({
   const { fact, copies } = folded;
   const value = factValueText(fact);
   const factLabel = factLabelOf(fact);
-  const subLabel = fact.label && fact.label.toLowerCase() !== groupLabel.toLowerCase() ? fact.label : "";
+  const shown = factDisplayLabel(fact.label, value);
+  const subLabel = shown && shown.toLowerCase() !== groupLabel.toLowerCase() ? shown : "";
   return (
     <li className="flex min-h-9 min-w-0 items-center gap-3 px-3 py-0.5 hover:bg-accent/40" data-fact-id={fact.id}>
       {showLabel ? (
@@ -534,7 +536,7 @@ function BusinessFactGroup({
   // The sub-label column shows only when it tells rows apart (Industry vs Business type), never one name repeated.
   const subLabels = new Set(
     folded
-      .map(({ fact }) => (fact.label ?? "").trim().toLowerCase())
+      .map(({ fact }) => factDisplayLabel(fact.label, factValueText(fact)).toLowerCase())
       .filter((l) => l && l !== label.toLowerCase()),
   );
   const showLabel = subLabels.size > 1;

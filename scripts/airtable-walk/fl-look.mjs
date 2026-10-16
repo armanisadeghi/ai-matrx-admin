@@ -1,0 +1,13 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = process.env.ORIGIN;
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+await walkSignIn(page, ORIGIN);
+await page.goto(ORIGIN + "/spaces", { waitUntil: "domcontentloaded", timeout: 180000 });
+await page.waitForTimeout(8000);
+const t = await page.evaluate(() => document.body.innerText);
+console.log(t.split("\n").filter(l => /juniper|notion|import|unmatched|admin/i.test(l)).slice(0, 30).join("\n"));
+await page.screenshot({ path: process.env.OUT + "/look.png" });
+await browser.close();

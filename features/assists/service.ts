@@ -299,6 +299,30 @@ export async function wasAssistDecided(dedupeKey: string): Promise<boolean> {
 }
 
 /**
+ * Every row of mine (any status) whose `source_key` starts with `prefix` —
+ * for a producer that must honour its own history: what the person declined,
+ * snoozed or already ran, and what is pending right now. Mine-scope (THE VIEW
+ * LAW); bounded by the producer's own catalog, so one page is the whole set.
+ */
+export async function listMyAssistsBySourcePrefix(
+  userId: string,
+  prefix: string,
+): Promise<Assist[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .schema("platform")
+    .from(TABLE)
+    .select("*")
+    .eq("user_id", userId)
+    .is("deleted_at", null)
+    .like("source_key", `${prefix}%`)
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(`[assists] ${prefix} history read failed: ${error.message}`);
+  return (data ?? []).map((row) => toAssist(row as AssistRow)).filter((a): a is Assist => a !== null);
+}
+
+/**
  * Batch form of `wasAssistDecided` — returns the subset of keys with NO
  * decided row (safe to emit). One query, producers call it before a sweep.
  */

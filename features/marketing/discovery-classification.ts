@@ -119,6 +119,17 @@ export function defaultKind(
 }
 
 /**
+ * True while a row's starting type still depends on the server's field → kind rules, which have
+ * not answered: the cell shows a shimmer, never the "Other" fallback the rules would then replace.
+ * A social profile, a guess that is already a kind of its pool, or a person's own pick never waits.
+ */
+export function kindWaitsOnRules(item: DiscoveredItem, rulesPending: boolean): boolean {
+  if (!rulesPending || isSocialCategory(item.category)) return false;
+  const guess = item.guessed_kind ?? "";
+  return !kindOptionsFor(kindPoolOf(item.category)).some((option) => option.value === guess);
+}
+
+/**
  * The kind that DEMANDS a label. Confirming an `other` row with no label is
  * refused for the user (the Confirm button disables) and must be refused for
  * an agent too — otherwise the agent stages a row the human cannot confirm.

@@ -35,6 +35,7 @@ describe("assist actions on the one action registry", () => {
     const kinds = [
       "apply_keyword_meaning",
       "apply_page_meta",
+      "brand_assist",
       "launch_agent",
       "run_mandate",
       "navigate",

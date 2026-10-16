@@ -14,6 +14,7 @@ import { invokedActionProvider } from "@/features/content-ir/react/actions/invok
 import type { AssistActionDefinition } from "./assist-action-types";
 import { applyKeywordMeaningAssistAction } from "./handlers/apply-keyword-meaning";
 import { applyPageMetaAssistAction } from "./handlers/apply-page-meta";
+import { brandAssistAction } from "./handlers/brand-assist";
 import { launchAgentAssistAction } from "./handlers/launch-agent";
 import { runMandateAssistAction } from "./handlers/run-mandate";
 import { navigateAssistAction } from "./handlers/navigate";
@@ -28,6 +29,7 @@ export const ASSIST_ACTIONS_PROVIDER_ID = "assists.actions";
 export const ASSIST_ACTIONS: readonly AssistActionDefinition[] = [
   applyKeywordMeaningAssistAction,
   applyPageMetaAssistAction,
+  brandAssistAction,
   launchAgentAssistAction,
   runMandateAssistAction,
   navigateAssistAction,

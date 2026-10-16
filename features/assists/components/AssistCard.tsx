@@ -375,7 +375,13 @@ export function AssistCard({
           </Button>
           <Button
             variant="quiet"
-            onClick={onClose}
+            // A brand assist is a treat, never a nag (Arman, 2026-10-16): its
+            // "Not now" is a decline the producer honours, not a close.
+            onClick={
+              assist.id && assist.action.kind === "brand_assist"
+                ? () => void dismiss()
+                : onClose
+            }
             disabled={busy !== null}
             className="min-w-0"
           >

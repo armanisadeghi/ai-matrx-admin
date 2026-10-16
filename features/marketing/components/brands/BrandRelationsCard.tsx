@@ -505,7 +505,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
   const filled = (Object.keys(GROUP_TITLES) as GroupKey[]).filter((k) => groups[k].length > 0);
 
   return (
-    <SectionCard title="Relationships" anchor="relationships">
+    <SectionCard title="Relationships" anchor="relationships" className="scroll-mt-24">
       <div className="grid gap-3 p-3" data-testid="brand-relations">
         {failed ? <ErrorNotice error={failed} operation="Load brand relationships" size="compact" /> : null}
         {loading ? (

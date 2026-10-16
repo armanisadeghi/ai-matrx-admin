@@ -139,6 +139,25 @@ export type AssistAction =
     }
   | {
       /**
+       * Run ONE brand assist (Smart Add VISION Part 24): a ~30-second
+       * pre-filled job that enriches one brand, priced up front. The server
+       * door is fixed (`/brand-assists/{brandId}/run`), so the row carries
+       * only which brand and which assist — never an address.
+       */
+      kind: "brand_assist";
+      brandId: string;
+      assistId: string;
+      /** Verb-labeled button text, e.g. "Look it up". */
+      label: string;
+      /** Exact points charged at emit time; 0 = free; null = not priced. */
+      costPoints: number | null;
+      /** Exact USD at emit time (string, never a float). */
+      costUsd: string | null;
+      /** Where the result lands, in the person's words. */
+      lands: string;
+    }
+  | {
+      /**
        * Call a server endpoint that performs a durable, named domain write.
        *
        * The other three kinds move the user (`navigate`), pre-fill a
@@ -653,6 +672,21 @@ export function narrowAction(value: Json): AssistAction | null {
       label: typeof obj.label === "string" ? obj.label : undefined,
       confirm: typeof obj.confirm === "string" ? obj.confirm : undefined,
       receipt: typeof obj.receipt === "string" ? obj.receipt : undefined,
+    };
+  }
+  if (
+    kind === "brand_assist" &&
+    typeof obj.brandId === "string" &&
+    typeof obj.assistId === "string"
+  ) {
+    return {
+      kind,
+      brandId: obj.brandId,
+      assistId: obj.assistId,
+      label: typeof obj.label === "string" ? obj.label : "Run it",
+      costPoints: typeof obj.costPoints === "number" ? obj.costPoints : null,
+      costUsd: typeof obj.costUsd === "string" ? obj.costUsd : null,
+      lands: typeof obj.lands === "string" ? obj.lands : "",
     };
   }
   if (kind === "server_action" && typeof obj.endpoint === "string") {
