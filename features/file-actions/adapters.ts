@@ -21,7 +21,7 @@ import {
   moveDocument,
   renameDocument,
   restoreDocument,
-} from "@/features/documents/document-service";
+} from "@ai-matrx/office/docs";
 import { downloadSheetAsCsv, downloadSheetAsPdf } from "@ai-matrx/office/sheets";
 import {
   copyPresentation,
@@ -46,7 +46,7 @@ async function latestDocumentMarkdown(id: string): Promise<string> {
   const res = await getLatestDocumentSnapshot(id);
   if (isServiceFailure(res)) throw new Error(res.error);
   if (!res.data) throw new Error("This document has no saved content yet");
-  const { univerDocToMarkdown } = await import("@/features/documents/univer-doc-to-markdown");
+  const { univerDocToMarkdown } = await import("@ai-matrx/office/docs/io");
   return univerDocToMarkdown(res.data.snapshot);
 }
 

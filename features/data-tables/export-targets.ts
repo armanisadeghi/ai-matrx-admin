@@ -31,12 +31,12 @@ import {
 import {
   createDocument,
   saveDocumentSnapshot,
-} from "@/features/documents/document-service";
+} from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import {
   deriveDocumentName,
   markdownToUniverDoc,
-} from "@/features/documents/markdown-to-univer-doc";
+} from "@ai-matrx/office/docs/io";
 import { unwrapCodeSpans } from "@/lib/markdown/code-ranges";
 
 export interface PushResult {

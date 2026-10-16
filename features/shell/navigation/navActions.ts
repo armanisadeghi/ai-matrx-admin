@@ -108,7 +108,7 @@ export function useNavActions(): ShellNavActionHandlers {
           return;
         }
         const { createDocument } =
-          await import("@/features/documents/document-service");
+          await import("@ai-matrx/office/docs");
         const res = await createDocument({
           name: "Untitled document",
           organizationId: capturedOrganizationId,

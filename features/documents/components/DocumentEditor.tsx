@@ -49,8 +49,8 @@ import {
   type PageSetupValues,
 } from "@ai-matrx/office/core";
 import { buildDocMenus, buildDocToolbar, type DocChromeHost, type DocsApiLike } from "@/features/documents/chrome/doc-commands";
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
-import { bodyTextOf } from "@/features/documents/document-body-text";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
+import { bodyTextOf } from "@ai-matrx/office/docs";
 
 import {
   createUniver,
@@ -91,8 +91,8 @@ import "@univerjs/docs-toc-ui/lib/index.css";
 import { DocumentOutlinePanel } from "@/features/documents/components/DocumentOutlinePanel";
 import { DocumentToolDialogs, type DocDialogId } from "@/features/documents/components/DocumentToolDialogs";
 import { DocumentRuler } from "@/features/documents/components/DocumentRuler";
-import { createDocEditOps, writeDocumentStyleKey } from "@/features/documents/doc-edit-ops";
-import { DOCUMENT_LANGUAGE_KEY, bookmarkFromHash, readDocumentLanguage } from "@/features/documents/doc-tools-core";
+import { createDocEditOps, writeDocumentStyleKey } from "@ai-matrx/office/docs/tools";
+import { DOCUMENT_LANGUAGE_KEY, bookmarkFromHash, readDocumentLanguage } from "@ai-matrx/office/docs/tools";
 import { UniverFindReplacePlugin } from "@univerjs/find-replace";
 import { UniverDocsFindReplacePlugin } from "@univerjs/docs-find-replace";
 import findReplaceEnUS from "@univerjs/find-replace/locale/en-US";
@@ -109,7 +109,7 @@ import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 import { toast as notice } from "@/lib/toast";
 
-import { fitZoomRatio } from "@/features/documents/utils/fitZoomRatio";
+import { fitZoomRatio } from "@ai-matrx/office/docs";
 import { applyPageSetup, readPageSetup, type PageSetupApiLike } from "@ai-matrx/office/core/page-setup-apply";
 import { PageSetupDialog } from "@/features/documents/components/PageSetupDialog";
 import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
@@ -121,7 +121,7 @@ import { mountUniverDocument, replaceUniverDocument } from "@/features/documents
 import "@/lib/univer-host";
 import { useUniverDarkModeSync } from "@ai-matrx/office/univer";
 import { useUniverDocSurfaceTheme } from "@/features/documents/hooks/useUniverDocSurfaceTheme";
-import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
+import { sanitizeUniverDocSnapshot } from "@ai-matrx/office/docs";
 import { identifyUniverUser } from "@ai-matrx/office/univer";
 import { registerMatrxImageStore } from "@ai-matrx/office/univer";
 import { registerMissingUniverIcons } from "@ai-matrx/office/univer";
@@ -139,7 +139,7 @@ import { DocumentPageReferenceCopyButton } from "@/features/documents/components
 import { DocumentGoogleLink, useDocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { copyCompoundReference } from "@/features/matrx-envelope/components/CompoundReferenceCopyButton";
 import { buildDocumentPageReferenceFence } from "@/features/matrx-envelope/compoundReference";
-import type { DocumentBodyPort } from "@/features/documents/document-body-text";
+import type { DocumentBodyPort } from "@ai-matrx/office/docs";
 import {
   selectWorkingCopyStatus,
   type WorkingCopyStatus,
@@ -148,11 +148,11 @@ import {
   connectDocumentRealtime,
   documentWorkingCopy,
 } from "@/features/documents/document-model/documentModels";
-import type { DocumentModel, ParkedDocumentEditor } from "@/features/documents/document-model/documentModel";
+import type { DocumentModel, ParkedDocumentEditor } from "@ai-matrx/office/docs";
 import type {
   DocumentAwareness,
   DocumentCollabFactory,
-} from "@/features/documents/document-model/documentModel";
+} from "@ai-matrx/office/docs";
 import type { CommandServiceLike } from "@ai-matrx/office/univer/collab";
 import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 
@@ -397,6 +397,7 @@ export default function DocumentEditor({
           );
         },
         editable: () => editableRef.current,
+        unitId: () => apiRef.current?.getActiveDocument()?.getId?.() ?? null,
       });
     const parked = model.takeParkedEditor() as ParkedDocumentEditor<KeptUniver> | null;
     if (parked) {

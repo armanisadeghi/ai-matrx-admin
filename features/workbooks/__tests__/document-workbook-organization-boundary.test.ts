@@ -10,7 +10,11 @@ jest.mock("@/utils/supabase/client", () => ({
   supabase: { auth: withClaims({ getUser }), schema },
 }));
 
-import { createDocument } from "@/features/documents/document-service";
+import { configureDocsHost, createDocument, type DocsSupabase } from "@ai-matrx/office/docs";
+import { supabase } from "@/utils/supabase/client";
+
+// The app states this at start-up (lib/docs-host); here the mocked client stands in for it.
+configureDocsHost({ getSupabase: () => supabase as unknown as DocsSupabase, requestRaw: async () => new Response(null) });
 
 const ORGANIZATION_ID = "1b2c3d4e-5f60-4a71-8b92-0c1d2e3f4a5b";
 

@@ -420,7 +420,6 @@
   "features/crm/outreach-single-send/service.ts": 1,
   "../aidream/apps/shared/chat/src/cx-chat/components/user-input/ConversationInput.tsx": 1,
   "features/data-tables/components/LocatedTableViewer.tsx": 1,
-  "features/documents/document-service.ts": 1,
   "features/data-tables/save-to-table.ts": 2,
   "features/data-tables/service.ts": 2,
   "features/directive-catalog/components/DirectiveBuilderPanel.tsx": 2,

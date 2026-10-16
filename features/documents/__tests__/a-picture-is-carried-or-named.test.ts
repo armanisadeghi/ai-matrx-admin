@@ -5,8 +5,8 @@
  * picture handling, so "Push to Google Docs" said "Pushed" while every picture
  * stayed behind, and the signed-out share page showed none of them.
  */
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
-import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
+import { markdownToUniverDoc } from "@ai-matrx/office/docs/io";
 
 jest.mock("@/features/files/handler/utils/python-base", () => ({
   pythonShareUrl: (t: string) => `https://files.example/share/${t}`,

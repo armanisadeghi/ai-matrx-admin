@@ -13,7 +13,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { defineWorkingCopyKind } from "@/lib/working-copy/reduxPort";
 import workingCopiesReducer, { getWorkingCopy } from "@/lib/working-copy/workingCopySlice";
-import { DocumentModel, type DocumentModelDeps, type DocumentSnapshotData } from "@/features/documents/document-model/documentModel";
+import { DocumentModel, type DocumentModelDeps, type DocumentSnapshotData } from "@ai-matrx/office/docs";
 
 type Listener = (info: { id: string; type: number; params: unknown }, options?: Record<string, unknown>) => void;
 

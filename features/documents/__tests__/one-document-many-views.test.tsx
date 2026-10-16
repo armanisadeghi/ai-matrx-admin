@@ -89,6 +89,7 @@ jest.mock("@univerjs/presets", () => ({
 }));
 jest.mock("@univerjs/core", () => ({
   CommandType: { COMMAND: 0, OPERATION: 1, MUTATION: 2 },
+  NamedStyleType: {}, // read at import by the Docs snapshot sanitizer inside @ai-matrx/office/docs
   ICommandService: Symbol("ICommandService"),
   createParagraphId: () => "p1",
   createSectionId: () => "s1",
@@ -140,7 +141,6 @@ jest.mock("@/features/canvas/host/toolCanvas", () => ({
 }));
 jest.mock("@/features/documents/hooks/useUniverDocSurfaceTheme", () => ({ useUniverDocSurfaceTheme: () => {} }));
 jest.mock("@/features/documents/univer-doc-canvas-colors", () => ({ renderDocumentCanvasColorsVerbatim: () => ({ applied: true }) }));
-jest.mock("@/features/documents/utils/sanitizeUniverDocSnapshot", () => ({ sanitizeUniverDocSnapshot: (s: unknown) => s }));
 jest.mock("@ai-matrx/data/realtime/collab/react", () => ({ RemotePeerChips: () => null }));
 jest.mock("@/features/documents/components/DocumentPageReferenceCopyButton", () => ({ DocumentPageReferenceCopyButton: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
@@ -155,7 +155,9 @@ jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ..
 const SERVER_TEXT = "Kiln log: cone 6 firing, 9 hours.";
 const saves: string[] = [];
 const pendingSaves: Array<() => void> = [];
-jest.mock("@/features/documents/document-service", () => ({
+jest.mock("@ai-matrx/office/docs", () => ({
+  ...jest.requireActual("@ai-matrx/office/docs"),
+  sanitizeUniverDocSnapshot: (s: unknown) => s,
   getLatestDocumentSnapshot: async () => ({
     success: true,
     data: { id: "snap-server", snapshot: { id: "unit-kiln", body: { dataStream: `${SERVER_TEXT}\r\n` } } },

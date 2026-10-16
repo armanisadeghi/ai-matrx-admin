@@ -7,7 +7,7 @@
  * and agent-written text. Pure — no Univer import — so it is tested against plain snapshots.
  */
 
-import { HEADING_LEVEL_BY_FONT_SIZE } from "@/features/documents/univer-doc-to-markdown";
+import { HEADING_LEVEL_BY_FONT_SIZE } from "@ai-matrx/office/docs/io";
 
 export interface OutlineItem {
   /** 1 = top level. */

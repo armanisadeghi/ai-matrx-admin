@@ -17,7 +17,7 @@ import {
   createDocument,
   getLatestDocumentSnapshot,
   saveDocumentSnapshot,
-} from "@/features/documents/document-service";
+} from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import {
   createPresentation,

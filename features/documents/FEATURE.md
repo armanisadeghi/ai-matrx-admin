@@ -2,8 +2,8 @@
 
 Domain tree: content > documents. Split out of `features/data-tables` on 2026-10-07; routes
 `/documents` and `/documents/[id]` are unchanged (`components/DocumentRecord.tsx` renders the record
-page). Holds the document editor, model (`document-model/`), service (`document-service.ts`),
-Markdown <-> Univer converters, the page/canvas theme, history views and the agent-context builders.
+page). Holds the document editor, the open-document registry (`document-model/documentModels.ts`), the page/canvas theme, history views and the agent-context builders.
+The document model and service, the Markdown <-> Univer converters, the file import, the open-format export and the insert/edit tools live in `@ai-matrx/office/docs`, `/docs/io`, `/docs/tools` (W1-G4); the app states their host (`lib/docs-host.ts`, imported by the client `StoreProvider`).
 Shared Univer runtime: `@ai-matrx/office src/univer/`; collab: `lib/collab/`. The data-model and history notes for
 documents and workbooks live together in `features/workbooks/FEATURE.md`.
 

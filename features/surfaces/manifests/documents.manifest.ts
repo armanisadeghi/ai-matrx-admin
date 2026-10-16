@@ -55,8 +55,8 @@ import type {
 import {
   DOCUMENT_DESCRIPTION_MAX_LENGTH,
   DOCUMENT_NAME_MAX_LENGTH,
-} from "@/features/documents/agent-context/documentWriteValidation";
-import { DOCUMENT_BODY_MAX_LENGTH } from "@/features/documents/document-body-text";
+} from "@ai-matrx/office/docs";
+import { DOCUMENT_BODY_MAX_LENGTH } from "@ai-matrx/office/docs";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 

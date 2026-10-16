@@ -5,7 +5,7 @@
  * Text runs are rebuilt per character so they never overlap.
  */
 import type { IDocumentData, ITextStyle } from "@univerjs/core";
-import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
+import { markdownToUniverDoc } from "@ai-matrx/office/docs/io";
 
 export type ParaRule = {
   match: string | RegExp;

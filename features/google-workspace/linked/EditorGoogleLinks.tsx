@@ -16,14 +16,14 @@ import type { FUniver } from "@univerjs/presets";
 
 import { isServiceFailure } from "@/features/data-tables/types";
 import { getLatestSnapshot, saveSnapshot } from "@ai-matrx/office/sheets";
-import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@/features/documents/document-service";
-import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
-import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
+import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@ai-matrx/office/docs";
+import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
+import { markdownToUniverDoc } from "@ai-matrx/office/docs/io";
 import { showSavedSnapshot } from "@ai-matrx/office/univer";
 import { deckAsPptxBase64 } from "@/features/presentations/deck-export";
 import { getPresentation } from "@/features/presentations/presentation-service";
 import type { Deck } from "@/features/presentations/deck-model";
-import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
+import { sanitizeUniverDocSnapshot } from "@ai-matrx/office/docs";
 
 import { GoogleLinkControl, googleLinkParts, useGoogleLink, type GoogleLinkAdapter } from "./GoogleLinkControl";
 

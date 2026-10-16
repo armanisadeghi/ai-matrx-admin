@@ -6,7 +6,7 @@
 import { DocumentFlavor, PageOrientType } from "@univerjs/core";
 
 import { isLegacySqueezedPageStyle } from "@ai-matrx/office/core";
-import { sanitizeUniverDocSnapshot } from "../utils/sanitizeUniverDocSnapshot";
+import { sanitizeUniverDocSnapshot } from "@ai-matrx/office/docs";
 
 describe("a document is a real page", () => {
   it("the squeezed legacy page (A4 at 72dpi, pageless) is moved to Letter by the sanitizer", () => {

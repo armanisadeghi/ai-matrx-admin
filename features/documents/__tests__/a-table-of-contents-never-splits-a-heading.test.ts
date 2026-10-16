@@ -5,7 +5,7 @@
  */
 import { flattenMenus } from "@ai-matrx/office/core";
 import { buildDocMenus, type DocChromeHost } from "../chrome/doc-commands";
-import { blockInsertPlan } from "../doc-tools-core";
+import { blockInsertPlan } from "@ai-matrx/office/docs/tools";
 
 const STREAM = "Intro heading line\rSome body text\r\n";
 

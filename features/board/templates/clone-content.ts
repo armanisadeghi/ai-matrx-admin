@@ -56,7 +56,7 @@ export const defaultCloneServices: CloneServices = {
     return { id: note.id, label: note.label };
   },
   async copyDocument(id) {
-    const { copyDocument } = await import("@/features/documents/document-service");
+    const { copyDocument } = await import("@ai-matrx/office/docs");
     const res = await copyDocument(id);
     if (!res.success) throw new Error(res.error);
     return { id: res.data.id, name: res.data.document_name };
