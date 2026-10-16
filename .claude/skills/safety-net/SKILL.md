@@ -49,7 +49,7 @@ safety net"; there was no weakness list, no sealed check, and the tests were edi
 | Briefs that can return what you do not already believe | reality-is-the-referee · `subagent-dispatch` §1 |
 | Realistic data and people | test-data-looks-real · `@ai-matrx/records/use-cases` · persona factory · aidream `scripts/pick_test_subject.py` (businesses and people to test on) |
 | The database tests run on | the live database, as `admin@admin.com`, on disposable records (Arman, 2026-10-03). The nightly clone is only for rehearsing destructive migrations or jobs that lock live 10+ minutes (`operations/clone/CURRENT.md`) |
-| A working localhost before any runner | §4a below; matrx-frontend `pnpm preview:status` / `preview:start`; memory rules in `operations/real-tests/RUNNER-ADDENDUM.md` |
+| A working localhost before any runner | §4a below; matrx-frontend `pnpm preview:ready`; memory rules in `operations/real-tests/RUNNER-ADDENDUM.md` |
 
 ## 0. Pick the scenario first — it decides what "before" means
 
@@ -259,9 +259,10 @@ the preview had stopped itself after 30 idle minutes, then the in-app browser pa
 memory twice. A runner is dispatched only after the grader has shown, in this turn:
 For a no-screen playbook the preflight is the AI Dream MCP `server_status` healthy plus one harmless
 call through the same door that returns; for a browser playbook:
-1. The preview answers: `pnpm preview:status` in matrx-frontend, and if it is down `pnpm preview:start`,
-   then a **signed-in page load of the sheet's first route** that renders without a build-error
-   overlay (the first compile takes about 75 seconds; wait for it). A curl of `/login` is not proof.
+1. `pnpm preview:ready <the sheet's first route>` in matrx-frontend (`--hold <minutes>` for the run's
+   length) says READY. It repairs what it can, waits out a running install, and says READY only after a
+   verified **signed-in page load** of that route without a build-error overlay. A curl of `/login`, or
+   `preview:status` alone, is not proof.
 2. A build error is diagnosed before it is blamed: an export missing right after a package install is
    a stale install (restart the preview), not another lane's edit.
 3. The browser pane is open and showing (`preview_start` with a url brings it back).
