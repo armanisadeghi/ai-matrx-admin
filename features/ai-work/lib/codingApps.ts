@@ -98,6 +98,14 @@ export function nextWord(a: AppAccount, ranks: Map<string, number>): { word: str
   return { word: "—", tone: "neutral", order: 2_000 };
 }
 
+/** The Next column's filter groups — the desktop's quick filters: Available, Running low, At the limit, No reading. */
+export function nextGroup(a: AppAccount): "Available" | "Running low" | "At the limit" | "No reading" {
+  const s = availability(a);
+  if (s === "unknown") return "No reading";
+  if (s !== "available") return "At the limit";
+  return Math.max(a.weekly ?? 0, a.five_hour ?? 0) >= LOW ? "Running low" : "Available";
+}
+
 /** Hours or days until a time ("7h", "4d", "now"). */
 export const untilWords = (at: number, now = Date.now()) => {
   const h = Math.max(0, Math.ceil((at - now) / 3_600_000));

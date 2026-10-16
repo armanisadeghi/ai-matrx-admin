@@ -26,6 +26,7 @@ import { Select } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 
 import { putJson } from "@/lib/python-client";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { readCodingSessionConnectionOrganization, writeCodingSessionConnectionOrganization } from "@ai-matrx/api/code";
 import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
 import { formatSessionTimestamp } from "@/features/agent-connections/coding-sessions/verdict";
@@ -169,7 +170,18 @@ function ProjectsTable({ state }: { state: ProjectOrganizationsState }) {
                 disabled={saving !== null || !report}
                 value={allProjects ?? ASK_EACH}
                 options={[{ value: ASK_EACH, label: "Ask for each project" }, ...organizations.map((o) => ({ value: o.id, label: o.name }))]}
-                onValueChange={(id) => void state.chooseForAllProjects(id === ASK_EACH ? null : id)}
+                onValueChange={(id) =>
+                  void confirm({
+                    title: id === ASK_EACH ? "Ask for each new project?" : `Save every project to ${state.organizationName(id)}?`,
+                    description:
+                      id === ASK_EACH
+                        ? "Projects without their own choice are held until you choose for each."
+                        : "Projects without their own choice save there from now on. Projects you chose keep their choice.",
+                    confirmLabel: id === ASK_EACH ? "Ask each time" : "Save there",
+                  }).then((ok) => {
+                    if (ok) void state.chooseForAllProjects(id === ASK_EACH ? null : id);
+                  })
+                }
               />
             </span>
           ),
@@ -228,9 +240,9 @@ function ChooseOrganizationDialog({ row, state, onClose }: { row: ProjectRow | n
             options={options}
             onValueChange={(id) => {
               if (id === CHOOSE) return;
-              if (id === FOLLOW_ALL) {
-                if (row.chosen) void state.chooseForProject(row.name, null);
-              } else void state.chooseForProject(row.name, id);
+              // "(all projects)" clears the project's own choice; a project with none is filed there explicitly.
+              if (id === FOLLOW_ALL) void state.chooseForProject(row.name, row.chosen ? null : allProjects);
+              else void state.chooseForProject(row.name, id);
               onClose();
             }}
           />

@@ -166,7 +166,7 @@ export function AiWorkConnections() {
                   : capability.state === "loading"
                     ? "Checking whether a sandbox can start for you…"
                     : hostedStart.selectable
-                      ? `Runs in a Matrx Sandbox${capability.runtime ? ` (${capability.runtime})` : ""}; start it from Start work`
+                      ? "Runs in a Matrx Sandbox; start it from Start work"
                       : `Not available: ${hostedStart.reason}`
               }
             >

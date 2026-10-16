@@ -18,11 +18,12 @@ import { ProInput } from "@/components/official/ProInput";
 import { useEffect, useState } from "react";
 import { ExternalLink, Info, KeyRound, Loader2, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ErrorNotice } from "@ai-matrx/design-system";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { CloudSetupDialog } from "@/features/ai-work/components/connections/CloudSetupDialog";
 import { toast } from "@/lib/toast";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { resolveBaseUrl } from "@/lib/python-client";
 import {
   CURSOR_DASHBOARD_URL,
@@ -86,6 +87,13 @@ export function CursorAccountsPanel() {
   };
 
   const remove = async (row: CursorAccountRow) => {
+    const ok = await confirm({
+      title: `Disconnect ${row.label}?`,
+      description: "The key leaves your vault and its Cursor cloud agents stop receiving messages.",
+      confirmLabel: "Disconnect",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setBusy(`rm:${row.id}`);
     try {
       await disconnectCursorKey(row.id);
@@ -99,61 +107,75 @@ export function CursorAccountsPanel() {
 
   return (
     <section id="cursor-accounts" className="space-y-2">
-      {open && (
-        <form
-          className="space-y-2 rounded-lg border border-border p-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void submit();
-          }}
-        >
-          <Button asChild variant="quiet">
-            <OutboundLink href={CURSOR_DASHBOARD_URL}>
-              <ExternalLink className="size-3.5" />
-              Create a key in Cursor
-            </OutboundLink>
-          </Button>
-          <Input
-            type="password"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            placeholder="Paste your Cursor API key"
-            autoComplete="off"
-            aria-label="Cursor API key"
-          />
-          <ProInput
-            enableVoice={false}
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="Name (optional)"
-            autoComplete="off"
-            aria-label="Name for this key"
-          />
-          {refusal && <ErrorNotice message={refusal} size="inline" />}
-          <div className="flex items-center gap-2">
-            <Button
-              type="submit"
-              variant="primary"
-              icon={busy === "connect" ? <Loader2 className="animate-spin" /> : <KeyRound />}
-              disabled={busy !== null || !key.trim()}
-            >
-              {busy === "connect" ? "Checking with Cursor…" : "Connect"}
-            </Button>
-            <Button
-              type="button"
-              variant="quiet"
-              icon={<X />}
-              aria-label="Cancel"
-              onClick={() => {
-                setOpen(false);
-                setKey("");
-                setRefusal(null);
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          if (o || busy !== null) return;
+          setOpen(false);
+          setKey("");
+          setRefusal(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Connect a Cursor account</DialogTitle>
+            <DialogDescription>Paste an API key from the Cursor Dashboard.</DialogDescription>
+          </DialogHeader>
+            <form
+              className="space-y-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void submit();
               }}
-              disabled={busy !== null}
-            />
-          </div>
-        </form>
-      )}
+            >
+              <Button asChild variant="quiet">
+                <OutboundLink href={CURSOR_DASHBOARD_URL}>
+                  <ExternalLink className="size-3.5" />
+                  Create a key in Cursor
+                </OutboundLink>
+              </Button>
+              <Input
+                type="password"
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                placeholder="Paste your Cursor API key"
+                autoComplete="off"
+                aria-label="Cursor API key"
+              />
+              <ProInput
+                enableVoice={false}
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="Name (optional)"
+                autoComplete="off"
+                aria-label="Name for this key"
+              />
+              {refusal && <ErrorNotice message={refusal} size="inline" />}
+              <div className="flex items-center gap-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  icon={busy === "connect" ? <Loader2 className="animate-spin" /> : <KeyRound />}
+                  disabled={busy !== null || !key.trim()}
+                >
+                  {busy === "connect" ? "Checking with Cursor…" : "Connect"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="quiet"
+                  icon={<X />}
+                  aria-label="Cancel"
+                  onClick={() => {
+                    setOpen(false);
+                    setKey("");
+                    setRefusal(null);
+                  }}
+                  disabled={busy !== null}
+                />
+              </div>
+            </form>
+        </DialogContent>
+      </Dialog>
 
       <MatrxDataTable<CursorAccountRow>
         tableId="work/connections/cursor-cloud"

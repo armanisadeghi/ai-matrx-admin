@@ -27,6 +27,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { CloudSetupDialog } from "@/features/ai-work/components/connections/CloudSetupDialog";
 import { toast } from "@/lib/toast";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { getUserMessage } from "@ai-matrx/api";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { formatDurationMs } from "@ai-matrx/kit/format";
@@ -338,6 +339,13 @@ export function ClaudeAccountsPanel() {
 
   const signOut = async (row: ClaudeAccountRow) => {
     if (!row.slot) return;
+    const ok = await confirm({
+      title: `Sign ${row.label} out?`,
+      description: "Its Claude cloud sessions stop receiving messages until you connect it again.",
+      confirmLabel: "Sign out",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setBusy(`out:${row.id}`);
     try {
       await signOutOwnPlan(PROVIDER, row.slot);

@@ -21,7 +21,7 @@ jest.mock("@/features/files/devices/console/useDeviceClient", () => ({ useDevice
 jest.mock("@/features/ai-work/lib/computerChooser", () => ({ listChooserComputers: async () => [] }));
 
 import { AppsTables, type AppsTablesProps } from "@/features/ai-work/components/connections/CodingAppsSection";
-import { awayCount, chatCount, compareNext, nextRanks, statusWords, type AppChats } from "@/features/ai-work/lib/codingApps";
+import { awayCount, chatCount, compareNext, nextGroup, nextRanks, statusWords, type AppChats } from "@/features/ai-work/lib/codingApps";
 
 const NOW = Date.now();
 const H = 3_600_000;
@@ -61,7 +61,7 @@ const claudeChats: AppChats = {
 
 function props(over: Partial<AppsTablesProps> = {}): AppsTablesProps {
   return {
-    computerName: "Test Mac", instances, accounts, chats: new Map([["claude", claudeChats]]), reading: false, readError: null, where: null,
+    computerName: "Test Mac", instances, accounts, chats: new Map([["claude", claudeChats]]), readingInstances: false, readingAccounts: false, instancesError: null, accountsError: null, where: null,
     problem: null, asOfMs: NOW - 60_000, refreshing: false, client: null, action: null, onRefresh: null, onDone: () => undefined, picker: null, ...over,
   };
 }
@@ -83,7 +83,8 @@ const tables = () => [...host.querySelectorAll("table")];
 
 describe("Coding apps tables — the same as Matrx 2's Code › Desktop apps", () => {
   it("Instances and Accounts carry the desktop's columns, in its order (All apps)", () => {
-    render(<AppsTables {...props()} />);
+    const codex = account({ app_key: "codex", account_id: "cx-1", email: "x@example.com", credits: 12.5, instances: [] });
+    render(<AppsTables {...props({ accounts: [...accounts, codex] })} />);
     const [inst, acct] = tables();
     expect(headers(inst!)).toEqual(["App", "Instance", "Status", "Account", "Version", "Weekly", "Chats", "Open", "Away", "Launched"]);
     expect(headers(acct!)).toEqual(["Next", "App", "Account", "Weekly", "Week resets", "5-hour", "5-hour resets", "Extra", "Credits", "Read", "Instances"]);
@@ -95,6 +96,20 @@ describe("Coding apps tables — the same as Matrx 2's Code › Desktop apps", (
     expect(buttons.length).toBe(2 * 3 + 3 * 2);
     expect(buttons.every((b) => b.disabled)).toBe(true);
     expect([...host.querySelectorAll("button")].some((b) => (b.getAttribute("aria-label") ?? "").startsWith("Everything about sales"))).toBe(true);
+  });
+
+  it("an app that keeps no usage shows no usage columns on its own tab", () => {
+    const cursor = [account({ app_key: "cursor", account_id: "cur-1", email: "c@example.com", weekly: null, five_hour: null, read_at_ms: null, weekly_resets_at_ms: null, five_hour_resets_at_ms: null })];
+    render(<AppsTables {...props({ accounts: [...accounts, ...cursor] })} />);
+    const cursorTab = [...host.querySelectorAll("button, [role=tab], [role=radio]")].find((b) => b.textContent?.startsWith("Cursor"));
+    act(() => (cursorTab as HTMLElement).click());
+    const [, acct] = tables();
+    expect(headers(acct!)).toEqual(["Next", "Account", "Instances"]);
+  });
+
+  it("Accounts says it is still reading, never 'No accounts seen yet', while its read is in flight", () => {
+    render(<AppsTables {...props({ accounts: [], readingAccounts: true })} />);
+    expect(host.textContent).not.toContain("No accounts seen yet");
   });
 
   it("no computer: an honest empty state, never a false 'no apps'", () => {
@@ -112,6 +127,8 @@ describe("the desktop's rules, mirrored", () => {
     expect(ranks.get("claude:acct-b")).toBe(1);
     expect(ranks.get("claude:acct-a")).toBe(2);
     expect(ranks.has("claude:acct-c")).toBe(false);
+    expect(accounts.map(nextGroup)).toEqual(["Available", "Available", "At the limit"]);
+    expect(nextGroup(account({ weekly: 75 }))).toBe("Running low");
   });
 
   it("Chats and Away count the instance's own chats and the ones moved off it", () => {

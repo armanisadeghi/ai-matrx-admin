@@ -47,6 +47,7 @@ import {
   instKey,
   instanceAccount,
   nextRanks,
+  nextGroup,
   nextWord,
   pct,
   statusWords,
@@ -131,8 +132,10 @@ export function CodingAppsSection() {
       instances={[]}
       accounts={[]}
       chats={new Map()}
-      reading={list.state === "loading"}
-      readError={null}
+      readingInstances={list.state === "loading"}
+      readingAccounts={list.state === "loading"}
+      instancesError={null}
+      accountsError={null}
       where={why}
       problem={null}
       asOfMs={null}
@@ -156,7 +159,7 @@ export function CodingAppsSection() {
 function useAppReads(client: DesktopClient, live: boolean, app: string) {
   const instances = useDesktopRequest("apps.instances.list", { app_key: app }, { client, enabled: live, refreshMs: POLL_MS });
   const accounts = useDesktopRequest("apps.accounts.list", { app_key: app }, { client, enabled: live && READS_ACCOUNTS.has(app), refreshMs: POLL_MS });
-  const chats = useDesktopRequest("apps.chats.list", { app_key: app }, { client, enabled: live && READS_CHATS.has(app) });
+  const chats = useDesktopRequest("apps.chats.list", { app_key: app }, { client, enabled: live && READS_CHATS.has(app), refreshMs: POLL_MS });
   return { app, instances, accounts, chats };
 }
 
@@ -178,8 +181,15 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
   const results = reads.flatMap((r) => [r.instances.data, READS_ACCOUNTS.has(r.app) ? r.accounts.data : undefined]).filter((d): d is NonNullable<typeof d> => d !== undefined);
   const asOfMs = results.length ? Math.min(...results.map((d) => d.as_of_ms ?? nowMs)) : null;
   const refreshing = results.some((d) => d.refreshing === true);
-  const firstError = reads.map((r) => r.instances.error ?? (READS_ACCOUNTS.has(r.app) ? r.accounts.error : undefined)).find(Boolean);
-  const readsDone = reads.every((r) => r.instances.data !== undefined || r.instances.error !== undefined);
+  const instancesDone = reads.every((r) => r.instances.data !== undefined || r.instances.error !== undefined);
+  const accountsDone = reads.every((r) => !READS_ACCOUNTS.has(r.app) || r.accounts.data !== undefined || r.accounts.error !== undefined);
+  const instancesError = reads.map((r) => r.instances.error).find(Boolean);
+  const accountsError = reads.map((r) => (READS_ACCOUNTS.has(r.app) ? r.accounts.error : undefined)).find(Boolean);
+  // Every app whose read failed is named, even when the other apps answered (nothing fails silently).
+  const failed = reads.flatMap((r) => {
+    const e = r.instances.error ?? (READS_ACCOUNTS.has(r.app) ? r.accounts.error : undefined) ?? (READS_CHATS.has(r.app) ? r.chats.error : undefined);
+    return e ? [`${appLabel(r.app)}: ${e.message}`] : [];
+  });
   const problems = [...new Set(reads.flatMap((r) => [r.instances.data?.problem, r.accounts.data?.problem]).filter((p): p is string => Boolean(p)))];
 
   const action = useDesktopAction({ client, onDone: () => refetch() });
@@ -187,6 +197,7 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
     for (const r of reads) {
       void r.instances.refetch();
       if (READS_ACCOUNTS.has(r.app)) void r.accounts.refetch();
+      if (READS_CHATS.has(r.app)) void r.chats.refetch();
     }
   };
   const refreshAll = () =>
@@ -201,8 +212,8 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
   const where = live || status.pill === "live" ? null : `${computer.name}: ${status.detail ?? status.label}`;
   const problem = !live
     ? null
-    : firstError && !instances.length
-      ? `${computer.name} answered: ${firstError.message}`
+    : failed.length
+      ? `Couldn't read ${failed.join(" · ")}`
       : problems.length
         ? `Some figures may be out of date: ${problems.join(" · ")}`
         : null;
@@ -213,8 +224,10 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
       instances={instances}
       accounts={accounts}
       chats={chats}
-      reading={!live ? status.pill === "reconnecting" : !readsDone}
-      readError={live && firstError && !instances.length ? firstError.message : null}
+      readingInstances={!live ? status.pill === "reconnecting" : !instancesDone}
+      readingAccounts={!live ? status.pill === "reconnecting" : !accountsDone}
+      instancesError={live && instancesError && !instances.length ? instancesError.message : null}
+      accountsError={live && accountsError && !accounts.length ? accountsError.message : null}
       where={where}
       problem={problem}
       asOfMs={asOfMs}
@@ -233,9 +246,11 @@ export interface AppsTablesProps {
   instances: AppInstance[];
   accounts: AppAccount[];
   chats: Map<string, AppChats>;
-  reading: boolean;
-  /** The instances read itself failed (the tables say so instead of "nothing found"). */
-  readError: string | null;
+  readingInstances: boolean;
+  readingAccounts: boolean;
+  /** A read failed with nothing to show (the table says so instead of "nothing found"). */
+  instancesError: string | null;
+  accountsError: string | null;
   /** Why no computer answers, said plainly (not an error: the computer is off or asleep). */
   where: string | null;
   problem: string | null;
@@ -273,6 +288,8 @@ function Usage({ v, label, resetSince = false }: { v: number | null; label: stri
 const time = (ms: number | null) => (ms ? new Date(ms).toLocaleString() : null);
 const ago = (ms: number | null, now: number) => (ms ? updatedWords(ms, now).replace(/^Updated /, "") : "—");
 const count = (n: number) => (n < 0 ? "—" : String(n));
+/** An unknown count (-1) is no value: it sorts last and never matches a number filter. */
+const known = (n: number) => (n < 0 ? null : n);
 
 /** Exported for the render test (`__tests__/coding-apps-tables.test.tsx`). */
 export function AppsTables(p: AppsTablesProps) {
@@ -294,7 +311,10 @@ export function AppsTables(p: AppsTablesProps) {
   const awayOf = (i: AppInstance) => (READS_CHATS.has(i.app_key) ? awayCount(p.chats.get(i.app_key), i.key) : -1);
   const openOf = (i: AppInstance) => (READS_CHATS.has(i.app_key) ? i.open_chats : -1);
 
-  const say = (r: Promise<{ message: string }>) => r.then((x) => setNote(x.message));
+  const say = (r: Promise<{ message: string }>) => {
+    setNote(null);
+    return r.then((x) => setNote(x.message));
+  };
   const open = (i: AppInstance) => void action?.run((c) => say(c.request("apps.windows.open", { app_key: i.app_key, window: i.key })));
   const restart = (i: AppInstance, force: boolean) =>
     void action?.run(async (c) => {
@@ -338,11 +358,14 @@ export function AppsTables(p: AppsTablesProps) {
   const shownAccounts = p.accounts.filter((a) => appOk(a.app_key));
   const multi = app === "all";
   // A column no app shown can fill is left out (an app that keeps no usage shows no usage columns).
-  const usageShown = multi ? p.accounts.some((a) => a.read_at_ms !== null) || p.instances.some((i) => READS_ACCOUNTS.has(i.app_key)) : READS_ACCOUNTS.has(app);
+  // As the desktop: Weekly on Instances when a shown app reads accounts; the Accounts usage columns
+  // only when a shown account has a reading; Extra only with a Claude account, Credits with Codex.
+  const usageShown = multi || READS_ACCOUNTS.has(app);
   const chatsShown = multi || READS_CHATS.has(app);
   const accountsShown = multi || READS_ACCOUNTS.has(app);
-  const extraShown = multi || app === "claude";
-  const creditsShown = multi || app === "codex";
+  const acctUsageShown = shownAccounts.some((a) => a.read_at_ms !== null);
+  const extraShown = shownAccounts.some((a) => a.app_key === "claude");
+  const creditsShown = shownAccounts.some((a) => a.credits !== null || a.app_key === "codex");
 
   const appColumn = <T extends { app_key: string }>(): MatrxColumnDef<T> => ({
     id: "app",
@@ -363,18 +386,20 @@ export function AppsTables(p: AppsTablesProps) {
     ...(usageShown ? ([{ id: "weekly", header: "Weekly", accessorFn: (i) => accountOf(i)?.weekly ?? null, filter: "number", width: 100, cell: (i) => <Usage v={accountOf(i)?.weekly ?? null} resetSince={accountOf(i)?.weekly_reset_since ?? false} label="Weekly use" /> }] satisfies MatrxColumnDef<AppInstance>[]) : []),
     ...(chatsShown
       ? ([
-          { id: "chats", header: "Chats", accessorFn: (i) => chatsOf(i), filter: "number", width: 80, align: "right", cell: (i) => count(chatsOf(i)) },
-          { id: "open_chats", header: "Open", accessorFn: (i) => openOf(i), filter: "number", width: 76, align: "right", cell: (i) => count(openOf(i)) },
-          { id: "away", header: "Away", accessorFn: (i) => awayOf(i), filter: "number", width: 76, align: "right", cell: (i) => count(awayOf(i)) },
+          { id: "chats", header: "Chats", accessorFn: (i) => known(chatsOf(i)), filter: "number", width: 80, align: "right", cell: (i) => count(chatsOf(i)) },
+          { id: "open_chats", header: "Open", accessorFn: (i) => known(openOf(i)), filter: "number", width: 76, align: "right", cell: (i) => count(openOf(i)) },
+          { id: "away", header: "Away", accessorFn: (i) => known(awayOf(i)), filter: "number", width: 76, align: "right", cell: (i) => count(awayOf(i)) },
         ] satisfies MatrxColumnDef<AppInstance>[])
       : []),
     { id: "launched", header: "Launched", accessorFn: (i) => (i.launched_ms ? new Date(i.launched_ms).toISOString() : null), sortValue: (i) => i.launched_ms ?? -1, filter: "date", width: 120, cell: (i) => <span className="text-muted-foreground">{ago(i.launched_ms, now)}</span> },
   ];
 
   const acctColumns: MatrxColumnDef<AppAccount>[] = [
-    { id: "next", header: "Next", accessorFn: (a) => nextWord(a, ranks).word, sortValue: (a) => nextOrder.get(acctKey(a)) ?? 0, filter: "select", width: 84, cell: (a) => <ToneWord {...nextWord(a, ranks)} /> },
+    { id: "next", header: "Next", accessorFn: (a) => nextWord(a, ranks).word, sortValue: (a) => nextOrder.get(acctKey(a)) ?? 0, filterValue: (a) => nextGroup(a), filter: "select", width: 84, cell: (a) => <ToneWord {...nextWord(a, ranks)} /> },
     ...(multi ? [appColumn<AppAccount>()] : []),
     { id: "account", header: "Account", accessorFn: (a) => accountName(a), filter: "text", width: 240, cell: (a) => <span className={`truncate ${a.email ? "" : "text-muted-foreground"}`} title={accountName(a)}>{accountName(a)}</span> },
+    ...(acctUsageShown
+      ? ([
     { id: "weekly", header: "Weekly", accessorFn: (a) => a.weekly, filter: "number", width: 100, cell: (a) => <Usage v={a.weekly} resetSince={a.weekly_reset_since} label="Weekly use" /> },
     {
       id: "weekly_resets",
@@ -417,10 +442,12 @@ export function AppsTables(p: AppsTablesProps) {
         </span>
       ),
     },
+        ] satisfies MatrxColumnDef<AppAccount>[])
+      : []),
     { id: "instances", header: "Instances", accessorFn: (a) => a.instances.length, filter: "number", width: 96, align: "right" },
   ];
 
-  const tabCount = (k: string) => p.instances.filter((i) => i.app_key === k).length;
+  const tabCount = (k: string) => (p.readingInstances && !p.instances.length ? null : p.instances.filter((i) => i.app_key === k).length);
   const updated = p.client ? (p.refreshing || refreshBusy ? "Reading…" : updatedWords(p.asOfMs, now)) : null;
 
   return (
@@ -431,6 +458,7 @@ export function AppsTables(p: AppsTablesProps) {
           {p.computerName ? <span className="truncate text-xs text-muted-foreground">on {p.computerName}</span> : null}
         </div>
         <div className="flex items-center gap-2">
+          {note ? <span className="max-w-80 truncate text-xs text-muted-foreground" role="status" title={note}>{note}</span> : null}
           {p.picker}
           {updated ? <span className="text-xs text-muted-foreground" data-coding-apps-updated>{updated}</span> : null}
           <Button
@@ -453,13 +481,12 @@ export function AppsTables(p: AppsTablesProps) {
         aria-label="App"
         value={app}
         onValueChange={setApp}
-        data={[{ value: "all" as AppFilter, label: "All apps", count: p.instances.length }, ...APP_KEYS.map((k) => ({ value: k as AppFilter, label: appLabel(k), count: tabCount(k) }))]}
+        data={[{ value: "all" as AppFilter, label: "All apps", count: p.readingInstances && !p.instances.length ? null : p.instances.length }, ...APP_KEYS.map((k) => ({ value: k as AppFilter, label: appLabel(k), count: tabCount(k) }))]}
       />
 
       {p.where ? <p className="text-xs text-muted-foreground" role="status" data-coding-apps-offline>{p.where}</p> : null}
       {p.problem ? <ErrorNotice message={p.problem} size="inline" /> : null}
       {action?.error ? <ErrorNotice message={action.error.message} size="inline" /> : null}
-      {note ? <p className="text-xs text-muted-foreground" role="status">{note}</p> : null}
 
       <MatrxDataTable<AppInstance>
         tableId="work/connections/instances"
@@ -474,8 +501,8 @@ export function AppsTables(p: AppsTablesProps) {
         toolbar={{ title: "Instances", searchPlaceholder: "Search instances" }}
         rowActions={(i, controls) => instActions(i, controls.openDetail)}
         detail={{ title: (i) => i.key, description: (i) => `${appLabel(i.app_key)} · ${i.main ? "the main instance: the app's own folder" : "an instance: the same install, started with its own folder"}`, render: (i) => <InstanceDetail i={i} account={accountOf(i) ?? null} chats={chatsOf(i)} away={awayOf(i)} now={now} /> }}
-        isLoading={p.reading && !p.instances.length}
-        read={{ status: p.readError ? "error" : p.reading && !p.instances.length ? "loading" : "ready", error: p.readError ?? undefined, onRetry: p.onDone, what: "this computer's instances" }}
+        isLoading={p.readingInstances && !p.instances.length}
+        read={{ status: p.instancesError ? "error" : p.readingInstances && !p.instances.length ? "loading" : "ready", error: p.instancesError ?? undefined, onRetry: p.onDone, what: "this computer's instances" }}
         emptyState={{ title: p.client ? (p.instances.length ? "No instances match" : "No coding apps found on this computer") : "No computer connected", description: p.client ? undefined : "Open Matrx 2 on your computer to see its coding apps here" }}
       />
 
@@ -493,8 +520,8 @@ export function AppsTables(p: AppsTablesProps) {
           toolbar={{ title: "Accounts", searchPlaceholder: "Search accounts" }}
           rowActions={(a, controls) => acctActions(a, controls.openDetail)}
           detail={{ title: (a) => accountName(a), description: (a) => `${appLabel(a.app_key)} · ${availability(a) === "available" ? `available, use ${ranks.get(acctKey(a)) === 1 ? "first" : `#${ranks.get(acctKey(a)) ?? ""}`}` : availability(a) === "unknown" ? "no usage reading yet" : "at its limit"}`, render: (a) => <AccountDetail a={a} stale={stale(a)} now={now} /> }}
-          isLoading={p.reading && !p.accounts.length}
-          read={{ status: p.readError ? "error" : p.reading && !p.accounts.length ? "loading" : "ready", error: p.readError ?? undefined, onRetry: p.onDone, what: "this computer's accounts" }}
+          isLoading={p.readingAccounts && !p.accounts.length}
+          read={{ status: p.accountsError ? "error" : p.readingAccounts && !p.accounts.length ? "loading" : "ready", error: p.accountsError ?? undefined, onRetry: p.onDone, what: "this computer's accounts" }}
           emptyState={{ title: p.client ? (p.accounts.length ? "No accounts match" : "No accounts seen yet") : "No computer connected" }}
         />
       ) : null}
@@ -535,7 +562,7 @@ function InstanceDetail({ i, account, chats, away, now }: { i: AppInstance; acco
       <Fact label="Folder exists" value={i.folder_exists ? "Yes" : "No"} />
       {READS_CHATS.has(i.app_key) ? (
         <>
-          <Fact label="Chats" value={chats < 0 ? "Still being read" : String(chats)} />
+          <Fact label="Chats" value={chats < 0 ? null : String(chats)} empty="Not read" />
           <Fact label="Open now" value={String(i.open_chats)} />
           <Fact label="Moved away" value={away < 0 ? null : String(away)} empty="—" />
         </>
