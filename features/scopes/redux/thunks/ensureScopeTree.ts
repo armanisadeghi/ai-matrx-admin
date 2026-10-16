@@ -18,6 +18,7 @@ import type { ThunkAction, UnknownAction } from "@reduxjs/toolkit";
 import { forgetSharedScopeBootRead, scopesService } from "@/features/scopes/service/scopesService";
 import { scopesActions } from "@/features/scopes/redux/scopesSlice";
 import { getUserId } from "@/utils/auth/getUserId";
+import { awaitSavedTree } from "@/features/scopes/redux/thunks/awaitSavedTree";
 import type { RootState } from "@/lib/redux/rootReducer";
 
 type AppThunk<R = void> = ThunkAction<R, RootState, unknown, UnknownAction>;
@@ -81,8 +82,6 @@ export function ensureScopeTree(
       await dispatch(ensureAdminOrganizationTree(adminOrganizationId, { refresh }));
       return;
     }
-    const state = getState().scopesTree;
-
     // No user yet = expected state, NOT an error. Every product surface fires
     // this on mount (the org picker, context pickers, notes, …); firing before
     // auth hydrates — a genuine race on (public) routes where auth lands async,
@@ -92,7 +91,12 @@ export function ensureScopeTree(
     // getUserId()-null guard (activeOrgBootstrap.ts, audioChunkJournal.ts).
     if (!getUserId()) return;
 
-    if (!refresh && state.treeStatus === "ready") return;
+    if (!refresh && getState().scopesTree.treeStatus === "ready") return;
+    // The saved copy first: a warm reload restores the tree and needs no fetch.
+    if (!refresh) {
+      await awaitSavedTree();
+      if (getState().scopesTree.treeStatus === "ready") return;
+    }
 
     // A refresh asks for her organizations and projects again (lane PAGE-BUNDLE-2).
     if (refresh) forgetSharedScopeBootRead();

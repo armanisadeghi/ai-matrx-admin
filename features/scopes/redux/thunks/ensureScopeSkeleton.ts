@@ -16,6 +16,7 @@ import { scopesActions } from "@/features/scopes/redux/scopesSlice";
 import { TYPE_SCOPES_PAGE } from "@ai-matrx/records/scopes";
 import { scopeDoors } from "@/features/scopes/service/scopeDoors";
 import { getUserId } from "@/utils/auth/getUserId";
+import { awaitSavedTree } from "@/features/scopes/redux/thunks/awaitSavedTree";
 import type { RootState } from "@/lib/redux/rootReducer";
 
 type AppThunk<R = void> = ThunkAction<R, RootState, unknown, UnknownAction>;
@@ -27,8 +28,16 @@ type AppThunk<R = void> = ThunkAction<R, RootState, unknown, UnknownAction>;
 export function ensureScopeSkeleton(opts: { refresh?: boolean } = {}): AppThunk<Promise<void>> {
   return async (dispatch, getState) => {
     if (!getUserId()) return;
-    const s = getState().scopesTree;
-    if (!opts.refresh && (s.skeletonStatus === "ready" || s.treeStatus === "ready")) return;
+    const loaded = () => {
+      const s = getState().scopesTree;
+      return s.skeletonStatus === "ready" || s.treeStatus === "ready";
+    };
+    if (!opts.refresh && loaded()) return;
+    // The saved copy first: a warm reload restores the tree (and with it the skeleton).
+    if (!opts.refresh) {
+      await awaitSavedTree();
+      if (loaded()) return;
+    }
     // A refresh asks for her organizations and projects again (lane PAGE-BUNDLE-2).
     if (opts.refresh) forgetSharedScopeBootRead();
     dispatch(scopesActions.skeletonFetchPending());

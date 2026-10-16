@@ -76,6 +76,10 @@ hydration errors.
 
 ## Change log
 
+- 2026-10-16 — **`whenSyncHydrated(store)`**: the settled signal as a promise, for
+  loaders outside React (same tracker and backstop as `useSyncHydrated`). A
+  loader of a warm-cache slice awaits it before going to the network.
+
 - 2026-10-15 — **A paint-only cache is declared, not faked.** `remote.cachePaintsOnly: true`
   means the cached record only paints: every boot fetches at once with no
   `boot.cache.insufficient` warning, and a fetch result never warms the cache
