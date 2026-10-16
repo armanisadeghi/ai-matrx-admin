@@ -23,7 +23,9 @@
  * organization, project, or task. It counts a whitelisted set of tables,
  * detects each container column dynamically, and omits any table that's moved
  * / lacks the column — which the UI still renders as an informational tile
- * (null), not a fake 0.
+ * (null), not a fake 0. A table another session holds locked (any DDL in flight) answers
+ * `n: null` within 750 ms instead of stalling the whole call into the 8 s statement timeout
+ * (57014, 2026-10-16); that kind is named in `failures`, the rest still render.
  *
  * `useOrgResourceInventory` is a thin wrapper over this (column =
  * "organization_id"), preserving the org "shared-with-org" pass.
@@ -39,7 +41,8 @@ import { countSavedSources } from "@/features/resource-manager/source-input/save
 
 interface ContainerCountRow {
   resource_key: string;
-  n: number;
+  /** null: the table was busy (locked) or the call's time budget ran out — unread, not 0. */
+  n: number | null;
 }
 
 export type ContainerColumn = "organization_id" | "project_id" | "task_id";
@@ -95,6 +98,10 @@ async function readContainerInventory(column: ContainerColumn, value: string): P
   // Cast through `never` because the generated DB types intentionally aren't
   // regenerated mid-reorg (a full regen would pull half-applied schema).
   const ownedByKey = new Map<string, number>();
+  // A row with `n: null` is a table the RPC could not read this time (another session held a lock
+  // on it, or the call ran out of its time budget) — unread, never a 0. Named as a failure below
+  // unless a later read fills that key.
+  const unreadKeys = new Set<string>();
   try {
     const { data, error } = await supabase.rpc(
       "container_resource_counts" as never,
@@ -108,6 +115,10 @@ async function readContainerInventory(column: ContainerColumn, value: string): P
         // Guard the untyped RPC rows: a future signature change would
         // otherwise silently yield NaN counts. Skip anything malformed.
         if (!row || typeof row.resource_key !== "string") continue;
+        if (row.n === null) {
+          unreadKeys.add(row.resource_key);
+          continue;
+        }
         const num = Number(row.n);
         if (!Number.isFinite(num)) continue;
         ownedByKey.set(row.resource_key, num);
@@ -190,6 +201,12 @@ async function readContainerInventory(column: ContainerColumn, value: string): P
     }
   }
 
+  for (const entry of ORG_RESOURCE_CATALOGUE) {
+    if (unreadKeys.has(entry.key) && !ownedByKey.has(entry.key)) {
+      failed.push(entry.labelPlural.toLowerCase());
+    }
+  }
+
   const next: Record<string, number | null> = {};
   for (const entry of ORG_RESOURCE_CATALOGUE) {
     const owned = ownedByKey.has(entry.key)
@@ -199,7 +216,8 @@ async function readContainerInventory(column: ContainerColumn, value: string): P
     if (column === "organization_id" && entry.shareKey) {
       shared = sharedByTable.get(entry.shareKey) ?? 0;
     }
-    if (owned === null && shared === null) {
+    if (owned === null && (shared === null || unreadKeys.has(entry.key))) {
+      // Uncountable, or its own rows went unread: a shared-only number would read as the total.
       next[entry.key] = null;
     } else {
       next[entry.key] = (owned ?? 0) + (shared ?? 0);
