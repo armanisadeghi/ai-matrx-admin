@@ -419,8 +419,8 @@ describe("the Meet package loads when a DM thread is opened, not before (first-p
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { MessagingHost } = require("./MessagingHost") as typeof import("./MessagingHost");
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { useMessagingHost } = require("@ai-matrx/messaging/react") as typeof import("@ai-matrx/messaging/react");
-    let engine: { openConversation: (id: string) => Promise<unknown> } | null = null;
+    const { useMessagingHost, asConversationId } = require("@ai-matrx/messaging/react") as typeof import("@ai-matrx/messaging/react");
+    let engine: import("@ai-matrx/messaging/react").MessagingEngine | null = null;
     function EngineProbe(): null {
       engine = useMessagingHost()?.engine ?? null;
       return null;
@@ -444,7 +444,7 @@ describe("the Meet package loads when a DM thread is opened, not before (first-p
     expect(loads()).toBe(0);
 
     await act(async () => {
-      void engine!.openConversation("77777777-7777-4777-8777-777777777777");
+      void engine!.openConversation(asConversationId("77777777-7777-4777-8777-777777777777"));
     });
     await until(() => loads() === 1, "opening a thread never fetched the Meet package");
   });

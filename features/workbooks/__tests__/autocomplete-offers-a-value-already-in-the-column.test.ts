@@ -21,7 +21,11 @@ describe("Tools > Suggestion controls change what the formula editor is told", (
   it("each switch empties its own popup and nothing else", () => {
     const description = { getSearchListByNameFirstLetter: () => ["SUM"] };
     const lexer = { getFunctionAndParameter: () => ({ functionName: "SUM", paramIndex: 0 }) };
-    const injector = { get: (token: unknown) => (token === "IDescription" ? description : lexer) };
+    // Univer's injector is generic in what it resolves (`get<T>(token): T`); a DI fake answers with
+    // the registered instance for the token it was asked for.
+    const injector = {
+      get: <T,>(token: unknown): T => (token === "IDescription" ? description : lexer) as T,
+    };
     const prefs = { functionSuggestions: true, formulaHints: true, columnAutocomplete: true };
     const off = installFormulaPopupControls(injector, () => prefs);
     expect(description.getSearchListByNameFirstLetter()).toEqual(["SUM"]);

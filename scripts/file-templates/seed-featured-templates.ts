@@ -40,7 +40,7 @@ async function main() {
       const body = JSON.stringify(t.snapshot);
       const hash = stableContentHash(t.snapshot);
       const metadata = JSON.stringify({
-        ...("metadata" in t ? t.metadata : {}),
+        ...t.metadata,
         seed_key: t.seedKey,
         content_hash: hash,
       });

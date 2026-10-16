@@ -13,6 +13,8 @@ export type SeedTemplate = {
   description: string;
   sortOrder: number;
   snapshot: Record<string, unknown>;
+  /** Extra file_template.metadata a seed carries (the Univer showcases do). */
+  metadata?: Record<string, unknown>;
 };
 
 const sum = (xs: number[]) => Math.round(xs.reduce((a, b) => a + b, 0) * 100) / 100;
