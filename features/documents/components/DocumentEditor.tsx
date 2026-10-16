@@ -152,7 +152,7 @@ import type {
   DocumentAwareness,
   DocumentCollabFactory,
 } from "@/features/documents/document-model/documentModel";
-import type { CommandServiceLike } from "@/features/workbooks/collab/WorkbookCollabSession";
+import type { CommandServiceLike } from "@ai-matrx/office/univer/collab";
 import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 
 import { getClaimsUser } from "@ai-matrx/auth";
@@ -1023,7 +1023,7 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
     const uid = userData?.user?.id;
     if (!uid) return null;
     const [{ WorkbookCollabSession }, { SupabaseYjsProvider }] = await Promise.all([
-      import("@/features/workbooks/collab/WorkbookCollabSession"),
+      import("@ai-matrx/office/univer/collab"),
       import("@ai-matrx/data/realtime/collab"),
     ]);
     const clientId =

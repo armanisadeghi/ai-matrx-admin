@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { safeReturnUrl } from "../session";
+import { safeRelativePath } from "@/utils/auth/safe-redirect";
 import { escapeHtml } from "@ai-matrx/kit/html-escape";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -8,8 +8,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const error =
     request.nextUrl.searchParams.get("github_error") ??
     "GitHub connection failed.";
-  const returnUrl = safeReturnUrl(
+  const returnUrl = safeRelativePath(
     request.nextUrl.searchParams.get("return_url"),
+    "/code",
   );
   const message = connected
     ? { type: "github_oauth_complete" }

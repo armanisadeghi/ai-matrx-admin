@@ -4,6 +4,7 @@ import { agentTrafficOf, agentTrafficSetCookie } from "@/lib/agent-traffic/marke
 import { readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "@/utils/supabase/server";
+import { safeRelativePath } from "@/utils/auth/safe-redirect";
 import { getClaimsUser } from "@ai-matrx/auth";
 import {
   describeFailure,
@@ -330,10 +331,7 @@ async function signIn(request: NextRequest): Promise<NextResponse> {
   }
 
   const nextParam = url.searchParams.get("next") ?? "/dashboard";
-  const safeNext =
-    nextParam.startsWith("/") && !nextParam.startsWith("//")
-      ? nextParam
-      : "/dashboard";
+  const safeNext = safeRelativePath(nextParam, "/dashboard");
   // 🚨 THE REDIRECT STAYS ON THE HOST IT WAS CALLED ON.
   // The whole point of `<session>.localhost` is a private cookie jar; a redirect
   // that rewrote the host to `localhost` would land the caller back in the

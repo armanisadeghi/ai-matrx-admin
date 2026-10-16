@@ -41,7 +41,7 @@ import { isSnapshotMutation } from "@ai-matrx/office/univer";
 import type {
   CollabMutationInfo,
   CommandServiceLike,
-} from "@/features/workbooks/collab/WorkbookCollabSession";
+} from "@ai-matrx/office/univer/collab";
 
 /** Debounce from the last edit to the save. */
 export const DOCUMENT_SAVE_DELAY_MS = 2500;

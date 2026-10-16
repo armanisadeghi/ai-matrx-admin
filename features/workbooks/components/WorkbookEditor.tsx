@@ -102,7 +102,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
-import { useWorkbookRealtime } from "@/features/workbooks/hooks/useWorkbookRealtime";
+import { useWorkbookRealtime } from "@ai-matrx/office/univer/collab";
 import "@/lib/univer-host";
 import { useUniverDarkModeSync } from "@ai-matrx/office/univer";
 import { identifyUniverUser } from "@ai-matrx/office/univer";
@@ -197,7 +197,7 @@ export default function WorkbookEditor({
   // See `../collab/FEATURE.md` for the full architecture; this ref is the
   // sole live connection between Univer's command service and Yjs.
   const collabSessionRef = useRef<
-    import("@/features/workbooks/collab/WorkbookCollabSession").WorkbookCollabSession | null
+    import("@ai-matrx/office/univer/collab").WorkbookCollabSession | null
   >(null);
   // Univer selection-listener disposer, kept ref-side so the unmount path can
   // reach it regardless of which render registered it.
@@ -490,7 +490,7 @@ export default function WorkbookEditor({
 
     const [{ WorkbookCollabSession }, { SupabaseYjsProvider }] =
       await Promise.all([
-        import("@/features/workbooks/collab/WorkbookCollabSession"),
+        import("@ai-matrx/office/univer/collab"),
         import("@ai-matrx/data/realtime/collab"),
       ]);
 
@@ -501,7 +501,7 @@ export default function WorkbookEditor({
     // resolve the command service, log + return so the editor runs in
     // solo-without-collab mode rather than tearing down the route.
     let commandService:
-      | import("@/features/workbooks/collab/WorkbookCollabSession").CommandServiceLike
+      | import("@ai-matrx/office/univer/collab").CommandServiceLike
       | null = null;
     try {
       const injector = (
@@ -517,7 +517,7 @@ export default function WorkbookEditor({
       }
       const { ICommandService } = await import("@univerjs/core");
       const resolved = injector.get<
-        import("@/features/workbooks/collab/WorkbookCollabSession").CommandServiceLike
+        import("@ai-matrx/office/univer/collab").CommandServiceLike
       >(ICommandService as unknown);
       if (
         !resolved ||

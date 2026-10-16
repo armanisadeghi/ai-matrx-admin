@@ -37,7 +37,7 @@ import {
   type CollabMutationInfo,
   type CollabProviderLike,
   type CommandServiceLike,
-} from "@/features/workbooks/collab/WorkbookCollabSession";
+} from "@ai-matrx/office/univer/collab";
 
 let passed = 0;
 let failed = 0;

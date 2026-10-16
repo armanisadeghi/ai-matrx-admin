@@ -217,6 +217,22 @@ export function readAuthDestination(
 }
 
 /**
+ * THE one way to turn a validated destination into the URL to redirect to.
+ * An allowed absolute URL (an Office host) is returned as-is; a relative
+ * path is joined onto `baseUrl`. Never concatenate `${baseUrl}${destination}`
+ * by hand: with an absolute destination that yields a broken URL.
+ */
+export function resolveAuthDestinationUrl(
+  baseUrl: string,
+  destination: string,
+): string {
+  const absolute = safeAbsoluteReturnUrl(destination);
+  if (absolute) return absolute;
+  const relative = safeRelativePath(destination, "");
+  return `${baseUrl}${relative || DEFAULT_AUTH_DESTINATION}`;
+}
+
+/**
  * Read the destination, falling back to `/dashboard` (or your own fallback).
  * Use this at the very END of a flow — the point where someone must actually
  * be sent somewhere. Everywhere else prefer `readAuthDestination` so "no
