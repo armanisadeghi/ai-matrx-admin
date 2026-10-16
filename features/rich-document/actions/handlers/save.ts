@@ -6,21 +6,17 @@
 // a source → entity_type map so any source can produce a task.
 
 import { durableRecordId } from "@ai-matrx/kit/ids";
-import { FileText, Save, FileCode, CheckSquare, BookText } from "lucide-react";
+import { FileCode, CheckSquare } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { NotesAPI } from "@/features/notes/service/notesApi";
 import { CodeFilesAPI } from "@/features/code-files/service/codeFilesApi";
 import { setPendingSource } from "@/features/tasks/redux/taskUiSlice";
 import { registerActionIfAbsent } from "./register-if-absent";
-import { extractFirstCodeBlock, getErrorMessage, requireAuth, buildTaskTitle, deriveContentTitle, contentForDestination, chatStateOf } from "../utils";
-import { NOTE_BUCKET_TAGS } from "@/features/notes/homes/bucketTags";
+import { extractFirstCodeBlock, getErrorMessage, requireAuth, buildTaskTitle, contentForDestination, chatStateOf } from "../utils";
 import { selectConversationTitle } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import { selectMessagePosition } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { buildTaskSeedFromMessage } from "@ai-matrx/chat/agents/components/messages-display/message-options/buildTaskSeedFromMessage";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
-import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /**
  * Map a ContentSource to the `entity_type` used by save-to-task. Centralized
@@ -78,79 +74,6 @@ function sourceToEntityType(source: ContentSource): {
       return null;
   }
 }
-
-registerActionIfAbsent({
-  id: "save-to-scratch",
-  label: "Save to Scratch",
-  icon: FileText,
-  iconColor: "text-cyan-500 dark:text-cyan-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 0,
-  run: async (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "save-to-scratch",
-        "Save to Scratch",
-        "Sign in to save notes to your Scratch folder.",
-      )
-    )
-      return;
-    try {
-      const organizationId = await ensureOrgId(ctx.organizationId);
-      // Identical to Save to Notes, minus the questions: the home is General,
-      // tagged Scratch, title auto-derived, saved immediately.
-      await NotesAPI.create({
-        label: deriveContentTitle(ctx) ?? "New Note",
-        content: contentForDestination(ctx),
-        tags: [NOTE_BUCKET_TAGS.quickSaves],
-        organization_id: organizationId,
-      });
-      toast.success("Saved to Scratch!");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to save"));
-    }
-  },
-});
-
-registerActionIfAbsent({
-  id: "save-to-notes",
-  label: "Save to Notes",
-  icon: Save,
-  iconColor: "text-violet-500 dark:text-violet-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 1,
-  run: (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "save-to-notes",
-        "Save as Note",
-        "Sign in to save this content as a note.",
-      )
-    )
-      return;
-    // The quick-save window is the gold standard (refine editor, folder,
-    // derived title) — every source uses it. Chat saves land in Chat Saves.
-    ctx.dispatch(
-      openOverlay({
-        overlayId: "quickNoteSaveWindow",
-        data: {
-          initialContent: contentForDestination(ctx),
-          bucketTag:
-            ctx.source.type === "chat-message" ? NOTE_BUCKET_TAGS.chatSaves : undefined,
-          defaultNoteName: deriveContentTitle(ctx),
-          initialEditorMode: undefined,
-        },
-      }),
-    );
-    ctx.onClose();
-  },
-});
 
 registerActionIfAbsent({
   id: "save-code-to-scratch",
@@ -239,53 +162,6 @@ registerActionIfAbsent({
         },
       }),
     );
-  },
-});
-
-registerActionIfAbsent({
-  id: "add-to-docs",
-  label: "Save to Document",
-  icon: BookText,
-  iconColor: "text-emerald-500 dark:text-emerald-400",
-  category: "save",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 6,
-  run: async (ctx) => {
-    if (
-      !requireAuth(
-        ctx,
-        "add-to-docs",
-        "Save to Document",
-        "Sign in to save this content as a document.",
-      )
-    )
-      return;
-    try {
-      const organizationId = await ensureOrgId(ctx.organizationId);
-      // Lazy-import so Univer (heavy) stays out of the bundle until used.
-      const { pushMarkdownToDocument } =
-        await import("@/features/data-tables/export-targets");
-      const res = await pushMarkdownToDocument(
-        contentForDestination(ctx),
-        deriveContentTitle(ctx),
-        organizationId,
-      );
-      if (!res.ok || !res.href) {
-        toast.error(res.error || "Failed to create document");
-        return;
-      }
-      const href = res.href;
-      toast.success("Saved to Document", {
-        description: "Your content is ready as a normal document.",
-        action: {
-          label: "Open",
-          onClick: () => openOutbound(href, "_blank", "noopener"),
-        },
-      });
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to create document"));
-    }
   },
 });
 

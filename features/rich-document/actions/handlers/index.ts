@@ -10,19 +10,15 @@
 
 import "./save";
 import "./capture";
-import "./share";
 import "./listen";
-import "./transfer";
 import "./attach-to-chat";
 import "./ai";
-import "./send-to-agent";
 import "./chat";
 import "./contact";
 import "./export";
 import "./print";
 import "./edit";
 import "./compare";
-import "./creator";
 import "./feedback";
 import "./app";
 import "./server-api";

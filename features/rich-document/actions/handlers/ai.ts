@@ -11,8 +11,6 @@
 
 import { BookmarkPlus, FilePen, Link2, MessageCircle, Wand2 } from "lucide-react";
 import { registerActionIfAbsent } from "./register-if-absent";
-import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { customAgentWindowAction } from "@/features/overlays/openers/customAgentWindow";
 import { applyToSourceReviewAction } from "@/features/overlays/openers/applyToSourceReview";
 import { shortcutEditorWindowAction } from "@/features/overlays/openers/shortcutEditorWindow";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
@@ -21,18 +19,11 @@ import {
   shortcutSeedForMapping,
 } from "@/features/agent-shortcuts/draft-seed";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
-import { buildValueSources } from "@ai-matrx/chat/agents/components/custom-agent/custom-agent-plan";
-import {
-  applyTargetForConversation,
-  canApplyBack,
-  registerApplyTarget,
-} from "@ai-matrx/rich-content/rich-document/review/applyTargets";
+import { applyTargetForConversation } from "@ai-matrx/rich-content/rich-document/review/applyTargets";
 import {
   chatIds,
   chatStateOf,
   contentForDestination,
-  deriveContentTitle,
-  requireAuth,
 } from "../utils";
 
 registerActionIfAbsent({
@@ -61,57 +52,6 @@ registerActionIfAbsent({
   order: 1,
   visible: (ctx) => Boolean(ctx.callbacks?.onRequestTextAgentAction),
   run: (ctx) => ctx.callbacks?.onRequestTextAgentAction?.("help", ctx),
-});
-
-registerActionIfAbsent({
-  // "Custom agent…": THE agent picker window, then map the agent's inputs to
-  // what the menu captured; the agent opens in its own window (one per open,
-  // so several can work on the same text). When the text can be saved back,
-  // each answer in that window offers "Apply to source".
-  //
-  // A text FIELD (ProTextarea — a raw source that applies into itself) keeps
-  // its in-field panel: that host's whole point is the result landing in the
-  // field being typed in.
-  id: "text-custom-agent",
-  label: "Custom agent…",
-  icon: AGENT_ICON,
-  iconColor: "text-primary",
-  category: "ai",
-  supportedSources: "*",
-  renderSlot: "overflow",
-  order: 2,
-  visible: (ctx) =>
-    Boolean(ctx.callbacks?.onRequestTextAgentAction) ||
-    contentForDestination(ctx).trim().length > 0,
-  run: (ctx) => {
-    if (ctx.source.type === "raw" && ctx.callbacks?.onRequestTextAgentAction) {
-      ctx.callbacks.onRequestTextAgentAction("customAgent", ctx);
-      return;
-    }
-    if (
-      !requireAuth(
-        ctx,
-        "text-custom-agent",
-        "Custom agent",
-        "Sign in to run any of your agents on this text.",
-      )
-    )
-      return;
-    const title = deriveContentTitle(ctx) ?? null;
-    const applyTargetId =
-      ctx.callbacks?.onRequestTextAgentAction && canApplyBack(ctx)
-        ? registerApplyTarget(ctx, title ?? "source")
-        : null;
-    ctx.dispatch(
-      customAgentWindowAction({
-        scope: ctx.applicationScope ?? null,
-        sources: buildValueSources(ctx.applicationScope, contentForDestination(ctx)),
-        sourceTitle: title,
-        applyTargetId,
-      }),
-    );
-    ctx.onClose();
-  },
 });
 
 registerActionIfAbsent({

@@ -7,7 +7,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";
-import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { contentForDestination, contentForPrint } from "../utils";
 import { chatContext } from "../../test-utils/chatContext";
 
@@ -46,18 +45,9 @@ describe("every outbound writer uses the one destination step", () => {
   }
 });
 
-describe("Save to Notes receives the readable text", () => {
-  it("the quick-save window opens without the envelope, table kept", () => {
-    const dispatch = jest.fn();
-    const ctx = { ...chatContext("assistant"), content: ENVELOPED, dispatch, isAuthenticated: true };
-    getAction("save-to-notes")!.run(ctx as never);
-    const payload = dispatch.mock.calls
-      .map(([a]) => a?.payload)
-      .find((p) => p?.overlayId === "quickNoteSaveWindow");
-    expect(payload.data.initialContent).not.toContain("<artifact");
-    expect(payload.data.initialContent).toContain("| Payroll | Dana |");
-  });
-});
+// What Save to Notes opens (the quick-save window, readable text without envelopes or __kind JSON)
+// is @ai-matrx/chat's own since message-actions W2a: the package's w2a-rows-reach-their-host-seams
+// test guards it.
 
 describe("a __kind answer reaches every destination as readable markdown", () => {
   const SET = {
@@ -77,17 +67,6 @@ describe("a __kind answer reaches every destination as readable markdown", () =>
     });
     expect(fenced).not.toContain("__kind");
     expect(fenced).toContain("Your cards:");
-  });
-
-  it("Save to Notes opens with the kind's markdown, never its JSON", () => {
-    const dispatch = jest.fn();
-    const ctx = { ...chatContext("assistant"), content: JSON.stringify(SET), dispatch, isAuthenticated: true };
-    getAction("save-to-notes")!.run(ctx as never);
-    const payload = dispatch.mock.calls
-      .map(([a]) => a?.payload)
-      .find((p) => p?.overlayId === "quickNoteSaveWindow");
-    expect(payload.data.initialContent).not.toContain("__kind");
-    expect(payload.data.initialContent).toContain("Powerhouse?");
   });
 
   it("kindless content is unchanged", () => {

@@ -37,6 +37,10 @@ import { featureRegExp, gitFiles } from "./lib/source-roots.cjs";
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Where a person meets content that can hold rows. */
+const SAVE_TABLE_ACTIONS = "../aidream/apps/shared/chat/src/agents/components/messages-display/rich-document/actions";
+const SAVE_TABLE_SOURCE = `${SAVE_TABLE_ACTIONS}/table-source.ts`;
+const SAVE_TABLE_BODY = `${SAVE_TABLE_ACTIONS}/bodies/w2a-actions.ts`;
+
 export const CONTENT_ROOTS = [
   "app",
   "features/page-extraction",
@@ -155,9 +159,12 @@ export function judge(files: ReadonlyMap<string, string>): Finding[] {
       out.push({ rule: 4, file, says: "makes a table itself — open the saveToTable overlay (useOpenSaveToTable) instead" });
     }
   }
-  const registry = files.get("features/rich-document/actions/handlers/transfer.ts") ?? "";
-  if (!/hasTableShape\(/.test(registry) || !/overlayId:\s*"saveToTable"/.test(registry)) {
-    out.push({ rule: 3, file: "features/rich-document/actions/handlers/transfer.ts", says: "the registry no longer offers Save to a table for every shape (hasTableShape → saveToTable)" });
+  // The registry's "Save to a table" is @ai-matrx/chat's own since message-actions W2a: what it
+  // saves (table-source.ts) and the window it opens (bodies/w2a-actions.ts).
+  const registry = files.get(SAVE_TABLE_SOURCE) ?? "";
+  const registryBody = files.get(SAVE_TABLE_BODY) ?? "";
+  if (!/hasTableShape\(/.test(registry) || !/CHAT_WINDOWS\.saveToTable/.test(registryBody)) {
+    out.push({ rule: 3, file: SAVE_TABLE_SOURCE, says: "the registry no longer offers Save to a table for every shape (hasTableShape → saveToTable)" });
   }
   const selection = files.get("components/selection-toolbar/common-actions.ts") ?? "";
   if (!selection.includes('"selection:save-to-table"')) {
@@ -212,7 +219,7 @@ function selfTest(): void {
   flat.set("components/selection-toolbar/selection-shape.ts", "export function liveSelectionShapeText() { return null; }");
   if (!judge(flat).some((f) => f.rule === 3)) throw new Error("rule 3 did not fire when the selection was read flattened");
   const lost = new Map(base);
-  lost.set("features/rich-document/actions/handlers/transfer.ts", (base.get("features/rich-document/actions/handlers/transfer.ts") ?? "").replace(/hasTableShape\(/g, "parseFirstMarkdownTable("));
+  lost.set(SAVE_TABLE_SOURCE, (base.get(SAVE_TABLE_SOURCE) ?? "").replace(/hasTableShape\(/g, "parseFirstMarkdownTable("));
   if (!judge(lost).some((f) => f.rule === 3)) throw new Error("rule 3 did not fire when the registry stopped reading every shape");
   // W1.6: the widened roots — a tool-result table, a transcript, a thread that offer nothing.
   for (const [path, body] of [

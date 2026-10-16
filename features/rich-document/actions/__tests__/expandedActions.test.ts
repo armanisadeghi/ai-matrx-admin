@@ -107,15 +107,8 @@ describe("the expanded action set", () => {
 
   // SAVE-AS-TABLE-EVERYWHERE: "Save to a table…" needs no host — it opens the one overlay — and it
   // is offered for every shape the one reader understands, not only a markdown table.
-  it("save-table-as-data opens the one Save to a table overlay with the content", () => {
-    const dispatch = jest.fn();
-    const ctx = chatContext("assistant", { dispatch });
-    void getAction("save-table-as-data")!.run(ctx);
-    const opened = dispatch.mock.calls.map((c) => c[0]).find((a) => a?.payload?.overlayId === "saveToTable");
-    expect(opened).toBeDefined();
-    expect(opened.payload.data.text).toBe(ctx.content);
-  });
-
+  // What "Save to a table…" opens (the saveToTable window, with the content) is @ai-matrx/chat's own
+  // since message-actions W2a: its guard is the package's w2a-rows-reach-their-host-seams test.
   it("offers Save to a table for a few bullet points and for Key: value lines, never for prose", () => {
     const bullets = ids(noteContext({ content: "Bring:\n\n- Loose shorts\n- Water bottle\n- Knee brace\n" }));
     expect(bullets).toContain("save-table-as-data");
