@@ -1174,6 +1174,9 @@ def facts(path, ours, theirs):
 
     L.append("CODE ONE SIDE HAS THAT THE OTHER DOES NOT")
     summary = []
+    for name, blob in (("LOCAL", ours), ("GITHUB", theirs)):
+        if not blob:
+            summary.append("%s deleted the file" % name)
     for holder, hname, side, sname in ((ours, "LOCAL", theirs, "GITHUB"), (theirs, "GITHUB", ours, "LOCAL")):
         if not holder or not side:
             continue
@@ -1341,12 +1344,40 @@ def stages(path):
     return st
 
 
+def superseding_side(path, ours, theirs, mb):
+    """'theirs' when LOCAL's exact blob is one GitHub's own history held after the merge base (and
+    GitHub then changed or deleted it); 'ours' for the mirror case; else None. Equal to the base
+    never counts: a side that left the file alone is not in conflict."""
+    base_blob = blob_at(mb, path)
+    if ours and ours != base_blob and ours != theirs and ours in versions(CTX["theirs"], mb, path):
+        return "theirs"
+    if theirs and theirs != base_blob and theirs != ours and theirs in versions(CTX["ours"], mb, path):
+        return "ours"
+    return None
+
+
 def decide(path, ours, theirs, ours_mode, theirs_mode, stamp, mb):
     """Resolve ONE conflicted file. Returns ('fixed'|'docs'|'held', held_path_or_None, summary)."""
     def held(reason):
         block, summary = facts(path, ours, theirs)
         return "held", hold(path, ours, theirs, stamp, reason, block, theirs_mode), summary
 
+    # One side's version is one the OTHER side already had after the merge base and then moved past
+    # (the same commit replayed under another SHA): that side adds nothing, the other side's current
+    # version (a change or a deletion) is the later decision. 2026-10-16: 32 of 34 holds were this.
+    winner = superseding_side(path, ours, theirs, mb)
+    if winner == "theirs":
+        if theirs:
+            write_live(path, content(theirs), theirs_mode)
+        else:
+            git("rm", "-q", "--ignore-unmatch", "--", path)
+        return "fixed", None, ""
+    if winner == "ours":
+        if ours:
+            write_live(path, content(ours), ours_mode)
+        else:
+            git("rm", "-q", "--ignore-unmatch", "--", path)
+        return "fixed", None, ""
     if not ours or not theirs:
         return held("deleted on one side, changed on the other")
     mode = ours_mode or theirs_mode
