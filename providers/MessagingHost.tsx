@@ -90,6 +90,7 @@ import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/ac
 import { withSharedRpcReads } from "@/lib/supabase/sharedRpcReads";
 import { getUserId } from "@/utils/auth/getUserId";
 import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
+import { demandMeetHost } from "@/providers/meetHostDemand";
 import { MESSAGE_ACTION_SURFACES } from "@/features/messaging/actions/messageActionSurfaces";
 import {
   MessagingConversationRowChrome,
@@ -256,7 +257,11 @@ export function MessagingHost({ children }: MessagingHostProps) {
   // already drawn gains its chips the moment the package lands (guard: the messaging package's
   // "a handler that arrives after the thread rendered still draws its chips").
   const [threadOpened, setThreadOpened] = useState(false);
-  const onThreadOpened = useCallback(() => setThreadOpened(true), []);
+  const onThreadOpened = useCallback(() => {
+    setThreadOpened(true);
+    // The call chips need the call runtime too (V2): ask the Meet host to attach now.
+    demandMeetHost();
+  }, []);
   const [meetApi, setMeetApi] = useState<typeof import("@ai-matrx/meet/react") | null>(null);
   useEffect(() => {
     if (!threadOpened) return;
