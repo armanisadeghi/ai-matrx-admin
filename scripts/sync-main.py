@@ -1297,6 +1297,38 @@ def hold(path, ours, theirs, stamp, reason, fact_block, theirs_mode):
     return held
 
 
+def clear_untracked_blockers(merge_output, stamp):
+    """Clear the untracked files a merge refused to overwrite. A file byte-identical to GitHub's
+    copy is removed (the merge brings it back unchanged); a different one is moved, not lost, to
+    _conflicts/<stamp>/<path>.held and listed as a held item. Returns the held entries."""
+    paths, listing = [], False
+    for line in merge_output.splitlines():
+        if "would be overwritten by merge" in line:
+            listing = True
+        elif listing and line.startswith("\t"):
+            paths.append(line.strip())
+        elif listing:
+            listing = False
+    held = []
+    for path in paths:
+        if not os.path.isfile(path):
+            continue
+        theirs = blob_at("%s/%s" % (REMOTE, BRANCH), path)
+        mine = open(path, "rb").read()
+        if theirs and content(theirs) == mine:
+            os.remove(path)
+            say("untracked %s is identical to GitHub's copy: removed so the merge can bring it." % path)
+            continue
+        dest = held_copy_path(os.path.join(HOLD_ROOT, stamp), path, ".held")
+        shutil.move(path, dest)
+        say("UNTRACKED FILE BLOCKED THE MERGE: %s moved to %s (GitHub's version goes live)." % (path, dest))
+        held.append((path, dest, "untracked local copy differed from GitHub's; compare and keep the upgrade"))
+    if held:
+        update_log(stamp, [], held)
+        git("add", "--", HOLD_ROOT)
+    return held
+
+
 def stages(path):
     _, out, _ = git("ls-files", "-u", "-z", "--", path)
     st = {}
@@ -2059,6 +2091,12 @@ def main():
                            check=False)
         if rc != 0:
             if not os.path.exists(os.path.join(gd, "MERGE_HEAD")):
+                if "untracked working tree files would be overwritten" in out + err:
+                    # An untracked file GitHub also carries — typically one the sweep held because it
+                    # needs code only GitHub has. Retrying cannot help: the same file blocks every
+                    # attempt (2026-10-16: five attempts, no merge, no push, "synced" printed).
+                    held += clear_untracked_blockers(out + err, stamp)
+                    continue
                 if "overwritten" in out + err:   # an agent wrote a file between step 1 and now
                     continue
                 die("git merge failed:\n" + out + err)
@@ -2093,6 +2131,10 @@ def main():
         if attempt == MAX_ATTEMPTS or not re.search(r"non-fast-forward|fetch first|rejected", err):
             die("git push failed:\n" + err)
         say("GitHub moved while syncing; going again (attempt %d)." % (attempt + 1))
+    else:
+        # Every attempt hit `continue`: nothing was merged or pushed. Never print "synced".
+        die("%d attempts and the merge never ran (a working-tree file kept blocking it); see the "
+            "lines above." % MAX_ATTEMPTS)
 
     report(fixed, docs, held,
            "synced: %d local files committed, %d commits pulled from GitHub%s" % (
