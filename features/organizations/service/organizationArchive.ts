@@ -150,6 +150,27 @@ export async function organizationArchiveState(
   };
 }
 
+/** The sentence a refused write into an archived organization shows instead of the raw 42501. */
+export const ARCHIVED_ORGANIZATION_WRITE_REFUSAL =
+  "This organization is archived, so nothing new can be added to it until an owner restores it.";
+
+/**
+ * A WRITE INTO AN ARCHIVED ORGANIZATION SAYS SO (Arman, 2026-10-16: archived organizations are
+ * read-only). The database refuses it through `org_open_gate` with a bare 42501
+ * ("new row violates row-level security policy"); this turns that refusal into the honest
+ * sentence when the organization really is archived. Any other error, or a live organization,
+ * answers null and the caller keeps its own message.
+ */
+export async function archivedOrganizationWriteRefusal(
+  error: unknown,
+  organizationId: string | null | undefined,
+): Promise<string | null> {
+  const code = (error as { code?: unknown } | null)?.code;
+  if (code !== "42501" || !organizationId) return null;
+  const state = await organizationArchiveState(organizationId);
+  return state?.archived ? ARCHIVED_ORGANIZATION_WRITE_REFUSAL : null;
+}
+
 /**
  * Restore an archived organization by its id alone - for a refusal screen that knows only WHICH organization
  * ("This organization is archived", records-ui `archivedOrganization`). The door wants the organization's name

@@ -19,6 +19,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createClient } from "@/utils/supabase/client";
 import { ragDb } from "@/utils/supabase/ragDb";
+import { archivedOrganizationWriteRefusal } from "@/features/organizations/service/organizationArchive";
 import { writeOne } from "@/utils/supabase/writeOne";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
@@ -328,15 +329,17 @@ export function useDataStoreDetail(storeId: string | null) {
   const addMember = useCallback(
     async (input: { sourceKind: string; sourceId: string; notes?: string }) => {
       if (!storeId || !userId) return false;
+      let organizationId: string | null = null;
       try {
         const supabase = createClient();
+        organizationId = await dataStoreOrganizationId(supabase, storeId);
         // Idempotent membership write — revives a soft-deleted binding, mirrors
         // the previous server-side upsert (on_conflict data_store_id/source_kind/source_id).
         const { error: upsertError } = await ragDb(supabase)
           .from("data_store_members")
           .upsert(
             {
-              organization_id: await dataStoreOrganizationId(supabase, storeId),
+              organization_id: organizationId,
               data_store_id: storeId,
               source_kind: input.sourceKind,
               source_id: input.sourceId,
@@ -351,7 +354,8 @@ export function useDataStoreDetail(storeId: string | null) {
         refresh();
         return true;
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Could not add member");
+        const archived = await archivedOrganizationWriteRefusal(e, organizationId);
+        setError(archived ?? (e instanceof Error ? e.message : "Could not add member"));
         return false;
       }
     },
