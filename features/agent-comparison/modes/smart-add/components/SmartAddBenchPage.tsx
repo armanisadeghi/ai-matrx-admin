@@ -142,6 +142,8 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   }, [setId, userId]);
 
   // Who judges, from data: the web-result job's holder, and the Jev agent picked on the last bench.
+  // Until the lookup answers, the row says "Finding…", never "No agent found".
+  const [judgesLooked, setJudgesLooked] = useState(false);
   useEffect(() => {
     // Only once the person is known: a read sent before sign-in hydrates goes out as anon.
     if (setId || !userId) return;
@@ -159,7 +161,8 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
         (err: unknown) =>
           alive &&
           setLoadError(err instanceof Error ? err.message : String(err)),
-      );
+      )
+      .finally(() => alive && setJudgesLooked(true));
     return () => {
       alive = false;
     };
@@ -409,6 +412,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
               canSearch={canSearch}
               busy={busy}
               net={net}
+              judgesLooked={judgesLooked}
             />
             </>
           ) : (
@@ -465,6 +469,7 @@ function SetupPanel({
   canSearch,
   busy,
   net,
+  judgesLooked,
 }: {
   bench: BenchState;
   patchBrand: (p: Partial<BenchState["brand"]>) => void;
@@ -477,6 +482,7 @@ function SetupPanel({
   canSearch: boolean;
   busy: boolean;
   net: NetProgress | null;
+  judgesLooked: boolean;
 }) {
   const brand = bench.brand;
   const toggle = (s: SystemKey, on: boolean) =>
@@ -656,6 +662,8 @@ function SetupPanel({
                   >
                     Open agent <ExternalLink className="w-3 h-3" />
                   </Link>
+                ) : !judgesLooked ? (
+                  <span className="type-caption text-muted-foreground">Finding…</span>
                 ) : (
                   <span className="type-caption text-destructive">
                     No agent found

@@ -6,6 +6,7 @@
  */
 
 import { createClient } from "@/utils/supabase/client";
+import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import { readAllRows } from "@ai-matrx/data/db";
 import type { AppDispatch } from "@/lib/redux/store";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
@@ -47,6 +48,7 @@ export const TERMINAL_RUN = new Set(["completed", "failed", "errored", "cancelle
  */
 export async function resolveRoundJudges(): Promise<{ agents: Record<Judgment, string | null>; relationOptions: string[] }> {
   const client = createClient();
+  await requireAuthenticatedSupabaseSession(client);
   const agents: Record<Judgment, string | null> = { identity: null, entity: null, we_think: null };
   for (const judgment of JUDGMENTS) {
     const tags = JEV_TAGS[judgment];

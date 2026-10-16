@@ -154,9 +154,11 @@ export function SmartAddRoundPage({
     };
   }, [setId]);
 
-  // Who judges, from data: each Jev decision agent by its tags.
+  // Who judges, from data: each Jev decision agent by its tags — only once the person is known
+  // (a read sent before sign-in hydrates goes out as anon and finds nothing).
+  const [judgesLooked, setJudgesLooked] = useState(false);
   useEffect(() => {
-    if (setId) return;
+    if (setId || !userId) return;
     let alive = true;
     resolveRoundJudges()
       .then(
@@ -168,11 +170,12 @@ export function SmartAddRoundPage({
             relationOptions: j.relationOptions,
           })),
       )
-      .catch((err: unknown) => alive && setError(errText(err)));
+      .catch((err: unknown) => alive && setError(errText(err)))
+      .finally(() => alive && setJudgesLooked(true));
     return () => {
       alive = false;
     };
-  }, [setId]);
+  }, [setId, userId]);
 
   // While the round runs: watch its steps; once it ends, capture it and start Jev (once — the
   // capture is also claimed in the saved row, so a second page never starts Jev twice).
@@ -481,6 +484,8 @@ export function SmartAddRoundPage({
                       >
                         Open agent <ExternalLink className="w-3 h-3" />
                       </Link>
+                    ) : !judgesLooked && !setId ? (
+                      <span className="type-caption text-muted-foreground">Finding…</span>
                     ) : (
                       <span className="type-caption text-destructive">
                         No agent found
