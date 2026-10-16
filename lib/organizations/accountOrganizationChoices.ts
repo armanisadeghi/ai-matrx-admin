@@ -60,6 +60,11 @@ export function readAccountPreferencesRow(userId: string): Promise<AccountPrefer
   );
 }
 
+/** The (core) layout already read this row for this page load: the first boot read is answered from it. */
+export function primeAccountPreferencesRow(userId: string, row: AccountPreferencesRow | null): void {
+  preferenceReads.prime<AccountPreferencesAnswer>(userId, PREFERENCES_KEY, { data: row, error: null });
+}
+
 export function forgetAccountPreferencesRow(): void {
   preferenceReads.forget(PREFERENCES_KEY);
 }

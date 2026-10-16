@@ -14,6 +14,7 @@
 // identity (the same one matrx-local and matrx-extend carry) can grep for it.
 
 import { defineClientKey } from "@/lib/sync/client-storage";
+import { WEB_DEVICE_ID_COOKIE } from "./deviceIdCookie";
 
 export const WEB_DEVICE_ID_STORAGE_KEY = "matrx.settings.web_device_id";
 
@@ -27,18 +28,30 @@ const deviceIdKey = defineClientKey({
 
 let memo: string | null = null;
 
+/** Mirror the id into its cookie (deviceIdCookie.ts) once per tab, so the server can address the rung. */
+function mirrorToCookie(id: string): string {
+  try {
+    if (!document.cookie.includes(`${WEB_DEVICE_ID_COOKIE}=${id}`)) {
+      document.cookie = `${WEB_DEVICE_ID_COOKIE}=${id}; path=/; max-age=31536000; samesite=lax`;
+    }
+  } catch {
+    // Cookies blocked: the server simply reads no snapshot for first paint.
+  }
+  return id;
+}
+
 /** The stable per-browser device id, or null when storage is unavailable (SSR, blocked). */
 export function getWebDeviceId(): string | null {
   if (memo) return memo;
   if (typeof window === "undefined") return null;
   const existing = deviceIdKey.get();
   if (existing && /^[0-9a-f-]{36}$/i.test(existing)) {
-    memo = existing;
+    memo = mirrorToCookie(existing);
     return existing;
   }
   const minted = crypto.randomUUID();
   // Private mode / storage blocked: the device rung is simply not addressed.
   if (!deviceIdKey.set(minted)) return null;
-  memo = minted;
+  memo = mirrorToCookie(minted);
   return minted;
 }

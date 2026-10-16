@@ -25,6 +25,7 @@ import { readMembershipRows } from "@ai-matrx/auth/organizations";
 import { err, ok } from "@/features/scopes/service/rpcResult";
 import type { RecordsResult } from "@ai-matrx/records";
 import type { Json } from "@/types/database.types";
+import { createSeedHold } from "@/lib/sharedReads";
 
 // ─── Module-scoped in-flight dedup + short TTL cache ──────────────────
 //
@@ -78,8 +79,23 @@ function countsKey(containerType: string, containerIds: string[]): string {
   return `${containerType}::${[...new Set(containerIds)].sort().join(",")}`;
 }
 
+// THE BOOT SEED (first-paint fetch contract G1): the (core) layout read the person's organization
+// memberships and their member counts for this page load; the first boot reads answer from them.
+const organizationMembershipsSeed = createSeedHold<MbrForUserRow[]>(READ_CACHE_TTL_MS);
+const organizationCountsSeed = createSeedHold<Map<string, number>>(READ_CACHE_TTL_MS);
+
+/** Hold the server's organization memberships + member counts for this page load's first reads. */
+export function primeOrganizationMembershipReads(
+  memberships: MbrForUserRow[],
+  counts: MbrCountRow[],
+): void {
+  organizationMembershipsSeed.put(memberships);
+  organizationCountsSeed.put(new Map(counts.map((c) => [c.container_id, Number(c.member_count)])));
+}
+
 /** Drop cached membership reads for `containerType` (e.g. after a write). */
 function invalidateForUserCache(containerType?: string): void {
+  if (!containerType || containerType === "organization") organizationMembershipsSeed.drop();
   if (!containerType) {
     forUserCache.clear();
     return;
@@ -89,6 +105,7 @@ function invalidateForUserCache(containerType?: string): void {
 
 /** Drop cached member counts for `containerType` (e.g. after a write). */
 function invalidateCountsCache(containerType?: string): void {
+  if (!containerType || containerType === "organization") organizationCountsSeed.drop();
   if (!containerType) {
     countsCache.clear();
     return;
@@ -110,6 +127,10 @@ function installSignOutHook(): void {
     if (event === "SIGNED_OUT" || event === "SIGNED_IN") {
       forUserCache.clear();
       countsCache.clear();
+    }
+    if (event === "SIGNED_OUT") {
+      organizationMembershipsSeed.drop();
+      organizationCountsSeed.drop();
     }
   });
 }
@@ -182,7 +203,7 @@ interface MbrListWithUsersRow extends Omit<
   user_avatar_url: string | null;
 }
 
-interface MbrForUserRow {
+export interface MbrForUserRow {
   id: string;
   organization_id: string | null;
   container_id: string;
@@ -192,7 +213,7 @@ interface MbrForUserRow {
   created_at: string;
 }
 
-interface MbrCountRow {
+export interface MbrCountRow {
   container_id: string;
   member_count: number | string;
 }
@@ -326,6 +347,9 @@ export const membershipsService = {
     const cached = forUserCache.get(key);
     if (cached && cached.expiresAt > Date.now()) return cached.value;
 
+    const seeded = containerType === "organization" ? organizationMembershipsSeed.take() : undefined;
+    if (seeded) return ok({ memberships: seeded.map(toUserMembership) });
+
     const pending = forUserInflight.get(key);
     if (pending) return pending;
 
@@ -408,6 +432,12 @@ export const membershipsService = {
 
     const cached = countsCache.get(key);
     if (cached && cached.expiresAt > Date.now()) return cached.value;
+
+    // Every id in the boot seed (each membership has at least its holder): no request.
+    const seededCounts = containerType === "organization" ? organizationCountsSeed.take() : undefined;
+    if (seededCounts && ids.every((id) => seededCounts.has(id))) {
+      return ok({ counts: ids.map((id) => ({ containerId: id, memberCount: seededCounts.get(id) ?? 0 })) });
+    }
 
     const pending = countsInflight.get(key);
     if (pending) return pending;

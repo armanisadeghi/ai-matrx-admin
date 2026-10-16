@@ -506,6 +506,66 @@ export function ensureKnobSnapshot(
   return run;
 }
 
+/** What `platform.knob_snapshot_delta` answered, read by the (core) layout for this page load. */
+export interface KnobSnapshotSeed {
+  organizationId: string | null;
+  userId: string;
+  /** The device rung the server addressed (this browser's id, from its cookie mirror). */
+  deviceId: string | null;
+  payload: { etag?: string; defaults_version?: string; overrides?: Record<string, unknown> };
+}
+
+/**
+ * 🚨 THE BOOT SEED (first-paint fetch contract G2). The (core) layout already asked
+ * `knob_snapshot_delta` for the organization the load ladder predicts; when this tab lands on that
+ * same (organization, person, device) address the answer is installed with no request. Any other
+ * address — another organization chosen by this tab or a link, another device id — is not touched,
+ * and its readers fetch as before. A snapshot or fetch already present wins; an invalidation since
+ * (a knob write, the server-bus `settings_changed` directive) drops it exactly like a fetched one.
+ * The platform values come from this browser's stored copy when its version matches; otherwise the
+ * one `knob_defaults` read runs (a cold browser), and `knob_snapshot_delta` still does not.
+ */
+export function primeKnobSnapshot(seed: KnobSnapshotSeed): void {
+  if (typeof window === "undefined") return;
+  if ((seed.deviceId ?? null) !== (getWebDeviceId() ?? null)) return;
+  const id = snapshotAddr(seed.organizationId, seed.userId, undefined);
+  if (snapshots.has(id) || inFlight.has(id)) return;
+  const askedAt = generation;
+  const build = (defaults: DefaultsEntry): Snapshot => {
+    const resolved = { ...defaults.values, ...(seed.payload.overrides ?? {}) };
+    if (seed.payload.etag) lastAnswers.set(id, { etag: seed.payload.etag, resolved });
+    return { resolved, stamp: seed.payload.etag ?? null, at: Date.now() };
+  };
+  const want = seed.payload.defaults_version ?? null;
+  const warm = defaultsCache ?? readStoredDefaults();
+  if (warm && (want === null || warm.version === want)) {
+    defaultsCache = warm;
+    snapshots.set(id, build(warm));
+    notify();
+    return;
+  }
+  const mine: { promise?: Promise<Snapshot> } = {};
+  const run = ensureDefaults(platformRpc(createClient()), want).then(
+    (defaults) => {
+      const snapshot = build(defaults);
+      if (generation === askedAt) {
+        snapshots.set(id, snapshot);
+        notify();
+      }
+      return snapshot;
+    },
+    (error: unknown) => {
+      throw error instanceof Error ? error : new Error(String(error));
+    },
+  );
+  const retire = () => {
+    if (inFlight.get(id) === mine.promise) inFlight.delete(id);
+  };
+  mine.promise = run;
+  run.then(retire, retire);
+  inFlight.set(id, run);
+}
+
 // Opt in to the platform client-directive channel (Lane E, 2026-09-11): an
 // `instant` key changed somewhere — another tab, another admin, the server —
 // so forget it here and let every mounted reader re-resolve. Module-level

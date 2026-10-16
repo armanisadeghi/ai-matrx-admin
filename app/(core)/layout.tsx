@@ -1,4 +1,5 @@
-import { headers } from "next/headers";
+import { Suspense } from "react";
+import { cookies, headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { ADMIN_LANE_HEADER } from "@/utils/supabase/adminLane";
 import { getServerAuth } from "@/utils/supabase/getServerAuth";
@@ -9,6 +10,10 @@ import {
 } from "@/utils/supabase/userSessionData";
 import type { BaseReduxState } from "@/types/reduxTypes";
 import { readUsageSnapshotServer } from "@/features/entitlements/usage-gate/usageReadServer";
+import { readCoreBootSeedServer, readKnobSeedServer } from "@/lib/boot/coreBootSeed.server";
+import { KnobSeedPrimer } from "@/lib/boot/KnobSeedPrimer";
+import type { KnobSnapshotSeed } from "@/lib/boot/coreBootSeedShape";
+import { WEB_DEVICE_ID_COOKIE, parseWebDeviceIdCookie } from "@/lib/scoped-config/deviceIdCookie";
 // Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
 // is deleted in this PR. The Redux preloaded state below carries the user data;
 // `lib/sync/identity::attachStore` (called from StoreProvider) wires the
@@ -97,18 +102,37 @@ export default async function AppLayout({
   let initialReduxState: BaseReduxState;
   let userData: UserData;
   let enableInternalAnalytics = false;
+  let knobSeed: Promise<KnobSnapshotSeed | null> | null = null;
 
   if (user) {
-    // Phase 3: admin check is now a narrow single-row lookup on the `admins`
-    // table. Preferences fetch has moved client-side to `userPreferencesPolicy`
-    // warm-cache cold-boot (IDB → LS → remote.fetch). No preloadedState for
-    // userPreferences — the client warms its own cache.
+    // 🚨 THE CORE SET, IN ONE PARALLEL ROUND (first-paint fetch contract, Arman
+    // 2026-10-16): identity, admin level, usage, and the boot seed — the account
+    // row (preferences + the ladder's two organization columns), organization
+    // memberships, their rows and member counts. The seed is not a slice: the
+    // policies that own preferences and the active organization still run in
+    // the browser (IDB → LS → remote.fetch; the ladder needs this TAB's held
+    // organization and the link's `?org=`), and their boot reads are answered
+    // from it with no request (`lib/boot/coreBootSeed.ts`). Each read is bounded
+    // (usage 400 ms, seed 400 ms): a slow one is simply absent and the browser
+    // reads it as before.
+    const coreBootSeedRead = readCoreBootSeedServer(supabase, user.id);
+    // The knob snapshot needs the memberships (to know the organization), so it
+    // runs after the seed and STREAMS: it never holds the first byte.
+    knobSeed = coreBootSeedRead.then(async (seed) =>
+      readKnobSeedServer(
+        supabase,
+        seed,
+        parseWebDeviceIdCookie((await cookies()).get(WEB_DEVICE_ID_COOKIE)?.value),
+        headersList.get("x-search-params"),
+      ),
+    ).catch(() => null);
     const [
       {
         data: { session },
       },
       adminStatus,
       usageSnapshot,
+      coreBootSeed,
     ] = await Promise.all([
       supabase.auth.getSession(),
       getAdminStatus(supabase, user.id).catch((err) => {
@@ -118,6 +142,7 @@ export default async function AppLayout({
       // THE USAGE GATE seed (USAGE-GATE.md rule 9): loaded WITH the reads this
       // layout already makes, never as a request on the path of an AI call.
       readUsageSnapshotServer(supabase),
+      coreBootSeedRead,
     ]);
 
     const { isAdmin, level: adminLevel } = adminStatus;
@@ -132,6 +157,7 @@ export default async function AppLayout({
       // section; `proxy.ts` stamped the request (utils/supabase/adminLane.ts).
       adminLaneOpen: headersList.get(ADMIN_LANE_HEADER) === "1",
       usageSnapshot,
+      coreBootSeed,
     };
   } else {
     const guestUserData = mapUserData(null, undefined, false);
@@ -150,6 +176,11 @@ export default async function AppLayout({
       pathname={pathname}
       sidebarExpanded={sidebarExpanded}
     >
+      {knobSeed ? (
+        <Suspense fallback={null}>
+          <KnobSeedPrimer seed={knobSeed} />
+        </Suspense>
+      ) : null}
       {children}
       {enableInternalAnalytics ? <InternalGoogleAnalytics /> : null}
     </AppShell>

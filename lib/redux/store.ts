@@ -35,6 +35,7 @@ import { tasksRealtimeMiddleware } from "@/features/tasks/redux/tasksRealtimeMid
 import { pdfStudioPersistenceMiddleware } from "@/features/pdf-extractor/state/persistence";
 // The chat package's middlewares, in their required order (P2).
 import { chatMiddlewares } from "@ai-matrx/chat/store/middlewares";
+import { primeCoreBootSeed } from "@/lib/boot/coreBootSeed";
 import { setStoreSingleton as setChatStoreSingleton } from "@ai-matrx/chat/store/store-singleton";
 import { mandateOrgSwitchCacheMiddleware } from "@/features/mandates/redux/org-switch-cache-middleware";
 import { activeOrgCookieMiddleware } from "@/lib/organizations/activeOrgCookieMiddleware";
@@ -219,6 +220,8 @@ export function resolveStoreBootstrapState(
 }
 
 export const makeStore = (initialState?: Partial<BaseReduxState>) => {
+  // Browser only (module-level reads must never carry one request's answer to another on the server).
+  if (typeof window !== "undefined") primeCoreBootSeed(initialState?.coreBootSeed);
   const resolved = resolveStoreBootstrapState(initialState);
   const rootReducer = createSlimRootReducer();
 
