@@ -23,8 +23,8 @@ const MIN = 60_000;
 const KNOBS: WalkKnobs = { cap: 4, windowMinutes: 10 };
 const T0 = 1_800_000_000_000;
 
-function registryWith(entries: Array<[string, number]>) {
-  return { admitted: new Map<string, number>(entries), evicted: new Set<string>() } satisfies WalkRegistry;
+function registryWith(entries: Array<[string, number]>): WalkRegistry {
+  return { admitted: new Map<string, number>(entries), evicted: new Set<string>() };
 }
 
 describe("decideWalkAdmission — the live-database walk cap", () => {
@@ -171,13 +171,14 @@ describe("decideWalkAdmission — the live-database walk cap", () => {
 describe("decideWalkAdmission — a held test run is never paused", () => {
   const HELD = new Set(["runner.localhost"]);
 
-  it("a held host idle far past the window is neither expired nor evicted; the newcomer is refused", () => {
+  it("a held host that is still making requests is neither expired nor evicted, however old its last click", () => {
     const registry = registryWith([
       ["runner.localhost:3001", T0 - 60 * MIN],
       ["b.localhost:3001", T0 - 3 * MIN],
       ["c.localhost:3001", T0 - 4 * MIN],
       ["d.localhost:3001", T0 - 5 * MIN],
     ]);
+    registry.lastRequest = new Map([["runner.localhost:3001", T0 - MIN]]);
     const decision = decideWalkAdmission(registry, "e.localhost:3001", T0, KNOBS, "document", HELD);
     expect(registry.admitted.has("runner.localhost:3001")).toBe(true);
     expect(registry.evicted.has("runner.localhost:3001")).toBe(false);
@@ -194,6 +195,7 @@ describe("decideWalkAdmission — a held test run is never paused", () => {
       ["r3.localhost:3001", T0 - 30 * MIN],
       ["r4.localhost:3001", T0 - 30 * MIN],
     ]);
+    registry.lastRequest = new Map(["r1", "r2", "r3", "r4"].map((r) => [`${r}.localhost:3001`, T0 - 2 * MIN] as [string, number]));
     expect(decideWalkAdmission(registry, "x.localhost:3001", T0, KNOBS, "document", held).verdict).toBe("refuse");
     expect(registry.admitted.size).toBe(4);
   });
@@ -205,6 +207,44 @@ describe("decideWalkAdmission — a held test run is never paused", () => {
     const decision = decideWalkAdmission(registry, "runner.localhost:3001", T0, KNOBS, "document", HELD);
     expect(decision.verdict).toBe("admit");
     expect(registry.evicted.has("runner.localhost:3001")).toBe(false);
+  });
+
+  // MKT-174: a hold is up to 180 minutes; a runner that finished leaves it behind. The idle window still rules.
+  it("a held host with no request of any kind for the window frees its slot (the hold file outlives the run)", () => {
+    const registry = registryWith([
+      ["gone.localhost:3001", T0 - 18 * MIN],
+      ["b.localhost:3001", T0 - MIN],
+      ["c.localhost:3001", T0 - MIN],
+      ["d.localhost:3001", T0 - MIN],
+    ]);
+    registry.lastRequest = new Map([["gone.localhost:3001", T0 - 18 * MIN]]);
+    const decision = decideWalkAdmission(registry, "e.localhost:3001", T0, KNOBS, "document", new Set(["gone.localhost"]));
+    expect(decision.verdict).toBe("admit");
+    expect(registry.admitted.has("gone.localhost:3001")).toBe(false);
+    expect(registry.admitted.size).toBe(4);
+  });
+
+  it("the idle timer also expires a held host that went quiet for the window", () => {
+    jest.useFakeTimers();
+    const dir = mkdtempSync(join(tmpdir(), "walk-holds-timer-"));
+    const prev = process.env.MATRX_PREVIEW_STATE_DIR;
+    try {
+      jest.setSystemTime(T0);
+      process.env.MATRX_PREVIEW_STATE_DIR = dir;
+      require("node:fs").mkdirSync(join(dir, "holds"));
+      writeFileSync(join(dir, "holds", "gone"), `${Math.floor(T0 / 1000) + 3 * 3600} gone\n`);
+      const registry = registryWith([["gone.localhost:3001", T0]]);
+      setWalkCapTestState({ registry, listeners: new Map(), readKnobs: async () => KNOBS });
+      scheduleWalkIdleExpiryForTest(KNOBS);
+      jest.advanceTimersByTime(10 * MIN + 2);
+      expect(registry.admitted.has("gone.localhost:3001")).toBe(false);
+    } finally {
+      jest.useRealTimers();
+      setWalkCapTestState(undefined);
+      if (prev === undefined) delete process.env.MATRX_PREVIEW_STATE_DIR;
+      else process.env.MATRX_PREVIEW_STATE_DIR = prev;
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("without a hold the same quiet runner is expired exactly as before", () => {
@@ -387,6 +427,27 @@ describe("walk-cap dev endpoint framing and safe parking", () => {
     const html = await response?.text();
     expect(html).toContain('value="/"');
     expect(html).toContain("font:16px/1.5 system-ui");
+  });
+
+  it("a runner that stops frees its slot at once (release), and its hold file goes with it", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "walk-release-"));
+    process.env.MATRX_PREVIEW_STATE_DIR = dir;
+    require("node:fs").mkdirSync(join(dir, "holds"));
+    writeFileSync(join(dir, "holds", "runner"), `${Math.floor(T0 / 1000) + 3600} runner\n`);
+    endpointState.registry.admitted.set("runner.localhost:3001", T0 - 30_000);
+    const post = (headers: Record<string, string>) =>
+      walkCapDevEndpoint(new Request("http://runner.localhost:3001/__dev-walk?release=1", { method: "POST", headers: { host: "runner.localhost:3001", ...headers } }));
+    try {
+      expect((await post({}))?.status).toBe(403);
+      expect(endpointState.registry.admitted.has("runner.localhost:3001")).toBe(true);
+      const ok = await post({ "x-matrx-walk-release": "1" });
+      expect(await ok?.json()).toEqual({ released: true });
+      expect(endpointState.registry.admitted.has("runner.localhost:3001")).toBe(false);
+      expect(endpointState.registry.evicted.has("runner.localhost:3001")).toBe(false);
+      expect(heldPreviewHosts(join(dir, "holds"), Math.floor(T0 / 1000)).size).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("does not let status or unknown activity create an admission", async () => {

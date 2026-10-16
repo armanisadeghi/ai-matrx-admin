@@ -1,5 +1,5 @@
 import { escapeHtml } from "@ai-matrx/kit/html-escape";
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 // utils/supabase/walkCap.ts — THE LIVE-DATABASE WALK CAP (development only).
 //
@@ -107,6 +107,31 @@ function hostName(host: string): string {
 }
 
 /**
+ * A hold keeps a host's slot only while the run is alive: the host made ANY request (document, background or
+ * activity) within the idle window. A hold left behind by a runner that finished (or whose browser died) is
+ * just a file with up to 180 minutes on it; it must not pin a slot past the stated idle window (MKT-174: a
+ * previous runner's sign-in kept a slot for 18 minutes while the notice promised 10).
+ */
+export function holdKeepsSlot(
+  registry: WalkRegistry,
+  host: string,
+  now: number,
+  windowMs: number,
+  held: ReadonlySet<string>,
+): boolean {
+  if (!held.has(hostName(host))) return false;
+  const last = Math.max(registry.admitted.get(host) ?? 0, registry.lastRequest?.get(host) ?? 0);
+  return now - last <= windowMs;
+}
+
+/** Frees a host's slot at once (a runner that has ended): no tombstone, so the host may sign in again later. */
+export function releaseWalkHost(registry: WalkRegistry, host: string): boolean {
+  registry.lastRequest?.delete(host);
+  registry.evicted.delete(host);
+  return registry.admitted.delete(host);
+}
+
+/**
  * The admission rule. `registry` maps an admitted preview host to the last
  * time of a real document navigation or explicit user interaction; background
  * requests do not refresh it. It tombstones expired/evicted hosts so they can
@@ -123,8 +148,9 @@ export function decideWalkAdmission(
   const windowMs = knobs.windowMinutes * 60_000;
   const evicted: string[] = [];
   const isHeld = (h: string): boolean => held.has(hostName(h));
+  const keepsSlot = (h: string): boolean => holdKeepsSlot(registry, h, now, windowMs, held);
   for (const [seenHost, lastSeen] of registry.admitted) {
-    if (now - lastSeen > windowMs && !isHeld(seenHost)) {
+    if (now - lastSeen > windowMs && !keepsSlot(seenHost)) {
       registry.admitted.delete(seenHost);
       registry.evicted.add(seenHost);
       evicted.push(seenHost);
@@ -154,7 +180,7 @@ export function decideWalkAdmission(
   const lastRequest = (registry.lastRequest ??= new Map());
   if (existing) lastRequest.set(host, now);
   const isBusy = (h: string): boolean =>
-    isHeld(h) ||
+    keepsSlot(h) ||
     now - Math.max(registry.admitted.get(h) ?? 0, lastRequest.get(h) ?? 0) < WALK_BUSY_PROTECT_MS;
 
   // A newly admitted host always gets a slot. Break timestamp ties by map
@@ -427,11 +453,13 @@ function scheduleIdleExpiry(state: WalkCapGlobal, knobs: WalkKnobs, now = Date.n
 
   const windowMs = knobs.windowMinutes * 60_000;
   const held = currentHolds();
-  const expiring = [...state.registry.admitted.entries()].filter(([host]) => !held.has(hostName(host)));
-  // Held hosts never expire; re-check once a minute so a hold that lapses is noticed.
-  const earliestDeadline = expiring.length
-    ? Math.min(...expiring.map(([, seen]) => seen + windowMs + 1))
-    : now + 60_000;
+  // A held host expires too once it has made no request of any kind for the window; a lapsing hold is
+  // noticed by the same deadline.
+  const lastActive = (host: string, seen: number): number =>
+    held.has(hostName(host)) ? Math.max(seen, state.registry.lastRequest?.get(host) ?? 0) : seen;
+  const earliestDeadline = Math.min(
+    ...[...state.registry.admitted.entries()].map(([host, seen]) => lastActive(host, seen) + windowMs + 1),
+  );
   const delay = Math.max(0, earliestDeadline - now);
   state.idleTimer = setTimeout(() => {
     state.idleTimer = undefined;
@@ -439,7 +467,7 @@ function scheduleIdleExpiry(state: WalkCapGlobal, knobs: WalkKnobs, now = Date.n
     const current = Date.now();
     const heldNow = currentHolds();
     for (const [host, lastSeen] of state.registry.admitted) {
-      if (current - lastSeen > windowMs && !heldNow.has(hostName(host))) {
+      if (current - lastSeen > windowMs && !holdKeepsSlot(state.registry, host, current, windowMs, heldNow)) {
         state.registry.admitted.delete(host);
         state.registry.evicted.add(host);
         expired.push(host);
@@ -468,6 +496,18 @@ function currentHolds(): Set<string> {
     join(process.env.TMPDIR || "/tmp", `matrx-frontend-preview-${typeof process.getuid === "function" ? process.getuid() : ""}`);
   holdsCache = { at: now, held: heldPreviewHosts(join(stateDir, "holds"), Math.floor(now / 1000)) };
   return holdsCache.held;
+}
+
+function releaseHoldFile(host: string): void {
+  const label = hostName(host).replace(/\.localhost$/, "").replace(/[^A-Za-z0-9._-]/g, "_");
+  const stateDir =
+    process.env.MATRX_PREVIEW_STATE_DIR ||
+    join(process.env.TMPDIR || "/tmp", `matrx-frontend-preview-${typeof process.getuid === "function" ? process.getuid() : ""}`);
+  try {
+    unlinkSync(join(stateDir, "holds", label));
+  } catch {
+    // no hold was taken
+  }
 }
 
 /** The proxy's entry point: gate one signed-in request with process-wide state. */
@@ -597,6 +637,18 @@ export async function walkCapDevEndpoint(request: Request): Promise<Response | n
       if (listeners?.size === 0) state.listeners.delete(normalizedHost);
     }, { once: true });
     return new Response(stream, { headers: { "content-type": "text/event-stream", "cache-control": "no-store", connection: "keep-alive" } });
+  }
+  if (request.method === "POST" && url.searchParams.get("release") === "1") {
+    // A runner that has ended (scripts/test-browser.mjs stop) frees its slot at once. A custom header keeps a
+    // cross-site form post from releasing someone's slot; the host is the session label, so a runner can only
+    // release its own.
+    if (request.headers.get("x-matrx-walk-release") !== "1") return new Response("release header required", { status: 403 });
+    const released = releaseWalkHost(state.registry, normalizedHost);
+    releaseHoldFile(normalizedHost);
+    holdsCache = null;
+    notifyEvicted([normalizedHost]);
+    console.log(`[walk-cap] RELEASED ${normalizedHost}${released ? "" : " (was not admitted)"}`);
+    return new Response(JSON.stringify({ released }), { headers: { "content-type": "application/json", "cache-control": "no-store" } });
   }
   if (request.method === "POST") {
     if (url.searchParams.get("activity") === "1") {
