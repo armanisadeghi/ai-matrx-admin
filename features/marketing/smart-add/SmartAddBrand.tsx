@@ -16,6 +16,7 @@
  * Watch window when it is built.
  */
 
+import { livePromoteDeps, promoteSmartAddFindings } from "./promote";
 import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -1261,6 +1262,12 @@ export function SmartAddBrand({
       const merged = mergeConfirmedIntoPlan(factPlan, contact);
       problems.push(...(await saveKeptFacts(organizationId, brand.id, merged.plan)).problems);
       problems.push(...(await saveFacts(organizationId, brand.id, basics, merged.remaining)));
+      // What Create kept on the brand (competitors…) lands in its real home tables, once (promote.ts).
+      try {
+        await promoteSmartAddFindings(livePromoteDeps, brand.id);
+      } catch (error) {
+        problems.push(`Competitors: ${extractErrorMessage(error)}`);
+      }
       setSaveNotes(problems);
       setCreated(brand);
       // Shift to the focus queue for everything else.

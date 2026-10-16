@@ -26,6 +26,7 @@ import type { SocialPlatform } from "../social/types";
 import { BackendApiError } from "@ai-matrx/api";
 import { formatSocialHandle } from "../lib/social-handle";
 import { findSavedAccount, resolveTrackOutcome, type SavedAccountRow } from "./track-outcome";
+import { normalizeCompetitorDomain, profileCompetitors } from "../smart-add/promote";
 
 const OUTLIER_WINDOW_DAYS = 30;
 
@@ -55,6 +56,8 @@ export interface BrandCompetitor {
   siteId: string | null;
   websiteTracking: string | null;
   accounts: CompetitorAccount[];
+  /** Handles kept on the brand profile for a rival not tracked yet (tracking spends points; a click). */
+  keptHandles?: string[];
   /** Present only on a row that is still being added: one entry per social handle. */
   progress?: { platform: string; state: "tracking" | "ok" | "failed"; message: string | null }[];
 }
@@ -229,6 +232,34 @@ export async function listBrandCompetitors(
       }
     }
     target.accounts.push(account);
+  }
+
+  // 6. The rivals kept on the brand itself (Smart Add, the brand profile): a name, a domain with no site
+  // to hang it on, or handles not tracked yet. Those with a domain and a site are promoted to
+  // seo.competitor (smart-add/promote.ts) and already merged above by domain.
+  const { data: brandRow, error: brandError } = await supabase
+    .schema("web")
+    .from("brand")
+    .select("profile")
+    .eq("id", brandId)
+    .abortSignal(sig)
+    .maybeSingle();
+  if (brandError) throw brandError;
+  const names = new Set([...byKey.values()].map((c) => c.name.toLowerCase()));
+  for (const kept of profileCompetitors(brandRow?.profile ?? null)) {
+    const domain = normalizeCompetitorDomain(kept.domain);
+    if ((domain && byDomain.has(domain)) || names.has(kept.name.toLowerCase())) continue;
+    names.add(kept.name.toLowerCase());
+    byKey.set(`profile:${kept.name.toLowerCase()}`, {
+      key: `profile:${kept.name.toLowerCase()}`,
+      name: kept.name,
+      domain,
+      seoCompetitorId: null,
+      siteId: null,
+      websiteTracking: null,
+      accounts: [],
+      ...(kept.handles?.length ? { keptHandles: kept.handles } : {}),
+    });
   }
 
   return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));

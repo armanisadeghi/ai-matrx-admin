@@ -89,6 +89,7 @@ under the Name slot only when `full_name_asked`, and sends the typed value as `c
 
 ## Change Log
 
+- 2026-10-16 — Promotion: what Create and the validation page keep on the brand reaches its real home through ONE reconcile, `promote.ts` (`promoteSmartAddFindings`, one promoter per type in `PROMOTERS`; idempotent, insert-if-missing). Competitors with a domain → `seo.competitor` on the brand's first site; name/handle-only rivals stay in `web.brand.profile.competitors`, which the Competitors page now lists (`listBrandCompetitors` step 6). Before, every Smart Add rival sat in the profile list the page never read. Guard: `__tests__/promoteFindings.test.ts`.
 - 2026-10-16 — Validate answers survive background brand writes: brand writes rebase when only other fields moved (`updateBrand` `base`), profile edits merge on the current profile (`mergeBrandProfile`); a refused answer is filed (`unsaved-work`) and toasted (`validate/notSaved.ts`); an About confirmed at Create is never asked again (`KnownOnBrand.about`). Guards: `validateStaleBrand`, `validateAboutSettled`, `validateNotSaved` tests (MKT-151, MKT-175).
 - 2026-10-15 — Weak names: anchors sent with every round, inline "Full name?" field, Decisions › Name strength.
 - 2026-10-14 — Duplicate check: detail line per brand, rules moved to feature knobs, Create step extracted and tested.

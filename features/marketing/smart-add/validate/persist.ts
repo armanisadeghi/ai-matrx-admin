@@ -18,6 +18,7 @@
  *   Ask me later            → nothing (stays pending)
  */
 
+import { livePromoteDeps, promoteSmartAddFindings } from "../promote";
 import { foundByForSource } from "../factIdentity";
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
@@ -698,6 +699,8 @@ async function persistAnswerOnce(
       }, before);
       homes.push(`web.brand.profile.competitors:${ctx.getBrand().id}`);
       undos.push(undo);
+      // The kept rival lands in its real home (seo.competitor when it has a domain and the brand a site).
+      await promoteSmartAddFindings(livePromoteDeps, ctx.getBrand().id);
     }
   }
   if (answer === "not_us") {
@@ -720,6 +723,7 @@ async function persistAnswerOnce(
     }, before);
     homes.push(`web.brand.profile.${profileHome}:${ctx.getBrand().id}`);
     undos.push(undo);
+    if (profileHome === "competitors") await promoteSmartAddFindings(livePromoteDeps, ctx.getBrand().id);
   } else if ((answer === "correct" || answer === "wrong") && item.kind === "fact" && (await settleKeptFact(ctx, item, answer, value, resolved, homes, undos, before))) {
     // The fact Create kept (keptFacts.ts) is settled in place: confirmed, or soft-deleted — never a second row.
   } else if (answer === "correct" && item.kind === "fact") {
