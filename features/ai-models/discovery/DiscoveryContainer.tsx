@@ -48,7 +48,7 @@ import {
   testedLabel,
 } from "./api";
 import { ImagePicker, PlacementFields, TagsField } from "./parts";
-import { placementWords, samePlacement } from "./placement";
+import { detailKey, listNotice, placementWords, samePlacement } from "./placement";
 import {
   compatLabel,
   describeRun,
@@ -93,7 +93,9 @@ function usePlacementChoices(auth: CallAuth, caps: { input: string[]; output: st
     inUse: Placement[];
     current: Placement | null;
     error: string | null;
-  }>({ automatic: null, specPages: [], inUse: [], current: null, error: null });
+    /** The automatic suggestion could not be loaded: said in words, while the saved placement still shows. */
+    automaticUnavailable: string | null;
+  }>({ automatic: null, specPages: [], inUse: [], current: null, error: null, automaticUnavailable: null });
   const capsKey = JSON.stringify(caps);
   const { baseUrl, accessToken, organizationId } = auth;
   useEffect(() => {
@@ -101,17 +103,23 @@ function usePlacementChoices(auth: CallAuth, caps: { input: string[]; output: st
     const a: CallAuth = { baseUrl, accessToken, organizationId };
     (async () => {
       try {
-        const [def, placed] = await Promise.all([
+        const [defRes, placedRes] = await Promise.allSettled([
           caps ? discoveryApi.defaultPlacement(a, caps) : Promise.resolve(null),
           loadPlacements(modelId ?? undefined),
         ]);
         if (!alive) return;
+        const def = defRes.status === "fulfilled" ? defRes.value : null;
+        const placed = placedRes.status === "fulfilled" ? placedRes.value : { inUse: [], current: null };
         setState({
           automatic: def ? { page: def.page, shelf: def.shelf, shelf_title: def.shelf_title } : null,
           specPages: def?.spec_pages ?? [],
           inUse: placed.inUse,
           current: placed.current,
-          error: null,
+          error: placedRes.status === "rejected" ? extractErrorMessage(placedRes.reason) : null,
+          automaticUnavailable:
+            defRes.status === "rejected"
+              ? `The automatic page and shelf could not be worked out (${extractErrorMessage(defRes.reason)}).`
+              : null,
         });
       } catch (err) {
         if (alive) setState((p) => ({ ...p, error: extractErrorMessage(err) }));
@@ -126,7 +134,7 @@ function usePlacementChoices(auth: CallAuth, caps: { input: string[]; output: st
 
 export default function DiscoveryContainer() {
   const auth = useAuth();
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // The row the server just answered for Check: shown at once even before the list re-read has it.
   const [justChecked, setJustChecked] = useState<Candidate | null>(null);
@@ -176,8 +184,9 @@ export default function DiscoveryContainer() {
   };
 
   const selected =
-    candidates.find((c) => c.id === selectedId) ?? (justChecked?.id === selectedId ? justChecked : null);
+    (candidates ?? []).find((c) => c.id === selectedId) ?? (justChecked?.id === selectedId ? justChecked : null);
 
+  const listWords = listNotice(candidates, loadError);
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -201,10 +210,8 @@ export default function DiscoveryContainer() {
       <div className="grid min-h-0 flex-1 grid-cols-[18rem_1fr]">
         <div className="min-h-0 overflow-y-auto border-r border-border">
           {loadError ? <ErrorNotice message={loadError} size="compact" /> : null}
-          {candidates.length === 0 && !loadError ? (
-            <p className="p-3 text-sm text-muted-foreground">No candidates yet</p>
-          ) : null}
-          {candidates.map((c) => {
+          {listWords ? <p className="p-3 text-sm text-muted-foreground">{listWords}</p> : null}
+          {(candidates ?? []).map((c) => {
             const open = (c.suggested?.ambiguities ?? []).length;
             return (
               <Button
@@ -228,7 +235,7 @@ export default function DiscoveryContainer() {
             // Its own boundary: a part of the panel that loads lazily never blanks the whole page.
             <Suspense fallback={<p className="p-6 text-sm text-muted-foreground">Opening {selected.repo ?? "candidate"}…</p>}>
               <CandidateDetail
-                key={selected.id + selected.updated_at}
+                key={detailKey(selected)}
                 candidate={selected}
                 auth={auth}
                 onChanged={refresh}
@@ -464,8 +471,10 @@ function CandidateDetail({
         </div>
       </section>
 
+      {candidate.model_id ? null : (
       <section className="space-y-2" aria-label="Where it shows">
         <h3 className="text-sm font-semibold text-foreground">Where it shows on the Models page</h3>
+        {choices.automaticUnavailable ? <ErrorNotice message={choices.automaticUnavailable} size="inline" /> : null}
         {choices.error ? <ErrorNotice message={choices.error} size="inline" /> : null}
         {placement ? (
           <PlacementFields
@@ -480,6 +489,7 @@ function CandidateDetail({
           <p className="text-sm text-muted-foreground">Working out the automatic page and shelf…</p>
         )}
       </section>
+      )}
 
       {(s.notes ?? []).length ? (
         <ul className="list-disc pl-5 text-xs text-muted-foreground">
@@ -616,11 +626,13 @@ function PromotedPlacement({
     }
   };
   if (choices.error && !shown) return <ErrorNotice message={choices.error} size="inline" />;
+  if (!shown && choices.automaticUnavailable) return <ErrorNotice message={choices.automaticUnavailable} size="inline" />;
   if (!shown) return <p className="text-xs text-muted-foreground">Reading where it shows…</p>;
   const current = saved ?? choices.current;
   return (
     <div className="space-y-2 border-t border-border pt-2" aria-label="Where it shows on the Models page">
       <h4 className="text-xs font-semibold text-foreground">Where it shows on the Models page</h4>
+      {choices.automaticUnavailable ? <ErrorNotice message={choices.automaticUnavailable} size="inline" /> : null}
       <p className="text-xs text-muted-foreground">
         {current ? placementWords(current) : "No page or shelf is saved for this model yet."}
       </p>

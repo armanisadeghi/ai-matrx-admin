@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { ImagePicker, PlacementFields, TagsField } from "../parts";
-import { pageChoices } from "../placement";
+import { detailKey, listNotice, pageChoices, placementForPage } from "../placement";
 import type { SuggestedMedia } from "../api";
 
 const img = (over: Partial<SuggestedMedia>): SuggestedMedia => ({
@@ -47,5 +47,23 @@ describe("page / shelf picker", () => {
       <PlacementFields value={{ ...auto, page: "text" }} automatic={auto} inUse={[auto]} specPages={["text", "speech"]} onChange={() => {}} onUseAutomatic={() => {}} />,
     );
     expect(html).toContain("Automatic choice would be: speech page");
+  });
+});
+
+describe("review fixes", () => {
+  const speech = { page: "speech", shelf: "voices", shelf_title: "Voices" };
+  const text = { page: "text", shelf: "added", shelf_title: "Newly Added" };
+  it("changing the page never keeps the old page's shelf id", () => {
+    expect(placementForPage([speech, text], speech, "text")).toEqual(text);
+    expect(placementForPage([speech, text], text, "speech")).toEqual(speech);
+    expect(placementForPage([text], null, "image")).toEqual({ page: "image", shelf: "", shelf_title: "" });
+  });
+  it("the list says loading before rows arrive, empty only when really empty", () => {
+    expect(listNotice(null, null)).toBe("Loading candidates\u2026");
+    expect(listNotice([], null)).toBe("No candidates yet");
+    expect(listNotice([{}], null)).toBeNull();
+  });
+  it("a refreshed row keeps the same detail identity (no remount)", () => {
+    expect(detailKey({ id: "a", updated_at: "1" } as { id: string })).toBe(detailKey({ id: "a", updated_at: "2" } as { id: string }));
   });
 });

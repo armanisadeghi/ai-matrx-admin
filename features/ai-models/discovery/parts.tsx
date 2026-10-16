@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import type { Placement, SuggestedMedia } from "./api";
-import { pageChoices, shelvesOnPage } from "./placement";
+import { pageChoices, placementForPage, shelvesOnPage } from "./placement";
 
 export function TagsField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
@@ -109,7 +109,7 @@ export function PlacementFields({
   return (
     <div className="grid grid-cols-[8rem_1fr] items-center gap-2 text-sm" aria-label="Where it shows on the Models page">
       <span className="text-muted-foreground">Models page</span>
-      <Select value={value.page} onValueChange={(page) => onChange({ ...value, page })}>
+      <Select value={value.page} onValueChange={(page) => onChange(placementForPage(inUse, automatic, page))}>
         <SelectTrigger className="max-w-xs" aria-label="Models page"><SelectValue /></SelectTrigger>
         <SelectContent>
           {pages.map((p) => (
