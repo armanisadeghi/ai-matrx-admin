@@ -147,6 +147,37 @@ export function paidCardsHost(host: string | null, rules: readonly KnownDomainRu
   return ruleFor(host, FREE_HOST_CATEGORIES, rules) ? null : host;
 }
 
+const compact = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^\p{L}\p{N}]+/gu, "");
+
+/**
+ * The names a search term can carry that make it a search FOR them, not for what they offer: the brand's name, its
+ * site's name (the host without its ending), and for a person their surname ("jemisin broken earth"). Compacted, so
+ * "N K Jemisin", "nk jemisin" and "nkjemisin" are one name. Under three letters never counts (it would match anything).
+ */
+export function ownNames(brand: { name: string; kind?: string | null }, host: string | null): string[] {
+  const words = brand.name.trim().split(/\s+/).filter(Boolean);
+  const site = host ? host.replace(/^www\./, "").split(".")[0] : "";
+  const out = [compact(brand.name), compact(site), ...(brand.kind === "person" && words.length > 1 ? [compact(words[words.length - 1])] : [])];
+  return [...new Set(out.filter((n) => n.length >= 3))];
+}
+
+/**
+ * "What buyers search": at most `max` terms, highest volume first, none of them their own name. A list where every term
+ * names them says nothing about their buyers: it comes back empty and the card is not shown.
+ */
+export function buyerTerms(keywords: readonly string[], names: readonly string[], max = 3): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const k of keywords) {
+    const c = compact(k);
+    if (!c || seen.has(c) || names.some((n) => c.includes(n))) continue;
+    seen.add(c);
+    out.push(k.trim());
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
 /** Who the welcome is for: the signed-in account (or an admin's test login) and the session's stable subject. */
 export interface WelcomeLogin {
   user: User;

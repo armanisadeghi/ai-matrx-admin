@@ -76,7 +76,7 @@ async function main(): Promise<void> {
   await signIn(page);
   await page.goto(`${BASE}${ROUTE}`, { waitUntil: "domcontentloaded" });
   // The hook arrives with the deferred singleton core (post-idle); wait for it.
-  await page.waitForFunction(() => !!(window as unknown as { __overlaysTest?: OverlaysTestHook }).__overlaysTest && hook().ids().length > 0, null, { timeout: 120_000 });
+  await page.waitForFunction(() => !!(window as unknown as { __overlaysTest?: SummonTestHook }).__overlaysTest && hook().ids().length > 0, null, { timeout: 120_000 });
   const ids: string[] = ONLY ?? (await page.evaluate(() => hook().ids()));
   console.log(`sweeping ${ids.length} overlays on ${ROUTE}`);
 
@@ -115,14 +115,14 @@ async function main(): Promise<void> {
 }
 
 /** The dev hook installed by OverlayServices (typed here; the page owns the real one). */
-interface OverlaysTestHook {
+interface SummonTestHook {
   ids(): string[];
   open(id: string, data?: Record<string, unknown>): string;
   close(id: string): void;
   isOpen(id: string, instanceId: string): boolean;
 }
-function hook(): OverlaysTestHook {
-  return (window as unknown as { __overlaysTest: OverlaysTestHook }).__overlaysTest;
+function hook(): SummonTestHook {
+  return (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest;
 }
 
 main().catch((e) => {

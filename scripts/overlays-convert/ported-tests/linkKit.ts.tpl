@@ -3,8 +3,8 @@
  * over the app definitions' `link.hydrate`, in the shapes the app's link tests read. Test-only.
  */
 import type { Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import { getOverlayMetaByLinkKey } from "@ai-matrx/overlays";
-import { canonicalLinkKey, formatLinkToken, hydrateLinkToken, parseLinkParam, type TokenOutcome } from "@ai-matrx/overlays/url";
+import { getOverlayMetaByLinkKey } from "@ai-matrx/summon";
+import { canonicalLinkKey, formatLinkToken, hydrateLinkToken, parseLinkParam, type TokenOutcome } from "@ai-matrx/summon/url";
 import { ensureAppOverlaysRegistered } from "../register";
 
 export { ensureAppOverlaysRegistered as registerAppLinks };

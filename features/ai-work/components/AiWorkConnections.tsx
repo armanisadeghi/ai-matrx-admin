@@ -1,151 +1,45 @@
 "use client";
 
+/**
+ * /work/connections — "Connections and sync". Tables, never cards (owner, 2026-10-16): the same
+ * Instances and Accounts tables as Matrx 2's Code › Desktop apps (read from the person's computer
+ * over the relay), then what has been synced into AI Matrx, which organization each coding project
+ * saves to, and the cloud accounts that deliver messages. Every table sorts and filters on every
+ * column; everything else about a row is in its details panel.
+ */
+
 import { useEffect, useState } from "react";
-import { ClaudeAccountsPanel } from "./ClaudeAccountsPanel";
-import { CursorAccountsPanel } from "./CursorAccountsPanel";
-import { SandboxCapacityList } from "./SandboxCapacityList";
-import { readHostedCapacity, type SandboxCapacityRefusal } from "@/features/ai-work/lib/ownPlan";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  CircleDot,
-  Download,
-  ExternalLink,
-  Loader2,
-  Play,
-  RefreshCw,
-  ServerCog,
-} from "lucide-react";
+import { ExternalLink, Play, RefreshCw } from "lucide-react";
+import { StaleDataNotice } from "@ai-matrx/design-system";
+import { RowGroup, SettingRow } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { StaleDataNotice } from "@ai-matrx/design-system";
+import { readHostedCapacity, type SandboxCapacityRefusal } from "@/features/ai-work/lib/ownPlan";
 import {
   INITIAL_BRIDGE_CAPABILITY,
   readBridgeCapability,
   type CodingBridgeCapability,
 } from "@/features/ai-work/lib/codingBridgeCapability";
 import { destinationAvailability } from "@/features/ai-work/compose/destinations";
-import {
-  CODING_SESSION_PROVIDERS,
-  CODING_SESSION_PROVIDER_META,
-} from "@/features/agent-connections/coding-sessions/catalog";
-import type { CodingSessionView } from "@/features/agent-connections/coding-sessions/service";
 import { useCodingSessions } from "@/features/agent-connections/coding-sessions/useCodingSessions";
-import { formatSessionTimestamp } from "@/features/agent-connections/coding-sessions/verdict";
 import { captureGapVerdict } from "@/features/agent-connections/coding-sessions/captureGap";
 import { CaptureGapAlert } from "@/features/agent-connections/coding-sessions/CaptureGapAlert";
-import {
-  NO_ACCOUNT_IDENTITY,
-  providerAccountIdentity,
-  workspaceName,
-} from "@/features/ai-work/lib/codingSessionPresentation";
-import {
-  deliveryHistory,
-  newestDeliveryAt,
-} from "@/features/ai-work/conversations/bindingPlurality";
+import { deliveryHistory, newestDeliveryAt } from "@/features/ai-work/conversations/bindingPlurality";
 import { SyncStatePanel } from "@/features/ai-work/conversations/components/SyncStatePanel";
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
 import { CodingProjectOrganizations } from "@/features/ai-work/components/CodingProjectOrganizations";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-
-/**
- * Matrx Local ships the explicit Claude local-history importer (v1.4.22+,
- * sidebar → "Claude History"). Its aimatrx:// scheme only handles OAuth
- * callbacks today, so the honest door is the desktop download page plus the
- * exact in-app route name — not a pretend deep link.
- */
-interface AccountGroup {
-  key: string;
-  display: string;
-  isLabel: boolean;
-  sessionCount: number;
-  lastSeenAt: string | null;
-}
-
-/** Groups delivered sessions by their opaque provider-account identity. */
-function groupSessionsByAccount(sessions: CodingSessionView[]): AccountGroup[] {
-  const groups = new Map<string, AccountGroup>();
-  for (const session of sessions) {
-    const identity = providerAccountIdentity(session.metadata);
-    const key = identity.fingerprint ?? identity.label ?? NO_ACCOUNT_IDENTITY;
-    const existing = groups.get(key);
-    if (existing) {
-      existing.sessionCount += 1;
-      if (
-        session.last_seen_at &&
-        (!existing.lastSeenAt || session.last_seen_at > existing.lastSeenAt)
-      ) {
-        existing.lastSeenAt = session.last_seen_at;
-      }
-      // A later session may carry the display label an earlier one lacked.
-      if (!existing.isLabel && identity.label) {
-        existing.display = identity.label;
-        existing.isLabel = true;
-      }
-    } else {
-      groups.set(key, {
-        key,
-        display: identity.display,
-        isLabel: identity.label !== null,
-        sessionCount: 1,
-        lastSeenAt: session.last_seen_at,
-      });
-    }
-  }
-  return [...groups.values()].sort((a, b) =>
-    (b.lastSeenAt ?? "").localeCompare(a.lastSeenAt ?? ""),
-  );
-}
-
-interface WorkspaceGroup {
-  name: string;
-  sessionCount: number;
-  lastSeenAt: string | null;
-}
-
-/** Groups delivered sessions by the bridge-stamped workspace/project name. */
-function groupSessionsByWorkspace(
-  sessions: CodingSessionView[],
-): WorkspaceGroup[] {
-  const groups = new Map<string, WorkspaceGroup>();
-  for (const session of sessions) {
-    const name = workspaceName(session.metadata);
-    if (!name) continue;
-    const existing = groups.get(name);
-    if (existing) {
-      existing.sessionCount += 1;
-      if (
-        session.last_seen_at &&
-        (!existing.lastSeenAt || session.last_seen_at > existing.lastSeenAt)
-      ) {
-        existing.lastSeenAt = session.last_seen_at;
-      }
-    } else {
-      groups.set(name, {
-        name,
-        sessionCount: 1,
-        lastSeenAt: session.last_seen_at,
-      });
-    }
-  }
-  return [...groups.values()].sort((a, b) =>
-    (b.lastSeenAt ?? "").localeCompare(a.lastSeenAt ?? ""),
-  );
-}
+import { CodingAppsSection } from "@/features/ai-work/components/connections/CodingAppsSection";
+import { ClaudeAccountsPanel } from "./ClaudeAccountsPanel";
+import { CursorAccountsPanel } from "./CursorAccountsPanel";
+import { SandboxCapacityList } from "./SandboxCapacityList";
 
 export function AiWorkConnections() {
-  const {
-    sessions,
-    loading,
-    error,
-    checkedAtMs,
-    refresh,
-    hasMore,
-    loadingMore,
-    loadOlder,
-  } = useCodingSessions();
+  const { sessions, loading, error, checkedAtMs, refresh } = useCodingSessions();
 
   // Derived from the bindings this page already loaded — no second read, and
   // no chance of disagreeing with the delivery facts rendered below.
@@ -219,13 +113,9 @@ export function AiWorkConnections() {
 
   return (
     <div className="h-full overflow-y-auto px-4 py-5 scrollbar-thin sm:px-6">
-      <div className="mx-auto max-w-6xl space-y-5">
-        <section className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card p-4">
-          <div className="min-w-0">
-            <h1 className="text-lg font-semibold text-foreground">
-              Connections and sync
-            </h1>
-          </div>
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-lg font-semibold text-foreground">Connections and sync</h1>
           <Button asChild variant="outline">
             <Link href="/agent-connections/plugins" target="_blank" rel="noopener noreferrer">
               Technical diagnostics
@@ -245,9 +135,8 @@ export function AiWorkConnections() {
         ) : null}
 
         {/*
-          Above every per-platform card on purpose. "Session delivery" is the
-          one connection fact that fails silently — Claude treats a failed hook
-          as non-blocking — so it gets the top of the page, not a status chip.
+          Above every table on purpose. "Session delivery" is the one connection fact that fails
+          silently — Claude treats a failed hook as non-blocking — so it gets the top of the page.
         */}
         <CaptureGapAlert
           verdict={captureGap}
@@ -256,327 +145,69 @@ export function AiWorkConnections() {
           refreshing={loading}
         />
 
+        {/* The same Instances and Accounts tables as Matrx 2's Code › Desktop apps. */}
+        <CodingAppsSection />
+
+        {/* What has actually been delivered into AI Matrx, per provider account. */}
+        <SyncStatePanel />
+
         <CodingProjectOrganizations />
 
         <ClaudeAccountsPanel />
         <CursorAccountsPanel />
 
-        <section>
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Coding platforms
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Detection comes only from authenticated sessions already
-                delivered to AI Matrx.
-              </p>
-            </div>
-            <Button
-              icon={<RefreshCw
-                className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
-              />}
-              type="button"
-              variant="quiet"
-              onClick={refresh}
-              disabled={loading}
+        <section aria-label="Hosted sessions and history" className="space-y-2">
+          <RowGroup title="Hosted sessions and history">
+            <SettingRow
+              label="Hosted Claude Code"
+              line={
+                capability.organizationRequired
+                  ? "Choose an organization first"
+                  : capability.state === "loading"
+                    ? "Checking whether a sandbox can start for you…"
+                    : hostedStart.selectable
+                      ? `Runs in a Matrx Sandbox${capability.runtime ? ` (${capability.runtime})` : ""}; start it from Start work`
+                      : `Not available: ${hostedStart.reason}`
+              }
             >
-              Refresh
-            </Button>
-          </div>
-          <div className="grid gap-3 lg:grid-cols-2">
-            {CODING_SESSION_PROVIDERS.map((provider) => {
-              const meta = CODING_SESSION_PROVIDER_META[provider];
-              const providerSessions = sessions.filter(
-                (session) => session.provider === provider,
-              );
-              const latest = providerSessions[0] ?? null;
-              const accounts = groupSessionsByAccount(providerSessions);
-              const workspaces = groupSessionsByWorkspace(providerSessions);
-              return (
-                <article
-                  key={provider}
-                  className="rounded-xl border border-border bg-card p-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <meta.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-sm font-semibold text-foreground">
-                          {meta.label}
-                        </h3>
-                        <StateBadge ready={providerSessions.length > 0} />
-                      </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {meta.connection}
-                      </p>
-                    </div>
-                    <OutboundLink
-                      href={meta.docsHref}
-                      className="text-muted-foreground hover:text-foreground"
-                      aria-label={`${meta.label} documentation`}
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </OutboundLink>
-                  </div>
-                  <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
-                    <ConnectionFact label="Authorization grant">
-                      Not exposed by the session binding
-                    </ConnectionFact>
-                    <ConnectionFact label="Client detection">
-                      {providerSessions.length > 0
-                        ? "Detected from delivered session"
-                        : error
-                          ? "Unknown — see the notice above"
-                          : "Not detected"}
-                    </ConnectionFact>
-                    <ConnectionFact label="Session delivery">
-                      {/* read-gate-exempt: drawn only when the read returned a delivered session, so it counts rows that exist */}
-                      {latest
-                        ? `${providerSessions.length} recent binding${providerSessions.length === 1 ? "" : "s"}; ${formatSessionTimestamp(latest.last_seen_at)}`
-                        : error
-                          ? "Unknown — see the notice above"
-                          : loading
-                            ? "Checking…"
-                            : "No session delivered"}
-                    </ConnectionFact>
-                    <ConnectionFact
-                      // read-gate-exempt: drawn only when the read returned more than one account, never a 0 from a failure
-                      label={
-                        accounts.length > 1
-                          ? `Accounts (${accounts.length})`
-                          : "Account identity"
-                      }
-                    >
-                      {accounts.length === 0 ? (
-                        NO_ACCOUNT_IDENTITY
-                      ) : (
-                        <ul className="space-y-1">
-                          {accounts.map((account) => (
-                            <li
-                              key={account.key}
-                              className="flex flex-wrap items-baseline gap-x-1.5"
-                            >
-                              <span className="break-all font-medium">
-                                {account.display}
-                              </span>
-                              {accounts.length > 1 ||
-                              account.sessionCount > 1 ? (
-                                <span className="text-muted-foreground">
-                                  {account.sessionCount} session
-                                  {account.sessionCount === 1 ? "" : "s"}
-                                  {account.lastSeenAt
-                                    ? ` · ${formatSessionTimestamp(account.lastSeenAt)}`
-                                    : ""}
-                                </span>
-                              ) : null}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </ConnectionFact>
-                    {workspaces.length > 0 ? (
-                      <ConnectionFact
-                        // read-gate-exempt: drawn only when the read returned workspaces, never a 0 from a failure
-                        label={`Workspaces (${workspaces.length})`}
-                      >
-                        <ul className="space-y-1">
-                          {workspaces.map((workspace) => (
-                            <li
-                              key={workspace.name}
-                              className="flex flex-wrap items-baseline gap-x-1.5"
-                            >
-                              <span className="break-all font-medium">
-                                {workspace.name}
-                              </span>
-                              <span className="text-muted-foreground">
-                                {workspace.sessionCount} session
-                                {workspace.sessionCount === 1 ? "" : "s"}
-                                {workspace.lastSeenAt
-                                  ? ` · ${formatSessionTimestamp(workspace.lastSeenAt)}`
-                                  : ""}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </ConnectionFact>
-                    ) : null}
-                  </dl>
-                </article>
-              );
-            })}
-          </div>
-          {hasMore ? (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
               <Button
-                type="button"
-                variant="outline"
-                onClick={loadOlder}
-                disabled={loadingMore}
-              >
-                {loadingMore
-                  ? "Loading older sessions…"
-                  : "Load older sessions"}
+                variant="quiet"
+                icon={<RefreshCw className={capability.state === "loading" ? "animate-spin" : undefined} />}
+                aria-label="Check the hosted Claude Code capability again"
+                onClick={refreshHostedCapability}
+                disabled={capability.state === "loading"}
+              />
+              {hostedStart.selectable ? (
+                <Button asChild variant="outline" icon={<Play />}>
+                  <Link href="/work/new">Start</Link>
+                </Button>
+              ) : (
+                <Button variant="outline" icon={<Play />} disabled title={hostedStart.reason ?? "Not available yet"}>
+                  Start
+                </Button>
+              )}
+            </SettingRow>
+            <SettingRow label="Claude Code history import" line="Runs in Matrx Local: open Claude History in its sidebar">
+              <Button asChild variant="outline">
+                <OutboundLink href={MATRX_LOCAL_DOWNLOAD_PATH}>
+                  Get Matrx Local
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </OutboundLink>
               </Button>
-              <p className="text-xs text-muted-foreground">
-                {/* read-gate-exempt: shown only when the read returned a page with more after it, counting rows it returned */}
-                Detection and account facts above cover the {sessions.length}{" "}
-                most recent delivered sessions; older sessions exist.
-              </p>
-            </div>
+            </SettingRow>
+            <SettingRow label="ChatGPT and Claude.ai web history" line="Not available: no supported way to read it yet" />
+          </RowGroup>
+          {capability.organizationRequired ? (
+            <OrganizationRequiredNotice
+              compact
+              description="Starting a hosted Claude Code session needs to know which organization to work in. Pick one below and this checks again automatically."
+            />
+          ) : null}
+          {capacityFull && !hostedStart.selectable ? (
+            <SandboxCapacityList capacity={capacityFull} onStopped={() => refreshHostedCapability()} />
           ) : null}
         </section>
-
-        <section className="grid gap-3 lg:grid-cols-2">
-          <article className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-start gap-3">
-              <ServerCog className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold text-foreground">
-                  Start a hosted Claude Code session
-                </h2>
-                {capability.organizationRequired ? (
-                  <div className="mt-1">
-                    <OrganizationRequiredNotice
-                      compact
-                      description="Starting a hosted Claude Code session needs to know which organization to work in. Pick one below and this checks again automatically."
-                    />
-                  </div>
-                ) : capability.state === "loading" ? (
-                  <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Checking whether a hosted sandbox can be started for you…
-                  </p>
-                ) : hostedStart.selectable ? (
-                  <>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      AI Matrx can start a Claude Code session for you in a
-                      Matrx Sandbox
-                      {capability.runtime ? ` (${capability.runtime})` : ""}.
-                      Start it from the composer, where you also say what you
-                      want done and where the result should live.
-                    </p>
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="mt-2"
-                    >
-                      <Link href="/work/new">
-                        <Play className="h-3.5 w-3.5" />
-                        Start a hosted session
-                      </Link>
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      Starting a hosted Claude Code session is not available:{" "}
-                      {hostedStart.reason} No launch control is shown until the
-                      live capability verdict says otherwise.
-                    </p>
-                    {capacityFull && (
-                      <SandboxCapacityList
-                        capacity={capacityFull}
-                        onStopped={() => refreshHostedCapability()}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={refreshHostedCapability}
-                aria-label="Refresh the hosted Claude Code capability"
-                aria-busy={capability.state === "loading"}
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                <RefreshCw
-                  className={
-                    capability.state === "loading"
-                      ? "h-3.5 w-3.5 animate-spin"
-                      : "h-3.5 w-3.5"
-                  }
-                />
-              </button>
-            </div>
-          </article>
-
-          {/* The answer to "is my history actually arriving?", from binding
-              facts that already existed and that nothing rendered. Same reader
-              as the compact indicator on /work/conversations, so the two
-              surfaces cannot disagree. */}
-          <SyncStatePanel />
-
-          <article className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-start gap-3">
-              <Download className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold text-foreground">
-                  Historical Claude Code sync
-                </h2>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Available in the Matrx Local desktop app (v1.4.22+): open{" "}
-                  <span className="font-medium text-foreground">
-                    Claude History
-                  </span>{" "}
-                  in its sidebar to preview local Claude Code sessions and
-                  import the ones you choose, with an exact accepted/duplicate
-                  report. This web page never reads local provider files, so the
-                  import itself runs in the desktop app.
-                </p>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="mt-2"
-                >
-                  <OutboundLink
-                    href={MATRX_LOCAL_DOWNLOAD_PATH}
-                  >
-                    Get Matrx Local
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </OutboundLink>
-                </Button>
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  ChatGPT and Claude.ai web-chat history remain unavailable — no
-                  supported live seam exists, and no pretend sync action is
-                  offered.
-                </p>
-              </div>
-            </div>
-          </article>
-        </section>
       </div>
-    </div>
-  );
-}
-
-function StateBadge({ ready }: { ready: boolean }) {
-  const Icon = ready ? CheckCircle2 : CircleDot;
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-        ready
-          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-          : "bg-muted text-muted-foreground"
-      }`}
-    >
-      <Icon className="h-3 w-3" />
-      {ready ? "Detected" : "Not detected"}
-    </span>
-  );
-}
-
-function ConnectionFact({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-w-0 rounded-md bg-muted/30 px-2.5 py-2">
-      <dt className="font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 break-words text-foreground">{children}</dd>
     </div>
   );
 }

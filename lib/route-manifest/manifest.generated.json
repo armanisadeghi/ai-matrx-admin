@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1452,
+  "routeCount": 1454,
   "routes": [
     {
       "pattern": "/",
@@ -1767,6 +1767,16 @@
       "pattern": "/agents/battle/settings/[setId]",
       "status": "live",
       "source": "app/(core)/agents/battle/settings/[setId]/page.tsx"
+    },
+    {
+      "pattern": "/agents/battle/smart-add",
+      "status": "live",
+      "source": "app/(core)/agents/battle/smart-add/page.tsx"
+    },
+    {
+      "pattern": "/agents/battle/smart-add/[setId]",
+      "status": "live",
+      "source": "app/(core)/agents/battle/smart-add/[setId]/page.tsx"
     },
     {
       "pattern": "/agents/battle/system-prompt",

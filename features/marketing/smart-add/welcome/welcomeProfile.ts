@@ -7,6 +7,7 @@
  * Social handles merge by platform + handle (the route replaces the whole array, so the patch carries all of them).
  */
 
+import { firstNameOf } from "./firstName";
 import type { SocialHandle, UserFormProfileData, UserFormProfilePatch } from "@/features/user-profile/types";
 
 export interface WelcomeConfirmed {
@@ -30,7 +31,8 @@ export function welcomeProfilePatch(current: Current, found: WelcomeConfirmed, n
   const patch: UserFormProfilePatch = {};
   const parts = (found.name ?? "").trim().split(/\s+/).filter(Boolean);
   if (parts.length) {
-    if (empty(current?.preferred_name)) patch.preferred_name = parts[0];
+    // What they are called: the first word, or the full name when that word is an initial ("N K Jemisin").
+    if (empty(current?.preferred_name)) patch.preferred_name = firstNameOf(found.name);
     if (parts.length >= 2 && empty(current?.legal_first_name) && empty(current?.legal_last_name)) {
       patch.legal_first_name = parts[0];
       patch.legal_last_name = parts.slice(1).join(" ");

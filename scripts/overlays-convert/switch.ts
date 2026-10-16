@@ -1,6 +1,6 @@
 /**
  * overlays-switch — the deterministic, re-runnable codemod that moves matrx-frontend from its
- * in-app overlay/window system onto @ai-matrx/overlays.
+ * in-app overlay/window system onto @ai-matrx/summon.
  *
  *   npx tsx scripts/overlays-convert/switch.ts --root <app dir> [--pkg <overlays package dir>]
  *       [--report <file.json>] [--allow-real-tree]
@@ -19,7 +19,7 @@
  *                          persistence services, extension bridge, notifications, the files whose
  *                          use of a deleted name has no 1:1 package equivalent.
  *   B  importers         — every import / export-from / import() / jest.mock of a deleted module is
- *                          re-pointed (openers → definitions, slices → "@ai-matrx/overlays",
+ *                          re-pointed (openers → definitions, slices → "@ai-matrx/summon",
  *                          callbackManager → "/handles", engine → "/window" "/url" "/persistence"
  *                          "/lite"), names renamed by alias so call sites stay byte-identical.
  *   D  delete            — the replaced app code (list in DELETED below).
@@ -52,7 +52,7 @@ if (fs.realpathSync(ROOT) === fs.realpathSync(REAL_APP) && !argv.includes("--all
   console.error(`refusing to switch the real checkout (${ROOT}); prove it on a scratch export, or pass --allow-real-tree`);
   process.exit(2);
 }
-const PKG = path.resolve(argValue("--pkg") ?? path.join(REAL_APP, "../aidream/apps/shared/overlays"));
+const PKG = path.resolve(argValue("--pkg") ?? path.join(REAL_APP, "../aidream/apps/shared/summon"));
 const REPORT = argValue("--report");
 
 const DEFS = "features/overlays/definitions";
@@ -200,13 +200,13 @@ const isDeleted = (rel: string): boolean =>
 // ── package exports (per section) ─────────────────────────────────────────────────────────────
 
 const SECTIONS: Record<string, string> = {
-  "@ai-matrx/overlays": "index.ts",
-  "@ai-matrx/overlays/window": "window.ts",
-  "@ai-matrx/overlays/url": "url.ts",
-  "@ai-matrx/overlays/persistence": "persistence.ts",
-  "@ai-matrx/overlays/lite": "lite.ts",
-  "@ai-matrx/overlays/react": "react.ts",
-  "@ai-matrx/overlays/handles": "handles.ts",
+  "@ai-matrx/summon": "index.ts",
+  "@ai-matrx/summon/window": "window.ts",
+  "@ai-matrx/summon/url": "url.ts",
+  "@ai-matrx/summon/persistence": "persistence.ts",
+  "@ai-matrx/summon/lite": "lite.ts",
+  "@ai-matrx/summon/react": "react.ts",
+  "@ai-matrx/summon/handles": "handles.ts",
 };
 const PKG_EXPORTS: Record<string, Set<string>> = {};
 for (const [spec, entry] of Object.entries(SECTIONS)) {
@@ -218,7 +218,7 @@ for (const [spec, entry] of Object.entries(SECTIONS)) {
     module: ts.ModuleKind.ESNext,
     target: ts.ScriptTarget.ES2022,
     skipLibCheck: true,
-    paths: { "@ai-matrx/overlays": [path.join(PKG, "src/index.ts")], "@ai-matrx/overlays/*": [path.join(PKG, "src/*")] },
+    paths: { "@ai-matrx/summon": [path.join(PKG, "src/index.ts")], "@ai-matrx/summon/*": [path.join(PKG, "src/*")] },
   });
   const checker = program.getTypeChecker();
   const sf = program.getSourceFile(file);
@@ -349,7 +349,7 @@ function emitDefinitions(): void {
         "\n" +
         defImports.join("").trimEnd() +
         opener.slice(lastImportEnd).replace(/\s*$/, "\n") +
-        "\n// ── definition (@ai-matrx/overlays) ──────────────────────────────────────────────────\n" +
+        "\n// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────\n" +
         defRest.replace(/^\n+/, "\n");
     } else if (base) {
       const home = openerHome.get(base)!;
@@ -375,7 +375,7 @@ function emitDefinitions(): void {
   if (fsm) {
     const f = exists(`${DEFS}/fullScreenEditor.overlay.tsx`) ? `${DEFS}/fullScreenEditor.overlay.tsx` : `${DEFS}/fullScreenEditor.overlay.ts`;
     const t = read(f);
-    if (!t.includes("export type FullScreenEditorMode")) write(f, t.replace("\n// ── definition (@ai-matrx/overlays)", `\n/** Which message a full-screen edit belongs to (moved from the app's overlaySlice). */\n${fsm[0]}\n// ── definition (@ai-matrx/overlays)`));
+    if (!t.includes("export type FullScreenEditorMode")) write(f, t.replace("\n// ── definition (@ai-matrx/summon)", `\n/** Which message a full-screen edit belongs to (moved from the app's overlaySlice). */\n${fsm[0]}\n// ── definition (@ai-matrx/summon)`));
     resolve("FullScreenEditorMode: moved from lib/redux/slices/overlaySlice.ts into fullScreenEditor.overlay");
   }
   // Ruling 3 extension: overlays whose app-side openers (outside features/overlays/openers) dispatch an
@@ -439,11 +439,11 @@ function emitDefinitions(): void {
   }
   write(
     `${DEFS}/overlay-host-types.ts`,
-    `/**\n * The app's host types for @ai-matrx/overlays: link hydrators receive the app's thunk-aware\n * dispatch, so a hydrator that hands dispatch to an app helper needs no cast.\n */\nimport type { AppDispatch } from "@/lib/redux/store";\n\ndeclare module "@ai-matrx/overlays" {\n  interface OverlayHostTypes {\n    dispatch: AppDispatch;\n  }\n}\n\nexport {};\n`,
+    `/**\n * The app's host types for @ai-matrx/summon: link hydrators receive the app's thunk-aware\n * dispatch, so a hydrator that hands dispatch to an app helper needs no cast.\n */\nimport type { AppDispatch } from "@/lib/redux/store";\n\ndeclare module "@ai-matrx/summon" {\n  interface OverlayHostTypes {\n    dispatch: AppDispatch;\n  }\n}\n\nexport {};\n`,
   );
   write(
     `${DEFS}/register.ts`,
-    `import { registerOverlayMeta } from "@ai-matrx/overlays";\nimport { APP_OVERLAYS } from "./registry";\n\nlet registered = false;\n\n/**\n * Registers every app overlay's metadata with the package registry (links, persistence and\n * window metadata read it). Idempotent; OverlayHost registers the same list again on mount.\n */\nexport function ensureAppOverlaysRegistered(): void {\n  if (registered) return;\n  registered = true;\n  registerOverlayMeta(APP_OVERLAYS);\n}\n\n/** The app definition for an overlay id (label, instance, window options), registered or not. */\nexport function appOverlayDefinition(overlayId: string) {\n  return APP_OVERLAYS.find((d) => d.id === overlayId);\n}\n`,
+    `import { registerOverlayMeta } from "@ai-matrx/summon";\nimport { APP_OVERLAYS } from "./registry";\n\nlet registered = false;\n\n/**\n * Registers every app overlay's metadata with the package registry (links, persistence and\n * window metadata read it). Idempotent; SummonHost registers the same list again on mount.\n */\nexport function ensureAppOverlaysRegistered(): void {\n  if (registered) return;\n  registered = true;\n  registerOverlayMeta(APP_OVERLAYS);\n}\n\n/** The app definition for an overlay id (label, instance, window options), registered or not. */\nexport function appOverlayDefinition(overlayId: string) {\n  return APP_OVERLAYS.find((d) => d.id === overlayId);\n}\n`,
   );
   // tray previews: the old registry object → registerTrayPreview calls
   const trayReg = "features/window-panels/registry/trayPreviewRegistry.ts";
@@ -454,7 +454,7 @@ function emitDefinitions(): void {
     const names = [...new Set(entries.map(([, n]) => n))].sort();
     write(
       `${DEFS}/trayPreviews.ts`,
-      `/**\n * The app's minimized-window previews (the components stay in the app; the package draws them\n * in the tray chip). Imported for its side effect by the overlay world host.\n */\nimport { registerTrayPreview } from "@ai-matrx/overlays/window-host";\nimport {\n${names.map((n) => `  ${n},`).join("\n")}\n} from "@/features/window-panels/registry/tray-previews";\n\n${entries.map(([id, n]) => `registerTrayPreview("${id}", { Preview: ${n} });`).join("\n")}\n`,
+      `/**\n * The app's minimized-window previews (the components stay in the app; the package draws them\n * in the tray chip). Imported for its side effect by the overlay world host.\n */\nimport { registerTrayPreview } from "@ai-matrx/summon/window-host";\nimport {\n${names.map((n) => `  ${n},`).join("\n")}\n} from "@/features/window-panels/registry/tray-previews";\n\n${entries.map(([id, n]) => `registerTrayPreview("${id}", { Preview: ${n} });`).join("\n")}\n`,
     );
     resolve(`tray previews: ${entries.length} registry rows → registerTrayPreview in ${DEFS}/trayPreviews.ts (components kept in features/window-panels/registry/tray-previews.tsx)`);
   }
@@ -480,13 +480,13 @@ function removeSupersededOverlays(): void {
     if (!defFile) throw new Error(`[switch] superseded overlay ${id}: no definition emitted`);
     if (plan.keepOpenerAs) {
       const t = read(defFile);
-      const cut = t.indexOf("\n// ── definition (@ai-matrx/overlays)");
+      const cut = t.indexOf("\n// ── definition (@ai-matrx/summon)");
       if (cut < 0) throw new Error(`[switch] superseded overlay ${id}: definition marker not found`);
       if (/overlayId:\s*["']${id}["']|OVERLAY_ID = "${id}"/.test(t.slice(0, cut))) throw new Error(`[switch] ${id}: the kept opener still opens ${id}`);
       const opener =
         t
           .slice(0, cut)
-          .replace(/^import \{ defineOverlay \} from "@ai-matrx\/overlays\/react";\n/m, "")
+          .replace(/^import \{ defineOverlay \} from "@ai-matrx\/summon\/react";\n/m, "")
           .replace(/^import type \{ OverlayWire \} from "\.\/overlay-types";\n/m, "")
           .replace(/\s*$/, "\n");
       write(`${DEFS}/${plan.keepOpenerAs}${path.extname(defFile)}`, opener);
@@ -509,14 +509,14 @@ function emitHost(): void {
   write(
     `${HOST}/ports.ts`,
     `/**
- * The app's @ai-matrx/overlays ports. Store-independent ones (notify, errors) are module values;
+ * The app's @ai-matrx/summon ports. Store-independent ones (notify, errors) are module values;
  * the rest are built from the app store: identity (\`auth:<id>\` / \`guest:<fingerprint>\`), the
  * admin debug flag, and persistence over the person's \`users.user_surface_state\` rows through
  * the app's @ai-matrx/data doors.
  */
 import { createDb } from "@ai-matrx/data/db";
-import type { DebugPort, ErrorSinkPort, IdentityPort, NotifyOptions, NotifyPort, OverlayPersistencePort } from "@ai-matrx/overlays";
-import { createDataPersistence } from "@ai-matrx/overlays/persistence/data";
+import type { DebugPort, ErrorSinkPort, IdentityPort, NotifyOptions, NotifyPort, OverlayPersistencePort } from "@ai-matrx/summon";
+import { createDataPersistence } from "@ai-matrx/summon/persistence/data";
 import { toast } from "@/lib/toast";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
@@ -601,20 +601,20 @@ export function createAppOverlayPorts(store: StoreLike) {
 `,
   );
   write(
-    `${HOST}/AppOverlaysProvider.tsx`,
+    `${HOST}/AppSummonProvider.tsx`,
     `"use client";
 
 /**
- * The app's OverlaysProvider + WindowsProvider: the ONE app store (overlaysReducers + createOverlaysMiddleware are
+ * The app's SummonProvider + WindowsProvider: the ONE app store (summonReducers + createSummonMiddleware are
  * mounted in lib/redux), the app's ports, every rendered overlay inside the chat surface layer
  * boundary, and the admin "Copy for AI" report in the error card.
  */
 import { Suspense, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { locationRouter, type RouterPort } from "@ai-matrx/overlays";
-import { OverlaysProvider, type OverlayErrorExtrasContext } from "@ai-matrx/overlays/react";
-import { useNextRouterPort } from "@ai-matrx/overlays/next";
-import { WindowsProvider, WindowTraySync } from "@ai-matrx/overlays/window-host";
+import { locationRouter, type RouterPort } from "@ai-matrx/summon";
+import { SummonProvider, type OverlayErrorExtrasContext } from "@ai-matrx/summon/react";
+import { useNextRouterPort } from "@ai-matrx/summon/next";
+import { WindowsProvider, WindowTraySync } from "@ai-matrx/summon/window-host";
 import { SurfaceLayerBoundary } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useAppStore } from "@/lib/redux/hooks";
 import { AppWindowSelectionSurface } from "./AppWindowSelectionSurface";
@@ -640,14 +640,14 @@ function RouterPortBridge({ onPort }: { onPort: (port: RouterPort) => void }) {
   return null;
 }
 
-export function AppOverlaysProvider({ children }: { children: ReactNode }) {
+export function AppSummonProvider({ children }: { children: ReactNode }) {
   const store = useAppStore();
   const [base] = useState(() => createAppOverlayPorts(store));
   const [router, setRouter] = useState<RouterPort>(locationRouter);
   const [ports, setPorts] = useState(() => ({ ...base, router: locationRouter }));
   if (ports.router !== router) setPorts({ ...base, router });
   return (
-    <OverlaysProvider store={store} ports={ports} renderWrapper={renderInSurfaceLayer} errorReportExtras={errorReportExtras}>
+    <SummonProvider store={store} ports={ports} renderWrapper={renderInSurfaceLayer} errorReportExtras={errorReportExtras}>
       <Suspense fallback={null}>
         <RouterPortBridge onPort={setRouter} />
       </Suspense>
@@ -657,7 +657,7 @@ export function AppOverlaysProvider({ children }: { children: ReactNode }) {
         <WindowTraySync />
         {children}
       </WindowsProvider>
-    </OverlaysProvider>
+    </SummonProvider>
   );
 }
 `,
@@ -666,7 +666,7 @@ export function AppOverlaysProvider({ children }: { children: ReactNode }) {
     `${HOST}/OverlayErrorCopyForAi.tsx`,
     `"use client";
 
-import type { OverlayErrorExtrasContext } from "@ai-matrx/overlays/react";
+import type { OverlayErrorExtrasContext } from "@ai-matrx/summon/react";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
@@ -716,14 +716,14 @@ export function AppWindowSelectionSurface({ children }: { children: ReactNode })
 /**
  * The overlay world: every app overlay rendered by its definition (one subscriber per overlay).
  * Loaded only through app/DeferredOverlayWorld.tsx; window options and tray sync are mounted at
- * the app root (AppOverlaysProvider).
+ * the app root (AppSummonProvider).
  */
-import { OverlayHost } from "@ai-matrx/overlays/react";
+import { SummonHost } from "@ai-matrx/summon/react";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 import "@/features/overlays/definitions/trayPreviews";
 
 export function OverlayWorldHost() {
-  return <OverlayHost definitions={APP_OVERLAYS} />;
+  return <SummonHost definitions={APP_OVERLAYS} />;
 }
 `,
   );
@@ -737,9 +737,9 @@ export function OverlayWorldHost() {
  * state). Mounted by the deferred singleton core; an open they trigger loads the overlay world.
  */
 import { Suspense, useEffect } from "react";
-import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, type OverlayId } from "@ai-matrx/overlays";
-import { OverlayLinkManager } from "@ai-matrx/overlays/url";
-import { OverlayPersistence } from "@ai-matrx/overlays/persistence";
+import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, type OverlayId } from "@ai-matrx/summon";
+import { OverlayLinkManager } from "@ai-matrx/summon/url";
+import { OverlayPersistence } from "@ai-matrx/summon/persistence";
 import { useAppStore } from "@/lib/redux/hooks";
 import { ensureAppOverlaysRegistered } from "@/features/overlays/definitions/register";
 
@@ -797,8 +797,8 @@ function wireHost(): void {
       .replace(/^import overlayDataReducer from "\.\/slices\/overlayDataSlice";\n/m, "")
       .replace(/^import windowManagerReducer from "\.\/slices\/windowManagerSlice";\n/m, "")
       .replace(/^import urlSyncReducer from "\.\/slices\/urlSyncSlice";\n/m, "");
-    if (!t.includes(`import { overlaysReducers } from "@ai-matrx/overlays";`)) t = t.replace(/^(import [^\n]+\n)/m, `$1import { overlaysReducers } from "@ai-matrx/overlays";\n`);
-    t = swap("rootReducer.ts", t, /\n  overlays: overlaySlice,\n/, "\n  // overlays, windowManager, urlSync, overlayState (@ai-matrx/overlays)\n  ...overlaysReducers,\n");
+    if (!t.includes(`import { summonReducers } from "@ai-matrx/summon";`)) t = t.replace(/^(import [^\n]+\n)/m, `$1import { summonReducers } from "@ai-matrx/summon";\n`);
+    t = swap("rootReducer.ts", t, /\n  overlays: overlaySlice,\n/, "\n  // overlays, windowManager, urlSync, overlayState (@ai-matrx/summon)\n  ...summonReducers,\n");
     t = t.replace(/\n  overlayData: overlayDataReducer,\n/, "\n").replace(/\n  windowManager: windowManagerReducer,\n/, "\n").replace(/\n  urlSync: urlSyncReducer,\n/, "\n");
     return t;
   });
@@ -806,30 +806,30 @@ function wireHost(): void {
     t = t
       .replace(/^import \{ overlayRenderWatchdogMiddleware \} from "[^"]+";\n/m, "")
       .replace(/^import \{ windowPersistenceCloseMiddleware \} from "[^"]+";\n/m, "");
-    if (!t.includes(`from "@ai-matrx/overlays";`)) {
-      t = t.replace(/^(import \{ reduxErrorCaptureMiddleware \} from [^\n]+\n)/m, `import { createOverlaysMiddleware } from "@ai-matrx/overlays";\nimport { bindOverlayStoreState, createStoreOverlayPorts } from "${HOST_SPEC}/ports";\n$1`);
+    if (!t.includes(`from "@ai-matrx/summon";`)) {
+      t = t.replace(/^(import \{ reduxErrorCaptureMiddleware \} from [^\n]+\n)/m, `import { createSummonMiddleware } from "@ai-matrx/summon";\nimport { bindOverlayStoreState, createStoreOverlayPorts } from "${HOST_SPEC}/ports";\n$1`);
     }
     t = swap("store.ts", t, "\n  let bootPromise: Promise<void> | null = null;", "\n  bindOverlayStoreState(() => store.getState());\n  let bootPromise: Promise<void> | null = null;", "bindOverlayStoreState(");
     return swap(
       "store.ts",
       t,
       /\n(\s+)windowPersistenceCloseMiddleware,\n\s+overlayRenderWatchdogMiddleware,\n/,
-      "\n$1// close lifecycle + render watchdog (@ai-matrx/overlays)\n$1...createOverlaysMiddleware(createStoreOverlayPorts()),\n",
-      "createOverlaysMiddleware(createStoreOverlayPorts()",
+      "\n$1// close lifecycle + render watchdog (@ai-matrx/summon)\n$1...createSummonMiddleware(createStoreOverlayPorts()),\n",
+      "createSummonMiddleware(createStoreOverlayPorts()",
     );
   });
-  // providers: AppOverlaysProvider replaces WindowPersistenceManager; dead providers leave
+  // providers: AppSummonProvider replaces WindowPersistenceManager; dead providers leave
   for (const rel of ["app/Providers.tsx", "features/applets-host/AppletProviders.tsx"]) {
     patch(rel, (t) => {
       t = t
-        .replace(/(\/\/[^\n]*\n)*import \{ WindowPersistenceManager \} from "@\/features\/window-panels\/WindowPersistenceManager";\n/, `import { AppOverlaysProvider } from "${HOST_SPEC}/AppOverlaysProvider";\n`)
+        .replace(/(\/\/[^\n]*\n)*import \{ WindowPersistenceManager \} from "@\/features\/window-panels\/WindowPersistenceManager";\n/, `import { AppSummonProvider } from "${HOST_SPEC}/AppSummonProvider";\n`)
         .replace(/^import \{ RefProvider \} from "@\/lib\/refs";\n/m, "")
         .replace(/^import \{ PersistentComponentProvider \} from "@\/providers\/persistance\/PersistentComponentProvider";\n/m, "")
-        .replace(/<WindowPersistenceManager>/g, "<AppOverlaysProvider>")
-        .replace(/<\/WindowPersistenceManager>/g, "</AppOverlaysProvider>")
+        .replace(/<WindowPersistenceManager>/g, "<AppSummonProvider>")
+        .replace(/<\/WindowPersistenceManager>/g, "</AppSummonProvider>")
         .replace(/^\s*<\/?RefProvider>\n/gm, "")
         .replace(/^\s*<\/?PersistentComponentProvider>\n/gm, "");
-      if (!t.includes("AppOverlaysProvider")) throw new Error(`[switch] ${rel}: AppOverlaysProvider not mounted`);
+      if (!t.includes("AppSummonProvider")) throw new Error(`[switch] ${rel}: AppSummonProvider not mounted`);
       return t;
     });
   }
@@ -852,7 +852,7 @@ function wireHost(): void {
     t = t.replace(/\n\s*\{\/\* Window geometry must listen[\s\S]*?\*\/\}\n\s*<WindowTraySync \/>/, "").replace(/\n\s*<WindowTraySync \/>/, "");
     if (t.includes("WindowTraySync")) throw new Error("[switch] DeferredIslands.tsx: WindowTraySync still referenced");
     if (!/\bdynamic\(/.test(t)) t = t.replace(/^import dynamic from "next\/dynamic";\n/m, "");
-    resolve("WindowTraySync: moved from the shell's deferred islands to the app root (AppOverlaysProvider, @ai-matrx/overlays/window-host)");
+    resolve("WindowTraySync: moved from the shell's deferred islands to the app root (AppSummonProvider, @ai-matrx/summon/window-host)");
     return t;
   });
   // extension bridge → the package's one link door
@@ -862,7 +862,7 @@ function wireHost(): void {
     return (
       head +
       `import type { Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import { openPanelRequest } from "@ai-matrx/overlays/url";
+import { openPanelRequest } from "@ai-matrx/summon/url";
 import { OpenPanelPayloadSchema } from "@/lib/types/bridge-envelope";
 import { ensureAppOverlaysRegistered } from "${DEFS_SPEC}/register";
 
@@ -904,8 +904,8 @@ export function handleExtensionOpenPanel(
     return (
       head +
       `import type { AppDispatch } from "@/lib/redux/store";
-import { getOverlayMetaByLinkKey } from "@ai-matrx/overlays";
-import { canonicalLinkKey, openFromLink, parseLinkParam } from "@ai-matrx/overlays/url";
+import { getOverlayMetaByLinkKey } from "@ai-matrx/summon";
+import { canonicalLinkKey, openFromLink, parseLinkParam } from "@ai-matrx/summon/url";
 import { ensureAppOverlaysRegistered } from "${DEFS_SPEC}/register";
 
 export type OpenInPlaceResult =
@@ -974,7 +974,7 @@ export function openPanelsInPlace(
     const head = t.slice(0, t.indexOf("import {"));
     return (
       head +
-      `import type { MobilePresentation } from "@ai-matrx/overlays";
+      `import type { MobilePresentation } from "@ai-matrx/summon";
 import { APP_OVERLAYS } from "${DEFS_SPEC}/registry";
 
 type AppOverlay = (typeof APP_OVERLAYS)[number];
@@ -1041,7 +1041,7 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
   resolve("LinkAgentToShortcutModal: lazyOverlay (deleted app boundary) → next/dynamic with ssr:false (same one-edge lazy chunk)");
   // overlayDataSlice mirror → overlayState
   patch("components/mardown-display/chat-markdown/FullScreenMarkdownEditorBridge.tsx", (t) => {
-    t = t.replace(/^import \{ updateOverlayData \} from "@\/lib\/redux\/slices\/overlayDataSlice";\n/m, 'import { instanceKey, setOverlayStateValue } from "@ai-matrx/overlays";\n');
+    t = t.replace(/^import \{ updateOverlayData \} from "@\/lib\/redux\/slices\/overlayDataSlice";\n/m, 'import { instanceKey, setOverlayStateValue } from "@ai-matrx/summon";\n');
     return t.replace(
       /updateOverlayData\(\{\s*overlayId: "fullScreenEditor",\s*instanceId,\s*updates: \{ content: newContent \},\s*\}\)/g,
       'setOverlayStateValue({ key: instanceKey("fullScreenEditor", instanceId), name: "content", value: newContent })',
@@ -1052,12 +1052,12 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
   for (const rel of ["components/matrx/resizable/MatrxDynamicPanelHost.tsx", "providers/chatUiRegistration.ts"]) {
     patch(rel, (t) =>
       t
-        .replace(/import type \{ FloatingFrameSize \} from "@\/components\/matrx\/resizable\/MatrxFloatingFrame";/, 'import type { FloatingFrameSize } from "@ai-matrx/overlays/lite";')
-        .replace(/import\("@\/components\/matrx\/resizable\/MatrxFloatingFrame"\)\.then\(\s*\(m\) => m\.MatrxFloatingFrame,?\s*\)/, 'import("@ai-matrx/overlays/lite").then((m) => m.LiteWindow)')
-        .replace(/import \{ MatrxFloatingFrame as (\w+) \} from "@\/components\/matrx\/resizable\/MatrxFloatingFrame";/, 'import { LiteWindow as $1 } from "@ai-matrx/overlays/lite";'),
+        .replace(/import type \{ FloatingFrameSize \} from "@\/components\/matrx\/resizable\/MatrxFloatingFrame";/, 'import type { FloatingFrameSize } from "@ai-matrx/summon/lite";')
+        .replace(/import\("@\/components\/matrx\/resizable\/MatrxFloatingFrame"\)\.then\(\s*\(m\) => m\.MatrxFloatingFrame,?\s*\)/, 'import("@ai-matrx/summon/lite").then((m) => m.LiteWindow)')
+        .replace(/import \{ MatrxFloatingFrame as (\w+) \} from "@\/components\/matrx\/resizable\/MatrxFloatingFrame";/, 'import { LiteWindow as $1 } from "@ai-matrx/summon/lite";'),
     );
   }
-  resolve("MatrxFloatingFrame → LiteWindow (@ai-matrx/overlays/lite), import aliased so JSX stays");
+  resolve("MatrxFloatingFrame → LiteWindow (@ai-matrx/summon/lite), import aliased so JSX stays");
   // the dev-only eager-load guard of the deleted engine (the package's assertLazyLoaded is opt-in)
   patch("app/DeferredSingletonWrapper.tsx", (t) => t.replace(/^import "@\/features\/window-panels\/utils\/lazy-bundle-guard";\n/m, ""));
   resolve("app/DeferredSingletonWrapper.tsx: side-effect import of the engine's lazy-bundle-guard removed (it would now load the whole window section eagerly)");
@@ -1077,7 +1077,7 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
   resolve("state analyzer tab: overlayData slice → overlayState (package)");
   patch("providers/ChatHostAdapter.tsx", (t) => {
     t = t.replace("openOverlay({ overlayId: chatWindowOverlay(id), instanceId, data })", "overlaysRawActions.openOverlay({ overlayId: chatWindowOverlay(id), instanceId, data: data as Readonly<Record<string, unknown>> | null })");
-    if (t.includes("overlaysRawActions.openOverlay") && !/import \{[^}]*overlaysRawActions/.test(t)) t = t.replace(/^(import [^\n]+\n)/m, `$1import { overlaysRawActions } from "@ai-matrx/overlays";\n`);
+    if (t.includes("overlaysRawActions.openOverlay") && !/import \{[^}]*overlaysRawActions/.test(t)) t = t.replace(/^(import [^\n]+\n)/m, `$1import { overlaysRawActions } from "@ai-matrx/summon";\n`);
     return t;
   });
   resolve("ChatHostAdapter: chat-window open with unknown data → overlaysRawActions.openOverlay (erased id/data, as the chat port hands them)");
@@ -1089,7 +1089,7 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
       /jest\.mock\("@\/features\/window-panels\/url-sync\/initUrlHydration", \(\) => \(\{\n  initUrlHydration: \(\) => \{\n    const \{ registerPanelHydrator \} = require\("@\/features\/window-panels\/url-sync\/UrlPanelRegistry"\);\n    registerPanelHydrator\("test_window", testHydrator\);\n  \},\n\}\)\);/,
       `jest.mock("${DEFS_SPEC}/register", () => ({
   ensureAppOverlaysRegistered: () => {
-    const { registerOverlayMeta } = require("@ai-matrx/overlays");
+    const { registerOverlayMeta } = require("@ai-matrx/summon");
     registerOverlayMeta([
       {
         id: "testWindow",
@@ -1104,11 +1104,11 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
     ),
   );
   patch("features/window-panels/detail/__tests__/the-title-never-runs-under-the-actions.test.tsx", (t) => {
-    t = swap("the-title-never-runs…test.tsx", t, /^(import \{ WindowPanel \} from "[^"]+";)$/m, '$1\nimport { OverlaysProvider } from "@ai-matrx/overlays/react";', 'import { OverlaysProvider } from "@ai-matrx/overlays/react";');
-    t = swap("the-title-never-runs…test.tsx", t, /(\n(\s*)<Provider store=\{store\}>\n)([\s\S]*?)(\n\s*<\/Provider>)/, "$1$2  <OverlaysProvider store={store}>\n$3\n$2  </OverlaysProvider>$4", "<OverlaysProvider store={store}>");
+    t = swap("the-title-never-runs…test.tsx", t, /^(import \{ WindowPanel \} from "[^"]+";)$/m, '$1\nimport { SummonProvider } from "@ai-matrx/summon/react";', 'import { SummonProvider } from "@ai-matrx/summon/react";');
+    t = swap("the-title-never-runs…test.tsx", t, /(\n(\s*)<Provider store=\{store\}>\n)([\s\S]*?)(\n\s*<\/Provider>)/, "$1$2  <SummonProvider store={store}>\n$3\n$2  </SummonProvider>$4", "<SummonProvider store={store}>");
     return t;
   });
-  resolve("tests: notice-opens-without-moving-the-page mocks the definitions registration (test link on the package registry); the-title-never-runs renders WindowPanel inside OverlaysProvider (WindowPanel needs the provider)");
+  resolve("tests: notice-opens-without-moving-the-page mocks the definitions registration (test link on the package registry); the-title-never-runs renders WindowPanel inside SummonProvider (WindowPanel needs the provider)");
   patch("components/agent-copy/copy-subset/overlay-registration.test.ts", (t) => {
     const start = t.indexOf('  it("has a lazy import and a gated multi-instance block in the controller"');
     if (start < 0) return t;
@@ -1177,7 +1177,7 @@ function catalogueViewForTest(rel: string, t: string): string {
   }
   if (!removals.length) return t;
   const decl: string[] = [`import { APP_OVERLAYS } from "${DEFS_SPEC}/registry";`];
-  if (wanted.has("OverlayId")) decl.push(`import type { OverlayId } from "@ai-matrx/overlays";`);
+  if (wanted.has("OverlayId")) decl.push(`import type { OverlayId } from "@ai-matrx/summon";`);
   decl.push(
     "",
     "/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */",
@@ -1226,10 +1226,10 @@ function emitPortedTests(): void {
 
 // ── B. importers ─────────────────────────────────────────────────────────────────────────────
 
-const CORE = "@ai-matrx/overlays";
-const WIN = "@ai-matrx/overlays/window";
-const URL_S = "@ai-matrx/overlays/url";
-const ENGINE_ORDER = [WIN, CORE, URL_S, "@ai-matrx/overlays/persistence", "@ai-matrx/overlays/lite", "@ai-matrx/overlays/react", "@ai-matrx/overlays/handles"];
+const CORE = "@ai-matrx/summon";
+const WIN = "@ai-matrx/summon/window";
+const URL_S = "@ai-matrx/summon/url";
+const ENGINE_ORDER = [WIN, CORE, URL_S, "@ai-matrx/summon/persistence", "@ai-matrx/summon/lite", "@ai-matrx/summon/react", "@ai-matrx/summon/handles"];
 
 interface Target {
   /** default module for import()/jest.mock/namespace imports */
@@ -1249,7 +1249,7 @@ const SPECIFIC: Record<string, Record<string, [string, string]>> = {
   "lib/redux/slices/windowManagerSlice": { default: [CORE, "windowManagerReducer"] },
   "lib/redux/slices/urlSyncSlice": { default: [CORE, "linksReducer"] },
   "lib/redux/slices/overlayDataSlice": { default: [CORE, "overlayStateReducer"] },
-  "components/matrx/resizable/MatrxFloatingFrame": { MatrxFloatingFrame: ["@ai-matrx/overlays/lite", "LiteWindow"] },
+  "components/matrx/resizable/MatrxFloatingFrame": { MatrxFloatingFrame: ["@ai-matrx/summon/lite", "LiteWindow"] },
   "features/window-panels/mobile/MobileDrawerSurface": { default: [WIN, "MobileDrawerSurface"] },
   "features/window-panels/mobile/MobileCardSurface": { default: [WIN, "MobileCardSurface"] },
   "features/window-panels/url-sync/useUrlSync": { useUrlSync: [URL_S, "useOverlayLink"] },
@@ -1266,7 +1266,7 @@ function targetFor(rel: string): Target | undefined {
   if (noExt.startsWith("features/overlays/callbacks/")) return { spec: `${DEFS_SPEC}/callbacks/${noExt.slice("features/overlays/callbacks/".length)}` };
   if (noExt === "features/overlays/boundary/overlayErrorReport" || noExt === "features/overlays/boundary/overlayDiagnostics")
     return { spec: `${HOST_SPEC}/${path.basename(noExt)}` };
-  if (noExt === "utils/callbackManager" || noExt === "hooks/useCallbackManager") return { spec: "@ai-matrx/overlays/handles", name: (n) => lookup(n, ["@ai-matrx/overlays/handles"]) };
+  if (noExt === "utils/callbackManager" || noExt === "hooks/useCallbackManager") return { spec: "@ai-matrx/summon/handles", name: (n) => lookup(n, ["@ai-matrx/summon/handles"]) };
   const specific = SPECIFIC[noExt];
   const isSlice = noExt.startsWith("lib/redux/slices/");
   const isEngine = noExt.startsWith("features/window-panels/") || noExt === "components/matrx/resizable/MatrxFloatingFrame" || noExt.startsWith("features/overlays/");
@@ -1410,10 +1410,10 @@ function adaptWindowPanelUsers(): void {
     if (baseProps) {
       // the window's own props extend the props WITHOUT the close binding (it binds its own close)
       const stillUsed = /\bWindowPanelProps\b/.test(out.replace(/import[^;]*;/g, ""));
-      out = out.replace(/(import \{[^}]*?)\btype WindowPanelProps\b([^}]*\} from "@ai-matrx\/overlays\/window";)/, (_m, a, b) =>
+      out = out.replace(/(import \{[^}]*?)\btype WindowPanelProps\b([^}]*\} from "@ai-matrx\/summon\/window";)/, (_m, a, b) =>
         stillUsed ? `${a}type WindowPanelProps, type WindowPanelBaseProps${b}` : `${a}type WindowPanelBaseProps${b}`,
       );
-      if (!/\bWindowPanelBaseProps\b[^;]*from "@ai-matrx\/overlays\/window"/.test(out)) throw new Error(`[switch] ${rel}: could not import WindowPanelBaseProps`);
+      if (!/\bWindowPanelBaseProps\b[^;]*from "@ai-matrx\/summon\/window"/.test(out)) throw new Error(`[switch] ${rel}: could not import WindowPanelBaseProps`);
     }
     write(rel, out);
     resolve(`${rel}: WindowPanel removed props dropped / Omit<WindowPanelProps, …> → Omit<WindowPanelBaseProps, …>`);
@@ -1474,7 +1474,7 @@ function repointGuards(): void {
     const renderRel = \`\${defsDir}/\${f}\`;
     const text = read(renderRel) ?? "";
     for (const m of text.matchAll(/^import (?!type )(?:[A-Z]\\w*|\\{[^}]*\\b[A-Z]\\w*[^}]*\\}) from ["']([^"']+)["'];$/gm)) {
-      if (m[1].startsWith("@ai-matrx/overlays")) continue;
+      if (m[1].startsWith("@ai-matrx/summon")) continue;
       const r = resolveImport(renderRel, m[1]);
       if (r) windowFiles.add(r);
     }
@@ -1503,11 +1503,11 @@ function repointGuards(): void {
 
 function wireStylesAndDependency(): void {
   patch("app/globals.css", (t) => {
-    t = swap("globals.css", t, '@source "../node_modules/@ai-matrx/capture/dist";\n', '@source "../node_modules/@ai-matrx/capture/dist";\n@source "../node_modules/@ai-matrx/overlays/dist";\n', '@source "../node_modules/@ai-matrx/overlays/dist";');
-    return swap("globals.css", t, '@import "@ai-matrx/design-system/web-base.css";\n', '@import "@ai-matrx/design-system/web-base.css";\n@import "@ai-matrx/overlays/styles.css";\n', '@import "@ai-matrx/overlays/styles.css";');
+    t = swap("globals.css", t, '@source "../node_modules/@ai-matrx/capture/dist";\n', '@source "../node_modules/@ai-matrx/capture/dist";\n@source "../node_modules/@ai-matrx/summon/dist";\n', '@source "../node_modules/@ai-matrx/summon/dist";');
+    return swap("globals.css", t, '@import "@ai-matrx/design-system/web-base.css";\n', '@import "@ai-matrx/design-system/web-base.css";\n@import "@ai-matrx/summon/styles.css";\n', '@import "@ai-matrx/summon/styles.css";');
   });
-  patch("package.json", (t) => swap("package.json", t, '    "@ai-matrx/office": "latest",\n', '    "@ai-matrx/office": "latest",\n    "@ai-matrx/overlays": "latest",\n', '"@ai-matrx/overlays": "latest"'));
-  resolve('globals.css: @source "../node_modules/@ai-matrx/overlays/dist" + @import "@ai-matrx/overlays/styles.css"; package.json: "@ai-matrx/overlays": "latest" (pnpm-lock is NOT touched: install after publish)');
+  patch("package.json", (t) => swap("package.json", t, '    "@ai-matrx/office": "latest",\n', '    "@ai-matrx/office": "latest",\n    "@ai-matrx/summon": "latest",\n', '"@ai-matrx/summon": "latest"'));
+  resolve('globals.css: @source "../node_modules/@ai-matrx/summon/dist" + @import "@ai-matrx/summon/styles.css"; package.json: "@ai-matrx/summon": "latest" (pnpm-lock is NOT touched: install after publish)');
 }
 
 // ── run ──────────────────────────────────────────────────────────────────────────────────────

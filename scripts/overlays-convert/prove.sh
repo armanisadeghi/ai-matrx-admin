@@ -8,13 +8,13 @@
 #   <work>/sw    the same export, switched by switch.ts
 # Both symlink node_modules to the real install (read-only use). The package SOURCE is copied
 # into each export as .overlays-src/ so its own imports resolve from the app's node_modules,
-# exactly as the published package would; a scratch tsconfig maps "@ai-matrx/overlays/*" there.
+# exactly as the published package would; a scratch tsconfig maps "@ai-matrx/summon/*" there.
 # Then: the full type-check on both (new errors = switched minus baseline), the deleted-path
 # re-grep, and a second codemod run that must change nothing.
 set -euo pipefail
 
 APP="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PKG="${OVERLAYS_PKG:-$APP/../aidream/apps/shared/overlays}"
+PKG="${SUMMON_PKG:-$APP/../aidream/apps/shared/summon}"
 W="${1:-$(mktemp -d)}"
 mkdir -p "$W"
 echo "work dir: $W"
@@ -40,9 +40,9 @@ export_tree() {
       "@components/ui/*": ["./components/ui/*"],
       "@components/*": ["./components/*"],
       "/*": ["./public/*"],
-      "@ai-matrx/overlays": ["./.overlays-src/index.ts"],
-      "@ai-matrx/overlays/persistence/data": ["./.overlays-src/persistence-data.ts"],
-      "@ai-matrx/overlays/*": ["./.overlays-src/*"]
+      "@ai-matrx/summon": ["./.overlays-src/index.ts"],
+      "@ai-matrx/summon/persistence/data": ["./.overlays-src/persistence-data.ts"],
+      "@ai-matrx/summon/*": ["./.overlays-src/*"]
     }
   }
 }
@@ -101,14 +101,14 @@ for d in base sw; do [ -d "$W/$d/.git" ] || git -C "$W/$d" init -q; done
 for d in base sw; do
   cat > "$W/$d/jest.scratch.config.ts" <<'JEST'
 import base from "./jest.config.ts";
-// Scratch-only: "@ai-matrx/overlays" resolves to the package SOURCE copied into .overlays-src.
+// Scratch-only: "@ai-matrx/summon" resolves to the package SOURCE copied into .overlays-src.
 const config = {
   ...base,
   moduleNameMapper: {
-    "^@ai-matrx/overlays$": "<rootDir>/.overlays-src/index.ts",
-    "^@ai-matrx/overlays/persistence/data$": "<rootDir>/.overlays-src/persistence-data.ts",
-    "^@ai-matrx/overlays/styles\\.css$": "<rootDir>/test-utils/style-mock.ts",
-    "^@ai-matrx/overlays/(.*)$": "<rootDir>/.overlays-src/$1.ts",
+    "^@ai-matrx/summon$": "<rootDir>/.overlays-src/index.ts",
+    "^@ai-matrx/summon/persistence/data$": "<rootDir>/.overlays-src/persistence-data.ts",
+    "^@ai-matrx/summon/styles\\.css$": "<rootDir>/test-utils/style-mock.ts",
+    "^@ai-matrx/summon/(.*)$": "<rootDir>/.overlays-src/$1.ts",
     ...(base.moduleNameMapper ?? {}),
   },
   cacheDirectory: "<rootDir>/.jest-scratch-cache",

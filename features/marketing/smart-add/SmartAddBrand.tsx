@@ -17,6 +17,7 @@
  */
 
 import { promoteSmartAddFindings } from "./promote";
+import { websiteLinkIn } from "./personPrefill";
 import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
 import { PersonFoundStage } from "./found/PersonFoundStage";
@@ -25,7 +26,8 @@ import { loginSeed as readLoginSeed, provenWebsite, seedEvidence, type LoginSeed
 import { peopleGroups, type PersonGroup } from "./welcome/peopleGroups";
 import { PersonPickCards } from "./welcome/PersonPickCards";
 import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
-import { saveWelcomeProfile } from "./welcome/saveWelcomeProfile";
+import { writeWelcomeProfile } from "./welcome/saveWelcomeProfile";
+import type { WelcomeConfirmed } from "./welcome/welcomeProfile";
 import { fetchKnownDomainRules } from "@/lib/web-domains/service";
 import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
@@ -818,6 +820,9 @@ export function SmartAddBrand({
     personTyped.current = { name, city };
     personMore.current = more;
     const answers = [customItem("name", name), ...(city ? [customItem("address", city)] : [])];
+    // MKT-186: a plain website typed in a Person box is the person's website: a Websites row, not only free text for the agent.
+    const ownSite = websiteLinkIn(more.extra, more.company, more.occupation);
+    if (ownSite) answers.push(customItem("website", ownSite));
     addCustom(answers);
     // The anchor round carries the woken name and city itself; the wake effect must not send them again.
     wokenSent.current.add(`name:${name}`);
@@ -1828,24 +1833,43 @@ export function SmartAddBrand({
     setWelcomeConfirming(true);
     setWelcomeCreateKick((k) => k + 1);
   };
-  const runWelcomeCreate = useEffectEvent(() => void create());
-  useEffect(() => {
-    if (welcomeCreateKick) runWelcomeCreate();
-  }, [welcomeCreateKick]);
-  // Created through "Looks right": their plain profile gets what they confirmed, then the welcome page takes over.
-  const finishWelcome = useEffectEvent(async (brand: MarketingBrand) => {
-    const factOf = (fields: string[]) =>
-      facts.find((f) => fields.includes(f.field) && (decisions[f.key] === "yes" || new Set(f.evidence_urls.map(websiteHost)).size >= 2))?.value ?? null;
-    try {
-      await saveWelcomeProfile({
+  // Their plain profile gets what they confirmed. The write starts WITH Create, never after it: Create's many steps
+  // take seconds, and a page that went away inside them (a dev-server full reload did, 2026-10-16) lost the write.
+  // writeWelcomeProfile records the values first, so a page that dies mid-write is finished by the next /welcome load.
+  const welcomeProfileFound = useRef<WelcomeConfirmed | null>(null);
+  const welcomeProfileWrite = useRef<Promise<Error | null> | null>(null);
+  const runWelcomeCreate = useEffectEvent(() => {
+    if (loginSeed) {
+      // This render has the Looks right answers applied (set in the same press), so `basics` holds what they confirmed.
+      const factOf = (fields: string[]) =>
+        facts.find((f) => fields.includes(f.field) && (decisions[f.key] === "yes" || new Set(f.evidence_urls.map(websiteHost)).size >= 2))?.value ?? null;
+      const found: WelcomeConfirmed = {
         name: basics.name ?? welcomeName,
         websiteUrl: basics.websiteUrl,
         accounts: basics.accounts.map((a) => ({ platform: a.platform, handle: a.handle, url: a.url })),
         company: personMore.current.company || factOf(["employer", "company", "current_company", "organization"]),
         jobTitle: factOf(["job_title", "occupation", "profession", "role"]),
-      });
-    } catch (error) {
-      toast.error(`Your profile was not updated: ${extractErrorMessage(error)}`);
+      };
+      welcomeProfileFound.current = found;
+      welcomeProfileWrite.current = writeWelcomeProfile(loginSeed.subject, found).then(
+        () => null,
+        (error: unknown) => (error instanceof Error ? error : new Error(extractErrorMessage(error))),
+      );
+    }
+    void create();
+  });
+  useEffect(() => {
+    if (welcomeCreateKick) runWelcomeCreate();
+  }, [welcomeCreateKick]);
+  // Created through "Looks right": the profile write has landed (or is retried once), then the welcome page takes over.
+  const finishWelcome = useEffectEvent(async (brand: MarketingBrand) => {
+    const failed = await welcomeProfileWrite.current;
+    if (failed && loginSeed && welcomeProfileFound.current) {
+      try {
+        await writeWelcomeProfile(loginSeed.subject, welcomeProfileFound.current);
+      } catch (error) {
+        toast.error(`Your profile was not updated: ${extractErrorMessage(error)}`);
+      }
     }
     const host = basics.websiteUrl ? websiteHost(basics.websiteUrl) : null;
     onWelcomeDone?.({ brand, paidHost: paidCardsHost(host, liveKnownDomainRules()), test: Boolean(loginSeed?.test) });

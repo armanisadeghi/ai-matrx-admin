@@ -7,6 +7,7 @@
  */
 
 import { cleanLine } from "../welcome/peopleGroups";
+import { firstNameOf } from "../welcome/firstName";
 import { websiteHost, type Decision, type EvidenceItem } from "../evidence";
 import { foundAnswers, foundCards, type FoundAccount, type FoundCards, type FoundFact, type FoundInput } from "./foundCards";
 
@@ -55,9 +56,8 @@ function oneLine(raw: string | null | undefined): string | null {
   return `${(space > BIO_MAX / 2 ? cut.slice(0, space) : cut).replace(/[\s,;:|·-]+$/, "")}…`;
 }
 
-export function firstNameOf(name: string): string {
-  return name.trim().split(/\s+/)[0] ?? "";
-}
+/** The greeting's name (welcome/firstName.ts): the first word, or the full name when that word is an initial. */
+export { firstNameOf };
 
 /** A certain account's own words about the person: its description row (read from that profile) or its bio line. */
 function accountBio(accounts: FoundAccount[], items: readonly EvidenceItem[], decisions: Record<string, Decision>): { text: string; item: EvidenceItem | null } | null {

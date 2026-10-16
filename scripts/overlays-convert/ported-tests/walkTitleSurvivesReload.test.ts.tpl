@@ -4,7 +4,7 @@
  */
 import { configureStore } from "@reduxjs/toolkit";
 
-import { overlaysReducer, selectOpenInstances } from "@ai-matrx/overlays";
+import { overlaysReducer, selectOpenInstances } from "@ai-matrx/summon";
 import { linkHydrator, parsePanels, registerAppLinks, serializePanels } from "@/features/overlays/definitions/__tests__/linkKit";
 import * as address from "@/features/review-walk/address";
 import { walkTitle } from "@/features/review-walk/walkTitle";

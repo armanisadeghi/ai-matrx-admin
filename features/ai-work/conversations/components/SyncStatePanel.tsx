@@ -26,6 +26,8 @@
 // looks live and does nothing is the "fake Resume" this product forbids.
 
 import { PropertyRow } from "@ai-matrx/design-system/controls";
+import { StatusDot } from "@ai-matrx/design-system";
+import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -156,124 +158,73 @@ export function SyncNowDoor({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function AccountCard({ account }: { account: SyncAccountState }) {
-  return (
-    <article className="rounded-lg border border-border bg-background p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <h3 className="text-sm font-medium text-foreground">
-            {providerLabel(account.provider) ?? humanizeIdentifier(account.provider)}
-          </h3>
-          <span
-            className={cn(
-              "max-w-56 truncate rounded-full px-2 py-0.5 text-[11px] font-medium",
-              account.accountReported
-                ? "bg-primary/10 text-primary-ink"
-                : "bg-muted text-muted-foreground",
-            )}
-            title={account.accountLabel}
-          >
-            {account.accountLabel}
-          </span>
-        </div>
-        <FreshnessPill freshness={account.freshness} />
-      </div>
-      <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
-        <PropertyRow label="Sessions delivered">
-          {account.sessionCount.toLocaleString()}
-        </PropertyRow>
-        <PropertyRow label="Last delivery">
-          {account.lastSeenAt
-            ? formatSessionTimestamp(account.lastSeenAt)
-            : "Never"}
-        </PropertyRow>
-        <PropertyRow label="Fidelity">
-          {account.fidelity
-            .map((f) => `${humanizeIdentifier(f.value)} (${f.count})`)
-            .join(", ") || "None recorded"}
-        </PropertyRow>
-        <PropertyRow label="Arrived by">
-          {account.origin
-            .map((o) => `${arrivedByLabel(o.value, humanizeIdentifier)} (${o.count})`)
-            .join(", ") || "None recorded"}
-        </PropertyRow>
-        <PropertyRow label="Bindings not active">
-          {account.inactiveCount > 0 ? account.inactiveCount : "None"}
-        </PropertyRow>
-        <PropertyRow label="Workspaces">
-          {account.workspaces.length > 0
-            ? account.workspaces.join(", ")
-            : "None reported"}
-        </PropertyRow>
-      </dl>
-    </article>
-  );
-}
-
+/**
+ * The full breakdown on /work/connections: one row per provider account in the canonical table
+ * (every column sorts and filters); fidelity, arrival and workspaces are in the row's details.
+ */
 export function SyncStatePanel() {
   const { state, status, error, reload } = useSyncState();
-
+  const columns: MatrxColumnDef<SyncAccountState>[] = [
+    { id: "app", header: "App", accessorFn: (a) => providerLabel(a.provider) ?? humanizeIdentifier(a.provider), filter: "select", width: 130 },
+    { id: "account", header: "Account", accessorFn: (a) => a.accountLabel, filter: "text", width: 240, cell: (a) => <span className={cn("truncate", !a.accountReported && "text-muted-foreground")} title={a.accountLabel}>{a.accountLabel}</span> },
+    {
+      id: "status",
+      header: "Status",
+      accessorFn: (a) => freshnessLabel(a.freshness),
+      sortValue: (a) => FRESHNESS_ORDER[a.freshness],
+      filter: "select",
+      width: 130,
+      cell: (a) => (
+        <span className="flex min-w-0 items-center gap-1.5">
+          <StatusDot tone={FRESHNESS_TONE[a.freshness]} label={freshnessLabel(a.freshness)} />
+          <span className="truncate">{freshnessLabel(a.freshness)}</span>
+        </span>
+      ),
+    },
+    { id: "sessions", header: "Sessions", accessorFn: (a) => a.sessionCount, filter: "number", width: 100, align: "right" },
+    { id: "last_delivery", header: "Last delivery", accessorFn: (a) => a.lastSeenAt, filter: "date", width: 150, cell: (a) => <span className="text-muted-foreground">{a.lastSeenAt ? formatSessionTimestamp(a.lastSeenAt) : "Never"}</span> },
+    { id: "inactive", header: "Not active", accessorFn: (a) => a.inactiveCount, filter: "number", width: 100, align: "right", helpText: "Sessions whose delivery binding is no longer active" },
+    { id: "workspaces", header: "Workspaces", accessorFn: (a) => a.workspaces.length, filter: "number", width: 110, align: "right" },
+  ];
   return (
-    <article className="rounded-xl border border-border bg-card p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold text-foreground">Sync state</h2>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            What has actually been delivered into AI Matrx, per provider
-            account. These are binding facts from your own coding sessions — not
-            an estimate, and not a claim that anything is running right now.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {status === "ready" && <FreshnessPill freshness={state.freshness} />}
-          <button
-            type="button"
-            onClick={reload}
-            aria-label="Re-read sync state"
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {status === "loading" ? (
-        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          Reading delivered sessions…
-        </div>
-      ) : status === "error" ? (
-        <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive-ink">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          {error}
-          <ErrorAlchemyMenu error={error} />
-        </div>
-      ) : state.accounts.length === 0 ? (
-        <p className="mt-3 rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
-          No coding session has ever been delivered to this account. Install the
-          AI Matrx plugin in Claude Code, or import your existing history from
-          Matrx Local.
-        </p>
-      ) : (
-        <div className="mt-3 space-y-2">
-          <p className="text-xs text-muted-foreground">
-            {state.totalSessions.toLocaleString()} session
-            {state.totalSessions === 1 ? "" : "s"} across{" "}
-            {state.accounts.length} provider account
-            {state.accounts.length === 1 ? "" : "s"}.
-          </p>
-          {state.accounts.map((account) => (
-            <AccountCard key={account.key} account={account} />
-          ))}
-        </div>
-      )}
-
-      <div className="mt-3 border-t border-border pt-3">
-        <SyncNowDoor />
-      </div>
-    </article>
+    <MatrxDataTable<SyncAccountState>
+      tableId="work/connections/synced"
+      data={state.accounts}
+      columns={columns}
+      getRowId={(a) => a.key}
+      pageSize={0}
+      density="condensed"
+      viewTabs={false}
+      selection={false}
+      defaultSort={{ id: "last_delivery", direction: "desc" }}
+      toolbar={{ title: "Synced to AI Matrx", searchPlaceholder: "Search synced accounts", refresh: { onRefresh: reload, label: "Read sync state again" } }}
+      rowActions={(a, controls) => [{ id: "info", icon: Info, label: `Everything about ${a.accountLabel}`, onClick: controls.openDetail }]}
+      detail={{
+        title: (a) => a.accountLabel,
+        description: (a) => providerLabel(a.provider) ?? humanizeIdentifier(a.provider),
+        render: (a) => (
+          <div className="space-y-3 p-1">
+            <PropertyRow label="App" value={providerLabel(a.provider) ?? humanizeIdentifier(a.provider)} />
+            <PropertyRow label="Account" value={a.accountReported ? a.accountLabel : null} missing="No identity reported" />
+            <PropertyRow label="Status" value={freshnessLabel(a.freshness)} />
+            <PropertyRow label="Sessions delivered" value={a.sessionCount.toLocaleString()} />
+            <PropertyRow label="Last delivery" value={a.lastSeenAt ? formatSessionTimestamp(a.lastSeenAt) : "Never"} />
+            <PropertyRow label="Fidelity" value={a.fidelity.map((f) => `${humanizeIdentifier(f.value)} (${f.count})`).join(", ") || null} missing="None recorded" />
+            <PropertyRow label="Arrived by" value={a.origin.map((o) => `${arrivedByLabel(o.value, humanizeIdentifier)} (${o.count})`).join(", ") || null} missing="None recorded" />
+            <PropertyRow label="Bindings not active" value={a.inactiveCount > 0 ? String(a.inactiveCount) : "None"} />
+            <PropertyRow label="Workspaces" value={a.workspaces.length ? a.workspaces.join(", ") : null} missing="None reported" />
+          </div>
+        ),
+      }}
+      isLoading={status === "loading"}
+      read={{ status, error: error ?? undefined, onRetry: reload, what: "your delivered coding sessions" }}
+      emptyState={{ title: "Nothing synced yet", description: "Install the AI Matrx plugin in Claude Code" }}
+    />
   );
 }
+
+const FRESHNESS_ORDER: Record<SyncFreshness, number> = { live: 0, recent: 1, stale: 2, none: 3 };
+const FRESHNESS_TONE: Record<SyncFreshness, "success" | "warning" | "neutral"> = { live: "success", recent: "warning", stale: "neutral", none: "neutral" };
 
 /**
  * The compact form for the conversations list — same reader, same verdict, one

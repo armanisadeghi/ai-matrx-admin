@@ -1,6 +1,6 @@
 /**
  * overlays-convert — turns matrx-frontend's hand-wired overlay system into declare-once
- * @ai-matrx/overlays definitions, written into a SCRATCH directory. Inert: nothing imports it and it
+ * @ai-matrx/summon definitions, written into a SCRATCH directory. Inert: nothing imports it and it
  * never writes inside the app tree.
  *
  *   npx tsx scripts/overlays-convert/convert.ts --out <dir> [--app <app dir>] [--pkg <overlays package dir>]
@@ -53,7 +53,7 @@ if (OUT.startsWith(path.resolve(APP, "..") + path.sep) && !OUT.includes(`${path.
     process.exit(2);
   }
 }
-const PKG = path.resolve(argValue("--pkg") ?? path.join(APP, "../aidream/apps/shared/overlays"));
+const PKG = path.resolve(argValue("--pkg") ?? path.join(APP, "../aidream/apps/shared/summon"));
 const DEFS_SPEC = argValue("--defs-specifier") ?? "@/features/overlays/definitions";
 const RUN_TSC = !argv.includes("--no-typecheck");
 
@@ -556,7 +556,7 @@ function convertBlock(id: string, b: Block): RenderResult {
     `\n}\n`;
   // imports
   const names = referencedNames(pre.join("\n") + "\n" + body, true);
-  const specs: ImportSpec[] = [{ local: "OverlayRenderProps", module: "@ai-matrx/overlays/react", imported: "OverlayRenderProps", typeOnly: true }];
+  const specs: ImportSpec[] = [{ local: "OverlayRenderProps", module: "@ai-matrx/summon/react", imported: "OverlayRenderProps", typeOnly: true }];
   const helpers: string[] = [];
   for (const n of names) {
     const lz = lazy.get(n);
@@ -598,7 +598,7 @@ function rewriteSpecifiersIn(sf: ts.SourceFile, mode: "opener" | "callback"): st
     const lit = st.moduleSpecifier as ts.StringLiteral;
     const spec = lit.text;
     let next: string | undefined;
-    if (spec === "@/utils/callbackManager") next = "@ai-matrx/overlays/handles";
+    if (spec === "@/utils/callbackManager") next = "@ai-matrx/summon/handles";
     else if (spec.startsWith("@/features/overlays/callbacks/")) next = (mode === "opener" ? "../callbacks/" : "./") + spec.slice("@/features/overlays/callbacks/".length);
     else if (spec.startsWith("@/features/overlays/openers/")) next = (mode === "opener" ? "./" : "../openers/") + spec.slice("@/features/overlays/openers/".length);
     else if (spec.startsWith("./") || spec.startsWith("../")) {
@@ -606,14 +606,14 @@ function rewriteSpecifiersIn(sf: ts.SourceFile, mode: "opener" | "callback"): st
       const inMirrored = abs.startsWith(F.openers + path.sep) || abs.startsWith(F.callbacks + path.sep);
       if (!inMirrored) next = absolutize(sf.fileName, spec);
     } else if (spec === "@/features/overlays/catalogue") {
-      next = "@ai-matrx/overlays";
+      next = "@ai-matrx/summon";
     } else if (spec === OVERLAY_SLICE && ts.isImportDeclaration(st) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings)) {
       const els = st.importClause.namedBindings.elements;
       const moved = els.filter((e) => PKG_CORE_NAMES.has((e.propertyName ?? e.name).text));
       const kept = els.filter((e) => !PKG_CORE_NAMES.has((e.propertyName ?? e.name).text));
       const typeKw = st.importClause.isTypeOnly ? "type " : "";
       const lines: string[] = [];
-      if (moved.length) lines.push(`import ${typeKw}{ ${moved.map((e) => e.getText()).join(", ")} } from "@ai-matrx/overlays";`);
+      if (moved.length) lines.push(`import ${typeKw}{ ${moved.map((e) => e.getText()).join(", ")} } from "@ai-matrx/summon";`);
       if (kept.length) {
         lines.push(`import ${typeKw}{ ${kept.map((e) => e.getText()).join(", ")} } from "${OVERLAY_SLICE}";`);
         notes.push(`${path.basename(sf.fileName)} keeps ${kept.map((e) => e.getText()).join(", ")} from the app overlaySlice (no package equivalent)`);
@@ -824,13 +824,13 @@ function emitLink(plan: LinkPlan, dataType: string): string {
   if (passesDispatch) notes.push(`link ${plan.key} (${plan.id}): hydrator passes dispatch on; typed back to AppDispatch with one cast (package LinkHydrateContext.dispatch is erased)`);
   const names = referencedNames(body, false);
   const specs: ImportSpec[] = [
-    { local: "LinkHydrateContext", module: "@ai-matrx/overlays", imported: "LinkHydrateContext", typeOnly: true },
+    { local: "LinkHydrateContext", module: "@ai-matrx/summon", imported: "LinkHydrateContext", typeOnly: true },
     { local: dataType, module: `./${plan.id}.overlay`, imported: dataType, typeOnly: true },
   ];
   if (passesDispatch) specs.push({ local: "AppDispatch", module: "@/lib/redux/store", imported: "AppDispatch", typeOnly: true });
   for (const n of names) {
     if (linkHelperNames.has(n)) specs.push({ local: n, module: "./link-helpers", imported: n, typeOnly: false });
-    else if (n === "openOverlay") specs.push({ local: n, module: "@ai-matrx/overlays", imported: "openOverlay", typeOnly: false });
+    else if (n === "openOverlay") specs.push({ local: n, module: "@ai-matrx/summon", imported: "openOverlay", typeOnly: false });
     else {
       const imp = hydPool.get(n);
       if (imp) specs.push(imp);
@@ -858,14 +858,14 @@ for (const id of IDS) {
   const bl = blocksById.get(id) ?? [];
   if (bl.length === 0) {
     flag(id, "render", "no controller block renders this overlay id; render module emitted as `return null`");
-    fs.writeFileSync(path.join(OUT, `${id}.render.tsx`), `import type { OverlayRenderProps } from "@ai-matrx/overlays/react";\n\nexport default function render(_props: OverlayRenderProps) {\n  return null;\n}\n`);
+    fs.writeFileSync(path.join(OUT, `${id}.render.tsx`), `import type { OverlayRenderProps } from "@ai-matrx/summon/react";\n\nexport default function render(_props: OverlayRenderProps) {\n  return null;\n}\n`);
   } else {
     if (bl.length > 1) flag(id, "render", `${bl.length} controller blocks render this id; only the first was moved`);
     renders.set(id, convertBlock(id, bl[0]!));
   }
   // opener + data type
   const opener = openerById.get(id);
-  const imports: string[] = [`import { defineOverlay } from "@ai-matrx/overlays/react";`, `import type { OverlayWire } from "./overlay-types";`];
+  const imports: string[] = [`import { defineOverlay } from "@ai-matrx/summon/react";`, `import type { OverlayWire } from "./overlay-types";`];
   let dataDecl: string;
   if (opener) {
     const opt = optionsTypeFor(id, opener);
@@ -951,7 +951,7 @@ for (const id of IDS) {
     `export const ${defName} = defineOverlay<${dataType}>()({\n${fields.join("\n")}\n});\n` +
     reexport +
     restore +
-    `\ndeclare module "@ai-matrx/overlays" {\n  interface OverlayRegistry {\n    ${id}: OverlayWire<${dataType}>;\n  }\n}\n`;
+    `\ndeclare module "@ai-matrx/summon" {\n  interface OverlayRegistry {\n    ${id}: OverlayWire<${dataType}>;\n  }\n}\n`;
   fs.writeFileSync(path.join(OUT, `${id}.overlay.ts`), text);
 }
 
@@ -964,7 +964,7 @@ fs.writeFileSync(
 );
 fs.writeFileSync(
   path.join(OUT, "overlay-types.ts"),
-  `/**\n * What rides an overlay's open data. The old app typed it \`unknown\`; openers put their options on\n * it, often with null for an absent value and keys of their own (seed nonces, callback group ids).\n * The registry is typed with this wire shape; the definition's Data (the opener's options) types\n * def.useOpen / def.Controller.\n */\nexport type OverlayWire<T> = { [K in keyof T]?: T[K] | null } & { readonly [key: string]: unknown };\n\n/** The wire for an overlay whose opener sends a payload of its own shape (typed in the opener). */\nexport type UntypedOverlayWire = object;\n`,
+  `/**\n * What rides an overlay's open data. The old app typed it \`unknown\`; openers put their options on\n * it, often with null for an absent value and keys of their own (seed nonces, callback group ids).\n * The registry is typed with this wire shape; the definition's Data (the opener's options) types\n * def.useSummon / def.Controller.\n */\nexport type OverlayWire<T> = { [K in keyof T]?: T[K] | null } & { readonly [key: string]: unknown };\n\n/** The wire for an overlay whose opener sends a payload of its own shape (typed in the opener). */\nexport type UntypedOverlayWire = object;\n`,
 );
 fs.writeFileSync(
   path.join(OUT, "overlay-ids.ts"),
@@ -994,45 +994,45 @@ interface PlanEntry {
   names: Array<{ name: string; replacement: string | null; module?: string; status: string }>;
 }
 function pkgExports(entry: string): Set<string> {
-  const program = ts.createProgram([path.join(PKG, "src", entry)], { noEmit: true, allowJs: false, jsx: ts.JsxEmit.ReactJSX, moduleResolution: ts.ModuleResolutionKind.Bundler, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022, skipLibCheck: true, paths: { "@ai-matrx/overlays": [path.join(PKG, "src/index.ts")], "@ai-matrx/overlays/*": [path.join(PKG, "src/*")] } });
+  const program = ts.createProgram([path.join(PKG, "src", entry)], { noEmit: true, allowJs: false, jsx: ts.JsxEmit.ReactJSX, moduleResolution: ts.ModuleResolutionKind.Bundler, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022, skipLibCheck: true, paths: { "@ai-matrx/summon": [path.join(PKG, "src/index.ts")], "@ai-matrx/summon/*": [path.join(PKG, "src/*")] } });
   const checker = program.getTypeChecker();
   const sf = program.getSourceFile(path.join(PKG, "src", entry));
   const sym = sf && checker.getSymbolAtLocation(sf);
   return new Set(sym ? checker.getExportsOfModule(sym).map((s) => s.name) : []);
 }
 const PKG_EXPORTS: Record<string, Set<string>> = {
-  "@ai-matrx/overlays": pkgExports("index.ts"),
-  "@ai-matrx/overlays/react": pkgExports("react.ts"),
-  "@ai-matrx/overlays/handles": pkgExports("handles.ts"),
+  "@ai-matrx/summon": pkgExports("index.ts"),
+  "@ai-matrx/summon/react": pkgExports("react.ts"),
+  "@ai-matrx/summon/handles": pkgExports("handles.ts"),
 };
-const PENDING_SECTIONS = new Set(["@ai-matrx/overlays/window", "@ai-matrx/overlays/url", "@ai-matrx/overlays/persistence"]);
+const PENDING_SECTIONS = new Set(["@ai-matrx/summon/window", "@ai-matrx/summon/url", "@ai-matrx/summon/persistence"]);
 const RENAMES: Record<string, Record<string, { replacement: string | null; module?: string }>> = {
   "features/overlays/catalogue": {
     OVERLAY_CATALOGUE: { replacement: "APP_OVERLAYS", module: `${DEFS_SPEC}/registry` },
-    OverlayId: { replacement: "OverlayId", module: "@ai-matrx/overlays" },
-    isOverlayId: { replacement: "isRegisteredOverlay", module: "@ai-matrx/overlays" },
-    getCatalogueEntry: { replacement: "getOverlayMeta", module: "@ai-matrx/overlays" },
-    OverlayCatalogueEntry: { replacement: "AnyOverlayMeta", module: "@ai-matrx/overlays" },
+    OverlayId: { replacement: "OverlayId", module: "@ai-matrx/summon" },
+    isOverlayId: { replacement: "isRegisteredOverlay", module: "@ai-matrx/summon" },
+    getCatalogueEntry: { replacement: "getOverlayMeta", module: "@ai-matrx/summon" },
+    OverlayCatalogueEntry: { replacement: "AnyOverlayMeta", module: "@ai-matrx/summon" },
   },
   "lib/redux/slices/overlaySlice": {
-    default: { replacement: "overlaysReducer", module: "@ai-matrx/overlays" },
+    default: { replacement: "overlaysReducer", module: "@ai-matrx/summon" },
     FullScreenEditorMode: { replacement: "FullScreenEditorMode", module: `${DEFS_SPEC}/openers/fullScreenEditor` },
   },
-  "lib/redux/slices/windowManagerSlice": { default: { replacement: "windowManagerReducer", module: "@ai-matrx/overlays" } },
-  "lib/redux/slices/urlSyncSlice": { default: { replacement: "linksReducer", module: "@ai-matrx/overlays" }, urlSyncSlice: { replacement: null } },
+  "lib/redux/slices/windowManagerSlice": { default: { replacement: "windowManagerReducer", module: "@ai-matrx/summon" } },
+  "lib/redux/slices/urlSyncSlice": { default: { replacement: "linksReducer", module: "@ai-matrx/summon" }, urlSyncSlice: { replacement: null } },
   "lib/redux/slices/overlayDataSlice": {
-    default: { replacement: "overlayStateReducer", module: "@ai-matrx/overlays" },
-    overlayDataReducer: { replacement: "overlayStateReducer", module: "@ai-matrx/overlays" },
-    setOverlayData: { replacement: "setOverlayStateValue (different payload: {key, name, value})", module: "@ai-matrx/overlays" },
-    updateOverlayData: { replacement: "setOverlayStateValue (different payload)", module: "@ai-matrx/overlays" },
-    clearOverlayData: { replacement: "clearOverlayState", module: "@ai-matrx/overlays" },
-    selectOverlayData: { replacement: "selectOverlayStateFor (different key shape)", module: "@ai-matrx/overlays" },
-    selectTypedOverlayData: { replacement: "selectOverlayStateValue (different key shape)", module: "@ai-matrx/overlays" },
-    overlayDataKey: { replacement: "instanceKey", module: "@ai-matrx/overlays" },
+    default: { replacement: "overlayStateReducer", module: "@ai-matrx/summon" },
+    overlayDataReducer: { replacement: "overlayStateReducer", module: "@ai-matrx/summon" },
+    setOverlayData: { replacement: "setOverlayStateValue (different payload: {key, name, value})", module: "@ai-matrx/summon" },
+    updateOverlayData: { replacement: "setOverlayStateValue (different payload)", module: "@ai-matrx/summon" },
+    clearOverlayData: { replacement: "clearOverlayState", module: "@ai-matrx/summon" },
+    selectOverlayData: { replacement: "selectOverlayStateFor (different key shape)", module: "@ai-matrx/summon" },
+    selectTypedOverlayData: { replacement: "selectOverlayStateValue (different key shape)", module: "@ai-matrx/summon" },
+    overlayDataKey: { replacement: "instanceKey", module: "@ai-matrx/summon" },
   },
-  "features/overlays/OverlayController": { default: { replacement: "OverlayHost (with definitions={APP_OVERLAYS})", module: "@ai-matrx/overlays/react" } },
+  "features/overlays/OverlayController": { default: { replacement: "SummonHost (with definitions={APP_OVERLAYS})", module: "@ai-matrx/summon/react" } },
   "features/window-panels/registry/windowRegistryMetadata": {
-    getStaticEntryByOverlayId: { replacement: "getOverlayMeta", module: "@ai-matrx/overlays" },
+    getStaticEntryByOverlayId: { replacement: "getOverlayMeta", module: "@ai-matrx/summon" },
     ALL_WINDOW_STATIC_METADATA: { replacement: "APP_OVERLAYS", module: `${DEFS_SPEC}/registry` },
     getStaticEntryBySlug: { replacement: null },
     isPersistableWindow: { replacement: null },
@@ -1047,19 +1047,19 @@ function targetFor(rel: string): { kind: string; newSpecifier: string; renameKey
     return { kind: "opener", newSpecifier: id ? `${DEFS_SPEC}/${id}.overlay` : `${DEFS_SPEC}/openers/${base}` };
   }
   if (noExt.startsWith("features/overlays/callbacks/")) return { kind: "callback", newSpecifier: `${DEFS_SPEC}/callbacks/${noExt.slice("features/overlays/callbacks/".length)}` };
-  if (noExt === "features/overlays/catalogue") return { kind: "catalogue", newSpecifier: "@ai-matrx/overlays", renameKey: noExt };
-  if (noExt === "features/overlays/OverlayController") return { kind: "controller", newSpecifier: "@ai-matrx/overlays/react", renameKey: noExt };
+  if (noExt === "features/overlays/catalogue") return { kind: "catalogue", newSpecifier: "@ai-matrx/summon", renameKey: noExt };
+  if (noExt === "features/overlays/OverlayController") return { kind: "controller", newSpecifier: "@ai-matrx/summon/react", renameKey: noExt };
   if (noExt === "lib/redux/slices/overlaySlice" || noExt === "lib/redux/slices/windowManagerSlice" || noExt === "lib/redux/slices/urlSyncSlice" || noExt === "lib/redux/slices/overlayDataSlice")
-    return { kind: "slice", newSpecifier: "@ai-matrx/overlays", renameKey: noExt };
-  if (noExt === "utils/callbackManager" || noExt === "hooks/useCallbackManager") return { kind: "callbackManager", newSpecifier: "@ai-matrx/overlays/handles" };
+    return { kind: "slice", newSpecifier: "@ai-matrx/summon", renameKey: noExt };
+  if (noExt === "utils/callbackManager" || noExt === "hooks/useCallbackManager") return { kind: "callbackManager", newSpecifier: "@ai-matrx/summon/handles" };
   if (noExt.startsWith("features/window-panels/")) {
     const sub = noExt.slice("features/window-panels/".length);
     if (/^(windows|detail|tools-grid|docs|__tests__|_baselines)\//.test(sub)) return undefined;
-    if (sub === "registry/windowRegistryMetadata") return { kind: "window-engine", newSpecifier: "@ai-matrx/overlays", renameKey: noExt };
-    if (sub.startsWith("registry/")) return { kind: "window-engine", newSpecifier: "@ai-matrx/overlays" };
-    if (sub.startsWith("url-sync/")) return { kind: "window-engine", newSpecifier: "@ai-matrx/overlays/url" };
-    if (sub.startsWith("persistence/") || sub.startsWith("WindowPersistence")) return { kind: "window-engine", newSpecifier: "@ai-matrx/overlays/persistence" };
-    return { kind: "window-engine", newSpecifier: "@ai-matrx/overlays/window" };
+    if (sub === "registry/windowRegistryMetadata") return { kind: "window-engine", newSpecifier: "@ai-matrx/summon", renameKey: noExt };
+    if (sub.startsWith("registry/")) return { kind: "window-engine", newSpecifier: "@ai-matrx/summon" };
+    if (sub.startsWith("url-sync/")) return { kind: "window-engine", newSpecifier: "@ai-matrx/summon/url" };
+    if (sub.startsWith("persistence/") || sub.startsWith("WindowPersistence")) return { kind: "window-engine", newSpecifier: "@ai-matrx/summon/persistence" };
+    return { kind: "window-engine", newSpecifier: "@ai-matrx/summon/window" };
   }
   return undefined;
 }
@@ -1171,7 +1171,7 @@ fs.writeFileSync(
       generatedFrom: APP,
       definitionsSpecifier: DEFS_SPEC,
       notes: [
-        "WindowPanel (and the rest of features/window-panels engine) → @ai-matrx/overlays/window — section being built by Builder B; names marked pending-section.",
+        "WindowPanel (and the rest of features/window-panels engine) → @ai-matrx/summon/window — section being built by Builder B; names marked pending-section.",
         "All callbackManager importers must switch in the same commit: the package handles registry is a different instance from @ai-matrx/chat's.",
       ],
       summary: planSummary,
@@ -1188,8 +1188,8 @@ fs.writeFileSync(
   const appCfg = ts.readConfigFile(path.join(APP, "tsconfig.json"), ts.sys.readFile).config as { compilerOptions: { paths: Record<string, string[]> } };
   const paths: Record<string, string[]> = {};
   for (const [k, v] of Object.entries(appCfg.compilerOptions.paths)) paths[k] = v.map((p) => path.join(APP, p));
-  paths["@ai-matrx/overlays"] = [path.join(PKG, "src/index.ts")];
-  paths["@ai-matrx/overlays/*"] = [path.join(PKG, "src/*")];
+  paths["@ai-matrx/summon"] = [path.join(PKG, "src/index.ts")];
+  paths["@ai-matrx/summon/*"] = [path.join(PKG, "src/*")];
   // The scratch dir has no node_modules above it: link the app's install so bare imports (and
   // package.json "exports" subpaths like @ai-matrx/chat/…) resolve exactly as they do in the app.
   const nm = path.join(OUT, "node_modules");
@@ -1278,7 +1278,7 @@ log(`controller: ${lazy.size} lazy components, ${blocks.length} gated blocks (${
   const aliasOk = aliasKeys.filter((a) => [...linkById.values()].some((l) => l.aliases.includes(a)));
   log(`aliases mapped: ${aliasOk.length}/${aliasKeys.length} (${aliasKeys.map((a) => `${a}→${aliasesMap[a]}`).join(", ")})`);
 }
-log(`opener files: ${openerFiles.length} moved verbatim to openers/ (import specifiers rewritten: overlaySlice actions → @ai-matrx/overlays, callbackManager → @ai-matrx/overlays/handles)`);
+log(`opener files: ${openerFiles.length} moved verbatim to openers/ (import specifiers rewritten: overlaySlice actions → @ai-matrx/summon, callbackManager → @ai-matrx/summon/handles)`);
 
 // ── 11. type-check + export check ───────────────────────────────────────────────────────────
 

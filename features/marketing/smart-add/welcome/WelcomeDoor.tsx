@@ -24,6 +24,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { SmartAddBrand } from "../SmartAddBrand";
 import {
   EMPTY_TEST_LOGIN,
+  ownNames,
   testLoginUsable,
   testLoginUser,
   testSubject,
@@ -34,6 +35,7 @@ import {
   type WelcomeLogin,
 } from "./welcomeSession";
 import { WelcomeSearchCards } from "./WelcomeSearchCards";
+import { resumeWelcomeProfiles } from "./saveWelcomeProfile";
 
 const PROVIDERS: SelectOption<TestProvider>[] = [
   { value: "google", label: "Google" },
@@ -83,6 +85,19 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
   const [test, setTest] = useState<TestLogin | null>(null);
   const [done, setDone] = useState<WelcomeDone | null>(null);
 
+  // A "Looks right" whose profile write never finished (the page went away mid-way) is written now, door or not.
+  useEffect(() => {
+    void supabase.auth.getSession().then(async ({ data }) => {
+      const id = data.session?.user.id;
+      if (!id) return;
+      try {
+        await resumeWelcomeProfiles(id);
+      } catch (error) {
+        toast.error(`Your profile was not updated: ${extractErrorMessage(error)}`);
+      }
+    });
+  }, []);
+
   useEffect(() => {
     if (!showDoor) return;
     let live = true;
@@ -123,7 +138,7 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
           onWelcomeDone={setDone}
         />
       ) : null}
-      {done?.paidHost ? <WelcomeSearchCards host={done.paidHost} /> : null}
+      {done?.paidHost ? <WelcomeSearchCards host={done.paidHost} names={ownNames(done.brand, done.paidHost)} /> : null}
       {children}
     </div>
   );

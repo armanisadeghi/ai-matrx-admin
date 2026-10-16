@@ -13,17 +13,18 @@
  * The pasted code is component-local state only: never Redux, never storage,
  * never logged, and cleared the moment it is submitted.
  *
- * Below the list: how to add AI Matrx to Claude itself (claude.ai's own
+ * Behind "Use in Claude": how to add AI Matrx to Claude itself (claude.ai's own
  * connector settings, OAuth, once per Claude account) so cloud sessions can
  * send and read mail.
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Check, Copy, ExternalLink, KeyRound, Loader2, LogOut, Plus, X } from "lucide-react";
+import { ExternalLink, Info, KeyRound, Loader2, LogOut, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
+import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
+import { CloudSetupDialog } from "@/features/ai-work/components/connections/CloudSetupDialog";
 import { toast } from "@/lib/toast";
 import { getUserMessage } from "@ai-matrx/api";
 import { resolveBaseUrl } from "@/lib/python-client";
@@ -158,13 +159,12 @@ function useElapsed(since: number | null): string | null {
 }
 
 export function ClaudeAccountsPanel() {
-  const { copyText } = useClipboard();
   const [rows, setRows] = useState<ClaudeAccountRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pending, setPending] = useState<{ slot: string; status: OwnPlanStatus } | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState<Busy>(null);
-  const [copied, setCopied] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
   const [connectFailure, setConnectFailure] = useState<string | null>(null);
   const connectAbort = useRef<AbortController | null>(null);
   /** The account slot the running Connect is signing in, so Cancel can end it. */
@@ -348,215 +348,203 @@ export function ClaudeAccountsPanel() {
     }
   };
 
-  const copyUrl = async () => {
-    if (!(await copyText(connectorUrl))) {
-      toast.error("Couldn't copy the connector URL");
-      return;
-    }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  };
-
   return (
-    <section id="claude-accounts" className="grid gap-3 lg:grid-cols-2">
-      <div className="rounded-xl border border-border bg-card p-4">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-foreground">Claude accounts</h2>
-          <Button
-            variant="outline"
-            icon={<Plus />}
-            onClick={() => void connect()}
-            disabled={busy !== null || pending !== null || resuming}
-          >
-            Connect
-          </Button>
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Delivers messages to your Claude cloud sessions.
-        </p>
-
-        {busy === "starting" && (
-          <div
-            className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-border p-3"
-            role="status"
-          >
-            <span className="flex min-w-0 items-center gap-2 text-xs text-foreground">
-              <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
-              <span className="min-w-0">
-                <span className="block truncate">
-                  Starting your sandbox…{elapsed ? ` ${elapsed}` : ""}
-                </span>
-                <span className="block truncate text-muted-foreground">
-                  This can take a couple of minutes.
-                </span>
+    <section id="claude-accounts" className="space-y-2">
+      {busy === "starting" && (
+        <div
+          className="flex items-center justify-between gap-2 rounded-lg border border-border p-3"
+          role="status"
+        >
+          <span className="flex min-w-0 items-center gap-2 text-xs text-foreground">
+            <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+            <span className="min-w-0">
+              <span className="block truncate">
+                Starting your sandbox…{elapsed ? ` ${elapsed}` : ""}
+              </span>
+              <span className="block truncate text-muted-foreground">
+                This can take a couple of minutes.
               </span>
             </span>
-            <Button variant="quiet" onClick={() => void cancel()}>
-              Cancel
-            </Button>
-          </div>
-        )}
-
-        {resuming && (
-          <div
-            className="mt-3 flex items-center gap-2 rounded-lg border border-border p-3 text-xs text-foreground"
-            role="status"
-          >
-            <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
-            <span className="truncate">Checking your sign-in in progress…</span>
-          </div>
-        )}
-
-        {busy === "cancel" && (
-          <div
-            className="mt-3 flex items-center gap-2 rounded-lg border border-border p-3 text-xs text-foreground"
-            role="status"
-          >
-            <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
-            <span className="truncate">Cancelling…</span>
-          </div>
-        )}
-
-        {connectFailure && busy !== "starting" && (
-          <div className="mt-3 space-y-2 rounded-lg border border-border p-3" role="alert">
-            <ErrorNotice message={connectFailure} size="inline" />
-            <Button variant="outline" onClick={() => void connect()}>
-              Try again
-            </Button>
-          </div>
-        )}
-
-        {capacity && busy !== "starting" && (
-          <SandboxCapacityList
-            capacity={capacity}
-            disabled={busy !== null}
-            onStopped={(o) => {
-              setCapacity((current) =>
-                current
-                  ? { ...current, occupants: current.occupants.filter((x) => x.row_id !== o.row_id) }
-                  : current,
-              );
-              return connect({ afterStop: true });
-            }}
-          />
-        )}
-
-        {pending && (
-          <div className="mt-3 space-y-2 rounded-lg border border-border p-3">
-            {pending.status.sign_in_url ? (
-              <Button asChild variant="outline">
-                <OutboundLink href={pending.status.sign_in_url}>
-                  <ExternalLink className="size-3.5" />
-                  Sign in on Claude
-                </OutboundLink>
-              </Button>
-            ) : (
-              <p className="text-xs text-muted-foreground">{pending.status.detail}</p>
-            )}
-            <div className="flex items-center gap-2">
-              {/* ui-exception: Claude's authorization code is a raw provider value */}
-              <Input
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Paste the code Claude shows"
-                autoComplete="off"
-                aria-label="Code from Claude"
-              />
-              <Button
-                variant="primary"
-                icon={busy === "code" ? <Loader2 className="animate-spin" /> : <KeyRound />}
-                onClick={() => void finish()}
-                disabled={busy !== null || !code.trim()}
-              >
-                Finish
-              </Button>
-              <Button
-                variant="quiet"
-                aria-label="Cancel sign-in"
-                onClick={() => void cancel()}
-                disabled={busy !== null && busy !== "code"}
-                icon={<X />}
-              />
-            </div>
-            {pending.status.detail && pending.status.sign_in_url && (
-              <p className="text-xs text-muted-foreground">
-                {pending.status.detail}
-                {claudeAnswerAt(pending.status) && (
-                  <>
-                    {" "}
-                    <span className="whitespace-nowrap">
-                      (Claude said this at{" "}
-                      {new Date(claudeAnswerAt(pending.status) as string).toLocaleTimeString()})
-                    </span>
-                  </>
-                )}
-              </p>
-            )}
-          </div>
-        )}
-
-        <ul className="mt-3 divide-y divide-border">
-          {rows === null && (
-            <li className="py-2 text-xs text-muted-foreground">Loading…</li>
-          )}
-          {rows?.length === 0 && !loadError && (
-            <li className="py-2 text-xs text-muted-foreground">No Claude account connected.</li>
-          )}
-          {loadError && (
-            <li className="py-2">
-              <ErrorNotice message={loadError} size="inline" />
-            </li>
-          )}
-          {rows?.map((row) => (
-            <li key={row.id} className="flex items-center justify-between gap-2 py-2">
-              <div className="min-w-0">
-                <p className="truncate text-sm text-foreground">{row.label}</p>
-                <p className="text-xs text-muted-foreground">
-                  {row.status === "connected" ? "Connected" : "Signed out"}
-                </p>
-              </div>
-              {row.status === "connected" && row.slot && (
-                <Button
-                  variant="quiet"
-                  icon={busy === `out:${row.id}` ? <Loader2 className="animate-spin" /> : <LogOut />}
-                  onClick={() => void signOut(row)}
-                  disabled={busy !== null}
-                >
-                  Sign out
-                </Button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h2 className="text-sm font-semibold text-foreground">
-          Use AI Matrx in Claude cloud sessions
-        </h2>
-        <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
-          <li>Open Claude connectors, signed in to each Claude account.</li>
-          <li>Add custom connector, paste the address below, then Connect.</li>
-        </ol>
-        <div className="mt-3 flex items-center gap-2">
-          <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-2 py-1 text-xs">
-            {connectorUrl}
-          </code>
-          <Button
-            variant="outline"
-            icon={copied ? <Check /> : <Copy />}
-            onClick={() => void copyUrl()}
-          >
-            {copied ? "Copied" : "Copy"}
+          </span>
+          <Button variant="quiet" onClick={() => void cancel()}>
+            Cancel
           </Button>
         </div>
-        <Button asChild variant="outline" className="mt-3">
-          <OutboundLink href={CLAUDE_CONNECTORS_URL}>
-            <ExternalLink className="size-3.5" />
-            Open Claude connectors
-          </OutboundLink>
-        </Button>
-      </div>
+      )}
+
+      {resuming && (
+        <div
+          className="flex items-center gap-2 rounded-lg border border-border p-3 text-xs text-foreground"
+          role="status"
+        >
+          <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+          <span className="truncate">Checking your sign-in in progress…</span>
+        </div>
+      )}
+
+      {busy === "cancel" && (
+        <div
+          className="flex items-center gap-2 rounded-lg border border-border p-3 text-xs text-foreground"
+          role="status"
+        >
+          <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+          <span className="truncate">Cancelling…</span>
+        </div>
+      )}
+
+      {connectFailure && busy !== "starting" && (
+        <div className="space-y-2 rounded-lg border border-border p-3" role="alert">
+          <ErrorNotice message={connectFailure} size="inline" />
+          <Button variant="outline" onClick={() => void connect()}>
+            Try again
+          </Button>
+        </div>
+      )}
+
+      {capacity && busy !== "starting" && (
+        <SandboxCapacityList
+          capacity={capacity}
+          disabled={busy !== null}
+          onStopped={(o) => {
+            setCapacity((current) =>
+              current
+                ? { ...current, occupants: current.occupants.filter((x) => x.row_id !== o.row_id) }
+                : current,
+            );
+            return connect({ afterStop: true });
+          }}
+        />
+      )}
+
+      {pending && (
+        <div className="space-y-2 rounded-lg border border-border p-3">
+          {pending.status.sign_in_url ? (
+            <Button asChild variant="outline">
+              <OutboundLink href={pending.status.sign_in_url}>
+                <ExternalLink className="size-3.5" />
+                Sign in on Claude
+              </OutboundLink>
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">{pending.status.detail}</p>
+          )}
+          <div className="flex items-center gap-2">
+            {/* ui-exception: Claude's authorization code is a raw provider value */}
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Paste the code Claude shows"
+              autoComplete="off"
+              aria-label="Code from Claude"
+            />
+            <Button
+              variant="primary"
+              icon={busy === "code" ? <Loader2 className="animate-spin" /> : <KeyRound />}
+              onClick={() => void finish()}
+              disabled={busy !== null || !code.trim()}
+            >
+              Finish
+            </Button>
+            <Button
+              variant="quiet"
+              aria-label="Cancel sign-in"
+              onClick={() => void cancel()}
+              disabled={busy !== null && busy !== "code"}
+              icon={<X />}
+            />
+          </div>
+          {pending.status.detail && pending.status.sign_in_url && (
+            <p className="text-xs text-muted-foreground">
+              {pending.status.detail}
+              {claudeAnswerAt(pending.status) && (
+                <>
+                  {" "}
+                  <span className="whitespace-nowrap">
+                    (Claude said this at{" "}
+                    {new Date(claudeAnswerAt(pending.status) as string).toLocaleTimeString()})
+                  </span>
+                </>
+              )}
+            </p>
+          )}
+        </div>
+      )}
+
+      <MatrxDataTable<ClaudeAccountRow>
+        tableId="work/connections/claude-cloud"
+        data={rows ?? []}
+        columns={CLAUDE_COLUMNS}
+        getRowId={(row) => row.id}
+        pageSize={0}
+        density="condensed"
+        viewTabs={false}
+        selection={false}
+        defaultSort={{ id: "account", direction: "asc" }}
+        toolbar={{
+          title: "Claude cloud accounts",
+          searchPlaceholder: "Search Claude accounts",
+          refresh: { onRefresh: reload, label: "Read Claude accounts again" },
+          actions: (
+            <>
+              <Button variant="quiet" onClick={() => setSetupOpen(true)}>
+                Use in Claude
+              </Button>
+              <Button
+                variant="outline"
+                icon={<Plus />}
+                onClick={() => void connect()}
+                disabled={busy !== null || pending !== null || resuming}
+                title="Sign in to a Claude account so messages reach your Claude cloud sessions"
+              >
+                Connect
+              </Button>
+            </>
+          ),
+        }}
+        rowActions={(row, controls) => [
+          {
+            id: "sign-out",
+            icon: LogOut,
+            label: row.status !== "connected" ? "Sign out (already signed out)" : !row.slot ? "Sign out (this account has no sandbox sign-in)" : `Sign ${row.label} out`,
+            onClick: () => void signOut(row),
+            disabled: busy !== null || row.status !== "connected" || !row.slot,
+            loading: busy === `out:${row.id}`,
+          },
+          { id: "info", icon: Info, label: `Everything about ${row.label}`, onClick: controls.openDetail },
+        ]}
+        detail={{
+          title: (row) => row.label,
+          description: () => "Claude cloud account",
+          render: (row) => (
+            <div className="space-y-3 p-1">
+              <PropertyRow label="Account" value={row.label} />
+              <PropertyRow label="Status" value={row.status === "connected" ? "Connected" : "Signed out"} />
+              <PropertyRow label="Sandbox sign-in" value={row.slot} mono missing="None" />
+              <PropertyRow label="Connection id" value={row.id} mono />
+              <PropertyRow label="Used for" value="Delivering messages to your Claude cloud sessions" />
+            </div>
+          ),
+        }}
+        isLoading={rows === null}
+        read={{ status: rows === null ? "loading" : loadError ? "error" : "ready", error: loadError ?? undefined, onRetry: reload, what: "your Claude accounts" }}
+        emptyState={{ title: "No Claude account connected" }}
+      />
+
+      <CloudSetupDialog
+        open={setupOpen}
+        onOpenChange={setSetupOpen}
+        title="Use AI Matrx in Claude cloud sessions"
+        description="Once per Claude account, so its cloud sessions can send and read mail."
+        steps={["Open Claude connectors, signed in to each Claude account.", "Add custom connector, paste the address below, then Connect."]}
+        url={connectorUrl}
+        what="connector URL"
+        link={{ href: CLAUDE_CONNECTORS_URL, label: "Open Claude connectors" }}
+      />
     </section>
   );
 }
+
+const CLAUDE_COLUMNS: MatrxColumnDef<ClaudeAccountRow>[] = [
+  { id: "account", header: "Account", accessorFn: (row) => row.label, filter: "text", width: 280 },
+  { id: "status", header: "Status", accessorFn: (row) => (row.status === "connected" ? "Connected" : "Signed out"), filter: "select", width: 140 },
+];

@@ -4,6 +4,7 @@ import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import HeaderIconTitle from "@/features/shell/components/header/variants/variants/HeaderIconTitle";
 import { isNewUser } from "@/utils/onboarding";
+import { firstNameOf } from "@/features/marketing/smart-add/welcome/firstName";
 import { WelcomeClient } from "./WelcomeClient";
 
 export const metadata: Metadata = {
@@ -19,10 +20,10 @@ export default async function WelcomePage() {
 
   const firstName =
     (typeof user.user_metadata?.full_name === "string"
-      ? user.user_metadata.full_name.split(" ")[0]
+      ? firstNameOf(user.user_metadata.full_name)
       : null) ||
     (typeof user.user_metadata?.name === "string"
-      ? user.user_metadata.name.split(" ")[0]
+      ? firstNameOf(user.user_metadata.name)
       : null) ||
     null;
 
