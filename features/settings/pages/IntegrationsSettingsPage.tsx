@@ -76,6 +76,8 @@ import { cn } from "@/lib/utils";
 
 import { GitHubConnectionCard } from "@/features/github-integration/GitHubConnectionCard";
 import { useGitHubConnection } from "@/features/github-integration/useGitHubConnection";
+import { HuggingFaceConnectionCard } from "@/features/huggingface-integration/HuggingFaceConnectionCard";
+import { useHuggingFaceConnection } from "@/features/huggingface-integration/useHuggingFaceConnection";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { ConnectorsSettingsPanel } from "@/features/connectors/ConnectorsSettingsPanel";
 import {
@@ -279,6 +281,7 @@ export function IntegrationsWorkspace({
   const connectionViewer = useConnectionViewer();
   const organizations = useAppSelector(selectOrganizationsList);
   const github = useGitHubConnection();
+  const huggingFace = useHuggingFaceConnection();
   const googleInventory = useGoogleConnectionInventory();
   const githubStatus = github.loading
     ? undefined
@@ -511,6 +514,18 @@ export function IntegrationsWorkspace({
     github.loading,
     Boolean(github.readError),
   );
+  const huggingFaceSummary = savedAccountSummary(
+    huggingFace.connection?.connected
+      ? [
+          {
+            identity: `@${huggingFace.connection.account_name ?? "Hugging Face account"}`,
+            status: huggingFace.connection.status,
+          },
+        ]
+      : [],
+    huggingFace.loading,
+    Boolean(huggingFace.error && !huggingFace.connection),
+  );
   const microsoft = savedAccountSummary(
     microsoftConnections.map((account) => ({
       identity:
@@ -637,6 +652,16 @@ export function IntegrationsWorkspace({
       "developer",
       "https://github.com/favicon.ico",
       githubSummary,
+    ),
+    nativeItem(
+      "huggingface",
+      "Hugging Face",
+      "Use gated models and your own private model repositories.",
+      "Hugging Face",
+      "developer",
+      "https://huggingface.co/favicon.ico",
+      huggingFaceSummary,
+      "hf models gated private repos token",
     ),
     nativeItem(
       "api-keys",
@@ -1023,6 +1048,7 @@ export function IntegrationsWorkspace({
       );
     if (item.id === "native:google") return <ConnectorsSettingsPanel />;
     if (item.id === "native:github") return <GitHubConnectionCard />;
+    if (item.id === "native:huggingface") return <HuggingFaceConnectionCard />;
     if (item.id === "native:microsoft") return <MicrosoftConnectPanel />;
     if (item.id === "native:x")
       return <SocialConnectionsPanel onChanged={refresh} />;
