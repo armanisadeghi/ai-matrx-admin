@@ -57,10 +57,13 @@ export function HumanGatePanel({
   entityType,
   entityId,
   onAnswered,
+  bare = false,
 }: {
   entityType: string;
   entityId: string;
   onAnswered?: () => void;
+  /** The host (a dialog) already draws the frame: render without the panel's own border, tint and padding. */
+  bare?: boolean;
 }) {
   const queryClient = useQueryClient();
   const { answerInterrupt } = useWorkflowRunControls();
@@ -86,7 +89,7 @@ export function HumanGatePanel({
   return (
     <section
       data-human-gate={gate.run_id}
-      className="rounded-xl border border-primary/40 bg-primary/5 p-3"
+      className={bare ? undefined : "rounded-xl border border-primary/40 bg-primary/5 p-3"}
       aria-label={gate.title ?? "Decision needed"}
     >
       <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">

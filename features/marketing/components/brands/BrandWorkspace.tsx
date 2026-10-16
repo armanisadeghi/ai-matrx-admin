@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
 import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useEffect, useRef, useState } from "react";
@@ -1033,6 +1034,9 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             </div>
           </section>
 
+          {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
+          {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
+
           {/* Section jumps: the home is long, so every area is one click away; sub-pages sit at the end. */}
           <nav
             aria-label="Brand sections"
@@ -1185,8 +1189,23 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       <CopyButtons
                         size="icon"
                         label={`Site ${site.domain}`}
-                        sourceId={`web-brand-site:${site.id}`}
-                        data={site}
+                        data={() =>
+                          webCopy({
+                            kind: "web-brand-site",
+                            label: `Site ${site.domain}`,
+                            description:
+                              "One website property (managed site) owned by this brand.",
+                            surface: `Websites — ${current.name}`,
+                            data: site,
+                            lines: [
+                              ["Site", site.name],
+                              ["Domain", site.domain],
+                              ["Status", site.status],
+                              ["Initialized", site.initialized_at ? "yes" : "never"],
+                            ],
+                            attributes: { brand_id: current.id, site_id: site.id },
+                          }).agent()
+                        }
                         dataType="Agent"
                       />
                       <RowActionButton
@@ -1381,8 +1400,23 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                           <CopyButtons
                             size="xs"
                             label={`${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`}
-                            sourceId={`web-brand-asset:${asset.id}`}
-                            data={asset}
+                            data={() =>
+                              webCopy({
+                                kind: "web-brand-asset",
+                                label: `${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`,
+                                description:
+                                  "One human-confirmed brand asset (logo, favicon, imagery, or color).",
+                                surface: `Brand assets — ${current.name}`,
+                                data: asset,
+                                lines: [
+                                  ["Asset", kindLabel],
+                                  ["Title", asset.title],
+                                  ["Source URL", asset.source_url],
+                                  ["Primary", asset.is_primary ? "yes" : "no"],
+                                ],
+                                attributes: { brand_id: current.id, asset_id: asset.id, kind: asset.kind },
+                              }).agent()
+                            }
                             dataType="Agent"
                           />
                           {canEdit ? (
