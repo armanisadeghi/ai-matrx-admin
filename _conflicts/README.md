@@ -31,6 +31,9 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-16-104553/features/marketing/components/brands/BrandWorkspace.tsx.held — untracked local copy differed from GitHub's; compare and keep the upgrade
+- _conflicts/2026-10-16-104553/features/marketing/smart-add/__tests__/newFindings.test.ts.held — untracked local copy differed from GitHub's; compare and keep the upgrade
+- _conflicts/2026-10-16-104553/features/marketing/smart-add/enrich/newFindings.ts.held — untracked local copy differed from GitHub's; compare and keep the upgrade
 
 ## Resolution log
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
