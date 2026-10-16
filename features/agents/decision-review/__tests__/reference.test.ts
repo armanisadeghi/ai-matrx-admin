@@ -20,6 +20,7 @@ import {
   readReferenceVerdictRow,
   referenceView,
   rowAgrees,
+  storedFailure,
   type ReferenceResultRow,
   type ReferenceVerdict,
 } from "../reference";
@@ -57,6 +58,8 @@ function item(id: string, overrides: Partial<JudgeVerdictRow> = {}, meta: Record
 function ref(itemId: string, overrides: Partial<ReferenceVerdict> = {}): ReferenceVerdict {
   return {
     id: `ref-${itemId}`,
+    status: "answered",
+    reason: null,
     itemId,
     runId: "run",
     referenceModel: "claude-opus",
@@ -68,6 +71,7 @@ function ref(itemId: string, overrides: Partial<ReferenceVerdict> = {}): Referen
     createdAt: "2026-10-02T00:00:00Z",
     probability: null,
     probabilities: null,
+    legend: null,
     rawAnswer: false,
     ...overrides,
   };
@@ -111,7 +115,7 @@ describe("agreement and order", () => {
     const disagreeHigh = row(item("dis-high", { confidence: 0.95 }), ref("dis-high", { agree: false }));
     const disagreeLow = row(item("dis-low", { confidence: 0.4 }), ref("dis-low", { agree: false }));
     const failed = row(item("failed"), null, {
-      failure: { itemId: "failed", question: null, error: "timeout" },
+      failure: { itemId: "failed", question: null, error: "timeout", status: "failed" },
     });
     const pending = row(item("pending"), null, { pending: true });
     const ordered = orderReferenceRows([agreeHigh, pending, agreeLow, failed, disagreeHigh, disagreeLow]);
@@ -156,8 +160,30 @@ describe("quote", () => {
         { itemId: "b", question: null },
       ],
       skippedExisting: 0,
+      inFlight: 0,
+      unbuildable: [],
+      maxCostUsd: null,
       maxItems: 20,
     });
+  });
+
+  it("reads in-flight, unbuildable and the retry-bounded cost", () => {
+    const quote = readReferenceQuote({
+      item_count: 1,
+      reference_model: { id: "m1", name: "Claude Sonnet" },
+      estimated_cost_usd: 0.01,
+      max_cost_usd: 0.03,
+      in_flight: 2,
+      unbuildable: [{ item_id: "c", question: "q", reason: "has non-text input the reference cannot see" }, { x: 1 }],
+      items: [{ item_id: "a", question: "q" }],
+      max_items: 5,
+    });
+    expect(quote.inFlight).toBe(2);
+    expect(quote.maxCostUsd).toBe(0.03);
+    expect(quote.unbuildable).toEqual([
+      { itemId: "c", question: "q", reason: "has non-text input the reference cannot see" },
+    ]);
+    expect(quote.maxItems).toBe(5);
   });
 
   it("refuses a quote that is not an object", () => {
@@ -203,7 +229,94 @@ describe("stored rows", () => {
   });
 });
 
+describe("stored rows without an answer", () => {
+  const base = {
+    subject_ref_id: "a",
+    verdict: "",
+    confidence: null,
+    model: "claude-sonnet-5-5",
+    created_at: "2026-10-04T00:00:00Z",
+  };
+
+  it("a refusal survives a reload with its reason and never reads as agree", () => {
+    const refused = readReferenceVerdictRow({
+      ...base,
+      id: "r",
+      metadata: { status: "unanswerable", reason: "the report does not say", agree: true },
+    }) as ReferenceVerdict;
+    expect(refused.status).toBe("unanswerable");
+    expect(refused.answer).toBeNull();
+    expect(refused.agree).toBeNull();
+    expect(storedFailure(refused)).toEqual({
+      itemId: "a",
+      question: null,
+      error: "the report does not say",
+      status: "unanswerable",
+    });
+    expect(rowAgrees(row(item("a"), refused))).toBeNull();
+  });
+
+  it("a live claim is pending, not a failure", () => {
+    const claim = readReferenceVerdictRow({
+      ...base,
+      id: "p",
+      metadata: { status: "pending", run_id: "run" },
+    }) as ReferenceVerdict;
+    expect(claim.status).toBe("pending");
+    expect(storedFailure(claim)).toBeNull();
+  });
+
+  it("an older row without a status is an answer", () => {
+    const old = readReferenceVerdictRow({ ...base, id: "o", verdict: "true", metadata: { agree: true } });
+    expect(old?.status).toBe("answered");
+    expect(old?.answer).toBe("true");
+  });
+});
+
 describe("live run", () => {
+  it("a live row carries the distribution and the model that answered", () => {
+    const state = applyRunEvent(EMPTY_RUN, {
+      event: "data",
+      data: {
+        type: "decision_reference_item",
+        run_id: "r",
+        item_id: "i1",
+        question: "q",
+        reference_answer: "reject",
+        reference_verdict: "reject",
+        reference_p: 0.8,
+        reference_probabilities: { keep: 0.2, reject: 0.8 },
+        reference_legend: null,
+        item_verdict: "keep",
+        agree: false,
+        already_checked: true,
+        model: "claude-sonnet-5-5-20261001",
+        cost_usd: 0.001,
+        latency_ms: 800,
+      },
+    });
+    expect(state.verdicts.i1).toMatchObject({
+      status: "answered",
+      probabilities: { keep: 0.2, reject: 0.8 },
+      referenceModel: "claude-sonnet-5-5-20261001",
+    });
+  });
+
+  it("reads why an item has no answer", () => {
+    const state = applyRunEvent(EMPTY_RUN, {
+      event: "data",
+      data: {
+        type: "decision_reference_item_failed",
+        run_id: "r",
+        item_id: "i2",
+        question: "q",
+        error: "another reference run is checking this answer right now",
+        status: "in_flight",
+      },
+    });
+    expect(state.failures.i2?.status).toBe("in_flight");
+  });
+
   it("reads the server's typed data payloads", () => {
     let state = applyRunEvent(EMPTY_RUN, {
       event: "data",
@@ -273,7 +386,14 @@ describe("live run", () => {
       data: { run_id: "run-1", done: 1, failed: 1, agreement_rate: 0, cost_usd: 0.003 },
     });
     expect(state.finished).toBe(true);
-    expect(state.summary).toEqual({ done: 1, failed: 1, agreementRate: 0, costUsd: 0.003 });
+    expect(state.summary).toEqual({
+      done: 1,
+      failed: 1,
+      unanswerable: 0,
+      inFlight: 0,
+      agreementRate: 0,
+      costUsd: 0.003,
+    });
   });
 
   it("records a stream-level error", () => {

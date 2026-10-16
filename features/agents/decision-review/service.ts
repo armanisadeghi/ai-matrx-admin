@@ -381,6 +381,8 @@ export interface ReferenceSample {
 export interface ReferenceRunRequest {
   item_ids?: string[];
   sample?: ReferenceSample;
+  /** Re-ask answers already checked (a failure or refusal is a stored check). */
+  rerun?: boolean;
 }
 
 function referenceBody(request: ReferenceRunRequest, quoteOnly: boolean): Record<string, unknown> {
@@ -396,6 +398,7 @@ function referenceBody(request: ReferenceRunRequest, quoteOnly: boolean): Record
     sample.only_without_reference = request.sample.only_without_reference ?? true;
     body.sample = sample;
   }
+  if (request.rerun) body.rerun = true;
   if (quoteOnly) body.quote_only = true;
   return body;
 }
