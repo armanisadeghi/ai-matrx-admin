@@ -49,6 +49,8 @@ import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTroubleshootingToTasks } from "@/features/tasks/utils/importConverters";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 interface TroubleshootingData {
   title: string;
@@ -64,6 +66,8 @@ export interface TroubleshootingState {
 
 interface TroubleshootingBlockProps {
   troubleshooting: TroubleshootingData;
+  /** The block's own source text: what its Controls edit. */
+  source?: string;
   taskId?: string; // Task ID for canvas deduplication
   artifactId?: string;
   conversationId?: string;
@@ -77,6 +81,7 @@ interface TroubleshootingBlockProps {
 
 const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
   troubleshooting,
+  source,
   taskId,
   artifactId,
   conversationId,
@@ -90,6 +95,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
   });
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  const controls = useBlockControls("troubleshooting", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
@@ -416,6 +422,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                       <Button variant="quiet" icon={<Maximize2 />} onClick={() => setIsFullScreen(true)}>
                         <span>Debug Mode</span>
                       </Button>
+                      <BlockControlsButton controls={controls} title="Troubleshooting controls" />
                       {host.actions}
                     </div>
                   )}

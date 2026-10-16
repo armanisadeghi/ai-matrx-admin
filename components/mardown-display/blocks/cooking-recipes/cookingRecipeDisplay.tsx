@@ -33,6 +33,8 @@ import { recipeShoppingList } from "./recipe-shopping-list";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 interface Ingredient {
   amount: string;
@@ -59,6 +61,8 @@ export interface RecipeState {
 
 interface RecipeViewerProps {
   recipe: RecipeData;
+  /** The block's own source text: what its Controls edit. */
+  source?: string;
   taskId?: string;
   artifactId?: string;
   conversationId?: string;
@@ -79,6 +83,7 @@ const STAT_ITEMS = [
 
 const RecipeViewer: React.FC<RecipeViewerProps> = ({
   recipe,
+  source,
   taskId,
   artifactId,
   conversationId,
@@ -96,6 +101,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
   );
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  const controls = useBlockControls("cooking_recipe", source ?? "", useBlockEdit());
   // A narrow canvas pane: the quick stats wrap to two per row (four in 360px
   // leaves no room for a value), and ingredients sit above the steps. Outside
   // the canvas the fit is "outside" and the layout is unchanged.
@@ -375,6 +381,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                         tooltip="Cook mode (full screen)"
                         onClick={() => setIsFullScreen(true)}
                       />
+                      <BlockControlsButton controls={controls} title="Recipe controls" />
                       {host.actions}
                     </div>
                   )}
