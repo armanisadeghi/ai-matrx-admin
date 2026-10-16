@@ -19,7 +19,7 @@
  *           RED (amber when a click came first: the person asked). After → green.
  *   core  — expected for first paint (route shell, composer…). A normal line with its time.
  *   A heavy thing names the routes that SHOW it as its home — `performance.mark("load:heavy:Notes
- *   editor", { detail: { home: ["/notes"] } })` — and prints as core there.
+ *   editor", { detail: { home: ["/notes"] } })`, or a "^" pattern — and prints as core there.
  *   `load:module:<name>` and plain `load:<name>` (the older forms) print as core / mark lines.
  *
  * SHIFTS — every layout shift over 0.005 not caused by input prints RED with its value and the
@@ -309,7 +309,9 @@ export function installLoadTrace(): void {
     // A heavy thing on its own HOME route (the PDF studio on /pdf, the notes editor on /notes) is
     // what that page shows: `performance.mark("load:heavy:X", { detail: { home: ["/notes"] } })`.
     const home = (entry as PerformanceMark).detail?.home as string[] | undefined;
-    if (kind === "heavy" && home?.some((prefix) => window.location.pathname.startsWith(prefix))) {
+    const path = window.location.pathname;
+    // A home entry is a path prefix, or a pattern when it starts with "^" ("^/chat/(?!new)").
+    if (kind === "heavy" && home?.some((h) => (h.startsWith("^") ? new RegExp(h).test(path) : path.startsWith(h)))) {
       kind = "core";
       label = `${label} (home route)`;
     }
