@@ -32,6 +32,7 @@ import {
 import {
   setMode,
   toggleMode,
+  markThemeChoiceKnown,
   writeThemeCookie,
   type ResolvedThemeMode,
   type ThemeMode,
@@ -153,6 +154,9 @@ async function mountStoreProvider(): Promise<AppStore> {
 
   const store = holder.store;
   if (!store) throw new Error("StoreProvider did not provide a store");
+  // The sync boot has restored the saved choice (none here): "system" may now
+  // reconcile against the device colour.
+  await act(async () => markThemeChoiceKnown());
   return store;
 }
 

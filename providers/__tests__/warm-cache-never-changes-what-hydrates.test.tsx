@@ -31,6 +31,7 @@ jest.mock("@/styles/themes/themeSlice", () => ({
   resolveThemeMode: () => "light",
   themePolicy: { prePaintDescriptors: [] },
   writeThemeCookie: () => {},
+  whenThemeChoiceKnown: () => {},
 }));
 jest.mock("@/lib/sync/engine/applyPrePaint", () => ({ applyPrePaintDescriptors: () => {} }));
 

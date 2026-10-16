@@ -35,7 +35,7 @@ import { announceLoadFailure } from "./remoteFetchStatus";
 import { createStaleRefreshScheduler, invokeRemoteFetch, type StaleRefreshRegistration } from "./remoteFetch";
 import { buildReplayUnsavedAction, isUnsavedMarkerBody, unsavedMarkerKey } from "./remoteWrite";
 import { extractErrorMessage } from "@/utils/errors";
-import { setMode, type ThemeMode, type ResolvedThemeMode } from "@/styles/themes/themeSlice";
+import { markThemeChoiceKnown, setMode, type ThemeMode, type ResolvedThemeMode } from "@/styles/themes/themeSlice";
 // MATRX-EXCEPTION: `Policy<any>` throughout this file — same invariant-TState
 // reason as lib/sync/registry.ts (partialize: readonly (keyof TState)[] makes
 // TState invariant, so `Policy<unknown>` cannot accept the registry's
@@ -681,6 +681,7 @@ async function bootSyncInner(options: BootOptions): Promise<BootResult> {
     const legacyMigrated = runLegacyMigrations(policies, identity);
     const hydratedFromStorage = rehydrateFromStorage(policies, identity, store);
     reconcileThemeFromPaintedDom(store);
+    markThemeChoiceKnown();
     attachChannelListener(channel, policies, store);
 
     // --- Async IDB hydration (warm-cache slices) ---
