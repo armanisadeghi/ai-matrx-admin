@@ -110,7 +110,7 @@ export default function DirectChatClient() {
       // rides as `baseUrlOverride`; the response pane shows the raw HTTP
       // outcome, so a non-2xx is returned (and is no inspector error).
       const response = await requestRaw(
-        ENDPOINTS.ai.chat,
+        ENDPOINTS.ai.manual,
         {
           method: "POST",
           headers: {
