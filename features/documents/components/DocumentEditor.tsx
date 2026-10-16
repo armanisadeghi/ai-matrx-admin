@@ -107,6 +107,7 @@ import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
+import { toast as notice } from "@/lib/toast";
 
 import { fitZoomRatio } from "@/features/documents/utils/fitZoomRatio";
 import { applyPageSetup, readPageSetup, type PageSetupApiLike } from "@ai-matrx/office/core/page-setup-apply";
@@ -159,6 +160,8 @@ import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { WorkingCopyAlert } from "@/lib/working-copy/WorkingCopyAlert";
 import { formatCount } from "@ai-matrx/kit/format";
+
+const VIEWING_MODE_NOTICE = "Viewing mode — switch to Editing to change";
 
 type Props = {
   documentId: string;
@@ -641,10 +644,21 @@ export default function DocumentEditor({
       }),
     [],
   );
-  // Viewing mode is Univer's own read-only permission on this document.
+  // Viewing mode is Univer's own read-only permission on this document; a refused edit says so in our words.
   useEffect(() => {
-    if (bootState !== "ready") return;
-    void editOps.setViewOnly(docMode === "viewing");
+    if (bootState !== "ready") return undefined;
+    const viewing = docMode === "viewing";
+    void editOps.setViewOnly(viewing);
+    if (!viewing) return undefined;
+    let stop: (() => void) | null = null;
+    let gone = false;
+    void editOps
+      .onEditDenied(() => notice.info(VIEWING_MODE_NOTICE, { id: "doc-viewing-mode" }))
+      .then((unsubscribe) => (gone ? unsubscribe() : (stop = unsubscribe)));
+    return () => {
+      gone = true;
+      stop?.();
+    };
   }, [bootState, docMode, editOps, unitId]);
   useEffect(() => {
     if (bootState !== "ready") return;
@@ -676,6 +690,7 @@ export default function DocumentEditor({
       ? {
           api: apiRef.current as unknown as DocsApiLike,
           editable: editable && docMode === "editing",
+          blockStart: () => editOps.toBlockStart(),
           unitId: () => unitId,
           zoom: () => zoom,
           print: printDocument,
