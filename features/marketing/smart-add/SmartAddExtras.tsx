@@ -36,7 +36,7 @@ import {
   type EvidenceItem,
   type Relation,
 } from "./evidence";
-import { STANCE_LABEL, STANCE_ORDER } from "./webKinds";
+import { compareRelationKinds, relationGroupKey, relationGroupLabel } from "./webKinds";
 
 // ── Custom ──────────────────────────────────────────────────────────────────────
 
@@ -446,13 +446,14 @@ export function CustomRelation({ onSave, onCancel }: { onSave: (label: string) =
 /** Related · <stance> groups of every relationship but Ours / Not us (the row's own Yes / No), then Custom…. */
 export function relationWayOut(kinds: BrandRelationKind[], exclude: string[] = []): WayOutItem[] {
   const list = [...kinds]
-    .filter((k) => k.stance !== "ours" && k.key !== "not_us" && !exclude.includes(k.key))
-    .sort((a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown));
+    // Ours-in-use kinds are the row's own Yes; ours-but-never-used ones (Former, Misspelled…) are offered here.
+    .filter((k) => (k.stance !== "ours" || k.usage !== "use") && k.key !== "not_us" && !exclude.includes(k.key))
+    .sort(compareRelationKinds);
   return [
     ...list.map((k, n) => ({
       value: `rel:${k.key}`,
       label: k.label,
-      group: n === 0 || list[n - 1].stance !== k.stance ? `Related · ${STANCE_LABEL[k.stance]}` : undefined,
+      group: n === 0 || relationGroupKey(list[n - 1]) !== relationGroupKey(k) ? `Related · ${relationGroupLabel(k)}` : undefined,
     })),
     { value: CUSTOM, label: "Custom…" },
   ];

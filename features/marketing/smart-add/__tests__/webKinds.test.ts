@@ -11,6 +11,7 @@ const kind = (key: string, stance: BrandRelationKind["stance"], match: Partial<B
   stance,
   description: null,
   hasSentiment: key === "mention",
+  usage: "use",
   match: { hosts: match.hosts ?? [], paths: match.paths ?? [], categories: [] },
 });
 

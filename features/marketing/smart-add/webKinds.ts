@@ -11,6 +11,7 @@
  */
 
 import type { BrandRelationKind, RelationStance } from "@/features/marketing/data/service";
+import { USAGE_GROUP_LABEL } from "@/features/marketing/data/relation-usage";
 import { websiteHost, type EvidenceItem } from "./evidence";
 import { isSocialPlatformPage } from "./validate/fold";
 
@@ -41,6 +42,26 @@ export const STANCE_LABEL: Record<RelationStance, string> = {
   not_us: "Not us",
   irrelevant: "Irrelevant",
 };
+
+/**
+ * The menu group every relationship reads under: its stance, except a kind that is never used
+ * (relation-usage.ts) — "Kept for matching" (Former, Misspelled, Broken link…) or "Not sure" (Maybe).
+ * ONE helper every relation menu sorts and groups by.
+ */
+const GROUP_ORDER: readonly string[] = ["ours", "about_us", "undecided", "associated", "competitor", "match_only", "not_us", "irrelevant"];
+
+export function relationGroupKey(kind: Pick<BrandRelationKind, "stance" | "usage">): string {
+  return kind.usage === "use" ? kind.stance : kind.usage;
+}
+
+export function relationGroupLabel(kind: Pick<BrandRelationKind, "stance" | "usage">): string {
+  return kind.usage === "use" ? STANCE_LABEL[kind.stance] : USAGE_GROUP_LABEL[kind.usage];
+}
+
+/** Vocabulary order for menus: group, then known before custom, then the kinds' own order. */
+export function compareRelationKinds(a: BrandRelationKind, b: BrandRelationKind): number {
+  return GROUP_ORDER.indexOf(relationGroupKey(a)) - GROUP_ORDER.indexOf(relationGroupKey(b)) || Number(b.isKnown) - Number(a.isKnown);
+}
 
 /** What the suggestion rules read: the facts the person has confirmed so far. */
 export interface SuggestContext {
@@ -312,7 +333,7 @@ export function groupByKind(
     if (!c || !byKey.has(c.kind)) continue;
     groups.set(c.kind, [...(groups.get(c.kind) ?? []), i]);
   }
-  const order = (k: BrandRelationKind) => STANCE_ORDER.indexOf(k.stance) * 10000 + kinds.indexOf(k);
+  const order = (k: BrandRelationKind) => GROUP_ORDER.indexOf(relationGroupKey(k)) * 10000 + kinds.indexOf(k);
   return [...groups.entries()]
     .map(([key, list]) => ({ kind: byKey.get(key) as BrandRelationKind, items: list }))
     .sort((a, b) => order(a.kind) - order(b.kind))

@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Loader2, Plus, X } from "lucide-react";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button, Input } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
@@ -402,7 +403,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
   return (
     <SectionCard title="Relationships" anchor="relationships">
       <div className="grid gap-3" data-testid="brand-relations">
-        {failed ? <p className="text-sm text-destructive">{extractErrorMessage(failed)}</p> : null}
+        {failed ? <ErrorNotice error={failed} operation="Load brand relationships" size="compact" /> : null}
         {loading ? (
           <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
             <Loader2 className="size-3.5 animate-spin" /> Loading

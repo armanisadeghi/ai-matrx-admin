@@ -1,3 +1,4 @@
+import { marketingProperties, toRelationUsage, type RelationUsage } from "./relation-usage";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { applyHiddenView, type HiddenView } from "@/features/access-gate/service/hiddenByMe";
 import {
@@ -2738,6 +2739,8 @@ export interface BrandRelationKind {
   description: string | null;
   /** A finding of this kind carries positive / neutral / negative. */
   hasSentiment: boolean;
+  /** Usage class (relation-usage.ts): use, match_only (kept for matching, never shown or used) or undecided (Maybe). */
+  usage: RelationUsage;
   /**
    * Deterministic suggestion rules. `categories` (metadata.match.categories) names known-domain categories
    * (web.domain_category, lib/web-domains); `listBrandRelationKinds` expands them into `hosts` and `paths`,
@@ -2762,6 +2765,7 @@ function toRelationKind(row: {
   stance?: string | null;
   description?: string | null;
   has_sentiment?: boolean | null;
+  usage?: string | null;
   metadata?: Json | null;
 }): BrandRelationKind {
   const routes = row.routes_to as RelationRoute | null;
@@ -2776,6 +2780,7 @@ function toRelationKind(row: {
     stance: RELATION_STANCES.includes(row.stance as RelationStance) ? (row.stance as RelationStance) : "associated",
     description: row.description ?? null,
     hasSentiment: Boolean(row.has_sentiment),
+    usage: toRelationUsage(row.usage),
     match: { hosts: stringList(match.hosts), paths: stringList(match.paths), categories: stringList(match.categories) },
   };
 }
@@ -2816,7 +2821,7 @@ export async function createBrandExclusions(
 export async function listBrandRelationKinds(): Promise<BrandRelationKind[]> {
   const { data, error } = await (await authenticatedWebDb(supabase))
     .from("brand_relation_kind")
-    .select("id, key, label, routes_to, is_known, sort, stance, description, has_sentiment, metadata")
+    .select("id, key, label, routes_to, is_known, sort, stance, usage, description, has_sentiment, metadata")
     .eq("status", "active")
     .is("deleted_at", null)
     .order("is_known", { ascending: false })
@@ -2841,7 +2846,7 @@ export async function saveCustomRelationKind(organizationId: string, label: stri
   const db = await authenticatedWebDb(supabase);
   const existing = await db
     .from("brand_relation_kind")
-    .select("id, key, label, routes_to, is_known, stance, description, has_sentiment, metadata")
+    .select("id, key, label, routes_to, is_known, stance, usage, description, has_sentiment, metadata")
     .eq("organization_id", organizationId)
     .eq("key", key)
     .is("deleted_at", null)
@@ -2851,7 +2856,7 @@ export async function saveCustomRelationKind(organizationId: string, label: stri
   const { data, error } = await db
     .from("brand_relation_kind")
     .insert({ organization_id: organizationId, key, label: clean, is_known: false, sort: 1000, visibility: "internal" })
-    .select("id, key, label, routes_to, is_known, stance, description, has_sentiment, metadata")
+    .select("id, key, label, routes_to, is_known, stance, usage, description, has_sentiment, metadata")
     .single();
   if (error) throw new Error(error.message);
   return toRelationKind(data);
@@ -3206,6 +3211,20 @@ export async function listBrandProperties(
     .order("kind", { ascending: true })
     .order("created_at", { ascending: true })
     .abortSignal(signal ?? new AbortController().signal);
+  // The marketing read: only properties in use (relation-usage.ts). Matching reads every live property.
+  return marketingProperties(assertData(response.data, response.error));
+}
+
+/** Every live property of the brand, in use or kept for matching only (a dead link, a former account). */
+export async function listBrandPropertiesForMatching(brandId: string): Promise<BrandProperty[]> {
+  const response = await (await authenticatedWebDb(supabase))
+    .from("property")
+    .select(PROPERTY_COLUMNS)
+    .eq("brand_id", brandId)
+    .is("deleted_at", null)
+    .order("kind", { ascending: true })
+    .order("created_at", { ascending: true })
+    .limit(500);
   return assertData(response.data, response.error);
 }
 

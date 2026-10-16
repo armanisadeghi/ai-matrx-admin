@@ -27,6 +27,7 @@ const kind = (key: string, categories: string[]): BrandRelationKind => ({
   stance: "about_us",
   description: null,
   hasSentiment: false,
+  usage: "use",
   match: { hosts: [], paths: [], categories },
 });
 

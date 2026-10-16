@@ -27,6 +27,7 @@ const KINDS: BrandRelationKind[] = [
   stance: stance as BrandRelationKind["stance"],
   description: null,
   hasSentiment: key === "mention",
+  usage: "use",
   match: { hosts: [], paths: [], categories: [] },
 }));
 
