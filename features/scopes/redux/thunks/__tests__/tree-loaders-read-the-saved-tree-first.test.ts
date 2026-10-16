@@ -13,6 +13,7 @@ import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeS
 import { scopesService } from "@/features/scopes/service/scopesService";
 import { setStoreSingleton, type AppStore } from "@/lib/redux/store-singleton";
 import { buildRehydrateAction } from "@/lib/sync/engine/rehydrate";
+import { WHEN_SYNC_HYDRATED_CAP_MS } from "@/lib/sync/whenSyncHydrated";
 
 jest.mock("@/utils/auth/getUserId", () => ({ getUserId: () => "8d3f2c41-5b7e-4a90-9c12-6e4b1f0a7d55" }));
 jest.mock("@/features/scopes/service/scopesService", () => ({
@@ -84,4 +85,27 @@ it("a refresh never waits", async () => {
   const { store } = storeWithEngine();
   await store.dispatch(ensureScopeTree({ refresh: true }) as never);
   expect(getScopeTree).toHaveBeenCalledTimes(1);
+});
+
+it("a boot that never starts holds the loader only until the cap, then it fetches", async () => {
+  jest.useFakeTimers();
+  try {
+    getScopeTree.mockResolvedValue({ ok: true, data: { organizations: [], fetched_at: new Date(4_000).toISOString() } });
+    const error = jest.spyOn(console, "error").mockImplementation(() => {});
+    const store = configureStore({ reducer: { scopesTree: reducer } });
+    Object.assign(store, {
+      _sync: { hydrationSettled: () => false, bootStarted: () => false, onHydrationSettledChange: () => () => {} },
+    });
+    setStoreSingleton(store as unknown as AppStore);
+    const whole = store.dispatch(ensureScopeTree() as never) as unknown as Promise<void>;
+    await jest.advanceTimersByTimeAsync(WHEN_SYNC_HYDRATED_CAP_MS - 1);
+    expect(getScopeTree).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    await whole;
+    expect(getScopeTree).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith(expect.stringContaining("never started"));
+    error.mockRestore();
+  } finally {
+    jest.useRealTimers();
+  }
 });

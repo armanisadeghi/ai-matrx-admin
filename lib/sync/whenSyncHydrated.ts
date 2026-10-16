@@ -95,22 +95,45 @@ export function createSettledTracker(store: unknown): SettledTracker {
 }
 
 /**
+ * The longest a promise waiter ever waits: boot's own deferral cap (5 s,
+ * `BOOT_DEFER_CAP_MS` in SyncBootstrap) + the engine backstop + slack. The
+ * backstop arms only once boot starts, so without this a store whose boot
+ * never starts would hold its waiters forever.
+ */
+export const WHEN_SYNC_HYDRATED_CAP_MS = 5_000 + HYDRATION_BACKSTOP_MS + 2_000;
+
+/**
  * Resolves once the sync engine has read persisted state for the current
  * identity (or the backstop fired). A loader that would otherwise go to the
  * network awaits this first, so a warm reload answers from the saved copy
- * instead of racing it. A store without the engine resolves at once.
+ * instead of racing it. A store without the engine, and the server, resolve
+ * at once; past `WHEN_SYNC_HYDRATED_CAP_MS` it resolves anyway, loudly.
  */
 export function whenSyncHydrated(store: unknown): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
   const tracker = createSettledTracker(store);
   if (tracker.getSnapshot()) return Promise.resolve();
   return new Promise((resolve) => {
     let unsubscribe: (() => void) | null = null;
     let done = false;
-    const check = () => {
-      if (done || !tracker.getSnapshot()) return;
+    const finish = () => {
       done = true;
+      clearTimeout(cap);
       unsubscribe?.();
       resolve();
+    };
+    const cap = setTimeout(() => {
+      if (done) return;
+      console.error(
+        `[sync] persisted hydration did not settle within ${WHEN_SYNC_HYDRATED_CAP_MS}ms and boot ` +
+          (readSyncSource(store)?.bootStarted?.() ? "had started" : "never started") +
+          " — a loader waiting on the saved copy goes to the network instead.",
+      );
+      finish();
+    }, WHEN_SYNC_HYDRATED_CAP_MS);
+    const check = () => {
+      if (done || !tracker.getSnapshot()) return;
+      finish();
     };
     unsubscribe = tracker.subscribe(check);
     check();
