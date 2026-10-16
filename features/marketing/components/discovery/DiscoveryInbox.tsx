@@ -1,35 +1,39 @@
 "use client";
 
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   AtSign,
   Check,
-  ChevronLeft,
   ChevronRight,
   ExternalLink,
   FileQuestion,
   Globe2,
-  Image as ImageIcon,
   Link2,
   ListChecks,
   MapPinned,
-  Phone,
-  Share2,
   Trash2,
-  Type,
   Undo2,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import {
+  MatrxDataTable,
+  type MatrxColumnDef,
+  type MatrxTableIconAction,
+} from "@ai-matrx/design-system/data-table";
+import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
+import { Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
+import { Button, Input, Select } from "@ai-matrx/design-system/controls";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 import { InfoHint } from "@/components/official/InfoHint";
 import { toast } from "@/lib/toast";
+import { confirm as confirmDialog } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { jsonExportItem, rowsToCsv } from "@/components/agent-copy/export";
 import {
-  buildGroomerPresetPayload,
   groomerPresetVariants,
   type AgentCopyGroomerConfig,
   type AgentCopyGroomerSection,
@@ -44,22 +48,10 @@ import {
   Youtube,
 } from "@/components/icons/brand-icons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@ai-matrx/design-system/controls";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createMarketingDiscoveryScope } from "@/features/surfaces/manifests/marketing-discovery.manifest";
-import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import {
   useBulkConfirmDiscoveredItems,
   useBulkDeleteDiscoveredItems,
@@ -74,6 +66,7 @@ import {
   useConfirmDiscoveredFact,
   useConfirmDiscoveredProperty,
   useDeleteDiscoveredItem,
+  useDiscoveredCategoryCount,
   useDiscoveredItems,
   useDismissDiscoveredItem,
   usePendingDiscoveredCount,
@@ -105,13 +98,11 @@ import {
   LABEL_REQUIRED_KIND,
 } from "@/features/marketing/discovery-classification";
 import { extractErrorMessage } from "@/utils/errors";
-import { cn } from "@/lib/utils";
 import { describeDiscoveredSocialProfile } from "@/features/marketing/lib/discovery-promotion";
 import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { loadFactRules } from "@/features/marketing/smart-add/factRules";
 import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const STATUS_TABS: Array<{ value: DiscoveredItemStatus; label: string }> = [
   { value: "pending", label: "Pending" },
@@ -119,21 +110,29 @@ const STATUS_TABS: Array<{ value: DiscoveredItemStatus; label: string }> = [
   { value: "dismissed", label: "Dismissed" },
 ];
 
-/** Discovered products and services: managed on the Offerings screen. */
-const OFFERING_CATEGORY = "offering";
+function isStatus(value: string): value is DiscoveredItemStatus {
+  return STATUS_TABS.some((tab) => tab.value === value);
+}
 
-const PAGE_SIZE_OPTIONS = [50, 100, 250] as const;
+/** Discovered products and services: reviewed on the Offerings screen, never in this table. */
+const OFFERING_CATEGORY = "offering";
+const EXCLUDED_CATEGORIES = [OFFERING_CATEGORY] as const;
+
+const PAGE_SIZE_OPTIONS = [50, 100, 250];
 const DEFAULT_PAGE_SIZE = 100;
 
-const CATEGORY_META: Record<string, { label: string; icon: typeof ImageIcon }> =
-  {
-    media: { label: "Media & imagery", icon: ImageIcon },
-    identity: { label: "Identity", icon: Type },
-    social: { label: "Social profiles", icon: Share2 },
-    fact: { label: "Business facts", icon: Phone },
-    link: { label: "Notable links", icon: Link2 },
-    other: { label: "Other", icon: FileQuestion },
-  };
+const CATEGORY_LABEL: Record<string, string> = {
+  media: "Media & imagery",
+  identity: "Identity",
+  social: "Social profiles",
+  fact: "Business facts",
+  link: "Notable links",
+  other: "Other",
+};
+
+function categoryLabel(category: string): string {
+  return CATEGORY_LABEL[category] ?? CATEGORY_LABEL.other;
+}
 
 const SOCIAL_ICONS: Partial<Record<PropertyKind, LucideIcon>> = {
   instagram: Instagram,
@@ -157,18 +156,126 @@ function itemDisplayValue(item: DiscoveredItem): string {
   return String(item.value ?? "");
 }
 
-function itemContextSnippet(item: DiscoveredItem): string | null {
+/** The first context line the finder left (where it was found), named by its key. */
+function itemContext(item: DiscoveredItem): { key: string; text: string } | null {
   if (!isJsonRecord(item.context)) return null;
   for (const key of ["found_in", "alt", "surrounding_text", "schema_path"]) {
     const value = item.context[key];
-    if (typeof value === "string" && value.trim()) {
-      const text = value.trim();
-      const clipped = text.length > 140 ? `${text.slice(0, 139)}…` : text;
-      return `${key.replace(/_/g, " ")}: ${clipped}`;
-    }
+    if (typeof value === "string" && value.trim())
+      return { key: key.replace(/_/g, " "), text: value.trim() };
   }
   return null;
 }
+
+function itemContextSnippet(item: DiscoveredItem): string | null {
+  const context = itemContext(item);
+  if (!context) return null;
+  const clipped =
+    context.text.length > 140 ? `${context.text.slice(0, 139)}…` : context.text;
+  return `${context.key}: ${clipped}`;
+}
+
+/** Every context string the finder left, for the peek. */
+function itemContextLines(item: DiscoveredItem): Array<{ key: string; text: string }> {
+  if (!isJsonRecord(item.context)) return [];
+  const lines: Array<{ key: string; text: string }> = [];
+  for (const [key, value] of Object.entries(item.context)) {
+    if (typeof value === "string" && value.trim())
+      lines.push({ key: humanizeIdentifier(key) || key, text: value.trim() });
+  }
+  return lines;
+}
+
+function foundAs(item: DiscoveredItem): string {
+  const social = isSocialCategory(item.category)
+    ? describeDiscoveredSocialProfile(item)
+    : null;
+  if (social) return social.providerLabel;
+  return item.guessed_kind
+    ? humanizeIdentifier(item.guessed_kind) || item.guessed_kind
+    : "";
+}
+
+function previewUrlOf(item: DiscoveredItem): string | null {
+  return isMediaCategory(item.category) &&
+    item.url &&
+    /\.(png|jpe?g|webp|gif|svg|ico)(\?|$)/i.test(item.url)
+    ? item.url
+    : null;
+}
+
+function percentOf(confidence: number | null | undefined): string {
+  return typeof confidence === "number" ? `${Math.round(confidence * 100)}%` : "";
+}
+
+function confidenceTone(
+  confidence: number | null | undefined,
+): "success" | "warning" | "danger" | undefined {
+  if (typeof confidence !== "number") return undefined;
+  return confidence >= 0.8 ? "success" : confidence >= 0.5 ? "warning" : "danger";
+}
+
+/** The fixed 24px leading glyph: a picture, the network's mark, or the category's icon. */
+function ItemGlyph({ item }: { item: DiscoveredItem }) {
+  const preview = previewUrlOf(item);
+  if (preview) {
+    return (
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-muted">
+        {/* Discovered candidates are external public URLs, not our media. */}
+        <img src={preview} alt="" className="h-full w-full object-contain" loading="lazy" />
+      </span>
+    );
+  }
+  const social = isSocialCategory(item.category)
+    ? describeDiscoveredSocialProfile(item)
+    : null;
+  const Icon: LucideIcon = social
+    ? (SOCIAL_ICONS[social.kind] ?? AtSign)
+    : item.category === "fact"
+      ? ListChecks
+      : item.category === "social"
+        ? AtSign
+        : Link2;
+  return (
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-muted text-muted-foreground">
+      <Icon className="h-3.5 w-3.5" aria-hidden />
+    </span>
+  );
+}
+
+function peekOf(item: DiscoveredItem): PeekRecord {
+  const social = isSocialCategory(item.category)
+    ? describeDiscoveredSocialProfile(item)
+    : null;
+  const display = itemDisplayValue(item);
+  const preview = previewUrlOf(item);
+  const context = itemContextLines(item);
+  const kindLabel = foundAs(item) || categoryLabel(item.category);
+  return {
+    kind: "Discovery",
+    id: item.id,
+    title: social?.identity || display,
+    subtitle: [kindLabel, percentOf(item.confidence)].filter(Boolean).join(" · "),
+    ...(preview ? { media: { alt: kindLabel, src: preview } } : {}),
+    body: [
+      { property: "Category", value: categoryLabel(item.category) },
+      ...(social ? [{ property: "Profile type", value: social.profileType }] : []),
+      ...(item.url ? [{ property: "Address", value: item.url, href: item.url }] : []),
+      ...(context.length
+        ? [
+            {
+              section: "Where it was found",
+              rows: context.map((line) => ({ text: line.text, detail: line.key })),
+            },
+          ]
+        : []),
+    ],
+    ...(item.url ? { href: item.url } : {}),
+    copyData: item,
+  };
+}
+
+const EMPTY_FILTERS: MatrxDataTableQueryState["columnFilters"] = {};
 
 export function DiscoveryInbox({ brandId }: { brandId: string }) {
   const brand = useBrand(brandId);
@@ -181,228 +288,331 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
   // access-errors: ok — classification context under the gated brand + items primaries
   const facts = useBusinessFacts(brandId);
   const [status, setStatusState] = useState<DiscoveredItemStatus>("pending");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
-  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
-  const [kindOverrides, setKindOverrides] = useState<Record<string, string>>(
-    {},
-  );
-  // Labels live BESIDE the kinds in the parent (they used to be per-row local
-  // state) for two reasons: the bulk Confirm must be able to send the label
-  // the user typed, and the `item_classifications` write target stages kind
-  // and label together through these very setters — never a parallel path.
-  const [labelOverrides, setLabelOverrides] = useState<Record<string, string>>(
-    {},
-  );
-  const [confirmingBulkDelete, setConfirmingBulkDelete] = useState(false);
-  // access-errors: ok — tab count badge; absence only hides the number
+  // The table's query: the source owns the page; search, sort and column
+  // filters run over the page the source returned.
+  const [query, setQuery] = useState<MatrxDataTableQueryState>({
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
+    search: "",
+    anyOf: "",
+    columnFilters: EMPTY_FILTERS,
+    sort: null,
+  });
+  const [kindOverrides, setKindOverrides] = useState<Record<string, string>>({});
+  // Labels live BESIDE the kinds in the parent for two reasons: the bulk
+  // Confirm must be able to send the label the user typed, and the
+  // `item_classifications` write target stages kind and label together
+  // through these very setters — never a parallel path.
+  const [labelOverrides, setLabelOverrides] = useState<Record<string, string>>({});
+  const [busyIds, setBusyIds] = useState<ReadonlySet<string>>(new Set());
+  const [bulkKind, setBulkKind] = useState("");
+  // access-errors: ok — tab count; absence only hides the number
   const pendingCount = usePendingDiscoveredCount(brandId);
+  // access-errors: ok — the Offerings door's count; absence only hides the door
+  const offeringCount = useDiscoveredCategoryCount(brandId, status, OFFERING_CATEGORY);
   const bulkConfirm = useBulkConfirmDiscoveredItems();
   const bulkDismiss = useBulkDismissDiscoveredItems();
   const bulkUndismiss = useBulkUndismissDiscoveredItems();
   const bulkDelete = useBulkDeleteDiscoveredItems();
+  const confirmAsset = useConfirmDiscoveredAsset();
+  const confirmFact = useConfirmDiscoveredFact();
+  const confirmProperty = useConfirmDiscoveredProperty();
+  const dismissOne = useDismissDiscoveredItem();
+  const undismissOne = useUndismissDiscoveredItem();
+  const deleteOne = useDeleteDiscoveredItem();
 
   // A review action on the last page can shrink the list under the stored
   // page number — clamp at render so the query never strands the user on an
   // empty over-shot page. `knownTotal` is last-seen data, so the clamp is a
   // derived value, never an effect.
   const [knownTotal, setKnownTotal] = useState(0);
-  const knownPageCount = Math.max(1, Math.ceil(knownTotal / pageSize));
-  const currentPage = Math.min(page, knownPageCount);
-  const items = useDiscoveredItems(brandId, status, currentPage, pageSize);
-
-  // Products and services have their own screen (Yes / No / Other per item, the offering tree behind it): the inbox
-  // names them and opens it, and never shows rows it cannot confirm.
-  // A finding the brand already keeps is resolved by the server (promote.py), so what is pending is what is left to decide.
-  const rows = useMemo(() => (items.data?.rows ?? []).filter((item) => item.category !== OFFERING_CATEGORY), [items.data]);
-  const offeringCount = useMemo(() => (items.data?.rows ?? []).filter((item) => item.category === OFFERING_CATEGORY).length, [items.data]);
+  const knownPageCount = Math.max(1, Math.ceil(knownTotal / query.pageSize));
+  const currentPage = Math.min(query.page, knownPageCount);
+  // Offerings are left out by the SOURCE, so the page, the count and the pager all agree.
+  const items = useDiscoveredItems(
+    brandId,
+    status,
+    currentPage,
+    query.pageSize,
+    EXCLUDED_CATEGORIES,
+  );
+  const rows = items.data?.rows ?? [];
   // The server's field → kind rules: a fact the facts agent named already has its kind (never "Other fact").
-  const factRules = useQuery({ queryKey: ["marketing", "fact-rules"], queryFn: loadFactRules, staleTime: Infinity });
+  const factRules = useQuery({
+    queryKey: ["marketing", "fact-rules"],
+    queryFn: loadFactRules,
+    staleTime: Infinity,
+  });
   const fieldKind = factRules.data?.fieldKind;
   const total = items.data?.total ?? 0;
   if (items.data !== undefined && total !== knownTotal) setKnownTotal(total);
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const pageCount = Math.max(1, Math.ceil(total / query.pageSize));
 
   const setStatus = (next: DiscoveredItemStatus) => {
     setStatusState(next);
-    setPage(1);
+    setQuery((current) => ({ ...current, page: 1 }));
     setKnownTotal(0);
-    setSelected(new Set());
-  };
-  const goToPage = (next: number) => {
-    setPage(next);
-    setSelected(new Set());
   };
 
-  const grouped = useMemo(() => {
-    const groups = new Map<string, DiscoveredItem[]>();
-    for (const item of rows) {
-      const bucket = groups.get(item.category) ?? [];
-      bucket.push(item);
-      groups.set(item.category, bucket);
-    }
-    return [...groups.entries()];
-  }, [rows]);
+  const categoryCounts = (() => {
+    const counts = new Map<string, number>();
+    for (const item of rows) counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+    return [...counts.entries()];
+  })();
 
   const effectiveKind = (item: DiscoveredItem) =>
     kindOverrides[item.id] ?? defaultKind(item, fieldKind);
   // A row filed under Other starts labelled by what the finder called it, so Confirm is never a dead button.
   const effectiveLabel = (item: DiscoveredItem) =>
     labelOverrides[item.id] ??
-    (effectiveKind(item) === LABEL_REQUIRED_KIND && item.guessed_kind ? humanizeIdentifier(item.guessed_kind) : "");
+    (effectiveKind(item) === LABEL_REQUIRED_KIND && item.guessed_kind
+      ? humanizeIdentifier(item.guessed_kind)
+      : "");
+  const needsLabel = (item: DiscoveredItem) =>
+    effectiveKind(item) === LABEL_REQUIRED_KIND && !effectiveLabel(item).trim();
 
-  // Selection is only meaningful against the rows actually on screen —
-  // refetches can move ids out from under a stale selection.
-  const selectedItems = useMemo(
-    () => rows.filter((item) => selected.has(item.id)),
-    [rows, selected],
-  );
-  const selectable = status !== "confirmed";
-  const selectedPools = useMemo(
-    () => new Set(selectedItems.map((item) => kindPoolOf(item.category))),
-    [selectedItems],
-  );
-  const bulkTypePool = selectedPools.size === 1 ? [...selectedPools][0] : null;
-
-  const toggleSelected = (itemId: string, next: boolean) => {
-    setSelected((current) => {
-      const draft = new Set(current);
-      if (next) draft.add(itemId);
-      else draft.delete(itemId);
-      return draft;
-    });
+  const withBusy = async (itemId: string, work: () => Promise<void>) => {
+    setBusyIds((current) => new Set(current).add(itemId));
+    try {
+      await work();
+    } finally {
+      setBusyIds((current) => {
+        const next = new Set(current);
+        next.delete(itemId);
+        return next;
+      });
+    }
   };
-  const setManySelected = (itemIds: string[], next: boolean) => {
-    setSelected((current) => {
-      const draft = new Set(current);
-      for (const id of itemIds) {
-        if (next) draft.add(id);
-        else draft.delete(id);
+
+  // ---- per-row verbs -------------------------------------------------------
+
+  const confirmRow = (item: DiscoveredItem) =>
+    withBusy(item.id, async () => {
+      const kind = effectiveKind(item);
+      const trimmedLabel = effectiveLabel(item).trim();
+      if (kind === LABEL_REQUIRED_KIND && !trimmedLabel) {
+        toast.error("Add a custom label for an Other item.");
+        return;
       }
-      return draft;
+      try {
+        if (isMediaCategory(item.category)) {
+          await confirmAsset.mutateAsync({ item, assetKind: kind, title: trimmedLabel || null });
+        } else if (isSocialCategory(item.category)) {
+          if (!isPropertyKind(kind)) throw new Error("Select a valid property type.");
+          await confirmProperty.mutateAsync({
+            item,
+            propertyKind: kind,
+            displayName: trimmedLabel || null,
+          });
+        } else {
+          await confirmFact.mutateAsync({ item, factKind: kind, label: trimmedLabel || null });
+        }
+        toast.success("Confirmed");
+      } catch (error) {
+        toast.error("Could not confirm item", { description: extractErrorMessage(error) });
+      }
+    });
+
+  const dismissRow = (item: DiscoveredItem) =>
+    withBusy(item.id, async () => {
+      try {
+        await dismissOne.mutateAsync(item.id);
+      } catch (error) {
+        toast.error("Could not dismiss item", { description: extractErrorMessage(error) });
+      }
+    });
+
+  const restoreRow = (item: DiscoveredItem) =>
+    withBusy(item.id, async () => {
+      try {
+        await undismissOne.mutateAsync(item.id);
+        toast.success("Returned to pending");
+      } catch (error) {
+        toast.error("Could not restore item", { description: extractErrorMessage(error) });
+      }
+    });
+
+  const deleteRow = async (item: DiscoveredItem) => {
+    const yes = await confirmDialog({
+      title: "Delete this discovery?",
+      description:
+        "The candidate moves to trash. If the crawler finds the same value again it will not reappear.",
+      confirmLabel: "Delete",
+      variant: "destructive",
+    });
+    if (!yes) return;
+    await withBusy(item.id, async () => {
+      try {
+        await deleteOne.mutateAsync(item.id);
+        toast.success("Discovery deleted");
+      } catch (error) {
+        toast.error("Could not delete item", { description: extractErrorMessage(error) });
+      }
     });
   };
 
-  const bulkBusy =
-    bulkConfirm.isPending ||
-    bulkDismiss.isPending ||
-    bulkUndismiss.isPending ||
-    bulkDelete.isPending;
+  // ---- bulk verbs (the table's own bar) -----------------------------------
 
+  const bulkActions: EntityBulkAction<DiscoveredItem>[] =
+    status === "pending"
+      ? [
+          {
+            id: "confirm",
+            label: "Confirm",
+            icon: Check,
+            disabledReason: (_count, selection) =>
+              selection.rows.every(needsLabel)
+                ? "Add a label to each Other item first"
+                : null,
+            run: async (selection) => {
+              // An "Other" row is confirmable in bulk exactly when it carries a
+              // label — the same rule the per-row Confirm enforces.
+              const ready = selection.rows.filter((item) => !needsLabel(item));
+              const skipped = selection.rows.length - ready.length;
+              const result = await bulkConfirm.mutateAsync(
+                ready.map((item) => ({
+                  item,
+                  kind: effectiveKind(item),
+                  label: effectiveLabel(item).trim() || null,
+                })),
+              );
+              if (result.failed.length > 0) {
+                toast.error(`Confirmed ${result.confirmed}, ${result.failed.length} failed`, {
+                  description: result.failed
+                    .slice(0, 3)
+                    .map((f) => `${itemDisplayValue(f.item)}: ${f.message}`)
+                    .join(" · "),
+                });
+              }
+              if (skipped > 0) {
+                toast.info(
+                  `${skipped} item${skipped === 1 ? "" : "s"} typed Other skipped — Other needs a per-item label.`,
+                );
+              }
+              return { message: `Confirmed ${bulkCountLabel(result.confirmed, "item")}` };
+            },
+          },
+          {
+            id: "dismiss",
+            label: "Dismiss",
+            icon: X,
+            variant: "outline",
+            run: async (selection) => {
+              const changed = await bulkDismiss.mutateAsync(selection.ids);
+              return {
+                message: `Dismissed ${bulkCountLabel(changed, "item")}`,
+                undo: async () => {
+                  await bulkUndismiss.mutateAsync(selection.ids);
+                },
+              };
+            },
+          },
+          {
+            id: "delete",
+            label: "Delete",
+            icon: Trash2,
+            variant: "destructive",
+            confirm: (selection) => ({
+              title: `Delete ${bulkCountLabel(selection.count, "discovery")}?`,
+              description:
+                "The candidates move to trash. If the crawler finds the same values again they will not reappear.",
+              confirmLabel: "Delete",
+              variant: "destructive",
+            }),
+            run: async (selection) => {
+              const changed = await bulkDelete.mutateAsync(selection.ids);
+              return { message: `Deleted ${bulkCountLabel(changed, "discovery")}` };
+            },
+          },
+        ]
+      : status === "dismissed"
+        ? [
+            {
+              id: "restore",
+              label: "Restore",
+              icon: Undo2,
+              variant: "outline",
+              run: async (selection) => {
+                const changed = await bulkUndismiss.mutateAsync(selection.ids);
+                return { message: `Returned ${bulkCountLabel(changed, "item")} to pending` };
+              },
+            },
+            {
+              id: "delete",
+              label: "Delete",
+              icon: Trash2,
+              variant: "destructive",
+              confirm: (selection) => ({
+                title: `Delete ${bulkCountLabel(selection.count, "discovery")}?`,
+                description:
+                  "The candidates move to trash. If the crawler finds the same values again they will not reappear.",
+                confirmLabel: "Delete",
+                variant: "destructive",
+              }),
+              run: async (selection) => {
+                const changed = await bulkDelete.mutateAsync(selection.ids);
+                return { message: `Deleted ${bulkCountLabel(changed, "discovery")}` };
+              },
+            },
+          ]
+        : // Confirmed rows are the promotion audit trail: nothing acts on them in bulk.
+          [];
+
+  const bulk = useTableBulkSelection<DiscoveredItem>({
+    noun: "item",
+    rows,
+    getRowId: (item) => item.id,
+    getRowName: itemDisplayValue,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void items.refetch(),
+  });
+
+  // Bulk "Set type": one pool only — each category promotes into a different table.
+  const selectedRows = rows.filter((item) => bulk.selectedIds.includes(item.id));
+  const selectedPools = new Set(selectedRows.map((item) => kindPoolOf(item.category)));
+  const bulkTypePool = selectedPools.size === 1 ? [...selectedPools][0] : null;
   const assignBulkKind = (kind: string) => {
+    setBulkKind("");
+    if (!kind) return;
     setKindOverrides((current) => {
       const draft = { ...current };
-      for (const item of selectedItems) draft[item.id] = kind;
+      for (const item of selectedRows) draft[item.id] = kind;
       return draft;
     });
   };
-
-  const runBulkConfirm = async () => {
-    // An "Other" row is confirmable in bulk exactly when it carries a label —
-    // the same rule the per-row Confirm button enforces. Now that labels are
-    // parent state, a label the user typed (or an agent staged) travels with
-    // the bulk write instead of being silently dropped.
-    const ready = selectedItems.filter(
-      (item) =>
-        effectiveKind(item) !== LABEL_REQUIRED_KIND ||
-        effectiveLabel(item).trim().length > 0,
-    );
-    const needLabel = selectedItems.length - ready.length;
-    if (ready.length === 0) {
-      toast.error(
-        "Add a label to each “Other” item before confirming them together.",
-      );
-      return;
-    }
-    try {
-      const result = await bulkConfirm.mutateAsync(
-        ready.map((item) => ({
-          item,
-          kind: effectiveKind(item),
-          label: effectiveLabel(item).trim() || null,
-        })),
-      );
-      setSelected(new Set());
-      if (result.failed.length > 0) {
-        toast.error(
-          `Confirmed ${result.confirmed}, ${result.failed.length} failed`,
-          {
-            description: result.failed
-              .slice(0, 3)
-              .map((f) => `${itemDisplayValue(f.item)}: ${f.message}`)
-              .join(" · "),
-          },
-        );
-      } else {
-        toast.success(`Confirmed ${result.confirmed} items`);
+  const selection = bulk.selection
+    ? {
+        ...bulk.selection,
+        actions: (
+          selected: DiscoveredItem[],
+          ids: string[],
+          scope: Parameters<NonNullable<NonNullable<typeof bulk.selection>["actions"]>>[2],
+        ) => (
+          <>
+            {status === "pending" ? (
+              <Select<string>
+                aria-label="Set type for selected"
+                value={bulkKind}
+                disabled={!bulkTypePool}
+                onValueChange={assignBulkKind}
+                options={[
+                  { value: "", label: bulkTypePool ? "Set type" : "Mixed categories" },
+                  ...(bulkTypePool ? kindOptionsFor(bulkTypePool) : []),
+                ]}
+              />
+            ) : null}
+            {bulk.selection?.actions?.(selected, ids, scope)}
+          </>
+        ),
       }
-      if (needLabel > 0) {
-        toast.info(
-          `${needLabel} item${needLabel === 1 ? "" : "s"} typed Other skipped — Other needs a per-item label.`,
-        );
-      }
-    } catch (error) {
-      toast.error("Could not confirm items", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
+    : undefined;
 
-  const runBulkDismiss = async () => {
-    try {
-      const changed = await bulkDismiss.mutateAsync(
-        selectedItems.map((item) => item.id),
-      );
-      setSelected(new Set());
-      toast.success(`Dismissed ${changed} items`);
-    } catch (error) {
-      toast.error("Could not dismiss items", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  const runBulkRestore = async () => {
-    try {
-      const changed = await bulkUndismiss.mutateAsync(
-        selectedItems.map((item) => item.id),
-      );
-      setSelected(new Set());
-      toast.success(`Returned ${changed} items to pending`);
-    } catch (error) {
-      toast.error("Could not restore items", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  const runBulkDelete = async () => {
-    try {
-      const changed = await bulkDelete.mutateAsync(
-        selectedItems.map((item) => item.id),
-      );
-      setSelected(new Set());
-      setConfirmingBulkDelete(false);
-      toast.success(`Deleted ${changed} discoveries`);
-    } catch (error) {
-      toast.error("Could not delete items", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  if (brand.isLoading || items.isLoading) {
+  if (brand.isLoading || (items.isLoading && !items.data)) {
     return <LoadingSurface label="Loading discoveries…" />;
   }
   if (brand.isError || !brand.data) {
-    return (
-      <QueryError error={brand.error} onRetry={() => void brand.refetch()} />
-    );
-  }
-  if (items.isError) {
-    return (
-      <QueryError error={items.error} onRetry={() => void items.refetch()} />
-    );
+    return <QueryError error={brand.error} onRetry={() => void brand.refetch()} />;
   }
 
   const currentBrand = brand.data;
@@ -426,18 +636,12 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
       ["Total items", total],
       ["Loaded on this page", rows.length],
       ["Page", `${currentPage} of ${pageCount}`],
-      ...grouped.map(([category, categoryItems]): [string, string] => [
-        (CATEGORY_META[category] ?? CATEGORY_META.other).label,
-        `${categoryItems.length} item${categoryItems.length === 1 ? "" : "s"}`,
+      ...categoryCounts.map(([category, count]): [string, string] => [
+        categoryLabel(category),
+        `${count} item${count === 1 ? "" : "s"}`,
       ]),
     ],
-    attributes: {
-      brand_id: brandId,
-      status,
-      count: rows.length,
-      total,
-      page: currentPage,
-    },
+    attributes: { brand_id: brandId, status, count: rows.length, total, page: currentPage },
   });
 
   const pageLocation = `AI Matrx — Marketing — Discovery inbox — ${currentBrand.name}`;
@@ -463,10 +667,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
           ? rows
           : level === "compact"
             ? rows.slice(0, 25)
-            : grouped.map(([category, items]) => ({
-                category,
-                count: items.length,
-              })),
+            : categoryCounts.map(([category, count]) => ({ category, count })),
     },
   ];
   const groomerConfig = (): AgentCopyGroomerConfig => ({
@@ -478,9 +679,6 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
     summary: inboxCopy.human(),
     sections: groomerSections(),
   });
-
-  const rangeStart = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const rangeEnd = (currentPage - 1) * pageSize + rows.length;
 
   // Agent write handlers for the manifest's declared writeTargets. Fresh
   // closures per call (the getWriteHandlers contract), so `rows` and `status`
@@ -506,9 +704,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
           : `loaded ids are: ${rows
               .slice(0, 10)
               .map((row) => row.id)
-              .join(
-                ", ",
-              )}${rows.length > 10 ? ` (+${rows.length - 10} more)` : ""}`;
+              .join(", ")}${rows.length > 10 ? ` (+${rows.length - 10} more)` : ""}`;
 
       // Validate EVERY entry BEFORE any state moves, so a rejected entry can
       // never leave a half-applied triage staged on the page.
@@ -517,14 +713,10 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
       value.forEach((entry, index) => {
         const at = `item_classifications[${index}]`;
         if (typeof entry !== "object" || entry === null || Array.isArray(entry))
-          throw new Error(
-            `${at} expects an object: { item_id, kind, label? }.`,
-          );
+          throw new Error(`${at} expects an object: { item_id, kind, label? }.`);
         const patch = entry as Record<string, unknown>;
         const accepted = ["item_id", "kind", "label"];
-        const unsupported = Object.keys(patch).filter(
-          (key) => !accepted.includes(key),
-        );
+        const unsupported = Object.keys(patch).filter((key) => !accepted.includes(key));
         if (unsupported.length > 0)
           throw new Error(
             `${at} got unsupported key(s): ${unsupported.join(", ")}. Accepted keys: ${accepted.join(" | ")}.`,
@@ -584,6 +776,212 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
     },
   });
 
+  // ---- columns ---------------------------------------------------------------
+
+  const columns: MatrxColumnDef<DiscoveredItem>[] = [
+    {
+      id: "category",
+      accessorFn: (item) => categoryLabel(item.category),
+      header: "Category",
+      label: "Category",
+      width: 150,
+      filter: "select",
+    },
+    {
+      id: "found",
+      accessorFn: foundAs,
+      header: "Found as",
+      label: "Found as",
+      width: 170,
+      filter: "select",
+      cell: (item) => <span className="type-label">{foundAs(item)}</span>,
+    },
+    {
+      id: "value",
+      accessorFn: (item) => {
+        const social = isSocialCategory(item.category)
+          ? describeDiscoveredSocialProfile(item)
+          : null;
+        return social?.identity || itemDisplayValue(item);
+      },
+      header: "Value",
+      label: "Value",
+      width: 380,
+      filter: "text",
+      cell: (item) => {
+        const social = isSocialCategory(item.category)
+          ? describeDiscoveredSocialProfile(item)
+          : null;
+        const text = social?.identity || itemDisplayValue(item);
+        return (
+          <span className="flex min-w-0 items-center gap-2">
+            <ItemGlyph item={item} />
+            <PeekHoverCard
+              trigger={
+                <span className="block min-w-0 truncate" data-discovery-item={item.id}>
+                  {text}
+                </span>
+              }
+            >
+              <Peek record={peekOf(item)} />
+            </PeekHoverCard>
+          </span>
+        );
+      },
+    },
+    {
+      id: "confidence",
+      accessorFn: (item) => item.confidence ?? null,
+      header: "Confidence",
+      label: "Confidence",
+      helpText: "How sure the finder is",
+      width: 110,
+      align: "right",
+      filter: "number",
+      tone: (item) => confidenceTone(item.confidence),
+      cell: (item) => (
+        <span className="tabular-nums font-medium">{percentOf(item.confidence)}</span>
+      ),
+    },
+    {
+      id: "context",
+      accessorFn: (item) => itemContextSnippet(item) ?? "",
+      header: "Where found",
+      label: "Where found",
+      width: 240,
+      filter: "text",
+      hidden: true,
+    },
+    ...(status === "pending"
+      ? ([
+          {
+            id: "type",
+            accessorFn: (item) => {
+              const kind = effectiveKind(item);
+              return (
+                kindOptionsFor(kindPoolOf(item.category)).find((o) => o.value === kind)
+                  ?.label ?? kind
+              );
+            },
+            header: "Type",
+            label: "Type",
+            width: 190,
+            filter: "select",
+            cell: (item) => (
+              <Select<string>
+                aria-label="Type"
+                variant="inline"
+                value={effectiveKind(item)}
+                options={kindOptionsFor(kindPoolOf(item.category))}
+                onValueChange={(kind) =>
+                  setKindOverrides((current) => ({ ...current, [item.id]: kind }))
+                }
+              />
+            ),
+          },
+          {
+            id: "label",
+            accessorFn: (item) => effectiveLabel(item),
+            header: "Label",
+            label: "Label",
+            width: 200,
+            filter: "text",
+            cell: (item) => (
+              <Input
+                value={effectiveLabel(item)}
+                onChange={(event) =>
+                  setLabelOverrides((current) => ({
+                    ...current,
+                    [item.id]: event.target.value,
+                  }))
+                }
+                className="w-full"
+                placeholder={
+                  effectiveKind(item) === LABEL_REQUIRED_KIND
+                    ? "Required for Other"
+                    : "Optional"
+                }
+                aria-label={
+                  isMediaCategory(item.category)
+                    ? "Asset label"
+                    : isSocialCategory(item.category)
+                      ? "Property label"
+                      : "Fact label"
+                }
+              />
+            ),
+          },
+        ] satisfies MatrxColumnDef<DiscoveredItem>[])
+      : []),
+  ];
+
+  // Four fixed slots on every row of every tab; a verb that does not apply is
+  // disabled in its slot with the reason, never absent.
+  const rowActions = (item: DiscoveredItem): MatrxTableIconAction[] => {
+    const busy = busyIds.has(item.id);
+    const pending = item.status === "pending";
+    const dismissed = item.status === "dismissed";
+    const confirmReason = !pending
+      ? item.status === "confirmed"
+        ? "Already confirmed"
+        : "Restore it to pending first"
+      : needsLabel(item)
+        ? "Add a label for an Other item"
+        : null;
+    return [
+      {
+        id: "confirm",
+        icon: Check,
+        label: confirmReason ?? "Confirm",
+        tone: "primary",
+        disabled: busy || confirmReason !== null,
+        loading: busy && pending,
+        onClick: () => void confirmRow(item),
+      },
+      dismissed
+        ? {
+            id: "restore",
+            icon: Undo2,
+            label: "Restore to pending",
+            disabled: busy,
+            onClick: () => void restoreRow(item),
+          }
+        : {
+            id: "dismiss",
+            icon: X,
+            label: pending ? "Dismiss" : "Confirmed items stay",
+            disabled: busy || !pending,
+            onClick: () => void dismissRow(item),
+          },
+      {
+        id: "delete",
+        icon: Trash2,
+        label:
+          item.status === "confirmed"
+            ? "Confirmed items are the brand's record"
+            : "Delete discovery",
+        tone: "destructive",
+        disabled: busy || item.status === "confirmed",
+        onClick: () => void deleteRow(item),
+      },
+      {
+        id: "open",
+        icon: ExternalLink,
+        label: item.url ? "Open in new tab" : "No link to open",
+        disabled: !item.url,
+        onClick: () => {
+          if (item.url) openOutbound(item.url, "_blank");
+        },
+      },
+    ];
+  };
+
+  const showNoWebsite =
+    status === "pending" &&
+    total === 0 &&
+    brandSites.isSuccess &&
+    (brandSites.data ?? []).length === 0;
+
   return (
     <SurfaceRuntimeProvider
       surfaceName="matrx-user/marketing-discovery"
@@ -616,10 +1014,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
           pending_review_count: pendingCount.data,
           active_status: status,
           loaded_count: rows.length,
-          category_counts: grouped.map(([category, categoryItems]) => ({
-            category,
-            count: categoryItems.length,
-          })),
+          category_counts: categoryCounts.map(([category, count]) => ({ category, count })),
           pending_count: pendingCount.data,
           pending_items: pendingLoaded
             ? rows.slice(0, 30).map((item) => ({
@@ -649,186 +1044,22 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
           header for the whole client tree (Arman, 2026-08-30). */}
       <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
         <div className="grid w-full gap-3">
-          <header className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h1 className="flex items-center gap-2 text-base font-semibold text-foreground">
-                Discovery inbox
-                <span className="text-xs font-normal tabular-nums text-muted-foreground">
-                  {total}
-                </span>
-                <InfoHint text="What was found for this brand, waiting for a person. Confirm adds it to the brand's facts, assets or properties." />
-              </h1>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {rows.length > 0 ? (
-                <CopyButtons
-                  size="icon"
-                  {...inboxCopy}
-                  // Everything must be a superset of the graded variants — build
-                  // it from the same groomer sections, not from inboxCopy's
-                  // rows-only payload.
-                  agent={() =>
-                    buildGroomerPresetPayload(groomerConfig(), "everything")
-                  }
-                  json={() => rows}
-                  aiVariants={groomerPresetVariants(groomerConfig)}
-                  groomer={groomerConfig}
-                  export={{
-                    items: [
-                      jsonExportItem(() => rows, "JSON (loaded items, raw)"),
-                      {
-                        id: "csv",
-                        label: "CSV (loaded items)",
-                        build: () => ({
-                          content: rowsToCsv(
-                            rows as unknown as Array<Record<string, unknown>>,
-                          ),
-                          extension: "csv",
-                          mime: "text/csv",
-                        }),
-                      },
-                    ],
-                  }}
-                />
-              ) : null}
-              <div className="flex items-center gap-1 rounded-md border border-border bg-card p-0.5">
-                {STATUS_TABS.map((tab) => (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    onClick={() => setStatus(tab.value)}
-                    className={cn(
-                      "rounded px-2.5 py-1 text-xs font-medium transition-colors",
-                      status === tab.value
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </header>
-
-          {selectable && rows.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Checkbox
-                  checked={
-                    selectedItems.length === 0
-                      ? false
-                      : selectedItems.length === rows.length
-                        ? true
-                        : "indeterminate"
-                  }
-                  onCheckedChange={(next) =>
-                    setManySelected(
-                      rows.map((item) => item.id),
-                      next === true,
-                    )
-                  }
-                  aria-label="Select all items on this page"
-                />
-                {selectedItems.length > 0 ? (
-                  <span className="font-medium text-foreground tabular-nums">
-                    {selectedItems.length} selected
-                  </span>
-                ) : (
-                  <span>Select all on page</span>
-                )}
-              </label>
-              {selectedItems.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {status === "pending" ? (
-                    <>
-                      <Select
-                        // Reset per selection so a fresh pick always fires.
-                        key={selectedItems.map((i) => i.id).join(",")}
-                        onValueChange={assignBulkKind}
-                        disabled={!bulkTypePool || bulkBusy}
-                      >
-                        <SelectTrigger className="w-40">
-                          <SelectValue
-                            placeholder={
-                              bulkTypePool
-                                ? "Set type for selected"
-                                : "Mixed categories"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(bulkTypePool
-                            ? kindOptionsFor(bulkTypePool)
-                            : []
-                          ).map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        icon={<Check />}
-                        variant="primary"
-                        disabled={bulkBusy}
-                        onClick={() => void runBulkConfirm()}
-                      >
-                        Confirm {selectedItems.length}
-                      </Button>
-                      <Button
-                        icon={<X />}
-                        variant="quiet"
-                        disabled={bulkBusy}
-                        onClick={() => void runBulkDismiss()}
-                      >
-                        Dismiss
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      icon={<Undo2 />}
-                      variant="quiet"
-                      disabled={bulkBusy}
-                      onClick={() => void runBulkRestore()}
-                    >
-                      Restore
-                    </Button>
-                  )}
-                  <Button
-                    icon={<Trash2 />}
-                    variant="quiet"
-                    disabled={bulkBusy}
-                    onClick={() => setConfirmingBulkDelete(true)}
-                  >
-                    Delete
-                  </Button>
-                  <Button
-                    variant="quiet"
-                    disabled={bulkBusy}
-                    onClick={() => setSelected(new Set())}
-                  >
-                    Clear
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {offeringCount > 0 ? (
+          {(offeringCount.data ?? 0) > 0 ? (
             <section
               className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2"
               data-testid="discovery-offerings-door"
             >
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Products &amp; services</h2>
-              <span className="text-[11px] tabular-nums text-muted-foreground">{offeringCount}</span>
-              <Button asChild variant="outline" className="ml-auto" icon={<ChevronRight />}>
+              <h2 className="type-label">Products &amp; services</h2>
+              <span className="type-meta tabular-nums text-muted-foreground">
+                {offeringCount.data}
+              </span>
+              <Button asChild variant="outline" className="ml-auto" iconEnd={<ChevronRight />}>
                 <Link href={marketingRoutes.brandOfferings(brandId)}>Review in Offerings</Link>
               </Button>
             </section>
           ) : null}
 
-          {grouped.length === 0 && status === "pending" && brandSites.isSuccess && (brandSites.data ?? []).length === 0 ? (
+          {showNoWebsite ? (
             <div className="flex min-h-56 items-center justify-center p-6">
               <NoWebsiteState
                 brandId={brandId}
@@ -840,517 +1071,120 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
                 ]}
               />
             </div>
-          ) : grouped.length === 0 ? (
-            <div className="flex min-h-56 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card/50 p-6 text-center">
-              <FileQuestion className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">
-                {status === "pending"
-                  ? "No discoveries waiting"
-                  : `No ${status} items`}
-              </p>
-              <p className="max-w-sm text-xs text-muted-foreground">
-                {status === "pending"
-                  ? "Initialize or re-initialize the site to sweep the homepage for logos, imagery, social profiles, and contact details."
-                  : "Items you review will appear here."}
-              </p>
-            </div>
           ) : (
-            grouped.map(([category, categoryItems]) => {
-              const meta = CATEGORY_META[category] ?? CATEGORY_META.other;
-              const Icon = meta.icon;
-              const categorySelected = categoryItems.filter((item) =>
-                selected.has(item.id),
-              ).length;
-              return (
-                <section
-                  key={category}
-                  className="overflow-hidden rounded-lg border border-border bg-card"
-                >
-                  <header className="flex items-center gap-2 border-b border-border px-3 py-2">
-                    {selectable ? (
-                      <Checkbox
-                        checked={
-                          categorySelected === 0
-                            ? false
-                            : categorySelected === categoryItems.length
-                              ? true
-                              : "indeterminate"
-                        }
-                        onCheckedChange={(next) =>
-                          setManySelected(
-                            categoryItems.map((item) => item.id),
-                            next === true,
-                          )
-                        }
-                        aria-label={`Select all ${meta.label} items`}
+            <MatrxDataTable<DiscoveredItem>
+              data={rows}
+              columns={columns}
+              getRowId={(item) => item.id}
+              tableId={`marketing.discovery-inbox.${status}`}
+              read={{
+                status: items.isError ? "error" : items.data ? "ready" : "loading",
+                error: items.error,
+                onRetry: () => void items.refetch(),
+                what: "discoveries",
+              }}
+              isLoading={!items.data && !items.isError}
+              isFetching={items.isFetching}
+              query={{
+                mode: "controlled",
+                state: { ...query, page: currentPage },
+                totalItems: total,
+                onStateChange: setQuery,
+                sourceProcessing: {
+                  search: "local",
+                  columnFilters: "local",
+                  sort: "local",
+                },
+              }}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              toolbar={{
+                title: "Discovery inbox",
+                titleCount: { value: total, label: status },
+                searchPlaceholder: "Search this page",
+                facets: [
+                  {
+                    type: "button-group",
+                    id: "status",
+                    value: status,
+                    defaultValue: "pending",
+                    options: STATUS_TABS.map((tab) => ({
+                      value: tab.value,
+                      label:
+                        tab.value === "pending" && typeof pendingCount.data === "number"
+                          ? `${tab.label} ${pendingCount.data}`
+                          : tab.label,
+                    })),
+                    onChange: (value) => {
+                      if (isStatus(value)) setStatus(value);
+                    },
+                  },
+                ],
+                actions: (
+                  <span className="flex items-center gap-1.5">
+                    <InfoHint text="What was found for this brand, waiting for a person. Confirm adds it to the brand's facts, assets or properties." />
+                    {rows.length > 0 ? (
+                      <CopyButtons
+                        size="icon"
+                        label={`Discovery inbox — ${currentBrand.name} (${status})`}
+                        sourceId={`web-discovery-inbox:${brandId}:${status}`}
+                        data={{
+                          brand: currentBrand.name,
+                          brand_id: brandId,
+                          status,
+                          total,
+                          page: currentPage,
+                          page_count: pageCount,
+                          items: rows,
+                        }}
+                        dataType="Agent"
+                        aiVariants={groomerPresetVariants(groomerConfig)}
+                        groomer={groomerConfig}
+                        export={{
+                          items: [
+                            jsonExportItem(() => rows, "JSON (loaded items, raw)"),
+                            {
+                              id: "csv",
+                              label: "CSV (loaded items)",
+                              build: () => ({
+                                content: rowsToCsv(rows as unknown as Array<Record<string, unknown>>),
+                                extension: "csv",
+                                mime: "text/csv",
+                              }),
+                            },
+                          ],
+                        }}
                       />
                     ) : null}
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {meta.label}
-                    </h2>
-                    <span className="text-[11px] tabular-nums text-muted-foreground">
-                      {categoryItems.length}
-                    </span>
-                  </header>
-                  <ul className="divide-y divide-border">
-                    {categoryItems.map((item) => (
-                      <DiscoveryRow
-                        key={item.id}
-                        item={item}
-                        readOnly={status !== "pending"}
-                        kind={effectiveKind(item)}
-                        onKindChange={(kind) =>
-                          setKindOverrides((current) => ({
-                            ...current,
-                            [item.id]: kind,
-                          }))
-                        }
-                        label={effectiveLabel(item)}
-                        onLabelChange={(label) =>
-                          setLabelOverrides((current) => ({
-                            ...current,
-                            [item.id]: label,
-                          }))
-                        }
-                        selectable={selectable}
-                        selected={selected.has(item.id)}
-                        onSelectedChange={(next) =>
-                          toggleSelected(item.id, next)
-                        }
-                      />
-                    ))}
-                  </ul>
-                </section>
-              );
-            })
+                  </span>
+                ),
+              }}
+              grouping={{
+                columnId: "category",
+                groupableColumnIds: ["category", "found", "type"],
+                order: "value-asc",
+                rowNoun: "item",
+              }}
+              selection={selection}
+              rowActions={rowActions}
+              rowVersion={(item) => [
+                kindOverrides[item.id],
+                labelOverrides[item.id],
+                busyIds.has(item.id),
+                fieldKind,
+              ]}
+              detail={{ enabled: false }}
+              emptyState={{
+                icon: <FileQuestion className="h-8 w-8" />,
+                title: status === "pending" ? "No discoveries waiting" : `No ${status} items`,
+                description:
+                  status === "pending"
+                    ? "Initialize the site to sweep its homepage again."
+                    : "Items you review appear here.",
+              }}
+            />
           )}
-
-          {total > 0 ? (
-            <footer className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2">
-              <span className="text-xs tabular-nums text-muted-foreground">
-                Showing {rangeStart}–{rangeEnd} of {total}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Select
-                  value={String(pageSize)}
-                  onValueChange={(value) => {
-                    setPageSize(Number(value));
-                    goToPage(1);
-                  }}
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZE_OPTIONS.map((size) => (
-                      <SelectItem key={size} value={String(size)}>
-                        {size} / page
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  icon={<ChevronLeft />}
-                  variant="outline"
-                  disabled={currentPage <= 1 || items.isFetching}
-                  onClick={() => goToPage(currentPage - 1)}
-                >
-                  Prev
-                </Button>
-                <span className="text-xs tabular-nums text-muted-foreground">
-                  {currentPage} / {pageCount}
-                </span>
-                <Button
-                  iconEnd={<ChevronRight />}
-                  variant="outline"
-                  disabled={currentPage >= pageCount || items.isFetching}
-                  onClick={() => goToPage(currentPage + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </footer>
-          ) : null}
         </div>
-
-        <ConfirmDialog
-          open={confirmingBulkDelete}
-          onOpenChange={setConfirmingBulkDelete}
-          title={`Delete ${selectedItems.length} discoveries?`}
-          description="The candidates move to trash. If the crawler finds the same values again they will not reappear."
-          variant="destructive"
-          confirmLabel="Delete"
-          busy={bulkDelete.isPending}
-          onConfirm={() => void runBulkDelete()}
-        />
       </main>
     </SurfaceRuntimeProvider>
-  );
-}
-
-function DiscoveryRow({
-  item,
-  readOnly,
-  kind,
-  onKindChange,
-  label,
-  onLabelChange,
-  selectable,
-  selected,
-  onSelectedChange,
-}: {
-  item: DiscoveredItem;
-  readOnly: boolean;
-  kind: string;
-  onKindChange: (kind: string) => void;
-  /** Lifted to the parent — the bulk confirm and the agent write both need it. */
-  label: string;
-  onLabelChange: (label: string) => void;
-  selectable: boolean;
-  selected: boolean;
-  onSelectedChange: (selected: boolean) => void;
-}) {
-  const confirmAsset = useConfirmDiscoveredAsset();
-  const confirmFact = useConfirmDiscoveredFact();
-  const confirmProperty = useConfirmDiscoveredProperty();
-  const dismiss = useDismissDiscoveredItem();
-  const undismiss = useUndismissDiscoveredItem();
-  const deleteMutation = useDeleteDiscoveredItem();
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const media = isMediaCategory(item.category);
-  const social = isSocialCategory(item.category);
-  const socialPreview = social ? describeDiscoveredSocialProfile(item) : null;
-  const SocialIcon = socialPreview
-    ? (SOCIAL_ICONS[socialPreview.kind] ?? AtSign)
-    : AtSign;
-  const kindOptions = kindOptionsFor(kindPoolOf(item.category));
-  const customLabelRequired = kind === LABEL_REQUIRED_KIND;
-  const busy =
-    confirmAsset.isPending ||
-    confirmFact.isPending ||
-    confirmProperty.isPending ||
-    dismiss.isPending ||
-    undismiss.isPending ||
-    deleteMutation.isPending;
-  const display = itemDisplayValue(item);
-  const context = itemContextSnippet(item);
-  const itemCopy = webCopy({
-    kind: "web-discovered-item",
-    label: "Discovered item",
-    description:
-      "One machine-discovered brand candidate from the brand discovery inbox.",
-    surface: `Discovery inbox — ${display}`,
-    data: item,
-    lines: [
-      ["Category", item.category],
-      ["Guessed kind", item.guessed_kind],
-      [
-        "Confidence",
-        typeof item.confidence === "number"
-          ? `${Math.round(item.confidence * 100)}%`
-          : null,
-      ],
-      ["Value", display],
-      ["Context", context],
-      ["Status", item.status],
-    ],
-    attributes: {
-      item_id: item.id,
-      category: item.category,
-      status: item.status,
-    },
-  });
-  const previewUrl =
-    media && item.url && /\.(png|jpe?g|webp|gif|svg|ico)(\?|$)/i.test(item.url)
-      ? item.url
-      : null;
-
-  const confirm = async () => {
-    const trimmedLabel = label.trim();
-    if (customLabelRequired && !trimmedLabel) {
-      toast.error("Add a custom label for an Other item.");
-      return;
-    }
-    try {
-      if (media) {
-        await confirmAsset.mutateAsync({
-          item,
-          assetKind: kind,
-          title: trimmedLabel || null,
-        });
-      } else if (social) {
-        if (!isPropertyKind(kind)) {
-          throw new Error("Select a valid property type.");
-        }
-        await confirmProperty.mutateAsync({
-          item,
-          propertyKind: kind,
-          displayName: trimmedLabel || null,
-        });
-      } else {
-        await confirmFact.mutateAsync({
-          item,
-          factKind: kind,
-          label: trimmedLabel || null,
-        });
-      }
-      toast.success("Confirmed");
-    } catch (error) {
-      toast.error("Could not confirm item", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  const reject = async () => {
-    try {
-      await dismiss.mutateAsync(item.id);
-    } catch (error) {
-      toast.error("Could not dismiss item", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  const restore = async () => {
-    try {
-      await undismiss.mutateAsync(item.id);
-      toast.success("Returned to pending");
-    } catch (error) {
-      toast.error("Could not restore item", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  const remove = async () => {
-    try {
-      await deleteMutation.mutateAsync(item.id);
-      toast.success("Discovery deleted");
-      setConfirmingDelete(false);
-    } catch (error) {
-      toast.error("Could not delete item", {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  return (
-    <li
-      className={cn(
-        "flex flex-wrap items-center gap-3 px-3 py-2",
-        selected && "bg-accent/40",
-      )}
-    >
-      {selectable ? (
-        <Checkbox
-          checked={selected}
-          onCheckedChange={(next) => onSelectedChange(next === true)}
-          aria-label={`Select ${display}`}
-        />
-      ) : null}
-      {socialPreview ? (
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-muted/40 text-foreground shadow-sm">
-          <SocialIcon className="h-5 w-5" aria-hidden />
-        </span>
-      ) : previewUrl ? (
-        <span className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded border border-border/60 bg-muted/30">
-          {/* Discovered candidates are external public URLs, not our media. */}
-          <img
-            src={previewUrl}
-            alt=""
-            className="h-full w-full object-contain"
-            loading="lazy"
-          />
-        </span>
-      ) : (
-        <span
-          className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-            item.category === "social"
-              ? "bg-info/10 text-info-ink"
-              : item.category === "fact"
-                ? "bg-primary/10 text-primary-ink"
-                : "bg-success/10 text-success-ink",
-          )}
-        >
-          {item.category === "social" ? (
-            <AtSign className="h-4 w-4" />
-          ) : item.category === "fact" ? (
-            <ListChecks className="h-4 w-4" />
-          ) : (
-            <Link2 className="h-4 w-4" />
-          )}
-        </span>
-      )}
-
-      <div className="min-w-0 flex-1 basis-56">
-        <div className="flex items-center gap-1.5">
-          {item.guessed_kind ? (
-            <span className="truncate type-label">
-              {socialPreview
-                ? socialPreview.providerLabel
-                : (humanizeIdentifier(item.guessed_kind) || item.guessed_kind)}
-            </span>
-          ) : null}
-          {typeof item.confidence === "number" ? (
-            <span
-              title="How sure the finder is"
-              className={cn(
-                "type-meta tabular-nums font-medium",
-                item.confidence >= 0.8
-                  ? "text-success-ink"
-                  : item.confidence >= 0.5
-                    ? "text-warning-ink"
-                    : "text-destructive-ink",
-              )}
-            >
-              {Math.round(item.confidence * 100)}%
-            </span>
-          ) : null}
-          {context ? <InfoHint text={context} label="Where it was found" /> : null}
-        </div>
-        {socialPreview ? (
-          <div className="mt-0.5 flex min-w-0 items-baseline gap-2">
-            <p className="truncate text-sm font-medium text-foreground">
-              {socialPreview.identity}
-            </p>
-            <span className="shrink-0 text-[10px] text-muted-foreground">
-              {socialPreview.profileType}
-            </span>
-          </div>
-        ) : null}
-        {item.url ? (
-          <OutboundLink
-            href={item.url}
-            className={cn(
-              "block truncate text-xs text-muted-foreground transition-colors hover:text-primary",
-              !socialPreview && "mt-0.5 text-sm text-foreground",
-            )}
-          >
-            {display}
-          </OutboundLink>
-        ) : (
-          <p className="mt-0.5 truncate text-sm text-foreground" title={display}>
-            {display}
-          </p>
-        )}
-      </div>
-
-      <span className="shrink-0">
-        <CopyButtons size="icon" {...itemCopy} />
-      </span>
-      {item.url ? (
-        <Button
-          icon={<ExternalLink />} aria-label="Open in new tab"
-          asChild
-          variant="quiet"
-          className="shrink-0"
-        >
-          <OutboundLink
-            href={item.url}
-            aria-label={`Open ${socialPreview?.providerLabel ?? "discovered link"} in a new tab`}
-            title="Open in new tab"
-          />
-        </Button>
-      ) : (
-        // No address to open: the slot stays, disabled, so every row's controls line up.
-        <Button icon={<ExternalLink />} aria-label="No link to open" title="No link to open" variant="quiet" disabled className="shrink-0" />
-      )}
-
-      {readOnly ? (
-        <div className="flex shrink-0 items-center gap-1.5">
-          <Badge
-            variant={item.status === "confirmed" ? "success" : "outline"}
-            className="capitalize"
-          >
-            {item.status}
-          </Badge>
-          {item.status === "dismissed" ? (
-            <>
-              <Button
-                icon={<Undo2 />}
-                variant="quiet"
-                disabled={busy}
-                onClick={() => void restore()}
-              >
-                Restore
-              </Button>
-              <Button
-                icon={<Trash2 />}
-                variant="quiet"
-                disabled={busy}
-                onClick={() => setConfirmingDelete(true)}
-              >
-                Delete
-              </Button>
-            </>
-          ) : null}
-        </div>
-      ) : (
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-          <Select value={kind} onValueChange={onKindChange}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {kindOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Input
-            value={label}
-            onChange={(event) => onLabelChange(event.target.value)}
-            className="w-40"
-            placeholder={
-              customLabelRequired
-                ? "Custom label (required)"
-                : "Label (optional)"
-            }
-            aria-label={
-              media ? "Asset label" : social ? "Property label" : "Fact label"
-            }
-          />
-          <Button
-            icon={<Check />}
-            variant="primary"
-            disabled={busy || (customLabelRequired && !label.trim())}
-            onClick={() => void confirm()}
-          >
-            Confirm
-          </Button>
-          <Button
-            icon={<X />}
-            variant="quiet"
-            disabled={busy}
-            onClick={() => void reject()}
-          >
-            Dismiss
-          </Button>
-          <Button
-            icon={<Trash2 />} aria-label="Delete discovery"
-            variant="quiet"
-            title="Delete discovery"
-            disabled={busy}
-            onClick={() => setConfirmingDelete(true)}
-          />
-        </div>
-      )}
-
-      <ConfirmDialog
-        open={confirmingDelete}
-        onOpenChange={setConfirmingDelete}
-        title="Delete this discovery?"
-        description="The candidate moves to trash. If the crawler finds the same value again it will not reappear."
-        variant="destructive"
-        confirmLabel="Delete"
-        busy={deleteMutation.isPending}
-        onConfirm={() => void remove()}
-      />
-    </li>
   );
 }
