@@ -101,6 +101,7 @@ import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
+import { workbookSeatOptions, type WorkbookSeatApi } from "@/features/workbooks/collab/workbookSeatOptions";
 
 import { useWorkbookRealtime } from "@ai-matrx/office/univer/realtime";
 import "@/lib/univer-host";
@@ -544,6 +545,19 @@ export default function WorkbookEditor({
       uid,
       clientId,
       commandService,
+      // Each seat mounts its own Univer unit: peers' mutations are re-addressed
+      // to it, and one that cannot be applied says so and re-syncs.
+      ...workbookSeatOptions({
+        getApi: () => apiRef.current as unknown as WorkbookSeatApi,
+        onFailed: () => {
+          toast({
+            title: "A collaborator's change could not be applied",
+            description: "Showing the last saved version of this workbook.",
+            variant: "destructive",
+          });
+          void reloadFromLatest();
+        },
+      }),
       makeProvider: ({ workbookId: wid, clientId: cid, doc, awareness, onLeaderChange }) =>
         new SupabaseYjsProvider({
           workbookId: wid,
