@@ -312,7 +312,8 @@ export async function createDeal(input: {
   primaryPartyId?: string | null;
   assignedTo?: string | null;
   description?: string | null;
-  source?: string;
+  /** Where this deal came from — the caller says; never assumed "manual". */
+  source: string;
 }): Promise<DealRow> {
   const name = input.name.trim();
   if (!name) throw new Error("Name the deal");
@@ -327,7 +328,7 @@ export async function createDeal(input: {
     primary_party_id: input.primaryPartyId ?? null,
     assigned_to: input.assignedTo ?? null,
     description: input.description?.trim() || null,
-    source: input.source ?? "manual",
+    source: input.source,
   };
   const { data, error } = await crm()
     .from("deal")

@@ -77,6 +77,7 @@ export function PartyDealsCard({ party, onStateChange }: Props) {
         description: input.description,
         primaryPartyId: party.id,
         assignedTo: ctx?.userId ?? null,
+        source: "agent",
       });
       setGeneration((g) => g + 1);
       return {

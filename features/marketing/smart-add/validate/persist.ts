@@ -747,7 +747,8 @@ async function persistAnswerOnce(
           }
         : ev
           ? { source: "discovered" as const, metadata: { found_by: foundByForSource(ev.source.node, ev.source.kind), where: ev.source.where, url: ev.source.url } }
-          : {}),
+          : // Still a validation-queue item (it lands in web.discovered_item below): found, then confirmed.
+            { source: "discovered" as const }),
     });
     resolved.resolved_fact_id = fact.id;
     homes.push(`web.business_fact:${fact.id}`);

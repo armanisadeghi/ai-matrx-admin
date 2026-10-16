@@ -55,10 +55,11 @@ export async function setGscKeywordClass(
   ruling: GscClassRuling,
   notes: string | null,
   options: {
-    origin?: GscRulingOrigin;
+    /** Who made this ruling — the caller says; never assumed "manual". */
+    origin: GscRulingOrigin;
     ruleId?: string | null;
     confirmed?: boolean;
-  } = {},
+  },
 ): Promise<GscSetKeywordClassRow[]> {
   const response = await (
     await seoDb()
@@ -67,7 +68,7 @@ export async function setGscKeywordClass(
     p_keyword_ids: keywordIds,
     p_class: ruling,
     p_notes: notes?.trim() || undefined,
-    p_origin: options.origin ?? "manual",
+    p_origin: options.origin,
     p_rule_id: options.ruleId ?? undefined,
     p_confirmed: options.confirmed ?? true,
   });

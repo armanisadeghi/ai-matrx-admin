@@ -138,6 +138,7 @@ function BusinessFactEditorDialogBody({
           kind,
           label: label.trim() || null,
           value: nextValue,
+          source: "manual",
         });
         toast.success("Fact added");
       }

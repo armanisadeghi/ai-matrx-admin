@@ -178,6 +178,7 @@ export function DealCreateDialog({
         expectedCloseDate: expectedClose || null,
         primaryPartyId: party?.id ?? null,
         assignedTo: userId,
+        source: "manual",
       });
       recordToast.success(
         { type: "deal", id: deal.id, title: deal.name },

@@ -4237,7 +4237,7 @@ export async function createBrandAsset(
       title: input.title,
       notes: input.notes,
       is_primary: input.isPrimary,
-      source: input.source ?? "manual",
+      source: input.source,
       confirmed_at: new Date().toISOString(),
     })
     .select(BRAND_ASSET_COLUMNS)
@@ -4309,7 +4309,7 @@ export async function createBusinessFact(
       kind: input.kind,
       label: input.label,
       value: factValuePayload(input.value),
-      source: input.source ?? "manual",
+      source: input.source,
       ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
       confirmed_at: new Date().toISOString(),
     })
