@@ -5,8 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { callApi } from "@/lib/api/call-api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
-import { operationsByLink } from "@ai-matrx/api/architecture";
-import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
+import { fetchOperationsByLink } from "@/lib/runtime-operations/operationsByLink";
 
 const POLL_MS = 6000;
 /** `rs_topic.status` values while a pass is working. */
@@ -36,10 +35,7 @@ export function useRunningPass(topicId: string, topicStatus: string | null | und
     let cancelled = false;
     const look = async () => {
       try {
-        const data = await operationsByLink(serverApi, { path: {
-            link_kind: "rs_topic",
-            link_id: topicId,
-          } }, { headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
+        const data = await fetchOperationsByLink("rs_topic", topicId);
         const live = (data?.operations ?? []).find((o) => !o.is_terminal);
         if (cancelled) return;
         setRunning(Boolean(live));

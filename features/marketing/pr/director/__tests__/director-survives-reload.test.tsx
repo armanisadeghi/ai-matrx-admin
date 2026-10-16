@@ -40,11 +40,15 @@ let messageCount = 0;
 let executing = false;
 let cacheOnly = false;
 let serverOperations = 0;
-jest.mock("@/lib/api/server-api", () =>
-  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
-    apiGet: async () => ({ data: { operation_count: serverOperations, operations: [] } }),
+// "Does the server hold work for this conversation?" is read from Supabase (runtime.global_execution).
+jest.mock("@/lib/runtime-operations/operationsByLink", () => ({
+  fetchOperationsByLink: async () => ({
+    link_kind: "conversation",
+    link_id: "c",
+    operation_count: serverOperations,
+    operations: [],
   }),
-);
+}));
 let userMessages: Array<{ role: string; content: unknown }> = [];
 /** Resume outcomes in order: "fail" rejects as an unwritten row, "hang" never settles. */
 let resumePlan: Array<"ok" | "fail" | "hold"> = [];
