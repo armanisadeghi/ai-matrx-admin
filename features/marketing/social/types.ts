@@ -95,6 +95,7 @@ export const SOCIALS_TABS = [
   { id: "studio", label: "Studio" },
   { id: "outliers", label: "Outliers" },
   { id: "swipe", label: "Swipe file" },
+  { id: "videos", label: "Videos" },
   { id: "ads", label: "Ad library" },
   { id: "kpis", label: "KPIs" },
 ] as const;

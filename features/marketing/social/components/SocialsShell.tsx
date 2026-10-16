@@ -13,6 +13,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   Bookmark,
   Clapperboard,
+  Film,
   Megaphone,
   Plus,
   Target,
@@ -40,6 +41,7 @@ const TAB_ICONS: Record<SocialsTabId, LucideIcon> = {
   studio: Clapperboard,
   outliers: TrendingUp,
   swipe: Bookmark,
+  videos: Film,
   ads: Megaphone,
   kpis: Target,
 };
@@ -64,7 +66,9 @@ export function SocialsShell({ children }: { children: ReactNode }) {
   const segment = afterSocials ? afterSocials.split("/")[0] : "";
   const activeTab = SOCIALS_TABS.find((t) => t.id === segment)?.id ?? "accounts";
 
-  const fullBleed = activeTab === "studio";
+  // A video project is a record page with its own header (the studio); the clone runner sits under the tabs.
+  const videoSub = segment === "videos" ? afterSocials?.split("/")[1] : undefined;
+  const fullBleed = activeTab === "studio" || (videoSub !== undefined && videoSub !== "" && videoSub !== "new");
   // An account's own page shows its tracked state + Refresh; a second "Track account" there reads as if
   // this account were not tracked yet.
   const onAccountPage = segment !== "" && !SOCIALS_TABS.some((t) => t.id === segment) && segment !== "post";

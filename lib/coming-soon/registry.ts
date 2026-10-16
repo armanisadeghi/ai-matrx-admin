@@ -207,6 +207,27 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
     // (features/marketing/social, SI-07a); Outliers and KPIs are live (SI-07b1); Studio is live (SI-07c, a board with the marketing-social preset).
     surfaces: ["/marketing/[brand]/socials"],
   },
+  "marketing.social.video-render": {
+    id: "marketing.social.video-render",
+    label: "Render video clones",
+    owner: "marketing",
+    promise: "Build a clone and its variants into finished mp4 files you can download.",
+    stage: "building",
+    // The render worker and its job door exist (aidream services/render_jobs, VC-03); the door that starts a
+    // render (and a variant batch) from a project is lane VC-06. The studio's Build button announces this until then.
+    surfaces: ["/marketing/[brand]/socials/videos/[project]"],
+  },
+  "marketing.social.video-slots": {
+    id: "marketing.social.video-slots",
+    label: "Presenter and music swaps",
+    owner: "marketing",
+    promise: "Swap a clone's presenter for your spokesperson or a generated one, and add library or generated music.",
+    stage: "building",
+    // The composition carries the slots and invalidation regenerates exactly the takes a presenter swap touches
+    // (VC-01); the generation of presenter takes (VC-05) and the director that fills slots (VC-08) are not wired
+    // into the studio yet. Music has no catalog route (VC-05).
+    surfaces: ["/marketing/[brand]/socials/videos/[project] → Swaps"],
+  },
   // Lane B email — the mailbox, the templates, the sequences — SHIPPED, and
   // /marketing/email is now its front door. What remains is LANE A: opt-in
   // marketing we send on the customer's behalf, which is committed vision and

@@ -3125,6 +3125,81 @@ export type Database = {
         }
         Relationships: []
       }
+      media_generation_cache: {
+        Row: {
+          alias: string
+          capability: string
+          content_hash: string | null
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          duration_seconds: number | null
+          file_id: string
+          id: string
+          metadata: Json
+          model: string | null
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          request_hash: string
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          alias: string
+          capability: string
+          content_hash?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          duration_seconds?: number | null
+          file_id: string
+          id?: string
+          metadata?: Json
+          model?: string | null
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request_hash: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          alias?: string
+          capability?: string
+          content_hash?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          duration_seconds?: number | null
+          file_id?: string
+          id?: string
+          metadata?: Json
+          model?: string | null
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request_hash?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       model_alias: {
         Row: {
           alias: string
@@ -10822,6 +10897,10 @@ export type Database = {
       run_approval_waiting_count: {
         Args: { p_org_id?: string }
         Returns: number
+      }
+      run_origin_class: {
+        Args: { p_context_origin: string; p_request_origin: string }
+        Returns: string
       }
       run_volume_sweep: {
         Args: never
@@ -83437,6 +83516,7 @@ export type Database = {
         }
         Returns: string
       }
+      core_boot_seed: { Args: never; Returns: Json }
       derive_organization_abbreviation: {
         Args: { p_name: string }
         Returns: string
@@ -87951,6 +88031,47 @@ export type Database = {
         Args: { p_is_system: boolean; p_org: string }
         Returns: string
       }
+      _client_agent_problems: {
+        Args: {
+          p_contract: Json
+          p_has_provision: boolean
+          p_is_version: boolean
+          p_ref: string
+        }
+        Returns: Json
+      }
+      _client_as_words: {
+        Args: { p_empty?: string; p_items: string[] }
+        Returns: string
+      }
+      _client_auto_run: {
+        Args: { p_map: Json; p_stored: boolean }
+        Returns: boolean
+      }
+      _client_decision_names: { Args: { p_messages: Json }; Returns: string[] }
+      _client_layer_overrides: {
+        Args: { p_base: Json; p_top: Json }
+        Returns: Json
+      }
+      _client_repr: { Args: { p_value: string }; Returns: string }
+      _client_settle_overrides: { Args: { p_merged: Json }; Returns: Json }
+      _client_verdict: {
+        Args: {
+          p_chain?: string[]
+          p_mandate_key: string
+          p_organization_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      _client_workflow_problems: {
+        Args: {
+          p_output_kind: string
+          p_version_id: string
+          p_workflow_id: string
+        }
+        Returns: Json
+      }
       _member_list_rows:
         | {
             Args: {
@@ -88304,6 +88425,20 @@ export type Database = {
           rung: string
           subject_user_id: string
           version_live: boolean
+        }[]
+      }
+      resolve_for_client: {
+        Args: { p_keys: string[]; p_organization_id: string }
+        Returns: {
+          auto_context_disabled: boolean
+          http_status: number
+          mandate_id: string
+          mandate_key: string
+          pinned_context: Json
+          pins: Json
+          presentation: Json
+          refusal: Json
+          verdict: Json
         }[]
       }
       run_history: {
@@ -91251,6 +91386,7 @@ export type Database = {
         Returns: Json
       }
       record_system_error: { Args: { p_error: Json }; Returns: string }
+      server_now: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -92092,6 +92228,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _ai_run_headline: {
+        Args: { p_kind: string; p_result: Json }
+        Returns: string
+      }
+      _ai_run_kind_label: { Args: { p_kind: string }; Returns: string }
+      brief_run_history: { Args: { p_node_id: string }; Returns: Json }
+      restore_brief_run: {
+        Args: { p_node_id: string; p_run_id: string }
+        Returns: Json
+      }
+      site_ai_run: {
+        Args: { p_run_id: string; p_site_id: string }
+        Returns: Json
+      }
+      site_ai_runs: { Args: { p_site_id: string }; Returns: Json }
       status_flow: {
         Args: never
         Returns: {
@@ -104632,6 +104783,7 @@ export type Database = {
         Args: { p_tool_name: string }
         Returns: boolean
       }
+      shell_counts: { Args: never; Returns: Json }
       shown_to_context: { Args: { p_token: string }; Returns: Json }
       shown_to_default: {
         Args: { p_organization_id: string; p_token: string; p_user_id?: string }
@@ -137319,6 +137471,8 @@ export type Database = {
           updated_by: string | null
           version: number
           word_count: number | null
+          words: Json | null
+          words_clamp_rule: string | null
         }
         Insert: {
           created_at?: string
@@ -137337,6 +137491,8 @@ export type Database = {
           updated_by?: string | null
           version?: number
           word_count?: number | null
+          words?: Json | null
+          words_clamp_rule?: string | null
         }
         Update: {
           created_at?: string
@@ -137355,6 +137511,8 @@ export type Database = {
           updated_by?: string | null
           version?: number
           word_count?: number | null
+          words?: Json | null
+          words_clamp_rule?: string | null
         }
         Relationships: [
           {
@@ -137774,6 +137932,184 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "social_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_composition_version: {
+        Row: {
+          author: string | null
+          base_version: number | null
+          composition_version: number
+          created_at: string
+          created_by: string | null
+          document: Json
+          id: string
+          metadata: Json
+          note: string | null
+          organization_id: string
+          patch: Json | null
+          project_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          author?: string | null
+          base_version?: number | null
+          composition_version: number
+          created_at?: string
+          created_by?: string | null
+          document?: Json
+          id?: string
+          metadata?: Json
+          note?: string | null
+          organization_id: string
+          patch?: Json | null
+          project_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          author?: string | null
+          base_version?: number | null
+          composition_version?: number
+          created_at?: string
+          created_by?: string | null
+          document?: Json
+          id?: string
+          metadata?: Json
+          note?: string | null
+          organization_id?: string
+          patch?: Json | null
+          project_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_composition_version_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "video_project"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_project: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          head_version: number
+          id: string
+          metadata: Json
+          name: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          head_version?: number
+          id?: string
+          metadata?: Json
+          name: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          head_version?: number
+          id?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      video_variant: {
+        Row: {
+          base_version: number
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          metadata: Json
+          ops: Json
+          organization_id: string
+          project_id: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          base_version: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          metadata?: Json
+          ops?: Json
+          organization_id: string
+          project_id: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          base_version?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          metadata?: Json
+          ops?: Json
+          organization_id?: string
+          project_id?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_variant_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "video_project"
             referencedColumns: ["id"]
           },
         ]
@@ -148536,6 +148872,7 @@ export type Database = {
         }[]
       }
       site_page_coverage: { Args: { p_site_id: string }; Returns: Json }
+      url_match_key: { Args: { p_url: string }; Returns: string }
       url_quality_metrics: { Args: { page_url: string }; Returns: Json }
     }
     Enums: {
