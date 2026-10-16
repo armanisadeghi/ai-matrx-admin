@@ -30,7 +30,7 @@ import { exitAfterDrain } from "./lib/exit-after-drain";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIR = resolve(ROOT, "scripts", "change-engine-scenarios");
-const TARGET = "ef4b0d95-5ec3-4d8f-901b-d40e178a71df";
+const TARGET = "2643e470-b275-47f3-95f3-ae275ad3ca47";
 const SOURCE = "7cd12da2-2213-4378-8fba-a9e2dc4ea657";
 
 type Obs = Record<string, unknown>;
@@ -44,6 +44,7 @@ const ASSERT: Record<string, Array<[string, (x: Obs) => boolean]>> = {
     ["delete stamps brand, asset, persona and the logo file", (x) => Object.values(o(x.after_delete)).every((v) => v === true) && Object.keys(o(x.after_delete)).length === 4],
     ["delete is one inline plan of 4 rows", (x) => o(x.commit).status === "done" && o(x.commit).rows === 4],
     ["restore by plan brings exactly those 4 back", (x) => o(x.restore).rows === 4 && Object.values(o(x.after_restore)).every((v) => v === true)],
+    ["every call clears its scratch rows", (x) => x.work_rows_left === 0],
   ],
   "note-move-scope-alarm.sql": [
     ["preview raises the scope alarm naming both case scopes", (x) => {
