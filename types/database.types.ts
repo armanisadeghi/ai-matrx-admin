@@ -27572,6 +27572,181 @@ export type Database = {
   }
   content: {
     Tables: {
+      collab_checkpoint: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          ref: string
+          rev: number
+          room_id: string
+          saved_at: string
+          saved_by: string | null
+          state_hash: string | null
+          trimmed_through: number
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          ref: string
+          rev?: number
+          room_id: string
+          saved_at?: string
+          saved_by?: string | null
+          state_hash?: string | null
+          trimmed_through?: number
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          ref?: string
+          rev?: number
+          room_id?: string
+          saved_at?: string
+          saved_by?: string | null
+          state_hash?: string | null
+          trimmed_through?: number
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_checkpoint_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "collab_room"
+            referencedColumns: ["room_id"]
+          },
+        ]
+      }
+      collab_op: {
+        Row: {
+          base_rev: number
+          client_id: string | null
+          client_seq: number | null
+          created_at: string
+          created_by: string | null
+          groups: Json | null
+          id: string
+          metadata: Json
+          op_kind: string
+          organization_id: string
+          replace_ref: string | null
+          rev: number
+          room_id: string
+          uid: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          base_rev: number
+          client_id?: string | null
+          client_seq?: number | null
+          created_at?: string
+          created_by?: string | null
+          groups?: Json | null
+          id?: string
+          metadata?: Json
+          op_kind: string
+          organization_id: string
+          replace_ref?: string | null
+          rev: number
+          room_id: string
+          uid?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          base_rev?: number
+          client_id?: string | null
+          client_seq?: number | null
+          created_at?: string
+          created_by?: string | null
+          groups?: Json | null
+          id?: string
+          metadata?: Json
+          op_kind?: string
+          organization_id?: string
+          replace_ref?: string | null
+          rev?: number
+          room_id?: string
+          uid?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_op_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "collab_room"
+            referencedColumns: ["room_id"]
+          },
+        ]
+      }
+      collab_room: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          head_rev: number
+          id: string
+          kind: string
+          metadata: Json
+          organization_id: string
+          proto: number
+          room_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          head_rev?: number
+          id?: string
+          kind: string
+          metadata?: Json
+          organization_id: string
+          proto: number
+          room_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          head_rev?: number
+          id?: string
+          kind?: string
+          metadata?: Json
+          organization_id?: string
+          proto?: number
+          room_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       document: {
         Row: {
           archived_at: string | null
@@ -27946,6 +28121,44 @@ export type Database = {
     }
     Functions: {
       _capture_bypassed: { Args: never; Returns: boolean }
+      _collab_access: {
+        Args: {
+          p_kind?: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_room: string
+        }
+        Returns: boolean
+      }
+      _collab_cp_verdict: {
+        Args: { p_hash: string; p_rev: number; p_room: string }
+        Returns: string
+      }
+      _collab_cp_write: {
+        Args: { p_hash: string; p_ref: string; p_rev: number; p_room: string }
+        Returns: undefined
+      }
+      _collab_knob: {
+        Args: { p_default: number; p_key: string; p_org: string }
+        Returns: number
+      }
+      _collab_knobs: { Args: { p_org: string }; Returns: Json }
+      _collab_parent: { Args: { p_kind: string }; Returns: string }
+      _collab_send: {
+        Args: {
+          p_base: number
+          p_client_id: string
+          p_client_seq: number
+          p_groups: Json
+          p_op_kind: string
+          p_org: string
+          p_replace_ref: string
+          p_rev: number
+          p_room: string
+          p_uid: string
+        }
+        Returns: undefined
+      }
+      _collab_trim: { Args: { p_room: string }; Returns: number }
       _search_args_ok: {
         Args: { p_archive: string; p_organization_id: string; p_scope: string }
         Returns: boolean
@@ -28012,6 +28225,62 @@ export type Database = {
           edge_id: string
         }[]
       }
+      collab_append: {
+        Args: {
+          p_base_rev: number
+          p_client_id: string
+          p_client_seq: number
+          p_groups: Json
+          p_proto: number
+          p_room_id: string
+        }
+        Returns: Json
+      }
+      collab_checkpoint_save: {
+        Args: {
+          p_ref: string
+          p_rev: number
+          p_room_id: string
+          p_state_hash: string
+        }
+        Returns: Json
+      }
+      collab_head: { Args: { p_room_id: string }; Returns: Json }
+      collab_open: {
+        Args: {
+          p_kind: string
+          p_proto: number
+          p_room_id: string
+          p_state_hash?: string
+        }
+        Returns: Json
+      }
+      collab_read: {
+        Args: { p_after_rev: number; p_limit?: number; p_room_id: string }
+        Returns: {
+          base_rev: number
+          client_id: string
+          client_seq: number
+          created_at: string
+          groups: Json
+          op_kind: string
+          replace_ref: string
+          rev: number
+          uid: string
+        }[]
+      }
+      collab_replace: {
+        Args: {
+          p_client_id?: string
+          p_origin: string
+          p_projection?: string
+          p_room_id: string
+          p_snapshot: Json
+          p_state_hash: string
+        }
+        Returns: Json
+      }
+      collab_topic_admits: { Args: { p_topic: string }; Returns: boolean }
       document_get: {
         Args: { p_document_id: string; p_include_body?: boolean }
         Returns: {
@@ -28408,11 +28677,13 @@ export type Database = {
       }
       univer_save: {
         Args: {
+          p_collab_rev?: number
           p_document_id: string
           p_expected_version: number
           p_origin?: string
           p_projection: string
           p_snapshot: Json
+          p_state_hash?: string
         }
         Returns: {
           archived_at: string | null
@@ -103307,6 +103578,18 @@ export type Database = {
           organization_id: string
           organization_name: string
           scope_id: string
+        }[]
+      }
+      home_names: {
+        Args: { p_general_orgs?: string[]; p_scope_ids: string[] }
+        Returns: {
+          is_general: boolean
+          name: string
+          organization_id: string
+          organization_name: string
+          scope_id: string
+          scope_type_id: string
+          scope_type_label: string
         }[]
       }
       home_scope_org: { Args: { p_scope: string }; Returns: string }
