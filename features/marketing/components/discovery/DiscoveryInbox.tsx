@@ -175,13 +175,29 @@ function itemContextSnippet(item: DiscoveredItem): string | null {
   return `${context.key}: ${clipped}`;
 }
 
-/** Every context string the finder left, for the peek. */
+/**
+ * The context keys a person reads (where it was found, the words around it). Run ids, step names,
+ * decisions and evidence keys are pipeline plumbing and stay in Copy, never in the peek.
+ */
+const PEEK_CONTEXT_KEYS: ReadonlyArray<[string, string]> = [
+  ["found_on", "Found on"],
+  ["found_in", "Found in"],
+  ["surrounding_text", "Surrounding text"],
+  ["anchor_text", "Link text"],
+  ["alt", "Image text"],
+  ["title", "Title"],
+  ["search", "Search"],
+  ["answer", "Answer"],
+  ["schema_path", "Schema path"],
+];
+
+/** The readable context strings the finder left, for the peek. */
 function itemContextLines(item: DiscoveredItem): Array<{ key: string; text: string }> {
   if (!isJsonRecord(item.context)) return [];
   const lines: Array<{ key: string; text: string }> = [];
-  for (const [key, value] of Object.entries(item.context)) {
-    if (typeof value === "string" && value.trim())
-      lines.push({ key: humanizeIdentifier(key) || key, text: value.trim() });
+  for (const [key, label] of PEEK_CONTEXT_KEYS) {
+    const value = item.context[key];
+    if (typeof value === "string" && value.trim()) lines.push({ key: label, text: value.trim() });
   }
   return lines;
 }
@@ -310,6 +326,12 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
   const pendingCount = usePendingDiscoveredCount(brandId);
   // access-errors: ok — the Offerings door's count; absence only hides the door
   const offeringCount = useDiscoveredCategoryCount(brandId, status, OFFERING_CATEGORY);
+  // access-errors: ok — subtracts the offerings from the Pending tab's count so it matches the table
+  const pendingOfferings = useDiscoveredCategoryCount(brandId, "pending", OFFERING_CATEGORY);
+  const pendingInTable =
+    typeof pendingCount.data === "number" && typeof pendingOfferings.data === "number"
+      ? pendingCount.data - pendingOfferings.data
+      : null;
   const bulkConfirm = useBulkConfirmDiscoveredItems();
   const bulkDismiss = useBulkDismissDiscoveredItems();
   const bulkUndismiss = useBulkUndismissDiscoveredItems();
@@ -794,6 +816,8 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
       label: "Found as",
       width: 170,
       filter: "select",
+      // A phone leads with the value; "found as" is the peek's subtitle there.
+      mobileHidden: true,
       cell: (item) => <span className="type-label">{foundAs(item)}</span>,
     },
     {
@@ -1110,8 +1134,8 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
                     options: STATUS_TABS.map((tab) => ({
                       value: tab.value,
                       label:
-                        tab.value === "pending" && typeof pendingCount.data === "number"
-                          ? `${tab.label} ${pendingCount.data}`
+                        tab.value === "pending" && pendingInTable !== null
+                          ? `${tab.label} ${pendingInTable}`
                           : tab.label,
                     })),
                     onChange: (value) => {
