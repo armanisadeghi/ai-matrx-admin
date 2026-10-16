@@ -1,14 +1,23 @@
 "use client";
 
-// Thin shell over ONE dynamic edge (Method C, code-splitting skill): the
-// admin singletons always render together for admins, so they live statically
-// inside AdminFeatureProviderCore behind this single boundary instead of four
-// sibling dynamics. Non-admins never fetch the chunk.
+// Thin shell over ONE dynamic edge (Method C, code-splitting skill): every
+// admin singleton of the deferred tree lives statically inside
+// AdminFeatureProviderCore behind this single boundary instead of sibling
+// dynamics or static mounts in DeferredSingletonCore.
+//
+// THE EARLY BOOLEAN (Arman, 2026-10-15): "The admin parts absolutely must not
+// ever go past an early boolean check for any non-admin user." The gate is
+// ADMIN IDENTITY at any tier (`selectIsAdminDebugger`), the widest bar any
+// piece inside uses; a non-admin never fetches the core chunk and runs none of
+// its effects. Each piece keeps its own narrower gate inside the core.
 
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsSuperAdmin, selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
-import AutoWatch from "@/features/ai-watch/AutoWatch";
+import {
+  selectIsAdminDebugger,
+  selectIsSuperAdmin,
+  selectIsSuperAdminDebugger,
+} from "@/lib/redux/selectors/userSelectors";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { useDebugModePersistence } from "./useDebugModePersistence";
 
@@ -18,6 +27,7 @@ const AdminFeatureProviderCore = dynamic(
 );
 
 export default function AdminFeatureProvider() {
+  const isAdminPerson = useAppSelector(selectIsAdminDebugger);
   const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
   // The debug switch (sidebar, every page) survives reloads, tabs and devices — saved in user
@@ -25,11 +35,12 @@ export default function AdminFeatureProvider() {
   const canDebug = useAppSelector(selectIsSuperAdminDebugger);
   useDebugModePersistence(Boolean(canDebug));
 
+  if (!isAdminPerson) return null;
   return (
-    <>
-      {/* Auto-watch runs on user pages too (Smart Add); it gates itself on `useCanWatchAi`. */}
-      {canDebug ? <AutoWatch /> : null}
-      {isAdmin ? <AdminFeatureProviderCore isDebugMode={isDebugMode} /> : null}
-    </>
+    <AdminFeatureProviderCore
+      isAdmin={isAdmin}
+      canDebug={canDebug}
+      isDebugMode={isDebugMode}
+    />
   );
 }

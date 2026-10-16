@@ -33,9 +33,7 @@ import AssistsDock from "@/features/assists/components/AssistsDock";
 import CloudBrowserHandoffDeepLink from "@/features/cloud-browser/components/CloudBrowserHandoffDeepLink";
 import { TutorialHost } from "@/features/guided-tutorials/TutorialHost";
 import LiveCaptureIndicator from "@/features/media-capture/components/LiveCaptureIndicator";
-import ErrorInspectorBadge from "@/features/admin/error-inspector/ErrorInspectorBadge";
 import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProducer";
-import AdminAttentionDock from "@/features/admin/attention/AdminAttentionDock";
 import AiTestModeDock from "@/features/ai-test-mode/AiTestModeDock";
 import SupportSessionPill from "@/features/admin/users/support-sessions/SupportSessionPill";
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
@@ -198,17 +196,16 @@ export default function DeferredSingletonCore() {
       <PersonTimeZoneCapture />
       <VendorNameRuntimeGuard />
       <AnnouncementProvider />
+      {/* EVERY admin singleton (error badge, attention dock, auto-watch,
+          indicators) lives behind this ONE admin gate + dynamic edge: a
+          non-admin downloads none of their code (Arman, 2026-10-15). Never
+          mount an admin component directly here. */}
       <AdminFeatureProvider />
-      <ErrorInspectorBadge />
-      {/* Super-admin only; renders nothing for everyone else, issues no request
-          for them, and renders nothing while nothing needs a person. ONE
-          floating card for every concern (schedule alarms, provider outages)
-          with a per-item mute and a whole-dock snooze — the two separate
-          notices it replaced had become furniture (Arman, 2026-09-14). It
-          FLOATS: see the component header and styles/shell.css. */}
-      <AdminAttentionDock />
+      {/* Not admin-only: a fixture account under ?ai_test_mode= uses it, and
+          the header's phone sheet imports the same module statically. */}
       <AiTestModeDock />
-      {/* Only in a browser that redeemed a support link: the countdown, +time and End. */}
+      {/* Only in a browser that redeemed a support link (the supported person's
+          own session, not an admin's): the countdown, +time and End. */}
       <SupportSessionPill />
       <LiveCaptureIndicator />
       {/* Render-free. Keeps ONE assist row in step with the capture queue; the
