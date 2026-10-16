@@ -8,9 +8,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { foldKeptDuplicates, keptKindOf, nameKey, type KeptOnBrand } from "@/features/marketing/discovery-duplicates";
-import { isJsonRecord, type DiscoveredItem } from "@/features/marketing/types";
-import { profileCompetitors } from "@/features/marketing/data/brand-relations";
+import { isJsonRecord } from "@/features/marketing/types";
 import type { BrandSnapshot } from "./known";
 
 export type FindingGroup = "competitor" | "person" | "location" | "listing" | "keyword" | "offering" | "credential";
@@ -20,6 +18,8 @@ export interface FindingRow {
   guessed_kind: string | null;
   url: string | null;
   value: unknown;
+  /** The server stamps `resolution` on a finding it resolved as already on the brand (promote.py). */
+  context?: unknown;
 }
 
 export interface FindingSummary {
@@ -46,6 +46,7 @@ const ORDER: FindingGroup[] = ["competitor", "person", "location", "listing", "k
 const PERSON_FIELDS = new Set(["founder", "co_founder", "cofounder", "owner", "key_executive", "ceo", "president", "employee", "team_member", "staff_contact", "spokesperson", "person"]);
 const LOCATION_FIELDS = new Set(["headquarters_location", "additional_location", "campus_location"]);
 const LISTING_FIELDS = new Set(["yelp_page", "other_listing", "trustpilot_page", "bbb_profile", "crunchbase_page", "google_business_profile", "tripadvisor_page", "angi_page", "houzz_page", "linkedin_company_page"]);
+const OFFERING_FIELDS = new Set(["product", "service", "products", "services", "primary_products_services", "offering"]);
 const CREDENTIAL_FIELDS = new Set(["certification", "membership", "award", "press_mention", "credential"]);
 
 export function findingGroupOf(row: Pick<FindingRow, "category" | "guessed_kind">): FindingGroup | null {
@@ -56,7 +57,7 @@ export function findingGroupOf(row: Pick<FindingRow, "category" | "guessed_kind"
   if (LISTING_FIELDS.has(field)) return "listing";
   if (field === "specialty") return "keyword";
   if (CREDENTIAL_FIELDS.has(field)) return "credential";
-  if (row.category === "offering" || keptKindOf({ category: row.category, guessed_kind: row.guessed_kind }) === "offering") return "offering";
+  if (row.category === "offering" || OFFERING_FIELDS.has(field)) return "offering";
   return null;
 }
 
@@ -86,18 +87,24 @@ function hrefFor(group: FindingGroup, brandId: string): string {
   }
 }
 
-/** What was already on the brand before the round, in the duplicate check's terms. */
-export function keptFromSnapshot(snapshot: BrandSnapshot): KeptOnBrand {
-  return {
-    competitors: profileCompetitors(snapshot.brand.profile ?? null).map((c) => ({ name: c.name, domain: c.domain ?? c.url ?? null })),
-    people: snapshot.people.map((p) => ({ name: p.label, domain: p.url })),
-    offerings: snapshot.offerings.map((o) => ({ name: o.name })),
-  };
+/** Letters and digits only, so a repeat of the same name collapses to one line. */
+function nameKey(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/**
+ * A finding the SERVER resolved as already on the brand before this round (promote.py stamps
+ * `context.resolution` with `held_before`). The matching rule lives only there.
+ */
+export function wasAlreadyHeld(row: Pick<FindingRow, "context">): boolean {
+  if (!isJsonRecord(row.context) || !isJsonRecord(row.context.resolution)) return false;
+  const r = row.context.resolution;
+  return r.kind === "duplicate" && r.held_before !== false;
 }
 
 /** Group a round's findings into counts with a short list; what the brand already held and repeats are not new. */
-export function summarizeFindings(rows: readonly FindingRow[], kept: KeptOnBrand, brandId: string): FindingSummary[] {
-  const { open } = foldKeptDuplicates(rows as readonly DiscoveredItem[], kept);
+export function summarizeFindings(rows: readonly FindingRow[], brandId: string): FindingSummary[] {
+  const open = rows.filter((row) => !wasAlreadyHeld(row));
   const seen = new Set<string>();
   const byGroup = new Map<FindingGroup, string[]>();
   for (const row of open) {
@@ -121,12 +128,12 @@ export async function loadNewFindings(snapshot: BrandSnapshot): Promise<FindingS
   const db = await authenticatedWebDb(supabase);
   const { data, error } = await db
     .from("discovered_item")
-    .select("category, guessed_kind, url, value")
+    .select("category, guessed_kind, url, value, context")
     .eq("brand_id", snapshot.brand.id)
     .in("status", ["pending", "confirmed"])
     .gte("created_at", snapshot.readAt)
     .is("deleted_at", null)
     .limit(1000);
   if (error) throw new Error(error.message);
-  return summarizeFindings(data ?? [], keptFromSnapshot(snapshot), snapshot.brand.id);
+  return summarizeFindings(data ?? [], snapshot.brand.id);
 }
