@@ -41,6 +41,7 @@ import http from "node:http";
 import os from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { browserStability } from "./lib/preview-browser-stability.mjs";
 import { diagnoseBuildError, verdictOf } from "./lib/preview-ready-judge.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -57,11 +58,13 @@ let member = false;
 let repair = true;
 let budgetSec = 0; // 0 = scale with load
 let warm = [];
+let browserCheck = true;
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === "--hold") holdMin = Number(args[++i]);
   else if (a === "--member") member = true;
   else if (a === "--no-repair") repair = false;
+  else if (a === "--no-browser-check") browserCheck = false;
   else if (a === "--timeout") budgetSec = Number(args[++i]);
   else if (a === "--warm") warm = String(args[++i] ?? "").split(",").map((r) => r.trim()).filter((r) => r.startsWith("/"));
   else if (a === "-h" || a === "--help") {
@@ -407,6 +410,21 @@ for (let attempt = 1; attempt <= 2; attempt++) {
 
 // READY only after a verified signed-in load — never by falling out of the loop.
 if (!verified) notReady(`${route} never loaded signed in`);
+
+// ── 6a. the same route in a real browser, watched for 20 s ───────────────────
+if (browserCheck) {
+  say(`browser: opening ${route} signed in, headless, and watching it for 20 s`);
+  const b = await browserStability({
+    url: `http://${HOST}:${PORT}${mintLoginPath(route)}`,
+    port: PORT,
+    windowSec: 20,
+    timeoutMs: Math.max(60000, left()),
+    say,
+  });
+  if (b.skipped) say(`browser: check skipped — ${b.why}`);
+  else if (!b.ok) notReady(`${route} is not stable in a real browser: ${b.why}`);
+  else say(`browser: ${route} loaded and held still for 20 s (no reload, readyState complete)`);
+}
 
 // ── 6b. warm the run's other routes ──────────────────────────────────────────
 for (const extra of warm) {
