@@ -108,6 +108,8 @@ import { cn } from "@/lib/utils";
 import { describeDiscoveredSocialProfile } from "@/features/marketing/lib/discovery-promotion";
 import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { foldKeptDuplicates, NOTHING_KEPT } from "@/features/marketing/discovery-duplicates";
+import { useKeptOnBrand } from "@/features/marketing/data/kept-on-brand";
 import { loadFactRules } from "@/features/marketing/smart-add/factRules";
 import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -210,17 +212,22 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
 
   // Products and services have their own screen (Yes / No / Other per item, the offering tree behind it): the inbox
   // names them and opens it, and never shows rows it cannot confirm.
-  const rows = useMemo(() => (items.data?.rows ?? []).filter((item) => item.category !== OFFERING_CATEGORY), [items.data]);
-  const offeringCount = useMemo(
-    () => (items.data?.rows ?? []).filter((item) => item.category === OFFERING_CATEGORY).length,
-    [items.data],
+  // A finding the brand already kept (a competitor on the Relationships card, a linked person, an offering in the
+  // tree) resolves to that entry and leaves the pending list; the match lives in discovery-duplicates.ts.
+  const kept = useKeptOnBrand(brandId, brand.data ?? null, brandSites.data ?? null);
+  const split = useMemo(
+    () => foldKeptDuplicates(items.data?.rows ?? [], status === "pending" ? kept : NOTHING_KEPT),
+    [items.data, kept, status],
   );
+  const rows = useMemo(() => split.open.filter((item) => item.category !== OFFERING_CATEGORY), [split]);
+  const offeringCount = useMemo(() => split.open.filter((item) => item.category === OFFERING_CATEGORY).length, [split]);
   // The server's field → kind rules: a fact the facts agent named already has its kind (never "Other fact").
   const factRules = useQuery({ queryKey: ["marketing", "fact-rules"], queryFn: loadFactRules, staleTime: Infinity });
   const fieldKind = factRules.data?.fieldKind;
-  const total = items.data?.total ?? 0;
-  if (items.data !== undefined && total !== knownTotal) setKnownTotal(total);
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const rawTotal = items.data?.total ?? 0;
+  if (items.data !== undefined && rawTotal !== knownTotal) setKnownTotal(rawTotal);
+  const total = Math.max(0, rawTotal - split.folded.length);
+  const pageCount = Math.max(1, Math.ceil(rawTotal / pageSize));
 
   const setStatus = (next: DiscoveredItemStatus) => {
     setStatusState(next);

@@ -86,6 +86,8 @@ export interface BrandSnapshot {
   exclusions: BrandExclusionRow[];
   /** The server's evidence key for long text (description, address): sha1 of the normalized text, 12 hex. */
   textKeys: Record<string, string>;
+  /** When the brand was read (ISO): findings the round makes after this are the round's. */
+  readAt?: string;
 }
 
 /** The normalization the server's `_key` hashes for description and address (brand_identify._key). */

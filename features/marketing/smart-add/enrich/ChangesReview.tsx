@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Button, DisclosureHeader, RowGroup, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +24,7 @@ import type { EvidenceItem } from "../evidence";
 import { applyEnrichChanges, type AppliedChange } from "./apply";
 import { diffCounts, type ChangeChoice, type EnrichChange } from "./diff";
 import type { BrandSnapshot, KnownFact } from "./known";
+import { loadNewFindings, type FindingSummary } from "./newFindings";
 
 function Value({ fact, item }: { fact?: KnownFact | null; item?: EvidenceItem | null }) {
   const image = fact?.imageUrl ?? (item?.field === "logo" ? (item.image_url ?? item.value) : null);
@@ -83,6 +85,25 @@ function ConflictRow({ brandId, change, choice, onChoice }: { brandId: string; c
   );
 }
 
+/** Competitors, people, locations, listings, keywords, offerings and credentials the round found, and where they live now. */
+function NewFindings({ found }: { found: FindingSummary[] }) {
+  if (!found.length) return null;
+  return (
+    <RowGroup title="Also found" data-testid="enrich-new-findings">
+      {found.map((f) => (
+        <Link key={f.group} href={f.href} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50" data-testid="enrich-new-finding">
+          <span className="w-28 shrink-0 text-xs text-muted-foreground">{f.label}</span>
+          <span className="shrink-0 text-sm tabular-nums">{f.count}</span>
+          <span className="min-w-0 truncate text-sm text-muted-foreground">
+            {f.names.join(", ")}
+            {f.count > f.names.length ? ` +${f.count - f.names.length}` : ""}
+          </span>
+        </Link>
+      ))}
+    </RowGroup>
+  );
+}
+
 export function ChangesReview({
   snapshot,
   changes,
@@ -101,6 +122,15 @@ export function ChangesReview({
   const [applied, setApplied] = useState<AppliedChange[] | null>(null);
   const [undone, setUndone] = useState<Set<string>>(new Set());
   const [showSame, setShowSame] = useState(false);
+  const foundQuery = useQuery({
+    queryKey: ["marketing", "enrich-new-findings", snapshot.brand.id, snapshot.readAt],
+    queryFn: () => loadNewFindings(snapshot),
+    enabled: Boolean(snapshot.readAt),
+    // Late findings keep arriving while the person reviews: every visit to this screen reads again.
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+  const found = foundQuery.data ?? [];
   const counts = diffCounts(changes);
   const choiceOf = (c: EnrichChange) => choices[c.id] ?? c.defaultChoice;
   const set = (id: string, c: ChangeChoice) => setChoices((cur) => ({ ...cur, [id]: c }));
@@ -165,6 +195,7 @@ export function ChangesReview({
             </div>
           ))}
         </RowGroup>
+        <NewFindings found={found} />
       </div>
     );
   }
@@ -231,7 +262,9 @@ export function ChangesReview({
         </RowGroup>
       ) : null}
 
-      {counts.add + counts.replace + counts.conflict === 0 ? <p className="text-sm text-muted-foreground">Nothing new found</p> : null}
+      <NewFindings found={found} />
+
+      {counts.add + counts.replace + counts.conflict + found.length === 0 ? <p className="text-sm text-muted-foreground">Nothing new found</p> : null}
 
       <div>
         <DisclosureHeader open={showSame} onClick={() => setShowSame((v) => !v)} title="Unchanged" meta={String(counts.unchanged)} />
