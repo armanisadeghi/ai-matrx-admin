@@ -967,6 +967,10 @@ if $STRICT; then
         # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
         "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"
         "Notification new-tab guard self-test|pnpm check:notice-new-tab:self-test"
+        # THE CONTACT VALUES (Arman, 2026-10-16): every email, phone and social profile is the canonical
+        # @ai-matrx/design-system component, never a hand-built mailto:/tel:/sms:/profile link.
+        "Hand-built mailto/tel/sms/social link outside the canonical contact values|pnpm check:contact-values"
+        "Contact-values guard self-test|pnpm check:contact-values:self-test"
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
@@ -1722,6 +1726,10 @@ else
         # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
         "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"
         "Notification new-tab guard self-test|pnpm check:notice-new-tab:self-test"
+        # THE CONTACT VALUES (Arman, 2026-10-16): every email, phone and social profile is the canonical
+        # @ai-matrx/design-system component, never a hand-built mailto:/tel:/sms:/profile link.
+        "Hand-built mailto/tel/sms/social link outside the canonical contact values|pnpm check:contact-values"
+        "Contact-values guard self-test|pnpm check:contact-values:self-test"
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"

@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 192,
+    "repo-only": 194,
     "live-db": 70
   },
   "rows": {
@@ -2371,6 +2371,20 @@
       "label": "Notification new-tab guard self-test",
       "class": "repo-only",
       "cmd": "pnpm check:notice-new-tab:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "hand-built-mailto-tel-sms-social-link-outside-the-canonical-": {
+      "label": "Hand-built mailto/tel/sms/social link outside the canonical contact values",
+      "class": "repo-only",
+      "cmd": "pnpm check:contact-values",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "contact-values-guard-self-test": {
+      "label": "Contact-values guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:contact-values:self-test",
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },

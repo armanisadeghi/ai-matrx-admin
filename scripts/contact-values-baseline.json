@@ -1,0 +1,29 @@
+{
+  "note": "SHRINK-ONLY debt from before check:contact-values (2026-10-16). Lower it as files move to the canonical contact values; never raise it.",
+  "files": {
+    "app/(public)/contact/page.tsx": 1,
+    "app/(public)/privacy-policy/extension/page.tsx": 3,
+    "app/(public)/privacy-policy/page.tsx": 7,
+    "app/(public)/request-access/thank-you/page.tsx": 1,
+    "app/(public)/sms/page.tsx": 1,
+    "app/(public)/sms/personal-staff/page.tsx": 1,
+    "app/(public)/terms-and-conditions/page.tsx": 2,
+    "app/(public)/terms-of-service/page.tsx": 2,
+    "components/coming-soon/CominSoonTemplate.tsx": 1,
+    "components/mardown-display/blocks/answer-kinds/answer-kind-blocks.tsx": 2,
+    "components/mardown-display/blocks/search-kinds/place-entity-blocks.tsx": 3,
+    "components/mardown-display/blocks/table-kinds/data-table-cells.tsx": 1,
+    "features/crm/components/outreach-lists/CallQueuePage.tsx": 1,
+    "features/data-tables/records-ui-host/PersonPeekHost.tsx": 1,
+    "features/esign/signer/parts/Dialogs.tsx": 1,
+    "features/hr/people/directory/HrDirectoryCards.tsx": 2,
+    "features/hr/people/directory/directoryColumns.tsx": 1,
+    "features/hr/people/profile/tabs/PersonalTab.tsx": 2,
+    "features/marketing/components/integrations/MarketingConnectionsWorkspace.tsx": 2,
+    "features/marketing/google/YouTubeAnalyticsResult.tsx": 2,
+    "features/organizations/peek/kinds/UserPeek.tsx": 1,
+    "features/scopes/components/reference/ContextValueDisplay.tsx": 2,
+    "features/social-connections/PinterestDataPanel.tsx": 2,
+    "lib/field-formats/FormattedFieldValue.tsx": 2
+  }
+}
