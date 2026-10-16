@@ -185,6 +185,7 @@ export const conversationListConfig: EntityListConfig<ConversationBrowseRow> = {
     humanRow: (row) =>
       `${conversationTitleText(row.title?.trim() || null) || "Untitled conversation"} — ${conversationTypeLabel(
         row.conversation_type,
+        row.origin_class,
       )}${row.workspace_name ? ` in ${row.workspace_name}` : ""}, ${
         row.message_count
       } messages, last active ${formatRelativeTime(row.last_activity_at)}`,

@@ -47,7 +47,7 @@ export function MatrxConversationDetail({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground">
-              {conversationTypeLabel(conversation.conversation_type)} ·{" "}
+              {conversationTypeLabel(conversation.conversation_type, conversation.origin_class)} ·{" "}
               {conversation.message_count} message
               {conversation.message_count === 1 ? "" : "s"} · updated{" "}
               {formatSessionTimestamp(conversation.updated_at)}

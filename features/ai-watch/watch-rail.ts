@@ -21,9 +21,11 @@ export interface RailCall {
 }
 
 export interface RailGroup {
-  /** The workflow run id, or `"live"` / `"chat"` for calls with no run on record yet. */
+  /** The workflow run id, `"live"` for calls with no record yet, or `origin:<class>` outside a run. */
   id: string;
   workflowRunId: string | null;
+  /** Who started the calls of a group outside a workflow run (`chat.user_request.origin_class`). */
+  originClass: string | null;
   startedAt: string;
   calls: RailCall[];
 }
@@ -38,10 +40,18 @@ export function buildRail(registry: readonly WatchableRun[], records: readonly A
   const groups = new Map<string, RailGroup>();
   const seen = new Set<string>();
   for (const r of records) {
-    const gid = r.workflowRunId ?? "chat";
+    // Outside a workflow run a call is grouped by WHO STARTED IT — never one blanket "chat"
+    // group (2026-10-16: factory, API and scheduled calls all read "Chat").
+    const gid = r.workflowRunId ?? `origin:${r.originClass ?? "unknown"}`;
     let group = groups.get(gid);
     if (!group) {
-      group = { id: gid, workflowRunId: r.workflowRunId, startedAt: r.createdAt, calls: [] };
+      group = {
+        id: gid,
+        workflowRunId: r.workflowRunId,
+        originClass: r.workflowRunId ? null : r.originClass,
+        startedAt: r.createdAt,
+        calls: [],
+      };
       groups.set(gid, group);
     }
     if (r.createdAt && (!group.startedAt || r.createdAt < group.startedAt)) group.startedAt = r.createdAt;
@@ -78,6 +88,7 @@ export function buildRail(registry: readonly WatchableRun[], records: readonly A
     ordered.unshift({
       id: UNRECORDED_GROUP,
       workflowRunId: null,
+      originClass: null,
       startedAt: unrecorded.at(-1)?.startedAt ?? "",
       calls: unrecorded,
     });
@@ -115,4 +126,22 @@ export function focusKey(
     if (calls.length) return calls.at(-1)?.key ?? null;
   }
   return null;
+}
+
+const ORIGIN_HEADINGS: Record<string, string> = {
+  human: "Chat",
+  delegated_member: "Chat",
+  client_auto: "App calls",
+  api: "API calls",
+  child_agent: "Subagent calls",
+  workflow: "Workflow calls",
+  scheduled: "Scheduled calls",
+  system: "System calls",
+};
+
+/** A rail group's heading: the page's run, an earlier run, or who started the calls. */
+export function railGroupHeading(group: RailGroup, currentRunId: string | null): string {
+  if (group.id === UNRECORDED_GROUP) return "Live";
+  if (group.workflowRunId) return group.workflowRunId === currentRunId ? "This run" : "Earlier run";
+  return ORIGIN_HEADINGS[group.originClass ?? ""] ?? "Other calls";
 }

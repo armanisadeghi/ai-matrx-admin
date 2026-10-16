@@ -57,7 +57,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { AI_WATCH_PAGE_INSTANCE } from "@/features/overlays/openers/aiWatchWindow";
-import { autoSelection, buildRail, focusKey, UNRECORDED_GROUP } from "@/features/ai-watch/watch-rail";
+import { autoSelection, buildRail, focusKey, railGroupHeading, UNRECORDED_GROUP } from "@/features/ai-watch/watch-rail";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
@@ -242,13 +242,10 @@ export function useAiWatchPanel({
           <div key={group.id} className="border-b border-border">
             <div className="flex items-center justify-between gap-2 bg-muted/50 px-2 py-1 text-muted-foreground">
               <span className="truncate">
-                {group.id === UNRECORDED_GROUP
-                  ? "Live"
-                  : group.workflowRunId
-                    ? group.workflowRunId === (newestRun ?? groups.find((g) => g.workflowRunId)?.workflowRunId)
-                      ? "This run"
-                      : "Earlier run"
-                    : "Chat"}
+                {railGroupHeading(
+                  group,
+                  newestRun ?? groups.find((g) => g.workflowRunId)?.workflowRunId ?? null,
+                )}
               </span>
               <span className="shrink-0">{group.startedAt ? runTime(group.startedAt) : ""}</span>
             </div>

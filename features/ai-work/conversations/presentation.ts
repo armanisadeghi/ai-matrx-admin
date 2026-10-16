@@ -15,11 +15,38 @@ import {
   type ConversationAudienceId,
 } from "./types";
 
-/** Plain-language name for a `chat.conversation.conversation_type`. */
-export function conversationTypeLabel(value: string | null): string {
+/**
+ * Plain-language name for a conversation, from WHO STARTED IT (`origin_class`) first and
+ * `conversation_type` second. Only a person's own conversation is a "Chat" — an API caller, a
+ * client's automatic call, a workflow, a schedule or the platform is named as such. Without an
+ * origin (a facet value is a type alone) `standard` is the neutral "Conversation".
+ */
+export function conversationTypeLabel(
+  value: string | null,
+  originClass?: string | null,
+): string {
+  const machine = value === "standard" || value === "auto" || value === "subagent";
+  if (machine && originClass === "workflow") return "Workflow run";
+  if (machine && originClass === "scheduled") return "Scheduled run";
+  if (machine && originClass === "child_agent") return "Subagent run";
+  if (value === "standard" && originClass !== undefined) {
+    switch (originClass) {
+      case "human":
+      case "delegated_member":
+        return "Chat";
+      case "api":
+        return "API run";
+      case "client_auto":
+        return "App run";
+      case "system":
+        return "System run";
+      default:
+        return "Conversation";
+    }
+  }
   switch (value) {
     case "standard":
-      return "Chat";
+      return "Conversation";
     case "subagent":
       return "Subagent run";
     case "workflow":

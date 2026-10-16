@@ -117,7 +117,7 @@ export const CONVERSATION_COLUMNS: EntityColumnSpec<ConversationBrowseRow>[] = [
       width: 130,
       cell: (row) => (
         <span className="truncate text-muted-foreground">
-          {conversationTypeLabel(row.conversation_type)}
+          {conversationTypeLabel(row.conversation_type, row.origin_class)}
         </span>
       ),
     },
