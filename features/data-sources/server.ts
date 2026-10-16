@@ -6,10 +6,10 @@
 import { getJson, requestRaw } from "@/lib/python-client";
 import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
+import { settleDataFetch } from "./settle";
 import { parseChangeSet, type ChangeSet } from "./changes";
 import {
   DataFetchRefusal,
-  consumeDataFetch,
   parseCatalog,
   parseJob,
   refusalOf,
@@ -69,8 +69,16 @@ async function stream(path: string, body: unknown, opts: CallOptions): Promise<D
     if (job.state === "failed") throw job.refusal;
     throw new DataFetchRefusal("data_fetch_no_result", "The fetch answered without a table.");
   }
-  const parsed = parseMatrxNdjsonResponse(response, opts.signal);
-  return consumeDataFetch(parsed.events, opts.onProgress);
+  const reader = new AbortController();
+  opts.signal?.addEventListener("abort", () => reader.abort(), { once: true });
+  const parsed = parseMatrxNdjsonResponse(response, reader.signal);
+  return settleDataFetch({
+    events: parsed.events,
+    onProgress: opts.onProgress,
+    signal: opts.signal,
+    stopStream: () => reader.abort(),
+    readJob: (jobId, signal) => getJob(jobId, { organizationId: opts.organizationId, signal }),
+  });
 }
 
 export function fetchData(
