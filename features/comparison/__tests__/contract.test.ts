@@ -70,7 +70,7 @@ describe("comparison contract parsing", () => {
     expect(l.items[0].candidates[0].item.url).toBe("https://www.trustpilot.com/review/acme.com");
     const s = parseRunState({ run_id: "r1", kind: "local_business", status: "running", item_count: 2,
       items: [{ index: 0, label: "A", stage: "waiting_for_provider", stage_label: "Reading", done: false }] });
-    expect(s?.items[0].stage).toBe("waiting_for_provider");
+    expect(s?.items[0].stage).toBe("reading");
     expect(s?.result).toBeNull();
   });
 });

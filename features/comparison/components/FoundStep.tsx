@@ -138,7 +138,12 @@ export function FoundStep({
               {seesDollars && quote.data.total_usd_display ? <span className="tabular-nums"> · {quote.data.total_usd_display}</span> : null}
               {lookupPoints > 0 ? <span className="tabular-nums"> · finding used {formatPoints(lookupPoints, { short: true })}</span> : null}
             </>
-          ) : quote.isError ? "Price unavailable" : <span className="inline-block h-4 w-40 animate-pulse rounded bg-muted align-middle" />}
+          ) : quote.isError ? (
+            <span className="inline-flex items-center gap-2">
+              Price unavailable
+              <Button variant="quiet" onClick={() => void quote.refetch()} disabled={quote.isFetching}>Try again</Button>
+            </span>
+          ) : <span className="inline-block h-4 w-40 animate-pulse rounded bg-muted align-middle" />}
         </div>
         <Button variant="primary" hero onClick={() => onCompare(chosen)} disabled={!canCompare || waiting > 0}>
           {starting ? "Starting" : `Compare ${chosen.length || ""}`.trim()}

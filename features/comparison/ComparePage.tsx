@@ -84,8 +84,8 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const [text, setText] = useState("");
   const [area, setArea] = useState("");
   // A page opened on ?run=<id> (a refresh, a new tab, a shared link) starts on that saved run.
-  const initialRun = params.get("run");
-  const [phase, setPhase] = useState<Phase>(initialRun ? "running" : "input");
+  const runParam = params.get("run");
+  const [phase, setPhase] = useState<Phase>(runParam ? "running" : "input");
   const [finding, setFinding] = useState(false);
   const [rows, setRows] = useState<FoundRow[]>([]);
   const [lookupPoints, setLookupPoints] = useState(0);
@@ -93,12 +93,14 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const [progress, setProgress] = useState<ItemProgress[]>([]);
   const [identities, setIdentities] = useState<ProgressRowIdentity[]>([]);
   const [startedAt, setStartedAt] = useState(() => Date.now());
-  const [recovering, setRecovering] = useState(Boolean(initialRun));
+  const [recovering, setRecovering] = useState(Boolean(runParam));
   const [runKind, setRunKind] = useState<string>(kindKey);
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
+  // The run THIS tab started: its own stream is already following it, so the address must not start a second reader.
+  const ownRun = useRef<string | null>(null);
 
   // Leaving the page stops this tab's reading (the run itself carries on on the server).
   useEffect(() => () => abort.current?.abort(), []);
@@ -108,10 +110,15 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
 
   // …and follows it to its end.
   useEffect(() => {
-    if (!initialRun) return;
+    if (!runParam || runParam === ownRun.current) return;
     const ctrl = new AbortController();
+    abort.current?.abort();
     abort.current = ctrl;
-    followRun(initialRun, {
+    setResult(null);
+    setFailure(null);
+    setRecovering(true);
+    setPhase("running");
+    followRun(runParam, {
       organizationId,
       signal: ctrl.signal,
       onRunState: (s) => {
@@ -127,8 +134,8 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
         setPhase("failed");
       });
     return () => ctrl.abort();
-    // a run id in the address is read once, when the page opens
-  }, []);
+    // the run id in the address, whenever it changes (a shared link, back/forward, a pasted address)
+  }, [runParam]);
 
   async function find() {
     if (!kind) return;
@@ -183,7 +190,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       const out = await runComparison(kind.key, items, {
         organizationId,
         signal: ctrl.signal,
-        onRunId: (runId) => setRunInAddress(runId),
+        onRunId: (runId) => { ownRun.current = runId; setRunInAddress(runId); },
         onProgress: (p) => setProgress((cur) => applyProgress(cur, p)),
         onRunState: (s) => setProgress((cur) => mergeRunProgress(cur, s.items)),
         onDropped: () => setRecovering(true),
@@ -199,6 +206,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
 
   function startOver() {
     abort.current?.abort();
+    ownRun.current = null;
     setRunInAddress(null);
     setResult(null);
     setFailure(null);
@@ -216,17 +224,27 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       name: c?.name ?? item.name, detail: c?.address ?? "", logo_url: null, website: null, url: c?.url ?? null,
       rating: c?.rating ?? null, reviews_count: c?.reviews_count ?? null,
     };
-    const fromResult: FoundRow[] = (result?.items ?? [])
-      .filter((i) => !i.error)
-      .map((i) => i.item_id === item.item_id
-        ? { key: rowKey(), index: 0, query: i.name, status: "found", match, candidates: [], message: null }
-        : { key: rowKey(), index: 0, query: i.name, status: "found", candidates: [], message: null,
-            match: rows.find((r) => r.match?.name === i.name)?.match ?? {
-              item: { label: i.name, url: i.source_url, website: i.website, logo_url: i.logo_url },
+    // Keep every original row (its candidates, rating, logo) and swap only the picked one. The
+    // result lists the compared rows in the order they were sent: the found rows with a match.
+    const sent = rows.filter((r) => r.status === "found" && r.match);
+    const at = (result?.items ?? []).findIndex((i) => i.item_id === item.item_id);
+    const target = at >= 0 ? sent[at] : undefined;
+    if (target) {
+      setRows(rows.map((r) => (r.key === target.key
+        ? { ...r, status: "found", match, open: false, candidates: r.candidates.length ? r.candidates : [match] }
+        : r)));
+    } else {
+      // A page opened on a saved run has no found rows: rebuild them from the result.
+      setRows((result?.items ?? []).filter((i) => !i.error).map((i, index): FoundRow => i.item_id === item.item_id
+        ? { key: rowKey(), index, query: i.name, status: "found", match, candidates: [match], message: null }
+        : { key: rowKey(), index, query: i.name, status: "found", candidates: [], message: null,
+            match: {
+              item: { label: i.name, url: i.source_url ?? undefined, website: i.website ?? undefined, logo_url: i.logo_url ?? undefined },
               name: i.name, detail: i.website ?? "", logo_url: i.logo_url, website: i.website, url: i.source_url,
               rating: null, reviews_count: null,
-            } });
-    setRows(fromResult);
+            } }));
+    }
+    ownRun.current = null;
     setRunInAddress(null);
     setPhase("found");
   }
