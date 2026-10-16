@@ -840,7 +840,13 @@ function ExtractionTabContent({
         )}
         {subTab === "metadata" && <MetadataView doc={doc} />}
         {subTab === "clean" && (
-          <AiCleanView tab={tab} onClean={onClean} onRefresh={onRefresh} />
+          <AiCleanView
+            tab={tab}
+            onClean={onClean}
+            onRefresh={onRefresh}
+            cleanable={cleanable}
+            tabPagesLoading={tabPagesLoading}
+          />
         )}
         {subTab === "ai" && <AiActionsView doc={doc} />}
         {subTab === "manipulate" && (
@@ -1030,10 +1036,14 @@ function AiCleanView({
   tab,
   onClean,
   onRefresh,
+  cleanable,
+  tabPagesLoading,
 }: {
   tab: ExtractionTab;
   onClean: (docId: string) => Promise<unknown>;
   onRefresh: (docId: string) => Promise<boolean>;
+  cleanable: boolean;
+  tabPagesLoading: boolean;
 }) {
   const doc = tab.document;
   if (!doc) return <EmptyState message="No document data" />;
