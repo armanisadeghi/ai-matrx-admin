@@ -76,11 +76,13 @@ export function AgentBuilderRightPanel({
     };
   }, [dispatch, surfaceKey]);
 
+  // Opened by an effect, not a click; sends typed in the panel declare "user" themselves.
+  const launchOrigin = { origin: "manual" as const, sourceFeature: "agent-builder" as const, initiation: "auto" as const };
   const agentOptions: ConversationInvocation = {
     identity: { surfaceKey },
     engine: { kind: "agent", agentId },
     routing: { apiEndpointMode: "manual" },
-    origin: { origin: "manual", sourceFeature },
+    origin: launchOrigin,
     // This test conversation IS the agent being built. The surrounding
     // agent-builder surface remains available to outside assists, but feeding
     // its prompts/settings back into the tested agent would be self-context.

@@ -185,7 +185,10 @@ export function SystemPromptOptimizer({
       // persisted display mode (modal-full) to "direct" with autoRun so the
       // stream renders into THIS dialog instead of opening a separate modal.
       // onConversationCreated mounts the streaming selectors immediately.
+      // Declared by the launch site; spread so it type-checks against packages with and without the field.
+      const launchInitiation = { initiation: "user" as const };
       await trigger(OPTIMIZER_SHORTCUT.id, {
+        ...launchInitiation,
         scope: { selection: currentSystemMessage },
         runtime: { userInput: additionalGuidance.trim() || undefined },
         config: { displayMode: "direct", autoRun: true },

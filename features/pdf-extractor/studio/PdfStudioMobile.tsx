@@ -357,7 +357,10 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
       const docText = activeDoc.cleanContent ?? activeDoc.content ?? "";
       if (!docText) return;
       try {
+        // Declared by the launch site; spread so it type-checks against packages with and without the field.
+        const launchInitiation = { initiation: "user" as const };
         await triggerShortcut(shortcutId, {
+          ...launchInitiation,
           scope: { selection: docText },
           sourceFeature: "pdf-extractor",
         });
