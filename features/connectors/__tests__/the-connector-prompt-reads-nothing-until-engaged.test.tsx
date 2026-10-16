@@ -55,6 +55,9 @@ jest.mock("@/features/connectors/ConnectorPromptCard", () => ({
     loading || connected ? null : <div data-testid="connect-google-card">Connect Google</div>,
 }));
 
+let mockLateIdle = false;
+jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => mockLateIdle }));
+
 import { ConnectorPromptHost } from "@/features/connectors/ConnectorPromptHost";
 
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 20)); });
@@ -89,5 +92,31 @@ it("reads nothing and draws nothing at first paint; one engagement reads once an
   });
   await settle();
   expect(listInventory).toHaveBeenCalledTimes(1);
+  await act(async () => root.unmount());
+});
+
+it("a page nobody touches still settles: late idle opens the one read and the card shows, no engagement needed", async () => {
+  listInventory.mockClear();
+  listCapabilities.mockClear();
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  const tree = (
+    <QueryClientProvider client={new QueryClient()}>
+      <ConnectorPromptHost />
+    </QueryClientProvider>
+  );
+  mockLateIdle = false;
+  await act(async () => root.render(tree));
+  await settle();
+  // Before settling: nothing read, nothing drawn (not even a placeholder).
+  expect(listInventory).not.toHaveBeenCalled();
+  expect(container.innerHTML).toBe("");
+
+  mockLateIdle = true;
+  await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost key="settled" /></QueryClientProvider>));
+  await settle();
+  expect(listInventory).toHaveBeenCalledTimes(1);
+  expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
   await act(async () => root.unmount());
 });

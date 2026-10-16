@@ -17,6 +17,7 @@ import { ConnectorPromptCard } from "./ConnectorPromptCard";
 import { accountHealth, anyProductConnected } from "./health";
 import { useGoogleConnectorState } from "./google-adapter";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
 
 /**
@@ -29,6 +30,11 @@ import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/conne
  * runs together and the card shows if it should. (Trade-off: the card can appear a moment after
  * the person starts interacting, never at first paint. Focus is not an engagement here: the
  * new-chat composer takes focus by itself.)
+ *
+ * NEVER A PERPETUAL LOADING STATE: a person who only reads the page never engages, so the page
+ * settling (the late idle tier, seconds after the idle flush) opens the same one batched read.
+ * Until then, and while the read is in flight or has failed, the host renders nothing at all:
+ * no skeleton, no placeholder box, no layout to shift when the card does or does not apply.
  */
 function usePageEngaged(): boolean {
   const [engaged, setEngaged] = useState(false);
@@ -53,7 +59,9 @@ export function ConnectorPromptHost({
 }) {
   const provider = GOOGLE_CONNECTOR_PROVIDER;
   const engaged = usePageEngaged();
-  const state = useGoogleConnectorState({ enabled: engaged });
+  const settled = useLateIdleReady();
+  const ready = engaged || settled;
+  const state = useGoogleConnectorState({ enabled: ready });
   const openConsent = useOpenConnectorConsentDialog();
 
   const connected = state.accounts.some((account) =>
@@ -72,15 +80,15 @@ export function ConnectorPromptHost({
     state.accounts.length > 0 &&
     state.accounts.every((account) => account.blocked === true);
 
+  // A read that FAILED is not "not connected": while the answer is unknown the card stays away
+  // rather than offering to connect something that may already be connected.
+  if (!ready || state.isLoading || state.isError) return null;
+
   return (
     <ConnectorPromptCard
       provider={provider}
       connected={connected}
       blocked={blocked}
-      // A read that FAILED is not "not connected": while the answer is unknown
-      // the card stays away rather than offering to connect something that may
-      // already be connected.
-      loading={!engaged || state.isLoading || state.isError}
       onConnect={() => openConsent()}
       variant={variant}
       className={className}
