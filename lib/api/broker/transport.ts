@@ -54,6 +54,15 @@ export interface ProxiedTransport {
 
 export type BrokeredTransport = NativeTransport | ProxiedTransport;
 
+/**
+ * Who started a relay call. REQUIRED on every proxied call: the server witnesses the origin and
+ * an unattested relay caller is `api`, which run-approval can hold. "user" only where a person's
+ * action (opening voice, pressing a button) starts the call; "auto" for automatic client calls.
+ */
+export type BrokerInitiation = "user" | "auto";
+
+export const BROKER_INITIATION_HEADER = "x-matrx-initiation";
+
 /** `(path, init)` — path is the PROVIDER's wire path, e.g. `/v1/messages`. */
 export type BrokeredFetch = (
   path: string,
@@ -73,9 +82,11 @@ async function fetchWithCredential(
   credential: BrokeredCredential,
   path: string,
   init: RequestInit,
+  initiation: BrokerInitiation,
 ): Promise<Response> {
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${credential.token}`);
+  headers.set(BROKER_INITIATION_HEADER, initiation);
   if (init.body != null && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
@@ -93,15 +104,16 @@ export async function brokeredFetch(
   req: CredentialRequest,
   path: string,
   init: RequestInit = {},
+  initiation: BrokerInitiation,
 ): Promise<Response> {
   const credential = await getBrokeredCredential(req, { signal: toSignal(init) });
   assertProxied(credential, req);
 
-  let response = await fetchWithCredential(credential, path, init);
+  let response = await fetchWithCredential(credential, path, init, initiation);
   if (response.status === 401) {
     reportCredentialRejected(credential);
     const fresh = await getBrokeredCredential(req, { signal: toSignal(init) });
-    response = await fetchWithCredential(fresh, path, init);
+    response = await fetchWithCredential(fresh, path, init, initiation);
     if (response.status === 401) {
       throw new BackendApiError({
         code: "auth_required",
@@ -121,8 +133,11 @@ function toSignal(init: RequestInit): AbortSignal | undefined {
 
 /** Bind `brokeredFetch` to one CredentialRequest — the "provider SDK with a
  *  custom base URL" shape. */
-export function createBrokeredFetch(req: CredentialRequest): BrokeredFetch {
-  return (path, init) => brokeredFetch(req, path, init);
+export function createBrokeredFetch(
+  req: CredentialRequest,
+  initiation: BrokerInitiation,
+): BrokeredFetch {
+  return (path, init) => brokeredFetch(req, path, init, initiation);
 }
 
 function assertProxied(
@@ -151,7 +166,7 @@ function assertProxied(
  */
 export async function resolveBrokeredTransport(
   req: CredentialRequest,
-  opts: { signal?: AbortSignal } = {},
+  opts: { signal?: AbortSignal; initiation: BrokerInitiation },
 ): Promise<BrokeredTransport> {
   const credential = await getBrokeredCredential(req, { signal: opts.signal });
   if (credential.credential_mode === "native_ephemeral") {
@@ -170,6 +185,6 @@ export async function resolveBrokeredTransport(
     protocol: credential.protocol,
     model: credential.model ?? null,
     credential,
-    fetch: createBrokeredFetch(req),
+    fetch: createBrokeredFetch(req, opts.initiation),
   };
 }

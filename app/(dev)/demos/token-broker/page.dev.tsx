@@ -141,7 +141,7 @@ export default function TokenBrokerDemoPage() {
           stream: true,
           messages: [{ role: "user", content: prompt }],
         }),
-      });
+      }, "user");
       if (!res.ok || !res.body) {
         throw new Error(`Gateway responded ${res.status}: ${await res.text()}`);
       }
