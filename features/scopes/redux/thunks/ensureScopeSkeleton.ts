@@ -39,7 +39,7 @@ export function ensureScopeSkeleton(opts: { refresh?: boolean } = {}): AppThunk<
     }
     dispatch(scopesActions.skeletonFetchFulfilled(res.data));
     // No separate counts call: a count asks the one ladder of every Table — the same work as the
-    // whole tree, which loads right behind the first paint (DeferredSingletonCore) and fills every
+    // whole tree, which loads on the first read of the tree (scopeTreeDemand.ts) and fills every
     // count. A count is an honest dash until then. `readScopeTypes(orgs, true)` stays for a screen
     // that needs counts without the whole tree.
   };

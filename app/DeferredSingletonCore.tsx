@@ -14,8 +14,6 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { useWarmup } from "@ai-matrx/agents/react";
-import { useIdleTask } from "@ai-matrx/kit/idle-scheduler";
-import { whenPrimaryContentShown } from "@/lib/boot/primaryContent";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
@@ -35,8 +33,6 @@ import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProd
 import AiTestModeDock from "@/features/ai-test-mode/AiTestModeDock";
 import SupportSessionPill from "@/features/admin/users/support-sessions/SupportSessionPill";
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
-import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
-import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
 import { registerBlobCacheOnFirstFileFetch } from "@/features/files/cache/registerOnFirstFileFetch";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { useHasEngaged } from "@/lib/boot/firstEngagement";
@@ -91,27 +87,8 @@ export default function DeferredSingletonCore() {
   // (DeferredSingletonWrapper.tsx), not here — they must be running during
   // the boot window, before this deferred core has loaded.
 
-  // Pre-warm the scope tree (features/scopes) on idle. This is the ONLY
-  // boot-time fetch in the scope/context system. `ensureScopeTree` is
-  // idempotent — status === "ready" short-circuits and in-flight is
-  // deduped inside the thunk.
-  // THE PAGED TREE (lane SCOPES-TREE-PAGED): the skeleton first (organizations, projects, scope
-  // types — what every first paint draws), then the whole tree at idle for the readers that still
-  // read every scope. Read switch OFF: the skeleton IS the whole tree and the second task is a no-op.
-  // Both wait for the page's own rows (`lib/boot/primaryContent`, lane PAGE-BUNDLE-2): the tree's
-  // `custom.context_tree` is ~1.2 s of database work that competed with a table page's first page.
-  useIdleTask("ensure-scope-tree", 1, async () => {
-    if (!user?.id) return;
-    await whenPrimaryContentShown();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await dispatch(ensureScopeSkeleton() as any);
-  });
-  useIdleTask("ensure-scope-tree-whole", 5, async () => {
-    if (!user?.id) return;
-    await whenPrimaryContentShown();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dispatch(ensureScopeTree() as any);
-  });
+  // The scope tree is NOT loaded here: it loads on its first read anywhere
+  // (features/scopes/redux/scopeTreeDemand.ts — the store-level demand), never at idle.
 
   // The blob-cache Service Worker — Layer 2½ of the 3-tier byte cache — registers on the page's
   // FIRST cloud-file byte fetch, never at idle (features/files/cache/registerOnFirstFileFetch.ts).

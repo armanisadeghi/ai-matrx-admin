@@ -42,6 +42,7 @@ import { activeOrgCookieMiddleware } from "@/lib/organizations/activeOrgCookieMi
 import { officeLookCookieMiddleware } from "@/lib/redux/preferences/officeLookCookieMiddleware";
 import { tabOrganizationMiddleware } from "@/lib/organizations/tabOrganization";
 import { scopeTreeInvalidationMiddleware } from "@/features/scopes/redux/scopeTreeInvalidationMiddleware";
+import { scopeTreeDemandEnhancer } from "@/features/scopes/redux/scopeTreeDemand";
 import { overlayRenderWatchdogMiddleware } from "@/features/window-panels/diagnostics/overlayRenderWatchdog";
 import { windowPersistenceCloseMiddleware } from "@/features/window-panels/persistence/windowPersistenceCloseMiddleware";
 import { reduxErrorCaptureMiddleware } from "@/lib/diagnostics/reduxErrorCaptureMiddleware";
@@ -299,6 +300,9 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
         overlayRenderWatchdogMiddleware,
         reduxErrorCaptureMiddleware,
       ),
+    // OUTSIDE applyMiddleware (prepend): the scope tree loads on its first READ, never at idle —
+    // features/scopes/redux/scopeTreeDemand.ts. Middleware/thunks get the raw getState.
+    enhancers: (getDefaultEnhancers) => getDefaultEnhancers().prepend(scopeTreeDemandEnhancer),
     devTools: process.env.NODE_ENV !== "production",
   });
 
