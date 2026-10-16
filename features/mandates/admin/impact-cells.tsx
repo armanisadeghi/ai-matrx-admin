@@ -26,14 +26,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import {
+  Peek,
+  PeekHoverCard,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  type PeekBlock,
+  type PeekRecord,
+  type PeekTone,
 } from "@ai-matrx/design-system";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
 import {
@@ -158,6 +158,67 @@ export function VerdictDetail({ verdict }: { verdict: ImpactVerdict }) {
   );
 }
 
+const GRADE_TONE: Record<ImpactVerdict["grade"], PeekTone> = {
+  identical: "neutral",
+  green: "success",
+  orange: "warning",
+  red: "danger",
+};
+
+/** One verdict as Peek blocks — the hover's twin of VerdictDetail (same words, same order). */
+function verdictPeekBlocks(verdict: ImpactVerdict, heading: string): PeekBlock[] {
+  const settings = settingsSignalOf(verdict);
+  const reason = setAsideReasonOf(verdict);
+  const eligibility = batchEligibilityOf(verdict);
+  const tooYoung = tooYoungReasonOf(verdict);
+  const findings = changeFindingsOf(verdict);
+  const blocks: PeekBlock[] = [
+    {
+      section: heading,
+      tone: GRADE_TONE[verdict.grade],
+      text: `${GRADE_META[verdict.grade].label} · ${verdict.holder_kind === "binding" ? `${verdict.principal.kind} binding` : "mandate default"}`,
+    },
+    { property: "Versions", value: `${pinnedLabelOf(verdict)} → ${newestLabelOf(verdict)}` },
+  ];
+  blocks.push(
+    findings.length > 0
+      ? {
+          section: "Findings",
+          rows: findings.map((finding) => ({
+            text: finding.message,
+            tone: finding.grade === "red" ? "danger" : finding.grade === "orange" ? "warning" : "success",
+          })),
+        }
+      : {
+          fact:
+            verdict.grade === "identical"
+              ? "No change between these versions affects a run."
+              : "The server graded this row but listed no finding.",
+          muted: true,
+          wrap: true,
+        },
+  );
+  if (settings.state !== "clean") {
+    blocks.push({
+      section: "Settings",
+      tone: "warning",
+      text: `${settings.state === "unmeasured" ? "UNMEASURED — " : ""}${settings.sentence}`,
+    });
+  }
+  if (tooYoung) blocks.push({ fact: `Not automatic — ${tooYoung}.`, muted: true, wrap: true });
+  if (verdict.blocker) {
+    blocks.push({
+      fact: `${BLOCKER_META[verdict.blocker].label}: ${BLOCKER_META[verdict.blocker].meaning}${reason ? ` “${reason}”` : ""}`,
+      muted: true,
+      wrap: true,
+    });
+  }
+  if (!eligibility.batchable) {
+    blocks.push({ fact: `Not in a batch — ${eligibility.why}`, muted: true, wrap: true });
+  }
+  return blocks;
+}
+
 export function ImpactGradeCell({
   mandateKey,
   defaultVerdict,
@@ -193,9 +254,31 @@ export function ImpactGradeCell({
         : worst,
     null,
   );
+  const record: PeekRecord = {
+    kind: "Change impact",
+    id: `${mandateKey}`,
+    title: `${defaultVerdict.agent_name} — what changed`,
+    body: [
+      ...verdictPeekBlocks(defaultVerdict, "Default"),
+      ...bindingVerdicts.flatMap((verdict, index) => [
+        ...(index === 0
+          ? [
+              {
+                fact: `${bindingVerdicts.length} binding rung${bindingVerdicts.length === 1 ? "" : "s"}, graded separately in the mandate`,
+                muted: true,
+                wrap: true,
+              } as PeekBlock,
+            ]
+          : []),
+        ...verdictPeekBlocks(verdict, `Binding ${index + 1}`),
+      ]),
+    ],
+    copyData: false,
+  };
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
+    <PeekHoverCard
+      label="What changed"
+      trigger={
         <button
           type="button"
           onClick={(event) => event.stopPropagation()}
@@ -237,31 +320,10 @@ export function ImpactGradeCell({
             </span>
           ) : null}
         </button>
-      </HoverCardTrigger>
-      <HoverCardContent
-        align="start"
-        className="w-[min(28rem,96vw)] space-y-2 p-3"
-      >
-        <div className="type-secondary font-medium">
-          {defaultVerdict.agent_name} — what changed
-        </div>
-        <VerdictDetail verdict={defaultVerdict} />
-        {bindingVerdicts.length > 0 ? (
-          <div className="space-y-2 border-t border-border pt-2">
-            <div className="type-meta text-muted-foreground">
-              {bindingVerdicts.length} binding rung
-              {bindingVerdicts.length === 1 ? "" : "s"}, graded separately in the mandate
-            </div>
-            {bindingVerdicts.map((verdict) => (
-              <VerdictDetail
-                key={`${verdict.holder_kind}:${verdict.row_id}`}
-                verdict={verdict}
-              />
-            ))}
-          </div>
-        ) : null}
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <Peek size="lg" record={record} />
+    </PeekHoverCard>
   );
 }
 

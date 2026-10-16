@@ -10,11 +10,7 @@
 import { Chip } from "@ai-matrx/design-system/controls";
 import React from "react";
 import { Code2 } from "lucide-react";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
 
 interface EditorCodeSnippetBlockProps {
   content: string;
@@ -37,30 +33,31 @@ export default function EditorCodeSnippetBlock({
   const label = `${file ? basename(file) : "Snippet"}${range ? `:${range.replace(/^L?(\d+)-L?(\d+)$/, "$1-$2")}` : ""}`;
   const snippet = content.trim();
 
+  const record: PeekRecord = {
+    kind: "Code snippet",
+    id: `${file}:${range}`,
+    title: label,
+    glyph: Code2,
+    subtitle: language,
+    body: [
+      {
+        section: "Snippet",
+        code: {
+          text: snippet,
+          language,
+          caption: `${file}${range ? ` · ${range}` : ""}` || undefined,
+        },
+      },
+    ],
+  };
+
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <Chip tone="cyan" icon={<Code2 />} label={label} />
-      </HoverCardTrigger>
-      <HoverCardContent
-        side="top"
-        align="start"
-        className="w-[28rem] max-w-[90vw] p-0 overflow-hidden"
-      >
-        <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
-          <Code2 className="w-4 h-4 shrink-0 text-cyan-600 dark:text-cyan-400" />
-          <span className="text-xs font-mono text-muted-foreground truncate">
-            {file}
-            {range ? ` · ${range}` : ""}
-          </span>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {language}
-          </span>
-        </div>
-        <pre className="text-xs font-mono bg-background p-3 overflow-x-auto max-h-72 leading-snug">
-          {snippet}
-        </pre>
-      </HoverCardContent>
-    </HoverCard>
+    <PeekHoverCard
+      side="top"
+      trigger={<Chip tone="cyan" icon={<Code2 />} label={label} />}
+      label={label}
+    >
+      <Peek size="md" record={record} />
+    </PeekHoverCard>
   );
 }

@@ -70,12 +70,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -143,7 +137,7 @@ import {
 } from "@/features/sources/sourceRows";
 import { cn } from "@/utils/cn";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { StaleDataNotice } from "@ai-matrx/design-system";
+import { Peek, PeekHoverCard, StaleDataNotice } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
 
 /** Canonical `ui_surface.name` this page emits (unchanged from the old library). */
@@ -284,7 +278,8 @@ function StageCell({
   );
 }
 
-function AttachedList({ attachments }: { attachments: SourceAttachment[] }) {
+/** The attached-places peek. Mounted only while the card is open, so titles are read on hover, once. */
+function AttachedPeek({ attachments }: { attachments: SourceAttachment[] }) {
   const { titleFor } = useEntityTitles(
     attachments.map((a) => ({
       token: a.target_type,
@@ -293,23 +288,26 @@ function AttachedList({ attachments }: { attachments: SourceAttachment[] }) {
     })),
   );
   return (
-    <ul className="space-y-1">
-      {attachments.map((a) => (
-        <li
-          key={`${a.target_type}:${a.target_id}`}
-          className="flex items-center gap-2 text-xs"
-        >
-          <span className="w-24 shrink-0 text-muted-foreground">
-            {attachmentTypeWords(a.target_type)}
-          </span>
-          <EntityRef
-            token={a.target_type}
-            id={a.target_id}
-            name={titleFor({ token: a.target_type, id: a.target_id })}
-          />
-        </li>
-      ))}
-    </ul>
+    <Peek
+      size="sm"
+      record={{
+        kind: "Source",
+        id: "attached-places",
+        title: `${attachments.length} ${attachments.length === 1 ? "place" : "places"}`,
+        glyph: Paperclip,
+        copyData: false,
+        body: [
+          {
+            section: "Attached to",
+            rows: attachments.map((a) => ({
+              text: titleFor({ token: a.target_type, id: a.target_id }),
+              detail: attachmentTypeWords(a.target_type),
+              entity: { token: a.target_type, id: a.target_id },
+            })),
+          },
+        ],
+      }}
+    />
   );
 }
 
@@ -330,8 +328,9 @@ function AttachedCell({
   if (n === 0)
     return <span className="text-muted-foreground">Not attached</span>;
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
+    <PeekHoverCard
+      label="Attached places"
+      trigger={
         <button
           type="button"
           className="inline-flex items-center gap-1 text-primary hover:underline"
@@ -339,11 +338,10 @@ function AttachedCell({
           <Paperclip className="h-3 w-3" />
           {n} {n === 1 ? "place" : "places"}
         </button>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80">
-        <AttachedList attachments={facts.attachments} />
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <AttachedPeek attachments={facts.attachments} />
+    </PeekHoverCard>
   );
 }
 
