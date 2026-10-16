@@ -64,6 +64,7 @@ export default function TroubleshootingArtifact({
         conversationId={conversationId}
         messageId={messageId}
         blockIndex={blockIndex}
+        source={typeof data === "string" ? data : raw}
         initialState={state ?? undefined}
         onStateChange={save as (state: TroubleshootingState) => void}
       />

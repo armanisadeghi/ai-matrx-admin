@@ -1,0 +1,1398 @@
+"use client";
+
+import { useBrandPersonas } from "@/features/marketing/data/personas";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  AtSign,
+  Award,
+  BadgeCheck,
+  Building2,
+  ChevronDown,
+  Clock,
+  ExternalLink,
+  FileText,
+  Globe2,
+  Images,
+  Inbox,
+  Info,
+  Mic,
+  ListTree,
+  Mail,
+  MapPin,
+  Palette,
+  Pencil,
+  Phone,
+  Printer,
+  Quote,
+  Star,
+  Trash2,
+  Archive,
+  Type,
+  SlidersHorizontal,
+  ScanSearch,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { useBrandSocialAccounts } from "@/features/marketing/social/hooks";
+import { brandAccountHref } from "@/features/marketing/social/property-account-href";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { webCopy } from "@/features/marketing/lib/copy-payloads";
+import { businessFactValueText } from "@/features/marketing/lib/business-fact-value";
+import { marketingSeg } from "@/features/marketing/lib/keys";
+import { BrandAiVisibilityCard } from "@/features/marketing/seo/ai-visibility/brand/BrandAiVisibilityCard";
+import { BrandTopicalMapCard } from "@/features/marketing/seo/topical-map/components/BrandTopicalMapCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useQueryClient } from "@tanstack/react-query";
+import { RetractionDialog } from "@/features/marketing/components/brands/RetractionDialog";
+import { SmartAddBasicsGate, SmartAddSetupStatus } from "@/features/marketing/smart-add/SmartAddSetupStatus";
+import { BrandEditorDialog } from "@/features/marketing/components/brands/BrandEditorDialog";
+import {
+  MARKETING_BRAND_SURFACE_NAME,
+  MarketingBrandWriteTargets,
+} from "@/features/marketing/components/brands/MarketingBrandWriteTargets";
+import { BrandAssetEditorDialog } from "@/features/marketing/components/brands/BrandAssetEditorDialog";
+import { BusinessFactEditorDialog } from "@/features/marketing/components/brands/BusinessFactEditorDialog";
+import { PropertyEditorDialog } from "@/features/marketing/components/brands/PropertyEditorDialog";
+import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
+import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
+import { CaptureThumb } from "@/features/marketing/components/shared/CaptureThumb";
+import RouteHeader from "@/features/shell/components/header/RouteHeader";
+import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { createMarketingBrandScope } from "@/features/surfaces/manifests/marketing-brand.manifest";
+import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
+import {
+  useBrand,
+  useBrandAssets,
+  useBrandProperties,
+  useBrandSites,
+  useBusinessFacts,
+  useCreateSite,
+  useDeleteBrandAsset,
+  useDeleteBusinessFact,
+  usePendingDiscoveredCount,
+} from "@/features/marketing/data/hooks";
+import {
+  LoadingSurface,
+  SectionCard,
+  StatusBadge,
+} from "@/features/marketing/components/shared/MarketingUi";
+import {
+  SiteConnectionChips,
+  SiteIdentityMark,
+} from "@/features/marketing/components/shared/SiteConnectionChips";
+import {
+  PropertyKindMark,
+  propertyPublicUrl,
+  toPropertyKind,
+} from "@/features/marketing/components/shared/PropertyKindMark";
+import { useAccess } from "@/utils/permissions/access";
+import { canEditAccess } from "@/utils/permissions/access-core";
+import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
+import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
+import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
+import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
+import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
+import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { normalizeWebsiteUrl, secureImageUrl } from "@/features/marketing/lib/website-url";
+import { linkLabel as linkLabelOf } from "@/features/marketing/lib/link-in-bio";
+import {
+  BRAND_ASSET_KIND_LABELS,
+  BUSINESS_FACT_KIND_LABELS,
+  PROPERTY_KIND_LABELS,
+  isBrandAssetKind,
+  isBusinessFactKind,
+  isJsonRecord,
+  parseBrandProfile,
+} from "@/features/marketing/types";
+import type {
+  BrandAsset,
+  BrandAssetKind,
+  BrandProperty,
+  BusinessFact,
+  BusinessFactKind,
+  MarketingSite,
+} from "@/features/marketing/types";
+import { extractErrorMessage } from "@/utils/errors";
+import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/useEditTarget";
+import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { ShareButton } from "@/features/sharing/components/ShareButton";
+import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
+
+/** Compact icon-button used by every cockpit row's edit/delete actions. */
+function RowActionButton({
+  title,
+  destructive,
+  onClick,
+  children,
+}: {
+  title: string;
+  destructive?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      className={
+        destructive
+          ? "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
+          : "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+/** A stored website may lack its scheme; a bare domain in an href is a relative link. */
+function externalHref(url: string): string {
+  return /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : `https://${url}`;
+}
+
+function factValueText(fact: BusinessFact): string {
+  return businessFactValueText(fact.value);
+}
+
+/**
+ * A brand asset's image with a designed fallback: a URL that 404s (a dead
+ * favicon, a blocked hotlink) shows the asset's initial in a monogram tile,
+ * never the browser's broken-image alt text.
+ */
+function AssetTileImage({ src, label }: { src: string; label: string }) {
+  const [failed, setFailed] = useState(false);
+  const ref = useRef<HTMLImageElement | null>(null);
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+  useEffect(() => {
+    // A cached failure can settle before React attaches onError.
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0) setFailed(true);
+  }, [src]);
+  if (failed) {
+    return (
+      <span
+        role="img"
+        aria-label={label}
+        title={label}
+        className="flex h-14 w-14 items-center justify-center rounded-md border border-border bg-muted text-lg font-semibold uppercase text-muted-foreground"
+      >
+        {label.trim().charAt(0) || "?"}
+      </span>
+    );
+  }
+  return (
+    // Confirmed assets reference the brand's own public URLs.
+    <img
+      ref={ref}
+      src={src}
+      alt=""
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+      className="max-h-full max-w-full object-contain"
+    />
+  );
+}
+
+function assetPreviewUrl(asset: BrandAsset): string | null {
+  return asset.source_url &&
+    /\.(png|jpe?g|webp|gif|svg|ico)(\?|$)/i.test(asset.source_url)
+    ? secureImageUrl(asset.source_url)
+    : null;
+}
+
+/** Color assets carry their value in `data` (hex/value) or a `#hex` title. */
+function assetColorValue(asset: BrandAsset): string | null {
+  if (asset.kind !== "color") return null;
+  if (isJsonRecord(asset.data)) {
+    const candidate = asset.data.hex ?? asset.data.value ?? asset.data.color;
+    if (typeof candidate === "string" && candidate) return candidate;
+  }
+  return asset.title && /^#([0-9a-f]{3,8})$/i.test(asset.title)
+    ? asset.title
+    : null;
+}
+
+/**
+ * Best previewable asset URL for the given kinds, in priority order —
+ * `is_primary` wins within a kind, then `sort_order`. Lets the hero fall back
+ * to the confirmed asset library when the brand row has no logo/favicon URL.
+ */
+function firstAssetUrl(
+  assets: BrandAsset[],
+  kinds: BrandAssetKind[],
+): string | null {
+  for (const kind of kinds) {
+    const match = assets
+      .filter((asset) => asset.kind === kind && assetPreviewUrl(asset))
+      .sort(
+        (a, b) =>
+          Number(b.is_primary) - Number(a.is_primary) ||
+          a.sort_order - b.sort_order,
+      )[0];
+    if (match) return assetPreviewUrl(match);
+  }
+  return null;
+}
+
+/**
+ * The homepage as a visitor sees it on a computer (Smart Add files it as an `image` titled
+ * "Homepage on a computer"): more than a logo, so it fronts the header.
+ */
+function homepageShotUrl(assets: BrandAsset[]): string | null {
+  const match = assets
+    .filter((asset) => asset.kind === "image" && /^homepage on a computer$/i.test((asset.title ?? "").trim()))
+    .sort((a, b) => a.sort_order - b.sort_order)[0];
+  return match ? assetPreviewUrl(match) : null;
+}
+
+const FACT_KIND_ICONS: Record<BusinessFactKind, LucideIcon> = {
+  phone: Phone,
+  fax: Printer,
+  email: Mail,
+  address: MapPin,
+  hours: Clock,
+  tagline: Quote,
+  legal_name: Building2,
+  title: Type,
+  description: FileText,
+  site_name: Globe2,
+  social_profile: AtSign,
+  registration: BadgeCheck,
+  spokesperson: Mic,
+  proof: Award,
+  other: Info,
+};
+
+/**
+ * Display order for grouped facts: identity/editorial truth first, bulk
+ * contact data (a national brand can carry dozens of phones/addresses) last so
+ * it never buries the identity rows.
+ */
+const FACT_KIND_ORDER: BusinessFactKind[] = [
+  "tagline",
+  "legal_name",
+  "site_name",
+  "title",
+  "description",
+  "spokesperson",
+  "proof",
+  "hours",
+  "registration",
+  "social_profile",
+  "other",
+  "email",
+  "phone",
+  "fax",
+  "address",
+];
+
+/** Kinds whose facts collapse into a bounded group once this many exist. */
+const FACT_GROUP_MIN = 3;
+/** Collapsed groups preview this many facts; the rest sit behind Show all. */
+const FACT_GROUP_PREVIEW = 4;
+/** Short single-line kinds render two-up inside a group on wide cards. */
+const TWO_UP_FACT_KINDS: ReadonlySet<BusinessFactKind> = new Set([
+  "phone",
+  "fax",
+  "email",
+]);
+
+function groupFactsByKind(
+  facts: BusinessFact[],
+): Array<[BusinessFactKind, BusinessFact[]]> {
+  const byKind = new Map<BusinessFactKind, BusinessFact[]>();
+  for (const fact of facts) {
+    const kind = isBusinessFactKind(fact.kind) ? fact.kind : "other";
+    const bucket = byKind.get(kind);
+    if (bucket) bucket.push(fact);
+    else byKind.set(kind, [fact]);
+  }
+  return [...byKind.entries()].sort(
+    (a, b) => FACT_KIND_ORDER.indexOf(a[0]) - FACT_KIND_ORDER.indexOf(b[0]),
+  );
+}
+
+/** One business-fact row; `compact` drops the per-row kind tile and label
+ *  chrome because the surrounding group header already carries them. */
+function BusinessFactRow({
+  fact,
+  compact,
+  onEdit,
+  onDelete,
+}: {
+  fact: BusinessFact;
+  compact?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) {
+  const value = factValueText(fact);
+  const factLabel =
+    fact.label ||
+    (isBusinessFactKind(fact.kind)
+      ? BUSINESS_FACT_KIND_LABELS[fact.kind]
+      : (humanizeIdentifier(fact.kind) || fact.kind));
+  const actions = (
+    <div className="flex shrink-0 items-center gap-0.5">
+      <CopyButtons
+        size="xs"
+        {...webCopy({
+          kind: "web-business-fact",
+          label: factLabel,
+          description: "One human-confirmed business fact for this brand.",
+          surface: "Brand cockpit — Business facts",
+          data: fact,
+          lines: [
+            ["Fact", factLabel],
+            ["Value", value],
+            ["Kind", fact.kind],
+          ],
+          attributes: {
+            brand_id: fact.brand_id,
+            fact_id: fact.id,
+            kind: fact.kind,
+          },
+        })}
+        json={() => fact}
+      />
+      {onEdit ? (
+        <RowActionButton title="Edit fact" onClick={onEdit}>
+          <Pencil className="h-3.5 w-3.5" />
+        </RowActionButton>
+      ) : null}
+      {onDelete ? (
+        <RowActionButton title="Delete fact" destructive onClick={onDelete}>
+          <Trash2 className="h-3.5 w-3.5" />
+        </RowActionButton>
+      ) : null}
+    </div>
+  );
+  if (compact) {
+    return (
+      <li className="flex min-w-0 items-center gap-2 py-0.5">
+        <div className="min-w-0 flex-1">
+          {fact.label ? (
+            <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {fact.label}
+            </p>
+          ) : null}
+          <p className="truncate text-sm text-foreground" title={value}>
+            {value}
+          </p>
+        </div>
+        {actions}
+      </li>
+    );
+  }
+  const FactIcon = isBusinessFactKind(fact.kind)
+    ? FACT_KIND_ICONS[fact.kind]
+    : Info;
+  return (
+    <li className="flex items-center gap-3 px-3 py-2">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
+        <FactIcon className="h-4 w-4 text-muted-foreground" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {factLabel}
+        </p>
+        <p className="truncate text-sm text-foreground" title={value}>
+          {value}
+        </p>
+      </div>
+      {actions}
+    </li>
+  );
+}
+
+export function BrandWorkspace({ brandId }: { brandId: string }) {
+  const router = useRouter();
+  const brand = useBrand(brandId);
+  // What the viewer may DO is the record's own access answer (not the active
+  // organization, not "can the page load"): write controls show only at
+  // editor level or above. RLS stays the boundary.
+  const brandAccess = useAccess("web_brand", brandId);
+  const canEdit = canEditAccess(brandAccess.level);
+  // Removing an account or website undoes the decision that brought it in (UNDO.md): preview, then retract.
+  const queryClient = useQueryClient();
+  const deleteAssetMutation = useDeleteBrandAsset();
+  const deleteFactMutation = useDeleteBusinessFact();
+  const openForEdit = useIsEditTarget("description");
+  const [editorOpen, setEditorOpen] = useState(openForEdit);
+  useFocusEditTarget("description", editorOpen);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [editingSite, setEditingSite] = useState<MarketingSite | null>(null);
+  const [deletingSite, setDeletingSite] = useState<MarketingSite | null>(null);
+  const [propertyEditor, setPropertyEditor] = useState<{
+    open: boolean;
+    property: BrandProperty | null;
+  }>({ open: false, property: null });
+  const [deletingProperty, setDeletingProperty] =
+    useState<BrandProperty | null>(null);
+  const [assetEditor, setAssetEditor] = useState<{
+    open: boolean;
+    asset: BrandAsset | null;
+  }>({ open: false, asset: null });
+  const [deletingAsset, setDeletingAsset] = useState<BrandAsset | null>(null);
+  const [factEditor, setFactEditor] = useState<{
+    open: boolean;
+    fact: BusinessFact | null;
+  }>({ open: false, fact: null });
+  const [deletingFact, setDeletingFact] = useState<BusinessFact | null>(null);
+  const [expandedFactKinds, setExpandedFactKinds] = useState<
+    Record<string, boolean>
+  >({});
+  // access-errors: ok — cockpit section list; the brand read below is the gated primary and a failed section shows as empty, editable via its own card
+  const sites = useBrandSites(brandId);
+  const createSite = useCreateSite();
+  // access-errors: ok — cockpit section list under the gated brand primary
+  const properties = useBrandProperties(brandId);
+  const personas = useBrandPersonas(brandId);
+  // access-errors: ok — cockpit section list under the gated brand primary
+  const assets = useBrandAssets(brandId);
+  // access-errors: ok — cockpit section list under the gated brand primary
+  const facts = useBusinessFacts(brandId);
+  // access-errors: ok — inbox count badge; absence only hides the badge
+  const pending = usePendingDiscoveredCount(brandId);
+  // access-errors: ok — the hero's account icons; without it they fall back to the public link
+  const socialAccounts = useBrandSocialAccounts(brandId);
+
+  if (brand.isLoading) {
+    // The [brandId] layout's trail is the header for this whole tree — a
+    // second per-page RouteHeader here would hide it (Arman, 2026-08-30).
+    return <LoadingSurface label="Loading brand…" />;
+  }
+  if (brand.isError || !brand.data) {
+    return (
+      <>
+        <AccessGate
+          token="web_brand"
+          id={brandId}
+          error={brand.error}
+          onRetry={() => void brand.refetch()}
+          fallbackHref={marketingRoutes.brands()}
+          fallbackLabel="All brands"
+        />
+      </>
+    );
+  }
+
+  const current = brand.data;
+  const websiteSites = sites.data ?? [];
+  const socialProperties = (properties.data ?? []).filter(
+    (property) => property.kind !== "website",
+  );
+  // The brand's public website: the website property (readable by anyone who
+  // can read the brand), else the URL typed on the brand itself.
+  const publicWebsiteUrl =
+    (properties.data ?? []).find((property) => property.kind === "website" && property.url)?.url ||
+    current.website_url ||
+    null;
+  const factRows = facts.data ?? [];
+  const assetRows = assets.data ?? [];
+
+  // The brand's best identity marks: explicit brand URLs first, then the
+  // confirmed asset library — a brand with confirmed logos never shows a
+  // placeholder globe just because nobody copied a URL onto the brand row.
+  const heroIdentity = {
+    name: current.name,
+    logo_url:
+      current.logo_url ||
+      firstAssetUrl(assetRows, ["logo", "logo_dark", "wordmark", "headshot"]),
+    favicon_url: current.favicon_url || firstAssetUrl(assetRows, ["favicon"]),
+  };
+  const heroCover =
+    homepageShotUrl(assetRows) ||
+    secureImageUrl(current.og_image_url) ||
+    firstAssetUrl(assetRows, ["og_image", "hero_image", "twitter_image"]);
+  const sortedAssets = [...assetRows].sort(
+    (a, b) =>
+      Number(b.is_primary) - Number(a.is_primary) ||
+      a.sort_order - b.sort_order,
+  );
+  const factGroups = groupFactsByKind(factRows);
+
+  // Surface scope — assembled at trigger time from what the cockpit already
+  // loaded. No fetching; keys are omitted when their data is not loaded yet.
+  const getBrandScope = () => {
+    const profile = parseBrandProfile(current.profile);
+    return createMarketingBrandScope({
+      brand_id: brandId,
+      brand_name: current.name,
+      brand_context: buildBrandContextXml({
+        brand: current,
+        properties: properties.data ?? [],
+        personas: personas.data ?? [],
+        facts: factRows,
+        assets: assetRows,
+        sites: websiteSites,
+      }),
+      ...(Object.keys(profile).length > 0
+        ? { brand_profile: profile as Record<string, unknown> }
+        : {}),
+      ...(typeof pending.data === "number"
+        ? { pending_review_count: pending.data }
+        : {}),
+      ...(websiteSites.length > 0
+        ? {
+            sites_summary: websiteSites.map((site) => ({
+              id: site.id,
+              name: site.name,
+              root_url: site.root_url,
+              status: site.status,
+            })),
+          }
+        : {}),
+      ...(socialProperties.length > 0
+        ? {
+            properties_summary: socialProperties.map((property) => ({
+              kind: property.kind,
+              url: property.url,
+              handle: property.handle,
+              status: property.status,
+            })),
+          }
+        : {}),
+    });
+  };
+
+  const overviewCopy = brandKindCopy(current).overview;
+
+  // The brand names a website that is not yet a managed site: one click makes it the website property.
+  const addBrandWebsite = async () => {
+    try {
+      const parsed = normalizeWebsiteUrl(current.website_url ?? "");
+      await createSite.mutateAsync({
+        organizationId: current.organization_id,
+        name: parsed.hostname,
+        rootUrl: parsed.toString(),
+        domain: parsed.hostname.toLowerCase(),
+        brandId: current.id,
+      });
+      toast.success(`Added ${parsed.hostname}`);
+    } catch (error) {
+      toast.error("Could not add website", { description: extractErrorMessage(error) });
+    }
+  };
+
+  const brandCopy = webCopy({
+    kind: "web-brand",
+    label: `Brand ${current.name}`,
+    description:
+      "The full brand cockpit: identity plus its websites, social properties, confirmed business facts, and brand assets.",
+    surface: `Brand cockpit — ${current.name}`,
+    data: {
+      brand: current,
+      sites: websiteSites,
+      properties: properties.data ?? [],
+      assets: assetRows,
+      facts: factRows,
+      pendingDiscovered: pending.data ?? 0,
+    },
+    lines: [
+      ["Brand", current.name],
+      ["Website", current.website_url],
+      ["Industry", current.industry],
+      ["Status", current.status],
+      ["Description", current.description],
+      [
+        "Websites",
+        websiteSites.map((site) => site.domain).join(", ") || "none",
+      ],
+      ["Social properties", socialProperties.length],
+      ["Business facts", factRows.length],
+      ["Brand assets", assetRows.length],
+      ["Pending review", pending.data ?? 0],
+    ],
+    attributes: { brand_id: current.id, status: current.status },
+  });
+
+  const websitesCopy = webCopy({
+    kind: "web-brand-websites",
+    label: "Brand websites",
+    description: "The website properties (managed sites) owned by this brand.",
+    surface: `Websites — ${current.name}`,
+    data: websiteSites,
+    lines: [
+      ["Brand", current.name],
+      ["Websites", websiteSites.length],
+      ...websiteSites.map((site): [string, string] => [
+        site.name,
+        `${site.domain} · ${site.status}`,
+      ]),
+    ],
+    attributes: { brand_id: current.id, count: websiteSites.length },
+  });
+
+  const socialsCopy = webCopy({
+    kind: "web-brand-properties",
+    label: "Social profiles & other properties",
+    description:
+      "The brand's non-website properties (social profiles and other presences).",
+    surface: `Social profiles — ${current.name}`,
+    data: socialProperties,
+    lines: [
+      ["Brand", current.name],
+      ["Properties", socialProperties.length],
+      ...socialProperties.map((property): [string, string] => [
+        (humanizeIdentifier(property.kind) || property.kind),
+        property.url || property.handle || property.display_name || "—",
+      ]),
+    ],
+    attributes: { brand_id: current.id, count: socialProperties.length },
+  });
+
+  const factsCopy = webCopy({
+    kind: "web-business-facts",
+    label: "Business facts",
+    description:
+      "Human-confirmed business facts for this brand (phones, addresses, taglines, identity).",
+    surface: `Business facts — ${current.name}`,
+    data: factRows,
+    lines: [
+      ["Brand", current.name],
+      ["Facts", factRows.length],
+      ...factRows.map((fact): [string, string] => [
+        fact.label || (humanizeIdentifier(fact.kind) || fact.kind),
+        factValueText(fact),
+      ]),
+    ],
+    attributes: { brand_id: current.id, count: factRows.length },
+  });
+
+  const assetsCopy = webCopy({
+    kind: "web-brand-assets",
+    label: "Brand assets",
+    description:
+      "Human-confirmed brand assets (logos, favicons, imagery) with their source URLs.",
+    surface: `Brand assets — ${current.name}`,
+    data: assetRows,
+    lines: [
+      ["Brand", current.name],
+      ["Assets", assetRows.length],
+      ...assetRows.map((asset): [string, string] => [
+        `${humanizeIdentifier(asset.kind) || asset.kind}${asset.title ? ` · ${asset.title}` : ""}`,
+        asset.source_url ?? "no source URL",
+      ]),
+    ],
+    attributes: { brand_id: current.id, count: assetRows.length },
+  });
+
+  return (
+    <SurfaceRuntimeProvider
+      surfaceName={MARKETING_BRAND_SURFACE_NAME}
+      getScope={getBrandScope}
+    >
+      {/* Write half of the surface — registers the handlers the manifest's
+          writeTargets declare. Renders nothing. */}
+      <MarketingBrandWriteTargets brand={current} />
+      {/* No RouteHeader here — the [brandId] layout's breadcrumb trail is the
+          header for the whole client tree (Arman, 2026-08-30). The old header's
+          "Value settings" door is the sidebar's Settings row. */}
+      <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
+        <div className="grid w-full gap-3">
+          {/* A person brand leads with the person: their face and their accounts come first. */}
+          <section className={`flex flex-wrap items-start gap-4 rounded-lg border border-border bg-card p-4${isPersonBrand(current) ? " order-first" : ""}`}>
+            {isPersonBrand(current) ? (
+              <PersonBrandAvatar
+                brandId={current.id}
+                size={72}
+                fallback={<SiteIdentityMark site={heroIdentity} size={72} prefer="logo" className="bg-background p-1.5" />}
+              />
+            ) : (
+              <SiteIdentityMark
+                site={heroIdentity}
+                size={72}
+                prefer="logo"
+                className="bg-background p-1.5"
+              />
+            )}
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                {current.name}
+              </h2>
+              {current.website_url ? (
+                <OutboundLink
+                  href={externalHref(current.website_url)}
+                  className="matrx-tap-area inline-flex max-w-full items-center gap-1.5 text-sm text-muted-foreground hover:text-primary"
+                >
+                  <span className="truncate">{current.website_url}</span>
+                  <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                </OutboundLink>
+              ) : null}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <StatusBadge value={current.status} />
+                {isPersonBrand(current) ? (
+                  <>
+                    <Badge variant="outline">{BRAND_KIND_COPY.person.label}</Badge>
+                    <PersonFollowerTotal brandId={current.id} />
+                  </>
+                ) : null}
+                {current.industry ? (
+                  <Badge variant="outline">{current.industry}</Badge>
+                ) : null}
+                <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
+                {socialProperties.length > 0 ? (
+                  <span className="ml-1 inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+                    {socialProperties.slice(0, 8).map((property) => {
+                      const accountRow = (socialAccounts.data ?? []).find((r) => r.propertyId === property.id);
+                      const href = accountRow
+                        ? brandAccountHref(marketingSeg(current), accountRow)
+                        : propertyPublicUrl(property);
+                      const internal = Boolean(accountRow && href);
+                      const label =
+                        PROPERTY_KIND_LABELS[toPropertyKind(property.kind)];
+                      const title = property.handle
+                        ? `${label} · ${formatSocialHandle({ platform: property.kind, handle: property.handle, url: property.url })}`
+                        : label;
+                      return internal && href ? (
+                        <Link
+                          key={property.id}
+                          href={href}
+                          title={title}
+                          aria-label={title}
+                          className="matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110"
+                        >
+                          <PropertyKindMark kind={property.kind} size={24} />
+                        </Link>
+                      ) : href ? (
+                        <OutboundLink
+                          key={property.id}
+                          href={href}
+                          title={title}
+                          aria-label={title}
+                          className="matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110"
+                        >
+                          <PropertyKindMark kind={property.kind} size={24} />
+                        </OutboundLink>
+                      ) : (
+                        <PropertyKindMark
+                          key={property.id}
+                          kind={property.kind}
+                          size={24}
+                        />
+                      );
+                    })}
+                    {socialProperties.length > 8 ? (
+                      <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
+                        +{socialProperties.length - 8}
+                      </span>
+                    ) : null}
+                  </span>
+                ) : null}
+              </div>
+              {current.description ? (
+                <p
+                  className="mt-2 line-clamp-3 max-w-prose text-sm leading-6 text-muted-foreground"
+                  title={current.description}
+                >
+                  {current.description}
+                </p>
+              ) : null}
+            </div>
+            {heroCover ? (
+              // The homepage picture (else the brand's own og/hero image). The box is a fixed 16:10
+              // size so the header never shifts when the image arrives; the image loads lazily.
+              <div className="relative hidden h-20 w-32 shrink-0 overflow-hidden rounded-md border border-border bg-muted sm:block">
+                <img
+                  src={heroCover}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover object-top"
+                  onError={(event) => {
+                    event.currentTarget.parentElement?.style.setProperty("display", "none");
+                  }}
+                />
+              </div>
+            ) : null}
+            <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:shrink-0">
+              <CopyButtons size="icon" {...brandCopy} />
+              <ShareButton
+                resourceType="web_brand"
+                resourceId={current.id}
+                resourceName={current.name}
+                size="sm"
+                showStatus={false}
+              />
+              {pending.data ? (
+                <Button
+                  asChild
+                  variant="outline"
+                >
+                  <Link href={marketingRoutes.brandDiscovery(brandId)}>
+                    <Inbox className="h-3.5 w-3.5" />
+                    {pending.data.toLocaleString()} to review
+                  </Link>
+                </Button>
+              ) : null}
+              {canEdit ? (
+                <>
+                  <Button asChild variant="outline">
+                    <Link href={marketingRoutes.smartAddEnrich(current.id)} data-testid="brand-enrich-smart-add">
+                      <ScanSearch className="h-3.5 w-3.5" />
+                      Enrich with Smart Add
+                    </Link>
+                  </Button>
+                  <Button
+                    icon={<Pencil />}
+                    variant="outline"
+                    onClick={() => setEditorOpen(true)}
+                  >
+                    Edit brand
+                  </Button>
+                  <Button
+                    icon={<Archive />}
+                    variant="quiet"
+                    onClick={() => setConfirmingDelete(true)}
+                  >
+                    Archive
+                  </Button>
+                </>
+              ) : null}
+            </div>
+            {/* THE HUMAN GATE: the full width of the brand card, under the header row. */}
+            <SmartAddBasicsGate brandId={current.id} />
+          </section>
+
+          {/* Every fetch the platform does for this brand: setup, crawls, posts. */}
+          <BrandBackgroundWork brand={current} canEdit={canEdit} />
+
+          {/* The brand is the anchor entity, but it carried no search data at
+              all — every number lived one or two routes down on an individual
+              site. This is the brand-level answer to "is our money traffic up
+              or down", rolled across every site the brand owns. */}
+          {websiteSites.length > 0 ? (
+            <GscPortfolioClassBar
+              siteIds={websiteSites.map((site) => site.id)}
+              totalSites={websiteSites.length}
+              title={`Search performance across ${current.name}`}
+            />
+          ) : null}
+
+          {/* The brand's topical map — which pages this client should have and
+              where they live. A map belongs to the BRAND, so it is a card here
+              rather than another row action on one site. */}
+          <BrandTopicalMapCard
+            title={overviewCopy.mapTitle}
+            brandId={current.id}
+            brandSeg={marketingSeg(current)}
+            organizationId={current.organization_id}
+            canEdit={canEdit}
+          />
+
+          {/* What AI says about this brand — the owner is the brand, so it shows with or without a site. */}
+          <BrandAiVisibilityCard
+            brandId={current.id}
+            brandSeg={marketingSeg(current)}
+            organizationId={current.organization_id}
+            canEdit={canEdit}
+          />
+
+          <SectionCard
+            title="Websites"
+            copy={websitesCopy}
+            action={
+              canEdit
+                ? { label: "Add site", href: marketingRoutes.newSite(brandId) }
+                : undefined
+            }
+          >
+            {websiteSites.length === 0 && !canEdit && publicWebsiteUrl ? (
+              // A viewer who cannot read the managed site still sees the
+              // brand's public website, as a plain link.
+              <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">
+                <OutboundLink
+                  href={publicWebsiteUrl}
+                  className="truncate font-medium text-foreground hover:underline"
+                >
+                  {linkLabelOf(publicWebsiteUrl).replace(/\/+$/, "")}
+                </OutboundLink>
+              </div>
+            ) : websiteSites.length === 0 ? (
+              <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-xs text-muted-foreground">
+                <p>{overviewCopy.websitesEmpty}</p>
+                {canEdit && current.website_url ? (
+                  <Button
+                    variant="outline"
+                    disabled={createSite.isPending}
+                    onClick={() => void addBrandWebsite()}
+                  >
+                    {`Add ${linkLabelOf(current.website_url)}`}
+                  </Button>
+                ) : null}
+              </div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {websiteSites.map((site) => (
+                  <li
+                    key={site.id}
+                    className="flex flex-wrap items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/30"
+                  >
+                    <Link
+                      href={marketingRoutes.site(brandId, site.id)}
+                      className="flex min-w-0 flex-1 basis-48 items-center gap-3"
+                    >
+                      <SiteIdentityMark site={site} size={28} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-foreground hover:underline">
+                          {site.name}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {site.domain}
+                        </p>
+                      </div>
+                    </Link>
+                    <SiteConnectionChips site={site} />
+                    <div className="flex shrink-0 items-center gap-0.5">
+                      <CopyButtons
+                        size="icon"
+                        {...webCopy({
+                          kind: "web-brand-site",
+                          label: `Site ${site.domain}`,
+                          description:
+                            "One website property (managed site) owned by this brand.",
+                          surface: `Websites — ${current.name}`,
+                          data: site,
+                          lines: [
+                            ["Site", site.name],
+                            ["Domain", site.domain],
+                            ["Status", site.status],
+                            [
+                              "Initialized",
+                              site.initialized_at ? "yes" : "never",
+                            ],
+                          ],
+                          attributes: {
+                            brand_id: current.id,
+                            site_id: site.id,
+                          },
+                        })}
+                        json={() => site}
+                      />
+                      <RowActionButton
+                        title="Content plan — every URL this site should have"
+                        onClick={() =>
+                          router.push(marketingRoutes.contentPlanSite(site.id))
+                        }
+                      >
+                        <ListTree className="h-3.5 w-3.5" />
+                      </RowActionButton>
+                      {canEdit ? (
+                        <>
+                          <RowActionButton
+                            title="Edit site"
+                            onClick={() => setEditingSite(site)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </RowActionButton>
+                          <RowActionButton
+                            title="Delete site"
+                            destructive
+                            onClick={() => setDeletingSite(site)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </RowActionButton>
+                        </>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </SectionCard>
+
+          <div className={`grid gap-3 lg:grid-cols-2${isPersonBrand(current) ? " -order-1" : ""}`}>
+            <BrandSocialProfilesCard
+              brandId={current.id}
+              brandSeg={marketingSeg(current)}
+              organizationId={current.organization_id}
+              properties={socialProperties}
+              canEdit={canEdit}
+              copy={socialsCopy}
+              onAdd={() => setPropertyEditor({ open: true, property: null })}
+              onEdit={(property) => setPropertyEditor({ open: true, property })}
+              onDelete={(property) => setDeletingProperty(property)}
+            />
+
+            <SectionCard
+              title={overviewCopy.factsTitle}
+              className="lg:col-span-2"
+              copy={factsCopy}
+              action={
+                canEdit
+                  ? {
+                      label: overviewCopy.factsAdd,
+                      onClick: () => setFactEditor({ open: true, fact: null }),
+                    }
+                  : undefined
+              }
+            >
+              {factRows.length === 0 ? (
+                <p className="px-4 py-2.5 text-xs text-muted-foreground">
+                  {overviewCopy.factsEmpty}
+                </p>
+              ) : (
+                <div className="divide-y divide-border">
+                  {factGroups.map(([kind, groupFacts]) => {
+                    if (groupFacts.length < FACT_GROUP_MIN) {
+                      return (
+                        <ul key={kind}>
+                          {groupFacts.map((fact) => (
+                            <BusinessFactRow
+                              key={fact.id}
+                              fact={fact}
+                              onEdit={canEdit ? () => setFactEditor({ open: true, fact }) : undefined}
+                              onDelete={canEdit ? () => setDeletingFact(fact) : undefined}
+                            />
+                          ))}
+                        </ul>
+                      );
+                    }
+                    const expanded = Boolean(expandedFactKinds[kind]);
+                    const visible = expanded
+                      ? groupFacts
+                      : groupFacts.slice(0, FACT_GROUP_PREVIEW);
+                    const GroupIcon = FACT_KIND_ICONS[kind];
+                    return (
+                      <div key={kind} className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
+                            <GroupIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                          </span>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {BUSINESS_FACT_KIND_LABELS[kind]}
+                          </p>
+                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                            {groupFacts.length}
+                          </span>
+                        </div>
+                        <ul
+                          className={
+                            TWO_UP_FACT_KINDS.has(kind)
+                              ? "mt-1 grid gap-x-4 pl-8 sm:grid-cols-2"
+                              : "mt-1 grid gap-x-4 pl-8"
+                          }
+                        >
+                          {visible.map((fact) => (
+                            <BusinessFactRow
+                              key={fact.id}
+                              fact={fact}
+                              compact
+                              onEdit={canEdit ? () => setFactEditor({ open: true, fact }) : undefined}
+                              onDelete={canEdit ? () => setDeletingFact(fact) : undefined}
+                            />
+                          ))}
+                        </ul>
+                        {groupFacts.length > FACT_GROUP_PREVIEW ? (
+                          <button
+                            type="button"
+                            className="mt-1 inline-flex items-center gap-1 pl-8 text-xs font-medium text-muted-foreground hover:text-primary"
+                            onClick={() =>
+                              setExpandedFactKinds((state) => ({
+                                ...state,
+                                [kind]: !expanded,
+                              }))
+                            }
+                          >
+                            <ChevronDown
+                              className={
+                                expanded
+                                  ? "h-3.5 w-3.5 rotate-180 transition-transform"
+                                  : "h-3.5 w-3.5 transition-transform"
+                              }
+                            />
+                            {expanded
+                              ? "Show less"
+                              : `Show all ${groupFacts.length}`}
+                          </button>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </SectionCard>
+          </div>
+
+          {/* Names, people, related companies, competitors, listings, mentions, "Not us". */}
+          <BrandRelationsCard brand={current} canEdit={canEdit} />
+
+          <SectionCard
+            title="Brand assets"
+            copy={assetsCopy}
+            headerExtra={
+              // THE DOOR: the full asset desk — library, research, stock
+              // sources, AI generation — moved here from the site's Media
+              // section on 2026-08-15. This card is the summary; that is the
+              // place you work.
+              <Button
+                asChild
+                variant="outline"
+              >
+                <Link href={marketingRoutes.brandAssets(brandId)}>
+                  <Images className="h-3.5 w-3.5" />
+                  Open asset desk
+                </Link>
+              </Button>
+            }
+            action={
+              canEdit
+                ? {
+                    label: "Add asset",
+                    onClick: () => setAssetEditor({ open: true, asset: null }),
+                  }
+                : undefined
+            }
+          >
+            {(assets.data ?? []).length === 0 ? (
+              <p className="px-4 py-2.5 text-xs text-muted-foreground">No confirmed assets yet.</p>
+            ) : (
+              <ul className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-4 lg:grid-cols-6">
+                {sortedAssets.map((asset) => {
+                  const preview = assetPreviewUrl(asset);
+                  const color = assetColorValue(asset);
+                  const kindLabel = isBrandAssetKind(asset.kind)
+                    ? BRAND_ASSET_KIND_LABELS[asset.kind]
+                    : (humanizeIdentifier(asset.kind) || asset.kind);
+                  return (
+                    <li
+                      key={asset.id}
+                      className="group overflow-hidden rounded-md border border-border bg-muted/20"
+                    >
+                      <div className="relative">
+                        {asset.file_id ? (
+                          // File-backed asset (uploaded / generated) — renders
+                          // through the canonical Files pipeline and opens the
+                          // platform file viewer.
+                          <CaptureThumb
+                            fileId={asset.file_id}
+                            alt={asset.title ?? asset.kind}
+                            aspectClassName="aspect-square"
+                            className="rounded-none border-0"
+                          />
+                        ) : (
+                          <div
+                            className={
+                              asset.source_url
+                                ? "flex aspect-square cursor-pointer items-center justify-center bg-card p-2"
+                                : "flex aspect-square items-center justify-center bg-card p-2"
+                            }
+                            onClick={() => {
+                              if (asset.source_url) {
+                                openOutbound(
+                                  asset.source_url,
+                                  "_blank",
+                                  "noopener",
+                                );
+                              }
+                            }}
+                          >
+                            {preview ? (
+                              // Confirmed assets reference the brand's own public URLs.
+                              <AssetTileImage
+                                src={preview}
+                                label={asset.title ?? kindLabel}
+                              />
+                            ) : color ? (
+                              <span
+                                className="h-14 w-14 rounded-full border border-border shadow-inner"
+                                style={{ backgroundColor: color }}
+                                title={color}
+                              />
+                            ) : asset.kind === "color" ? (
+                              <Palette className="h-6 w-6 text-muted-foreground/50" />
+                            ) : (
+                              <Globe2 className="h-6 w-6 text-muted-foreground/50" />
+                            )}
+                          </div>
+                        )}
+                        {asset.is_primary ? (
+                          <span
+                            title="Primary asset"
+                            className="absolute left-1 top-1 flex h-5 w-5 items-center justify-center rounded-md bg-card/90 shadow-sm"
+                          >
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          </span>
+                        ) : null}
+                        <div className="absolute right-1 top-1 flex items-center gap-0.5 rounded-md bg-card/90 opacity-0 shadow-sm transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                          <CopyButtons
+                            size="xs"
+                            {...webCopy({
+                              kind: "web-brand-asset",
+                              label: `${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`,
+                              description:
+                                "One human-confirmed brand asset (logo, favicon, imagery, or color).",
+                              surface: `Brand assets — ${current.name}`,
+                              data: asset,
+                              lines: [
+                                ["Asset", kindLabel],
+                                ["Title", asset.title],
+                                ["Source URL", asset.source_url],
+                                ["Primary", asset.is_primary ? "yes" : "no"],
+                              ],
+                              attributes: {
+                                brand_id: current.id,
+                                asset_id: asset.id,
+                                kind: asset.kind,
+                              },
+                            })}
+                            json={() => asset}
+                          />
+                          {canEdit ? (
+                            <>
+                              <RowActionButton
+                                title="Edit asset"
+                                onClick={() =>
+                                  setAssetEditor({ open: true, asset })
+                                }
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </RowActionButton>
+                              <RowActionButton
+                                title="Delete asset"
+                                destructive
+                                onClick={() => setDeletingAsset(asset)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </RowActionButton>
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                      <p className="truncate border-t border-border px-2 py-1 text-[10px] font-medium text-muted-foreground">
+                        {kindLabel}
+                        {asset.title ? ` · ${asset.title}` : ""}
+                        {color ? ` · ${color}` : ""}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </SectionCard>
+        </div>
+      </main>
+
+      <BrandEditorDialog
+        open={editorOpen && canEdit}
+        onOpenChange={setEditorOpen}
+        brand={current}
+      />
+      <SiteEditorDialog
+        open={Boolean(editingSite)}
+        onOpenChange={(open) => !open && setEditingSite(null)}
+        site={editingSite}
+      />
+      <RetractionDialog
+        target={deletingSite ? { rootType: "site", rootId: deletingSite.id, name: deletingSite.name } : null}
+        onCancel={() => setDeletingSite(null)}
+        onDone={() => {
+          setDeletingSite(null);
+          void queryClient.invalidateQueries();
+        }}
+      />
+      <PropertyEditorDialog
+        open={propertyEditor.open}
+        onOpenChange={(open) =>
+          setPropertyEditor((state) => ({ ...state, open }))
+        }
+        brandId={current.id}
+        organizationId={current.organization_id}
+        property={propertyEditor.property}
+      />
+      <RetractionDialog
+        target={
+          deletingProperty
+            ? {
+                rootType: "property",
+                rootId: deletingProperty.id,
+                name: deletingProperty.display_name ?? deletingProperty.handle ?? deletingProperty.url ?? "this account",
+              }
+            : null
+        }
+        onCancel={() => setDeletingProperty(null)}
+        onDone={() => {
+          setDeletingProperty(null);
+          void queryClient.invalidateQueries();
+        }}
+      />
+      <BrandAssetEditorDialog
+        open={assetEditor.open}
+        onOpenChange={(open) => setAssetEditor((state) => ({ ...state, open }))}
+        brandId={current.id}
+        organizationId={current.organization_id}
+        asset={assetEditor.asset}
+      />
+      <ConfirmDialog
+        open={Boolean(deletingAsset)}
+        onOpenChange={(open) => !open && setDeletingAsset(null)}
+        title="Delete asset?"
+        description="The asset moves to trash and leaves the brand library."
+        variant="destructive"
+        confirmLabel="Delete asset"
+        busy={deleteAssetMutation.isPending}
+        onConfirm={async () => {
+          if (!deletingAsset) return;
+          try {
+            await deleteAssetMutation.mutateAsync(deletingAsset.id);
+            toast.success("Asset deleted");
+            setDeletingAsset(null);
+          } catch (error) {
+            toast.error("Could not delete asset", {
+              description: extractErrorMessage(error),
+            });
+          }
+        }}
+      />
+      <BusinessFactEditorDialog
+        open={factEditor.open}
+        onOpenChange={(open) => setFactEditor((state) => ({ ...state, open }))}
+        brandId={current.id}
+        organizationId={current.organization_id}
+        fact={factEditor.fact}
+      />
+      <ConfirmDialog
+        open={Boolean(deletingFact)}
+        onOpenChange={(open) => !open && setDeletingFact(null)}
+        title="Delete fact?"
+        description="The fact moves to trash and disappears from this brand."
+        variant="destructive"
+        confirmLabel="Delete fact"
+        busy={deleteFactMutation.isPending}
+        onConfirm={async () => {
+          if (!deletingFact) return;
+          try {
+            await deleteFactMutation.mutateAsync(deletingFact.id);
+            toast.success("Fact deleted");
+            setDeletingFact(null);
+          } catch (error) {
+            toast.error("Could not delete fact", {
+              description: extractErrorMessage(error),
+            });
+          }
+        }}
+      />
+      <BrandArchiveFlow
+        brand={confirmingDelete ? { id: current.id, name: current.name } : null}
+        onCancel={() => setConfirmingDelete(false)}
+        onDone={() => router.push(marketingRoutes.brands())}
+      />
+    </SurfaceRuntimeProvider>
+  );
+}

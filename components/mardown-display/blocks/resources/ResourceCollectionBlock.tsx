@@ -41,8 +41,12 @@ import { matchesSearch as matchesSearchScoring } from "@ai-matrx/kit/search-scor
 import { DisclosureHeader, Select } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 interface ResourceCollectionBlockProps {
   collection: ResourceCollectionData;
+  /** The block's own source text: what its Controls edit. */
+  source?: string;
   taskId?: string;
   artifactId?: string;
   conversationId?: string;
@@ -81,6 +85,7 @@ const TYPE_ICON_COLORS: Record<string, string> = {
 
 const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
   collection,
+  source,
   taskId,
   artifactId,
   conversationId,
@@ -89,6 +94,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  const controls = useBlockControls("resources", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
@@ -356,6 +362,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
                         tooltip="Expand to full screen"
                         onClick={() => setIsFullScreen(true)}
                       />
+                      <BlockControlsButton controls={controls} title="Resources controls" />
                       {host.actions}
                     </div>
                   )}

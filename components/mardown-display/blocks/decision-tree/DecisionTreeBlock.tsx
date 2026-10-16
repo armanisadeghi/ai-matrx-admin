@@ -39,6 +39,8 @@ import { IconButton } from "@ai-matrx/design-system";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { decisionBranchesSideBySide } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 export type DecisionNode = Omit<
   DecisionNodeKind,
@@ -65,6 +67,8 @@ export interface DecisionTreeState {
 
 interface DecisionTreeBlockProps {
   decisionTree: DecisionTreeData;
+  /** The block's own source text: what its Controls edit. */
+  source?: string;
   taskId?: string; // Task ID for canvas deduplication
   artifactId?: string;
   conversationId?: string;
@@ -109,6 +113,7 @@ const navBtnClass =
 
 const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
   decisionTree,
+  source,
   taskId,
   artifactId,
   conversationId,
@@ -119,6 +124,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  const controls = useBlockControls("decision_tree", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const makeReal = useBlockMakeReal();
@@ -624,6 +630,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                         tooltip="Expand to full screen"
                         onClick={() => setIsFullScreen(true)}
                       />
+                      <BlockControlsButton controls={controls} title="Decision tree controls" />
                       {host.actions}
                     </div>
                   )}

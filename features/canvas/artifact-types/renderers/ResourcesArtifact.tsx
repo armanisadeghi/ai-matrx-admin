@@ -50,6 +50,7 @@ export default function ResourcesArtifact({
         conversationId={conversationId}
         messageId={messageId}
         blockIndex={blockIndex}
+        source={typeof data === "string" ? data : raw}
       />
     </Suspense>
   );
