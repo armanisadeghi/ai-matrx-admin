@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Upload } from "lucide-react";
 
@@ -28,6 +28,7 @@ import {
   listAccessibleDocuments,
   listTrashedDocuments,
 } from "@ai-matrx/office/docs";
+import { useHomeRows } from "@/features/file-actions/home/useHomeRows";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentRow } from "@ai-matrx/office/core";
 import { documentSourceLabel } from "@ai-matrx/office/docs";
@@ -61,33 +62,14 @@ export default function DocumentsLandingPage() {
   const router = useRouter();
   const organizationId = useAppSelector(selectOrganizationId);
   const userId = useAppSelector(selectUserId);
-  const [documents, setDocuments] = useState<DocumentRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
   const [scope, setScope] = useState<FileScope>("all");
+  const { rows: documents, loading, error, reload } = useHomeRows<DocumentRow>(scope, listAccessibleDocuments, listTrashedDocuments);
   // The Google row and the list land in ONE frame: the list waits for the connection answer too.
   const google = useGoogleWorkspaceConnection();
   const homeLoading = loading || (scope !== "trash" && google.state.status === "loading");
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    const res = scope === "trash" ? await listTrashedDocuments() : await listAccessibleDocuments();
-    if (isServiceFailure(res)) {
-      setError(res.error);
-      setLoading(false);
-      return;
-    }
-    setDocuments(res.data);
-    setError(null);
-    setLoading(false);
-  }, [scope]);
-
-  useEffect(() => {
-    void reload();
-  }, [reload]);
 
   const handleCreate = async () => {
     setCreating(true);

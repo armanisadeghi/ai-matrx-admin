@@ -98,6 +98,7 @@ import "@univerjs/preset-sheets-thread-comment/lib/index.css";
 
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
+import { EditorBootCover, useFirstPaint } from "@/components/editor-chrome/EditorBootCover";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
@@ -1203,6 +1204,7 @@ export default function WorkbookEditor({
   // Extensions (Google keeps its own in the menu bar): the Google link, the table link and the
   // sheet reference are rows of ONE menu, with small marks by the title once a link exists.
   const ready = bootState === "ready";
+  const firstPaint = useFirstPaint(ready);
   const googleLink = useWorkbookGoogleLink(apiRef, workbookId, workbookName, editable, ready);
   const tableLink = useWorkbookTableLink({ apiRef, workbookId, workbookName, editable, enabled: ready });
   const extensionRows = ready ? (
@@ -1341,6 +1343,7 @@ export default function WorkbookEditor({
             flex sizing. */}
         <div className="relative min-h-0 flex-1">
           <div ref={containerRef} className="absolute inset-0" />
+          {bootState === "load_error" || firstPaint ? null : <EditorBootCover label="Loading workbook" />}
           {collab && bootState === "ready" && (
             <WorkbookCursorOverlay
               univerAPI={apiRef.current}

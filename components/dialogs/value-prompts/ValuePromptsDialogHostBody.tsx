@@ -36,6 +36,7 @@ import {
   type ValuePromptsRequest,
 } from "./valuePromptsOpener";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { ProInput } from "@/components/official/ProInput";
 
 function initialAnswers(req: ValuePromptsRequest): Record<string, string> {
   const out: Record<string, string> = {};
@@ -73,14 +74,22 @@ export default function ValuePromptsDialogHostBody() {
     [request, settle],
   );
 
+  // One short value (Rename, a title, a name) is a plain one-line field, current value selected,
+  // Enter confirms — the shape every file manager gives it. Several values, or a value that
+  // already spans lines, keep the multi-line boxes.
+  const single =
+    request && request.fields.length === 1 && !(answers[request.fields[0].name] ?? "").includes("\n")
+      ? request.fields[0]
+      : null;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{request?.title ?? ""}</DialogTitle>
-          <DialogDescription>
-            {request?.description ??
-              "This action needs a few values from you before it runs."}
+          {/* Dialog semantics need a description; with none supplied it stays screen-reader-only. */}
+          <DialogDescription className={request?.description ? undefined : "sr-only"}>
+            {request?.description ?? request?.title ?? ""}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-1">
@@ -95,6 +104,24 @@ export default function ValuePromptsDialogHostBody() {
                   <span className="ml-1 text-destructive">*</span>
                 )}
               </Label>
+              {single?.name === field.name ? (
+                <ProInput
+                  id={`value-prompt-${field.name}`}
+                  value={answers[field.name] ?? ""}
+                  autoFocus
+                  onFocus={(e) => e.currentTarget.select()}
+                  onChange={(e) =>
+                    setAnswers((prev) => ({ ...prev, [field.name]: e.target.value }))
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
+                  className="text-base md:text-sm"
+                />
+              ) : (
               <ProTextarea
                 id={`value-prompt-${field.name}`}
                 value={answers[field.name] ?? ""}
@@ -107,6 +134,7 @@ export default function ValuePromptsDialogHostBody() {
                 rows={2}
                 className="min-h-9 resize-y text-base md:text-sm"
               />
+              )}
             </div>
           ))}
         </div>
