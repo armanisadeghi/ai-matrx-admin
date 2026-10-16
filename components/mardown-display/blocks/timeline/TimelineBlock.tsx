@@ -32,6 +32,8 @@ import { downloadFile } from "@ai-matrx/kit/download";
 import { toast } from "@/lib/toast";
 import { icsFileName } from "@/lib/calendar/eventLinks";
 import { timelineCalendarEvents, timelineIcs } from "./timeline-calendar";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
+import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 interface TimelinePeriod {
   period: string;
@@ -40,6 +42,8 @@ interface TimelinePeriod {
 
 interface TimelineBlockProps {
   timeline: TimelineData;
+  /** The block's own markdown, when it has one: lets Block Controls edit it (title, events). */
+  source?: string;
   taskId?: string;
   artifactId?: string;
   conversationId?: string;
@@ -61,6 +65,7 @@ function getInitialCollapsedPeriods(periods: TimelinePeriod[]): Set<string> {
 
 const TimelineBlock: React.FC<TimelineBlockProps> = ({
   timeline: initialTimeline,
+  source,
   taskId,
   artifactId,
   conversationId,
@@ -68,6 +73,13 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
   blockIndex,
 }) => {
   const [timeline, setTimeline] = useState<TimelineData>(initialTimeline);
+  // An edit made through Block Controls arrives as a new parsed timeline: show it (progress and collapse state stay).
+  const [shownSource, setShownSource] = useState(initialTimeline);
+  if (shownSource !== initialTimeline) {
+    setShownSource(initialTimeline);
+    setTimeline(initialTimeline);
+  }
+  const controls = useBlockControls("timeline", source ?? "", useBlockEdit());
   // In a wide canvas pane the periods run left to right as columns; in a
   // portrait pane (and everywhere outside the canvas) top to bottom.
   const axis = timelineAxis(useCanvasPresentation());
@@ -268,6 +280,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
+        <BlockControlsButton controls={controls} title={timeline.title} />
         {categories.length > 1 && (
           <Select
             value={selectedCategory}

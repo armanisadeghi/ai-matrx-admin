@@ -45,6 +45,7 @@ export default function TimelineArtifact({
     <Suspense fallback={<MatrxMiniLoader />}>
       <TimelineBlock
         timeline={timeline}
+        source={typeof raw === "string" ? raw : undefined}
         taskId={artifactDedupKey(taskId, artifactId)}
         artifactId={artifactId}
         conversationId={conversationId}
