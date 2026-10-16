@@ -11,10 +11,12 @@
 import React from "react";
 import { AlertCircle, AlertTriangle, Info, Lightbulb } from "lucide-react";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+  Peek,
+  PeekHoverCard,
+  type PeekBlock,
+  type PeekRecord,
+  type PeekTone,
+} from "@ai-matrx/design-system";
 
 interface EditorErrorBlockProps {
   content: string;
@@ -49,6 +51,13 @@ const SEVERITY_STYLE: Record<
     bg: "bg-emerald-50 dark:bg-emerald-950/30",
     border: "border-emerald-200 dark:border-emerald-900/50",
   },
+};
+
+const SEVERITY_TONE: Record<string, PeekTone> = {
+  error: "danger",
+  warning: "warning",
+  info: "info",
+  hint: "success",
 };
 
 function basename(path: string): string {
@@ -87,50 +96,43 @@ export default function EditorErrorBlock({
   const Icon = style.icon;
   const label = `${file ? basename(file) : "Diagnostic"}${line ? `:${line}` : ""}`;
 
+  const body: PeekBlock[] = [];
+  if (file) {
+    body.push({ fact: `${file}${line ? `:${line}` : ""}`, muted: true, wrap: true });
+  }
+  body.push({
+    section: severity.charAt(0).toUpperCase() + severity.slice(1),
+    glyph: style.icon,
+    tone: SEVERITY_TONE[severity] ?? "danger",
+    text: message,
+    breaks: true,
+  });
+  if (surrounding) {
+    body.push({ section: "Surrounding code", code: { text: surrounding } });
+  }
+  const record: PeekRecord = {
+    kind: "Diagnostic",
+    id: `${file}:${line ?? ""}:${code ?? ""}`,
+    title: label,
+    glyph: style.icon,
+    subtitle: source ? `${source}${code ? ` · ${code}` : ""}` : undefined,
+    body,
+  };
+
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
+    <PeekHoverCard
+      side="top"
+      label={label}
+      trigger={
         <span
           className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border ${style.bg} ${style.border} ${style.color} cursor-default align-middle`}
         >
           <Icon className="w-3.5 h-3.5 shrink-0" />
           <span className="font-mono truncate max-w-[16ch]">{label}</span>
         </span>
-      </HoverCardTrigger>
-      <HoverCardContent
-        side="top"
-        align="start"
-        className="w-96 max-w-[90vw] p-0 overflow-hidden"
-      >
-        <div className={`flex items-center gap-2 px-3 py-2 border-b ${style.border} ${style.bg}`}>
-          <Icon className={`w-4 h-4 shrink-0 ${style.color}`} />
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {severity}
-          </span>
-          {source && (
-            <span className="text-xs text-muted-foreground ml-auto">
-              {source}
-              {code ? ` · ${code}` : ""}
-            </span>
-          )}
-        </div>
-        <div className="px-3 py-2 space-y-2">
-          {file && (
-            <div className="text-xs font-mono text-muted-foreground truncate">
-              {file}
-              {line ? `:${line}` : ""}
-            </div>
-          )}
-          <pre className="text-sm whitespace-pre-wrap break-words leading-snug">
-            {message}
-          </pre>
-          {surrounding && (
-            <pre className="text-xs font-mono bg-muted rounded p-2 overflow-x-auto max-h-48">
-              {surrounding}
-            </pre>
-          )}
-        </div>
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <Peek size="md" record={record} />
+    </PeekHoverCard>
   );
 }

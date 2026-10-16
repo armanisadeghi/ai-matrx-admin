@@ -10,11 +10,7 @@
 import { ArrowRight, CircleHelp, AppWindow } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { Peek, PeekHoverCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
 import { GRADE_META } from "./impact";
@@ -110,6 +106,51 @@ export function WorkflowVerdictDetail({ verdict }: { verdict: WorkflowImpactVerd
   );
 }
 
+/** One workflow verdict as Peek blocks — the hover's twin of WorkflowVerdictDetail. */
+function workflowVerdictPeekBlocks(verdict: WorkflowImpactVerdict): PeekBlock[] {
+  const ways = (Object.keys(BREAK_WAY_LABEL) as WorkflowBreakWay[]).map((way) => ({
+    way,
+    grade: verdict.breaks[way] ?? "identical",
+  }));
+  const tone = (grade: string) =>
+    grade === "red" ? "danger" : grade === "orange" ? "warning" : grade === "green" ? "success" : "neutral";
+  const blocks: PeekBlock[] = [
+    {
+      section: GRADE_META[verdict.grade].label,
+      tone: tone(verdict.grade),
+      text: RUNG_WORDS[verdict.principal_kind],
+    },
+    {
+      fact: verdict.workflow_name,
+      entity: { token: "workflow", id: verdict.workflow_id },
+    },
+    { property: "Versions", value: `${workflowPinLabel(verdict)} → ${workflowNewestLabel(verdict)}` },
+    {
+      section: "Breaks",
+      rows: ways.map(({ way, grade }) => ({
+        text: BREAK_WAY_LABEL[way],
+        tone: tone(grade),
+        status: { text: GRADE_META[grade].label, tone: tone(grade), hint: `${BREAK_WAY_LABEL[way]}: ${GRADE_META[grade].label}` },
+      })),
+    },
+  ];
+  blocks.push(
+    verdict.findings.length > 0
+      ? {
+          section: "Findings",
+          rows: verdict.findings.map((finding) => ({ text: finding.message, tone: tone(finding.grade) })),
+        }
+      : { fact: "No change between these versions affects this job.", muted: true, wrap: true },
+  );
+  if (verdict.blocker === "set_aside" && verdict.set_aside_reason) {
+    blocks.push({ fact: `Set aside: ${verdict.set_aside_reason}`, muted: true, wrap: true });
+  }
+  if (verdict.behind_latest) {
+    blocks.push({ fact: "Move this pin in the mandate's Mandate Holder tab.", muted: true, wrap: true });
+  }
+  return blocks;
+}
+
 export function WorkflowImpactGradeCell({
   mandateKey,
   verdicts,
@@ -119,9 +160,17 @@ export function WorkflowImpactGradeCell({
 }) {
   const lead = leadWorkflowVerdict(verdicts);
   if (!lead) return null;
+  const record: PeekRecord = {
+    kind: "Workflow change impact",
+    id: String(mandateKey),
+    title: "What changed in the workflow",
+    body: verdicts.flatMap((verdict) => workflowVerdictPeekBlocks(verdict)),
+    copyData: false,
+  };
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
+    <PeekHoverCard
+      label="What changed in the workflow"
+      trigger={
         <button
           type="button"
           onClick={(event) => event.stopPropagation()}
@@ -135,19 +184,10 @@ export function WorkflowImpactGradeCell({
             workflow{verdicts.length > 1 ? ` ×${verdicts.length}` : ""}
           </span>
         </button>
-      </HoverCardTrigger>
-      <HoverCardContent align="start" className="w-[min(28rem,96vw)] space-y-2 p-3">
-        <div className="type-secondary font-medium">What changed in the workflow</div>
-        {verdicts.map((verdict, index) => (
-          <div
-            key={`${verdict.holder_kind}:${verdict.row_id}`}
-            className={index > 0 ? "border-t border-border pt-2" : undefined}
-          >
-            <WorkflowVerdictDetail verdict={verdict} />
-          </div>
-        ))}
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <Peek size="lg" record={record} />
+    </PeekHoverCard>
   );
 }
 

@@ -29,7 +29,6 @@
 
 "use client";
 
-import { type ReactNode } from "react";
 import { X } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
@@ -38,11 +37,7 @@ import { getFileTypeDetails } from "@/features/files/utils/file-types";
 import { MediaThumbnail } from "@ai-matrx/media/react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { FileRightClickMenu } from "@/features/files/components/core/FileContextMenu/FileRightClickMenu";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { Peek, PeekHoverCard, type PeekRecord } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { openFilePreview } from "./openFilePreview";
 import { useEnsureCloudFile } from "@/features/files/hooks/useEnsureCloudFile";
@@ -185,84 +180,37 @@ export function FileResourceChip({
     </button>
   ) : null;
 
+  const typeLine = [
+    details.displayName,
+    fileSize ? formatFileSize(fileSize) : null,
+    mimeType && mimeType !== details.displayName ? mimeType : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const peekRecord: PeekRecord = {
+    kind: "File",
+    id: fileId,
+    title: fileName,
+    subtitle: typeLine || undefined,
+    media: {
+      alt: fileName,
+      file: { id: fileId, mimeType: mimeType ?? undefined },
+    },
+    primary: { label: "Open full preview", onSelect: handleOpen },
+  };
+
   return (
     <FileRightClickMenu fileId={fileId}>
       {/* FileRightClickMenu must receive a real DOM trigger. Passing the
           Radix HoverCard root here drops the context-menu handler because
           that root renders no element of its own. */}
       <span className="inline-flex items-stretch">
-        <HoverCard>
-          <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
-          <HoverCardContent
-            side="top"
-            align="start"
-            sideOffset={6}
-            className="w-72 p-3"
-          >
-            <FilePeekContent
-              fileName={fileName}
-              fileSize={fileSize}
-              mimeType={mimeType}
-              displayName={details.displayName}
-              thumb={
-                <MediaThumbnail
-                  mediaRef={{
-                    file_id: thumbnailFile.id,
-                    mime_type: thumbnailFile.mimeType ?? undefined,
-                  }}
-                  fileName={thumbnailFile.fileName}
-                  mimeType={thumbnailFile.mimeType}
-                  iconSize={56}
-                  className="aspect-[4/3] w-full"
-                  rounded="rounded-md"
-                />
-              }
-            />
-          </HoverCardContent>
-        </HoverCard>
+        <PeekHoverCard trigger={chip} side="top" align="start" label={fileName}>
+          <Peek size="xs" record={peekRecord} />
+        </PeekHoverCard>
         {removeButton}
       </span>
     </FileRightClickMenu>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Hover peek body
-// ---------------------------------------------------------------------------
-
-function FilePeekContent({
-  fileName,
-  fileSize,
-  mimeType,
-  displayName,
-  thumb,
-}: {
-  fileName: string;
-  fileSize: number | null;
-  mimeType: string | null;
-  displayName: string;
-  thumb: ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      {thumb}
-      <div className="space-y-0.5">
-        <p
-          className="truncate text-sm font-medium leading-tight"
-          title={fileName}
-        >
-          {fileName}
-        </p>
-        <p className="text-[11px] text-muted-foreground">
-          {displayName}
-          {fileSize ? ` · ${formatFileSize(fileSize)}` : ""}
-          {mimeType && mimeType !== displayName ? ` · ${mimeType}` : ""}
-        </p>
-      </div>
-      <p className="pt-1 text-[10px] text-muted-foreground/80">
-        Click to open full preview
-      </p>
-    </div>
   );
 }
 
