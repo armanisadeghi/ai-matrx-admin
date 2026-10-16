@@ -19,7 +19,8 @@
  *
  * FRESHNESS. `communication.notification` is not in the realtime publication
  * and its select policy has no recipient arm (`pnpm check:realtime-publication`).
- * Reads refresh on focus, every `INBOX_POLL_INTERVAL_MS`, and after every write.
+ * The badge reads once after settle, then on focus (≤ once a minute) and after every write;
+ * the open list also refreshes every `INBOX_POLL_INTERVAL_MS`.
  * The broadcast on insert is the named follow-up in ./FEATURE.md.
  */
 
@@ -58,8 +59,12 @@ import type {
 
 /** How often the badge re-reads while the tab is open (ms). */
 export const INBOX_POLL_INTERVAL_MS = 60_000;
-/** How often the always-mounted bell BADGE re-reads (ms). Background tabs never poll (react-query default). */
-export const INBOX_BADGE_POLL_INTERVAL_MS = 5 * 60_000;
+/**
+ * The always-mounted bell BADGE never polls (owner, 2026-10-15: nothing the page does not show
+ * leaves on a timer). It reads once after the page settles, then on window focus — at most once
+ * per this window — and after every write. The open bell's list keeps its own interval.
+ */
+export const INBOX_BADGE_STALE_MS = 60_000;
 /** Notices per page read. */
 export const INBOX_PAGE_SIZE = 50;
 
@@ -79,9 +84,9 @@ export function useWorkWaiting(enabled: boolean) {
     queryKey: workKey(userId),
     queryFn: fetchMyWorkWaiting,
     enabled: userId !== null && enabled,
-    refetchInterval: INBOX_BADGE_POLL_INTERVAL_MS,
+    // No interval: the badge re-reads on window focus, at most once a minute (the load law).
     refetchOnWindowFocus: true,
-    staleTime: 15_000,
+    staleTime: INBOX_BADGE_STALE_MS,
     retry: 1,
   });
 }
@@ -121,9 +126,9 @@ export function useInboxCounts(): InboxCounts {
     queryKey: summaryKey(userId),
     queryFn: fetchInboxSummary,
     enabled: userId !== null && idleReady,
-    refetchInterval: INBOX_BADGE_POLL_INTERVAL_MS,
+    // No interval: the badge re-reads on window focus, at most once a minute (the load law).
     refetchOnWindowFocus: true,
-    staleTime: 15_000,
+    staleTime: INBOX_BADGE_STALE_MS,
   });
 
   // The record store's waiting changes are in BOTH numbers — `/approvals` lists them and
