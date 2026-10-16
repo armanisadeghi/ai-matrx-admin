@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 194,
+    "repo-only": 198,
     "live-db": 70
   },
   "rows": {
@@ -822,6 +822,20 @@
       "reason": "no database access in 3 file(s) reached",
       "evidence": []
     },
+    "host-configuration-never-imported-by-a-server-module": {
+      "label": "Host configuration never imported by a server module",
+      "class": "repo-only",
+      "cmd": "pnpm check:host-config-browser",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "host-configuration-guard-proves-it-can-fail": {
+      "label": "Host-configuration guard proves it can fail",
+      "class": "repo-only",
+      "cmd": "pnpm check:host-config-browser:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "one-agent-list-read-package-owned": {
       "label": "One agent-list read (package-owned)",
       "class": "repo-only",
@@ -1535,7 +1549,7 @@
       "label": "Authentication destinations and gates",
       "class": "repo-only",
       "cmd": "pnpm check:auth-destinations",
-      "reason": "no database access in 10 file(s) reached",
+      "reason": "no database access in 12 file(s) reached",
       "evidence": []
     },
     "auth-doors-blind-to-a-split-cookie-jar": {
@@ -2063,7 +2077,7 @@
       "label": "Content IR / kinds test suite",
       "class": "repo-only",
       "cmd": "pnpm test:content-ir",
-      "reason": "no database access in 254 file(s) reached",
+      "reason": "no database access in 257 file(s) reached",
       "evidence": []
     },
     "whole-jest-suite-every-suite-not-ci-s-four-scopes": {
