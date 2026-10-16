@@ -2862,6 +2862,182 @@ export type Database = {
         }
         Relationships: []
       }
+      device_model_file: {
+        Row: {
+          app_instance_id: string
+          artifact_id: string | null
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          file_key: string
+          hash_source: string | null
+          id: string
+          metadata: Json
+          mtime: string | null
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          quick_hash: string | null
+          rel_path: string | null
+          root_id: string
+          sha256: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          size_bytes: number
+          state: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          app_instance_id: string
+          artifact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          file_key: string
+          hash_source?: string | null
+          id?: string
+          metadata?: Json
+          mtime?: string | null
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          quick_hash?: string | null
+          rel_path?: string | null
+          root_id: string
+          sha256?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          size_bytes: number
+          state: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          app_instance_id?: string
+          artifact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          file_key?: string
+          hash_source?: string | null
+          id?: string
+          metadata?: Json
+          mtime?: string | null
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          quick_hash?: string | null
+          rel_path?: string | null
+          root_id?: string
+          sha256?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          size_bytes?: number
+          state?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_model_file_root_id_fkey"
+            columns: ["root_id"]
+            isOneToOne: false
+            referencedRelation: "device_model_root"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      device_model_root: {
+        Row: {
+          app_instance_id: string
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          include_kinds: string[]
+          is_download_target: boolean
+          last_error: string | null
+          last_scan_at: string | null
+          layout: string
+          metadata: Json
+          organization_id: string
+          origin: string
+          path: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          scan_state: string
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          app_instance_id: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          include_kinds?: string[]
+          is_download_target?: boolean
+          last_error?: string | null
+          last_scan_at?: string | null
+          layout: string
+          metadata?: Json
+          organization_id: string
+          origin: string
+          path: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          scan_state: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          app_instance_id?: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          include_kinds?: string[]
+          is_download_target?: boolean
+          last_error?: string | null
+          last_scan_at?: string | null
+          layout?: string
+          metadata?: Json
+          organization_id?: string
+          origin?: string
+          path?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          scan_state?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       endpoint: {
         Row: {
           auth_ref: Json
@@ -4000,7 +4176,7 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           updated_at?: string
           updated_by?: string | null
-          uses?: Database["ai"]["Enums"]["model_artifact_use"][]
+          uses: Database["ai"]["Enums"]["model_artifact_use"][]
           variant_id?: string | null
           variant_policy?: string
           version?: number
@@ -4237,6 +4413,123 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "model_variant"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      person_model_want: {
+        Row: {
+          app_instance_id: string | null
+          auto_download: boolean
+          auto_start: boolean
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          device_scope: string
+          id: string
+          metadata: Json
+          model_id: string
+          opted_out: boolean
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          uses: Database["ai"]["Enums"]["model_artifact_use"][]
+          variant_id: string | null
+          variant_policy: string
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          app_instance_id?: string | null
+          auto_download?: boolean
+          auto_start?: boolean
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          device_scope: string
+          id?: string
+          metadata?: Json
+          model_id: string
+          opted_out?: boolean
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          uses: Database["ai"]["Enums"]["model_artifact_use"][]
+          variant_id?: string | null
+          variant_policy: string
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          app_instance_id?: string | null
+          auto_download?: boolean
+          auto_start?: boolean
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          device_scope?: string
+          id?: string
+          metadata?: Json
+          model_id?: string
+          opted_out?: boolean
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          uses?: Database["ai"]["Enums"]["model_artifact_use"][]
+          variant_id?: string | null
+          variant_policy?: string
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_admin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "test_model_candidates"
+            referencedColumns: ["model_id"]
           },
         ]
       }
@@ -9820,6 +10113,7 @@ export type Database = {
           link_id: string
           link_kind: string
           organization_id: string
+          origin: string
           provider: string
           status: string
         }[]
@@ -9836,6 +10130,25 @@ export type Database = {
       _run_approval_threshold: { Args: { p_org: string }; Returns: number }
       _signup_free_months: { Args: { p_user: string }; Returns: undefined }
       _social_handle: { Args: { p: string }; Returns: string }
+      _work_subject_runs: {
+        Args: { p_since: string }
+        Returns: {
+          calls: number
+          conversation_id: string
+          cost: number
+          created_at: string
+          kind: string
+          model: string
+          name: string
+          origin: string
+          owner_org: string
+          person_id: string
+          request_id: string
+          run_key: string
+          sid: string
+          workflow_run_id: string
+        }[]
+      }
       account_spend_today: {
         Args: { p_user_ids: string[] }
         Returns: {
@@ -10057,6 +10370,7 @@ export type Database = {
       }
       my_cost_breakdown: {
         Args: {
+          p_bucket?: string
           p_feature?: string
           p_from?: string
           p_group?: string
@@ -10072,6 +10386,7 @@ export type Database = {
           group_key: string
           group_label: string
           last_at: string
+          origin_bucket: string
           points: number
         }[]
       }
@@ -10080,10 +10395,12 @@ export type Database = {
           p_activity?: string
           p_before_at?: string
           p_before_id?: string
+          p_bucket?: string
           p_feature?: string
           p_from?: string
           p_limit?: number
           p_organization?: string
+          p_origin?: string
           p_scope?: string
           p_to?: string
         }
@@ -10100,6 +10417,8 @@ export type Database = {
           link_kind: string
           organization_id: string
           organization_name: string
+          origin: string
+          origin_bucket: string
           points: number
           status: string
           subject_brand_id: string
@@ -10196,6 +10515,10 @@ export type Database = {
       }
       plan_set: { Args: { p_fields: Json; p_plan_key: string }; Returns: Json }
       plan_status: { Args: { p_org: string }; Returns: Json }
+      premium_model: {
+        Args: { p_model: string; p_org?: string }
+        Returns: boolean
+      }
       public_plans: { Args: never; Returns: Json }
       reconcile_hard_cost: {
         Args: {
@@ -10500,6 +10823,22 @@ export type Database = {
         Args: { p_org_id?: string }
         Returns: number
       }
+      run_volume_sweep: {
+        Args: never
+        Returns: {
+          action: string
+          approval_id: string
+          calls: number
+          calls_limit: number
+          cost: number
+          organization_id: string
+          person_id: string
+          subject_id: string
+          subject_kind: string
+          subject_name: string
+          usd_limit: number
+        }[]
+      }
       spend_alarm_apply_held_estimates: {
         Args: { p_request_ids?: string[] }
         Returns: number
@@ -10770,6 +11109,21 @@ export type Database = {
         Args: { p_tier: Database["billing"]["Enums"]["tier"] }
         Returns: number
       }
+      unattributed_paid_sources: {
+        Args: { p_since: string }
+        Returns: {
+          app: string
+          calls: number
+          cost: number
+          feature: string
+          last_at: string
+          origin: string
+          persons: number
+          sample_execution_id: string
+          sample_person_id: string
+          source_key: string
+        }[]
+      }
       usage_admin_by_user: {
         Args: {
           p_capability?: string
@@ -10778,9 +11132,13 @@ export type Database = {
           p_to?: string
         }
         Returns: {
+          automated_quantity: number
+          by_origin: Json
           capability: string
           event_count: number
+          own_quantity: number
           total_quantity: number
+          unattributed_quantity: number
           user_id: string
         }[]
       }
@@ -10788,19 +11146,28 @@ export type Database = {
         Args: { p_from?: string; p_to?: string }
         Returns: {
           active_users: number
+          automated_quantity: number
+          by_origin: Json
           capability: string
           event_count: number
+          own_quantity: number
           total_quantity: number
+          unattributed_quantity: number
         }[]
       }
       usage_my_summary: {
         Args: { p_from?: string; p_to?: string }
         Returns: {
+          automated_quantity: number
+          by_origin: Json
           capability: string
           event_count: number
+          own_quantity: number
           total_quantity: number
+          unattributed_quantity: number
         }[]
       }
+      usage_origin_bucket: { Args: { p_origin: string }; Returns: string }
       usage_reset_apply: {
         Args: {
           p_note: string
@@ -10820,6 +11187,10 @@ export type Database = {
         Returns: Json
       }
       user_usage_state: { Args: { p_user?: string }; Returns: Json }
+      workflow_subject_id: {
+        Args: { p_definition_id: string; p_run_metadata: Json }
+        Returns: string
+      }
     }
     Enums: {
       meter_period:
@@ -16341,6 +16712,62 @@ export type Database = {
       root_conversation_id: {
         Args: { p_conversation_id: string }
         Returns: string
+      }
+      sidebar_bucket:
+        | {
+            Args: { c: Database["chat"]["Tables"]["conversation"]["Row"] }
+            Returns: string
+          }
+        | {
+            Args: {
+              confidential: boolean
+              conversation_type: string
+              origin_class: string
+              source_app: string
+              source_feature: string
+            }
+            Returns: string
+          }
+      sidebar_child_count: { Args: { p_id: string }; Returns: number }
+      sidebar_conversations: {
+        Args: {
+          p_before?: string
+          p_before_id?: string
+          p_buckets?: string[]
+          p_limit?: number
+          p_parent_id?: string
+          p_search?: string
+          p_sources?: string[]
+        }
+        Returns: {
+          bucket: string
+          child_count: number
+          conversation_type: string
+          id: string
+          is_confidential: boolean
+          last_activity_at: string
+          message_count: number
+          model_name: string
+          origin_class: string
+          parent_conversation_id: string
+          source_app: string
+          source_feature: string
+          title: string
+        }[]
+      }
+      sidebar_defaults: { Args: { p_organization_id?: string }; Returns: Json }
+      sidebar_defaults_set: {
+        Args: { p_organization_id: string; p_value: Json }
+        Returns: Json
+      }
+      sidebar_sources: {
+        Args: { p_buckets?: string[] }
+        Returns: {
+          bucket: string
+          n: number
+          source_app: string
+          source_feature: string
+        }[]
       }
       tool_call_refetch_backfill: {
         Args: { p_conversations?: number }
@@ -41034,6 +41461,10 @@ export type Database = {
       }
       field_make_automatic: {
         Args: { p_field_id: string; p_kind: string; p_organization_id: string }
+        Returns: Json
+      }
+      field_notify_on_assign: {
+        Args: { p_field_id: string; p_on: boolean; p_organization_id: string }
         Returns: Json
       }
       field_options: {
@@ -89479,6 +89910,7 @@ export type Database = {
           memory_breach: boolean
           memory_breach_streak: number
           project_ref: string
+          relieved_backends: Json
           sampled_at: string
           scrape_error: string | null
           scrape_fail_streak: number
@@ -89509,6 +89941,7 @@ export type Database = {
           memory_breach?: boolean
           memory_breach_streak?: number
           project_ref: string
+          relieved_backends?: Json
           sampled_at?: string
           scrape_error?: string | null
           scrape_fail_streak?: number
@@ -89539,6 +89972,7 @@ export type Database = {
           memory_breach?: boolean
           memory_breach_streak?: number
           project_ref?: string
+          relieved_backends?: Json
           sampled_at?: string
           scrape_error?: string | null
           scrape_fail_streak?: number
@@ -90726,6 +91160,14 @@ export type Database = {
       db_host_activity: { Args: never; Returns: Json }
       db_long_transactions: {
         Args: { p_min_age_seconds: number }
+        Returns: Json
+      }
+      db_memory_relief: {
+        Args: {
+          p_max: number
+          p_min_age_seconds: number
+          p_min_idle_seconds: number
+        }
         Returns: Json
       }
       perf_alert: { Args: { p_items: Json }; Returns: Json }
@@ -102557,6 +102999,10 @@ export type Database = {
         Returns: Json
       }
       entity_is_org_scoped: { Args: { p_token: string }; Returns: boolean }
+      entity_label: {
+        Args: { p_fallback: string; p_id: string; p_type: string }
+        Returns: string
+      }
       entity_link_shareable: { Args: { p_token: string }; Returns: boolean }
       entity_list_scoped: {
         Args: {
@@ -103601,6 +104047,7 @@ export type Database = {
         }
         Returns: number
       }
+      record_entity_title: { Args: { p_id: string }; Returns: string }
       record_removal_rights: {
         Args: { p_id: string; p_type: string }
         Returns: Json
@@ -123150,6 +123597,93 @@ export type Database = {
   }
   scraper: {
     Tables: {
+      comparison_run: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          error: string | null
+          error_code: string | null
+          facts: Json
+          finished_at: string | null
+          id: string
+          item_count: number
+          kind: string
+          lease_until: string
+          metadata: Json
+          organization_id: string
+          progress: Json
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          request: Json
+          result: Json | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          error?: string | null
+          error_code?: string | null
+          facts?: Json
+          finished_at?: string | null
+          id?: string
+          item_count?: number
+          kind: string
+          lease_until?: string
+          metadata?: Json
+          organization_id: string
+          progress?: Json
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request?: Json
+          result?: Json | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          error?: string | null
+          error_code?: string | null
+          facts?: Json
+          finished_at?: string | null
+          id?: string
+          item_count?: number
+          kind?: string
+          lease_until?: string
+          metadata?: Json
+          organization_id?: string
+          progress?: Json
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request?: Json
+          result?: Json | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       data_fetch_job: {
         Row: {
           billed_at: string | null
@@ -123826,7 +124360,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _column_name: { Args: { p_key: string }; Returns: string }
       canonical_url: { Args: { u: string }; Returns: string }
+      data_sources_library: {
+        Args: {
+          p_featured_only?: boolean
+          p_group?: string
+          p_organization_id?: string
+          p_q?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
