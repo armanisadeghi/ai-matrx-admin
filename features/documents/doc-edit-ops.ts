@@ -3,7 +3,7 @@
  * the selection, read the live snapshot, set view-only. Every operation is a real Univer command.
  */
 
-import { bookmarkBody, collectBookmarks, insertableBody, type Bookmark } from "@/features/documents/doc-tools-core";
+import { blockInsertPlan, bookmarkBody, collectBookmarks, insertableBody, type Bookmark } from "@/features/documents/doc-tools-core";
 
 interface ApiLike {
   executeCommand(id: string, params?: object): Promise<unknown> | unknown;
@@ -24,13 +24,18 @@ interface TextRangeLike {
 
 export interface DocEditOps {
   insertText(text: string): Promise<boolean>;
+  /** A block (building block) at a new paragraph, never mid-line. */
   insertMarkdown(markdown: string): Promise<boolean>;
+  /** Move the caret to where a block goes (`blockInsertPlan`); false when there is no caret. */
+  toBlockStart(): Promise<boolean>;
   bookmarks(): Bookmark[];
   addBookmark(name: string): Promise<boolean>;
   deleteBookmark(b: Bookmark): Promise<boolean>;
   goTo(offset: number): void;
   snapshot(): unknown;
   setViewOnly(viewOnly: boolean): Promise<void>;
+  /** Calls back when Univer refuses an edit (Viewing mode); returns the unsubscribe. */
+  onEditDenied(cb: () => void): Promise<() => void>;
   openImagePanel(): Promise<boolean>;
 }
 
@@ -43,6 +48,19 @@ export function createDocEditOps(deps: { api: () => ApiLike | null; injector: ()
     return live ?? null;
   };
   const exec = async (id: string, params: object) => (await deps.api()?.executeCommand(id, params)) !== false;
+  const toBlockStart = async (): Promise<boolean> => {
+    const d = doc();
+    const r = await range();
+    const stream = (snapshot() as { body?: { dataStream?: string } } | null)?.body?.dataStream;
+    if (!d || !r || typeof stream !== "string") return false;
+    const plan = blockInsertPlan(stream, r.startOffset);
+    if (plan.breakAt === null) {
+      d.setSelection?.(plan.at, plan.at);
+      return true;
+    }
+    d.setSelection?.(plan.breakAt, plan.breakAt);
+    return exec("doc.command.break-line", { unitId: d.getId() });
+  };
 
   return {
     snapshot,
@@ -50,9 +68,10 @@ export function createDocEditOps(deps: { api: () => ApiLike | null; injector: ()
       if (!text || !(await range())) return false;
       return exec("doc.command.insert-special-character", { value: text });
     },
+    toBlockStart,
     async insertMarkdown(markdown) {
       const d = doc();
-      if (!d || !(await range())) return false;
+      if (!d || !(await toBlockStart())) return false;
       return exec("doc.command.replace-selection", { unitId: d.getId(), body: insertableBody(markdown) });
     },
     bookmarks: () => collectBookmarks(snapshot()),
@@ -75,6 +94,18 @@ export function createDocEditOps(deps: { api: () => ApiLike | null; injector: ()
       if (!perm) return;
       if (viewOnly) await perm.setReadOnly();
       else await perm.setEditable(true);
+      // Univer's own refusal notice ("This content is protected…") stays off while viewing; the
+      // editor shows ours through onEditDenied.
+      const { IPermissionService } = await import("@univerjs/core");
+      deps.injector()?.get<{ setShowComponents?(show: boolean): void }>(IPermissionService)?.setShowComponents?.(!viewOnly);
+    },
+    async onEditDenied(cb) {
+      const { ErrorService } = await import("@univerjs/core");
+      const errors = deps.injector()?.get<{ error$?: { subscribe(fn: (e: { code?: string }) => void): { unsubscribe(): void } } }>(ErrorService);
+      const sub = errors?.error$?.subscribe((e) => {
+        if (e.code === "PERMISSION_DENIED") cb();
+      });
+      return () => sub?.unsubscribe();
     },
     async openImagePanel() {
       return exec("sidebar.operation.doc-image", { value: "doc-image" });

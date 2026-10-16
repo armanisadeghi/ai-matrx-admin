@@ -59,6 +59,8 @@ export interface DocsApiLike {
 export interface DocChromeHost {
   api: DocsApiLike;
   editable: boolean;
+  /** Move the caret to a paragraph boundary before a block insert (never split a heading). */
+  blockStart?: () => Promise<boolean>;
   /** The open document's unit id (zoom needs it). */
   unitId: () => string | null;
   zoom: () => number;
@@ -182,7 +184,10 @@ const tocEntries = (h: DocChromeHost): EditorMenuEntry[] => [
     id: "insert.toc.insert",
     label: "Insert table of contents",
     keywords: ["contents", "headings"],
-    run: () => {
+    run: async () => {
+      // Univer inserts the table at the caret; inside a heading that splits it and the table then
+      // lists the broken half. The table goes at its own paragraph instead.
+      if (h.blockStart && !(await h.blockStart())) return false;
       const unitId = h.unitId();
       return h.api.executeCommand("doc.command.insert-table-of-contents", {
         ...(unitId ? { unitId } : {}),

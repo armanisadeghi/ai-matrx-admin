@@ -38,6 +38,23 @@ export function insertableBody(markdown: string): InsertableBody {
   return { dataStream: stream, paragraphs, ...(textRuns.length ? { textRuns } : {}) };
 }
 
+/**
+ * Where a BLOCK (table of contents, building block) goes for a caret: never inside a paragraph's
+ * text, so a heading is never split. Caret at the start of a paragraph (or in an empty one) →
+ * insert right there; anywhere else → end the caret's paragraph with a new line and insert at the
+ * start of that new paragraph. `dataStream` is Univer's body stream (paragraphs end in `\r`).
+ */
+export function blockInsertPlan(dataStream: string, caret: number): { at: number; breakAt: number | null } {
+  const c = Math.max(0, Math.min(caret, dataStream.length));
+  const start = Math.max(dataStream.lastIndexOf("\r", c - 1), dataStream.lastIndexOf("\n", c - 1)) + 1;
+  let end = dataStream.indexOf("\r", c);
+  if (end < 0) end = dataStream.length;
+  // Field marks and anchors are zero-width: a paragraph holding only them is empty.
+  const text = dataStream.slice(start, end).replace(/[\u0000-\u001f\u200b]/g, "").trim();
+  if (c === start || text === "") return { at: start, breakAt: null };
+  return { at: end + 1, breakAt: end };
+}
+
 /** Univer's CustomRangeType.BOOKMARK. */
 export const BOOKMARK_RANGE_TYPE = 3;
 /** A bookmark is an invisible anchor: one zero-width character the custom range wraps. */
