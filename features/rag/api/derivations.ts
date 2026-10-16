@@ -24,6 +24,7 @@
  */
 
 import { getJson, postJson, postNdjson } from "@/lib/python-client";
+import { fetchLibraryChunks } from "./libraryChunks";
 import { getUserMessage } from "@ai-matrx/api";
 
 // ---------------------------------------------------------------------------
@@ -251,22 +252,11 @@ export async function fetchDerivativeChunks(
     signal?: AbortSignal;
   } = {},
 ): Promise<DerivativeChunksResponse> {
-  const params = new URLSearchParams();
-  params.set("limit", String(opts.limit ?? 50));
-  if (opts.offset) params.set("offset", String(opts.offset));
-  if (opts.pageNumber != null) {
-    params.set("page_number", String(opts.pageNumber));
-  }
-  const { data } = await getJson<DerivativeChunksResponse>(
-    `/rag/library/${encodeURIComponent(derivativeId)}/chunks?${params.toString()}`,
-    { signal: opts.signal },
-  );
-  return {
-    chunks: Array.isArray(data?.chunks) ? data.chunks : [],
-    total: typeof data?.total === "number" ? data.total : 0,
-    limit: typeof data?.limit === "number" ? data.limit : (opts.limit ?? 50),
-    offset: typeof data?.offset === "number" ? data.offset : (opts.offset ?? 0),
-  };
+  return fetchLibraryChunks(derivativeId, {
+    limit: opts.limit ?? 50,
+    offset: opts.offset,
+    pageNumber: opts.pageNumber,
+  });
 }
 
 // ---------------------------------------------------------------------------

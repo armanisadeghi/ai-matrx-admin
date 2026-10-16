@@ -55,8 +55,7 @@ import {
   citedChunkFacts,
   timeRangeLabel,
 } from "@/features/rag/components/source-inspector/citedAnchor";
-import { listLibraryChunks } from "@ai-matrx/api/knowledge";
-import { serverApi } from "@/lib/api/server-api";
+import { fetchLibraryChunks } from "@/features/rag/api/libraryChunks";
 
 /** The structural shape ChunkCard needs. Any endpoint chunk row that carries
  *  these fields renders without adaptation. */
@@ -434,9 +433,7 @@ export function ChunksOnPage({
     setLoading(true);
     setError(null);
     setOrgRequired(false);
-    listLibraryChunks(serverApi, { path: {
-        processed_document_id: documentId,
-      }, query: { limit, page_number: pageNumber } })
+    fetchLibraryChunks(documentId, { limit, pageNumber })
       .then((data) => {
         if (cancelled || !data) return;
         setChunks(Array.isArray(data.chunks) ? data.chunks : []);
