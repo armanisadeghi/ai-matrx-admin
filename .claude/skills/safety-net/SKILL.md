@@ -99,7 +99,7 @@ runner and fault proof (§2–§5); they differ only in what the runs compare an
    Run rows, fixes and fault rows follow as their own commits in every scenario. No script checks this. Anyone who doubts
    the order reads the history, which cannot be rewritten on the shared remote.
 6. **The change** (B, D only).
-7. **After-run** (B, D) — a fresh runner walks every playbook through every trigger. All PASS → ship.
+7. **After-run** (B, D) — a fresh runner walks every playbook through every trigger it names. All PASS → ship.
    Any FAIL → stop. Fix the product. Rerun the failed playbook and every playbook that shares the
    broken channel. **A playbook is never edited to make it pass.** It changes only when the intended
    behavior changed, and the ledger row says what changed and why.
@@ -192,8 +192,17 @@ That is what makes one passing test worth hundreds of smaller ones.
 this skill and hides each piece of its answer behind a different row there, so a missing piece names the
 break. Only Arman adds rows; propose new ones to him in chat.
 
-**Triggers are a slot, not a copy.** The same playbook names every entry point that can perform the
-job, and a run is one playbook through one trigger. The after-run covers every trigger.
+**One primary chain, one rich UI; every other test is short and different** (Arman, 2026-10-15: "we don't
+need to run the same test on all uis… it kills the test on the other surface"). The server and the core
+front-end work (variables, bindings, attachments, context, agent calls, the confirmed write) are proven once,
+by the primary chain on one surface rich enough to exercise them (Notes). Another UI gets its own quick test
+of only what that UI does differently: its surface map, its tools, one read and one write. Server-only
+behavior (mandates, bindings resolved without a page, other ways in) is tested by direct calls to the
+product's own API or the AI Dream connector, with no browser. Never repeat the primary chain on a second UI.
+
+**Triggers are a slot, not a copy.** A playbook names the entry points that reach a DIFFERENT path for the
+same job (a server-side door, a mandate), and a run is one playbook through one trigger. Two UIs that call the
+same server path are one trigger, not two.
 
 **No screen.** When what is tested has no page (a server path, a package, an agent behind a mandate),
 the runner's tool is the product's own door as the person: the AI Dream MCP (`agent_run`, the mandate
