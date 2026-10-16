@@ -25,11 +25,14 @@ import {
 export function DestinationStep({
   value,
   bridgeCapability,
+  codexBridgeCapability,
   localCapability,
   onChange,
 }: {
   value: WorkDestinationId;
   bridgeCapability: CodingBridgeCapability;
+  /** The bridge verdict for `codex × matrx_sandbox` (Codex (hosted)). */
+  codexBridgeCapability?: CodingBridgeCapability;
   localCapability?: LocalRuntimeCapability;
   onChange: (id: WorkDestinationId) => void;
 }) {
@@ -46,6 +49,7 @@ export function DestinationStep({
           destination.id,
           bridgeCapability,
           localCapability,
+          codexBridgeCapability,
         );
         const selected = selectable && value === destination.id;
         return (

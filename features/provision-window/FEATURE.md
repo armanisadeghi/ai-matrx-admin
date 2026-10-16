@@ -13,6 +13,9 @@ platform shows the EXACT values available there and the expected output instead 
   `features/overlays/openers/provisionWindow.tsx` (`useOpenProvisionWindow()(snapshotId, title)`), address
   `?panels=provision:<snapshot id>` (the window passes `urlSyncId={snapshotId}`).
 
+- `BrandGuideInputs.tsx` — the four brand-guide points (`brand_guide.voice` / `.messaging` / `.audience` / `.words`): Capture
+  (debug values on demand) opens the window, earlier captures beside it. Admin + debug only.
+
 Used by: Smart Add (`features/marketing/smart-add/SmartAddBrand.tsx`) and the brand Identity page
-(`BrandAnalysisInputs.tsx` on `app/(core)/marketing/[brandId]/identity/page.tsx`). Server: aidream
+(`BrandAnalysisInputs.tsx` and `BrandGuideInputs.tsx` on `app/(core)/marketing/[brandId]/identity/page.tsx`). Server: aidream
 `aidream/services/provision_window/FEATURE.md`.
