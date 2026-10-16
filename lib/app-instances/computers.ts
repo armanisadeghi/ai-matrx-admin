@@ -54,11 +54,22 @@ export async function nonComputerPlatforms(client: unknown): Promise<string[]> {
   return held.list;
 }
 
-/** Keep computers only: `await onlyComputers(supabase.from("app_instances").select(...)..., supabase)`. */
-export async function onlyComputers<Q extends { or(filters: string): Q }>(query: Q, client: unknown): Promise<Q> {
+/** The `.or()` filter that keeps computers only, or null when nothing is excluded. */
+export async function computerFilter(client: unknown): Promise<string | null> {
   const excluded = await nonComputerPlatforms(client);
-  if (excluded.length === 0) return query;
-  return query.or(`platform.is.null,platform.not.in.(${excluded.map((p) => `"${p}"`).join(",")})`);
+  if (excluded.length === 0) return null;
+  return `platform.is.null,platform.not.in.(${excluded.map((p) => `"${p}"`).join(",")})`;
+}
+
+/**
+ * Keep computers only and RUN the list read: `const { data, error } = await onlyComputers(supabase.from("app_instances")..., supabase)`.
+ * An async function cannot hand back an unexecuted Supabase builder — the builder is thenable, so the returned
+ * promise runs it. The return type says so (`Awaited<Q>`, the response), so chaining `.maybeSingle()` after it
+ * fails typecheck. For a single-row read, apply `computerFilter` yourself, then `.maybeSingle()`.
+ */
+export async function onlyComputers<Q extends { or(filters: string): Q }>(query: Q, client: unknown): Promise<Awaited<Q>> {
+  const filter = await computerFilter(client);
+  return (filter === null ? query : query.or(filter)) as Awaited<Q>;
 }
 
 /** Same rule for a row already in hand. */
