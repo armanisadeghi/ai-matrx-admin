@@ -8,8 +8,12 @@
  * `certain`. The facts agent never witnesses by itself: its fact adds the hosts it cites (when it is at least `likely`),
  * so a fact citing only the brand's own site adds nothing the site read did not already say.
  * What the person typed or confirmed is certain at once; Not us removes a card.
+ * A website the person typed or confirmed is VOUCHED for (coordinator ruling, 2026-10-16): what that site says about
+ * itself — its name, logo, description, address — is certain from that one host (any page of it, or a fact citing it).
+ * A website we found ourselves vouches for nothing: its statements still need a second host. Accounts, category, tools
+ * and a competitor always need two hosts.
  * A category that repeats a name the site gives itself (its title, og:site_name) is a title, never a category.
- * A logo is the brand's own declared picture (its site's structured-data logo, or the lead certain account's photo).
+ * A logo is a certain logo row, else the lead certain account's photo.
  */
 
 import type { BrandFact } from "../validate/queue";
@@ -25,13 +29,8 @@ export const CERTAIN_AT = 2;
 const OWN_SITE = "own-site";
 const TYPED = "typed";
 
-/** A complete host name (a mid-stream fact can carry a cut-off address such as "https" or "www.example."). */
-const HOST = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
-
 function hostOf(url: string | null | undefined): string | null {
-  if (!url) return null;
-  const h = websiteHost(url).toLowerCase();
-  return HOST.test(h) ? h : null;
+  return url ? websiteHost(url) || null : null;
 }
 
 /** One raw evidence item → the host it witnesses from (null: no witness — a guess, the facts agent, the typed address echoed). */
@@ -114,8 +113,15 @@ export interface FoundInput {
 const isOurs = (d: Decision | undefined) => d === "preferred" || d === "yes" || d === "alias";
 
 export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey }: FoundInput): FoundCards {
-  const ownHost = typedWebsiteKey?.startsWith("website:") ? typedWebsiteKey.slice(8) : null;
-  const resolve = (h: string) => (h === OWN_SITE ? (ownHost ?? OWN_SITE) : h);
+  const typedHost = typedWebsiteKey?.startsWith("website:") ? typedWebsiteKey.slice(8) : null;
+  const siteHost = (i: EvidenceItem) => websiteHost(i.url ?? i.value);
+  // The sites the person vouched for: the one they typed, and every website they confirmed as theirs.
+  const vouched = new Set([
+    ...(typedHost ? [typedHost] : []),
+    ...items.filter((i) => i.field === "website" && isOurs(decisions[i.key])).map(siteHost),
+  ]);
+  const ownHost = typedHost ?? [...vouched][0] ?? items.find((i) => i.field === "website" && decisions[i.key] !== "no")?.value ?? null;
+  const resolve = (h: string) => (h === OWN_SITE ? (ownHost ? websiteHost(ownHost) : OWN_SITE) : h);
   const sure = facts.filter((f) => SURE.has(f.certainty) && decisions[f.key] !== "no");
   /** The hosts the facts agent cites for this value in these fields (each host once; no citation = no witness). */
   const factHosts = (fields: readonly string[], value: string, key: (s: string) => string = norm): { hosts: string[]; facts: BrandFact[] } => {
@@ -124,17 +130,18 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
     return { hosts: hit.flatMap((f) => f.evidence_urls.map(hostOf).filter((h): h is string => Boolean(h))), facts: hit };
   };
   const hostsOf = (i: EvidenceItem) => [...(witnesses.get(i.key) ?? [])].map(resolve);
-  const certain = (hosts: Iterable<string>, decision?: Decision) => {
+  /** Certain: the person's own word, two hosts, or (for what a site says about itself) a host they vouched for. */
+  const certain = (hosts: Iterable<string>, decision?: Decision, selfStatement = false) => {
     const set = new Set(hosts);
-    return isOurs(decision) || set.has(TYPED) || set.size >= CERTAIN_AT;
+    return isOurs(decision) || set.has(TYPED) || set.size >= CERTAIN_AT || (selfStatement && [...set].some((h) => vouched.has(h)));
   };
 
   const open = items.filter((i) => decisions[i.key] !== "no");
   const of = (field: EvidenceItem["field"]) => open.filter((i) => i.field === field);
-  const pick = (candidates: EvidenceItem[], fields: readonly string[] = []) =>
+  const pick = (candidates: EvidenceItem[], fields: readonly string[] = [], selfStatement = false) =>
     candidates
       .map((i) => ({ i, hosts: new Set([...hostsOf(i), ...factHosts(fields, i.value).hosts]) }))
-      .filter((x) => certain(x.hosts, decisions[x.i.key]))
+      .filter((x) => certain(x.hosts, decisions[x.i.key], selfStatement))
       .sort((a, b) => b.hosts.size - a.hosts.size || b.i.confidence - a.i.confidence)[0]?.i ?? null;
 
   // A name is one name however it is spelled with its legal suffix: every spelling's hosts count for it.
@@ -146,15 +153,11 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
         const hosts = new Set([...names.filter((n) => nameKey(n.value) === k).flatMap(hostsOf), ...factHosts(NAME_FIELDS, i.value, nameKey).hosts]);
         return { i, hosts };
       })
-      .filter((x) => certain(x.hosts, decisions[x.i.key]))
+      .filter((x) => certain(x.hosts, decisions[x.i.key], true))
       .sort((a, b) => b.hosts.size - a.hosts.size || Number(b.i.source.kind === "website") - Number(a.i.source.kind === "website") || b.i.confidence - a.i.confidence)[0]?.i ??
     null;
-  // The brand's own words about itself ride under a certain name: read off its site, or two hosts agreeing.
-  const description = name
-    ? (of("description")
-        .filter((i) => i.source.kind === "website" && i.source.where !== "the address itself")
-        .sort((a, b) => b.confidence - a.confidence)[0] ?? pick(of("description")))
-    : null;
+  // The brand's own words about itself ride under a certain name.
+  const description = name ? pick(of("description"), ["short_description", "description"], true) : null;
   const website = of("website").find((i) => i.key === typedWebsiteKey) ?? pick(of("website"), ["website"]);
 
   const accounts: FoundAccount[] = of("social")
@@ -165,7 +168,7 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
     .map((i) => ({ item: i, platform: i.platform as string, handle: i.handle, followers: i.followers }));
 
   const declaredLogo = of("logo")
-    .filter((i) => certain(hostsOf(i), decisions[i.key]) || (i.source.kind === "website" && i.confidence >= 0.95))
+    .filter((i) => certain(hostsOf(i), decisions[i.key], true))
     .sort((a, b) => b.confidence - a.confidence)[0];
   const logo = declaredLogo
     ? { url: declaredLogo.image_url ?? declaredLogo.value, item: declaredLogo }
@@ -186,7 +189,7 @@ export function foundCards({ items, witnesses, facts, decisions, typedWebsiteKey
     description,
     logo,
     website,
-    location: findLocation(of("address"), sure, hostsOf, factHosts, decisions),
+    location: findLocation(of("address"), sure, hostsOf, factHosts, decisions, (h) => certain(h, undefined, true)),
     accounts,
     category: findCategory(of("category").filter((i) => notTitle(i.value)), sure.filter((f) => notTitle(f.value)), hostsOf, factHosts, decisions),
     tools: factCard(sure, TOOL_FIELDS, factHosts, decisions, 3),
@@ -199,27 +202,27 @@ type FactHosts = (fields: readonly string[], value: string) => { hosts: string[]
 
 const confirmedFact = (f: BrandFact, decisions: Record<string, Decision>) => isOurs(decisions[f.key]);
 
-/** "Based in": a city (with its state) or an address that two hosts agree on, counting the site's address row. */
+/** "Based in": a city (with its state) or an address that two hosts agree on, or that the vouched site states. */
 function findLocation(
   addresses: EvidenceItem[],
   sure: BrandFact[],
   hostsOf: HostsOf,
   factHosts: FactHosts,
   decisions: Record<string, Decision>,
+  selfCertain: (hosts: Iterable<string>) => boolean,
 ): FoundFact | null {
   for (const city of sure.filter((f) => CITY_FIELDS.includes(f.field))) {
     const item = addresses.find((a) => norm(a.value).includes(norm(city.value))) ?? null;
     const own = factHosts(CITY_FIELDS, city.value);
     const hosts = new Set([...own.hosts, ...(item ? hostsOf(item) : [])]);
-    if (hosts.size < CERTAIN_AT && !confirmedFact(city, decisions) && !(item && isOurs(decisions[item.key]))) continue;
+    if (!selfCertain(hosts) && !confirmedFact(city, decisions) && !(item && isOurs(decisions[item.key]))) continue;
     const state = city.field === "city" ? sure.find((x) => x.field === "state") : undefined;
     const text = state && !norm(city.value).includes(norm(state.value)) ? `${city.value}, ${state.value}` : city.value;
     return { text, item, facts: [...own.facts, ...(state ? [state] : [])] };
   }
   for (const item of addresses) {
     const own = factHosts(ADDRESS_FIELDS, item.value);
-    if (new Set([...hostsOf(item), ...own.hosts]).size >= CERTAIN_AT || isOurs(decisions[item.key]))
-      return { text: item.value, item, facts: own.facts };
+    if (selfCertain([...hostsOf(item), ...own.hosts]) || isOurs(decisions[item.key])) return { text: item.value, item, facts: own.facts };
   }
   return null;
 }

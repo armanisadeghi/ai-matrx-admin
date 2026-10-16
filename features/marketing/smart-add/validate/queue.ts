@@ -201,7 +201,7 @@ function parseFact(raw: unknown): BrandFact | null {
     value,
     certainty: str(f.certainty) ?? "possible",
     reason: str(f.reason) ?? "",
-    evidence_urls: Array.isArray(f.evidence_urls) ? f.evidence_urls.filter((u): u is string => typeof u === "string") : [],
+    evidence_urls: Array.isArray(f.evidence_urls) ? completeUrls(f.evidence_urls.filter((u): u is string => typeof u === "string")) : [],
     known_field: typeof f.known_field === "boolean" ? String(f.known_field) : str(f.known_field),
     suggestion: parseSuggestion(f.suggestion),
   };
@@ -262,10 +262,27 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
  */
 export function grownFact(f: BrandFact, next: BrandFact): BrandFact | null {
   const longer = next.reason.length > f.reason.length;
-  const extra = next.evidence_urls.filter((u) => !f.evidence_urls.includes(u));
-  if (!longer && !extra.length) return null;
+  const joined = completeUrls([...f.evidence_urls, ...next.evidence_urls]);
+  const grew = joined.length !== f.evidence_urls.length || joined.some((u, i) => u !== f.evidence_urls[i]);
+  if (!longer && !grew) return null;
   const base = longer ? next : f;
-  return { ...base, evidence_urls: [...f.evidence_urls, ...extra] };
+  return { ...base, evidence_urls: joined };
+}
+
+/** A complete web address: a scheme-less or http(s) address whose host ends in a real top-level name. */
+const COMPLETE_URL = /^(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(?=$|[/?#:])/i;
+
+/**
+ * A fact's evidence addresses as stored: a fact streams in pieces, so a copy can carry a cut-off address ("https",
+ * "https://www.example.", "https://www.example.com/abo") beside the finished one. Only complete addresses are kept,
+ * once each, and an address another one completes is replaced by it. Order is kept, so joining again changes nothing.
+ */
+export function completeUrls(urls: readonly string[]): string[] {
+  const whole = [...new Set(urls.map((u) => u.trim()).filter((u) => COMPLETE_URL.test(u)))];
+  // Cut mid-word: another address continues it without a boundary ("…/con" → "…/contact"). A homepage beside a page
+  // of the same site ("https://x.com/" and "https://x.com/contact") is two real addresses.
+  const cutOff = (u: string) => whole.some((o) => o.length > u.length && o.startsWith(u) && !u.endsWith("/") && !"/?#".includes(o[u.length]));
+  return whole.filter((u) => !cutOff(u));
 }
 
 export function mergeFacts(current: BrandFact[], incoming: BrandFact[]): BrandFact[] {
@@ -275,7 +292,8 @@ export function mergeFacts(current: BrandFact[], incoming: BrandFact[]): BrandFa
   for (const f of incoming) {
     const have = byKey.get(f.key);
     if (!have) {
-      byKey.set(f.key, f);
+      const clean = completeUrls(f.evidence_urls);
+      byKey.set(f.key, clean.length === f.evidence_urls.length && clean.every((u, i) => u === f.evidence_urls[i]) ? f : { ...f, evidence_urls: clean });
       changed = true;
     } else {
       const grown = grownFact(have, f);

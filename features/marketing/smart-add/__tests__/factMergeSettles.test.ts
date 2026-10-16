@@ -13,8 +13,8 @@ const fact = (reason: string, evidence_urls: string[]) => ({
   reason,
   evidence_urls,
 });
-const live = { kind: "brand_basics", value: { __kind: "brand_basics", facts: [fact("Footer of the site, beside the hours", ["https://a.b"])] } };
-const output = { brand_basics: { __kind: "brand_basics", facts: [fact("Footer", ["https://a.b", "https://c.d", "https://e.f"])] } };
+const live = { kind: "brand_basics", value: { __kind: "brand_basics", facts: [fact("Footer of the site, beside the hours", ["https://a.com"])] } };
+const output = { brand_basics: { __kind: "brand_basics", facts: [fact("Footer", ["https://a.com", "https://c.com", "https://e.com"])] } };
 
 /** The facts step's render: the same render-time ratchet SmartAddRound's StepWatch runs, bounded like React's 25. */
 function renderUntilSettled(): { renders: number; facts: ReturnType<typeof ratchetFacts> } {
@@ -33,7 +33,7 @@ describe("fact merges settle (MKT-118)", () => {
     expect(renders).toBeLessThanOrEqual(3);
     expect(facts).toHaveLength(1);
     expect(facts[0].reason).toBe("Footer of the site, beside the hours");
-    expect(facts[0].evidence_urls).toEqual(["https://a.b", "https://c.d", "https://e.f"]);
+    expect(facts[0].evidence_urls).toEqual(["https://a.com", "https://c.com", "https://e.com"]);
   });
 
   it("onFacts' merge returns the same array when the same crossing copies arrive again", () => {

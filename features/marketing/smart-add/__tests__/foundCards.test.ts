@@ -75,11 +75,25 @@ describe("found-first door: only what two independent hosts agree on gets a card
     expect(named.name?.value).toBe("Eudora Brewing Company");
   });
 
-  // eudorabrewing.com, run 4fe04c35 (2026-10-16): mid-stream the facts agent's evidence_urls held cut-off addresses
-  // ("https", "https://www.eudorabrewing.") beside the full ones, and each counted as another host.
-  it("a cut-off address from a streaming fact is no host", () => {
-    const partial = fact("industry", "Executive search", "confirmed", ["https", "https://www.fullspecstaff.", "https://www.fullspecstaff.com/about"]);
-    expect(cardsWith([partial]).category).toBeNull();
+  // Coordinator ruling 2026-10-16: a site the person typed or confirmed is vouched for; what it says about itself is
+  // certain from that one host. A site we found ourselves needs a second host. (nlpkak.com: one site, typed.)
+  it("a typed site's own name is certain from that one host; the same site found by us is not", () => {
+    const own = { ...raw.find((i) => i.key === "name:healthcare executive search for senior care")!, key: "name:northern lights preschool", value: "Northern Lights Preschool", source: { node: "page", kind: "website" as const, url: "https://nlpkak.com/", where: "og:site_name" } };
+    const site = { ...own, key: "website:nlpkak.com", field: "website" as const, value: "https://nlpkak.com", url: "https://nlpkak.com" };
+    const w = addWitnesses(new Map(), [own, site]);
+    const typed = foundCards({ items: [own, site], witnesses: w, facts: [], decisions: {}, typedWebsiteKey: "website:nlpkak.com" });
+    expect(typed.name?.value).toBe("Northern Lights Preschool");
+    const found = foundCards({ items: [own, site], witnesses: w, facts: [], decisions: {}, typedWebsiteKey: null });
+    expect(found.name).toBeNull();
+    // Confirming the found site vouches for it too.
+    expect(foundCards({ items: [own, site], witnesses: w, facts: [], decisions: { "website:nlpkak.com": "preferred" }, typedWebsiteKey: null }).name?.value).toBe(
+      "Northern Lights Preschool",
+    );
+    // A city the vouched site states is Based in; a category it states still needs a second host.
+    const facts = [fact("city", "Anchorage", "confirmed", ["https://nlpkak.com/contact/"]), fact("industry", "Child care", "confirmed", ["https://nlpkak.com/"])];
+    const placed = foundCards({ items: [own, site], witnesses: w, facts, decisions: {}, typedWebsiteKey: "website:nlpkak.com" });
+    expect(placed.location?.text).toBe("Anchorage");
+    expect(placed.category).toBeNull();
   });
 
   it("two hosts that disagree (Recruiter vs Staffing and Recruiting) make no category card", () => {
@@ -94,10 +108,11 @@ describe("found-first door: only what two independent hosts agree on gets a card
     expect(cardsWith([fact("business_type", title, "confirmed", ["https://fullspecstaff.com/", "https://www.bbb.org/x"])]).category).toBeNull();
   });
 
-  it("a city cited from two hosts is Based in, with its state; one host is not", () => {
+  it("a city cited from two hosts is Based in, with its state; one unvouched host is not", () => {
     const two = cardsWith([fact("city", "Laguna Hills", "confirmed", ["https://fullspecstaff.com/", "https://www.yelp.com/biz/x"]), fact("state", "CA", "likely")]);
     expect(two.location?.text).toBe("Laguna Hills, CA");
-    expect(cardsWith([fact("city", "Laguna Hills", "confirmed", ["https://fullspecstaff.com/"])]).location).toBeNull();
+    // One host the person never vouched for is not enough.
+    expect(cardsWith([fact("city", "Laguna Hills", "confirmed", ["https://www.yelp.com/biz/x"])]).location).toBeNull();
   });
 
   it("a web result the fixed rules only call possible is no witness", () => {
