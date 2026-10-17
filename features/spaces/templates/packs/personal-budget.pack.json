@@ -1,0 +1,1936 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0208",
+  "version": 1,
+  "title": "Personal Budget",
+  "description": "Track income, expenses by category, monthly totals and savings goals.",
+  "forWho": "Individuals tracking their money",
+  "icon": {
+    "emoji": "💵"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "finance",
+  "tags": [
+    "budget",
+    "money",
+    "expenses"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-personal-budget",
+    "catalogueId": "SP0208",
+    "useCase": "Nadia Brandt logs every purchase and checks her category totals at the end of each month.",
+    "industry": "cross_industry",
+    "vertical": "Personal finance tracking",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-personal-budget",
+    "tables": [
+      {
+        "token": "month",
+        "name": "Months",
+        "labelSingular": "Month",
+        "labelPlural": "Months",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-range",
+        "titleField": "month_name",
+        "describes": "One row per month: what you planned to spend, what came in and what went out.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "month_name",
+            "label": "Month",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "planned_spend",
+            "label": "Planned spending",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "state",
+            "label": "State",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Closed": "blue"
+            }
+          },
+          {
+            "key": "expenses",
+            "label": "Expenses",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "expense",
+            "multi": true
+          },
+          {
+            "key": "income_rows",
+            "label": "Income received",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "income",
+            "multi": true
+          },
+          {
+            "key": "spent",
+            "label": "Total spent",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "expenses",
+            "pick": "amount",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "earned",
+            "label": "Total earned",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "income_rows",
+            "pick": "amount",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "expense_count",
+            "label": "Expense count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "expenses",
+            "pick": "expense_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "mo1",
+            "values": {
+              "month_name": "Opening cycle",
+              "starts_on": "@today-60d",
+              "planned_spend": 3400,
+              "state": "Closed"
+            }
+          },
+          {
+            "key": "mo2",
+            "values": {
+              "month_name": "Middle cycle",
+              "starts_on": "@today-30d",
+              "planned_spend": 3500,
+              "state": "Closed"
+            }
+          },
+          {
+            "key": "mo3",
+            "values": {
+              "month_name": "Active cycle",
+              "starts_on": "@today",
+              "planned_spend": 3500,
+              "state": "Open"
+            }
+          }
+        ]
+      },
+      {
+        "token": "category",
+        "name": "Categories",
+        "labelSingular": "Category",
+        "labelPlural": "Categories",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shapes",
+        "titleField": "category_name",
+        "describes": "Spending categories with a monthly limit to compare against.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "category_name",
+            "label": "Category",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "monthly_limit",
+            "label": "Monthly limit",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fixed",
+              "Flexible"
+            ],
+            "choiceColors": {
+              "Fixed": "slate",
+              "Flexible": "blue"
+            }
+          },
+          {
+            "key": "expenses",
+            "label": "Expenses",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "expense",
+            "multi": true
+          },
+          {
+            "key": "spent_total",
+            "label": "Spent so far",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "expenses",
+            "pick": "amount",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ct-rent",
+            "values": {
+              "category_name": "Housing",
+              "monthly_limit": 1450,
+              "kind": "Fixed"
+            }
+          },
+          {
+            "key": "ct-food",
+            "values": {
+              "category_name": "Food",
+              "monthly_limit": 520,
+              "kind": "Flexible"
+            }
+          },
+          {
+            "key": "ct-transport",
+            "values": {
+              "category_name": "Transport",
+              "monthly_limit": 180,
+              "kind": "Flexible"
+            }
+          },
+          {
+            "key": "ct-bills",
+            "values": {
+              "category_name": "Bills and utilities",
+              "monthly_limit": 260,
+              "kind": "Fixed"
+            }
+          },
+          {
+            "key": "ct-fun",
+            "values": {
+              "category_name": "Fun",
+              "monthly_limit": 200,
+              "kind": "Flexible"
+            }
+          },
+          {
+            "key": "ct-health",
+            "values": {
+              "category_name": "Health",
+              "monthly_limit": 120,
+              "kind": "Flexible"
+            }
+          },
+          {
+            "key": "ct-save",
+            "values": {
+              "category_name": "Savings transfers",
+              "monthly_limit": 500,
+              "kind": "Fixed"
+            }
+          }
+        ]
+      },
+      {
+        "token": "expense",
+        "name": "Expenses",
+        "labelSingular": "Expense",
+        "labelPlural": "Expenses",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "expense_name",
+        "describes": "Every purchase and bill, filed to a category and a month.",
+        "subject": "thing",
+        "independentOf": {
+          "category": "Any expense can fall in any category.",
+          "month": "Expenses are recorded in the month they happen."
+        },
+        "fields": [
+          {
+            "key": "expense_name",
+            "label": "Expense",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "category",
+            "relationMax": 1
+          },
+          {
+            "key": "month",
+            "label": "Month",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "month",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "spent_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "account",
+            "label": "Account",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Checking",
+              "Debit card",
+              "Credit card"
+            ],
+            "choiceColors": {
+              "Checking": "slate",
+              "Debit card": "blue",
+              "Credit card": "green"
+            }
+          },
+          {
+            "key": "paid",
+            "label": "Paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "recurring",
+            "label": "Recurring",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "x01",
+            "values": {
+              "expense_name": "Rent to Kestrel Property",
+              "category": "ct-rent",
+              "month": "mo3",
+              "amount": 1450,
+              "spent_on": "@today-3d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x02",
+            "values": {
+              "expense_name": "Weekly groceries at Fairhaven Market",
+              "category": "ct-food",
+              "month": "mo3",
+              "amount": 118.4,
+              "spent_on": "@today-2d",
+              "account": "Debit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x03",
+            "values": {
+              "expense_name": "Electric bill from Northgrid",
+              "category": "ct-bills",
+              "month": "mo3",
+              "amount": 74.15,
+              "spent_on": "@today-5d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x04",
+            "values": {
+              "expense_name": "Internet service",
+              "category": "ct-bills",
+              "month": "mo3",
+              "amount": 59.99,
+              "spent_on": "@today-6d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x05",
+            "values": {
+              "expense_name": "Bus pass",
+              "category": "ct-transport",
+              "month": "mo3",
+              "amount": 62,
+              "spent_on": "@today-9d",
+              "account": "Debit card",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x06",
+            "values": {
+              "expense_name": "Movie night with friends",
+              "category": "ct-fun",
+              "month": "mo3",
+              "amount": 34.5,
+              "spent_on": "@today-4d",
+              "account": "Credit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x07",
+            "values": {
+              "expense_name": "Pharmacy refill",
+              "category": "ct-health",
+              "month": "mo3",
+              "amount": 23.8,
+              "spent_on": "@today-1d",
+              "account": "Credit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x08",
+            "values": {
+              "expense_name": "Takeout from Saffron Table",
+              "category": "ct-food",
+              "month": "mo3",
+              "amount": 42.75,
+              "spent_on": "@today-1d",
+              "account": "Credit card",
+              "paid": false,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x09",
+            "values": {
+              "expense_name": "Transfer to the emergency fund",
+              "category": "ct-save",
+              "month": "mo3",
+              "amount": 500,
+              "spent_on": "@today-7d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x10",
+            "values": {
+              "expense_name": "Rent with parking fee",
+              "category": "ct-rent",
+              "month": "mo2",
+              "amount": 1450,
+              "spent_on": "@today-33d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x11",
+            "values": {
+              "expense_name": "Groceries and household goods",
+              "category": "ct-food",
+              "month": "mo2",
+              "amount": 132.9,
+              "spent_on": "@today-38d",
+              "account": "Debit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x12",
+            "values": {
+              "expense_name": "Groceries at Hollis Co-op",
+              "category": "ct-food",
+              "month": "mo2",
+              "amount": 96.25,
+              "spent_on": "@today-45d",
+              "account": "Debit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x13",
+            "values": {
+              "expense_name": "Electric bill, higher heating use",
+              "category": "ct-bills",
+              "month": "mo2",
+              "amount": 81.3,
+              "spent_on": "@today-35d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x14",
+            "values": {
+              "expense_name": "Gas for the road trip",
+              "category": "ct-transport",
+              "month": "mo2",
+              "amount": 48.2,
+              "spent_on": "@today-40d",
+              "account": "Credit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x15",
+            "values": {
+              "expense_name": "Concert tickets",
+              "category": "ct-fun",
+              "month": "mo2",
+              "amount": 89,
+              "spent_on": "@today-42d",
+              "account": "Credit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x16",
+            "values": {
+              "expense_name": "Dental co-pay",
+              "category": "ct-health",
+              "month": "mo2",
+              "amount": 45,
+              "spent_on": "@today-47d",
+              "account": "Debit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x17",
+            "values": {
+              "expense_name": "Transfer to the Lisbon fund",
+              "category": "ct-save",
+              "month": "mo2",
+              "amount": 500,
+              "spent_on": "@today-37d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x18",
+            "values": {
+              "expense_name": "Water and sewer",
+              "category": "ct-bills",
+              "month": "mo2",
+              "amount": 38.6,
+              "spent_on": "@today-50d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x19",
+            "values": {
+              "expense_name": "Rent, paid early",
+              "category": "ct-rent",
+              "month": "mo1",
+              "amount": 1450,
+              "spent_on": "@today-63d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x20",
+            "values": {
+              "expense_name": "Bulk grocery run",
+              "category": "ct-food",
+              "month": "mo1",
+              "amount": 141.1,
+              "spent_on": "@today-70d",
+              "account": "Debit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x21",
+            "values": {
+              "expense_name": "Birthday dinner",
+              "category": "ct-fun",
+              "month": "mo1",
+              "amount": 76.4,
+              "spent_on": "@today-75d",
+              "account": "Credit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x22",
+            "values": {
+              "expense_name": "Car-share rental",
+              "category": "ct-transport",
+              "month": "mo1",
+              "amount": 54,
+              "spent_on": "@today-68d",
+              "account": "Credit card",
+              "paid": true,
+              "recurring": false
+            }
+          },
+          {
+            "key": "x23",
+            "values": {
+              "expense_name": "Electric bill, with a credit",
+              "category": "ct-bills",
+              "month": "mo1",
+              "amount": 88.05,
+              "spent_on": "@today-65d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x24",
+            "values": {
+              "expense_name": "Transfer to the laptop fund",
+              "category": "ct-save",
+              "month": "mo1",
+              "amount": 500,
+              "spent_on": "@today-66d",
+              "account": "Checking",
+              "paid": true,
+              "recurring": true
+            }
+          },
+          {
+            "key": "x25",
+            "values": {
+              "expense_name": "Eye exam",
+              "category": "ct-health",
+              "month": "mo1",
+              "amount": 60,
+              "spent_on": "@today-80d",
+              "account": "Debit card",
+              "paid": true,
+              "recurring": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "income",
+        "name": "Income",
+        "labelSingular": "Income",
+        "labelPlural": "Income",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wallet",
+        "titleField": "income_name",
+        "describes": "Money coming in: pay, side work and anything else.",
+        "subject": "thing",
+        "independentOf": {
+          "month": "Income lands in the month it is received."
+        },
+        "fields": [
+          {
+            "key": "income_name",
+            "label": "Income",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Salary",
+              "Side work",
+              "Other"
+            ],
+            "choiceColors": {
+              "Salary": "slate",
+              "Side work": "blue",
+              "Other": "green"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "month",
+            "label": "Month",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "month",
+            "relationMax": 1
+          },
+          {
+            "key": "received_on",
+            "label": "Received",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "i1",
+            "values": {
+              "income_name": "Alderwood Studio payroll deposit",
+              "source": "Salary",
+              "amount": 1750,
+              "month": "mo3",
+              "received_on": "@today-10d"
+            }
+          },
+          {
+            "key": "i2",
+            "values": {
+              "income_name": "Alderwood payroll, with overtime",
+              "source": "Salary",
+              "amount": 1750,
+              "month": "mo3",
+              "received_on": "@today-24d"
+            }
+          },
+          {
+            "key": "i3",
+            "values": {
+              "income_name": "Freelance logo project",
+              "source": "Side work",
+              "amount": 400,
+              "month": "mo3",
+              "received_on": "@today-8d"
+            }
+          },
+          {
+            "key": "i4",
+            "values": {
+              "income_name": "Alderwood payroll, regular",
+              "source": "Salary",
+              "amount": 1750,
+              "month": "mo2",
+              "received_on": "@today-40d"
+            }
+          },
+          {
+            "key": "i5",
+            "values": {
+              "income_name": "Alderwood payroll, half month",
+              "source": "Salary",
+              "amount": 1750,
+              "month": "mo2",
+              "received_on": "@today-54d"
+            }
+          },
+          {
+            "key": "i6",
+            "values": {
+              "income_name": "Sold a used monitor",
+              "source": "Other",
+              "amount": 85,
+              "month": "mo2",
+              "received_on": "@today-46d"
+            }
+          },
+          {
+            "key": "i7",
+            "values": {
+              "income_name": "Alderwood payroll, with bonus",
+              "source": "Salary",
+              "amount": 1750,
+              "month": "mo1",
+              "received_on": "@today-70d"
+            }
+          },
+          {
+            "key": "i8",
+            "values": {
+              "income_name": "Alderwood payroll, short week",
+              "source": "Salary",
+              "amount": 1750,
+              "month": "mo1",
+              "received_on": "@today-84d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "saving",
+        "name": "Savings goals",
+        "labelSingular": "Savings goal",
+        "labelPlural": "Savings goals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "piggy-bank",
+        "titleField": "saving_name",
+        "describes": "What you are putting money aside for, and how far along it is.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "saving_name",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "target",
+            "label": "Target",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "saved",
+            "label": "Saved so far",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "remaining",
+            "label": "Still to save",
+            "parityType": "formula",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "formula": "{Target} - {Saved so far}",
+            "source": "formula",
+            "computeOn": "read",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "by",
+            "label": "Aim to finish",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sg1",
+            "values": {
+              "saving_name": "Emergency fund",
+              "target": 6000,
+              "saved": 2400,
+              "by": "@today+120d"
+            }
+          },
+          {
+            "key": "sg2",
+            "values": {
+              "saving_name": "Trip to Lisbon",
+              "target": 2200,
+              "saved": 640,
+              "by": "@today+210d"
+            }
+          },
+          {
+            "key": "sg3",
+            "values": {
+              "saving_name": "New laptop",
+              "target": 1800,
+              "saved": 1500,
+              "by": "@today+300d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each expense has a category.",
+        "fromTable": "expense",
+        "fromField": "category",
+        "toTable": "category",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "spending_in"
+      },
+      {
+        "describes": "Each expense belongs to a month.",
+        "fromTable": "expense",
+        "fromField": "month",
+        "toTable": "month",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "spending_of"
+      },
+      {
+        "describes": "Each income row belongs to a month.",
+        "fromTable": "income",
+        "fromField": "month",
+        "toTable": "month",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "income_of"
+      },
+      {
+        "describes": "A month lists its expenses.",
+        "fromTable": "month",
+        "fromField": "expenses",
+        "toTable": "expense",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "month_spending"
+      },
+      {
+        "describes": "A month lists its income.",
+        "fromTable": "month",
+        "fromField": "income_rows",
+        "toTable": "income",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "month_income"
+      },
+      {
+        "describes": "A category lists its expenses.",
+        "fromTable": "category",
+        "fromField": "expenses",
+        "toTable": "expense",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "category_spending"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "log_expense",
+        "name": "Log an expense",
+        "describes": "Record a purchase.",
+        "audience": "staff",
+        "table": "expense",
+        "fields": [
+          {
+            "fieldKey": "expense_name",
+            "ask": "What did you buy?",
+            "required": true
+          },
+          {
+            "fieldKey": "amount",
+            "ask": "How much?"
+          },
+          {
+            "fieldKey": "category",
+            "ask": "Which category?"
+          },
+          {
+            "fieldKey": "spent_on",
+            "ask": "Which day?"
+          },
+          {
+            "fieldKey": "account",
+            "ask": "Which account?"
+          }
+        ],
+        "submitLabel": "Save expense",
+        "confirmation": "Recorded."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_expenses",
+        "name": "All expenses",
+        "table": "expense",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "spent_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "expense_cat",
+        "name": "By account",
+        "table": "expense",
+        "kind": "kanban",
+        "groupBy": "account"
+      },
+      {
+        "token": "expense_calendar",
+        "name": "Calendar",
+        "table": "expense",
+        "kind": "calendar",
+        "dateField": "spent_on",
+        "allDay": true
+      },
+      {
+        "token": "all_months",
+        "name": "Months",
+        "table": "month",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "starts_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "all_categories",
+        "name": "Budget by category",
+        "table": "category",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "cat_kind",
+        "name": "By kind",
+        "table": "category",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_income",
+        "name": "Income",
+        "table": "income",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "received_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "all_savings",
+        "name": "Savings goals",
+        "table": "saving",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "expense",
+          "describes": "Every expense with category, month and amount."
+        },
+        {
+          "name": "related_tables",
+          "table": "category",
+          "describes": "The categories and their limits."
+        }
+      ],
+      "question": {
+        "ask": "How many expenses are not paid yet?",
+        "whyItMatters": "Nadia clears unpaid items before month close.",
+        "expect": {
+          "table": "expense",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "paid": false
+          },
+          "answer": 1,
+          "unit": "expenses"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open every expense.",
+        "action": {
+          "kind": "open",
+          "surface": "all_expenses"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_expenses",
+          "minItems": 20
+        }
+      },
+      {
+        "says": "Open the expense calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "expense_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "expense_calendar",
+          "minItems": 20
+        }
+      },
+      {
+        "says": "Open categories by kind.",
+        "action": {
+          "kind": "open",
+          "surface": "cat_kind"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "cat_kind",
+          "minItems": 5
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "personal-budget",
+      "parent": null,
+      "title": "Personal Budget",
+      "icon": {
+        "emoji": "💵"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A simple tracker for money in and money out. Log expenses as they happen and watch each month's totals update. This only records what you enter; it does not give financial advice."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Month summary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "month",
+              "view": "all_months"
+            },
+            "inline": true,
+            "title": "Months",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Months",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-2",
+                "name": "Spent by month",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "month_name",
+                  "op": "sum",
+                  "field": "spent"
+                }
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Spending by category"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "expense",
+                      "view": "all_expenses"
+                    },
+                    "inline": true,
+                    "title": "Expenses",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-3",
+                        "name": "By category",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "view-4",
+                        "name": "Amount by category",
+                        "layout": "chart",
+                        "icon": "ChartBar",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-3"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Budget by category"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "category",
+                      "view": "all_categories"
+                    },
+                    "inline": true,
+                    "title": "Categories",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-5",
+                        "name": "Limits and spend",
+                        "layout": "grid",
+                        "icon": "Table"
+                      },
+                      {
+                        "id": "view-6",
+                        "name": "By kind",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "kind"
+                      }
+                    ],
+                    "activeViewId": "view-5"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expenses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "expense",
+              "view": "all_expenses"
+            },
+            "inline": true,
+            "title": "Expenses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-7",
+                "name": "All expenses",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "spent_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-8",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "spent_on"
+              },
+              {
+                "id": "view-9",
+                "name": "By account",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "account"
+              },
+              {
+                "id": "view-10",
+                "name": "Unpaid",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "paid": false
+                }
+              }
+            ],
+            "activeViewId": "view-7"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Income"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "income",
+                      "view": "all_income"
+                    },
+                    "inline": true,
+                    "title": "Income",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-11",
+                        "name": "Income",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "received_on",
+                            "direction": "desc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-12",
+                        "name": "Income by source",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-11"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Savings goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "saving",
+                      "view": "all_savings"
+                    },
+                    "inline": true,
+                    "title": "Savings goals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-13",
+                        "name": "Goals",
+                        "layout": "gallery",
+                        "icon": "LayoutGrid"
+                      },
+                      {
+                        "id": "view-14",
+                        "name": "Table",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "view-13"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:month-close"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:money-habits"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "month-close",
+      "parent": "personal-budget",
+      "title": "Month close checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Run this at the end of each month."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Log any missing receipts"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark paid bills as paid"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Compare each category to its limit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Record this month's savings transfer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set limits for the next month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "expense",
+              "view": "all_expenses"
+            },
+            "inline": true,
+            "title": "Expenses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-15",
+                "name": "Unpaid",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "paid": false
+                }
+              },
+              {
+                "id": "view-16",
+                "name": "Recurring",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "recurring": true
+                }
+              }
+            ],
+            "activeViewId": "view-15"
+          }
+        }
+      ]
+    },
+    {
+      "key": "money-habits",
+      "parent": "personal-budget",
+      "title": "Tracking habits",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A tracker works when entering data is easy."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log expenses the same day, even roughly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep fixed bills marked as recurring."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review the category chart once a week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move a set amount into savings when pay arrives."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kind"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How to track"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fixed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rent, internet"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Mark recurring"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Flexible"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Food, fun"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare to the limit"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1838 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0209",
+  "version": 1,
+  "title": "Meal Planner",
+  "description": "Weekly meal plan from a recipe library with a shopping list by aisle.",
+  "forWho": "Home cooks and families",
+  "icon": {
+    "emoji": "🍽️"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "meals",
+    "recipes",
+    "shopping"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-meal-planner",
+    "catalogueId": "SP0209",
+    "useCase": "Rosalind Park plans dinners every Sunday from a short list of favorite recipes and shops from one list.",
+    "industry": "cross_industry",
+    "vertical": "Meal planning",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-meal-planner",
+    "tables": [
+      {
+        "token": "recipe",
+        "name": "Recipes",
+        "labelSingular": "Recipe",
+        "labelPlural": "Recipes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chef-hat",
+        "titleField": "recipe_name",
+        "describes": "The recipes you cook, with times, ratings and what each one needs.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "recipe_name",
+            "label": "Recipe",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "cuisine",
+            "label": "Cuisine",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mediterranean",
+              "Seafood",
+              "Breakfast",
+              "Thai",
+              "Lunch",
+              "American",
+              "Italian",
+              "Mexican",
+              "Baking"
+            ],
+            "choiceColors": {
+              "Mediterranean": "slate",
+              "Seafood": "blue",
+              "Breakfast": "green",
+              "Thai": "amber",
+              "Lunch": "red",
+              "American": "violet",
+              "Italian": "teal",
+              "Mexican": "orange",
+              "Baking": "yellow"
+            }
+          },
+          {
+            "key": "meal_type",
+            "label": "Meal type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Breakfast",
+              "Lunch",
+              "Dinner",
+              "Snack"
+            ],
+            "choiceColors": {
+              "Breakfast": "slate",
+              "Lunch": "blue",
+              "Dinner": "green",
+              "Snack": "amber"
+            }
+          },
+          {
+            "key": "servings",
+            "label": "Servings",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "prep_min",
+            "label": "Prep (min)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "cook_min",
+            "label": "Cook (min)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "total_min",
+            "label": "Total time (min)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Prep (min)} + {Cook (min)}",
+            "source": "formula",
+            "computeOn": "read"
+          },
+          {
+            "key": "rating",
+            "label": "Rating (1-5)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "favorite",
+            "label": "Favorite",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notes",
+            "label": "Cook's note",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plan_slots",
+            "label": "Planned meals",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "meal_plan",
+            "multi": true
+          },
+          {
+            "key": "times_planned",
+            "label": "Times planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_slots",
+            "pick": "slot_name",
+            "agg": "count"
+          },
+          {
+            "key": "ingredients",
+            "label": "Ingredients",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "shopping",
+            "multi": true
+          },
+          {
+            "key": "ingredient_count",
+            "label": "Ingredient count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "ingredients",
+            "pick": "item_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rc1",
+            "values": {
+              "recipe_name": "Lemon chickpea soup",
+              "cuisine": "Mediterranean",
+              "meal_type": "Dinner",
+              "servings": 4,
+              "prep_min": 15,
+              "cook_min": 30,
+              "rating": 5,
+              "favorite": true,
+              "notes": "Bright, fast and freezes well",
+              "source": "https://kitchen.lifeledger.net/rc1"
+            }
+          },
+          {
+            "key": "rc2",
+            "values": {
+              "recipe_name": "Sheet-pan salmon and potatoes",
+              "cuisine": "Seafood",
+              "meal_type": "Dinner",
+              "servings": 2,
+              "prep_min": 10,
+              "cook_min": 25,
+              "rating": 4,
+              "favorite": true,
+              "notes": "One tray, no fuss",
+              "source": "https://kitchen.lifeledger.net/rc2"
+            }
+          },
+          {
+            "key": "rc3",
+            "values": {
+              "recipe_name": "Overnight oats with berries",
+              "cuisine": "Breakfast",
+              "meal_type": "Breakfast",
+              "servings": 1,
+              "prep_min": 5,
+              "cook_min": 0,
+              "rating": 4,
+              "favorite": false,
+              "notes": "Make three jars at once",
+              "source": "https://kitchen.lifeledger.net/rc3"
+            }
+          },
+          {
+            "key": "rc4",
+            "values": {
+              "recipe_name": "Veggie pad thai",
+              "cuisine": "Thai",
+              "meal_type": "Dinner",
+              "servings": 3,
+              "prep_min": 20,
+              "cook_min": 15,
+              "rating": 5,
+              "favorite": true,
+              "notes": "Peanut sauce is the star",
+              "source": "https://kitchen.lifeledger.net/rc4"
+            }
+          },
+          {
+            "key": "rc5",
+            "values": {
+              "recipe_name": "Turkey and avocado wraps",
+              "cuisine": "Lunch",
+              "meal_type": "Lunch",
+              "servings": 2,
+              "prep_min": 10,
+              "cook_min": 0,
+              "rating": 3,
+              "favorite": false,
+              "notes": "Good for desk lunches",
+              "source": "https://kitchen.lifeledger.net/rc5"
+            }
+          },
+          {
+            "key": "rc6",
+            "values": {
+              "recipe_name": "Slow-cooker chili",
+              "cuisine": "American",
+              "meal_type": "Dinner",
+              "servings": 6,
+              "prep_min": 20,
+              "cook_min": 240,
+              "rating": 4,
+              "favorite": false,
+              "notes": "Feeds a crowd on Sunday",
+              "source": "https://kitchen.lifeledger.net/rc6"
+            }
+          },
+          {
+            "key": "rc7",
+            "values": {
+              "recipe_name": "Greek yogurt parfait",
+              "cuisine": "Breakfast",
+              "meal_type": "Breakfast",
+              "servings": 1,
+              "prep_min": 5,
+              "cook_min": 0,
+              "rating": 3,
+              "favorite": false,
+              "notes": "Layer with granola",
+              "source": "https://kitchen.lifeledger.net/rc7"
+            }
+          },
+          {
+            "key": "rc8",
+            "values": {
+              "recipe_name": "Mushroom risotto",
+              "cuisine": "Italian",
+              "meal_type": "Dinner",
+              "servings": 3,
+              "prep_min": 15,
+              "cook_min": 35,
+              "rating": 4,
+              "favorite": true,
+              "notes": "Needs patience and stock",
+              "source": "https://kitchen.lifeledger.net/rc8"
+            }
+          },
+          {
+            "key": "rc9",
+            "values": {
+              "recipe_name": "Black bean tacos",
+              "cuisine": "Mexican",
+              "meal_type": "Lunch",
+              "servings": 4,
+              "prep_min": 15,
+              "cook_min": 10,
+              "rating": 5,
+              "favorite": true,
+              "notes": "Use up leftover rice",
+              "source": "https://kitchen.lifeledger.net/rc9"
+            }
+          },
+          {
+            "key": "rc10",
+            "values": {
+              "recipe_name": "Banana walnut muffins",
+              "cuisine": "Baking",
+              "meal_type": "Snack",
+              "servings": 12,
+              "prep_min": 15,
+              "cook_min": 25,
+              "rating": 4,
+              "favorite": false,
+              "notes": "Freeze half the batch",
+              "source": "https://kitchen.lifeledger.net/rc10"
+            }
+          }
+        ]
+      },
+      {
+        "token": "meal_plan",
+        "name": "Meal plan",
+        "labelSingular": "Planned meal",
+        "labelPlural": "Meal plan",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "slot_name",
+        "describes": "The week laid out meal by meal, each slot pointing at a recipe.",
+        "subject": "thing",
+        "independentOf": {
+          "recipe": "Any recipe can be planned on any day."
+        },
+        "fields": [
+          {
+            "key": "slot_name",
+            "label": "Slot",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "day",
+            "label": "Day",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday"
+            ],
+            "choiceColors": {
+              "Monday": "slate",
+              "Tuesday": "blue",
+              "Wednesday": "green",
+              "Thursday": "amber",
+              "Friday": "red",
+              "Saturday": "violet",
+              "Sunday": "teal"
+            }
+          },
+          {
+            "key": "meal",
+            "label": "Meal",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Breakfast",
+              "Lunch",
+              "Dinner",
+              "Snack"
+            ],
+            "choiceColors": {
+              "Breakfast": "slate",
+              "Lunch": "blue",
+              "Dinner": "green",
+              "Snack": "amber"
+            }
+          },
+          {
+            "key": "recipe",
+            "label": "Recipe",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "recipe",
+            "relationMax": 1
+          },
+          {
+            "key": "servings",
+            "label": "Servings",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "cooked",
+            "label": "Cooked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "mp01",
+            "values": {
+              "slot_name": "Mon lunch",
+              "on": "@mon+0d",
+              "day": "Monday",
+              "meal": "Lunch",
+              "recipe": "rc5",
+              "servings": 2,
+              "cooked": true
+            }
+          },
+          {
+            "key": "mp02",
+            "values": {
+              "slot_name": "Mon dinner",
+              "on": "@mon+0d",
+              "day": "Monday",
+              "meal": "Dinner",
+              "recipe": "rc1",
+              "servings": 4,
+              "cooked": true
+            }
+          },
+          {
+            "key": "mp03",
+            "values": {
+              "slot_name": "Tue breakfast",
+              "on": "@mon+1d",
+              "day": "Tuesday",
+              "meal": "Breakfast",
+              "recipe": "rc3",
+              "servings": 1,
+              "cooked": true
+            }
+          },
+          {
+            "key": "mp04",
+            "values": {
+              "slot_name": "Tue dinner",
+              "on": "@mon+1d",
+              "day": "Tuesday",
+              "meal": "Dinner",
+              "recipe": "rc4",
+              "servings": 3,
+              "cooked": true
+            }
+          },
+          {
+            "key": "mp05",
+            "values": {
+              "slot_name": "Wed lunch",
+              "on": "@mon+2d",
+              "day": "Wednesday",
+              "meal": "Lunch",
+              "recipe": "rc9",
+              "servings": 4,
+              "cooked": true
+            }
+          },
+          {
+            "key": "mp06",
+            "values": {
+              "slot_name": "Wed dinner",
+              "on": "@mon+2d",
+              "day": "Wednesday",
+              "meal": "Dinner",
+              "recipe": "rc2",
+              "servings": 2,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp07",
+            "values": {
+              "slot_name": "Thu breakfast",
+              "on": "@mon+3d",
+              "day": "Thursday",
+              "meal": "Breakfast",
+              "recipe": "rc7",
+              "servings": 1,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp08",
+            "values": {
+              "slot_name": "Thu dinner",
+              "on": "@mon+3d",
+              "day": "Thursday",
+              "meal": "Dinner",
+              "recipe": "rc8",
+              "servings": 3,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp09",
+            "values": {
+              "slot_name": "Fri lunch",
+              "on": "@mon+4d",
+              "day": "Friday",
+              "meal": "Lunch",
+              "recipe": "rc5",
+              "servings": 2,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp10",
+            "values": {
+              "slot_name": "Fri dinner",
+              "on": "@mon+4d",
+              "day": "Friday",
+              "meal": "Dinner",
+              "recipe": "rc9",
+              "servings": 4,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp11",
+            "values": {
+              "slot_name": "Sat snack",
+              "on": "@mon+5d",
+              "day": "Saturday",
+              "meal": "Snack",
+              "recipe": "rc10",
+              "servings": 12,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp12",
+            "values": {
+              "slot_name": "Sat dinner",
+              "on": "@mon+5d",
+              "day": "Saturday",
+              "meal": "Dinner",
+              "recipe": "rc4",
+              "servings": 3,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp13",
+            "values": {
+              "slot_name": "Sun breakfast",
+              "on": "@mon+6d",
+              "day": "Sunday",
+              "meal": "Breakfast",
+              "recipe": "rc3",
+              "servings": 1,
+              "cooked": false
+            }
+          },
+          {
+            "key": "mp14",
+            "values": {
+              "slot_name": "Sun dinner",
+              "on": "@mon+6d",
+              "day": "Sunday",
+              "meal": "Dinner",
+              "recipe": "rc6",
+              "servings": 6,
+              "cooked": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "shopping",
+        "name": "Shopping list",
+        "labelSingular": "Shopping item",
+        "labelPlural": "Shopping list",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-basket",
+        "titleField": "item_name",
+        "describes": "Ingredients to buy, grouped by aisle and tied to the recipe that needs them.",
+        "subject": "thing",
+        "independentOf": {
+          "recipe": "An item can be bought before or after a recipe is planned."
+        },
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Ingredient",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "recipe",
+            "label": "For recipe",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "recipe",
+            "relationMax": 1
+          },
+          {
+            "key": "quantity",
+            "label": "Quantity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "cans",
+              "each",
+              "carton",
+              "bags",
+              "fillets",
+              "lb",
+              "cups",
+              "pint",
+              "pack",
+              "jar",
+              "bag",
+              "wedge",
+              "tub",
+              "cup"
+            ],
+            "choiceColors": {
+              "cans": "slate",
+              "each": "blue",
+              "carton": "green",
+              "bags": "amber",
+              "fillets": "red",
+              "lb": "violet",
+              "cups": "teal",
+              "pint": "orange",
+              "pack": "yellow",
+              "jar": "pink",
+              "bag": "brown",
+              "wedge": "gray",
+              "tub": "slate",
+              "cup": "blue"
+            }
+          },
+          {
+            "key": "aisle",
+            "label": "Aisle",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Produce",
+              "Pantry",
+              "Dairy",
+              "Meat",
+              "Fish",
+              "Deli",
+              "Bakery"
+            ],
+            "choiceColors": {
+              "Produce": "slate",
+              "Pantry": "blue",
+              "Dairy": "green",
+              "Meat": "amber",
+              "Fish": "red",
+              "Deli": "violet",
+              "Bakery": "teal"
+            }
+          },
+          {
+            "key": "bought",
+            "label": "Bought",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sh01",
+            "values": {
+              "item_name": "Canned chickpeas",
+              "recipe": "rc1",
+              "quantity": 3,
+              "unit": "cans",
+              "aisle": "Pantry",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh02",
+            "values": {
+              "item_name": "Lemons",
+              "recipe": "rc1",
+              "quantity": 4,
+              "unit": "each",
+              "aisle": "Produce",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh03",
+            "values": {
+              "item_name": "Vegetable stock",
+              "recipe": "rc1",
+              "quantity": 1,
+              "unit": "carton",
+              "aisle": "Pantry",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh04",
+            "values": {
+              "item_name": "Baby spinach",
+              "recipe": "rc1",
+              "quantity": 2,
+              "unit": "bags",
+              "aisle": "Produce",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh05",
+            "values": {
+              "item_name": "Salmon fillets",
+              "recipe": "rc2",
+              "quantity": 2,
+              "unit": "fillets",
+              "aisle": "Fish",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh06",
+            "values": {
+              "item_name": "Baby potatoes",
+              "recipe": "rc2",
+              "quantity": 1.5,
+              "unit": "lb",
+              "aisle": "Produce",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh07",
+            "values": {
+              "item_name": "Rolled oats",
+              "recipe": "rc3",
+              "quantity": 2,
+              "unit": "cups",
+              "aisle": "Pantry",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh08",
+            "values": {
+              "item_name": "Mixed berries",
+              "recipe": "rc3",
+              "quantity": 1,
+              "unit": "pint",
+              "aisle": "Produce",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh09",
+            "values": {
+              "item_name": "Rice noodles",
+              "recipe": "rc4",
+              "quantity": 1,
+              "unit": "pack",
+              "aisle": "Pantry",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh10",
+            "values": {
+              "item_name": "Peanut butter",
+              "recipe": "rc4",
+              "quantity": 1,
+              "unit": "jar",
+              "aisle": "Pantry",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh11",
+            "values": {
+              "item_name": "Bean sprouts",
+              "recipe": "rc4",
+              "quantity": 1,
+              "unit": "bag",
+              "aisle": "Produce",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh12",
+            "values": {
+              "item_name": "Sliced turkey",
+              "recipe": "rc5",
+              "quantity": 0.5,
+              "unit": "lb",
+              "aisle": "Deli",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh13",
+            "values": {
+              "item_name": "Avocados",
+              "recipe": "rc5",
+              "quantity": 3,
+              "unit": "each",
+              "aisle": "Produce",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh14",
+            "values": {
+              "item_name": "Tortillas",
+              "recipe": "rc5",
+              "quantity": 1,
+              "unit": "pack",
+              "aisle": "Bakery",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh15",
+            "values": {
+              "item_name": "Ground beef",
+              "recipe": "rc6",
+              "quantity": 2,
+              "unit": "lb",
+              "aisle": "Meat",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh16",
+            "values": {
+              "item_name": "Kidney beans",
+              "recipe": "rc6",
+              "quantity": 2,
+              "unit": "cans",
+              "aisle": "Pantry",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh17",
+            "values": {
+              "item_name": "Crushed tomatoes",
+              "recipe": "rc6",
+              "quantity": 2,
+              "unit": "cans",
+              "aisle": "Pantry",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh18",
+            "values": {
+              "item_name": "Greek yogurt",
+              "recipe": "rc7",
+              "quantity": 1,
+              "unit": "tub",
+              "aisle": "Dairy",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh19",
+            "values": {
+              "item_name": "Granola",
+              "recipe": "rc7",
+              "quantity": 1,
+              "unit": "bag",
+              "aisle": "Pantry",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh20",
+            "values": {
+              "item_name": "Arborio rice",
+              "recipe": "rc8",
+              "quantity": 1,
+              "unit": "bag",
+              "aisle": "Pantry",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh21",
+            "values": {
+              "item_name": "Cremini mushrooms",
+              "recipe": "rc8",
+              "quantity": 1,
+              "unit": "lb",
+              "aisle": "Produce",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh22",
+            "values": {
+              "item_name": "Parmesan",
+              "recipe": "rc8",
+              "quantity": 1,
+              "unit": "wedge",
+              "aisle": "Dairy",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh23",
+            "values": {
+              "item_name": "Black beans",
+              "recipe": "rc9",
+              "quantity": 2,
+              "unit": "cans",
+              "aisle": "Pantry",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh24",
+            "values": {
+              "item_name": "Corn tortillas",
+              "recipe": "rc9",
+              "quantity": 1,
+              "unit": "pack",
+              "aisle": "Bakery",
+              "bought": false
+            }
+          },
+          {
+            "key": "sh25",
+            "values": {
+              "item_name": "Ripe bananas",
+              "recipe": "rc10",
+              "quantity": 4,
+              "unit": "each",
+              "aisle": "Produce",
+              "bought": true
+            }
+          },
+          {
+            "key": "sh26",
+            "values": {
+              "item_name": "Walnuts",
+              "recipe": "rc10",
+              "quantity": 1,
+              "unit": "cup",
+              "aisle": "Pantry",
+              "bought": false
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A planned meal uses one recipe.",
+        "fromTable": "meal_plan",
+        "fromField": "recipe",
+        "toTable": "recipe",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "planned_for"
+      },
+      {
+        "describes": "A shopping item is for one recipe.",
+        "fromTable": "shopping",
+        "fromField": "recipe",
+        "toTable": "recipe",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "needed_for"
+      },
+      {
+        "describes": "A recipe lists where it is planned.",
+        "fromTable": "recipe",
+        "fromField": "plan_slots",
+        "toTable": "meal_plan",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "recipe_slots"
+      },
+      {
+        "describes": "A recipe lists its ingredients.",
+        "fromTable": "recipe",
+        "fromField": "ingredients",
+        "toTable": "shopping",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "recipe_items"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_recipe",
+        "name": "Add a recipe",
+        "describes": "Save a recipe to the library.",
+        "audience": "staff",
+        "table": "recipe",
+        "fields": [
+          {
+            "fieldKey": "recipe_name",
+            "ask": "What is it called?",
+            "required": true
+          },
+          {
+            "fieldKey": "meal_type",
+            "ask": "Which meal?"
+          },
+          {
+            "fieldKey": "servings",
+            "ask": "How many servings?"
+          },
+          {
+            "fieldKey": "prep_min",
+            "ask": "Prep minutes"
+          },
+          {
+            "fieldKey": "cook_min",
+            "ask": "Cook minutes"
+          }
+        ],
+        "submitLabel": "Save recipe",
+        "confirmation": "Added to your recipes."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_recipes",
+        "name": "All recipes",
+        "table": "recipe",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "rating",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "recipe_meal",
+        "name": "By meal type",
+        "table": "recipe",
+        "kind": "kanban",
+        "groupBy": "meal_type"
+      },
+      {
+        "token": "recipe_cuisine",
+        "name": "By cuisine",
+        "table": "recipe",
+        "kind": "kanban",
+        "groupBy": "cuisine"
+      },
+      {
+        "token": "all_plan",
+        "name": "Meal plan",
+        "table": "meal_plan",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "plan_calendar",
+        "name": "Calendar",
+        "table": "meal_plan",
+        "kind": "calendar",
+        "dateField": "on",
+        "allDay": true
+      },
+      {
+        "token": "plan_day",
+        "name": "By day",
+        "table": "meal_plan",
+        "kind": "kanban",
+        "groupBy": "day"
+      },
+      {
+        "token": "all_shopping",
+        "name": "Shopping list",
+        "table": "shopping",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shop_aisle",
+        "name": "By aisle",
+        "table": "shopping",
+        "kind": "kanban",
+        "groupBy": "aisle"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "recipe",
+          "describes": "Every recipe with times and ratings."
+        },
+        {
+          "name": "related_tables",
+          "table": "meal_plan",
+          "describes": "The meals planned from recipes."
+        }
+      ],
+      "question": {
+        "ask": "How many recipes are marked favorite?",
+        "whyItMatters": "Rosalind rotates her favorites first.",
+        "expect": {
+          "table": "recipe",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "favorite": true
+          },
+          "answer": 5,
+          "unit": "recipes"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the meal calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the shopping list by aisle.",
+        "action": {
+          "kind": "open",
+          "surface": "shop_aisle"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "shop_aisle",
+          "minItems": 20
+        }
+      },
+      {
+        "says": "Open recipes by meal type.",
+        "action": {
+          "kind": "open",
+          "surface": "recipe_meal"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "recipe_meal",
+          "minItems": 8
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "meal-planner",
+      "parent": null,
+      "title": "Meal Planner",
+      "icon": {
+        "emoji": "🍽️"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan the week from your recipe library, then shop by aisle. Add a recipe, drop it in a slot, and the shopping list follows."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This week's plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meal_plan",
+              "view": "all_plan"
+            },
+            "inline": true,
+            "title": "Meal plan",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "on"
+              },
+              {
+                "id": "view-2",
+                "name": "By day",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "day"
+              },
+              {
+                "id": "view-3",
+                "name": "All meals",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Shopping list"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shopping",
+                      "view": "all_shopping"
+                    },
+                    "inline": true,
+                    "title": "Shopping list",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-4",
+                        "name": "To buy by aisle",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "aisle",
+                        "filters": {
+                          "bought": false
+                        }
+                      },
+                      {
+                        "id": "view-5",
+                        "name": "All items",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "view-4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Planned by meal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meal_plan",
+                      "view": "all_plan"
+                    },
+                    "inline": true,
+                    "title": "Meal plan",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-6",
+                        "name": "Meals by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "meal",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "view-7",
+                        "name": "Servings by day",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "day",
+                          "op": "sum",
+                          "field": "servings"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recipes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "recipe",
+              "view": "all_recipes"
+            },
+            "inline": true,
+            "title": "Recipes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-9",
+                "name": "By meal type",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "meal_type"
+              },
+              {
+                "id": "view-10",
+                "name": "By cuisine",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "cuisine"
+              },
+              {
+                "id": "view-11",
+                "name": "Favorites",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "favorite": true
+                }
+              },
+              {
+                "id": "view-12",
+                "name": "All recipes",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-8"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:prep-day"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pantry-staples"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "prep-day",
+      "parent": "meal-planner",
+      "title": "Prep day plan",
+      "icon": {
+        "emoji": "🥘"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An hour of prep makes weekday dinners painless."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check what is already in the fridge"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cook the slow-cooker meal first"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wash and chop vegetables for two dinners"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Portion breakfast jars"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Label and freeze leftovers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "recipe",
+              "view": "all_recipes"
+            },
+            "inline": true,
+            "title": "Recipes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Quick meals",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "meal_type": "Dinner"
+                },
+                "sorts": [
+                  {
+                    "field": "rating",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-13"
+          }
+        }
+      ]
+    },
+    {
+      "key": "pantry-staples",
+      "parent": "meal-planner",
+      "title": "Pantry staples",
+      "icon": {
+        "emoji": "🧂"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep these on hand so the plan never stalls."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Olive oil, vinegar and soy sauce"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rice, pasta and rolled oats"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Canned tomatoes and beans"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stock, spices and garlic"
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shopping",
+              "view": "all_shopping"
+            },
+            "inline": true,
+            "title": "Shopping list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-14",
+                "name": "Pantry items",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "aisle": "Pantry"
+                }
+              }
+            ],
+            "activeViewId": "view-14"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Restock when a staple drops to its last unit."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "ShoppingBasket"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1664 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0207",
+  "version": 1,
+  "title": "PARA System",
+  "description": "Projects, areas, resources and archive with an inbox and a weekly review.",
+  "forWho": "People organising a second brain",
+  "icon": {
+    "emoji": "🗂️"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "para",
+    "second-brain",
+    "notes"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-para-system",
+    "catalogueId": "SP0207",
+    "useCase": "Joaquin Medina files every project, note and reference under four buckets and reviews them each weekend.",
+    "industry": "cross_industry",
+    "vertical": "Knowledge management",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-para-system",
+    "tables": [
+      {
+        "token": "area",
+        "name": "Areas",
+        "labelSingular": "Area",
+        "labelPlural": "Areas",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "layers",
+        "titleField": "area_name",
+        "describes": "The responsibilities you maintain indefinitely, each with a standard.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "area_name",
+            "label": "Area",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "standard",
+            "label": "Standard to keep",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cadence",
+            "label": "Review cadence",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly",
+              "Monthly",
+              "Quarterly"
+            ],
+            "choiceColors": {
+              "Weekly": "slate",
+              "Monthly": "blue",
+              "Quarterly": "green"
+            }
+          },
+          {
+            "key": "state",
+            "label": "State",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Paused"
+            ],
+            "choiceColors": {
+              "Active": "slate",
+              "Paused": "blue"
+            }
+          },
+          {
+            "key": "last_reviewed",
+            "label": "Last reviewed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "importance",
+            "label": "Importance",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Core",
+              "Important",
+              "Optional"
+            ],
+            "choiceColors": {
+              "Core": "slate",
+              "Important": "blue",
+              "Optional": "green"
+            }
+          },
+          {
+            "key": "projects",
+            "label": "Projects",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "multi": true
+          },
+          {
+            "key": "project_count",
+            "label": "Project count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "a-fin",
+            "values": {
+              "area_name": "Personal finances",
+              "standard": "Pay every bill on time and save 15% of income",
+              "cadence": "Weekly",
+              "state": "Active",
+              "last_reviewed": "@today-3d",
+              "importance": "Core"
+            }
+          },
+          {
+            "key": "a-health",
+            "values": {
+              "area_name": "Health",
+              "standard": "Sleep seven hours, move daily, annual checkups",
+              "cadence": "Weekly",
+              "state": "Active",
+              "last_reviewed": "@today-8d",
+              "importance": "Core"
+            }
+          },
+          {
+            "key": "a-craft",
+            "values": {
+              "area_name": "Design craft",
+              "standard": "Ship one portfolio-worthy piece a quarter",
+              "cadence": "Monthly",
+              "state": "Active",
+              "last_reviewed": "@today-13d",
+              "importance": "Important"
+            }
+          },
+          {
+            "key": "a-home",
+            "values": {
+              "area_name": "Home",
+              "standard": "Rent paid, repairs logged, space tidy",
+              "cadence": "Monthly",
+              "state": "Active",
+              "last_reviewed": "@today-18d",
+              "importance": "Core"
+            }
+          },
+          {
+            "key": "a-friends",
+            "values": {
+              "area_name": "Friendships",
+              "standard": "See each close friend at least monthly",
+              "cadence": "Monthly",
+              "state": "Active",
+              "last_reviewed": "@today-23d",
+              "importance": "Important"
+            }
+          },
+          {
+            "key": "a-car",
+            "values": {
+              "area_name": "Vehicle",
+              "standard": "Insurance, service and registration current",
+              "cadence": "Quarterly",
+              "state": "Paused",
+              "last_reviewed": "@today-28d",
+              "importance": "Optional"
+            }
+          }
+        ]
+      },
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "project_name",
+        "describes": "Efforts with a finish line, each filed under the area it serves.",
+        "subject": "thing",
+        "independentOf": {
+          "area": "A project can start under any area at any time."
+        },
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "In progress",
+              "Waiting",
+              "Done"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "In progress": "blue",
+              "Waiting": "green",
+              "Done": "amber"
+            },
+            "default": "Not started"
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "area",
+            "relationMax": 1
+          },
+          {
+            "key": "deadline",
+            "label": "Deadline",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "effort",
+            "label": "Effort",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Small",
+              "Medium",
+              "Large"
+            ],
+            "choiceColors": {
+              "Small": "slate",
+              "Medium": "blue",
+              "Large": "green"
+            }
+          },
+          {
+            "key": "archived",
+            "label": "Archived",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "note",
+            "multi": true
+          },
+          {
+            "key": "note_count",
+            "label": "Note count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "notes",
+            "pick": "note_title",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pj-photos",
+            "values": {
+              "project_name": "Back up and sort ten years of photos",
+              "area": "a-home",
+              "status": "In progress",
+              "deadline": "@today+30d",
+              "effort": "Large",
+              "archived": false
+            }
+          },
+          {
+            "key": "pj-5k",
+            "values": {
+              "project_name": "Train for the neighbourhood 5k",
+              "area": "a-health",
+              "status": "In progress",
+              "deadline": "@today+45d",
+              "effort": "Medium",
+              "archived": false
+            }
+          },
+          {
+            "key": "pj-site",
+            "values": {
+              "project_name": "Rebuild my portfolio site",
+              "area": "a-craft",
+              "status": "In progress",
+              "deadline": "@today+60d",
+              "effort": "Large",
+              "archived": false
+            }
+          },
+          {
+            "key": "pj-tax",
+            "values": {
+              "project_name": "Prepare the annual tax return",
+              "area": "a-fin",
+              "status": "In progress",
+              "deadline": "@today+25d",
+              "effort": "Medium",
+              "archived": false
+            }
+          },
+          {
+            "key": "pj-lease",
+            "values": {
+              "project_name": "Renew the apartment lease",
+              "area": "a-home",
+              "status": "Waiting",
+              "deadline": "@today+15d",
+              "effort": "Small",
+              "archived": false
+            }
+          },
+          {
+            "key": "pj-service",
+            "values": {
+              "project_name": "Book the vehicle service",
+              "area": "a-car",
+              "status": "Not started",
+              "deadline": "@today+35d",
+              "effort": "Small",
+              "archived": false
+            }
+          },
+          {
+            "key": "pj-trip",
+            "values": {
+              "project_name": "Plan a weekend with Ravi and Tess",
+              "area": "a-friends",
+              "status": "Not started",
+              "deadline": "@today+50d",
+              "effort": "Medium",
+              "archived": false
+            }
+          },
+          {
+            "key": "pj-fridge",
+            "values": {
+              "project_name": "Replace the broken fridge shelf",
+              "area": "a-home",
+              "status": "Done",
+              "deadline": "@today-12d",
+              "effort": "Small",
+              "archived": true
+            }
+          }
+        ]
+      },
+      {
+        "token": "resource",
+        "name": "Resources",
+        "labelSingular": "Resource",
+        "labelPlural": "Resources",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "library",
+        "titleField": "resource_name",
+        "describes": "Reference material you want to find again, filed by topic.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "resource_name",
+            "label": "Resource",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Photography",
+              "Money",
+              "Design",
+              "Fitness",
+              "Housing",
+              "Cooking"
+            ],
+            "choiceColors": {
+              "Photography": "slate",
+              "Money": "blue",
+              "Design": "green",
+              "Fitness": "amber",
+              "Housing": "red",
+              "Cooking": "violet"
+            }
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Article",
+              "Checklist",
+              "Template",
+              "Video"
+            ],
+            "choiceColors": {
+              "Article": "slate",
+              "Checklist": "blue",
+              "Template": "green",
+              "Video": "amber"
+            }
+          },
+          {
+            "key": "usefulness",
+            "label": "Usefulness (1-5)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "saved_on",
+            "label": "Saved",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "r1",
+            "values": {
+              "resource_name": "Photo management tips",
+              "topic": "Photography",
+              "link": "https://reference.lifeledger.net/r1",
+              "kind": "Article",
+              "usefulness": 4,
+              "saved_on": "@today-11d"
+            }
+          },
+          {
+            "key": "r2",
+            "values": {
+              "resource_name": "Tax deduction checklist",
+              "topic": "Money",
+              "link": "https://reference.lifeledger.net/r2",
+              "kind": "Checklist",
+              "usefulness": 5,
+              "saved_on": "@today-22d"
+            }
+          },
+          {
+            "key": "r3",
+            "values": {
+              "resource_name": "Portfolio inspiration board",
+              "topic": "Design",
+              "link": "https://reference.lifeledger.net/r3",
+              "kind": "Template",
+              "usefulness": 3,
+              "saved_on": "@today-33d"
+            }
+          },
+          {
+            "key": "r4",
+            "values": {
+              "resource_name": "Beginner 5k plan",
+              "topic": "Fitness",
+              "link": "https://reference.lifeledger.net/r4",
+              "kind": "Video",
+              "usefulness": 4,
+              "saved_on": "@today-44d"
+            }
+          },
+          {
+            "key": "r5",
+            "values": {
+              "resource_name": "Tenant rights summary",
+              "topic": "Housing",
+              "link": "https://reference.lifeledger.net/r5",
+              "kind": "Article",
+              "usefulness": 5,
+              "saved_on": "@today-55d"
+            }
+          },
+          {
+            "key": "r6",
+            "values": {
+              "resource_name": "Recipes for busy weeknights",
+              "topic": "Cooking",
+              "link": "https://reference.lifeledger.net/r6",
+              "kind": "Checklist",
+              "usefulness": 3,
+              "saved_on": "@today-66d"
+            }
+          },
+          {
+            "key": "r7",
+            "values": {
+              "resource_name": "Typography references",
+              "topic": "Design",
+              "link": "https://reference.lifeledger.net/r7",
+              "kind": "Template",
+              "usefulness": 4,
+              "saved_on": "@today-77d"
+            }
+          },
+          {
+            "key": "r8",
+            "values": {
+              "resource_name": "Budget app comparison",
+              "topic": "Money",
+              "link": "https://reference.lifeledger.net/r8",
+              "kind": "Video",
+              "usefulness": 2,
+              "saved_on": "@today-88d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "note",
+        "name": "Notes",
+        "labelSingular": "Note",
+        "labelPlural": "Notes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "notebook",
+        "titleField": "note_title",
+        "describes": "Quick captures that start in the inbox and get filed to a project or archived.",
+        "subject": "thing",
+        "independentOf": {
+          "project": "A note can be captured at any moment of a project."
+        },
+        "fields": [
+          {
+            "key": "note_title",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inbox",
+              "Project",
+              "Archive"
+            ],
+            "choiceColors": {
+              "Inbox": "slate",
+              "Project": "blue",
+              "Archive": "green"
+            }
+          },
+          {
+            "key": "body",
+            "label": "Gist",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "captured_on",
+            "label": "Captured",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Idea",
+              "Reference",
+              "Meeting",
+              "Task"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "Reference": "blue",
+              "Meeting": "green",
+              "Task": "amber"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "n1",
+            "values": {
+              "note_title": "Photo folders audit",
+              "project": "pj-photos",
+              "stage": "Inbox",
+              "body": "Three duplicate years found on the old drive",
+              "captured_on": "@today-1d",
+              "kind": "Reference"
+            }
+          },
+          {
+            "key": "n2",
+            "values": {
+              "note_title": "5k week-one schedule",
+              "project": "pj-5k",
+              "stage": "Project",
+              "body": "Run Monday, Wednesday, Saturday",
+              "captured_on": "@today-3d",
+              "kind": "Task"
+            }
+          },
+          {
+            "key": "n3",
+            "values": {
+              "note_title": "Portfolio page structure",
+              "project": "pj-site",
+              "stage": "Project",
+              "body": "Home, three case studies, about",
+              "captured_on": "@today-5d",
+              "kind": "Idea"
+            }
+          },
+          {
+            "key": "n4",
+            "values": {
+              "note_title": "Receipts to collect",
+              "project": "pj-tax",
+              "stage": "Project",
+              "body": "Medical, donations, home office",
+              "captured_on": "@today-7d",
+              "kind": "Task"
+            }
+          },
+          {
+            "key": "n5",
+            "values": {
+              "note_title": "Questions for the landlord",
+              "project": "pj-lease",
+              "stage": "Project",
+              "body": "Rent increase cap and repair timeline",
+              "captured_on": "@today-9d",
+              "kind": "Meeting"
+            }
+          },
+          {
+            "key": "n6",
+            "values": {
+              "note_title": "Weekend ideas",
+              "project": "pj-trip",
+              "stage": "Inbox",
+              "body": "Coast cabin or city break",
+              "captured_on": "@today-11d",
+              "kind": "Idea"
+            }
+          },
+          {
+            "key": "n7",
+            "values": {
+              "note_title": "Idea: monthly dinner club",
+              "stage": "Inbox",
+              "body": "Rotate hosts",
+              "captured_on": "@today-13d",
+              "kind": "Idea"
+            }
+          },
+          {
+            "key": "n8",
+            "values": {
+              "note_title": "Book recommendations from Tess",
+              "stage": "Inbox",
+              "body": "Two novels and a memoir",
+              "captured_on": "@today-15d",
+              "kind": "Reference"
+            }
+          },
+          {
+            "key": "n9",
+            "values": {
+              "note_title": "Fridge shelf measurements",
+              "project": "pj-fridge",
+              "stage": "Archive",
+              "body": "Fixed with a universal bracket",
+              "captured_on": "@today-17d",
+              "kind": "Task"
+            }
+          },
+          {
+            "key": "n10",
+            "values": {
+              "note_title": "Car service quotes",
+              "project": "pj-service",
+              "stage": "Project",
+              "body": "Three shops compared",
+              "captured_on": "@today-19d",
+              "kind": "Reference"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A project is filed under an area.",
+        "fromTable": "project",
+        "fromField": "area",
+        "toTable": "area",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "projects_in"
+      },
+      {
+        "describes": "A note can belong to a project.",
+        "fromTable": "note",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "notes_in"
+      },
+      {
+        "describes": "An area lists its projects.",
+        "fromTable": "area",
+        "fromField": "projects",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "area_projects"
+      },
+      {
+        "describes": "A project lists its notes.",
+        "fromTable": "project",
+        "fromField": "notes",
+        "toTable": "note",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "project_notes"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "capture",
+        "name": "Capture a note",
+        "describes": "Drop a thought into the inbox.",
+        "audience": "staff",
+        "table": "note",
+        "fields": [
+          {
+            "fieldKey": "note_title",
+            "ask": "What is it?",
+            "required": true
+          },
+          {
+            "fieldKey": "body",
+            "ask": "The gist"
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of note?"
+          }
+        ],
+        "submitLabel": "Capture",
+        "confirmation": "In the inbox."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_projects",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "project_board",
+        "name": "By status",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_by_area",
+        "name": "By effort",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "effort"
+      },
+      {
+        "token": "all_areas",
+        "name": "Areas",
+        "table": "area",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "area_state",
+        "name": "By state",
+        "table": "area",
+        "kind": "kanban",
+        "groupBy": "state"
+      },
+      {
+        "token": "all_resources",
+        "name": "Resources",
+        "table": "resource",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "resource_topics",
+        "name": "By topic",
+        "table": "resource",
+        "kind": "kanban",
+        "groupBy": "topic"
+      },
+      {
+        "token": "all_notes",
+        "name": "Notes",
+        "table": "note",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "note_stage",
+        "name": "By stage",
+        "table": "note",
+        "kind": "kanban",
+        "groupBy": "stage"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "project",
+          "describes": "Every project, its area and deadline."
+        },
+        {
+          "name": "related_tables",
+          "table": "area",
+          "describes": "The areas that projects belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many projects are in progress?",
+        "whyItMatters": "Joaquin keeps active projects to four.",
+        "expect": {
+          "table": "project",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "In progress"
+          },
+          "answer": 4,
+          "unit": "projects"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open projects by status.",
+        "action": {
+          "kind": "open",
+          "surface": "project_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_board",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open notes by stage.",
+        "action": {
+          "kind": "open",
+          "surface": "note_stage"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "note_stage",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open resources by topic.",
+        "action": {
+          "kind": "open",
+          "surface": "resource_topics"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "resource_topics",
+          "minItems": 8
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "para-system",
+      "parent": null,
+      "title": "PARA System",
+      "icon": {
+        "emoji": "🗂️"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything lives in one of four places: Projects with a finish line, Areas you maintain, Resources for reference, and the Archive. Capture into the inbox, file once a week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.25
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Projects"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_projects"
+                    },
+                    "inline": true,
+                    "title": "Projects",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "Active",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": [
+                            "In progress",
+                            "Waiting"
+                          ]
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.25
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Areas"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "area",
+                      "view": "all_areas"
+                    },
+                    "inline": true,
+                    "title": "Areas",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-2",
+                        "name": "Active",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "state": "Active"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.25
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Resources"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "resource",
+                      "view": "all_resources"
+                    },
+                    "inline": true,
+                    "title": "Resources",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-3",
+                        "name": "By topic",
+                        "layout": "list",
+                        "icon": "List",
+                        "sorts": [
+                          {
+                            "field": "topic",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-3"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.25
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Archive"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_projects"
+                    },
+                    "inline": true,
+                    "title": "Projects",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-4",
+                        "name": "Archived",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "archived": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-4"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inbox"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "note",
+              "view": "all_notes"
+            },
+            "inline": true,
+            "title": "Notes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-5",
+                "name": "Inbox",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "stage": "Inbox"
+                },
+                "sorts": [
+                  {
+                    "field": "captured_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-6",
+                "name": "By stage",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "view-7",
+                "name": "All notes",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Project board"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_projects"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-9",
+                "name": "Deadlines",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "deadline"
+              },
+              {
+                "id": "view-10",
+                "name": "All projects",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-8"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Resource library"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "resource",
+              "view": "all_resources"
+            },
+            "inline": true,
+            "title": "Resources",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-11",
+                "name": "By topic",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "topic"
+              },
+              {
+                "id": "view-12",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-13",
+                "name": "All resources",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-11"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-review"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:filing-rules"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "weekly-review",
+      "parent": "para-system",
+      "title": "Weekly review",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Move things to where they belong, then stop."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Empty the inbox into projects, resources or the trash"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check each active project has a next step"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review one area's standard"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Archive finished projects"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick the three projects that get focus"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_projects"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-14",
+                "name": "Projects by area",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "effort",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "view-15",
+                "name": "Waiting",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Waiting"
+                }
+              }
+            ],
+            "activeViewId": "view-14"
+          }
+        }
+      ]
+    },
+    {
+      "key": "filing-rules",
+      "parent": "para-system",
+      "title": "Filing rules",
+      "icon": {
+        "emoji": "📎"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When unsure where something goes, ask the questions in order."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Question"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "If yes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Does it have a deadline and an outcome?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Project"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Is it a standard you keep up forever?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Might it be useful someday?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Resource"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Is it finished or dormant?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Archive"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Files move to the most actionable place; you can always move them out."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Folder"
+          }
+        }
+      ]
+    }
+  ]
+}
