@@ -7,7 +7,7 @@
  * when the person presses the button with a name in the box.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { runKindSearch } from "@/features/search/service";
@@ -27,6 +27,7 @@ export function useLaneFinder(laneId: string) {
   const { post } = useBackendApi();
   const [state, setState] = useState<FinderState>({ phase: "idle" });
   const controller = useRef<AbortController | null>(null);
+  useEffect(() => () => controller.current?.abort(), []);
 
   const find = async (words: string) => {
     const query = finderQuery(laneId, words);

@@ -10,10 +10,11 @@
  * Google Images Tools bar, beaten by showing the price before the press and the real cost after it.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Loader2, SearchX } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
+import { pickPrimary } from "@ai-matrx/chat/mandates/invoke/simple-box";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
@@ -71,7 +72,8 @@ function LaneBox({
   // A thing picked from the finder: the box keeps its name, the Tool is given its link or id.
   const [picked, setPicked] = useState<{ label: string; value: string } | null>(null);
   const inputs = form?.schema.inputs ?? [];
-  const primary = inputs.find((i) => i.primary) ?? inputs.find((i) => i.required) ?? inputs[0];
+  // THE box, by the form's own rule, so the finder and the seed attach to the field the person types in.
+  const primary = pickPrimary(inputs) ?? inputs[0];
 
   // The words already in the search box fill this Tool's box until the person types in it.
   const merged: Record<string, unknown> = {};
@@ -82,10 +84,11 @@ function LaneBox({
 
   const call = useToolCall(form?.facts.toolId ?? "", onPinned);
   const { view } = call;
+  const resumeCall = useEffectEvent((id: string) => call.resume(id));
+  const toolId = form?.facts.toolId;
   useEffect(() => {
-    if (callId && form) call.resume(callId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callId, form?.facts.toolId]);
+    if (callId && toolId) resumeCall(callId);
+  }, [callId, toolId]);
 
   const finder = useLaneFinder(lane.id);
   const run = (overrides: Record<string, unknown> = {}, spendApprovalId?: string) => {
@@ -102,7 +105,7 @@ function LaneBox({
     return call.run(adaptInputs(jobKey, { ...merged, ...given }), adaptInputs(jobKey, { ...overrides, ...given }), spendApprovalId);
   };
 
-  if (chosen === "loading") return <div className="h-14 animate-pulse rounded-full bg-muted" aria-busy />;
+  if (chosen === "loading") return <div className="h-14 animate-pulse rounded-full bg-muted" aria-busy aria-label="Loading" />;
   if (!form || !chosen) {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-center" data-tool-unavailable="">
@@ -128,7 +131,7 @@ function LaneBox({
         values={merged}
         onChange={(name, value) => {
           setValues((prev) => ({ ...prev, [name]: value }));
-          if (finder.state.phase !== "idle") finder.clear();
+          if (name === primary?.name && finder.state.phase !== "idle") finder.clear();
           if (name === primary?.name && typeof value === "string") onTyped(value);
         }}
         onSubmit={(overrides) => void run(overrides)}
@@ -140,7 +143,7 @@ function LaneBox({
         footer={price ? <span className="text-xs text-muted-foreground" data-tool-price="">{price}</span> : undefined}
       />
       {finder.state.phase !== "idle" ? (
-        <div className="flex flex-wrap items-center gap-2" data-tool-finder={finder.state.phase}>
+        <div className="flex flex-wrap items-center gap-2" role="status" aria-live="polite" data-tool-finder={finder.state.phase}>
           {finder.state.phase === "looking" ? (
             <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -201,8 +204,13 @@ export function ToolSearchPanel({ tab, seed }: { tab: ToolTab; seed: string }) {
   const params = useSearchParams();
   const pathname = usePathname();
   const lanes = TOOL_LANES[tab];
-  const [laneId, setLaneId] = useState(() => laneOf(tab, params.get("lane")).id);
-  const [typed, setTyped] = useState(() => params.get("q") ?? seed);
+  // What the box holds: the words typed on the page, else the link's own ?q=.
+  const [typed, setTyped] = useState(() => seed || params.get("q") || "");
+  // A link in the box says which source it is for, even on arrival.
+  const [laneId, setLaneId] = useState(() => {
+    const named = params.get("lane");
+    return named ? laneOf(tab, named).id : laneOf(tab, tab === "reviews" ? detectReviewLane(seed || params.get("q") || "") : null).id;
+  });
   const callId = params.get("call");
   const lane = laneOf(tab, laneId);
 

@@ -23,6 +23,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { tabHasEngineChoice } from "@/features/search/types";
 import { understandInput } from "@/features/search/input-understanding";
+import { isToolTab } from "@/features/search/tools/searchToolPlan";
 import { useSearchInputs } from "./useSearchInputs";
 
 export function useSearchRoute() {
@@ -59,6 +60,9 @@ export function useSearchRoute() {
     if (autoRan.current) return;
     autoRan.current = true;
     if (!initial.query) return;
+    // A catalog tab (Deep, Reviews, AI answers) owns the address: a hidden web search would rewrite it
+    // and lose the tab and the saved answer it points at.
+    if (isToolTab(searchParams.get("tab"))) return;
     const understood = understandInput(initial.query);
     if (understood.mode === "handle") {
       inputs.submit();
