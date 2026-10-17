@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * Where a test case's material came from, on the sample row itself.
+ * Where a sample's material came from, on the sample row itself.
  *
  * `source = 'library'` is a value this list had never seen before the media
- * catalog's "Use as test cases for an agent…" action started writing rows into
+ * catalog's "Use as samples for an agent…" action started writing rows into
  * it, and a sample whose material is somebody's channel is useless if the
  * screen cannot say which channel. THE DOOR LAW applies to both names printed
  * here: the Library opens at /libraries/<id>, and a single catalogued item

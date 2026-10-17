@@ -10,12 +10,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Package, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   LoadingSurface,
   QueryError,
+  SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { brandKindCopy } from "@/features/marketing/lib/brand-kind";
@@ -137,90 +138,83 @@ export function BrandOfferingsEditor() {
   const tree = buildCatalogTree(offerings, new Map());
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain pt-[var(--shell-header-h)]">
-      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-3 py-2.5 sm:px-4">
-        <div className="min-w-0">
-          <h1
-            className="flex items-center gap-2 text-base font-semibold text-foreground"
-            title={brandKindCopy(brand).offeringsLine(brand.name)}
-          >
-            <Package className="h-4 w-4 text-muted-foreground" />
-            Offerings
-          </h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            <Link
-              href={marketingRoutes.newSite(brand.id)}
-              className="underline underline-offset-2"
-            >
-              Add a website
-            </Link>{" "}
-            to see where each offering earns search traffic.
-          </p>
-        </div>
-        {offerings.length === 0 ? (
-          <Button variant="primary" onClick={() => setDraft(NEW_DRAFT)}>
-            <Plus className="mr-1 h-3.5 w-3.5" />
-            Add offering
-          </Button>
-        ) : null}
-      </header>
-
-      <div className="w-full px-3 py-3 sm:px-4">
-        {offerings.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            No offerings yet. Add the first thing {brand.name} sells.
-          </p>
-        ) : (
-          <OfferingCatalogTable
-            brandOnly
-            tree={tree}
-            prices={prices.data ?? {}}
-            metas={[]}
-            collapsed={collapsed}
-            selectedId={null}
-            selectedIds={[]}
-            busy={remove.isPending}
-            actions={{
-              ...SITE_ONLY_NOOPS,
-              onEdit: (node) => {
-                const o = node.offering;
-                const p = prices.data?.[o.id];
-                setDraft({
-                  offeringId: o.id,
-                  name: o.name,
-                  kind: o.kind,
-                  description: o.description ?? "",
-                  parentId: o.parentId,
-                  priceAmount: p?.amount == null ? "" : String(p.amount),
-                  priceCurrency: p?.currency ?? "USD",
-                  priceUnit: p?.unit ?? "",
-                  priceNote: p?.note ?? "",
-                });
-              },
-              onAddChild: (node) => setDraft({ ...NEW_DRAFT, parentId: node.offering.id }),
-              onRemove: async (node) => {
-                const ok = await confirm({
-                  title: `Remove "${node.offering.name}"?`,
-                  description: "It leaves this brand's offerings and every site that offers it.",
-                  variant: "destructive",
-                  confirmLabel: "Remove",
-                });
-                if (ok) remove.mutate(node.offering);
-              },
-            }}
-            onToggle={(id) =>
-              setCollapsed((current) => {
-                const next = new Set(current);
-                if (!next.delete(id)) next.add(id);
-                return next;
-              })
-            }
-            onSelect={() => undefined}
-            onSelectedIdsChange={() => undefined}
-            onAdd={() => setDraft(NEW_DRAFT)}
-            onSaveEdits={async () => undefined}
-          />
-        )}
+    <div className="h-full min-h-0 overflow-y-auto overscroll-contain bg-textured pt-[var(--shell-header-h)]">
+      <div className="mx-auto w-full max-w-6xl space-y-3 px-3 py-3 sm:px-4">
+        <SectionCard
+          title="Offerings"
+          about={brandKindCopy(brand).offeringsLine(brand.name)}
+          headerExtra={
+            <>
+              <Link
+                href={marketingRoutes.newSite(brand.id)}
+                className="matrx-tap-area type-secondary font-medium text-primary"
+              >
+                Add a website
+              </Link>
+              {offerings.length === 0 ? (
+                <Button variant="primary" icon={<Plus />} onClick={() => setDraft(NEW_DRAFT)}>
+                  Add offering
+                </Button>
+              ) : null}
+            </>
+          }
+        >
+          {offerings.length === 0 ? (
+            <p className="p-3 type-secondary text-muted-foreground">No offerings yet.</p>
+          ) : (
+            <div className="p-3">
+              <OfferingCatalogTable
+                brandOnly
+                tree={tree}
+                prices={prices.data ?? {}}
+                metas={[]}
+                collapsed={collapsed}
+                selectedId={null}
+                selectedIds={[]}
+                busy={remove.isPending}
+                actions={{
+                  ...SITE_ONLY_NOOPS,
+                  onEdit: (node) => {
+                    const o = node.offering;
+                    const p = prices.data?.[o.id];
+                    setDraft({
+                      offeringId: o.id,
+                      name: o.name,
+                      kind: o.kind,
+                      description: o.description ?? "",
+                      parentId: o.parentId,
+                      priceAmount: p?.amount == null ? "" : String(p.amount),
+                      priceCurrency: p?.currency ?? "USD",
+                      priceUnit: p?.unit ?? "",
+                      priceNote: p?.note ?? "",
+                    });
+                  },
+                  onAddChild: (node) => setDraft({ ...NEW_DRAFT, parentId: node.offering.id }),
+                  onRemove: async (node) => {
+                    const ok = await confirm({
+                      title: `Remove "${node.offering.name}"?`,
+                      description: "It leaves this brand's offerings and every site that offers it.",
+                      variant: "destructive",
+                      confirmLabel: "Remove",
+                    });
+                    if (ok) remove.mutate(node.offering);
+                  },
+                }}
+                onToggle={(id) =>
+                  setCollapsed((current) => {
+                    const next = new Set(current);
+                    if (!next.delete(id)) next.add(id);
+                    return next;
+                  })
+                }
+                onSelect={() => undefined}
+                onSelectedIdsChange={() => undefined}
+                onAdd={() => setDraft(NEW_DRAFT)}
+                onSaveEdits={async () => undefined}
+              />
+            </div>
+          )}
+        </SectionCard>
       </div>
 
       {draft ? (

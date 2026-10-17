@@ -35,6 +35,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import {
   LoadingSurface,
   QueryError,
+  SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
 import { useBrandSites } from "@/features/marketing/data/hooks";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
@@ -530,11 +531,11 @@ export function BrandCompetitorDirectory() {
   if (sites.isError) return <QueryError error={sites.error} />;
 
   return (
-    <div className="space-y-3 p-3 pt-[calc(var(--shell-header-h)+0.75rem)]">
-      <section className="min-w-0 rounded-lg border border-border bg-card">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-1.5">
-          <h2 className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-muted-foreground">{rivals.title}</h2>
-          <div className="flex flex-wrap items-center gap-2">
+    <div className="mx-auto w-full max-w-6xl space-y-3 px-3 pb-3 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-4">
+      <SectionCard
+        title={rivals.title}
+        headerExtra={
+          <>
             {canEdit && (toSearch.length > 0 || bulk) ? (
               <Button
                 variant="outline"
@@ -550,8 +551,9 @@ export function BrandCompetitorDirectory() {
                 {rivals.add}
               </Button>
             ) : null}
-          </div>
-        </div>
+          </>
+        }
+      >
         {list.isError && jobs.length === 0 ? (
           <QueryError error={list.error} onRetry={() => void list.refetch()} />
         ) : list.isPending && jobs.length === 0 ? (
@@ -633,7 +635,7 @@ export function BrandCompetitorDirectory() {
             }}
           />
         )}
-      </section>
+      </SectionCard>
       <Dialog open={detailRow !== null} onOpenChange={(o) => !o && setDetailRow(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -772,7 +774,7 @@ function AddCompetitorDialog({
             </div>
             {!firstSiteId && cleanDomain ? (
               <p className="text-[11px] text-muted-foreground">
-                This brand has no website, so the domain is not tracked as a website {rivals.oneLower}. Socials still are.
+                No brand website: socials only.
               </p>
             ) : null}
             {findNote ? <p className="text-[11px] text-muted-foreground">{findNote}</p> : null}

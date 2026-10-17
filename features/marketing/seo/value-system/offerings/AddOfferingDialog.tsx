@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { ProInput } from "@/components/official/ProInput";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { cn } from "@/styles/themes/utils";
@@ -104,7 +104,7 @@ export function AddOfferingDialog({
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain">
-          <Input
+          <ProInput
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { ProInput } from "@/components/official/ProInput";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/styles/themes/utils";
 import { extractErrorMessage } from "@/utils/errors";
@@ -137,7 +137,7 @@ export function RemoveOfferingDialog({
                       </span>
                       {mode === "move" ? (
                         <span className="mt-2 block space-y-1.5">
-                          <Input
+                          <ProInput
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Search this site's offerings…"

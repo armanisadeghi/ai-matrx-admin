@@ -45,7 +45,11 @@ import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Button } from "@/components/ui/button";
 import { extractErrorMessage } from "@/utils/errors";
-import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
+import {
+  InlineQueryError,
+  SectionCard,
+} from "@/features/marketing/components/shared/MarketingUi";
 import {
   getKwGuidelines,
   kwGuidelinesQueryKey,
@@ -88,10 +92,7 @@ Where we serve (and where we do not)
 - 
 `;
 
-const PLACEHOLDER =
-  'e.g. "We serve corporations, never consumers. CRT, TV and monitor repair ' +
-  "queries are consumer signals — they are never our customer, no matter how " +
-  'much traffic they bring."';
+const PLACEHOLDER = "e.g. We serve corporations, never consumers.";
 
 function daysSince(iso: string | null): number | null {
   if (!iso) return null;
@@ -216,16 +217,7 @@ export function KwGuidelinesPanel({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pt-2">
-      <p className="text-xs leading-snug text-muted-foreground">
-        What the AI must know about{" "}
-        <span className="font-medium text-foreground">this business</span>{" "}
-        before it judges a keyword. Every AI classification and valuation run
-        for this site reads this document first — write the things a smart
-        outsider would get wrong. Plain sentences beat rules; name the terms
-        themselves.
-      </p>
-
+    <div className="grid gap-3">
       {stored.isError ? (
         <InlineQueryError
           what="Keyword guidelines"
@@ -253,104 +245,108 @@ export function KwGuidelinesPanel({
       {/* The editor is where you LAND from every prompt, so the offer has to
           be here too — an empty textarea with no way out is the whole bug. */}
       {!stored.isLoading && !savedText ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-2">
-          <span className="min-w-0 flex-1 text-[11px] leading-snug text-foreground">
-            You do not have to start from a blank page — we can read your own
-            site and propose a draft for you to correct. Nothing is saved until
-            you approve it.
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+          <span className="min-w-0 flex-1 text-xs text-foreground">
+            No guidelines yet.
           </span>
+          <AboutPeek
+            title="Draft from my site"
+            about="We read your own site and propose a draft for you to correct. Nothing is saved until you approve it."
+          />
           <GuidelinesDraftButton siteId={siteId} hasDocument={false} />
         </div>
       ) : null}
 
       {stale ? (
-        <p className="flex items-start gap-1.5 rounded-md border border-warning/60 bg-warning/10 px-2 py-1.5 text-[11px] leading-snug text-warning-ink">
+        <p className="flex items-center gap-1.5 rounded-lg border border-warning/60 bg-warning/10 px-3 py-2 text-xs text-warning-ink">
           <TriangleAlert className="mt-px h-3 w-3 shrink-0" />
-          <span>
-            Not edited in {age} days. The AI is still ruling on every keyword
-            from this text — re-read it before the next classification sweep.
-            An out-of-date sentence keeps deciding things long after it stopped
-            being true.
-          </span>
+          <span>Not edited in {age} days.</span>
+          <AboutPeek
+            title="Stale guidelines"
+            about="The AI still rules on every keyword from this text. Re-read it before the next classification sweep; an out-of-date sentence keeps deciding things after it stopped being true."
+          />
         </p>
       ) : null}
 
-      <ProTextarea
-        wrapperClassName="min-h-0 flex-1"
-        data-edit-target="guidelines"
-        value={value}
-        onChange={(event) => setDraft(event.target.value)}
-        disabled={stored.isLoading || save.isPending}
-        spellCheck
-        placeholder={PLACEHOLDER}
-        className="min-h-[16rem] flex-1 resize-none font-mono text-xs leading-relaxed"
-      />
+      <SectionCard
+        title="Guidelines"
+        about="Every AI classification and valuation run for this site reads this document first. Write the things a smart outsider would get wrong; plain sentences beat rules, and name the terms themselves. Used by Classify with AI on the keyword workbench and every valuation agent for this site. It never overrides your explicit rulings: a keyword you ruled by hand always wins."
+      >
+        <div className="grid gap-3 p-3">
+          <ProTextarea
+            data-edit-target="guidelines"
+            value={value}
+            onChange={(event) => setDraft(event.target.value)}
+            disabled={stored.isLoading || save.isPending}
+            spellCheck
+            placeholder={PLACEHOLDER}
+            className="min-h-[20rem] resize-y font-mono text-xs leading-relaxed"
+          />
 
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-1.5">
-        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          {stored.isLoading ? (
-            <>
-              <Loader2 className="h-3 w-3 animate-spin" /> Loading…
-            </>
-          ) : stored.error ? (
-<ReadFailure error={stored.error} what="this list" />
-) : provenance ? (
-            <>
-              <Clock className="h-3 w-3" /> {provenance}
-            </>
-          ) : (
-            <>
-              <BookOpenCheck className="h-3 w-3" /> Never written — AI runs for
-              this site carry no business context yet.
-            </>
-          )}
-        </span>
+          <div className="flex flex-wrap items-center justify-between gap-1.5">
+            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              {stored.isLoading ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" /> Loading…
+                </>
+              ) : stored.error ? (
+                <ReadFailure error={stored.error} what="this list" />
+              ) : provenance ? (
+                <>
+                  <Clock className="h-3 w-3" /> {provenance}
+                </>
+              ) : (
+                <>
+                  <BookOpenCheck className="h-3 w-3" /> Never written — AI runs
+                  for this site carry no business context yet.
+                </>
+              )}
+            </span>
 
-        <span className="flex items-center gap-1.5">
-          {!savedText && !value ? (
-            <Button
-              type="button"
-              variant="quiet"
-              onClick={() => setDraft(STARTER_OUTLINE)}
-            >
-              Start an outline
-            </Button>
-          ) : null}
-          {savedText && !dirty ? (
-            <GuidelinesDraftButton siteId={siteId} hasDocument />
-          ) : null}
-          {dirty ? (
-            <Button
-              icon={<RotateCcw />}
-              type="button"
-              variant="quiet"
-              disabled={save.isPending}
-              onClick={() => setDraft(null)}
-            > Discard
-            </Button>
-          ) : null}
-          <Button
-            icon={save.isPending ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Check />
-            )}
-            type="button"
-            variant="outline"
-            disabled={!dirty || save.isPending}
-            onClick={() => void submit()}
-          >
-            Save
-          </Button>
-        </span>
-      </div>
-
-      <p className="text-[11px] leading-snug text-muted-foreground">
-        Used by: <span className="text-foreground">Classify with AI</span> on
-        this workbench, and every valuation agent that reasons about this
-        site&apos;s keywords. It never overrides your explicit rulings — a
-        keyword you ruled by hand always wins.
-      </p>
+            <span className="flex items-center gap-1.5">
+              {!savedText && !value ? (
+                <Button
+                  type="button"
+                  variant="quiet"
+                  onClick={() => setDraft(STARTER_OUTLINE)}
+                >
+                  Start an outline
+                </Button>
+              ) : null}
+              {savedText && !dirty ? (
+                <GuidelinesDraftButton siteId={siteId} hasDocument />
+              ) : null}
+              {dirty ? (
+                <Button
+                  icon={<RotateCcw />}
+                  type="button"
+                  variant="quiet"
+                  disabled={save.isPending}
+                  onClick={() => setDraft(null)}
+                >
+                  {" "}
+                  Discard
+                </Button>
+              ) : null}
+              <Button
+                icon={
+                  save.isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Check />
+                  )
+                }
+                type="button"
+                variant="outline"
+                disabled={!dirty || save.isPending}
+                onClick={() => void submit()}
+              >
+                Save
+              </Button>
+            </span>
+          </div>
+        </div>
+      </SectionCard>
     </div>
   );
 }

@@ -35,7 +35,7 @@ import { Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
 import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
-import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
+import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { selectInstanceStatus } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import {
   selectLatestAnswerText,
@@ -50,11 +50,9 @@ import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-co
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { STUDIO_MIN_THREE_PANE_PX, STUDIO_PANE_MIN_PX } from "../studio-layout";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { ProInput } from "@/components/official/ProInput";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";
 import { getFactoryBuild } from "@/features/agents/factory/service";
 import { KEPT_OUTCOMES, type FactoryBuildState } from "@/features/agents/factory/types";
-import { makeAgentFromChat, type StudioBrief } from "@/features/agents/from-chat/service";
 import { fetchAgentContractHead, fetchCandidateRuns, sampleInputText } from "@/features/agents/samples/service";
 import { createTestCase, fetchTestCaseRows, saveRunAsTestCase, type TestCaseRow } from "@/features/agent-tests/cases";
 import { fetchFullAgent } from "@/features/agents/redux/fetch-full-agent.thunk";
@@ -67,11 +65,8 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { studioMode } from "../modes";
 import { planImprove, runToSave } from "../improve";
 import {
-  CAPTURE_QUESTION,
   CHAT_CASE_SOURCE,
-  DOER_CONTEXT_KEY,
   EXAMPLES_CASE_SOURCE,
-  DOER_NOTE,
   approvedAnswerFrom,
   readStudioState,
   rerunSeedFrom,
@@ -83,7 +78,9 @@ import {
   type StudioMessageRecord,
   type StudioState,
 } from "../studio-state";
-import { loadMakeDraft, saveMakeDraft } from "../make-draft";
+import { STUDIO_ASSISTANT_MANDATE, STUDIO_SURFACE_NAME, buildFromWorkspace, checkMissedInputs } from "../workspace-api";
+import { codeApprove, type WorkspaceInput } from "../workspace";
+import { StudioWorkspacePane, useStudioWorkspace } from "./StudioWorkspacePane";
 import { StudioStart } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
 import { StudioControls } from "./StudioControls";
@@ -95,15 +92,14 @@ import { PlanBackLink, writeAgentToPlanStep } from "./PlanBackLink";
 const ASSISTANT_SURFACE = "agent-studio:assistant";
 /** The center's runs are the builder page's OWN conversations: they never receive the builder. */
 const tryKey = (agentId: string) => `agent-builder:${agentId}`;
-const CAPTURE_WAIT_MS = 600_000;
-/** The doer's standing hint, on its own conversation (never a new agent). */
-const DOER_CONTEXT = { [DOER_CONTEXT_KEY]: DOER_NOTE };
+/** The assistant is a MANDATE (the server resolves its holder); the page never names an agent for it. */
+const ASSISTANT_MANDATE = storedMandateKey(STUDIO_ASSISTANT_MANDATE);
 
 type MakePhase =
   | { kind: "idle" }
-  | { kind: "capturing" }
-  | { kind: "reading" }
-  | { kind: "confirm"; brief: StudioBrief; approved: string; capture: string }
+  | { kind: "approving" }
+  | { kind: "checking" }
+  | { kind: "suggest"; suggestions: WorkspaceInput[] }
   | { kind: "building" };
 
 export function AgentStudioPage() {
@@ -137,11 +133,9 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   // Below the width the three minimums fit in, the panes become tabs (never overlap).
   const tabbedPanes = useMediaQuery(`(max-width: ${STUDIO_MIN_THREE_PANE_PX - 1}px)`);
   const mode = studioMode(state.mode)!;
-  const { mandate, error: mandateError } = useMandate(DEFAULT_NEW_CHAT_MANDATE_KEY);
-  // The assistant: the default chat agent, unless the URL names another (`?assistant=`).
-  const doerId = state.assistantId ?? mandate?.agentId ?? null;
-  const doerError = state.assistantId ? null : mandateError;
-  const { launchAgent } = useAgentLauncher();
+  const { mandate, error: doerError } = useMandate(ASSISTANT_MANDATE);
+  const assistantReady = Boolean(mandate);
+  const { launchMandate } = useAgentLauncher();
 
   const [build, setBuild] = useState<FactoryBuildState | null>(null);
   const [runKey, setRunKey] = useState(0);
@@ -285,33 +279,29 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     );
   }, [state, agentName]);
 
-  /** One turn into the assistant's conversation (feedback, the capture question). */
+  /** The page's offered values, sent on EVERY turn: ids and where we are only (the server builds the rest). */
+  const assistantVariables = () => ({
+    studio_mode: mode.id,
+    studio_phase: state.agentId ? "improving" : state.buildId ? "building" : "doing",
+    ...(state.agentId ? { agent_id: state.agentId } : {}),
+    ...(state.buildId ? { build_id: state.buildId } : {}),
+  });
+
+  /** One turn into the assistant's conversation (feedback from the controls), through the mandate. */
   const sendToAssistant = async (text: string) => {
-    if (!doerId || !state.chatId) {
+    if (!state.chatId) {
       toast.error("Say something to the assistant first");
       return false;
     }
-    await launchAgent(doerId, { initiation: "user",
+    await launchMandate(ASSISTANT_MANDATE, {
+      initiation: "user",
       conversationId: state.chatId,
       surfaceKey: ASSISTANT_SURFACE,
       sourceFeature: "agent-studio",
       config: { displayMode: "direct", autoRun: true, allowChat: true },
-      runtime: { userInput: text, context: DOER_CONTEXT },
+      runtime: { userInput: text, variables: assistantVariables(), surfaceName: STUDIO_SURFACE_NAME },
     });
     return true;
-  };
-
-  const waitForAnswerAfter = async (conversationId: string, previousId: string | undefined) => {
-    const started = Date.now();
-    for (;;) {
-      const s = store.getState();
-      const latest = selectLatestAssistantMessageId(conversationId)(s);
-      const status = selectInstanceStatus(conversationId)(s);
-      if (latest && latest !== previousId && status === "complete") return selectLatestAnswerText(conversationId)(s);
-      if (status === "error") throw new Error("The assistant stopped before answering");
-      if (Date.now() - started > CAPTURE_WAIT_MS) throw new Error("The assistant took too long");
-      await new Promise((r) => setTimeout(r, 700));
-    }
   };
 
   /** The latest answer that actually came back — never a refused or failed turn. */
@@ -323,80 +313,54 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     return approvedAnswerFrom(ids, byId);
   };
 
+  const { ws, edit } = useStudioWorkspace(state.chatId ?? null);
+  const [dropped, setDropped] = useState<ReadonlySet<string>>(new Set());
+
+  /** "Make this an agent": approve (code), optional missed-inputs check, then the workspace goes to the factory. */
   const makeThisAnAgent = async () => {
     const chatId = state.chatId;
     if (!chatId) return;
-    const approved = readApproved(chatId)?.text ?? "";
-    if (!approved.trim()) {
+    const approved = readApproved(chatId);
+    if (!approved?.text.trim()) {
       toast.error("Get a result you like first");
       return;
     }
     try {
-      setPhase({ kind: "capturing" });
-      // (a) The capture turn enriches the brief; the brief still reads the whole chat without it,
-      // so a refused or failed capture is announced and the build goes on.
-      let capture = "";
+      setPhase({ kind: "approving" });
+      const ids = selectOrderedMessageIds(chatId)(store.getState());
+      await edit((w) => codeApprove(w, approved.text, ids.indexOf(approved.id) + 1 || null));
+      setPhase({ kind: "checking" });
+      let suggestions: WorkspaceInput[] = [];
       try {
-        const before = selectLatestAssistantMessageId(chatId)(store.getState());
-        if (await sendToAssistant(CAPTURE_QUESTION)) capture = await waitForAnswerAfter(chatId, before);
+        const check = await checkMissedInputs(dispatch, chatId);
+        suggestions = check.suggestions;
+        if (!check.checked && check.reason) toast.info("Skipped the check for missed inputs", { description: check.reason });
       } catch (e) {
-        toast.info("Building from the chat alone", {
-          description: `The assistant did not answer the how-it-worked question: ${e instanceof Error ? e.message : String(e)}`,
-        });
+        toast.info("Skipped the check for missed inputs", { description: e instanceof Error ? e.message : String(e) });
       }
-      setPhase({ kind: "reading" });
-      const answer = await makeAgentFromChat(dispatch, chatId, () => undefined, [], undefined, {
-        approvedOutput: approved,
-        capture,
-        stage: "inputs",
-      });
-      if (!answer.ok) throw new Error(answer.says);
-      if (!("brief" in answer)) throw new Error("The inputs did not come back");
-      setPhase({ kind: "confirm", brief: answer.brief, approved, capture });
-      // A reload from here resumes the confirm card (the draft rides on the doer's conversation).
-      void saveMakeDraft(chatId, { brief: answer.brief, approved, capture }).catch((e: unknown) =>
-        toast.error("This step will not survive a reload", { description: e instanceof Error ? e.message : String(e) }),
-      );
+      if (suggestions.length > 0) {
+        setDropped(new Set());
+        setPhase({ kind: "suggest", suggestions });
+        return;
+      }
+      await buildNow([]);
     } catch (e) {
       setPhase({ kind: "idle" });
       toast.error("Making the agent stopped", { description: e instanceof Error ? e.message : String(e) });
     }
   };
 
-  // Reload mid-"Make this an agent": the confirm card comes back from the conversation's draft.
-  const restoredFor = useRef<string | null>(null);
-  useEffect(() => {
-    const chatId = state.chatId;
-    if (mode.id !== "do-with-me" || !chatId || state.buildId || restoredFor.current === chatId) return;
-    restoredFor.current = chatId;
-    let live = true;
-    void loadMakeDraft<StudioBrief>(chatId)
-      .then((draft) => {
-        if (live && draft) setPhase((p) => (p.kind === "idle" ? { kind: "confirm", ...draft } : p));
-      })
-      .catch((e: unknown) => toast.error("The saved draft did not load", { description: e instanceof Error ? e.message : String(e) }));
-    return () => {
-      live = false;
-    };
-  }, [mode.id, state.chatId, state.buildId]);
-
-  const buildConfirmed = async (brief: StudioBrief, approved: string, capture: string) => {
+  const buildNow = async (accepted: WorkspaceInput[]) => {
     if (!state.chatId) return;
     setPhase({ kind: "building" });
-    const answer = await makeAgentFromChat(dispatch, state.chatId, () => undefined, [], undefined, {
-      approvedOutput: approved,
-      capture,
-      stage: "build",
-      brief,
-    });
-    if (answer.ok && "buildId" in answer) {
+    try {
+      const started = await buildFromWorkspace(dispatch, state.chatId, accepted);
       setPhase({ kind: "idle" });
-      void saveMakeDraft(state.chatId, null).catch(() => undefined); // the build's record holds it now
-      go({ buildId: answer.buildId });
+      go({ buildId: started.buildId });
       if (isMobile) setPaneTab("agent");
-    } else {
+    } catch (e) {
       setPhase({ kind: "idle" });
-      toast.error("The build did not start", { description: answer.ok ? "No build came back" : answer.says });
+      toast.error("The build did not start", { description: e instanceof Error ? e.message : String(e) });
     }
   };
 
@@ -432,12 +396,15 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   // ── panes ──
   const left = doerError ? (
     <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="The assistant is unavailable" line={doerError} />
+  ) : !assistantReady ? (
+    <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Getting your assistant ready" />
   ) : (
     <StudioRun
-      agentId={doerId}
+      mandateKey={ASSISTANT_MANDATE}
+      mandateVariables={assistantVariables}
+      surfaceName={STUDIO_SURFACE_NAME}
       conversationId={state.chatId}
       surfaceKey={ASSISTANT_SURFACE}
-      context={DOER_CONTEXT}
       onConversation={(id) => {
         // Opening the Studio creates nothing: the chat goes into the URL on the first send.
         if (id !== state.chatId) setOpenChat(id);
@@ -446,15 +413,22 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   );
 
   let center: React.ReactNode;
-  if (phase.kind === "confirm") {
+  if (phase.kind === "suggest") {
     center = (
-      <ConfirmInputs
-        brief={phase.brief}
-        onBuild={(b) => void buildConfirmed(b, phase.approved, phase.capture)}
-        onCancel={() => {
-          setPhase({ kind: "idle" });
-          if (state.chatId) void saveMakeDraft(state.chatId, null).catch(() => undefined);
-        }}
+      <EmptyState
+        icon={<AGENT_ICON className="h-5 w-5" />}
+        title="We found inputs you may have given"
+        line="Keep or drop each one in your workspace, then build the agent"
+        action={
+          <div className="flex gap-2">
+            <Button variant="quiet" onClick={() => setPhase({ kind: "idle" })}>
+              Not yet
+            </Button>
+            <Button variant="primary" data-testid="studio-build-agent" onClick={() => void buildNow([])}>
+              Build the agent
+            </Button>
+          </div>
+        }
       />
     );
   } else if (phase.kind !== "idle") {
@@ -462,10 +436,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       <EmptyState
         icon={<AGENT_ICON className="h-5 w-5" />}
         title={
-          phase.kind === "capturing"
-            ? "Asking the assistant how it did it"
-            : phase.kind === "reading"
-              ? "Finding the inputs you gave"
+          phase.kind === "approving"
+            ? "Saving the result you approved"
+            : phase.kind === "checking"
+              ? "Checking for inputs you may have given"
               : "Starting the build"
         }
       />
@@ -515,7 +489,15 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       );
   }
 
-  const right = (
+  const suggestions = phase.kind === "suggest" ? phase.suggestions.filter((x) => !dropped.has(x.name)) : [];
+  const right = !state.agentId && mode.id === "do-with-me" ? (
+    <StudioWorkspacePane
+      ws={ws}
+      edit={edit}
+      suggestions={suggestions}
+      onDropSuggestion={(name) => setDropped((d) => new Set(d).add(name))}
+    />
+  ) : (
     <StudioControls
       agentId={state.agentId}
       runConversationId={runConversation}
@@ -641,53 +623,5 @@ function BuilderSurface({ agentId, children }: { agentId: string; children: Reac
       <AgentBuilderClientTools agentId={agentId} />
       {children}
     </SurfaceRuntimeProvider>
-  );
-}
-
-function ConfirmInputs({
-  brief,
-  onBuild,
-  onCancel,
-}: {
-  brief: StudioBrief;
-  onBuild: (brief: StudioBrief) => void;
-  onCancel: () => void;
-}) {
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(brief.variables.map((v) => [v.name, v.test_value])),
-  );
-  const confirmed: StudioBrief = {
-    ...brief,
-    variables: brief.variables.map((v) => ({ ...v, test_value: values[v.name] ?? "" })),
-  };
-  return (
-    <div className="h-full overflow-y-auto p-4" data-testid="studio-confirm-inputs">
-      <div className="mx-auto flex max-w-xl flex-col gap-3 rounded-xl border border-border bg-card p-4">
-        <h2 className="text-sm font-semibold text-foreground">
-          If you&apos;d been asked these questions, would these have been your answers?
-        </h2>
-        {brief.variables.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No inputs: the agent takes what you type</p>
-        ) : (
-          brief.variables.map((v) => (
-            <label key={v.name} className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-              {v.description || v.name}
-              <ProInput
-                value={values[v.name] ?? ""}
-                onChange={(e) => setValues((prev) => ({ ...prev, [v.name]: e.target.value }))}
-              />
-            </label>
-          ))
-        )}
-        <div className="flex justify-end gap-2">
-          <Button variant="quiet" onClick={onCancel}>
-            Not yet
-          </Button>
-          <Button variant="primary" onClick={() => onBuild(confirmed)}>
-            Build the agent
-          </Button>
-        </div>
-      </div>
-    </div>
   );
 }

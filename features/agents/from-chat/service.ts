@@ -196,6 +196,12 @@ export async function makeAgentFromChat(
       const d = event.data as unknown;
       if (isProgress(d)) {
         lastStep = d.step;
+        // The door follows every sub-run the server names, the instant it names it: the tab streams
+        // it live (client-minted ids), but only the conversation id opens its stored record.
+        const runConversation = progressRunConversationId(d);
+        if (runConversation) {
+          followServerWork({ kind: "conversation", id: runConversation, label: `From chat · ${d.step}`, source: "Studio · from chat" });
+        }
         if (progressBuildId(d)) {
           buildId = progressBuildId(d);
           followServerWork({ kind: "factory_build", id: buildId as string, label: "Agent Factory build", source: "Studio · from chat" });

@@ -2,7 +2,7 @@
 
 /**
  * AgentSamplesManager — browse, borrow, approve, and prune an agent's sample
- * inputs ("test cases", rows of agent.exemplar keyed by agent_id).
+ * inputs ("samples", rows of agent.exemplar keyed by agent_id).
  *
  * Mounted in the agent builder (user view) and on the admin agent samples page.
  * Freshness is DERIVED from contract hashes at read time — see
@@ -174,7 +174,7 @@ export function AgentSamplesManager({
       setSamples(rows);
       setHead(headRow);
     } catch (error: unknown) {
-      toast.error(`Couldn't load test cases: ${describeError(error)}`);
+      toast.error(`Couldn't load samples: ${describeError(error)}`);
     } finally {
       setLoading(false);
     }
@@ -218,7 +218,7 @@ export function AgentSamplesManager({
     return (
       <div
         className="flex items-center justify-center p-6 text-muted-foreground"
-        aria-label="Loading test cases"
+        aria-label="Loading samples"
       >
         <Loader2 className="h-4 w-4 animate-spin" />
       </div>
@@ -242,7 +242,7 @@ export function AgentSamplesManager({
         className="overflow-hidden rounded-md border border-border bg-card"
       >
         <div className="flex flex-wrap items-start gap-1 px-1 py-1 pr-1.5">
-          {/* The whole identity line is the disclosure: a test case is routinely
+          {/* The whole identity line is the disclosure: a sample is routinely
               pages long, so it opens on purpose and never on arrival. */}
           <button
             type="button"
@@ -267,7 +267,7 @@ export function AgentSamplesManager({
                   >
                     <Input
                       autoFocus
-                      aria-label="Test case name"
+                      aria-label="Sample name"
                       value={renameValue}
                       onChange={(event) => setRenameValue(event.target.value)}
                       onKeyDown={(event) => {
@@ -326,7 +326,7 @@ export function AgentSamplesManager({
                 onClick={() =>
                   void withPending(sample.id, async () => {
                     await approveAgentSample(sample.id);
-                    toast.success("Test case approved.");
+                    toast.success("Sample approved.");
                   })
                 }
               />
@@ -357,9 +357,9 @@ export function AgentSamplesManager({
               </Button>
             ) : null}
             <Button
-              icon={<Pencil />} aria-label="Rename test case"
+              icon={<Pencil />} aria-label="Rename sample"
               variant="quiet"
-              title="Rename test case"
+              title="Rename sample"
               disabled={busy}
               onClick={() => {
                 setRenamingId(sample.id);
@@ -367,9 +367,9 @@ export function AgentSamplesManager({
               }}
             />
             <Button
-              icon={<Trash2 />} aria-label="Delete test case"
+              icon={<Trash2 />} aria-label="Delete sample"
               variant="quiet"
-              title="Delete test case"
+              title="Delete sample"
               disabled={busy}
               onClick={() => setDeleteTarget(sample)}
             />
@@ -427,7 +427,7 @@ export function AgentSamplesManager({
               variant="outline"
               onClick={() => setNewOpen(true)}
             >
-              New test case
+              New sample
             </Button>
             <Button
               icon={<Library />}
@@ -471,7 +471,7 @@ export function AgentSamplesManager({
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
-        title="Delete this test case?"
+        title="Delete this sample?"
         description={
           deleteTarget
             ? `“${deleteTarget.label}” will be removed from this agent's samples.`
@@ -485,7 +485,7 @@ export function AgentSamplesManager({
           if (!target) return;
           void withPending(target.id, async () => {
             await deleteAgentSample(target.id);
-            toast.success("Test case deleted.");
+            toast.success("Sample deleted.");
           });
         }}
       />
@@ -640,12 +640,12 @@ function BorrowFromRunsSection({
                           try {
                             await borrowSampleFromRun({ agentId, run });
                             toast.success(
-                              "Saved as a candidate test case — approve it to make it a sample.",
+                              "Saved as a candidate sample — approve it to make it a sample.",
                             );
                             await onBorrowed();
                           } catch (error: unknown) {
                             toast.error(
-                              `Couldn't save the test case: ${describeError(error)}`,
+                              `Couldn't save the sample: ${describeError(error)}`,
                             );
                           } finally {
                             setSavingId(null);

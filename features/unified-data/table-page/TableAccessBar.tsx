@@ -276,18 +276,51 @@ function FindDuplicates({ tableId, organizationId, level }: { tableId: string; o
   );
 }
 
+/**
+ * The caller's level on a table is remembered per person and table, so a return visit paints the header's
+ * Request edit access / Find duplicates controls in their final state at first paint (no late widening of the
+ * header cluster). The live read still runs and corrects the cache; nothing is hidden to avoid the shift.
+ */
+const LEVEL_CACHE_PREFIX = "matrx:table-level:";
+function levelCacheKey(userId: string | null, tableId: string): string | null {
+  return userId ? `${LEVEL_CACHE_PREFIX}${userId}:${tableId}` : null;
+}
+function readCachedLevel(key: string | null): string | null {
+  if (!key || typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(key) || null;
+  } catch {
+    return null;
+  }
+}
+function writeCachedLevel(key: string | null, level: string | null): void {
+  if (!key || typeof window === "undefined") return;
+  try {
+    if (level) window.localStorage.setItem(key, level);
+    else window.localStorage.removeItem(key);
+  } catch {
+    /* storage unavailable: the live read is still the truth */
+  }
+}
+
 export function TableAccessBar({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
-  const [level, setLevel] = useState<string | null>(null);
+  const userId = useAppSelector(selectUserId);
+  const cacheKey = levelCacheKey(userId ?? null, tableId);
+  const [level, setLevel] = useState<string | null>(() => readCachedLevel(cacheKey));
   useEffect(() => {
     if (!organizationId) return;
     let live = true;
     readMyTableLevel(organizationId, tableId)
-      .then((l) => live && setLevel(l))
+      .then((l) => {
+        if (!live) return;
+        setLevel(l);
+        writeCachedLevel(cacheKey, l);
+      })
       .catch(() => live && setLevel(null));
     return () => {
       live = false;
     };
-  }, [organizationId, tableId]);
+  }, [organizationId, tableId, cacheKey]);
   if (!organizationId) return null;
   return (
     <>

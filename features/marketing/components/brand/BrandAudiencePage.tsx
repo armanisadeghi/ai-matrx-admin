@@ -6,7 +6,6 @@ import { useState } from "react";
 import { Loader2, Pencil, Plus, Star, Trash2, Users } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ProInput } from "@/components/official/ProInput";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { LoadingSurface, QueryError } from "@/features/marketing/components/shared/MarketingUi";
+import { LoadingSurface, QueryError, SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import {
   useBrandPersonas,
   useCreateBrandPersona,
@@ -100,13 +100,14 @@ export function BrandAudiencePage({
 
   return (
     <div className="h-full overflow-y-auto bg-textured">
-      <div className="mx-auto w-full max-w-5xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
+      <div className="mx-auto w-full max-w-6xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
         <header className="mb-3 flex items-center justify-between gap-3">
-          <h1
-            className="text-base font-semibold text-foreground"
-            title="Who this brand sells to, so every brief and agent writes for a named audience"
-          >
+          <h1 className="flex items-center gap-1 type-title text-foreground">
             {brandName} · Audience
+            <AboutPeek
+              title="Audience"
+              about="Who this brand sells to, so every brief and agent writes for a named audience."
+            />
           </h1>
           <Button variant="primary" icon={<Plus />} onClick={() => setEditing("new")}>
             {Noun}
@@ -118,15 +119,15 @@ export function BrandAudiencePage({
         ) : personas.isError ? (
           <QueryError error={personas.error} onRetry={() => void personas.refetch()} />
         ) : rows.length === 0 ? (
-          <Card className="flex flex-col items-center gap-2 p-8 text-center">
+          <div className="flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-8 text-center">
             <Users className="h-5 w-5 text-muted-foreground" aria-hidden />
-            <p className="text-sm text-muted-foreground">No {audience.plural} yet.</p>
+            <p className="type-secondary text-muted-foreground">No {audience.plural} yet.</p>
             <Button variant="quiet" icon={<Plus />} onClick={() => setEditing("new")}>
               Add the first {audience.noun}
             </Button>
-          </Card>
+          </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 items-start">
             {rows.map((persona) => (
               <PersonaCard
                 key={persona.id}
@@ -153,20 +154,6 @@ export function BrandAudiencePage({
   );
 }
 
-function ChipList({ label, items }: { label: string; items: string[] }) {
-  if (!items.length) return null;
-  return (
-    <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <ul className="mt-0.5 list-disc pl-4 text-xs text-foreground">
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function PersonaCard({
   persona,
   onEdit,
@@ -177,31 +164,35 @@ function PersonaCard({
   onDelete: () => void;
 }) {
   const demographics = Object.values(personaDemographics(persona));
+  const lists: [string, string[]][] = [
+    ["Goals", persona.goals],
+    ["Pain points", persona.pain_points],
+    ["Objections", persona.objections],
+  ];
   return (
-    <Card className="grid content-start gap-2 p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-            {persona.name}
-            {persona.is_primary ? <Star className="h-3.5 w-3.5 fill-current text-primary-ink" aria-label="Primary" /> : null}
-          </h2>
-          {demographics.length ? (
-            <p className="text-xs text-muted-foreground">{demographics.join(" · ")}</p>
+    <SectionCard
+      title={persona.name}
+      headerExtra={
+        <>
+          {persona.is_primary ? (
+            <Star className="h-3.5 w-3.5 fill-current text-primary-ink" aria-label="Primary" />
           ) : null}
-        </div>
-        <div className="flex shrink-0">
-          <Button variant="quiet" aria-label={`Edit ${persona.name}`} icon={<Pencil />} onClick={onEdit} />
-          <Button variant="quiet" aria-label={`Remove ${persona.name}`} icon={<Trash2 />} onClick={onDelete} />
-        </div>
+          <span className="flex shrink-0">
+            <Button variant="quiet" aria-label={`Edit ${persona.name}`} icon={<Pencil />} onClick={onEdit} />
+            <Button variant="quiet" aria-label={`Remove ${persona.name}`} icon={<Trash2 />} onClick={onDelete} />
+          </span>
+        </>
+      }
+    >
+      <div className="grid gap-3 p-3">
+        {demographics.length ? <PropertyRow label="Profile" value={demographics.join(" · ")} /> : null}
+        {persona.summary ? <PropertyRow label="Summary" value={persona.summary} /> : null}
+        {lists.map(([label, items]) =>
+          items.length ? <PropertyRow key={label} label={label} value={items.join(" · ")} /> : null,
+        )}
+        {persona.channels.length ? <PropertyRow label="Channels" value={persona.channels.join(", ")} /> : null}
       </div>
-      {persona.summary ? <p className="text-xs leading-relaxed text-foreground">{persona.summary}</p> : null}
-      <ChipList label="Goals" items={persona.goals} />
-      <ChipList label="Pain points" items={persona.pain_points} />
-      <ChipList label="Objections" items={persona.objections} />
-      {persona.channels.length ? (
-        <p className="text-xs text-muted-foreground">Channels: {persona.channels.join(", ")}</p>
-      ) : null}
-    </Card>
+    </SectionCard>
   );
 }
 

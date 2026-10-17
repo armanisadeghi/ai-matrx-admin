@@ -37,8 +37,8 @@ export function AgentSamplesLauncher({
         size="icon"
         variant="ghost"
         className="h-11 w-11 rounded-full border border-glass-edge bg-glass text-muted-foreground shadow-glass backdrop-blur-glass backdrop-saturate-glass hover:bg-glass-hover hover:text-foreground md:h-8 md:w-8"
-        title="Test cases"
-        aria-label="Open test cases"
+        title="Samples"
+        aria-label="Open samples"
         onClick={() => openTestCases({ agentId, conversationId })}
       >
         <FlaskConical className="h-4 w-4" />

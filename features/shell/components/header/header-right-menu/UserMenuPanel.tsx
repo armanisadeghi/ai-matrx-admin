@@ -79,6 +79,8 @@ export default function UserMenuPanel({
       <LinkMenuItem href="/intelligence" icon="Intelligence" label="Intelligence" />
       {/* What my activity has cost so far: Plan & usage (features/entitlements/usage-history/MyCostSoFar). */}
       <LinkMenuItem href="/user-settings/plan" icon="Gauge" label="Usage & cost" />
+      {/* The studios and building blocks, reopened any time (the sign-up welcome shows it first). */}
+      <LinkMenuItem href="/meet-matrx" icon="Compass" label="Meet Matrx" />
 
       {divider}
 

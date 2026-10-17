@@ -45,7 +45,11 @@ const STAGE_LABELS: Record<string, string> = {
 interface DraftDoc {
   step?: string;
   artifact?: { guidelines_text?: unknown; summary?: unknown };
-  suggestion?: { assist_id?: unknown; status?: unknown; chars?: unknown } | null;
+  suggestion?: {
+    assist_id?: unknown;
+    status?: unknown;
+    chars?: unknown;
+  } | null;
 }
 
 export function GuidelinesDraftButton({

@@ -91,6 +91,7 @@ import { OfferingWorthDialog, type OfferingWorthValues } from "./OfferingWorthDi
 import { StopOfferingDialog } from "./StopOfferingDialog";
 import { RemoveOfferingDialog } from "./RemoveOfferingDialog";
 import { LEAD_QUALITY_OPTIONS, OFFERING_KIND_META, OFFERING_MATCH_OPTIONS } from "./vocabulary";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 
 const OFFERINGS_KEY = ["seo", "offerings"] as const;
 
@@ -574,7 +575,8 @@ export function OfferingsWorkbench() {
   const error = catalog.error ?? stats.error;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto overscroll-contain bg-textured p-3">
+    <div className="h-full min-h-0 overflow-y-auto overscroll-contain bg-textured">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-3 py-3 sm:px-4">
       {/* The catalog/stats failure renders below in place of the table; a strip of
           counts over a failed read would report zeros it never measured. */}
       {error ? null : (
@@ -702,10 +704,12 @@ export function OfferingsWorkbench() {
       </div>
 
       {!error && tree.orphaned.length > 0 ? (
-        <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-1.5 text-xs text-warning-ink">
-          {tree.orphaned.length} offering{tree.orphaned.length === 1 ? "" : "s"} point at a parent that is no
-          longer in this brand; they are drawn at the top level so nothing is hidden. Move them where they
-          belong.
+        <p className="flex items-center gap-1 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 type-secondary text-warning-ink">
+          {tree.orphaned.length} offering{tree.orphaned.length === 1 ? "" : "s"} without a parent
+          <AboutPeek
+            title="Offerings without a parent"
+            about="Their parent is no longer in this brand, so they are drawn at the top level and nothing is hidden. Move them where they belong."
+          />
         </p>
       ) : null}
 
@@ -798,6 +802,7 @@ export function OfferingsWorkbench() {
           }
         />
       ) : null}
+    </div>
     </div>
   );
 }
@@ -915,8 +920,8 @@ function OfferingStrip({
   ];
 
   return (
-    <section className="shrink-0 rounded-lg border border-border bg-card p-2">
-      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 xl:grid-cols-7">
+    <section className="shrink-0 rounded-lg border border-border bg-card p-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
         {cards.map((card) => {
           const Icon = card.icon;
           return (

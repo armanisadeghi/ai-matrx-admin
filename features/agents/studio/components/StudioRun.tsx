@@ -17,6 +17,8 @@ import { CircleAlert } from "lucide-react";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { AgentRunner } from "@ai-matrx/chat/agents/components/smart/AgentRunner";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { registerConversationHooks } from "@ai-matrx/chat/host";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
@@ -27,7 +29,16 @@ export interface StudioRunSeed {
 }
 
 interface StudioRunProps {
-  agentId: string | null;
+  agentId?: string | null;
+  /**
+   * Run through a MANDATE (the server resolves the holder; never an agent id). Used by the Studio assistant.
+   * `mandateVariables` are the page's offered values (ids and where we are only; the server builds the rest)
+   * and ride every turn — `everyTurnThroughMandate` — so each turn sees the current workspace.
+   */
+  mandateKey?: AnyMandateKey | null;
+  mandateVariables?: () => Record<string, unknown>;
+  /** The surface the server resolves this chat's tool defaults from. */
+  surfaceName?: string;
   conversationId?: string | null;
   surfaceKey: string;
   seed?: StudioRunSeed | null;
@@ -39,7 +50,10 @@ interface StudioRunProps {
 }
 
 export function StudioRun({
-  agentId,
+  agentId = null,
+  mandateKey = null,
+  mandateVariables,
+  surfaceName,
   conversationId = null,
   surfaceKey,
   seed = null,
@@ -48,44 +62,67 @@ export function StudioRun({
   context,
   onConversation,
 }: StudioRunProps) {
-  const { launchAgent } = useAgentLauncher();
+  const { launchAgent, launchMandate } = useAgentLauncher();
+  const variablesRef = useRef(mandateVariables);
+  useEffect(() => {
+    variablesRef.current = mandateVariables;
+  });
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const [shown, setShown] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const startedFor = useRef<string | null>(null);
+  const unhook = useRef<(() => void) | null>(null);
+  useEffect(() => () => unhook.current?.(), []);
 
   useEffect(() => {
-    if (!agentId) return;
-    const key = `${agentId}:${runKey}`;
+    if (!agentId && !mandateKey) return;
+    const key = `${agentId ?? mandateKey}:${runKey}`;
     if (startedFor.current === key) return;
     startedFor.current = key;
     setShown(null);
     setError(null);
 
+    const options = {
+      initiation: "user" as const,
+      surfaceKey,
+      sourceFeature: "agent-studio",
+      config: {
+        displayMode: "direct" as const,
+        autoRun: Boolean(seed),
+        allowChat: true,
+        showVariablePanel: showVariables,
+      },
+      runtime:
+        seed || context || mandateKey
+          ? {
+              ...(seed?.variables && Object.keys(seed.variables).length > 0 ? { variables: seed.variables } : {}),
+              ...(mandateKey ? { variables: variablesRef.current?.() ?? {} } : {}),
+              ...(seed?.userInput ? { userInput: seed.userInput } : {}),
+              ...(context ? { context } : {}),
+              ...(surfaceName ? { surfaceName } : {}),
+            }
+          : undefined,
+      onConversationCreated: (id: string) => {
+        hookUp(id);
+        setShown(id);
+        onConversation?.(id);
+      },
+    };
     const fresh = () =>
-      launchAgent(agentId, { initiation: "user",
-        surfaceKey,
-        sourceFeature: "agent-studio",
-        config: {
-          displayMode: "direct",
-          autoRun: Boolean(seed),
-          allowChat: true,
-          showVariablePanel: showVariables,
-        },
-        runtime:
-          seed || context
-            ? {
-                ...(seed?.variables && Object.keys(seed.variables).length > 0 ? { variables: seed.variables } : {}),
-                ...(seed?.userInput ? { userInput: seed.userInput } : {}),
-                ...(context ? { context } : {}),
-              }
-            : undefined,
-        onConversationCreated: (id: string) => {
-          setShown(id);
-          onConversation?.(id);
-        },
-      }).catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
+      (mandateKey ? launchMandate(mandateKey, options as never) : launchAgent(agentId as string, options as never)).catch(
+        (e: unknown) => setError(e instanceof Error ? e.message : String(e)),
+      );
+    // Every turn goes through the mandate with the page's CURRENT offered values (the server rebuilds the
+    // workspace from the conversation id; the client sends ids and where we are, nothing else).
+    const hookUp = (id: string) => {
+      if (!mandateKey) return;
+      unhook.current?.();
+      unhook.current = registerConversationHooks(id, {
+        everyTurnThroughMandate: true,
+        beforeSend: async () => ({ variables: variablesRef.current?.() ?? {} }),
+      });
+    };
 
     if (conversationId && runKey === 0) {
       dispatch(
@@ -102,6 +139,7 @@ export function StudioRun({
             void fresh();
             return;
           }
+          hookUp(conversationId);
           setShown(conversationId);
           onConversation?.(conversationId);
         })
@@ -109,7 +147,7 @@ export function StudioRun({
     } else {
       void fresh();
     }
-  }, [agentId, conversationId, runKey, surfaceKey, seed, showVariables, context, launchAgent, dispatch, store, onConversation]);
+  }, [agentId, mandateKey, surfaceName, launchMandate, conversationId, runKey, surfaceKey, seed, showVariables, context, launchAgent, dispatch, store, onConversation]);
 
   if (error) {
     return (
