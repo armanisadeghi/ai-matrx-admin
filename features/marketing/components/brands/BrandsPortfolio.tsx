@@ -468,8 +468,7 @@ export function BrandsPortfolio({
       id: "updated_at",
       accessorKey: "updated_at",
       header: "Updated",
-      // table-filter-off: server source does not filter updated_at yet
-      filter: false,
+      format: { id: "datetime" },
       className: "max-lg:hidden",
       headerClassName: "max-lg:hidden",
       cell: (row) => (

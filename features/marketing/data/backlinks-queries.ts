@@ -1,4 +1,4 @@
-import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
+import { applyDateFilter } from "./date-bounds";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import type {
   BacklinkChangeEventRow,
@@ -390,14 +390,8 @@ export async function listLatestBacklinks(
   } else if (states.length > 1) {
     query = query.in("state", states);
   }
-  for (const column of ["first_seen_at", "last_seen_at"] as const) {
-    const filter = state.columnFilters[column];
-    if (filter?.kind !== "date") continue;
-    // A relative preset resolves to bounds here, exactly as the table resolves it locally.
-    const range = dateFilterBounds(filter);
-    if (range.since) query = query.gte(column, range.since);
-    if (range.until) query = query.lt(column, range.until);
-  }
+  query = applyDateFilter(query, state, "first_seen_at");
+  query = applyDateFilter(query, state, "last_seen_at");
   const dofollow = state.columnFilters.is_dofollow;
   if (dofollow?.kind === "boolean") {
     query = query.eq("is_dofollow", dofollow.value);
@@ -544,14 +538,8 @@ export async function listBacklinkChangeEvents(
       query = query.lte("severity", severityFilter.max);
     }
   }
-  for (const column of ["detected_at", "observed_at"] as const) {
-    const filter = state.columnFilters[column];
-    if (filter?.kind !== "date") continue;
-    // A relative preset resolves to bounds here, exactly as the table resolves it locally.
-    const range = dateFilterBounds(filter);
-    if (range.since) query = query.gte(column, range.since);
-    if (range.until) query = query.lt(column, range.until);
-  }
+  query = applyDateFilter(query, state, "detected_at");
+  query = applyDateFilter(query, state, "observed_at");
   const sortColumn = state.sort
     ? (CHANGE_EVENT_SORT_COLUMNS[state.sort.id] ?? "detected_at")
     : "detected_at";
@@ -657,6 +645,9 @@ export async function listReferringDomainProfiles(
   if (verdict?.kind === "select" && verdict.value) {
     query = query.eq("opinion_verdict", verdict.value);
   }
+  const domainTypes = selectedValues(state.columnFilters.domain_type);
+  if (domainTypes.length === 1) query = query.eq("domain_type", domainTypes[0]);
+  else if (domainTypes.length > 1) query = query.in("domain_type", domainTypes);
   const sortColumn =
     state.sort && DOMAIN_PROFILE_SORT_COLUMNS.has(state.sort.id)
       ? state.sort.id
@@ -725,6 +716,8 @@ export async function listDimensionRows(
       `label.ilike.%${search}%,dimension_key.ilike.%${search}%,url.ilike.%${search}%`,
     );
   }
+  query = applyDateFilter(query, state, "first_seen_at");
+  query = applyDateFilter(query, state, "last_seen_at");
   const sortColumn =
     state.sort && DIMENSION_SORT_COLUMNS.has(state.sort.id)
       ? state.sort.id

@@ -1,4 +1,4 @@
-import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
+import { dateFilter } from "./date-bounds";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import type {
   CrawlCanonicalMapResult,
@@ -121,19 +121,6 @@ function numberFilter(
 ): { min?: number; max?: number } | null {
   const filter = state.columnFilters[column];
   return filter?.kind === "number" ? filter : null;
-}
-
-/**
- * A `date` column filter as bounds: `since` inclusive, `until` exclusive (ISO instants). A relative
- * preset ("Last hour", "Today") resolves through the table's own `dateFilterBounds`, so the server
- * applies exactly the range the person picked.
- */
-function dateFilter(
-  state: MatrxDataTableQueryState,
-  column: string,
-): { since?: string; until?: string } | null {
-  const filter = state.columnFilters[column];
-  return filter?.kind === "date" ? dateFilterBounds(filter) : null;
 }
 
 function assertData<T>(data: T | null, error: unknown): T {
@@ -412,11 +399,6 @@ export async function listCrawlSnapshots(
     query = query.gte("word_count", wordCount.min);
   if (wordCount?.max !== undefined)
     query = query.lte("word_count", wordCount.max);
-  const captured = state.columnFilters.captured_at;
-  if (captured?.kind === "date") {
-    if (captured.since) query = query.gte("captured_at", captured.since);
-    if (captured.until) query = query.lt("captured_at", captured.until);
-  }
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("id", { ascending });
   const response = await query

@@ -1,4 +1,4 @@
-import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
+import { dateFilter } from "./date-bounds";
 import { marketingProperties, toRelationUsage, type RelationUsage } from "./relation-usage";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { applyHiddenView, type HiddenView } from "@/features/access-gate/service/hiddenByMe";
@@ -135,19 +135,6 @@ function numberFilter(
 ): { min?: number; max?: number } | null {
   const filter = state.columnFilters[column];
   return filter?.kind === "number" ? filter : null;
-}
-
-/**
- * A `date` column filter as bounds: `since` inclusive, `until` exclusive (ISO instants). A relative
- * preset ("Last hour", "Today") resolves through the table's own `dateFilterBounds`, so the server
- * applies exactly the range the person picked.
- */
-function dateFilter(
-  state: MatrxDataTableQueryState,
-  column: string,
-): { since?: string; until?: string } | null {
-  const filter = state.columnFilters[column];
-  return filter?.kind === "date" ? dateFilterBounds(filter) : null;
 }
 
 function selectFilter(
@@ -1891,10 +1878,11 @@ export function snapshotSourceIdentity(state: MatrxDataTableQueryState) {
     content_hash: textFilter(state, "content_hash"),
     http_status: numberFilter(state, "http_status"),
     word_count: numberFilter(state, "word_count"),
+    captured_at: dateFilter(state, "captured_at"),
     // Referencing filters makes accidental expansion visible in review without
     // granting source ownership to anyOf/layered/whole-word controls.
     filterKeys: Object.keys(filters)
-      .filter((key) => ["final_url", "content_hash", "http_status", "word_count"].includes(key))
+      .filter((key) => ["final_url", "content_hash", "http_status", "word_count", "captured_at"].includes(key))
       .sort(),
   };
 }
@@ -1945,6 +1933,7 @@ export async function listSnapshotReceiptPage(input: {
   const hash = textFilter(state, "content_hash");
   const http = numberFilter(state, "http_status");
   const words = numberFilter(state, "word_count");
+  const captured = dateFilter(state, "captured_at");
   let countQuery = db
     .from("snapshot")
     .select("id", { count: "exact", head: true })
@@ -1959,6 +1948,8 @@ export async function listSnapshotReceiptPage(input: {
   if (http?.max !== undefined) countQuery = countQuery.lte("http_status", http.max);
   if (words?.min !== undefined) countQuery = countQuery.gte("word_count", words.min);
   if (words?.max !== undefined) countQuery = countQuery.lte("word_count", words.max);
+  if (captured?.since) countQuery = countQuery.gte("captured_at", captured.since);
+  if (captured?.until) countQuery = countQuery.lt("captured_at", captured.until);
   const countResponse = await countQuery.abortSignal(signal ?? new AbortController().signal);
   if (countResponse.error) throw countResponse.error;
   if (typeof countResponse.count !== "number" || !Number.isFinite(countResponse.count) || countResponse.count < 0) {
@@ -1981,6 +1972,8 @@ export async function listSnapshotReceiptPage(input: {
   if (http?.max !== undefined) query = query.lte("http_status", http.max);
   if (words?.min !== undefined) query = query.gte("word_count", words.min);
   if (words?.max !== undefined) query = query.lte("word_count", words.max);
+  if (captured?.since) query = query.gte("captured_at", captured.since);
+  if (captured?.until) query = query.lt("captured_at", captured.until);
   if (cursor) {
     const relation = sort.direction === "asc" ? "gt" : "lt";
     const idRelation = relation;
@@ -2005,6 +1998,8 @@ export async function listSnapshotReceiptPage(input: {
     if (http?.max !== undefined) terminalCount = terminalCount.lte("http_status", http.max);
     if (words?.min !== undefined) terminalCount = terminalCount.gte("word_count", words.min);
     if (words?.max !== undefined) terminalCount = terminalCount.lte("word_count", words.max);
+    if (captured?.since) terminalCount = terminalCount.gte("captured_at", captured.since);
+    if (captured?.until) terminalCount = terminalCount.lt("captured_at", captured.until);
     const terminalResponse = await terminalCount.abortSignal(signal ?? new AbortController().signal);
     if (terminalResponse.error) throw terminalResponse.error;
     if (terminalResponse.count !== countResponse.count) throw new SnapshotReceiptError("the matching count changed at the terminal page");
@@ -2082,6 +2077,12 @@ export async function listCrawls(
   const trigger = selectFilter(state, "trigger");
   if (status) query = query.eq("status", status);
   if (trigger) query = query.eq("trigger", trigger);
+  const startedAt = dateFilter(state, "started_at");
+  if (startedAt?.since) query = query.gte("started_at", startedAt.since);
+  if (startedAt?.until) query = query.lt("started_at", startedAt.until);
+  const finishedAt = dateFilter(state, "finished_at");
+  if (finishedAt?.since) query = query.gte("finished_at", finishedAt.since);
+  if (finishedAt?.until) query = query.lt("finished_at", finishedAt.until);
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("id", { ascending });
   const response = await query
@@ -2393,6 +2394,9 @@ export async function listCrawlEvents(
   if (level) query = query.eq("level", level);
   if (sequence?.min !== undefined) query = query.gte("sequence", sequence.min);
   if (sequence?.max !== undefined) query = query.lte("sequence", sequence.max);
+  const occurredAt = dateFilter(state, "occurred_at");
+  if (occurredAt?.since) query = query.gte("occurred_at", occurredAt.since);
+  if (occurredAt?.until) query = query.lt("occurred_at", occurredAt.until);
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("id", { ascending });
   const response = await query
@@ -3122,6 +3126,9 @@ export async function listBrands(
   const statuses = selectFilterValues(state, "status");
   if (statuses.length === 1) query = query.eq("status", statuses[0]);
   if (statuses.length > 1) query = query.in("status", statuses);
+  const updatedAt = dateFilter(state, "updated_at");
+  if (updatedAt?.since) query = query.gte("updated_at", updatedAt.since);
+  if (updatedAt?.until) query = query.lt("updated_at", updatedAt.until);
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("id", { ascending });
   const response = await query
@@ -4043,6 +4050,12 @@ export async function listDismissedPages(
   if (path) query = query.ilike("path", `%${path}%`);
   if (provenances.length === 1) query = query.eq("provenance", provenances[0]);
   if (provenances.length > 1) query = query.in("provenance", provenances);
+  const dismissedAt = dateFilter(state, "dismissed_at");
+  if (dismissedAt?.since) query = query.gte("deleted_at", dismissedAt.since);
+  if (dismissedAt?.until) query = query.lt("deleted_at", dismissedAt.until);
+  const lastSeen = dateFilter(state, "last_seen");
+  if (lastSeen?.since) query = query.gte("last_seen", lastSeen.since);
+  if (lastSeen?.until) query = query.lt("last_seen", lastSeen.until);
 
   query = query
     .order(sortColumn, { ascending, nullsFirst: false })

@@ -49,6 +49,13 @@ import {
 } from "@ai-matrx/kit/url-state";
 import { extractErrorMessage } from "@ai-matrx/api/net";
 
+/** The conveyed permission levels, defined once for the filter list and the inline editor. */
+const CONVEY_LEVEL_OPTIONS = [
+  { value: "viewer", label: "viewer" },
+  { value: "editor", label: "editor" },
+  { value: "admin", label: "admin" },
+];
+
 /** Select options for an entity-type column, taken from the loaded rules. */
 function typeOptions(
   rules: RelationshipRule[],
@@ -247,17 +254,9 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
         accessorFn: (r) =>
           r.container_side !== "none" && r.is_active ? r.conveys_max : "",
         filter: "select",
-        filterOptions: [
-          { value: "viewer", label: "viewer" },
-          { value: "editor", label: "editor" },
-          { value: "admin", label: "admin" },
-        ],
+        filterOptions: CONVEY_LEVEL_OPTIONS,
         editable: "select",
-        editOptions: [
-          { value: "viewer", label: "viewer" },
-          { value: "editor", label: "editor" },
-          { value: "admin", label: "admin" },
-        ],
+        editOptions: CONVEY_LEVEL_OPTIONS,
         cell: (rule) =>
           rule.container_side !== "none" && rule.is_active ? (
             <ConveyPill level={rule.conveys_max} />

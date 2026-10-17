@@ -19,6 +19,7 @@ import type {
   MarketingFinding,
   PriorityQueueRow,
 } from "@/features/marketing/data/analysis-types";
+import { applyDateFilter } from "@/features/marketing/data/date-bounds";
 import { FINDING_STATUS_VALUES } from "@/features/marketing/data/finding-lifecycle";
 import { assertFound } from "@/features/marketing/data/service";
 import { supabase } from "@/utils/supabase/client";
@@ -256,6 +257,7 @@ export async function listSitePriorityQueue(
   if (priority?.min !== undefined) query = query.gte("priority", priority.min);
   if (priority?.max !== undefined) query = query.lte("priority", priority.max);
   if (isUuidFilter(pageId)) query = query.eq("page_id", pageId);
+  query = applyDateFilter(query, state, "last_detected_at");
 
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("item_id", { ascending: true, nullsFirst: false });
@@ -657,6 +659,7 @@ export async function listFindingResults(
   if (providerVersion) {
     query = query.ilike("provider_version", `%${providerVersion}%`);
   }
+  query = applyDateFilter(query, state, "computed_at");
   if (score?.min !== undefined) query = query.gte("score", score.min);
   if (score?.max !== undefined) query = query.lte("score", score.max);
   if (confidence?.min !== undefined) {

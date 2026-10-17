@@ -246,8 +246,7 @@ export function FindingsTable() {
       id: "last_detected_at",
       accessorKey: "last_detected_at",
       header: "Last detected",
-      // table-filter-off: marketing URL codec and server query do not carry date filters yet
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.last_detected_at)}

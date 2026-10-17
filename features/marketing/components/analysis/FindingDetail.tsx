@@ -285,8 +285,7 @@ export function FindingDetail({ findingId }: { findingId: string }) {
       id: "computed_at",
       accessorKey: "computed_at",
       header: "Computed",
-      // table-filter-off: server source does not filter computed_at yet
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.computed_at)}

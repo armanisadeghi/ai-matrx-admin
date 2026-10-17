@@ -138,8 +138,7 @@ export function CrawlsTable() {
       id: "started_at",
       accessorKey: "started_at",
       header: "Started",
-      // table-filter-off: marketing URL codec and server query do not carry date filters yet
-      filter: false,
+      format: { id: "datetime" },
       // THE DOOR LAW: this cell IS the session's identity (its timestamp and
       // its id), so it is the real anchor — keyboard, screen reader,
       // cmd/middle-click. Same destination as `onRowOpen`, which stays a mouse
@@ -213,8 +212,7 @@ export function CrawlsTable() {
       id: "finished_at",
       accessorKey: "finished_at",
       header: "Finished",
-      // table-filter-off: marketing URL codec and server query do not carry date filters yet
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.finished_at)}

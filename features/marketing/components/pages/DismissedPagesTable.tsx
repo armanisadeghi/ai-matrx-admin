@@ -108,8 +108,7 @@ export function DismissedPagesTable() {
       id: "dismissed_at",
       accessorKey: "deleted_at",
       header: "Dismissed",
-      // table-filter-off: server source does not filter deleted_at yet
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.deleted_at)}
@@ -120,8 +119,7 @@ export function DismissedPagesTable() {
       id: "last_seen",
       accessorKey: "last_seen",
       header: "Last seen",
-      // table-filter-off: server source does not filter last_seen yet
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.last_seen)}

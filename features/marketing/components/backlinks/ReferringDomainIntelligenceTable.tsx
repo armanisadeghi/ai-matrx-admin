@@ -305,6 +305,18 @@ export function ReferringDomainIntelligenceTable({
       if (found) setOutreachRow(found);
     },
   });
+  const activeDomainTypes = table.queryState.columnFilters.domain_type;
+  const domainTypeOptions = [
+    ...new Set([
+      ...rows.map((r) => r.domain_type),
+      ...(activeDomainTypes?.kind === "select"
+        ? (activeDomainTypes.values ?? [activeDomainTypes.value])
+        : []),
+    ]),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .sort()
+    .map((value) => ({ value, label: humanizeAssessmentValue(value) }));
   const columns: MatrxColumnDef<ReferringDomainProfileRow>[] = [
     {
       id: "display_domain",
@@ -325,8 +337,9 @@ export function ReferringDomainIntelligenceTable({
       id: "domain_type",
       accessorKey: "domain_type",
       header: "Kind of site",
-      // table-filter-off: server source does not filter domain_type yet
-      filter: false,
+      filter: "select",
+      // An open set from the assessment, so the list is the kinds on this page plus any being filtered.
+      filterOptions: domainTypeOptions,
       cell: (row) => (
         <span className="text-xs">
           {humanizeAssessmentValue(row.domain_type)}

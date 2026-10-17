@@ -7,6 +7,7 @@
  * under it are computed from one set of rows and cannot disagree.
  */
 
+import { applyDateFilter } from "./date-bounds";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import {
   ABOUT_YOU_OR_UNJUDGED_FILTER,
@@ -114,6 +115,9 @@ export async function listCoverageMentions(
       `domain.ilike.%${search}%,title.ilike.%${search}%,author_name.ilike.%${search}%`,
     );
   }
+
+  query = applyDateFilter(query, state, "published_at");
+  query = applyDateFilter(query, state, "discovered_at");
 
   const sortColumn = state.sort
     ? (SORT_COLUMNS[state.sort.id] ?? "discovered_at")
