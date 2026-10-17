@@ -220,15 +220,15 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
     // (features/marketing/social, SI-07a); Outliers and KPIs are live (SI-07b1); Studio is live (SI-07c, a board with the marketing-social preset).
     surfaces: ["/marketing/[brand]/socials"],
   },
-  "marketing.social.video-render": {
-    id: "marketing.social.video-render",
-    label: "Render video clones",
+  "marketing.social.video-script-rewrite": {
+    id: "marketing.social.video-script-rewrite",
+    label: "AI script rewrite",
     owner: "marketing",
-    promise: "Build a clone and its variants into finished mp4 files you can download.",
+    promise: "Rewrite a reference video's script for your product in the same rhythm and beats.",
     stage: "building",
-    // The render worker and its job door exist (aidream services/render_jobs, VC-03); the door that starts a
-    // render (and a variant batch) from a project is lane VC-06. The studio's Build button announces this until then.
-    surfaces: ["/marketing/[brand]/socials/videos/[project]"],
+    // The clone plan accepts a rewrite request (mandate social.clone_script_rewrite) but the mandate has no holder
+    // agent yet (aidream VC-08: agent_not_built), so the clone page asks the person to write the script.
+    surfaces: ["/marketing/[brand]/socials/videos/new"],
   },
   "marketing.social.video-slots": {
     id: "marketing.social.video-slots",

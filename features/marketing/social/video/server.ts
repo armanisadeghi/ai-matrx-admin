@@ -47,7 +47,7 @@ export function conflictVersion(error: unknown): number | null {
 
 export async function appendPatch(
   projectId: string,
-  body: { base_version: number; patch: JsonDoc; document: JsonDoc; note?: string },
+  body: { base_version: number; patch: JsonDoc; document?: JsonDoc; note?: string },
   o: CallOptions,
 ): Promise<{ project_id: string; version: number }> {
   return (await postJson<{ project_id: string; version: number }>(`${BASE}/${projectId}/patches`, body, opts(o))).data;

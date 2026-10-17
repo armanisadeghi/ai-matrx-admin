@@ -30,7 +30,8 @@ import {
   useSurfaceRuntimeRegistration,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bookmark, ExternalLink, PanelRightClose, RefreshCw } from "lucide-react";
+import { ArrowLeft, Bookmark, Clapperboard, ExternalLink, PanelRightClose, RefreshCw } from "lucide-react";
+import { cloneHref, isClonable } from "../video/clone-links";
 
 import { ReadFailure } from "@ai-matrx/design-system";
 import { Button, RegionSkeleton, SegmentedControl, Tabs, PropertyRow } from "@ai-matrx/design-system/controls";
@@ -618,6 +619,23 @@ export function PostDetailBody({
           {(collections.data ?? []).length === 0 ? (
             <DropdownMenuItem onSelect={() => void save(null)}>New collection “Saved”</DropdownMenuItem>
           ) : null}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      ) : null}
+      {canEdit && isClonable({ durationSeconds: post.duration_seconds === null ? null : Number(post.duration_seconds), format: post.format }) ? (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" icon={<Clapperboard />}>
+            Clone
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem asChild>
+            <Link href={cloneHref(brandSeg, postId)}>Clone</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={cloneHref(brandSeg, postId, true)}>Clone with 3 variants</Link>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       ) : null}

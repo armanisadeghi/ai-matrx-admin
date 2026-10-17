@@ -115,29 +115,53 @@ export async function readCompositionHistory(projectId: string, afterVersion: nu
 }
 
 export interface VideoStructureFacts {
+  analysisId: string;
+  durationSeconds: number | null;
   sceneCuts: number[];
   shots: Array<{ start: number; end: number; roll: string; description?: string | null }>;
+  beats: Array<{ role: string; start: number; end: number; summary?: string | null }>;
+  hook: { spoken_text?: string | null; on_screen_text?: string | null; visual?: string | null; device?: string | null } | null;
+  onScreenText: Array<{ text: string; start: number; end: number }>;
+  nearestCaptionPreset: string | null;
+  pacing: { cuts_per_min?: number | null; avg_shot_s?: number | null; style?: string | null } | null;
   whyItWorks: string | null;
 }
 
-/** The reference's `video_structure` analysis (lane VC-04), or null when it has not run. */
+/** The reference's newest `video_structure` analysis (lane VC-04), or null when it has not run. */
 export async function readVideoStructure(postId: string): Promise<VideoStructureFacts | null> {
   const { data, error } = await supabase
     .schema("social")
     .from("post_analysis")
-    .select("payload, status")
+    .select("id, payload, status")
     .eq("post_id", postId)
     .eq("kind", "video_structure")
+    .eq("status", "complete")
     .is("deleted_at", null)
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (error) throw error;
   const p = (data?.payload ?? null) as {
-    ground_truth?: { scene_cuts?: number[] };
+    ground_truth?: { scene_cuts?: number[]; duration_seconds?: number };
     shots?: VideoStructureFacts["shots"];
+    beats?: VideoStructureFacts["beats"];
+    hook?: VideoStructureFacts["hook"];
+    on_screen_text?: VideoStructureFacts["onScreenText"];
+    caption_style?: { nearest_preset?: string | null } | null;
+    pacing?: VideoStructureFacts["pacing"];
     why_it_works?: string | null;
   } | null;
-  if (!p) return null;
-  return { sceneCuts: p.ground_truth?.scene_cuts ?? [], shots: p.shots ?? [], whyItWorks: p.why_it_works ?? null };
+  if (!data || !p) return null;
+  return {
+    analysisId: data.id,
+    durationSeconds: p.ground_truth?.duration_seconds ?? null,
+    sceneCuts: p.ground_truth?.scene_cuts ?? [],
+    shots: p.shots ?? [],
+    beats: p.beats ?? [],
+    hook: p.hook ?? null,
+    onScreenText: p.on_screen_text ?? [],
+    nearestCaptionPreset: p.caption_style?.nearest_preset ?? null,
+    pacing: p.pacing ?? null,
+    whyItWorks: p.why_it_works ?? null,
+  };
 }

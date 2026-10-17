@@ -8,7 +8,7 @@
  */
 
 import type { QueryClient } from "@tanstack/react-query";
-import { Bookmark, Copy, ExternalLink, FileText, Sparkles, UserRound } from "lucide-react";
+import { Bookmark, Clapperboard, Copy, ExternalLink, FileText, Layers, ScanSearch, UserRound } from "lucide-react";
 import { registerRecordMenu, type ContextMenuExtraItem, type RecordMenuRows } from "@ai-matrx/context-menu/engine";
 import { usdToPoints } from "@ai-matrx/kit/format";
 
@@ -20,6 +20,7 @@ import { socialKeys } from "../hooks";
 import type { PostCardModel, SocialCosts } from "../types";
 import { postActionRunners } from "./usePostActions";
 import { isCapturedPostId } from "../gated/capturedPosts";
+import { cloneHref, isClonable } from "../video/clone-links";
 
 export const postMenuKey = (postId: string) => `social-post:${postId}`;
 
@@ -69,6 +70,10 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
         (err: unknown) => toast.error(err instanceof Error ? err.message : "That didn't work"),
       );
     if (accountHref) items.push({ kind: "link", id: "open-account", label: "Open account", icon: UserRound, href: accountHref });
+    if (canEdit && isClonable(post)) {
+      items.push({ kind: "link", id: "clone", label: "Clone", icon: Clapperboard, href: cloneHref(brand.seg, post.postId) });
+      items.push({ kind: "link", id: "clone-3", label: "Clone with 3 variants", icon: Layers, href: cloneHref(brand.seg, post.postId, true) });
+    }
     // A post only this organization's browser captured offers Save (it reads the post from its link
     // first, points named); transcript and breakdown live in its post window.
     if (canEdit && isCapturedPostId(post.postId)) {
@@ -77,7 +82,7 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
       if (!onSave) items.push({ kind: "item", id: "save-swipe", label: "Save to swipe file", icon: Bookmark, onSelect: run(runners.saveToSwipe) });
       const points = transcriptPoints(queryClient, brand.organizationId);
       items.push({ kind: "item", id: "transcript", label: "Get transcript", icon: FileText, ...(points ? { hint: points } : {}), onSelect: run(runners.transcript) });
-      items.push({ kind: "item", id: "breakdown", label: "Run breakdown", icon: Sparkles, hint: "AI points", onSelect: run(runners.breakdown) });
+      items.push({ kind: "item", id: "breakdown", label: "Run breakdown", icon: ScanSearch, hint: "AI points", onSelect: run(runners.breakdown) });
     }
   }
   if (onSave && canEdit) items.push({ kind: "item", id: "save-swipe", label: "Save to swipe file", icon: Bookmark, onSelect: () => onSave(post) });

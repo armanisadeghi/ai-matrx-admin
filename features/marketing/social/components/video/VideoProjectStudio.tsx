@@ -1,0 +1,651 @@
+"use client";
+
+/**
+ * Socials → Videos → one project. The live preview (the engine's VideoPlayer over the resolved head), the script
+ * (click a word: fix the caption only, or change what is said), caption look and shape swaps, what is still to
+ * make and its cost, Render (the project head through the batch door: generate what is missing, align, render),
+ * the variants grid (three variants from a hook line / caption look / shape, run as one batch) and every finished
+ * mp4 with Download. Every change is one patch through the project door with the version it was made against; a
+ * stale write is refused and the page reloads the newer version.
+ */
+
+import { useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Clapperboard, Film, Layers, Palette, Type } from "lucide-react";
+
+import type { Composition, PatchOp, VariantOverride } from "@ai-matrx/media/video";
+import { editWordOps, materializeVariant, setAspectOps } from "@ai-matrx/media/video";
+import { CAPTION_PRESETS, CAPTION_PRESET_IDS } from "@ai-matrx/media/video/engine";
+import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+
+import {
+  HEAD_ITEM,
+  createVariantMatrix,
+  dollars,
+  points,
+  streamBatch,
+  streamGenerate,
+  type CloneAspect,
+  type LineEvent,
+  type ParamSet,
+} from "../../video/clone";
+import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
+import { appendPatch, conflictVersion, estimateProject } from "../../video/server";
+import type { VariantAnswer, VideoProjectAnswer } from "../../video/types";
+import { useSocials } from "../SocialsContext";
+import { CaptionLookPicker, CompositionPreview, CostLine, OutputDownload, RunLog, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
+import { mediaLabel } from "./VideoCloneNew";
+import { useQuery } from "@tanstack/react-query";
+
+const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
+  { value: "9:16", label: "9:16" },
+  { value: "1:1", label: "1:1" },
+  { value: "4:5", label: "4:5" },
+  { value: "16:9", label: "16:9" },
+];
+
+/** In development the hosted render fleet is not reachable; the server's local renderer is the dev tool. */
+const DEV_BUILD = process.env.NODE_ENV === "development";
+
+type Renderer = "hosted" | "local";
+
+interface ItemOutcome {
+  status: string;
+  stage?: string | null;
+  error?: string | null;
+  fileId?: string | null;
+  usd?: number;
+  pts?: number;
+}
+
+const EVENT = "video_variant_batch.";
+
+/** Read the batch door's events into run steps + per-item outcomes. */
+function batchHandler(
+  setSteps: (fn: (prev: RunStep[]) => RunStep[]) => void,
+  setOutcome: (fn: (prev: Record<string, ItemOutcome>) => Record<string, ItemOutcome>) => void,
+  labelOf: (id: string) => string,
+  flags: { confirm: boolean; error: string | null },
+) {
+  return (e: LineEvent) => {
+    const type = e.type.startsWith(EVENT) ? e.type.slice(EVENT.length) : e.type;
+    const vid = typeof e.variant_id === "string" ? e.variant_id : "";
+    switch (type) {
+      case "variant.materialized":
+        setOutcome((o) => ({ ...o, [vid]: { status: "ready" } }));
+        break;
+      case "estimated":
+        setSteps((p) => pushStep(p, { id: "est", label: "Priced", state: "done", meta: points(Number(e.total_points ?? e.estimate_points)) }));
+        break;
+      case "confirmation_required":
+        flags.confirm = true;
+        break;
+      case "generate.started":
+        setSteps((p) => pushStep(p, { id: `gen-${vid}`, label: `Making media for ${labelOf(vid)}`, state: "running" }));
+        break;
+      case "generated":
+        setSteps((p) => pushStep(p, { id: "gen", label: "Media ready", state: "done", meta: dollars(Number(e.total_usd)) }));
+        break;
+      case "aligned":
+        setSteps((p) => pushStep(p, { id: "align", label: "Captions synced to the voice", state: "done" }));
+        break;
+      case "render.queued":
+        setOutcome((o) => ({ ...o, [vid]: { ...o[vid], status: "queued" } }));
+        break;
+      case "render.started":
+        setOutcome((o) => ({ ...o, [vid]: { ...o[vid], status: "rendering" } }));
+        setSteps((p) => pushStep(p, { id: `render-${vid}`, label: `Rendering ${labelOf(vid)}`, state: "running" }));
+        break;
+      case "render.done": {
+        const out = (e.output ?? {}) as { file_id?: string };
+        setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null, usd: Number(e.cost_usd) || 0, pts: Number(e.points) || 0 } }));
+        setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
+        break;
+      }
+      case "variant.failed":
+        setOutcome((o) => ({ ...o, [vid]: { status: "failed", stage: String(e.stage ?? ""), error: String(e.error ?? "") } }));
+        setSteps((p) => [...p, { id: `fail-${vid}-${p.length}`, label: `${labelOf(vid)}: ${String(e.stage ?? "")} failed — ${String(e.error ?? "")}`.slice(0, 160), state: "failed" }]);
+        break;
+      case "batch_report":
+        setSteps((p) => pushStep(p, { id: "report", label: "Done", state: "done", meta: dollars(Number(e.total_usd)) }));
+        break;
+      case "error":
+        flags.error = String(e.message ?? e.code ?? "The run failed");
+        break;
+      default:
+        break;
+    }
+  };
+}
+
+export function VideoProjectStudio({ projectId }: { projectId: string }) {
+  const project = useVideoProject(projectId);
+  const { brandSeg } = useSocials();
+  const base = `${marketingRoutes.brandSocials(brandSeg)}/videos`;
+
+  if (project.isPending) return <RegionSkeleton shape="form" count={6} aria-label="Loading video" />;
+  if (project.isError) {
+    return (
+      <EmptyState
+        icon={<Film />}
+        title="Couldn't load this video"
+        line={<ErrorAlchemyMenu error={project.error} operation="load video project" />}
+        action={<Button onClick={() => void project.refetch()}>Retry</Button>}
+      />
+    );
+  }
+  const answer = project.data;
+  const doc = answer.composition?.document as unknown as Composition | undefined;
+  return (
+    <div className="flex min-h-0 flex-col gap-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <Button asChild variant="quiet" icon={<ArrowLeft />}>
+          <Link href={base}>Videos</Link>
+        </Button>
+        <span className="type-title truncate text-foreground">{answer.name}</span>
+        <Badge>{`v${answer.head_version}`}</Badge>
+        {DEV_BUILD ? <Badge tone="warning">Dev: renders on the local server</Badge> : null}
+      </div>
+      {!doc ? (
+        <EmptyState
+          icon={<Clapperboard />}
+          title="No plan yet"
+          line="Plan the clone first"
+          action={
+            answer.reference_post_ids[0] ? (
+              <Button asChild variant="primary">
+                <Link href={`${base}/new?post=${answer.reference_post_ids[0]}&project=${projectId}`}>Plan the clone</Link>
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <Studio answer={answer} doc={doc} />
+      )}
+    </div>
+  );
+}
+
+function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition }) {
+  const { organizationId } = useSocials();
+  const queryClient = useQueryClient();
+  const params = useSearchParams();
+  const projectId = answer.project_id;
+  const head = answer.head_version;
+  const [saving, setSaving] = useState(false);
+  const [renderer, setRenderer] = useState<Renderer>(DEV_BUILD ? "local" : "hosted");
+  const [steps, setSteps] = useState<RunStep[]>([]);
+  const [outcome, setOutcome] = useState<Record<string, ItemOutcome>>({});
+  const [running, setRunning] = useState<null | "generate" | "render" | "variants">(null);
+  const [confirm, setConfirm] = useState<null | { kind: "render" | "variants" | "generate"; ids?: string[] }>(null);
+  const [failure, setFailure] = useState<unknown>(null);
+  const variants = useProjectVariants(projectId);
+
+  const pending = pendingMediaCount(doc);
+  const estimate = useQuery({
+    queryKey: [...videoKeys.project(projectId), "estimate", head],
+    queryFn: () => estimateProject(projectId, null, { organizationId }),
+    enabled: Boolean(organizationId),
+  });
+
+  const reload = () => queryClient.invalidateQueries({ queryKey: videoKeys.project(projectId) });
+
+  const patch = async (ops: PatchOp[], note: string) => {
+    if (!ops.length) return;
+    setSaving(true);
+    try {
+      await appendPatch(projectId, { base_version: head, patch: { baseVersion: head, ops: ops as unknown as Record<string, unknown>[] }, note }, { organizationId });
+      await reload();
+    } catch (err) {
+      const actual = conflictVersion(err);
+      if (actual !== null) {
+        toast.error(`This video changed (now v${actual > 0 ? actual : "newer"}); reloaded`);
+        await reload();
+      } else {
+        toast.error(err instanceof Error ? err.message : "Couldn't save the change");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const captionTrack = Object.keys(doc.tracks.captions)[0] ?? null;
+  const preset = captionTrack ? doc.tracks.captions[captionTrack]?.style.preset ?? "" : "";
+  const labelOf = (id: string) => (id === HEAD_ITEM ? "the video" : (variants.data?.find((v) => v.id === id)?.label ?? "variant"));
+
+  const runGenerate = async (confirmed: boolean) => {
+    setRunning("generate");
+    setFailure(null);
+    setSteps([{ id: "price", label: "Pricing", state: "running" }]);
+    let needsConfirm = false;
+    let errored: string | null = null;
+    try {
+      await streamGenerate(projectId, { version: head, confirmed, apply: true }, { organizationId }, (e) => {
+        const media = typeof e.media_id === "string" ? e.media_id : "";
+        if (e.type === "confirmation_required") needsConfirm = true;
+        else if (e.type === "estimate") setSteps((p) => pushStep(p, { id: "price", label: "Priced", state: "done", meta: points(Number(e.total_points)) }));
+        else if (e.type === "generating") setSteps((p) => pushStep(p, { id: media, label: `Making ${mediaLabel(media)}`, state: "running" }));
+        else if (e.type === "generated")
+          setSteps((p) => p.map((s) => (s.id === media ? { ...s, label: `${mediaLabel(media)} made`, state: "done", meta: dollars(Number(e.cost_usd)) } : s)));
+        else if (e.type === "cache_hit") setSteps((p) => pushStep(p, { id: media, label: `${mediaLabel(media)} reused`, state: "done", meta: "$0.00" }));
+        else if (e.type === "applying") setSteps((p) => pushStep(p, { id: "apply", label: "Placing files and syncing captions", state: "running" }));
+        else if (e.type === "applied") setSteps((p) => pushStep(p, { id: "apply", label: `Saved as v${String(e.version)}`, state: "done" }));
+        else if (e.type === "error" || e.type === "preflight_failed") errored = String(e.message ?? e.code ?? "Generation failed");
+      });
+      if (needsConfirm) {
+        setConfirm({ kind: "generate" });
+        setSteps((p) => closeSteps(p));
+        return;
+      }
+      if (errored) throw new Error(errored);
+      setSteps((p) => closeSteps(p));
+      await reload();
+    } catch (err) {
+      setSteps((p) => closeSteps(p, "failed"));
+      setFailure(err);
+    } finally {
+      setRunning(null);
+    }
+  };
+
+  const runBatch = async (kind: "render" | "variants", ids: string[], confirmed: boolean) => {
+    setRunning(kind);
+    setFailure(null);
+    setSteps([{ id: "start", label: kind === "render" ? "Starting the render" : `Starting ${ids.length} variants`, state: "running" }]);
+    const flags = { confirm: false, error: null as string | null };
+    try {
+      await streamBatch(
+        projectId,
+        kind === "render" ? { head: true, variant_ids: [], renderer, confirmed } : { variant_ids: ids, renderer, confirmed },
+        { organizationId },
+        batchHandler(setSteps, setOutcome, labelOf, flags),
+      );
+      if (flags.confirm) {
+        setConfirm({ kind, ids });
+        setSteps((p) => closeSteps(p));
+        return;
+      }
+      if (flags.error) throw new Error(flags.error);
+      setSteps((p) => closeSteps(p));
+      await reload();
+    } catch (err) {
+      setSteps((p) => closeSteps(p, "failed"));
+      setFailure(err);
+    } finally {
+      setRunning(null);
+    }
+  };
+
+  const headOut = outcome[HEAD_ITEM];
+  const busy = running !== null || saving;
+  return (
+    <div className="grid min-h-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)]">
+      <section className="flex min-w-0 flex-col gap-3">
+        <CompositionPreview doc={doc} className="mx-auto w-full max-w-[22rem]" />
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
+          <div className="flex items-center gap-2">
+            <span className="type-label text-foreground">Make it</span>
+            <span className="ml-auto">
+              {estimate.data ? <CostLine label={pending ? `${pending} to make` : "All made"} usd={estimate.data.total_usd} pts={estimate.data.total_points} /> : null}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {pending ? (
+              <Button variant="primary" disabled={busy} onClick={() => void runGenerate(false)}>
+                Generate
+              </Button>
+            ) : null}
+            <Button variant={pending ? "outline" : "primary"} icon={<Clapperboard />} disabled={busy} onClick={() => void runBatch("render", [], false)}>
+              Render
+            </Button>
+            {DEV_BUILD ? (
+              <Select
+                aria-label="Renderer"
+                value={renderer}
+                onValueChange={(v) => setRenderer(v as Renderer)}
+                options={[
+                  { value: "local", label: "Local server (dev)" },
+                  { value: "hosted", label: "Render fleet" },
+                ]}
+                variant="inline"
+              />
+            ) : null}
+            {headOut?.status ? <Badge tone={headOut.status === "failed" ? "destructive" : headOut.status === "rendered" ? "success" : "info"}>{headOut.status}</Badge> : null}
+          </div>
+          {confirm ? (
+            <div className="flex items-center gap-2">
+              <span className="type-body text-foreground">Over your confirmation setting</span>
+              <Button
+                variant="primary"
+                className="ml-auto"
+                onClick={() => {
+                  const c = confirm;
+                  setConfirm(null);
+                  if (c.kind === "generate") void runGenerate(true);
+                  else void runBatch(c.kind, c.ids ?? [], true);
+                }}
+              >
+                Go ahead
+              </Button>
+              <Button variant="quiet" onClick={() => setConfirm(null)}>
+                Not now
+              </Button>
+            </div>
+          ) : null}
+          <RunLog steps={steps} />
+          {failure ? <ErrorAlchemyMenu error={failure} operation="video render" /> : null}
+          {headOut?.fileId ? <OutputDownload fileId={headOut.fileId} label="The video" /> : null}
+        </div>
+        <Outputs answer={answer} />
+      </section>
+
+      <section className="flex min-w-0 flex-col gap-4">
+        <Block title="Script" icon={<Type className="size-4" />}>
+          <ScriptEditor doc={doc} disabled={busy} onOps={(ops, note) => void patch(ops, note)} />
+        </Block>
+        <Block title="Look" icon={<Palette className="size-4" />}>
+          {captionTrack ? (
+            <CaptionLookPicker
+              value={preset}
+              disabled={busy}
+              onChange={(id) => void patch([{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset: id } }], `captions: ${id}`)}
+            />
+          ) : (
+            <span className="type-meta text-muted-foreground">This plan has no captions</span>
+          )}
+          <div className="flex items-center gap-2">
+            <span className="type-label text-foreground">Shape</span>
+            <SegmentedControl
+              aria-label="Shape"
+              value={doc.timeline.aspect as CloneAspect}
+              onValueChange={(v) => void patch(setAspectOps(v as CloneAspect), `shape: ${v}`)}
+              data={ASPECTS}
+            />
+          </div>
+        </Block>
+        <Block title="Variants" icon={<Layers className="size-4" />}>
+          <VariantsPanel
+            doc={doc}
+            head={head}
+            projectId={projectId}
+            variants={variants.data ?? []}
+            loading={variants.isPending}
+            outcome={outcome}
+            busy={busy}
+            openDraft={params.get("variants") === "3"}
+            onRun={(ids) => void runBatch("variants", ids, false)}
+            onCreated={() => void variants.refetch()}
+          />
+        </Block>
+      </section>
+    </div>
+  );
+}
+
+function Block({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
+      <span className="inline-flex items-center gap-1.5 type-label text-foreground">
+        {icon}
+        {title}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+// ── script ──────────────────────────────────────────────────────────────────────────────────────────
+
+function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: boolean; onOps: (ops: PatchOp[], note: string) => void }) {
+  const [editing, setEditing] = useState<{ turn: string; word: string; text: string } | null>(null);
+  return (
+    <div className="flex flex-col gap-2">
+      {doc.script.turns.map((turn) => (
+        <p key={turn.id} className="flex flex-wrap gap-x-1 gap-y-0.5 type-body text-foreground">
+          {turn.words.map((w) => {
+            const active = editing?.turn === turn.id && editing.word === w.id;
+            const shownDiffers = w.spoken !== undefined && w.spoken !== w.text;
+            return (
+              <button
+                key={w.id}
+                type="button"
+                disabled={disabled}
+                data-clickable
+                title={shownDiffers ? `Says "${w.spoken}"` : undefined}
+                onClick={() => setEditing({ turn: turn.id, word: w.id, text: w.text })}
+                className={cn("rounded px-0.5 hover:bg-muted", active && "bg-primary text-primary-foreground", shownDiffers && "underline decoration-dotted")}
+              >
+                {w.text}
+              </button>
+            );
+          })}
+        </p>
+      ))}
+      {editing ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-2">
+          {/* ui-exception: one word, not a writing box */}
+          <Field value={editing.text} onChange={(e) => setEditing({ ...editing, text: e.target.value })} className="w-40" autoFocus />
+          <Button
+            variant="primary"
+            disabled={disabled || !editing.text.trim()}
+            onClick={() => {
+              onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "captions"), "caption word");
+              setEditing(null);
+            }}
+          >
+            Caption only
+          </Button>
+          <Button
+            variant="outline"
+            disabled={disabled || !editing.text.trim()}
+            onClick={() => {
+              onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "voice"), "spoken word");
+              setEditing(null);
+            }}
+          >
+            Change what's said
+          </Button>
+          <Button variant="quiet" onClick={() => setEditing(null)}>
+            Cancel
+          </Button>
+          <span className="type-meta w-full text-muted-foreground">Changing what's said re-makes the voice on the next Generate</span>
+        </div>
+      ) : (
+        <span className="type-meta text-muted-foreground">Click a word to change it</span>
+      )}
+    </div>
+  );
+}
+
+// ── variants ────────────────────────────────────────────────────────────────────────────────────────
+
+type DraftKind = "hook" | "captions" | "aspect";
+
+interface Draft {
+  kind: DraftKind;
+  value: string;
+}
+
+function draftDefaults(doc: Composition, currentPreset: string): Draft[] {
+  const other = CAPTION_PRESET_IDS.find((id) => id !== currentPreset) ?? CAPTION_PRESET_IDS[0] ?? "";
+  return [
+    { kind: "hook", value: "" },
+    { kind: "captions", value: other },
+    { kind: "aspect", value: doc.timeline.aspect === "1:1" ? "4:5" : "1:1" },
+  ];
+}
+
+function paramSet(d: Draft): ParamSet | null {
+  if (d.kind === "hook") return d.value.trim() ? { label: `Hook: ${d.value.trim().slice(0, 40)}`, hook_text: d.value.trim() } : null;
+  if (d.kind === "captions") return d.value ? { label: `Captions: ${CAPTION_PRESETS[d.value]?.label ?? d.value}`, caption_preset: d.value } : null;
+  return d.value ? { label: `Shape ${d.value}`, aspect: d.value as CloneAspect } : null;
+}
+
+function VariantsPanel({
+  doc,
+  head,
+  projectId,
+  variants,
+  loading,
+  outcome,
+  busy,
+  openDraft,
+  onRun,
+  onCreated,
+}: {
+  doc: Composition;
+  head: number;
+  projectId: string;
+  variants: VariantAnswer[];
+  loading: boolean;
+  outcome: Record<string, ItemOutcome>;
+  busy: boolean;
+  openDraft: boolean;
+  onRun: (ids: string[]) => void;
+  onCreated: () => void;
+}) {
+  const { organizationId } = useSocials();
+  const captionTrack = Object.keys(doc.tracks.captions)[0];
+  const currentPreset = captionTrack ? (doc.tracks.captions[captionTrack]?.style.preset ?? "") : "";
+  const [drafts, setDrafts] = useState<Draft[] | null>(openDraft ? draftDefaults(doc, currentPreset) : null);
+  const [creating, setCreating] = useState(false);
+
+  const create = async () => {
+    const sets = (drafts ?? []).map(paramSet).filter((p): p is ParamSet => p !== null);
+    if (!sets.length) return;
+    setCreating(true);
+    try {
+      await createVariantMatrix(projectId, sets, { organizationId });
+      setDrafts(null);
+      onCreated();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't create the variants");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {loading ? <RegionSkeleton shape="cards" count={3} aria-label="Loading variants" /> : null}
+      {variants.length ? (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {variants.map((v) => (
+            <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} />
+          ))}
+        </div>
+      ) : null}
+      {drafts ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-border p-2">
+          {drafts.map((d, i) => (
+            <div key={i} className="flex flex-wrap items-center gap-2">
+              <Select
+                aria-label="Variant change"
+                value={d.kind}
+                onValueChange={(k) =>
+                  setDrafts((prev) =>
+                    (prev ?? []).map((x, j) =>
+                      j === i ? { kind: k as DraftKind, value: k === "aspect" ? "1:1" : k === "captions" ? (CAPTION_PRESET_IDS[0] ?? "") : "" } : x,
+                    ),
+                  )
+                }
+                options={[
+                  { value: "hook", label: "Hook line" },
+                  { value: "captions", label: "Caption look" },
+                  { value: "aspect", label: "Shape" },
+                ]}
+              />
+              {d.kind === "hook" ? (
+                <Field
+                  placeholder="A different opening line"
+                  value={d.value}
+                  maxLength={120}
+                  className="min-w-0 flex-1"
+                  onChange={(e) => setDrafts((prev) => (prev ?? []).map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))}
+                />
+              ) : d.kind === "captions" ? (
+                <Select
+                  aria-label="Caption look"
+                  value={d.value}
+                  onValueChange={(val) => setDrafts((prev) => (prev ?? []).map((x, j) => (j === i ? { ...x, value: val } : x)))}
+                  options={CAPTION_PRESET_IDS.map((id) => ({ value: id, label: CAPTION_PRESETS[id]?.label ?? id }))}
+                />
+              ) : (
+                <SegmentedControl
+                  aria-label="Shape"
+                  value={d.value as CloneAspect}
+                  onValueChange={(val) => setDrafts((prev) => (prev ?? []).map((x, j) => (j === i ? { ...x, value: val } : x)))}
+                  data={ASPECTS}
+                />
+              )}
+            </div>
+          ))}
+          <div className="flex items-center gap-2">
+            <Button variant="primary" disabled={creating || busy || !(drafts ?? []).some((d) => paramSet(d))} onClick={() => void create()}>
+              Create variants
+            </Button>
+            <Button variant="quiet" onClick={() => setDrafts(null)}>
+              Cancel
+            </Button>
+            <span className="type-meta ml-auto text-muted-foreground">Free until you render</span>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Button variant="outline" icon={<Layers />} disabled={busy} onClick={() => setDrafts(draftDefaults(doc, currentPreset))}>
+            Create 3 variants
+          </Button>
+          {variants.length ? (
+            <Button variant="primary" disabled={busy} onClick={() => onRun(variants.map((v) => v.id))}>
+              {`Render ${variants.length} variants`}
+            </Button>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VariantCard({ v, doc, head, outcome }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome }) {
+  const materialized = v.baseVersion === head ? materializeVariant(doc, v as unknown as VariantOverride) : null;
+  return (
+    <div className="flex min-w-0 flex-col gap-2 rounded-lg border border-border p-2">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <span className="type-label truncate text-foreground">{v.label}</span>
+        <Badge tone={outcome?.status === "failed" ? "destructive" : outcome?.status === "rendered" ? "success" : "neutral"} className="ml-auto">
+          {outcome?.status ?? (v.baseVersion === head ? "ready" : `pinned v${v.baseVersion}`)}
+        </Badge>
+      </div>
+      {materialized?.ok ? (
+        <CompositionPreview doc={materialized.doc} />
+      ) : (
+        <div className="flex items-center justify-center rounded-lg bg-muted p-4 type-meta text-muted-foreground" style={{ aspectRatio: "9 / 16" }}>
+          {v.baseVersion === head ? "Can't preview" : `Made on v${v.baseVersion}; rebased on render`}
+        </div>
+      )}
+      {outcome?.error ? <ErrorAlchemyMenu error={new Error(`${outcome.stage}: ${outcome.error}`)} operation="video variant render" /> : null}
+      {outcome?.usd !== undefined ? <CostLine usd={outcome.usd} pts={outcome.pts} /> : null}
+      {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} /> : null}
+    </div>
+  );
+}
+
+// ── every finished output ───────────────────────────────────────────────────────────────────────────
+
+function Outputs({ answer }: { answer: VideoProjectAnswer }) {
+  if (!answer.output_file_ids.length) return null;
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
+      <span className="type-label text-foreground">{`Finished videos (${answer.output_file_ids.length})`}</span>
+      {answer.output_file_ids.map((id, i) => (
+        <OutputDownload key={id} fileId={id} label={`Render ${answer.output_file_ids.length - i}`} />
+      ))}
+    </div>
+  );
+}

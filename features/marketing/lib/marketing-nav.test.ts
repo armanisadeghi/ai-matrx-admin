@@ -62,8 +62,8 @@ describe("marketing declarations ↔ coming-soon registry", () => {
     // Analytics shipped its Google half (the brand Analytics route renders real
     // GA4 evidence); the cross-channel join is printed under that live panel.
     "marketing.analytics.cross-channel",
-    // In-page actions of the live video studio (Build; presenter/music swaps).
-    "marketing.social.video-render",
+    // In-page actions of the live video studio (AI script rewrite; presenter/music swaps).
+    "marketing.social.video-script-rewrite",
     "marketing.social.video-slots",
   ]);
 

@@ -8,7 +8,7 @@
  */
 
 import Link from "next/link";
-import { Bookmark, FileText, Sparkles, UserRound } from "lucide-react";
+import { Bookmark, Clapperboard, FileText, Layers, ScanSearch, UserRound } from "lucide-react";
 
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "@/lib/toast";
@@ -17,6 +17,7 @@ import { accountHref } from "../account-href";
 import { useSocialSpend } from "../cost";
 import type { PostCardModel } from "../types";
 import { useCanEditSocial } from "../useCanEditSocial";
+import { cloneHref, isClonable } from "../video/clone-links";
 import { usePostActions } from "./usePostActions";
 
 function CostTail({ text }: { text: string | null }) {
@@ -61,6 +62,22 @@ export function PostCardMenuItems({
           </Link>
         </DropdownMenuItem>
       ) : null}
+      {canEdit && isClonable(post) ? (
+        <>
+          <DropdownMenuItem asChild>
+            <Link href={cloneHref(brandSeg, post.postId)}>
+              <Clapperboard className="mr-2 h-4 w-4" />
+              Clone
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={cloneHref(brandSeg, post.postId, true)}>
+              <Layers className="mr-2 h-4 w-4" />
+              Clone with 3 variants
+            </Link>
+          </DropdownMenuItem>
+        </>
+      ) : null}
       {!canEdit || hasSaveHandler ? null : (
         <DropdownMenuItem disabled={actions.busy === "save"} onSelect={run(actions.saveToSwipe)}>
           <Bookmark className="mr-2 h-4 w-4" />
@@ -75,7 +92,7 @@ export function PostCardMenuItems({
         <CostTail text={pointsText("transcript")} />
       </DropdownMenuItem>
       <DropdownMenuItem disabled={actions.busy === "breakdown"} onSelect={run(actions.breakdown)}>
-        <Sparkles className="mr-2 h-4 w-4" />
+        <ScanSearch className="mr-2 h-4 w-4" />
         Run breakdown
         <CostTail text="AI points" />
       </DropdownMenuItem>
