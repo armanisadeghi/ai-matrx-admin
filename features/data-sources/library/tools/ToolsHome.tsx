@@ -14,6 +14,7 @@ import { Button, EmptyState, RegionSkeleton, SearchField } from "@ai-matrx/desig
 import { formatCount } from "@ai-matrx/kit/format";
 import type { CatalogSearchState, CatalogToolHit } from "@ai-matrx/agents/tools";
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
 import { ToolCard } from "./ToolCard";
@@ -63,23 +64,26 @@ export function ToolsHome({
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-5" data-tools-home="">
       <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 sm:p-9">
         <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-4xl">What do you need done?</h1>
-        <div className="mt-5 max-w-2xl">
+        <div className="mt-6 max-w-3xl">
           <SearchField
             value={query}
             onChange={(e) => onQuery(e.target.value)}
-            placeholder="Backlinks for a site, a work email, reviews of a company…"
+            placeholder="Backlinks, work emails, reviews…"
             aria-label="Search Tools"
+            hero
+            className="w-full"
             autoFocus
           />
         </div>
-        <div className="-mx-1 mt-5 flex flex-wrap items-center gap-1.5" role="toolbar" aria-label="Browse by job">
-          <Button variant="quiet" pressed={family === null} onClick={() => onFamily(null)}>
+        <div className="-mx-6 mt-5 flex items-center gap-1.5 overflow-x-auto px-6 pb-1 sm:-mx-9 sm:px-9" role="toolbar" aria-label="Browse by job">
+          <Button variant="quiet" className="shrink-0" pressed={family === null} onClick={() => onFamily(null)}>
             All
           </Button>
           {JOB_FAMILIES.map((f) => (
             <Button
               key={f.slug}
               variant="quiet"
+              className="shrink-0"
               pressed={family === f.slug}
               onClick={() => onFamily(family === f.slug ? null : f.slug)}
               icon={createElement(f.icon, { className: "h-4 w-4" })}
@@ -105,7 +109,14 @@ export function ToolsHome({
             icon={<SearchX className="h-5 w-5" />}
             title="Couldn't load Tools"
             line="Try again in a moment."
-            action={<Button variant="outline" onClick={search.retry}>Try again</Button>}
+            action={
+              <span className="inline-flex items-center gap-1">
+                <Button variant="outline" onClick={search.retry}>
+                  Try again
+                </Button>
+                <ErrorAlchemyMenu error={search.error ?? "The Tool search failed"} />
+              </span>
+            }
           />
         ) : tools.length === 0 ? (
           <EmptyState icon={<SearchX className="h-5 w-5" />} title="No Tool does that yet" line="Try other words, or browse by job." />

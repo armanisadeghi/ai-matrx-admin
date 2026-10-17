@@ -16,6 +16,7 @@
 
 import { createElement, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { pushAddressWithoutNavigating, replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ArrowLeft, ChevronRight, Database, SearchX, ShieldCheck } from "lucide-react";
 import { useOwnToolSearch } from "@ai-matrx/chat/agents/identity/tool-search";
 import type { CatalogToolHit } from "@ai-matrx/agents/tools";
@@ -77,9 +78,9 @@ export function DataLibraryPage() {
       else p.set(key, value);
     }
     const text = p.toString();
-    router.push(text ? `${pathname}?${text}` : pathname);
+    pushAddressWithoutNavigating(text ? `${pathname}?${text}` : pathname);
   };
-  const back = () => (window.history.length > 1 ? router.back() : router.replace(pathname));
+  const back = () => (window.history.length > 1 ? router.back() : replaceAddressWithoutNavigating(pathname));
 
   return (
     <>

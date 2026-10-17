@@ -9,7 +9,7 @@
  */
 
 import { createElement, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Zap } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
@@ -19,7 +19,10 @@ import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { newToolCallKey, toolPriceText, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
 
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { extractErrorMessage } from "@/utils/errors";
 
 import { GiveToAgentDialog } from "./GiveToAgentDialog";
@@ -27,19 +30,19 @@ import { ToolResult } from "./ToolResult";
 import { inputsToSend, jobFamilyOf, reliabilityFacts, speedText } from "./toolFacts";
 import { useToolRunForm } from "./useToolRunForm";
 
-const draftKey = (toolId: string) => `tools-home:draft:${toolId}`;
+const draftKey = (userId: string, toolId: string) => `tools-home:draft:${userId}:${toolId}`;
 
-function readDraft(toolId: string): Record<string, unknown> {
+function readDraft(userId: string, toolId: string): Record<string, unknown> {
   try {
-    const raw = window.sessionStorage.getItem(draftKey(toolId));
+    const raw = window.sessionStorage.getItem(draftKey(userId, toolId));
     return raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
   } catch {
     return {};
   }
 }
-function writeDraft(toolId: string, values: Record<string, unknown>) {
+function writeDraft(userId: string, toolId: string, values: Record<string, unknown>) {
   try {
-    window.sessionStorage.setItem(draftKey(toolId), JSON.stringify(values));
+    window.sessionStorage.setItem(draftKey(userId, toolId), JSON.stringify(values));
   } catch {
     // Private window or full storage: the form still works, the draft just isn't kept.
   }
@@ -57,8 +60,8 @@ export function ToolPage({
   callId: string | null;
   onBack: () => void;
 }) {
-  const router = useRouter();
   const params = useSearchParams();
+  const userId = useAppSelector(selectUserId);
   const form = useToolRunForm(toolId);
   const facts = form.data?.facts ?? null;
   // The card the person pressed carries reliability and speed; a deep link has only the run-form's facts.
@@ -67,7 +70,7 @@ export function ToolPage({
   const noun = known?.display_noun ?? facts?.displayNoun ?? "";
   const priceHint = known?.price_hint_points ?? facts?.priceHintPoints ?? null;
 
-  const [values, setValues] = useState<Record<string, unknown>>(() => (typeof window === "undefined" ? {} : readDraft(toolId)));
+  const [values, setValues] = useState<Record<string, unknown>>(() => (typeof window === "undefined" || !userId ? {} : readDraft(userId, toolId)));
   const [view, setView] = useState<ToolCallView | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
   const [giving, setGiving] = useState(false);
@@ -86,7 +89,7 @@ export function ToolPage({
     next.set("tool", toolId);
     if (nextCallId) next.set("call", nextCallId);
     else next.delete("call");
-    router.replace(`?${next.toString()}`, { scroll: false });
+    replaceAddressWithoutNavigating(`${window.location.pathname}?${next.toString()}`);
   };
 
   const run = async (overrides: Record<string, unknown> = {}, spendApprovalId?: string) => {
@@ -205,7 +208,7 @@ export function ToolPage({
               onChange={(name, value) =>
                 setValues((prev) => {
                   const next = { ...prev, [name]: value };
-                  writeDraft(toolId, next);
+                  if (userId) writeDraft(userId, toolId, next);
                   return next;
                 })
               }

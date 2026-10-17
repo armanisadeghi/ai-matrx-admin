@@ -561,11 +561,12 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     color: "cyan",
   },
   {
-    // Every data source we can fetch into a table, at its own points price.
-    label: "Data Library",
+    // The Tools home (R-12: the data library grew into it): search thousands of Tools, try one, give it to an agent.
+    // Until the server has a Tool catalog the page is the data library as it was.
+    label: "Tools",
     href: "/data/library",
     iconName: "Library",
-    description: "Reviews, places, products, jobs and more, ready to fetch",
+    description: "Find, try and give Tools to your agents",
     color: "cyan",
     dashboard: true,
   },

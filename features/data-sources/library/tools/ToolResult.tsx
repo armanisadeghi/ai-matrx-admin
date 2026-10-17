@@ -16,7 +16,9 @@ import { ResultJson } from "@ai-matrx/chat/tool-call-visualization/result-fields
 
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import { useSeesDollars } from "@/components/cost/useCostDisplay";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
+import { ToolResultTableBar } from "@/features/tool-result-tables/ToolResultTableBar";
 
 type Pane = "answer" | "raw";
 
@@ -38,12 +40,19 @@ export function ToolResult({
   if (clientError && !view) {
     return (
       <div data-tool-result="client-error">
-        <EmptyState icon={<CircleAlert className="h-5 w-5" />} title="That didn't go through" line={clientError} />
-        <div className="mt-3 flex justify-center">
-          <Button variant="outline" onClick={onRunAgain}>
-            Try again
-          </Button>
-        </div>
+        <EmptyState
+          icon={<CircleAlert className="h-5 w-5" />}
+          title="That didn't go through"
+          line={clientError}
+          action={
+            <span className="inline-flex items-center gap-1">
+              <Button variant="outline" onClick={onRunAgain}>
+                Try again
+              </Button>
+              <ErrorAlchemyMenu error={clientError} />
+            </span>
+          }
+        />
       </div>
     );
   }
@@ -103,12 +112,15 @@ export function ToolResult({
           icon={<CircleAlert className="h-5 w-5" />}
           title={view.status === "refused" ? "Not run" : view.status === "cancelled" ? "Stopped" : "That didn't work"}
           line={view.error?.message ?? (view.status === "cancelled" ? "You weren't charged." : "Try again in a moment.")}
+          action={
+            <span className="inline-flex items-center gap-1">
+              <Button variant="outline" onClick={onRunAgain}>
+                Try again
+              </Button>
+              {view.status === "failed" || view.status === "refused" ? <ErrorAlchemyMenu error={view.error?.message ?? view.status} /> : null}
+            </span>
+          }
         />
-        <div className="mt-3 flex justify-center">
-          <Button variant="outline" onClick={onRunAgain}>
-            Try again
-          </Button>
-        </div>
       </div>
     );
   }
@@ -130,18 +142,19 @@ export function ToolResult({
         ) : null}
         <span className="ml-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground" data-tool-cost="">
           {view.cache !== "none" ? <Badge tone="neutral">Saved answer</Badge> : null}
-          {view.display_source ? <Badge tone="neutral">{view.display_source}</Badge> : null}
+          {view.display_source && view.display_source !== "Matrx" ? <Badge tone="neutral">{view.display_source}</Badge> : null}
           <span className="font-medium text-foreground">{free ? "No charge" : `Cost ${formatPoints(view.points_charged)}`}</span>
           {seesDollars && view.cost_usd != null ? <span>· {formatAdminUsd(view.cost_usd)}</span> : null}
         </span>
       </div>
       <div className="rounded-xl border border-border bg-card p-4">
         {pane === "raw" && view.raw != null ? (
-          <ResultJson data={view.raw} />
+          <ResultJson data={view.raw} showSource />
         ) : (
           <AnswerValueView value={view.output} emptyText="The answer came back empty." />
         )}
       </div>
+      <ToolResultTableBar callId={view.call_id} toolId={view.tool_id} toolName={view.display_name} output={view.output} />
       {view.ignored_filters.length > 0 ? (
         <p className="text-xs text-muted-foreground" data-tool-ignored="">
           Not used by this Tool: {view.ignored_filters.map((f) => f.label).join(", ")}

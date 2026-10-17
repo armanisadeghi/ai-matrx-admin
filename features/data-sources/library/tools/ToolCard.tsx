@@ -36,15 +36,10 @@ export function ToolCard({
     <div
       data-tool-card={hit.tool_id}
       data-tool-job={hit.job_key}
+      data-clickable=""
+      onClick={onOpen}
       className="group relative flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-colors focus-within:border-primary/60 hover:border-primary/50 hover:bg-accent/30"
     >
-      <button
-        type="button"
-        data-clickable=""
-        onClick={onOpen}
-        aria-label={`Try ${hit.display_name}`}
-        className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      />
       <div className="pointer-events-none flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden>
           {createElement(family.icon, { className: "h-5 w-5" })}
@@ -59,9 +54,9 @@ export function ToolCard({
           </div>
         </div>
         {price ? (
-          <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground" data-tool-price="">
+          <Badge tone="neutral" data-tool-price="">
             {price}
-          </span>
+          </Badge>
         ) : null}
       </div>
       <p className="pointer-events-none line-clamp-2 min-h-10 text-sm text-muted-foreground">{hit.summary}</p>
@@ -78,11 +73,22 @@ export function ToolCard({
           </span>
         ) : null}
       </div>
-      <div className="relative z-10 mt-auto flex items-center gap-2">
-        <Button variant="outline" onClick={onOpen}>
+      <div className="mt-auto flex items-center gap-2">
+        <Button
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpen();
+          }}
+        >
           Try it
         </Button>
-        <Button variant="quiet" onClick={onGive} icon={createElement(AGENT_ICON, { className: "h-4 w-4" })}>
+        <Button
+          variant="quiet"
+          onClick={(e) => {
+            e.stopPropagation();
+            onGive();
+          }} icon={createElement(AGENT_ICON, { className: "h-4 w-4" })}>
           Give to an agent
         </Button>
       </div>

@@ -7,15 +7,17 @@
  * changes. Everything is opt in: a Tool is never given to an agent on its own.
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { AgentListInlinePicker } from "@ai-matrx/agents/catalog/react";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
+import { getModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { Button } from "@ai-matrx/design-system/controls";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { applyOwnedAgentToolDelta, fetchAgentExecutionFull } from "@/features/agents/redux/builder-tier.thunks";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -29,6 +31,7 @@ export function GiveToAgentDialog({
   onClose: () => void;
 }) {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const [agentId, setAgentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -37,23 +40,20 @@ export function GiveToAgentDialog({
   const has = Boolean(agent?.tools?.includes(toolId));
 
   // The agent's tool list is read fresh when one is picked, so "already on it" is true.
-  useEffect(() => {
-    if (!agentId) return;
-    let current = true;
+  const pick = (id: string) => {
+    setAgentId(id);
     setLoading(true);
     setProblem(null);
-    dispatch(fetchAgentExecutionFull(agentId))
+    dispatch(fetchAgentExecutionFull(id))
       .unwrap()
-      .catch((cause: unknown) => {
-        if (current) setProblem(extractErrorMessage(cause, "This agent could not be loaded. Pick another."));
+      // The tool assignment checks the agent's model can use tools, so the model record is read first.
+      .then(async () => {
+        const modelId = selectAgentById(store.getState(), id)?.modelId;
+        if (modelId) await getModelRecords().loadModel(modelId);
       })
-      .finally(() => {
-        if (current) setLoading(false);
-      });
-    return () => {
-      current = false;
-    };
-  }, [agentId, dispatch]);
+      .catch((cause: unknown) => setProblem(extractErrorMessage(cause, "This agent could not be loaded. Pick another.")))
+      .finally(() => setLoading(false));
+  };
 
   async function change(add: boolean) {
     if (!agentId) return;
@@ -80,7 +80,7 @@ export function GiveToAgentDialog({
         </DialogHeader>
         <AgentListInlinePicker
           consumerId="tools-home-give-to-agent"
-          onSelect={setAgentId}
+          onSelect={pick}
           activeAgentId={agentId}
           initialTab="mine"
           visibleTabs={["mine"]}
@@ -88,8 +88,9 @@ export function GiveToAgentDialog({
           className="h-72 rounded-lg border border-border bg-background"
         />
         {problem ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="flex items-center gap-1 text-sm text-destructive">
             {problem}
+            <ErrorAlchemyMenu error={problem} />
           </p>
         ) : null}
         <DialogFooter>

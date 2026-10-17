@@ -14,9 +14,10 @@ import {
   MessagesSquare,
   Search,
   ShoppingBag,
-  Sparkle,
+  Eye,
   Star,
   UserSearch,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import type { CatalogReliability } from "@ai-matrx/agents/tools";
@@ -37,7 +38,7 @@ export const JOB_FAMILIES: readonly JobFamilyFacts[] = [
   { slug: "ads", label: "Ad research", icon: Megaphone },
   { slug: "search", label: "Web search", icon: Search },
   { slug: "reviews", label: "Reviews", icon: Star },
-  { slug: "ai_visibility", label: "AI visibility", icon: Sparkle },
+  { slug: "ai_visibility", label: "AI visibility", icon: Eye },
   { slug: "market", label: "Market data", icon: BarChart3 },
   { slug: "ecommerce", label: "Products & shops", icon: ShoppingBag },
   { slug: "generation", label: "Images, video & voice", icon: Clapperboard },
@@ -48,7 +49,7 @@ export const JOB_FAMILIES: readonly JobFamilyFacts[] = [
 const BY_SLUG = new Map(JOB_FAMILIES.map((f) => [f.slug, f]));
 
 export function jobFamilyOf(slug: string | null | undefined): JobFamilyFacts {
-  return (slug ? BY_SLUG.get(slug) : undefined) ?? { slug: slug ?? "other", label: "Other", icon: Database };
+  return (slug ? BY_SLUG.get(slug) : undefined) ?? { slug: slug ?? "other", label: "Other", icon: Wrench };
 }
 
 /** Under this many runs a success rate says nothing, so the card says "New" instead of a percent. */
