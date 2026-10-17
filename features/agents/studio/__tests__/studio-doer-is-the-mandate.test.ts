@@ -26,4 +26,10 @@ describe("the Studio doer", () => {
     expect(strip(page)).not.toMatch(/assistantId/);
     expect(strip(run)).toMatch(/launchMandate\(/);
   });
+
+  it("shows the chat once a mandate chat exists: a mandate run has no agent id, and must not stay on the skeleton", () => {
+    // Found live 2026-10-17: `if (!agentId || !shown)` kept every mandate chat on the loading skeleton forever.
+    expect(strip(run)).not.toMatch(/if \(!agentId \|\| !shown\)/);
+    expect(strip(run)).toMatch(/\(!agentId && !mandateKey\) \|\| !shown/);
+  });
 });

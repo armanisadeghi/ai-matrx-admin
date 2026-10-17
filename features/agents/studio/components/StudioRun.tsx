@@ -160,7 +160,7 @@ export function StudioRun({
       </div>
     );
   }
-  if (!agentId || !shown) return <RegionSkeleton />;
+  if ((!agentId && !mandateKey) || !shown) return <RegionSkeleton />;
   return (
     <div className="flex h-full min-h-0 flex-col">
       {mandateKey ? null : <StudioTurnModel conversationId={shown} />}
