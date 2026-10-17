@@ -11,6 +11,7 @@
  * all projects' counts/preview (no per-card round-trips).
  */
 
+import { isOpenStatus } from "@/features/tasks/constants/status";
 import { PROJECTS_DRILL } from "./projectsDrill";
 import { isRecordsErr } from "@ai-matrx/records";
 import React from "react";
@@ -325,8 +326,11 @@ export function ProjectsHub({
           if (row.parent_task_id || !row.project_id) continue; // top-level only
           const s = m.get(row.project_id);
           if (!s) continue;
+          // A dismissed or cancelled task is neither open nor done — the same
+          // reading as the tasks list (isOpenStatus), so the card and the
+          // tasks drill count the same open tasks.
           if (row.status === "completed") s.done += 1;
-          else {
+          else if (isOpenStatus(row.status)) {
             s.open += 1;
             if (s.preview.length < 4)
               s.preview.push({ id: row.id, title: row.title });
