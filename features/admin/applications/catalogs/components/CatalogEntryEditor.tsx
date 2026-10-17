@@ -14,11 +14,10 @@
 // confirm showing the full entry JSON. Saving the same app/kind/key revives it.
 //
 // Dual-gate activation: saving with is_active=true requires a valid payload,
-// and the confirm dialog live-probes the artifact URL. The probe prefers the
-// aidream resolver (POST /api/catalog-resolver/resolve — its "direct" branch
-// HEAD-probes server-side, immune to browser CORS); when the resolver is not
-// deployed it falls back to a browser HEAD with honest CORS labeling. An
-// unreachable artifact warns loudly but can be overridden.
+// and the confirm dialog live-probes the artifact URL. The probe asks the
+// discovery engine (POST /ai-catalog/discover/probe — server-side, immune to
+// browser CORS); when the server lacks the route it falls back to a browser
+// HEAD with honest CORS labeling. An unreachable artifact warns loudly but can be overridden.
 
 import { useCallback, useEffect, useState } from "react";
 import { format, formatDistanceToNow } from "date-fns";
@@ -61,8 +60,8 @@ import {
 } from "@/features/admin/shared/admin-rpc-errors";
 import { UrlProbeField } from "@/features/admin/shared/UrlProbeField";
 import { formatFileSize } from "@ai-matrx/kit/format";
-import { probeArtifactUrl } from "@/features/admin/applications/catalogs/resolver";
-import type { ArtifactProbeResult } from "@/features/admin/applications/catalogs/resolver";
+import { probeArtifactUrl } from "@/features/admin/applications/catalogs/artifact-probe";
+import type { ArtifactProbeResult } from "@/features/admin/applications/catalogs/artifact-probe";
 import { CatalogHistoryPanel } from "@/features/admin/applications/catalogs/components/CatalogHistoryPanel";
 import {
   CATALOG_KEY_REGEX,

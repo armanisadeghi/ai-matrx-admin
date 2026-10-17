@@ -4,7 +4,7 @@
 //
 // Entries for one (app, kind): key, name from payload, artifact size,
 // min_app_version, is_active toggle (confirm + live artifact probe via
-// probeArtifactUrl: aidream resolver first, browser HEAD fallback — the
+// probeArtifactUrl: server check first, browser HEAD fallback — the
 // dual-gate moment), inline-editable sort_order, provenance. All writes
 // go through admin_upsert_catalog_entry with p_expected_updated_at; a 40001
 // conflict toasts and refreshes.
@@ -50,8 +50,8 @@ import {
 } from "@/features/admin/shared/admin-rpc-errors";
 import { useAdminEmails } from "@/features/admin/shared/useAdminEmails";
 import { formatFileSize } from "@ai-matrx/kit/format";
-import { probeArtifactUrl } from "@/features/admin/applications/catalogs/resolver";
-import type { ArtifactProbeResult } from "@/features/admin/applications/catalogs/resolver";
+import { probeArtifactUrl } from "@/features/admin/applications/catalogs/artifact-probe";
+import type { ArtifactProbeResult } from "@/features/admin/applications/catalogs/artifact-probe";
 import {
   upsertArgsFromRow,
   upsertCatalogEntry,
@@ -126,7 +126,7 @@ export function CatalogKindTable({
   } | null>(null);
 
   // Dual-gate probe: activating an entry with an artifact URL live-probes it
-  // while the confirm dialog is open (resolver-first via probeArtifactUrl,
+  // while the confirm dialog is open (server check first via probeArtifactUrl,
   // browser HEAD fallback). Warn loudly; allow override.
   const probeTarget =
     pendingToggle?.next && pendingToggle.row.artifact_url
