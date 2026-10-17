@@ -10,6 +10,10 @@
 // platform's ONE field editor, never an HR fork. `platform.custom_field_target` (which tokens are on,
 // their ceilings) is still read as policy, read-only.
 //
+// THE ARCHIVED-ITEMS LAW: the read asks for retired fields too (`entityFields({ include_retired })`,
+// each with `archived_at`). Archived rows are hidden until "Archived fields (N)" is opened; then they
+// sit beside the live ones with a Status column and Restore (`custom.field_restore`) per row.
+//
 // ── THE GOVERNANCE RULES, STATED ON THE PAGE (SPEC-EMPLOYEES §7.4) ─────────
 //  • A field's key and type are IMMUTABLE once any value exists: archive and recreate instead.
 //  • DELETING A DEFINITION NEVER DELETES VALUES.
@@ -18,7 +22,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Archive, ClipboardList, Lock, Plus } from "lucide-react";
+import { Archive, ArchiveRestore, ClipboardList, Lock, Plus } from "lucide-react";
+import { ArchivedDisclosure } from "@ai-matrx/design-system";
 import { RecordsProvider, useEntityFieldMutation, useRecordsClient } from "@ai-matrx/records/react";
 import type { Field, RecordsError } from "@ai-matrx/records";
 import { FieldEditor, RefusalLine } from "@/features/data-tables/records-ui-host/recordsUiLazy";
@@ -255,13 +260,16 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
   const [reload, setReload] = useState(0);
   const [adding, setAdding] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<FieldLine | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [restoring, setRestoring] = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState<RecordsError | null>(null);
   const key = targets.map((t) => t.token).join("|");
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const results = await Promise.all(
-        key.split("|").map(async (token) => ({ token, result: await client.entityFields({ token }) })),
+        key.split("|").map(async (token) => ({ token, result: await client.entityFields({ token, include_retired: true }) })),
       );
       if (cancelled) return;
       const failed = results.find((r) => !r.result.ok);
@@ -284,6 +292,38 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
     setConfirming(null);
     if (done) setReload((n) => n + 1);
   };
+
+  const restore = async (line: FieldLine) => {
+    setRestoring(line.id);
+    const done = await client.fieldRestore({ field_id: line.id });
+    setRestoring(null);
+    setRestoreError(done.ok ? null : done.error);
+    if (done.ok) setReload((n) => n + 1);
+  };
+
+  const liveDefinitions = (lines ?? []).filter((row) => !row.archived_at);
+  const archivedDefinitions = (lines ?? []).filter((row) => Boolean(row.archived_at));
+  const visibleDefinitions = showArchived ? (lines ?? []) : liveDefinitions;
+
+  const rowItems = (row: FieldLine) =>
+    row.archived_at
+      ? { id: "restore", icon: ArchiveRestore, label: "Restore field", onClick: () => void restore(row) }
+      : { id: "archive", icon: Archive, label: "Archive field", onClick: () => setConfirming(row) };
+
+  const statusColumn: MatrxColumnDef<FieldLine>[] = showArchived
+    ? [
+        {
+          id: "status",
+          accessorFn: (row) => (row.archived_at ? "Archived" : "Live"),
+          header: "Status",
+          filter: "select",
+          format: { id: "choice" },
+          cell: (row) => (
+            <Badge variant={row.archived_at ? "outline" : "secondary"}>{row.archived_at ? "Archived" : "Live"}</Badge>
+          ),
+        },
+      ]
+    : [];
 
   const columns: MatrxColumnDef<FieldLine>[] = [
     { id: "label", accessorKey: "label", header: "Field", filter: "text", frozen: true, width: 220 },
@@ -342,11 +382,20 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
       format: { id: "datetime" },
       defaultSortDirection: "desc",
     },
+    ...statusColumn,
   ];
 
   return (
     <div className="space-y-3" data-hr-fields-table>
       <div className="flex flex-wrap items-center gap-2">
+        <ArchivedDisclosure
+          count={archivedDefinitions.length}
+          open={showArchived}
+          onOpenChange={setShowArchived}
+          label="Archived fields"
+          keepWhileOpen
+          className="w-auto"
+        />
         {targets.map((t) => (
           <Button
             key={t.token}
@@ -374,16 +423,15 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
       ) : null}
       {loadError ? <RefusalLine error={loadError} /> : null}
       {mutation.error ? <RefusalLine error={mutation.error} /> : null}
+      {restoreError ? <RefusalLine error={restoreError} /> : null}
       <MatrxDataTable<FieldLine>
         tableId="hr-custom-fields"
-        data={lines ?? []}
+        data={visibleDefinitions}
         columns={columns}
         getRowId={(row) => row.id}
         pageSize={25}
         toolbar={{ search: true, searchPlaceholder: "Search custom fields" }}
-        rowActions={(row) => [
-          { id: "archive", icon: Archive, label: "Archive field", onClick: () => setConfirming(row) },
-        ]}
+        rowActions={(row) => [{ ...rowItems(row), disabled: restoring === row.id }]}
         contextMenu={{
           sections: (payload) =>
             payload.level === "row" || payload.level === "cell"
@@ -392,14 +440,16 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
                     id: "field",
                     title: "Field",
                     primary: true,
-                    items: [
-                      {
-                        id: "archive",
-                        label: "Archive field",
-                        destructive: true,
-                        onSelect: () => setConfirming(payload.row),
-                      },
-                    ],
+                    items: payload.row.archived_at
+                      ? [{ id: "restore", label: "Restore field", onSelect: () => void restore(payload.row) }]
+                      : [
+                          {
+                            id: "archive",
+                            label: "Archive field",
+                            destructive: true,
+                            onSelect: () => setConfirming(payload.row),
+                          },
+                        ],
                   },
                 ]
               : [],
@@ -410,7 +460,15 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
           onRetry: () => setReload((n) => n + 1),
           what: "custom fields",
         }}
-        emptyState={{ title: "No custom fields on HR records" }}
+        emptyState={
+          // Honest empty copy: "none" only when live AND archived are both empty.
+          !showArchived && liveDefinitions.length === 0 && archivedDefinitions.length > 0
+            ? {
+                title: `All ${archivedDefinitions.length} custom ${archivedDefinitions.length === 1 ? "field is" : "fields are"} archived`,
+                description: "Open “Archived fields” to see or restore them.",
+              }
+            : { title: "No custom fields on HR records" }
+        }
       />
       <ConfirmDelete
         open={confirming !== null}
