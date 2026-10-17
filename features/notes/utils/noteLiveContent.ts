@@ -111,7 +111,7 @@ function applyAutoLabel(id: string, store: WorkingCopyStoreLike): void {
   if (!record.content || record.content.trim().length < 12) return;
   const generated = generateLabelFromContent(record.content);
   if (!generated) return;
-  const labelled = { ...updateNoteLabel({ id, label: generated }), meta: { notesAutoLabel: true } };
+  const labelled = { ...updateNoteLabel({ id, label: generated, generated: true }), meta: { notesAutoLabel: true } };
   store.dispatch(labelled);
 }
 
