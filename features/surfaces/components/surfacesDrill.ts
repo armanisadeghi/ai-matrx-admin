@@ -9,11 +9,11 @@ export const SURFACES_DRILL: MatrxDataTableLocalDrillConfig = {
   local: true,
   rowNoun: "surface",
   countLabel: "Surfaces",
-  dimensions: ["client_name", "readiness", "is_active", "executor_name", "sort_order"],
+  dimensions: ["client_name", "readiness", "is_active", "executor_name"],
   measures: ["count", "sum_agentCount", "sum_toolCount", "sum_surfaceValueCount"],
   levels: {
     client_name: {
-      breakouts: ["readiness", "is_active", "executor_name", "sort_order"],
+      breakouts: ["readiness", "is_active", "executor_name"],
       attributes: [],
       show: ["count", "sum_agentCount", "sum_toolCount", "sum_surfaceValueCount"],
     },
