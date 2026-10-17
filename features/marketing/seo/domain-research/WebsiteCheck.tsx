@@ -90,7 +90,7 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
   const spent = [authority, links, searchAds, linkRows].reduce((sum, c) => sum + (c.view?.points_charged ?? 0), 0);
 
   return (
-    <div className="flex flex-col gap-4" data-website-check={host}>
+    <div className="flex flex-col gap-6 sm:gap-8" data-website-check={host}>
       <section aria-label="Check this website" className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
         <div className="min-w-[12rem] flex-1">
           <div className="break-all text-base font-semibold text-foreground">{host}</div>
