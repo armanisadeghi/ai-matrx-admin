@@ -1,6 +1,6 @@
 // scripts/shape-shot.mjs — screenshot one app route in headless Chromium, signed in through the
 // single-use dev-login nonce (the in-app browser pane blocks the sealed kind frame; this does not).
-//   node scripts/shape-shot.mjs <path> <out.png> [--member] [--dark] [--width=1200] [--height=900] [--wait=12000] [--click="text"]
+//   node scripts/shape-shot.mjs <path> <out.png> [--member] [--dark] [--width=1200] [--height=900] [--wait=12000] [--type="text then Enter in the first input"] [--click="text"]
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -27,9 +27,18 @@ const context = await browser.newContext({
 const page = await context.newPage();
 const bad = [];
 page.on("console", (m) => m.type() === "error" && bad.push(m.text().slice(0, 200)));
-await page.goto(open, { waitUntil: "domcontentloaded", timeout: 180000 });
+await page.goto(open, { waitUntil: "commit", timeout: 180000 }).catch(() => {});
+await page.waitForTimeout(4000);
 await page.goto(`${origin}${path}`, { waitUntil: "domcontentloaded", timeout: 180000 });
 await page.waitForTimeout(Number(flag("wait", 12000)));
+const typed = flag("type", "");
+if (typed) {
+  const box = page.locator('input[placeholder^="e.g."], textarea[placeholder^="e.g."]').first();
+  await box.waitFor({ timeout: 150000 });
+  await box.fill(typed);
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(Number(flag("wait", 12000)));
+}
 const click = flag("click", "");
 if (click) {
   await page.getByText(click, { exact: false }).first().click();
