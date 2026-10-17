@@ -12,7 +12,7 @@ import type { FloatingFrameSize } from "@ai-matrx/summon/lite";
  * shared z-order, drawer below 768). Lazy so the 59 docked call sites do not
  * pay for it, and `ssr: false` for the same reason the docked panel is.
  */
-const MatrxFloatingFrame = dynamic(
+const LiteWindow = dynamic(
   () =>
     import("@ai-matrx/summon/lite").then((m) => m.LiteWindow),
   { ssr: false },
@@ -239,7 +239,7 @@ export function MatrxDynamicPanelHost({
     // docked hooks above are inert for it (their effects bail on `open` or on
     // the missing panel ref), so nothing double-fires.
     return (
-      <MatrxFloatingFrame
+      <LiteWindow
         id={floatingId ?? `lite-${titleId}`}
         title={title}
         description={description}
@@ -259,7 +259,7 @@ export function MatrxDynamicPanelHost({
         initialFocus={focusOnOpen}
       >
         {children}
-      </MatrxFloatingFrame>
+      </LiteWindow>
     );
   }
 

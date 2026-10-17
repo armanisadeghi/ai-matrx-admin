@@ -7,9 +7,9 @@
  * component — that would pull the entire registry chunk graph into the
  * boot bundle and trip the lazy-bundle-guard.
  *
- * The window itself (`notesWindow`) is registered in
- * `windowRegistry.ts` and rendered by `UnifiedOverlayController`. We
- * just toggle the overlay's open/close state via Redux. Active state
+ * The window itself (`notesWindow`) is a summon overlay
+ * (features/overlays/definitions) rendered by the app's SummonHost. We
+ * just toggle the overlay's open/close state. Active state
  * for the button comes from the same selector — no local useState.
  */
 

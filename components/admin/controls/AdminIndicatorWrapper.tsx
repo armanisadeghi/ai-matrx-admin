@@ -3,11 +3,11 @@
 
 /**
  * AdminIndicatorWrapper — admin-only ambient services that don't fit the
- * window-panels registry contract.
+ * summon overlay contract.
  *
  * The floating admin chip itself (`<AdminIndicator/>`) is now registered
- * as `overlayId: "adminIndicator"` in `windowRegistry.ts` and rendered by
- * the unified `OverlayWorldHost`. This wrapper retains:
+ * as the summon overlay `adminIndicator` (features/overlays/definitions) and
+ * rendered by `OverlayWorldHost`'s SummonHost. This wrapper retains:
  *   1. AdminDebugContextCollector — always-on for super admins; captures
  *      pathname, console errors, and browser metadata for the
  *      copy-context workflow.

@@ -11,10 +11,7 @@ export const TASKS_DRILL: MatrxDataTableLocalDrillConfig = {
   rowNoun: "task",
   countLabel: "Tasks",
   dimensions: ["status", "project", "priority", "dueDate", "updated"],
-  measures: ["count", "projects"],
-  extraMeasures: [
-    { key: "projects", label: "Projects", additive: false, op: "count_distinct", of: "project" },
-  ],
+  measures: ["count"],
   levels: {
     project: {
       breakouts: ["status", "priority", "dueDate:month"],
@@ -22,14 +19,14 @@ export const TASKS_DRILL: MatrxDataTableLocalDrillConfig = {
       show: ["count"],
     },
     status: {
-      breakouts: ["project", "priority", "dueDate:month", "updated:month"],
+      breakouts: ["project", "priority", "dueDate:month"],
       attributes: [],
-      show: ["count", "projects"],
+      show: ["count"],
     },
     priority: {
       breakouts: ["status", "project", "dueDate:month"],
       attributes: [],
-      show: ["count", "projects"],
+      show: ["count"],
     },
   },
 };

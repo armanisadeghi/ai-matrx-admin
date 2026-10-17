@@ -16,7 +16,7 @@
  *
  * The nested-portal wiring this file did by hand (`useNestedPortalContainer`)
  * is now the package's `PortalContainerProvider` seam, fed by
- * `DialogContent` and `features/window-panels/popout/PopoutShell.tsx`. Pass an
+ * `DialogContent` and summon's `PopoutShell` (`@ai-matrx/summon/window`). Pass an
  * explicit `container` on `TooltipContent` to override it.
  *
  * EVERY `title` IS THIS TOOLTIP (design-system, 2026-09-28). The root

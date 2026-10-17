@@ -13,12 +13,12 @@ export const OUTREACH_LISTS_DRILL: MatrxDataTableLocalDrillConfig = {
   measures: ["count", "sum_members", "max_members"],
   levels: {
     status: {
-      breakouts: ["list_kind", "started_at:month", "updated_at:month"],
+      breakouts: ["list_kind", "updated_at:month"],
       attributes: [],
       show: ["count", "sum_members", "max_members"],
     },
     list_kind: {
-      breakouts: ["status", "started_at:month", "updated_at:month"],
+      breakouts: ["status", "updated_at:month"],
       attributes: [],
       show: ["count", "sum_members", "max_members"],
     },

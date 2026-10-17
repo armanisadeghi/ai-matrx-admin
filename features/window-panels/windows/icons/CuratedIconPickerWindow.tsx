@@ -37,7 +37,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 export interface CuratedIconPickerWindowProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Auto-passed by `OverlaySurface` for multi-instance windows. */
+  /** Passed by the render module for multi-instance windows. */
   instanceId: string;
   /** From overlay data — connects events back to the opener. */
   callbackGroupId?: string | null;

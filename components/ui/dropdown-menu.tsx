@@ -10,7 +10,7 @@
  *
  * The host `useNestedPortalContainer` wiring is now the package's
  * `usePortalContainer` seam, fed by `DialogContent` and by
- * `features/window-panels/popout/PopoutShell.tsx`. An explicit `container`
+ * summon's `PopoutShell` (`@ai-matrx/summon/window`). An explicit `container`
  * prop still wins, exactly as before.
  */
 

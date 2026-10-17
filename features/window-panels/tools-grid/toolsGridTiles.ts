@@ -16,7 +16,7 @@
  * from the registry unless overridden for a tile-specific name).
  *
  * **Agent-family tiles:** each `label` should match the `label` on the
- * matching entry in `features/window-panels/registry/windowRegistry.ts`
+ * overlay definition in `features/overlays/definitions/`
  * (same `overlayId`). New grid-only entries are suffixed with ` (new)`.
  */
 import type { LucideIcon } from "lucide-react";
@@ -421,7 +421,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     seedData: () => ({ instanceId: "default" }),
   },
 
-  // ── Agents (labels match windowRegistry `label` for each overlayId) ───
+  // ── Agents (labels match the definition `label` for each overlayId) ───
   {
     id: "tile.agent-run",
     label: "Chat",
@@ -825,7 +825,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "creatorHub",
   },
 
-  // ── Admin (incl. agent debug / widgets — labels match windowRegistry) ──
+  // ── Admin (incl. agent debug / widgets — labels match the definitions) ──
   {
     id: "tile.agent-debug",
     label: "Agent Debug",

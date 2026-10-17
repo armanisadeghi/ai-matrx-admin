@@ -20,8 +20,10 @@ describe("Keyword Research responsive contract", () => {
       ),
       "utf8",
     );
+    // The window chrome ships in @ai-matrx/summon; read the built module the
+    // app actually runs (its MobileHeader holds the phone close/back targets).
     const mobileHeaderSource = readFileSync(
-      join(__dirname, "../../../window-panels/WindowPanel/MobileHeader.tsx"),
+      join(process.cwd(), "node_modules/@ai-matrx/summon/dist/window.js"),
       "utf8",
     );
 

@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * FullScreenMarkdownEditorBridge — registry adapter for `FullScreenMarkdownEditor`.
+ * FullScreenMarkdownEditorBridge — overlay adapter for `FullScreenMarkdownEditor`.
  *
- * `UnifiedOverlayController` -> `OverlaySurface` spreads the overlay's `data`
- * payload onto the registered component as props. Our overlay data shape
+ * Summon's SummonHost hands the overlay's `data` payload to the render module,
+ * which spreads it onto this component as props. Our overlay data shape
  * (defined by `openFullScreenEditor` in `@ai-matrx/summon`)
  * uses keys `content` and the surface injects `onClose` — but
  * `FullScreenMarkdownEditor` exposes its props as `initialContent` and
@@ -12,10 +12,7 @@
  * undefined (renders empty) and `onCancel` undefined (Esc/Cancel were no-ops,
  * which felt like a hard freeze).
  *
- * This bridge mirrors the legacy glue code that used to live inline in
- * `features/overlays/host/OverlayWorldHost.tsx` (deleted 2026-05-06 — only
- * `UnifiedOverlayController` is mounted in `app/DeferredSingletons.tsx` and
- * `app/(public)/PublicProviders.tsx`). It:
+ * This bridge holds the glue that once lived inline in the overlay host. It:
  *
  *   1. maps `content` → `initialContent` and `onClose` → `onCancel`
  *   2. wires `onChange` to mirror every keystroke into `summon overlay state` so
@@ -25,8 +22,8 @@
  *        - "free" / undefined  → falls back to a legacy `onSave` callback if
  *          the caller provided one (kept for unmigrated call sites)
  *
- * Use this bridge as the registry's `componentImport` target — never import
- * `FullScreenMarkdownEditor` directly from `windowRegistry.ts`.
+ * Use this bridge as the overlay's render target — never render
+ * `FullScreenMarkdownEditor` directly from the overlay definition.
  */
 
 import { useCallback } from "react";
@@ -53,7 +50,7 @@ interface FullScreenMarkdownEditorBridgeProps {
   isOpen: boolean;
   instanceId?: string;
   onClose: () => void;
-  // Data payload spread from overlay state by OverlaySurface:
+  // Data payload spread from summon overlay state:
   content?: string;
   mode?: FullScreenEditorMode;
   conversationId?: string;

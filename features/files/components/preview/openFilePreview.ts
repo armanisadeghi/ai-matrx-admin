@@ -3,10 +3,10 @@
  *
  * Imperative entry point for "open this file's preview from anywhere".
  * Dispatches an `openOverlay` action against the `filePreviewWindow`
- * registry entry — the UnifiedOverlayController picks it up and mounts
+ * summon overlay — the app's SummonHost picks it up and mounts
  * a draggable, resizable WindowPanel wrapping the canonical
- * [PreviewPane](../surfaces/PreviewPane.tsx). On mobile the registry's
- * `mobilePresentation: "fullscreen"` takes the same surface fullscreen.
+ * [PreviewPane](../surfaces/PreviewPane.tsx). On mobile the definition's
+ * `window.mobile: "fullscreen"` takes the same surface fullscreen.
  *
  * Why this replaces the old `<CloudFilesPreviewHost />` Dialog: every
  * preview surface in the app must give users the same level of access

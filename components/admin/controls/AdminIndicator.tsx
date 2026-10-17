@@ -26,7 +26,7 @@ interface Position {
  */
 interface AdminIndicatorProps {
   isOpen?: boolean;
-  // Accepted for OverlaySurface contract; intentionally unused — the chip
+  // Accepted for the summon render contract; intentionally unused — the chip
   // is closed via the same toggleOverlay action used to open it.
   onClose?: () => void;
 }
