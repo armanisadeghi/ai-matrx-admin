@@ -29,6 +29,8 @@ export interface PostJsonAsUserArgs {
   path: string;
   body?: Record<string, unknown>;
   signal?: AbortSignal;
+  /** Default POST; PATCH for a partial edit route. */
+  method?: "POST" | "PATCH";
 }
 
 export async function postJsonAsUser<T = unknown>({
@@ -38,6 +40,7 @@ export async function postJsonAsUser<T = unknown>({
   path,
   body = {},
   signal,
+  method = "POST",
 }: PostJsonAsUserArgs): Promise<T> {
   const base = baseUrl.replace(/\/+$/, "");
   const transport = createMatrxTransport({
@@ -51,7 +54,7 @@ export async function postJsonAsUser<T = unknown>({
   // `buildMatrxRequestUrl` owns the leading-`/api/` strip; keep its path.
   const url = buildMatrxRequestUrl(base, path);
   const response = await transport.fetch(url.slice(base.length), {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
     ...(signal ? { signal } : {}),
