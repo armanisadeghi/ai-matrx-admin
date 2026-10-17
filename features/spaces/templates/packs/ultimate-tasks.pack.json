@@ -1,0 +1,1978 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0107",
+  "version": 1,
+  "title": "Ultimate Tasks",
+  "description": "Inbox, focus lists and projects, with a daily journal, estimates and repeating tasks.",
+  "forWho": "Individuals and tiny teams who run on tasks",
+  "icon": {
+    "emoji": "✅"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "tasks",
+    "todo",
+    "gtd",
+    "journal"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-ultimate-tasks",
+    "catalogueId": "SP0107",
+    "useCase": "Mireille Castellanos runs a three-person design studio and uses this to capture every task, pick what matters today and reflect at the end of the day.",
+    "industry": "cross_industry",
+    "vertical": "Personal productivity",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Oak Hollow Studio",
+      "describes": "A three-person design studio working with local shops and nonprofits.",
+      "address": {
+        "line1": "410 Millbrook Terrace",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97205",
+        "country": "US"
+      },
+      "phone": "(503) 555-0160",
+      "website": "oakhollow-studio.net",
+      "email": "hello@oakhollow-studio.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-ultimate-tasks",
+    "tables": [
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "project_name",
+        "describes": "The bigger outcomes, each with its tasks and how many are done.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "state",
+            "label": "State",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "Active",
+              "Done"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "Active": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Active"
+          },
+          {
+            "key": "target_on",
+            "label": "Target date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "tasks",
+            "label": "Tasks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "task_count",
+            "label": "Task count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "done_count",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "minutes_total",
+            "label": "Minutes planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "minutes",
+            "agg": "sum"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pj-1",
+            "values": {
+              "project_name": "Redo the studio website",
+              "state": "Active",
+              "target_on": "@today+30d",
+              "tasks": [
+                "tk-01",
+                "tk-02",
+                "tk-03",
+                "tk-04",
+                "tk-05",
+                "tk-06"
+              ]
+            }
+          },
+          {
+            "key": "pj-2",
+            "values": {
+              "project_name": "Tax and bookkeeping catch-up",
+              "state": "Active",
+              "target_on": "@today+12d",
+              "tasks": [
+                "tk-07",
+                "tk-08",
+                "tk-09",
+                "tk-10"
+              ]
+            }
+          },
+          {
+            "key": "pj-3",
+            "values": {
+              "project_name": "Plan the autumn workshop series",
+              "state": "Planning",
+              "target_on": "@today+55d",
+              "tasks": [
+                "tk-11",
+                "tk-12",
+                "tk-13"
+              ]
+            }
+          },
+          {
+            "key": "pj-4",
+            "values": {
+              "project_name": "Move to a new office",
+              "state": "Planning",
+              "target_on": "@today+90d",
+              "tasks": [
+                "tk-14",
+                "tk-15"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "tasks": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Every task with its status, focus, due day, estimate and tags.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inbox",
+              "To do",
+              "Doing",
+              "Done"
+            ],
+            "choiceColors": {
+              "Inbox": "slate",
+              "To do": "violet",
+              "Doing": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Inbox"
+          },
+          {
+            "key": "focus",
+            "label": "Focus",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Now",
+              "Soon",
+              "Someday"
+            ],
+            "choiceColors": {
+              "Now": "red",
+              "Soon": "amber",
+              "Someday": "slate"
+            },
+            "required": true,
+            "default": "Someday"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "tags",
+            "label": "Tags",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "writing",
+              "design",
+              "dev",
+              "admin",
+              "money",
+              "errand",
+              "home"
+            ],
+            "choiceColors": {
+              "writing": "slate",
+              "design": "blue",
+              "dev": "amber",
+              "admin": "green",
+              "money": "red",
+              "errand": "violet",
+              "home": "teal"
+            }
+          },
+          {
+            "key": "recurrence",
+            "label": "Repeats",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "None",
+              "Weekly",
+              "Monthly"
+            ],
+            "choiceColors": {
+              "None": "slate",
+              "Weekly": "blue",
+              "Monthly": "violet"
+            },
+            "required": true,
+            "default": "None"
+          },
+          {
+            "key": "minutes",
+            "label": "Estimate (minutes)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "assignee",
+            "label": "Assignee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "days_left",
+            "label": "Days until due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tk-01",
+            "values": {
+              "task_name": "Buy a domain for the new site",
+              "status": "Done",
+              "focus": "Soon",
+              "due_on": "@today-6d",
+              "priority": "Medium",
+              "tags": [
+                "errand"
+              ],
+              "recurrence": "None",
+              "minutes": 15,
+              "assignee": "tm-mireille"
+            }
+          },
+          {
+            "key": "tk-02",
+            "values": {
+              "task_name": "Sketch three homepage layouts",
+              "status": "Done",
+              "focus": "Soon",
+              "due_on": "@today-4d",
+              "priority": "High",
+              "tags": [
+                "design"
+              ],
+              "recurrence": "None",
+              "minutes": 180,
+              "assignee": "tm-mireille"
+            }
+          },
+          {
+            "key": "tk-03",
+            "values": {
+              "task_name": "Write the About page copy",
+              "status": "Doing",
+              "focus": "Now",
+              "due_on": "@today",
+              "priority": "High",
+              "tags": [
+                "writing"
+              ],
+              "recurrence": "None",
+              "minutes": 90,
+              "assignee": "tm-mireille"
+            }
+          },
+          {
+            "key": "tk-04",
+            "values": {
+              "task_name": "Choose a new font pairing",
+              "status": "To do",
+              "focus": "Now",
+              "due_on": "@today",
+              "priority": "Low",
+              "tags": [
+                "design"
+              ],
+              "recurrence": "None",
+              "minutes": 30,
+              "assignee": "tm-mireille"
+            }
+          },
+          {
+            "key": "tk-05",
+            "values": {
+              "task_name": "Move the blog posts to the new site",
+              "status": "To do",
+              "focus": "Soon",
+              "due_on": "@today+4d",
+              "priority": "Medium",
+              "tags": [
+                "writing",
+                "dev"
+              ],
+              "recurrence": "None",
+              "minutes": 120,
+              "assignee": "tm-jasper"
+            }
+          },
+          {
+            "key": "tk-06",
+            "values": {
+              "task_name": "Set up redirects from old pages",
+              "status": "To do",
+              "focus": "Soon",
+              "due_on": "@today+6d",
+              "priority": "Medium",
+              "tags": [
+                "dev"
+              ],
+              "recurrence": "None",
+              "minutes": 60,
+              "assignee": "tm-jasper"
+            }
+          },
+          {
+            "key": "tk-07",
+            "values": {
+              "task_name": "Reconcile the bank statement",
+              "status": "Doing",
+              "focus": "Now",
+              "due_on": "@today",
+              "priority": "High",
+              "tags": [
+                "admin"
+              ],
+              "recurrence": "Monthly",
+              "minutes": 60,
+              "assignee": "tm-anwen"
+            }
+          },
+          {
+            "key": "tk-08",
+            "values": {
+              "task_name": "Collect receipts from the shared folder",
+              "status": "To do",
+              "focus": "Now",
+              "due_on": "@today",
+              "priority": "Medium",
+              "tags": [
+                "admin"
+              ],
+              "recurrence": "Weekly",
+              "minutes": 30,
+              "assignee": "tm-anwen"
+            }
+          },
+          {
+            "key": "tk-09",
+            "values": {
+              "task_name": "Send the quarterly tax estimate",
+              "status": "To do",
+              "focus": "Soon",
+              "due_on": "@today+8d",
+              "priority": "High",
+              "tags": [
+                "admin",
+                "money"
+              ],
+              "recurrence": "None",
+              "minutes": 45,
+              "assignee": "tm-anwen"
+            }
+          },
+          {
+            "key": "tk-10",
+            "values": {
+              "task_name": "Chase two overdue invoices",
+              "status": "To do",
+              "focus": "Now",
+              "due_on": "@today-2d",
+              "priority": "High",
+              "tags": [
+                "money"
+              ],
+              "recurrence": "None",
+              "minutes": 20,
+              "assignee": "tm-anwen"
+            }
+          },
+          {
+            "key": "tk-11",
+            "values": {
+              "task_name": "Draft the workshop outline",
+              "status": "To do",
+              "focus": "Someday",
+              "due_on": "@today+20d",
+              "priority": "Medium",
+              "tags": [
+                "writing"
+              ],
+              "recurrence": "None",
+              "minutes": 120,
+              "assignee": "tm-mireille"
+            }
+          },
+          {
+            "key": "tk-12",
+            "values": {
+              "task_name": "Ask three venues for a quote",
+              "status": "Inbox",
+              "focus": "Someday",
+              "due_on": "@today+25d",
+              "priority": "Low",
+              "tags": [
+                "errand"
+              ],
+              "recurrence": "None",
+              "minutes": 45,
+              "assignee": "tm-anwen"
+            }
+          },
+          {
+            "key": "tk-13",
+            "values": {
+              "task_name": "Book the photographer for headshots",
+              "status": "Inbox",
+              "focus": "Someday",
+              "due_on": "@today+40d",
+              "priority": "Low",
+              "tags": [
+                "errand"
+              ],
+              "recurrence": "None",
+              "minutes": 20,
+              "assignee": "tm-anwen"
+            }
+          },
+          {
+            "key": "tk-14",
+            "values": {
+              "task_name": "Tour the Hawthorne Street office",
+              "status": "To do",
+              "focus": "Soon",
+              "due_on": "@today+5d",
+              "priority": "Medium",
+              "tags": [
+                "errand"
+              ],
+              "recurrence": "None",
+              "minutes": 90,
+              "assignee": "tm-mireille"
+            }
+          },
+          {
+            "key": "tk-15",
+            "values": {
+              "task_name": "Compare office internet plans",
+              "status": "Inbox",
+              "focus": "Someday",
+              "due_on": "@today+60d",
+              "priority": "Low",
+              "tags": [
+                "admin"
+              ],
+              "recurrence": "None",
+              "minutes": 30,
+              "assignee": "tm-jasper"
+            }
+          },
+          {
+            "key": "tk-16",
+            "values": {
+              "task_name": "Water the studio plants",
+              "status": "To do",
+              "focus": "Now",
+              "due_on": "@today",
+              "priority": "Low",
+              "tags": [
+                "home"
+              ],
+              "recurrence": "Weekly",
+              "minutes": 10,
+              "assignee": "tm-jasper"
+            }
+          },
+          {
+            "key": "tk-17",
+            "values": {
+              "task_name": "Renew the software licenses",
+              "status": "Inbox",
+              "focus": "Soon",
+              "due_on": "@today+9d",
+              "priority": "Medium",
+              "tags": [
+                "admin",
+                "money"
+              ],
+              "recurrence": "None",
+              "minutes": 25,
+              "assignee": "tm-anwen"
+            }
+          },
+          {
+            "key": "tk-18",
+            "values": {
+              "task_name": "Reply to the podcast invitation",
+              "status": "Inbox",
+              "focus": "Now",
+              "due_on": "@today+1d",
+              "priority": "Medium",
+              "tags": [
+                "writing"
+              ],
+              "recurrence": "None",
+              "minutes": 15,
+              "assignee": "tm-mireille"
+            }
+          },
+          {
+            "key": "tk-19",
+            "values": {
+              "task_name": "Back up the design files",
+              "status": "To do",
+              "focus": "Soon",
+              "due_on": "@today+3d",
+              "priority": "High",
+              "tags": [
+                "dev"
+              ],
+              "recurrence": "Weekly",
+              "minutes": 30,
+              "assignee": "tm-jasper"
+            }
+          },
+          {
+            "key": "tk-20",
+            "values": {
+              "task_name": "Clear the desk drawer",
+              "status": "Done",
+              "focus": "Someday",
+              "due_on": "@today-10d",
+              "priority": "Low",
+              "tags": [
+                "home"
+              ],
+              "recurrence": "None",
+              "minutes": 25,
+              "assignee": "tm-jasper"
+            }
+          }
+        ],
+        "independentOf": {
+          "assignee": "Anyone can take a task."
+        }
+      },
+      {
+        "token": "journal",
+        "name": "Journal",
+        "labelSingular": "Journal entry",
+        "labelPlural": "Journal",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "notebook-pen",
+        "titleField": "headline",
+        "describes": "A few lines at the end of each day: the win, the lesson, the mood.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "headline",
+            "label": "Win of the day",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "entry_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reflection",
+            "label": "Reflection",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "mood",
+            "label": "Mood",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Great",
+              "Good",
+              "Okay",
+              "Rough"
+            ],
+            "choiceColors": {
+              "Great": "green",
+              "Good": "teal",
+              "Okay": "amber",
+              "Rough": "red"
+            }
+          },
+          {
+            "key": "tasks_planned",
+            "label": "Tasks planned",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "relationMax": 10,
+            "multi": true
+          }
+        ],
+        "rows": [
+          {
+            "key": "jn-1",
+            "values": {
+              "headline": "Shipped the About page draft",
+              "entry_on": "@today-1d",
+              "reflection": "Focused after lunch. Skipped the inbox until three.",
+              "mood": "Good",
+              "tasks_planned": [
+                "tk-03",
+                "tk-07"
+              ]
+            }
+          },
+          {
+            "key": "jn-2",
+            "values": {
+              "headline": "Two invoices sent",
+              "entry_on": "@today-2d",
+              "reflection": "Too many meetings; the afternoon vanished.",
+              "mood": "Okay",
+              "tasks_planned": [
+                "tk-10"
+              ]
+            }
+          },
+          {
+            "key": "jn-3",
+            "values": {
+              "headline": "Chose the homepage direction",
+              "entry_on": "@today-3d",
+              "reflection": "Felt clear. Walked at lunch.",
+              "mood": "Great",
+              "tasks_planned": [
+                "tk-02"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "tasks_planned": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A project is made of tasks.",
+        "fromTable": "project",
+        "fromField": "tasks",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "project"
+      },
+      {
+        "describes": "Assignee links to team_member.",
+        "fromTable": "task",
+        "fromField": "assignee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks_assigned"
+      },
+      {
+        "describes": "The tasks planned for that day.",
+        "fromTable": "journal",
+        "fromField": "tasks_planned",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "journal"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-mireille",
+            "values": {
+              "full_name": "Mireille Castellanos",
+              "role": "Owner and lead designer",
+              "work_email": "mireille@oakhollow-studio.net",
+              "mobile": "(503) 555-0161",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-jasper",
+            "values": {
+              "full_name": "Jasper Linwood",
+              "role": "Developer",
+              "work_email": "jasper@oakhollow-studio.net",
+              "mobile": "(503) 555-0162",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-anwen",
+            "values": {
+              "full_name": "Anwen Pritchard",
+              "role": "Account manager",
+              "work_email": "anwen@oakhollow-studio.net",
+              "mobile": "(503) 555-0163",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "quick_capture",
+        "name": "Quick capture",
+        "describes": "Drop a task in the Inbox in ten seconds.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What is on your mind?",
+            "required": true
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "Does it have a due day?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How important is it?"
+          }
+        ],
+        "submitLabel": "Add to the Inbox",
+        "confirmation": "Captured. It is in the Inbox."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "Board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_focus",
+        "name": "By focus",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "focus"
+      },
+      {
+        "token": "task_priority",
+        "name": "By priority",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "priority"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "target_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "project_board",
+        "name": "By state",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "state"
+      },
+      {
+        "token": "project_calendar",
+        "name": "Targets",
+        "table": "project",
+        "kind": "calendar",
+        "dateField": "target_on",
+        "allDay": true
+      },
+      {
+        "token": "all_journal",
+        "name": "All entries",
+        "table": "journal",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "entry_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "journal_calendar",
+        "name": "Calendar",
+        "table": "journal",
+        "kind": "calendar",
+        "dateField": "entry_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Tasks assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every task, its status, focus, due day and estimate."
+        },
+        {
+          "name": "related_tables",
+          "table": "project",
+          "describes": "The projects tasks belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many tasks are waiting in the Inbox?",
+        "whyItMatters": "Mireille empties the Inbox every Friday.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Inbox"
+          },
+          "answer": 5,
+          "unit": "tasks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open tasks by focus.",
+        "action": {
+          "kind": "open",
+          "surface": "task_focus"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_focus",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open the journal calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "journal_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "journal_calendar",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "oakhollow-studio.net"
+      ],
+      "fictionalStreets": [
+        "Millbrook Terrace"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "ultimate-tasks",
+      "parent": null,
+      "title": "Ultimate Tasks",
+      "icon": {
+        "emoji": "✅"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Capture everything in the Inbox, decide what matters this week, and pick a few things for Today. Views below slice the same tasks every way you need."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:today"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-reset"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:daily-journal"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-it-works"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Do now",
+                "icon": "List",
+                "filters": {
+                  "focus": "Now",
+                  "status": [
+                    "Inbox",
+                    "To do",
+                    "Doing"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "priority",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Inbox",
+                "icon": "List",
+                "filters": {
+                  "status": "Inbox"
+                },
+                "id": "view-1"
+              },
+              {
+                "layout": "kanban",
+                "name": "Board",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-2"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "due_on",
+                "id": "view-3"
+              },
+              {
+                "layout": "grid",
+                "name": "All tasks",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-4"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By state",
+                "icon": "SquareKanban",
+                "groupField": "state",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "Progress",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "target_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "today",
+      "parent": "ultimate-tasks",
+      "title": "Today",
+      "icon": {
+        "emoji": "☀️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Three to five things. If everything is Today, nothing is."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Doing now"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Doing",
+                "icon": "List",
+                "filters": {
+                  "status": "Doing"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Today’s list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Do now",
+                "icon": "List",
+                "filters": {
+                  "focus": "Now",
+                  "status": [
+                    "To do",
+                    "Inbox"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "priority",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Soon",
+                "icon": "Table",
+                "filters": {
+                  "focus": "Soon",
+                  "status": [
+                    "Inbox",
+                    "To do",
+                    "Doing"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "High priority, any day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "High",
+                "icon": "List",
+                "filters": {
+                  "priority": "High",
+                  "status": [
+                    "Inbox",
+                    "To do",
+                    "Doing"
+                  ]
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-reset",
+      "parent": "ultimate-tasks",
+      "title": "Weekly reset",
+      "icon": {
+        "emoji": "🔄"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fifteen minutes on Friday afternoon or Monday morning."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Empty the Inbox: every item gets a status and a focus"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Move finished tasks to Done and look at what is left"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Choose this week’s focus tasks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check each active project has a next task"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Look at the calendar for the next two weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inbox"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "To sort",
+                "icon": "List",
+                "filters": {
+                  "status": "Inbox"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Project progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Progress",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "target_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "chart",
+                "name": "Projects by state",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "state",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Where the time goes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Minutes by priority",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "priority",
+                  "op": "sum",
+                  "field": "minutes"
+                },
+                "id": "view-0"
+              },
+              {
+                "layout": "chart",
+                "name": "Tasks by status",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "status",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "daily-journal",
+      "parent": "ultimate-tasks",
+      "title": "Daily journal",
+      "icon": {
+        "emoji": "📓"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two minutes at the end of the day. A win, a lesson, a mood. Over time it shows what a good day looks like."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "journal",
+              "view": "all_journal"
+            },
+            "inline": true,
+            "title": "Journal",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Entries",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "entry_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "entry_on",
+                "id": "view-1"
+              },
+              {
+                "layout": "chart",
+                "name": "Mood",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "mood",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prompts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What moved forward today?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What took longer than expected?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is the first task tomorrow?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-it-works",
+      "parent": "ultimate-tasks",
+      "title": "How it works",
+      "icon": {
+        "emoji": "💡"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statuses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inbox",
+              "bold": true
+            },
+            {
+              "text": " — captured, not yet decided."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "To do",
+              "bold": true
+            },
+            {
+              "text": " — decided, waiting its turn."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Doing",
+              "bold": true
+            },
+            {
+              "text": " — started. Keep this list short."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Done",
+              "bold": true
+            },
+            {
+              "text": " — finished."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Focus"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Focus says when you intend to act. It is separate from the due day, so a task can be due in a week but still be today’s work."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Repeating tasks"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Set Repeats on a task. When you finish it, copy it forward with the next due day."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Estimates"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Estimates are in minutes. They help you see if Today fits in a day; they do not have to be accurate."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "ultimate-tasks",
+      "title": "People",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "People",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}

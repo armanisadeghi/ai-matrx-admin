@@ -1,0 +1,1618 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0108",
+  "version": 1,
+  "title": "Tech Spec & RFC Library",
+  "description": "Write and review technical proposals with status, risk, reviewers and a decision log.",
+  "forWho": "Engineering teams that review designs before building",
+  "icon": {
+    "emoji": "📐"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "docs",
+  "tags": [
+    "rfc",
+    "spec",
+    "design",
+    "engineering"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-tech-spec-rfc",
+    "catalogueId": "SP0108",
+    "useCase": "Anneliese Bergstrom is a principal engineer at a utility analytics company and uses this so every risky change has a written proposal, a named reviewer and a logged decision.",
+    "industry": "cross_industry",
+    "vertical": "Engineering",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Fathom Grid",
+      "describes": "Analytics software that helps small utilities forecast demand.",
+      "address": {
+        "line1": "61 Edgewater Quay",
+        "city": "Boston",
+        "region": "MA",
+        "postalCode": "02210",
+        "country": "US"
+      },
+      "phone": "(617) 555-0170",
+      "website": "fathomgrid.net",
+      "email": "hello@fathomgrid.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-tech-spec-rfc",
+    "tables": [
+      {
+        "token": "spec",
+        "name": "Specs",
+        "labelSingular": "Spec",
+        "labelPlural": "Specs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-code",
+        "titleField": "spec_title",
+        "describes": "Every proposal: who wrote it, who reviews it, its status, risk and the decision date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "spec_title",
+            "label": "Spec",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "In review",
+              "Approved",
+              "Implemented",
+              "Superseded"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "In review": "amber",
+              "Approved": "blue",
+              "Implemented": "green",
+              "Superseded": "gray"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Platform",
+              "API",
+              "Data",
+              "Security"
+            ],
+            "choiceColors": {
+              "Platform": "blue",
+              "API": "violet",
+              "Data": "teal",
+              "Security": "red"
+            }
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "reviewer",
+            "label": "Reviewer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "review_by",
+            "label": "Review deadline",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decided_on",
+            "label": "Decision date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "risk",
+            "label": "Risk",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "green",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "related",
+            "label": "Related spec",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "spec",
+            "relationMax": 1
+          },
+          {
+            "key": "doc_link",
+            "label": "Design doc",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sx-01",
+            "values": {
+              "spec_title": "Move job queue from cron to a durable scheduler",
+              "status": "Implemented",
+              "area": "Platform",
+              "author": "tm-cormac",
+              "reviewer": "tm-anneliese",
+              "decided_on": "@today-90d",
+              "review_by": "@today-100d",
+              "risk": "High",
+              "doc_link": "https://design.fathomgrid.net/specs/40"
+            }
+          },
+          {
+            "key": "sx-02",
+            "values": {
+              "spec_title": "Per-tenant rate limits on the public API",
+              "status": "Implemented",
+              "area": "API",
+              "author": "tm-marguerite",
+              "reviewer": "tm-cormac",
+              "decided_on": "@today-60d",
+              "review_by": "@today-70d",
+              "risk": "Medium",
+              "doc_link": "https://design.fathomgrid.net/specs/41"
+            }
+          },
+          {
+            "key": "sx-03",
+            "values": {
+              "spec_title": "Adopt structured logging across services",
+              "status": "Approved",
+              "area": "Platform",
+              "author": "tm-anneliese",
+              "reviewer": "tm-yuki",
+              "decided_on": "@today-14d",
+              "review_by": "@today-20d",
+              "risk": "Low",
+              "doc_link": "https://design.fathomgrid.net/specs/42",
+              "related": "sx-01"
+            }
+          },
+          {
+            "key": "sx-04",
+            "values": {
+              "spec_title": "Split the metrics store by retention tier",
+              "status": "Approved",
+              "area": "Data",
+              "author": "tm-lars",
+              "reviewer": "tm-cormac",
+              "decided_on": "@today-8d",
+              "review_by": "@today-12d",
+              "risk": "Medium",
+              "doc_link": "https://design.fathomgrid.net/specs/43"
+            }
+          },
+          {
+            "key": "sx-05",
+            "values": {
+              "spec_title": "Replace session cookies with short-lived tokens",
+              "status": "In review",
+              "area": "Security",
+              "author": "tm-zainab",
+              "reviewer": "tm-anneliese",
+              "decided_on": "@today+6d",
+              "review_by": "@today+5d",
+              "risk": "High",
+              "doc_link": "https://design.fathomgrid.net/specs/44"
+            }
+          },
+          {
+            "key": "sx-06",
+            "values": {
+              "spec_title": "Batch the nightly billing export",
+              "status": "In review",
+              "area": "Data",
+              "author": "tm-lars",
+              "reviewer": "tm-marguerite",
+              "decided_on": "@today+9d",
+              "review_by": "@today+8d",
+              "risk": "Medium",
+              "doc_link": "https://design.fathomgrid.net/specs/45"
+            }
+          },
+          {
+            "key": "sx-07",
+            "values": {
+              "spec_title": "Introduce feature flags for risky releases",
+              "status": "In review",
+              "area": "Platform",
+              "author": "tm-cormac",
+              "reviewer": "tm-yuki",
+              "decided_on": "@today+11d",
+              "review_by": "@today+10d",
+              "risk": "Low",
+              "doc_link": "https://design.fathomgrid.net/specs/46"
+            }
+          },
+          {
+            "key": "sx-08",
+            "values": {
+              "spec_title": "Webhook delivery with retries and signing",
+              "status": "Draft",
+              "area": "API",
+              "author": "tm-marguerite",
+              "reviewer": "tm-zainab",
+              "decided_on": "@today+20d",
+              "review_by": "@today+18d",
+              "risk": "Medium",
+              "doc_link": "https://design.fathomgrid.net/specs/47"
+            }
+          },
+          {
+            "key": "sx-09",
+            "values": {
+              "spec_title": "Multi-region read replicas",
+              "status": "Draft",
+              "area": "Platform",
+              "author": "tm-anneliese",
+              "reviewer": "tm-cormac",
+              "decided_on": "@today+35d",
+              "review_by": "@today+30d",
+              "risk": "High",
+              "doc_link": "https://design.fathomgrid.net/specs/48"
+            }
+          },
+          {
+            "key": "sx-10",
+            "values": {
+              "spec_title": "Archive customer data after 18 months",
+              "status": "Draft",
+              "area": "Data",
+              "author": "tm-lars",
+              "reviewer": "tm-zainab",
+              "decided_on": "@today+28d",
+              "review_by": "@today+24d",
+              "risk": "High",
+              "doc_link": "https://design.fathomgrid.net/specs/49"
+            }
+          },
+          {
+            "key": "sx-11",
+            "values": {
+              "spec_title": "Retire the v1 API",
+              "status": "Superseded",
+              "area": "API",
+              "author": "tm-marguerite",
+              "reviewer": "tm-yuki",
+              "decided_on": "@today-120d",
+              "review_by": "@today-130d",
+              "risk": "Medium",
+              "doc_link": "https://design.fathomgrid.net/specs/50"
+            }
+          }
+        ],
+        "datesIndependent": "The review deadline and decision date are planning dates that move on their own.",
+        "independentOf": {
+          "author": "Anyone can write a spec.",
+          "reviewer": "Anyone can review.",
+          "related": "Specs refer to each other without sharing a schedule."
+        }
+      },
+      {
+        "token": "decision",
+        "name": "Decision log",
+        "labelSingular": "Decision",
+        "labelPlural": "Decisions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "gavel",
+        "titleField": "decision_title",
+        "describes": "The choices each spec settled and why, in one line each.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "decision_title",
+            "label": "Decision",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "spec",
+            "label": "Spec",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "spec",
+            "relationMax": 1
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "decided_on",
+            "label": "Decided",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dc-1",
+            "values": {
+              "decision_title": "Use a managed durable scheduler",
+              "spec": "sx-01",
+              "reason": "Cron jobs were lost whenever a host restarted.",
+              "decided_on": "@today-92d"
+            }
+          },
+          {
+            "key": "dc-2",
+            "values": {
+              "decision_title": "Limit by tenant, not by IP",
+              "spec": "sx-02",
+              "reason": "Large customers share office addresses.",
+              "decided_on": "@today-62d"
+            }
+          },
+          {
+            "key": "dc-3",
+            "values": {
+              "decision_title": "Emit JSON logs with a request id",
+              "spec": "sx-03",
+              "reason": "Search across services needs one shape.",
+              "decided_on": "@today-16d"
+            }
+          },
+          {
+            "key": "dc-4",
+            "values": {
+              "decision_title": "Keep 7 days hot, 90 days warm",
+              "spec": "sx-04",
+              "reason": "Query patterns show nobody reads older data live.",
+              "decided_on": "@today-9d"
+            }
+          },
+          {
+            "key": "dc-5",
+            "values": {
+              "decision_title": "Retire v1 after two releases",
+              "spec": "sx-11",
+              "reason": "Fewer than 2% of calls still use it.",
+              "decided_on": "@today-125d"
+            }
+          }
+        ],
+        "independentOf": {
+          "spec": "A decision date is its own history."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Author links to team_member.",
+        "fromTable": "spec",
+        "fromField": "author",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "specs_authored"
+      },
+      {
+        "describes": "Reviewer links to team_member.",
+        "fromTable": "spec",
+        "fromField": "reviewer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "specs_reviewed"
+      },
+      {
+        "describes": "Related spec links to spec.",
+        "fromTable": "spec",
+        "fromField": "related",
+        "toTable": "spec",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "related_to"
+      },
+      {
+        "describes": "Spec links to spec.",
+        "fromTable": "decision",
+        "fromField": "spec",
+        "toTable": "spec",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "decisions"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-anneliese",
+            "values": {
+              "full_name": "Anneliese Bergstrom",
+              "role": "Principal engineer",
+              "work_email": "anneliese@fathomgrid.net",
+              "mobile": "(617) 555-0171",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-cormac",
+            "values": {
+              "full_name": "Cormac Delaney-Oyelaran",
+              "role": "Staff engineer",
+              "work_email": "cormac@fathomgrid.net",
+              "mobile": "(617) 555-0172",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-yuki",
+            "values": {
+              "full_name": "Yuki Hasegawa",
+              "role": "Engineering manager",
+              "work_email": "yuki@fathomgrid.net",
+              "mobile": "(617) 555-0173",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-marguerite",
+            "values": {
+              "full_name": "Marguerite Okoye",
+              "role": "Backend engineer",
+              "work_email": "marguerite@fathomgrid.net",
+              "mobile": "(617) 555-0174",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-lars",
+            "values": {
+              "full_name": "Lars Eriksson-Cho",
+              "role": "Data engineer",
+              "work_email": "lars@fathomgrid.net",
+              "mobile": "(617) 555-0175",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-zainab",
+            "values": {
+              "full_name": "Zainab Farouk",
+              "role": "Security engineer",
+              "work_email": "zainab@fathomgrid.net",
+              "mobile": "(617) 555-0176",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "spec_proposal",
+        "name": "Propose a spec",
+        "describes": "How an engineer opens a new proposal.",
+        "audience": "staff",
+        "table": "spec",
+        "fields": [
+          {
+            "fieldKey": "spec_title",
+            "ask": "What do you want to change or build?",
+            "required": true
+          },
+          {
+            "fieldKey": "area",
+            "ask": "Which area is it in?"
+          },
+          {
+            "fieldKey": "risk",
+            "ask": "How risky is it?"
+          },
+          {
+            "fieldKey": "review_by",
+            "ask": "When do you need a review by?"
+          }
+        ],
+        "submitLabel": "Start the spec",
+        "confirmation": "Thanks. A draft spec has been created."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_spec",
+        "name": "All specs",
+        "table": "spec",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "review_by",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "spec_board",
+        "name": "By status",
+        "table": "spec",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "spec_by_area",
+        "name": "By area",
+        "table": "spec",
+        "kind": "kanban",
+        "groupBy": "area"
+      },
+      {
+        "token": "spec_calendar",
+        "name": "Review deadlines",
+        "table": "spec",
+        "kind": "calendar",
+        "dateField": "review_by",
+        "allDay": true
+      },
+      {
+        "token": "spec_timeline",
+        "name": "Timeline",
+        "table": "spec",
+        "kind": "timeline",
+        "startField": "review_by",
+        "endField": "decided_on"
+      },
+      {
+        "token": "all_decision",
+        "name": "All decisions",
+        "table": "decision",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "decided_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Specs assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "spec",
+          "describes": "Every spec, its status, area, risk, author and reviewer."
+        },
+        {
+          "name": "related_tables",
+          "table": "decision",
+          "describes": "The decisions the specs settled."
+        }
+      ],
+      "question": {
+        "ask": "How many specs are in review?",
+        "whyItMatters": "Yuki checks the review queue each Monday.",
+        "expect": {
+          "table": "spec",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "In review"
+          },
+          "answer": 3,
+          "unit": "specs"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open specs by status.",
+        "action": {
+          "kind": "open",
+          "surface": "spec_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "spec_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the review calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "spec_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "spec_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the decision log.",
+        "action": {
+          "kind": "open",
+          "surface": "all_decision"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_decision",
+          "minItems": 4
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "fathomgrid.net"
+      ],
+      "fictionalStreets": [
+        "Edgewater Quay"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "tech-specs",
+      "parent": null,
+      "title": "Tech Specs & RFCs",
+      "icon": {
+        "emoji": "📐"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write a short spec before building anything that is hard to undo. Reviewers comment, the author decides, and the decision is logged."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:spec-outline"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:review-process"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:specs-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:decision-log"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Specs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spec",
+              "view": "all_spec"
+            },
+            "inline": true,
+            "title": "Specs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By area",
+                "icon": "SquareKanban",
+                "groupField": "area",
+                "id": "view-1"
+              },
+              {
+                "layout": "grid",
+                "name": "All specs",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "review_by",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-2"
+              },
+              {
+                "layout": "calendar",
+                "name": "Review deadlines",
+                "icon": "Calendar",
+                "dateField": "review_by",
+                "id": "view-3"
+              },
+              {
+                "layout": "list",
+                "name": "Needing review",
+                "icon": "List",
+                "filters": {
+                  "status": "In review"
+                },
+                "id": "view-4"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recent decisions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "decision",
+              "view": "all_decision"
+            },
+            "inline": true,
+            "title": "Decisions",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Latest",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "decided_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "All decisions",
+                "icon": "Table",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "spec-outline",
+      "parent": "tech-specs",
+      "title": "Spec outline",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Copy this outline into a new spec. Keep each section short; a good spec fits on two screens."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "FileText"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Summary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two sentences: what we will build and why now."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Context and goals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What problem are we solving, for whom?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How will we know it worked?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Non-goals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What are we deliberately not doing?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Proposal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The approach, with a diagram if it helps. Name the components and who owns them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Alternatives considered"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Alternative A"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "What it is, and why we did not choose it."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Alternative B"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "What it is, and why we did not choose it."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Risks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What could go wrong, and how will we notice?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rollout plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ship behind a flag."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enable for internal accounts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enable for ten percent of customers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Remove the old path."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open questions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Questions the review should answer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sign-off"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Author"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reviewer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Security review, if it touches data or sign-in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "review-process",
+      "parent": "tech-specs",
+      "title": "Review process",
+      "icon": {
+        "emoji": "🔎"
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write",
+              "bold": true
+            },
+            {
+              "text": " the spec from the outline and set a review deadline at least five working days out."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask",
+              "bold": true
+            },
+            {
+              "text": " one named reviewer and post the link in the engineering channel."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Comment",
+              "bold": true
+            },
+            {
+              "text": " in the doc. Reviewers say what they would change and why."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Decide",
+              "bold": true
+            },
+            {
+              "text": " by the deadline. The author makes the call and writes the reason."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log",
+              "bold": true
+            },
+            {
+              "text": " the decision, mark the spec Approved, and link follow-up tasks."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "When a spec is not needed"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Reversible changes under a few days of work do not need a spec."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "When to ask for a second reviewer"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Security, billing or anything touching customer data."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "specs-dashboard",
+      "parent": "tech-specs",
+      "title": "Specs dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "spec",
+                      "view": "all_spec"
+                    },
+                    "inline": true,
+                    "title": "Specs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Specs by status",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "spec",
+                      "view": "all_spec"
+                    },
+                    "inline": true,
+                    "title": "Specs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Specs by area",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "area",
+                          "op": "count"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "spec",
+                      "view": "all_spec"
+                    },
+                    "inline": true,
+                    "title": "Specs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Specs by risk",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "risk",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "High risk, not yet approved"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spec",
+              "view": "all_spec"
+            },
+            "inline": true,
+            "title": "Specs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "High risk",
+                "icon": "List",
+                "filters": {
+                  "risk": "High",
+                  "status": [
+                    "Draft",
+                    "In review"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "review_by",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reviews due soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spec",
+              "view": "all_spec"
+            },
+            "inline": true,
+            "title": "Specs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "In review",
+                "icon": "Table",
+                "filters": {
+                  "status": "In review"
+                },
+                "sorts": [
+                  {
+                    "field": "review_by",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "decision-log",
+      "parent": "tech-specs",
+      "title": "Decision log",
+      "icon": {
+        "emoji": "⚖️"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "decision",
+              "view": "all_decision"
+            },
+            "inline": true,
+            "title": "Decisions",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All decisions",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "decided_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Latest",
+                "icon": "List",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "tech-specs",
+      "title": "Engineers",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Engineers",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Engineers",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}
