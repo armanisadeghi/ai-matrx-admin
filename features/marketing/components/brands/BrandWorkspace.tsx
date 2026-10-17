@@ -493,17 +493,17 @@ function BusinessFactRow({
           data={fact}
           dataType="Agent"
         />
-        <RowActionButton title={canEdit ? "Edit fact" : "Only editors can edit"} disabled={!canEdit} onClick={onEdit}>
-          <Pencil className="h-3.5 w-3.5" />
-        </RowActionButton>
-        <RowActionButton
-          title={canEdit ? "Delete fact" : "Only editors can delete"}
-          destructive
-          disabled={!canEdit}
-          onClick={onDelete}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </RowActionButton>
+        {/* Viewers get copy only — the same rule as the hero's actions. */}
+        {canEdit ? (
+          <>
+            <RowActionButton title="Edit fact" onClick={onEdit}>
+              <Pencil className="h-3.5 w-3.5" />
+            </RowActionButton>
+            <RowActionButton title="Delete fact" destructive onClick={onDelete}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </RowActionButton>
+          </>
+        ) : null}
       </div>
     </li>
   );
@@ -1343,21 +1343,16 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       >
                         <ListTree className="h-3.5 w-3.5" />
                       </RowActionButton>
-                      <RowActionButton
-                        title={canEdit ? "Edit site" : "Only editors can edit"}
-                        disabled={!canEdit}
-                        onClick={() => setEditingSite(site)}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </RowActionButton>
-                      <RowActionButton
-                        title={canEdit ? "Delete site" : "Only editors can delete"}
-                        destructive
-                        disabled={!canEdit}
-                        onClick={() => setDeletingSite(site)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </RowActionButton>
+                      {canEdit ? (
+                        <>
+                          <RowActionButton title="Edit site" onClick={() => setEditingSite(site)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </RowActionButton>
+                          <RowActionButton title="Delete site" destructive onClick={() => setDeletingSite(site)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </RowActionButton>
+                        </>
+                      ) : null}
                     </div>
                   </li>
                 ))}
@@ -1476,21 +1471,16 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       }
                       dataType="Agent"
                     />
-                    <RowActionButton
-                      title={canEdit ? "Edit asset" : "Only editors can edit"}
-                      disabled={!canEdit}
-                      onClick={() => setAssetEditor({ open: true, asset })}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </RowActionButton>
-                    <RowActionButton
-                      title={canEdit ? "Delete asset" : "Only editors can delete"}
-                      destructive
-                      disabled={!canEdit}
-                      onClick={() => setDeletingAsset(asset)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </RowActionButton>
+                    {canEdit ? (
+                      <>
+                        <RowActionButton title="Edit asset" onClick={() => setAssetEditor({ open: true, asset })}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </RowActionButton>
+                        <RowActionButton title="Delete asset" destructive onClick={() => setDeletingAsset(asset)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </RowActionButton>
+                      </>
+                    ) : null}
                     </>
                   );
                 }}
