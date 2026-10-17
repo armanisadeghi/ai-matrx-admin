@@ -70,6 +70,15 @@ export function DrillOrList({
   const showList =
     firstScreen === "list" ? params.get("drill") !== "1" : params.get("rows") === "1" || listParams.some((k) => params.has(k));
   const go = (href: string) => pushAppHref(router, href);
+  // THE SWITCH KEEPS THE PAGE'S ADDRESS (2026-10-17: HR's "Drill-down" dropped the employer and pay
+  // period and fell back to the picker). Only the switch's own keys change; the page's filters and
+  // the drill question stay, so switching back lands on the same view.
+  const switchTo = (change: (next: URLSearchParams) => void) => {
+    const next = new URLSearchParams(params.toString());
+    change(next);
+    const query = next.toString();
+    go(query ? `${pathname}?${query}` : pathname);
+  };
 
   if (presence === "reading") return <div className="p-4"><div className="h-96 animate-pulse rounded-md bg-muted/50" /></div>;
 
@@ -86,7 +95,7 @@ export function DrillOrList({
     return (
       <div className="flex h-full min-h-0 flex-col">
         <div className="flex shrink-0 items-center gap-3 border-b px-4 py-1.5 text-xs text-muted-foreground">
-          <button type="button" className={switchClass} onClick={() => go(`${pathname}?drill=1`)} data-drill-open="">
+          <button type="button" className={switchClass} onClick={() => switchTo((next) => next.set("drill", "1"))} data-drill-open="">
             Drill-down
           </button>
         </div>
@@ -99,7 +108,7 @@ export function DrillOrList({
     return (
       <div className="flex h-full min-h-0 flex-col">
         <div className="flex shrink-0 items-center gap-3 border-b px-4 py-1.5 text-xs text-muted-foreground">
-          <button type="button" className={switchClass} onClick={() => go(pathname)} data-drill-open="">
+          <button type="button" className={switchClass} onClick={() => switchTo((next) => { next.delete("rows"); for (const key of listParams) next.delete(key); })} data-drill-open="">
             Drill-down
           </button>
         </div>
@@ -111,7 +120,7 @@ export function DrillOrList({
   return (
     <>
       {renderDrill(
-        <button type="button" className={switchClass} onClick={() => go(firstScreen === "list" ? pathname : `${pathname}?rows=1`)} data-drill-list="">
+        <button type="button" className={switchClass} onClick={() => switchTo((next) => (firstScreen === "list" ? next.delete("drill") : next.set("rows", "1")))} data-drill-list="">
           {listLabel}
         </button>,
       )}
