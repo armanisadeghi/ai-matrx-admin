@@ -106,10 +106,11 @@ export function usePagedOrganizations(archiveFilter: OrganizationArchiveFilter =
   };
 
   const showingSearch = serverSearch && search?.query === trimmed;
+  // While the server answers a new query, the loaded rows that already match stay on screen.
   const organizations = serverSearch
     ? showingSearch
       ? search.organizations
-      : []
+      : base.organizations.filter((org) => matchesOrganization(org, trimmed))
     : trimmed
       ? base.organizations.filter((org) => matchesOrganization(org, trimmed))
       : base.organizations;
