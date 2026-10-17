@@ -44,6 +44,12 @@ describe("what each Tool's input holds", () => {
     expect(adaptInput("data_app_store_reviews", "url", "https://apps.apple.com/us/app/x/id1")).toBe("https://apps.apple.com/us/app/x/id1");
   });
 
+  it("takes the package name out of a Google Play link, or builds the link a page-reading Tool wants", () => {
+    expect(adaptInput("play_store_reviews", "product_id", "https://play.google.com/store/apps/details?id=com.duolingo&hl=en")).toBe("com.duolingo");
+    expect(adaptInput("play_store_reviews", "product_id", "com.duolingo")).toBe("com.duolingo");
+    expect(adaptInput("data_google_play_reviews", "url", "com.spotify.music")).toBe("https://play.google.com/store/apps/details?id=com.spotify.music");
+  });
+
   it("reduces a Trustpilot page or a link to the website Trustpilot lists", () => {
     expect(adaptInput("customer_reviews", "domain", "https://www.trustpilot.com/review/www.apple.com")).toBe("www.apple.com");
     expect(adaptInput("customer_reviews", "domain", "https://www.example.com/about")).toBe("example.com");

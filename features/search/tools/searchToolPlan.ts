@@ -40,7 +40,7 @@ export const TOOL_LANES: Record<ToolTab, readonly ToolLane[]> = {
     { id: "maps", label: "Google Maps", jobKeys: ["place_reviews"] },
     { id: "trustpilot", label: "Trustpilot", jobKeys: ["customer_reviews", "data_trustpilot_reviews"] },
     { id: "appstore", label: "App Store", jobKeys: ["app_store_reviews", "data_app_store_reviews"] },
-    { id: "play", label: "Google Play", jobKeys: ["data_google_play_reviews"] },
+    { id: "play", label: "Google Play", jobKeys: ["play_store_reviews", "data_google_play_reviews"] },
   ],
   answers: [{ id: "ai", label: "AI answers", jobKeys: ["ai_visibility_mentions"] }],
 };
@@ -86,6 +86,10 @@ export function adaptInput(jobKey: string, inputName: string, value: string): st
   }
   if (jobKey === "data_app_store_reviews" && inputName === "url" && /^\d{6,}$/.test(v)) {
     return `https://apps.apple.com/us/app/id${v}`;
+  }
+  if (jobKey === "play_store_reviews" && inputName === "product_id") return /[?&]id=([\w.]+)/.exec(v)?.[1] ?? v;
+  if (jobKey === "data_google_play_reviews" && inputName === "url" && /^[a-z][\w]*(\.[\w]+)+$/i.test(v)) {
+    return `https://play.google.com/store/apps/details?id=${v}`;
   }
   if (jobKey === "customer_reviews" && inputName === "domain") return trustpilotDomain(v);
   if (jobKey === "data_trustpilot_reviews" && inputName === "url" && !/trustpilot\.com/i.test(v)) {
