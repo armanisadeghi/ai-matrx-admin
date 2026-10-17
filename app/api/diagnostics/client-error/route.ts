@@ -70,9 +70,13 @@ export async function POST(request: NextRequest) {
     .select("auth_user_id")
     .eq("fingerprint", parsed.data.fingerprint)
     .maybeSingle();
-  if (guestError || !guest) {
-    return NextResponse.json({ error: "Unknown guest identity" }, { status: 404 });
+  if (guestError) {
+    return NextResponse.json({ error: `Guest identity could not be read: ${guestError.message}` }, { status: 500 });
   }
+  // A signed-out visitor whose fingerprint has no guest row yet (it never ran anything) still had
+  // a real error on a real page: it is filed, never refused. Until 2026-10-16 this answered 404
+  // "Unknown guest identity" and every signed-out visitor's errors were dropped on the floor.
+  const authUserId = guest?.auth_user_id ?? null;
 
   // THE GUEST'S OWN ORGANIZATION. Every account gets exactly one organization
   // at signup, a guest included (migrations/guests_get_their_organization_at_signup.sql),
@@ -82,10 +86,7 @@ export async function POST(request: NextRequest) {
   // its auth user), or when signup left the guest with zero or several
   // memberships — a signup defect, which the row itself names so it is fixed,
   // never absorbed.
-  const { organizationId, organizationNote } = await resolveGuestOrganization(
-    admin,
-    guest.auth_user_id,
-  );
+  const { organizationId, organizationNote } = await resolveGuestOrganization(admin, authUserId);
   // An unregistered slug is never stored: a client that sends one is telling us
   // its map is wrong, and a wrong feature is harder to notice than a missing one.
   const sourceFeature =
@@ -108,16 +109,16 @@ export async function POST(request: NextRequest) {
         ? parsed.data.context
         : {}),
       fingerprint: parsed.data.fingerprint,
-      identity_state: "guest",
+      identity_state: guest ? "guest" : "anonymous",
       ...(organizationNote ? { organization_note: organizationNote } : {}),
     },
     source_app: "matrx-frontend",
     source_feature: sourceFeature,
-    user_id: guest.auth_user_id,
+    user_id: authUserId,
     organization_id: organizationId,
   } });
   if (error) {
-    return NextResponse.json({ error: "Failed to persist client error" }, { status: 500 });
+    return NextResponse.json({ error: `Failed to persist client error: ${error.message}` }, { status: 500 });
   }
   return NextResponse.json({ saved: true });
 }
