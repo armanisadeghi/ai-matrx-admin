@@ -20,10 +20,10 @@ import {
   type KindComponentProjection,
 } from "../registry/schema-source-kind-components";
 
-jest.mock("../registry/schema-source-kind-components", () => {
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components", () => {
   const actual = jest.requireActual<
-    typeof import("../registry/schema-source-kind-components")
-  >("../registry/schema-source-kind-components");
+    typeof import("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components")
+  >("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components");
   return {
     ...actual,
     listKindComponentsFromTables: jest.fn(),

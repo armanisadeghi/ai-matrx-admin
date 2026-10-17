@@ -38,7 +38,7 @@ import { envelopeFromCompleteValue } from "@ai-matrx/content-ir";
 
 import type { KindComponentProjection } from "../../registry/schema-source-kind-components";
 
-jest.mock("../../registry/schema-source-kind-components", () => {
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components", () => {
   const actual = jest.requireActual(
     "../../registry/schema-source-kind-components",
   );

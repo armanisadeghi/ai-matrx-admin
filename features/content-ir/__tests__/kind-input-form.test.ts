@@ -41,7 +41,7 @@ import {
   pairKindFieldsWithVariables,
 } from "../input/kind-input-values";
 
-jest.mock("../registry/schema-source-kind-components", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components", () => ({
   listKindComponentsFromTables: jest.fn(),
 }));
 

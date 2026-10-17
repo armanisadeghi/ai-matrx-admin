@@ -22,7 +22,9 @@ import { registerKindCorrector } from "@ai-matrx/rich-content/kinds/registry/kin
 // The app's compiled kinds register into the package's ONE kind registry at this import.
 import "@/features/content-ir/registry/kind-registry";
 import { registerKindHost } from "@ai-matrx/rich-content/kinds/register-kind-host";
-import { componentRegistry } from "@/features/content-ir/registry/component-registry";
+import { hasSession, whenSessionReady } from "@/features/content-ir/registry/session-ready";
+import { webViewerOrganizations } from "@/features/content-ir/registry/kind-viewer-organizations";
+import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
 import { matrxContentIrHost } from "@/features/content-ir/host/ContentIrHostBoundary";
 // Fills the content-ir host's directive slot (Apply / open / copy on every directive card) before any kind renders.
 import "@/features/matrx-envelope/directiveHost";
@@ -65,7 +67,6 @@ configureRichContent({
     const router = useRouter();
     return (tableId: string) => router.push(`/data/${encodeURIComponent(tableId)}`);
   },
-  componentRegistry,
   contentIrHost: matrxContentIrHost,
   reportKindComponentIncident: reportKindComponentIncident as never,
 });
@@ -74,9 +75,15 @@ configureRichContent({
 // database tiers read through this app's browser client (the signed-in person's RLS), table kinds
 // through this app's table-kind source, and its invalidation + identity-flush refreshes install once.
 // After the app bindings (above) registered the domain block dispatch, so no domain block is shadowed.
+// The kind COMPONENT tier is the package's too (kind_component rows, the viewer's layers): it reads
+// through the same client, waits on this app's session barrier to retry a refused read, and takes
+// the viewer's organizations from the scope tree.
 registerKindHost({
   kindDataClient: async () => (await import("@/utils/supabase/client")).supabase,
   loadTableKindSource: () => import("@/features/content-ir/registry/table-kind-source"),
+  sessionReady: { hasSession: () => hasSession(), whenSessionReady: (listener) => whenSessionReady(listener) },
+  adminLaneOpen: () => browserAdminLaneOpen(),
+  kindViewerOrganizations: webViewerOrganizations,
 });
 
 // This app's own kind correctors (the package ships none).

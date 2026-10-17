@@ -62,6 +62,12 @@ configureRichContent({
   kindDataClient: async () => require("@/utils/supabase/client").supabase,
   loadTableKindSource: async () => require("@/features/content-ir/registry/table-kind-source"),
   componentRegistry: late(() => require("@/features/content-ir/registry/component-registry").componentRegistry),
+  sessionReady: {
+    hasSession: () => require("@/features/content-ir/registry/session-ready").hasSession(),
+    whenSessionReady: (listener: () => void) => require("@/features/content-ir/registry/session-ready").whenSessionReady(listener),
+  },
+  adminLaneOpen: () => require("@/utils/supabase/adminLane").browserAdminLaneOpen(),
+  kindViewerOrganizations: late(() => require("@/features/content-ir/registry/kind-viewer-organizations").webViewerOrganizations),
   contentIrHost: late(() => require("@/features/content-ir/host/ContentIrHostBoundary").matrxContentIrHost),
   reportKindComponentIncident: (incident) => require("@/features/content-ir/react/db-component/kindComponentIncident").reportKindComponentIncident(incident),
 });

@@ -204,6 +204,8 @@ beforeEach(() => {
   jest.resetModules();
   // The kind registry is the package's page singleton (Symbol.for): fresh modules need a fresh one.
   (jest.requireActual("@ai-matrx/rich-content/kinds/registry/package-kind-registry") as typeof import("@ai-matrx/rich-content/kinds/registry/package-kind-registry")).resetPackageKindRegistry();
+  // The component registry is the package's page singleton too.
+  (jest.requireActual("@ai-matrx/rich-content/kinds/registry/component-registry") as typeof import("@ai-matrx/rich-content/kinds/registry/component-registry")).resetPackageComponentRegistry();
   mockOperations.length = 0;
 });
 

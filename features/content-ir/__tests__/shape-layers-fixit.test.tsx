@@ -622,7 +622,8 @@ it("the shape page's render-status strip renders the SAME per-person actions (no
 });
 
 it("the registry reads the shared tier through the package's public resolveShared — never the private overlay", () => {
-  const source = fs.readFileSync(path.join(__dirname, "../registry/component-registry.ts"), "utf8");
+  // The registry is the package's (kind component tier, behind registerKindHost): read the shipped module.
+  const source = fs.readFileSync(path.join(__dirname, "../../../node_modules/@ai-matrx/rich-content/dist/kinds/registry/component-registry.js"), "utf8");
   expect(source).toMatch(/super\.resolveShared\(/);
   expect(source).not.toMatch(/\boverlay\?: unknown|Object\.create\(this\)/);
 });

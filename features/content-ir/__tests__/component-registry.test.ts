@@ -22,7 +22,7 @@ import {
 
 import * as errorCaptureStore from "@/lib/diagnostics/errorCaptureStore";
 
-jest.mock("../registry/schema-source-kind-components", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components", () => ({
   listKindComponentsFromTables: jest.fn(),
 }));
 
@@ -369,9 +369,11 @@ describe("D115 inversion — module init registers the kind-components invalidat
     mockList.mockClear();
     mockList.mockResolvedValue([]);
 
-    // Importing component-registry (done at this file's top) must have
+    // registerKindHost (providers/richContentHost.ts — the call every host makes) must have
     // registered the callback — the firer (toolStateEffects) only knows the
     // NAME, so an unregistered name here means the repaint is silently dead.
+    const { registerKindHost } = await import("@ai-matrx/rich-content/kinds/register-kind-host");
+    registerKindHost({});
     expect(fireInvalidation(INVALIDATION_KEYS.kindComponents)).toBe(true);
 
     // The callback force-refreshes (maxAgeMs 0) → one warm list re-fetch.

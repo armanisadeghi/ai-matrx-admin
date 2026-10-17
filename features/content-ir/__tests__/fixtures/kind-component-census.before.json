@@ -1,0 +1,1125 @@
+{
+  "count": 224,
+  "kinds": {
+    "ad_creative": {
+      "output": "compiled:bundled:ad_creative:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "agent_result": {
+      "output": "compiled:bundled:agent_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "ai_answer": {
+      "output": "compiled:bundled:ai_answer:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "analogy": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "applet_build_result": {
+      "output": "compiled:bundled:applet_build_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "asset_grading": {
+      "output": "compiled:bundled:asset_grading:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "basic_card": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "case_disclosure": {
+      "output": "compiled:bundled:case_disclosure:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "checklist": {
+      "output": null,
+      "input": null,
+      "loading": null
+    },
+    "checklist_item": {
+      "output": null,
+      "input": null,
+      "loading": null
+    },
+    "citation": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "claim_evidence": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "cms_html_page_result": {
+      "output": "compiled:bundled:cms_html_page_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "cms_page_build": {
+      "output": "compiled:bundled:cms_page_build:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "code_block": {
+      "output": "compiled:bundled:code_block:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "comparison_criterion": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "comparison_set": {
+      "output": "compiled:bundled:comparison_table:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "contact": {
+      "output": "compiled:bundled:contact:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "content_fingerprint": {
+      "output": "compiled:bundled:content_fingerprint:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "cooking_recipe": {
+      "output": "compiled:bundled:cooking_recipe:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "data_table": {
+      "output": "compiled:bundled:data_table:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "decision_answers": {
+      "output": "compiled:bundled:decision_answers:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "decision_node": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "decision_tree": {
+      "output": "compiled:bundled:decision_tree:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "diagram_edge": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "diagram_node": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "diagram_spec": {
+      "output": "compiled:bundled:diagram:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "discussion_result": {
+      "output": "compiled:bundled:discussion_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "enhanced_flashcard": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "enrichment_verification": {
+      "output": "compiled:bundled:enrichment_verification:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "entity_card": {
+      "output": "compiled:bundled:entity_card:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "entity_mention": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "episode_title_option": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "episode_title_options": {
+      "output": "compiled:bundled:episode_title_options:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "event": {
+      "output": "compiled:bundled:event:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "evidence_source": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "faq_item": {
+      "output": "compiled:bundled:faq_item:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "flashcard": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "flashcard_card_ref_v1": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "flashcard_deck_cards_v1": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "flashcard_set": {
+      "output": "compiled:bundled:flashcards:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "generated_audio": {
+      "output": "compiled:bundled:generated_audio:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "generated_image": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "generated_image_set": {
+      "output": "compiled:bundled:generated_image_set:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "generated_video": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "generated_video_set": {
+      "output": "compiled:bundled:generated_video_set:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "geo_coordinates": {
+      "output": "compiled:bundled:geo_coordinates:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "glossary_term": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "image_result": {
+      "output": "compiled:bundled:image_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "ingested_chunk": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "ingested_sources": {
+      "output": "compiled:bundled:ingested_sources:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "intake_photo_grouping": {
+      "output": "compiled:bundled:intake_photo_grouping:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "item_presentation": {
+      "output": "compiled:bundled:item_presentation:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "item_vision_extraction": {
+      "output": "compiled:bundled:item_vision_extraction:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "keyword_classification_batch_v1": {
+      "output": "compiled:bundled:keyword_classification_batch:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "keyword_classification_v1": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "keyword_list": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "keyword_relationship_research": {
+      "output": "compiled:bundled:keyword_research:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "keyword_serp_intent_analysis_v1": {
+      "output": "compiled:bundled:keyword_serp_intent_analysis:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lesson_script_section": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lesson_script_set": {
+      "output": "compiled:bundled:lesson_scripts:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "link_buckets": {
+      "output": "compiled:bundled:link_buckets:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "list_change_proposal_item_v1": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "list_change_proposal_v1": {
+      "output": "compiled:bundled:list_change_proposal:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "list_change_target_v1": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "listing_draft": {
+      "output": "compiled:bundled:listing_draft:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "local_place": {
+      "output": "compiled:bundled:local_place:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "locus": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lot_detection": {
+      "output": "compiled:bundled:lot_detection:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lulu_cover_dimensions": {
+      "output": "compiled:bundled:lulu_cover_dimensions:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lulu_print_cost_calculation": {
+      "output": "compiled:bundled:lulu_print_cost_calculation:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lulu_print_job": {
+      "output": "compiled:bundled:lulu_print_job:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lulu_print_product_matches": {
+      "output": "compiled:bundled:lulu_print_product_matches:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "lulu_shipping_options": {
+      "output": "compiled:bundled:lulu_shipping_options:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "map_topic_node_v1": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "map_topic_proposal_v1": {
+      "output": "compiled:bundled:map_topic_proposal:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "masterwork_checkup_finding": {
+      "output": "compiled:bundled:masterwork_checkup_finding:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "masterwork_checkup_rule": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "masterwork_result": {
+      "output": "compiled:bundled:masterwork_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "masterwork_rule_draft": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "math_problem": {
+      "output": "compiled:bundled:math_problem:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "math_solution": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "math_solution_step": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "media_asset": {
+      "output": "compiled:bundled:media_asset:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "media_candidate_verdict": {
+      "output": "compiled:bundled:media_candidate_verdict:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "media_chapter": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "media_chapters": {
+      "output": "compiled:bundled:media_chapters:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "media_list_ranking_result": {
+      "output": "compiled:bundled:media_list_ranking_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "memory_aid": {
+      "output": "compiled:bundled:memory_aid:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "memory_hint": {
+      "output": "compiled:bundled:memory_hint:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "memory_palace": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "mermaid_diagram": {
+      "output": "compiled:bundled:mermaid:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "mnemonic": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "news_angle_set": {
+      "output": "compiled:bundled:news_monitor_kind:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "news_client_context": {
+      "output": "compiled:bundled:news_monitor_kind:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "news_digest": {
+      "output": "compiled:bundled:news_monitor_kind:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "news_opportunity_report": {
+      "output": "compiled:bundled:news_monitor_kind:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "news_result": {
+      "output": "compiled:bundled:news_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "news_triage": {
+      "output": "compiled:bundled:news_monitor_kind:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "newsworthiness_verdict": {
+      "output": "compiled:bundled:news_monitor_kind:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "node_outcome": {
+      "output": "compiled:bundled:node_outcome:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "notable_timestamp": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "opening_hours": {
+      "output": "compiled:bundled:opening_hours:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "outlier_row": {
+      "output": "compiled:bundled:outlier_row:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_audio": {
+      "output": "compiled:bundled:page_audio:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_block": {
+      "output": "compiled:bundled:page_block:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_brief": {
+      "output": "compiled:bundled:page_brief:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_cleaning_report": {
+      "output": "compiled:bundled:page_cleaning_report:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_heading": {
+      "output": "compiled:bundled:page_heading:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_image": {
+      "output": "compiled:bundled:page_image:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_link": {
+      "output": "compiled:bundled:page_link:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_list": {
+      "output": "compiled:bundled:page_list:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_metadata": {
+      "output": "compiled:bundled:page_metadata:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_removal": {
+      "output": "compiled:bundled:page_removal:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_section": {
+      "output": "compiled:bundled:page_section:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "page_video": {
+      "output": "compiled:bundled:page_video:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "pick_list": {
+      "output": "compiled:bundled:pick_list:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_concept_name": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_deferred_topic": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_draft_section": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_family_count": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_page_draft": {
+      "output": "compiled:bundled:plan_page_draft:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_page_outline": {
+      "output": "compiled:bundled:plan_page_outline:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_page_research": {
+      "output": "compiled:bundled:plan_page_research:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_page_review": {
+      "output": "compiled:bundled:plan_page_review:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_planned_link": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_research_source": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_review_issue": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "plan_shape_recommendation": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "podcast_episode": {
+      "output": "compiled:bundled:podcast_episode:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "podcast_speaker": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "post_transcript": {
+      "output": "compiled:bundled:post_transcript:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "postal_address": {
+      "output": "compiled:bundled:postal_address:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "pr_diagnosis": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "pr_peg_check": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "pr_play": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "pr_play_action": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "pr_play_menu": {
+      "output": "compiled:bundled:pr_play_menu:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "presentation_deck": {
+      "output": "compiled:bundled:presentation:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "presentation_slide": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "pricing_proposal": {
+      "output": "compiled:bundled:pricing_proposal:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "product_research": {
+      "output": "compiled:bundled:product_research:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "progress_phase": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "progress_step": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "progress_tracker": {
+      "output": "compiled:bundled:progress_tracker:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "provider_run_receipt": {
+      "output": "compiled:bundled:provider_run_receipt:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "publish_preflight": {
+      "output": "compiled:bundled:publish_preflight:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "questionnaire": {
+      "output": "compiled:bundled:questionnaire:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "questionnaire_option": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "questionnaire_question": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "quiz_question": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "quiz_set": {
+      "output": "compiled:bundled:quiz:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "rag_cross_doc_search_result": {
+      "output": "compiled:bundled:rag_cross_doc_search_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "rag_search_result": {
+      "output": "compiled:bundled:rag_search_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "rag_synthesize_result": {
+      "output": "compiled:bundled:rag_synthesize_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "rating": {
+      "output": "compiled:bundled:rating:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "recipe_ingredient": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "recipe_step": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "redirect_hop": {
+      "output": "compiled:bundled:redirect_hop:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "refusal": {
+      "output": "compiled:bundled:refusal:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "relation": {
+      "output": "compiled:bundled:relation:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "research_challenge": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "research_finding": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "research_recommendation": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "research_report": {
+      "output": "compiled:bundled:research:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "research_section": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "research_theme": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "resource_category": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "resource_collection": {
+      "output": "compiled:bundled:resources:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "resource_item": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "retrieved_chunk": {
+      "output": "compiled:bundled:retrieved_chunk:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "review_verdict": {
+      "output": "compiled:bundled:review_verdict:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "run_result": {
+      "output": "compiled:bundled:run_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "schema_proposal": {
+      "output": "compiled:bundled:schema_proposal:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "scraped_page": {
+      "output": "compiled:bundled:scraped_page:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "scraper_batch_result": {
+      "output": "compiled:bundled:scraper_batch_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "scraper_crawl_result": {
+      "output": "compiled:bundled:scraper_crawl_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_authority_route_analysis": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_keyword_relationship_research_result": {
+      "output": "compiled:bundled:seo_keyword_research_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_package": {
+      "output": "compiled:bundled:seo_package:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_rank_portfolio": {
+      "output": "compiled:bundled:seo_rank_portfolio:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_rank_reading": {
+      "output": "compiled:bundled:seo_rank_reading:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_rank_serp_landscape": {
+      "output": "compiled:bundled:seo_rank_serp_landscape:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_rank_target": {
+      "output": "compiled:bundled:seo_rank_target:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "seo_rank_target_removal": {
+      "output": "compiled:bundled:seo_rank_target_removal:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "serial_observation_timeline": {
+      "output": "compiled:bundled:serial_observation_timeline:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "serp_placement": {
+      "output": "compiled:bundled:serp_placement:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "social_post": {
+      "output": "compiled:bundled:social_post:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "social_profile": {
+      "output": "compiled:bundled:social_profile:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "source_ref": {
+      "output": "compiled:bundled:source_ref:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "space_build_result": {
+      "output": "compiled:bundled:space_build_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "space_database_design": {
+      "output": "compiled:bundled:space_database_design:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "space_notion_import": {
+      "output": "compiled:bundled:space_notion_import:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "structured_info": {
+      "output": "compiled:bundled:structured_info:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "structured_info_item": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "structured_info_section": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "study_notes": {
+      "output": "compiled:bundled:study_notes:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "study_notes_section": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "study_pack_set": {
+      "output": "compiled:bundled:study_pack:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "swipe_collection": {
+      "output": "compiled:bundled:swipe_collection:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "task_item": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "task_list": {
+      "output": "compiled:bundled:tasks:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "tiered_flashcard": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "timeline": {
+      "output": "compiled:bundled:timeline:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "timeline_event": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "timeline_period": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "topic_relevance": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "transcript": {
+      "output": "compiled:bundled:transcript:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "transcript_segment": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "transcript_usage": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "troubleshooting_guide": {
+      "output": "compiled:bundled:troubleshooting:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "troubleshooting_issue": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "troubleshooting_link": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "troubleshooting_solution": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "troubleshooting_step": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "trust_envelope": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "unfolding_ruling": {
+      "output": "compiled:bundled:unfolding_ruling:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "value_assessment": {
+      "output": "compiled:bundled:value_assessment:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "video_prompt_options": {
+      "output": "compiled:bundled:video_prompt_options:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "video_prompt_variation": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "video_result": {
+      "output": "compiled:bundled:video_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "video_transcript_research": {
+      "output": null,
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "web_result": {
+      "output": "compiled:bundled:web_result:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    },
+    "web_search_results": {
+      "output": "compiled:bundled:web_search_results:true",
+      "input": "compiled:bundled:generic_structured:true",
+      "loading": null
+    }
+  }
+}

@@ -138,7 +138,8 @@ export function checkPlannerLeg(root: string): OneRecordCardFinding[] {
       message: "artifact-renderers.tsx has no kind_value: KindValueArtifact entry — the canvas cannot draw a kind value",
     });
   }
-  const components = readFileSync(resolve(root, "features/content-ir/registry/component-registry.ts"), "utf8");
+  // The component registry is the package's (kind component tier behind registerKindHost): read the shipped module.
+  const components = readFileSync(resolve(root, "node_modules/@ai-matrx/rich-content/dist/kinds/registry/component-registry.js"), "utf8");
   if (!/if\s*\(isTableKind\(kind\)\)\s*return\s+super\.resolve\(TABLE_KIND_COMPONENT/.test(components)) {
     findings.push({
       severity: "red",

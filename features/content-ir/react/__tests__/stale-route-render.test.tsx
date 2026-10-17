@@ -50,7 +50,7 @@ jest.mock("@/utils/supabase/client", () => ({
   },
 }));
 
-jest.mock("../../registry/schema-source-kind-components", () => {
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components", () => {
   const actual = jest.requireActual(
     "../../registry/schema-source-kind-components",
   );

@@ -70,7 +70,7 @@ jest.mock("@/features/content-ir/registry/component-registry", () => ({
   }),
   subscribeKindComponents: () => () => {},
 }));
-jest.mock("@/features/content-ir/registry/schema-source-kind-components", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-components", () => ({
   GENERIC_STRUCTURED_COMPONENT_KEY: "generic_structured",
 }));
 
