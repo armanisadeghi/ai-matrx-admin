@@ -53,16 +53,19 @@ const MINOR_BANDS: { value: Exclude<AgeBand, "adult">; label: string }[] = [
   { value: "under_13", label: "Under 13" },
 ];
 
-export function AgeDeclarationDialog({
-  open,
-  onOpenChange,
+/**
+ * The question itself (title, explainer, choices) — ONE source for the dialog and the sign-up welcome step,
+ * so the wording and the over/under-18 then minor split can never fork.
+ */
+export function useAgeDeclarationContent({
+  open = true,
   onPick,
   saving,
   isGuest = false,
   variant = "gate",
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  /** Resets to the top question each time this turns true. Default: always on. */
+  open?: boolean;
   onPick: (band: AgeBand) => void;
   /** The band currently being written, so its button shows the spinner. */
   saving: AgeBand | null;
@@ -78,7 +81,6 @@ export function AgeDeclarationDialog({
    */
   variant?: AgeDeclarationVariant;
 }) {
-  const isMobile = useIsMobile();
   const [step, setStep] = useState<Step>("over_under_18");
   const busy = saving !== null;
   const pathname = usePathname();
@@ -179,6 +181,24 @@ export function AgeDeclarationDialog({
         </Button>
       </div>
     );
+
+  return { title, explainer, choices, busy };
+}
+
+export function AgeDeclarationDialog({
+  open,
+  onOpenChange,
+  ...rest
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onPick: (band: AgeBand) => void;
+  saving: AgeBand | null;
+  isGuest?: boolean;
+  variant?: AgeDeclarationVariant;
+}) {
+  const isMobile = useIsMobile();
+  const { title, explainer, choices, busy } = useAgeDeclarationContent({ open, ...rest });
 
   if (isMobile) {
     return (
