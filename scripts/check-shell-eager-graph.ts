@@ -78,6 +78,7 @@ export const HEAVY: ReadonlyArray<HeavyEntry> = [
   { match: /^@monaco-editor\//, why: "Monaco editor loader" },
   { match: /^mermaid\//, why: "Mermaid diagrams" },
   { match: /^three\//, why: "three.js" },
+  { match: /^@univerjs\//, why: "Univer document/sheet engine (@univerjs/core alone ~480 KB minified) — loads with Documents/Workbooks, never the shell (AssociationsHost pulled it via @ai-matrx/office/docs until 2026-10-16)" },
   { match: /^xlsx\//, why: "SheetJS" },
   { match: /^pdfjs-dist\//, why: "PDF.js" },
   { match: /^katex\//, why: "KaTeX (~680 KB) — markdown math, loaded with @ai-matrx/print/markdown on first use" },

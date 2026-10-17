@@ -67,7 +67,6 @@ import { UnresolvedEntityRef } from "@/features/access-gate/components/Unresolve
 import { useAccessStates } from "@/features/access-gate/hooks/useAccessStates";
 import { requestUpload } from "@/features/files/upload/uploadGuardOpeners";
 import { openFilePicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
-import { createDocument } from "@ai-matrx/office/docs";
 import type { Visibility } from "@/features/files/types";
 import { getAssociationsStore } from "./associationsStore";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
@@ -130,6 +129,10 @@ const UI_PORTS: AssociationsUiPorts = {
     },
     openFilePicker: (opts) => openFilePicker(opts),
     createDataTable: async ({ name, organizationId }) => {
+      // Loaded at click time, never statically: this host sits in Providers on every route, and
+      // `@ai-matrx/office/docs` carries the Univer document engine (~480 KB minified, @univerjs/core)
+      // into every page's first load (code-splitting skill, rule 6; guard: check:shell-eager-graph).
+      const { createDocument } = await import("@ai-matrx/office/docs");
       const result = await createDocument({ name, organizationId });
       return result.success ? { id: result.data.id } : null;
     },
