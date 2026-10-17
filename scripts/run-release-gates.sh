@@ -159,6 +159,9 @@ if $STRICT; then
         # Copy/Alchemy is never switched off on a table; no new hand-built tables (baseline shrinks only).
         "Tables keep copy/Alchemy; no new hand-built table|pnpm check:one-table-law"
         "The one-table-law guard can still fail (fixtures in a temp dir)|pnpm check:one-table-law:self-test"
+        # Known field types decide the filter (Arman 2026-10-17): a DB date/enum column declares its type.
+        "Table columns over DB dates/enums declare their field type|pnpm check:table-field-types --strict"
+        "The table-field-types guard can still fail (fixtures)|pnpm check:table-field-types:self-test"
         "Demos chat UI routes register required host slots|pnpm check:demos-chat-registration"
         "The demos chat registration guard can still fail|pnpm check:demos-chat-registration:self-test"
         # Never list every table to find one: tableFind / ensureTable / defineTypedTable are the doors.
