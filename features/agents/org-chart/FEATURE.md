@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-09-27`
+**Last updated:** `2026-10-16`
 
 ---
 
@@ -72,8 +72,16 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   closes and on mandate-cache invalidation.
 - The drawing is the shared `components/official/org-chart/OrgChart.tsx` — THE org chart primitive for
   any hierarchy (layout adapted from Paperclip, MIT, credited in `layout.ts`). Never a second one.
+  Its consumers: this chart and HR's `/hr/people/org-chart`. What it offers both: `forest.ts`
+  (`buildParentForest` — flat parent rows to a forest, cycle-safe, optional deterministic sibling
+  order), one PNG/PDF export (`exportChart.ts`; `exportCaption`/`exportFileName` override the burned
+  caption and file name, a success toast names the file), and `framing="once"` for charts redrawn
+  for another date.
 
 ## Change log
+
+- 2026-10-16 — The primitive is now the only org-chart renderer: HR's chart draws through it. Added
+  `buildParentForest`, export caption/file-name overrides, a success toast on export, `framing`.
 
 - 2026-10-05 — Removal: every card's menu ends with "Remove from the chart…" (all recorded links,
   Undo; Orchestra membership stays and the confirm says so) and "Archive agent/team/position…"

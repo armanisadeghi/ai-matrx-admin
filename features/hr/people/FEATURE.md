@@ -62,9 +62,16 @@ Section shell (the route-tab bar) is `HrPeopleShell.tsx`, mounted by
 - `shared/useHrStructure.ts` — departments, locations, job titles, for every picker and facet.
 - `new/writeAck.ts` — normalizes the WRITE doors' `{ok:false, reason, field, door}` dialect, which
   `callHr` currently mis-reads as success (**D271**). **Delete this file when D271 is fixed.**
-- `org-chart/layout.ts` — pure, tested (`__tests__/layout.test.ts`, 13 cases). Two guarantees: a
-  reporting cycle can never loop the layout, and sibling order is a function of the PEOPLE so a
-  persisting node keeps its slot across an as-of change with no remembered state.
+- `org-chart/HrOrgChart.tsx` draws through THE org chart primitive
+  (`components/official/org-chart/OrgChart.tsx`) — never a second renderer. HR owns only the data,
+  the card (`renderCard`) and the states. The forest comes from the primitive's
+  `buildParentForest` (`forest.ts`, tested in `__tests__/forest.test.ts`): a reporting cycle can
+  never loop the build (refused links feed the Loop badge alongside the server's `cycles[]`),
+  nobody is dropped, and siblings sort by the visible name so a persisting person keeps their slot
+  across an as-of change; `framing="once"` keeps the view still when the date changes. Dotted lines
+  are cross-links. PNG/PDF are the primitive's one export path (`exportChart.ts`, Alchemy capture
+  + kit download) with `exportCaption`/`exportFileName` carrying the as-of date into the image and
+  filename; `orgChartExport.ts` keeps only the CSV of chart rows.
 - `doors/HrPersonDoor.tsx` — the four openers for a person. A hand-roll only because `hr_employee`
   has no entity-registry token and no peek kind (**D274**); collapse it to `EntityRef` when they
   land.
@@ -87,6 +94,9 @@ Section shell (the route-tab bar) is `HrPeopleShell.tsx`, mounted by
 
 ## Change Log
 
+- `2026-10-16` — Org chart converged onto the shared `OrgChart`: HR's own layout and raster export
+  deleted; pan/zoom, search, collapse, minimap and PNG/PDF now come from the primitive. The
+  dotted-line label is a real 44px touch target again.
 - `2026-08-30` — A restricted note names its author. `hr._project_row` resolved a display name
   only from `subject_employment_id` / `employment_id`, and `hr.restricted_note` names its person
   `author_employment_id`, so every note on a case rendered unsigned; the projection now has an
