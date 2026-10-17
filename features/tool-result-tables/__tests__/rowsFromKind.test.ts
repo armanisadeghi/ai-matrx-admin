@@ -104,3 +104,28 @@ describe("rows written in the words the target column takes", () => {
     expect(rows[0]["Decision maker"]).toBe(true);
   });
 });
+
+describe("a kind says how its rows read as a table", () => {
+  const schema = {
+    properties: {
+      items: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            post_id: { type: "string", title: "Post id", "x-table-hide": true },
+            views: { type: ["integer", "null"], title: "Views", "x-table-order": 3 },
+            caption: { type: ["string", "null"], title: "Caption", "x-table-order": 1 },
+            posted: { type: ["string", "null"], title: "Posted", "x-table-order": 2 },
+            row_key: { type: ["string", "null"], title: "Row key", "x-row-key": true },
+          },
+        },
+      },
+    },
+  };
+  it("orders by x-table-order, leaves out x-table-hide, and keeps the row key last", () => {
+    const d = describeRows({ items: [{ post_id: "p1", views: 9, caption: "Hi", posted: "May 2", row_key: "k1" }] }, schema)!;
+    expect(d.headers).toEqual(["Caption", "Posted", "Views", "Row key"]);
+    expect(d.keyHeader).toBe("Row key");
+  });
+});

@@ -101,15 +101,20 @@ export function describeRows(output: unknown, schema?: unknown): ResultRows | nu
   const fieldOrder = Object.keys(props).length > 0 ? Object.keys(props) : Object.keys(sourceRows[0]);
   const fields = fieldOrder.filter((f) => f !== KIND_KEY);
 
-  const columns: { field: string; header: string }[] = [];
+  const columns: { field: string; header: string; order: number }[] = [];
   for (const field of fields) {
     const sample = sourceRows.find((r) => toCell(r[field]) !== undefined && r[field] != null);
     const declared = resolve(props[field], root);
     const nested = declared !== undefined && (typeOf(declared).includes("object") || (typeOf(declared).includes("array") && typeOf(resolve(declared.items, root)).includes("object")));
     if (nested || (sample === undefined && declared === undefined)) continue;
     if (sample !== undefined && toCell(sample[field]) === undefined) continue;
-    columns.push({ field, header: (declared?.title as string | undefined)?.trim() || humanize(field) });
+    // A kind may declare how its rows read as a table: `x-table-order` (ascending; undeclared fields follow in the
+    // schema's own order) and `x-table-hide` (a technical field a person never wants as a column; the row key stays).
+    if (declared?.["x-table-hide"] === true && field !== ROW_KEY_FIELD && declared?.["x-row-key"] !== true) continue;
+    const order = typeof declared?.["x-table-order"] === "number" ? (declared["x-table-order"] as number) : 1000 + columns.length;
+    columns.push({ field, header: (declared?.title as string | undefined)?.trim() || humanize(field), order });
   }
+  columns.sort((a, b) => a.order - b.order);
   if (columns.length === 0) return null;
 
   // Two fields can carry one title (a review's id and its text are both "Review"): rows are keyed by header, so a

@@ -12,3 +12,5 @@ timestamp: 2026-10-16
 - `toolTableBinding.ts` remembers `{tableId, tableName, auto}` in `users.user_preferences.preferences.tools.resultTables.<toolId>`.
 - `appendResultRows.ts` writes through the data-tables engine (`appendToTable`: matched columns, new columns added, `dedupe` on the key column, update on duplicate).
 - `ToolResultTableBar.tsx` is mounted under the answer in the Tools home (`ToolResult`): first time it opens the one Save to a table (new or existing table); after that one press adds this run; "Add every run" appends each finished call on its own (off by default).
+
+- A kind may declare how its rows read as a table: `x-table-order` (ascending; undeclared fields follow in schema order, the row key last) and `x-table-hide` (a technical field never offered as a column). Declared on the social kinds (aidream `kinds/tool_catalog_social.py`).
