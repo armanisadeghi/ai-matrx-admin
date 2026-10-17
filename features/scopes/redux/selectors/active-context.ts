@@ -87,7 +87,7 @@ export const selectHasActiveContext = createSelector(
  */
 const emptyIdsByType = {} as Record<string, string[]>;
 
-export const selectActiveScopeIdsByType = createSelector(
+const selectActiveScopeIdsByTypeFromTree = createSelector(
   selectActiveScopeIds,
   (state: RootState) => state.scopesTree.organizations,
   (scopeIds, orgs): Record<string, string[]> => {
@@ -105,6 +105,16 @@ export const selectActiveScopeIdsByType = createSelector(
     return Object.keys(out).length === 0 ? emptyIdsByType : out;
   },
 );
+
+/**
+ * Nothing active → nothing to resolve, and the scope tree is never touched: its first read starts
+ * the ~1 s shared tree load (scopeTreeDemand.ts), and every composer runs this selector at paint
+ * (2026-10-16: /chat/new loaded the whole tree before anyone engaged).
+ */
+export const selectActiveScopeIdsByType = (state: RootState): Record<string, string[]> =>
+  selectActiveScopeIds(state).length === 0
+    ? emptyIdsByType
+    : selectActiveScopeIdsByTypeFromTree(state);
 
 /**
  * Returns the FIRST active scope id of a given scope_type, or null. Active

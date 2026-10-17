@@ -1,7 +1,7 @@
 /**
  * First-paint contract V2. The call listener (MeetHostCore: `meet_pending_call_invites` + the
- * call-invite channel) must not attach at first paint or at the first idle, but MUST attach, or a
- * call never rings: in the late tier, at once on a /meet route, and at once when a DM thread is
+ * call-invite channel) must not attach before the person engages (idle is not engagement), but MUST
+ * attach, or a call never rings: on the first engagement, at once on a /meet route, and at once when a DM thread is
  * opened (its call chips need the runtime).
  */
 import * as React from "react";
@@ -10,11 +10,13 @@ import { createRoot } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-let lateIdle = false;
+let engaged = false;
 let pathname = "/chat/new";
 const coreMounts = jest.fn();
 
-jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => lateIdle }));
+// Late idle is NOT a trigger any more (2026-10-16): only engagement, a /meet route, or a demand.
+jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => true }));
+jest.mock("@/lib/boot/firstEngagement", () => ({ useHasEngaged: () => engaged }));
 jest.mock("next/navigation", () => ({ usePathname: () => pathname }));
 jest.mock("next/dynamic", () => () => function Core() {
   coreMounts();
@@ -51,19 +53,19 @@ async function render() {
 
 beforeEach(() => {
   coreMounts.mockClear();
-  lateIdle = false;
+  engaged = false;
   pathname = "/chat/new";
   resetMeetHostDemandForTests();
 });
 
-it("does not attach the call listener before the late tier", async () => {
+it("does not attach the call listener before the person engages, even once the page is idle", async () => {
   const root = await render();
   expect(coreMounts).not.toHaveBeenCalled();
   await act(async () => root.unmount());
 });
 
-it("attaches in the late tier, so an incoming call can ring", async () => {
-  lateIdle = true;
+it("attaches on the first engagement, so an incoming call can ring", async () => {
+  engaged = true;
   const root = await render();
   expect(coreMounts).toHaveBeenCalled();
   await act(async () => root.unmount());

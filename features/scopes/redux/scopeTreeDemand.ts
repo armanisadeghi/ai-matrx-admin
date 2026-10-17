@@ -38,13 +38,15 @@ export const scopeTreeDemandEnhancer: StoreEnhancer = (createStore) => (reducer,
   let satisfied = false;
 
   const demand = () => {
+    // Who asked — the one question a "why did the tree load here?" hunt needs answered. Dev only:
+    // every distinct reader before the load starts, in `window.__matrxScopeTreeDemandBy`.
+    if (process.env.NODE_ENV !== "production") {
+      const by = ((window as { __matrxScopeTreeDemandBy?: string[] }).__matrxScopeTreeDemandBy ??= []);
+      const stack = new Error("scope tree demand").stack ?? "";
+      if (by.length < 20 && !by.includes(stack)) by.push(stack);
+    }
     if (scheduled || satisfied) return;
     scheduled = true;
-    // Who asked — the one question a "why did the tree load here?" hunt needs answered.
-    if (process.env.NODE_ENV !== "production") {
-      (window as { __matrxScopeTreeDemandStack?: string }).__matrxScopeTreeDemandStack =
-        new Error("scope tree demand").stack;
-    }
     queueMicrotask(() => {
       const dispatch = store.dispatch as unknown as ThunkDispatch<unknown, unknown, UnknownAction>;
       void (async () => {
