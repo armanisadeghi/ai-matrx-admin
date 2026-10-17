@@ -188,6 +188,11 @@ function pane(width: number, height: number, isFullscreen = false): CanvasPresen
 }
 const NARROW = pane(360, 900);
 
+// The first render of a block pulls its lazy chunks through the jest transform
+// cold, which takes far longer than 30s on a loaded machine. A longer budget is
+// the honest fix; every assertion below still waits for the real element.
+jest.setTimeout(120_000);
+
 let container: HTMLDivElement;
 let root: Root;
 beforeEach(() => {
@@ -211,6 +216,18 @@ async function show(node: React.ReactElement, presentation: CanvasPresentation |
   await act(async () => {
     await new Promise((r) => setTimeout(r, 0));
   });
+}
+
+/** Wait (inside act) until the lazy chunks have rendered `selector`. A fixed
+ *  one-tick wait races the cold module load and reads an empty Suspense fallback. */
+async function untilRendered(selector: string, timeoutMs = 100_000) {
+  const start = Date.now();
+  while (!container.querySelector(selector)) {
+    if (Date.now() - start > timeoutMs) throw new Error(`"${selector}" never rendered`);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+  }
 }
 
 async function showPackageTable(width: number, height: number, isFullscreen = false) {
@@ -272,11 +289,13 @@ describe("table", () => {
 
   it("reads as labelled cards in a narrow pane, and as the grid outside the canvas", async () => {
     await show(render(), null);
+    await untilRendered("table");
     expect(container.querySelector("table")?.getAttribute("data-canvas-fit")).toBeNull();
     // The card list is ONE container query (`.phone-stack`): the labels are always
     // in the markup, and only the wrapper's own width turns them into cards.
 
     await showPackageTable(360, 900);
+    await untilRendered("table");
     expect(container.querySelector("table")?.getAttribute("data-canvas-fit")).toBe("narrow");
     const labels = Array.from(container.querySelectorAll("tbody tr:first-child td[data-label]")).map(
       (td) => td.getAttribute("data-label"),
@@ -288,8 +307,10 @@ describe("table", () => {
 
   it("pins the first column in a tight pane and not when that pane is full screen", async () => {
     await showPackageTable(630, 900);
+    await untilRendered("tbody td");
     expect(container.querySelector("tbody td")?.className).toContain("sticky");
     await showPackageTable(630, 900, true);
+    await untilRendered("tbody td");
     expect(container.querySelector("tbody td")?.className).not.toContain("sticky");
   });
 });
@@ -439,9 +460,11 @@ describe("quiz", () => {
   it("stacks options one per row and never opens focus mode by itself in a narrow pane", async () => {
     await show(<MultipleChoiceQuiz quizData={QUIZ} />, null);
     const options = () => container.querySelector("[data-testid='quiz-options']");
+    await untilRendered("[data-testid='quiz-options']");
     expect(options()?.className).toContain("md:grid-cols-2");
 
     await show(<MultipleChoiceQuiz quizData={QUIZ} />, NARROW);
+    await untilRendered("[data-testid='quiz-options']");
     expect(options()?.className).not.toContain("md:grid-cols-2");
     expect(options()?.getAttribute("data-canvas-fit")).toBe("narrow");
     expect(document.querySelector("[aria-label='Close fullscreen mode']")).toBeNull();
