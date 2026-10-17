@@ -177,7 +177,7 @@ export function describe(approval: StoreApproval): Pick<
     const summary = text(change["summary"]) ?? `A copy into ${table}`;
     return {
       headline: summary,
-      acceptEffect: "Allows this one job. The agent runs it on its next step in the chat.",
+      acceptEffect: "Allows this one job. It runs from its chat: Run it now.",
       rejectEffect: "Nothing is copied. The request is closed as declined.",
       fields: [],
     };
