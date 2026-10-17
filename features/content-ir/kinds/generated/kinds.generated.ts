@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1600 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1601 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "167d65438551";
+export const KIND_REGISTRY_FINGERPRINT = "63b59e5687b1";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -33810,6 +33810,28 @@ export interface MarketListing {
 }
 
 /**
+ * The latest price of one stock or crypto asset, with the day's open, high, low and volume.
+ *  *
+ *  * Kind `market_quote` (registry v1).
+ */
+export interface MarketQuote {
+  low?: number | null;
+  high?: number | null;
+  open?: number | null;
+  as_of?: string | null;
+  price?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "market_quote";
+  market?: string | null;
+  symbol: string;
+  volume?: number | null;
+  currency?: string | null;
+  exchange?: string | null;
+}
+
+/**
  * Kind `marketing.image_prompt.offer` (registry v10).
  */
 export interface MarketingImagePromptOffer {
@@ -63040,6 +63062,7 @@ export type GeneratedKindSlug =
   | "mapped_list_result"
   | "markdown"
   | "market_listing"
+  | "market_quote"
   | "marketing.image_prompt.offer"
   | "marketing.local_endowment.offer"
   | "marketing.page_image.offer"
@@ -64643,6 +64666,7 @@ export interface KindPayloadBySlug {
   "mapped_list_result": MappedListResult;
   "markdown": Markdown;
   "market_listing": MarketListing;
+  "market_quote": MarketQuote;
   "marketing.image_prompt.offer": MarketingImagePromptOffer;
   "marketing.local_endowment.offer": MarketingLocalEndowmentOffer;
   "marketing.page_image.offer": MarketingPageImageOffer;
@@ -66250,6 +66274,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "mapped_list_result",
   "markdown",
   "market_listing",
+  "market_quote",
   "marketing.image_prompt.offer",
   "marketing.local_endowment.offer",
   "marketing.page_image.offer",
