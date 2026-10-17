@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-17T10:31:34.550Z",
+  "generated_at": "2026-10-17T10:34:12.886Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -11341,6 +11341,12 @@
       "filename": "template_gaps_b_double_equals_is_equals.sql",
       "checksum": "0d1756265fad2287d464a465f41aab4520b0ca2485979df48a9a0b76cbfad4cc",
       "applied_at": "2026-10-17 10:31:33.089076+00"
+    },
+    "migrations/campaign/template_gaps_c_a_flat_filter_window_may_be_relative.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_gaps_c_a_flat_filter_window_may_be_relative.sql",
+      "checksum": "87b209f885c734545f9fcef95181acd436d9cfc6eb7d1053c53c55caaaba1524",
+      "applied_at": "2026-10-17 10:34:11.640143+00"
     }
   }
 }
