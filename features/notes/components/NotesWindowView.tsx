@@ -36,6 +36,9 @@ import { NotePresenceBanner } from "./NotePresenceBanner";
 import { NoteMetadataBar } from "./NoteMetadataBar";
 import { HomeQuickPick } from "../homes/HomeQuickPick";
 import { cn } from "@/lib/utils";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
+import { useNoteEditorMode } from "../hooks/usePreferredDefaultEditorMode";
 
 export interface NotesWindowViewProps {
   instanceId: string;
@@ -57,6 +60,7 @@ export function NotesWindowView({
   const activeTabId = useAppSelector(selectInstanceActiveTab(instanceId));
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
   const splitNoteId = useAppSelector(selectInstanceSplitNoteId(instanceId));
+  const activeEditorMode = useNoteEditorMode(activeTabId ?? "");
   const splitNoteLabel = useAppSelector(
     splitNoteId ? selectNoteLabel(splitNoteId) : () => undefined,
   );
@@ -115,6 +119,19 @@ export function NotesWindowView({
         <div className="flex h-full min-h-0 flex-col">
           {showTabs && <NoteTabBar instanceId={instanceId} syncUrl={syncUrl} />}
           <NotePresenceBanner instanceId={instanceId} />
+          {/* THE formatting toolbar — the same one /notes and the Board draw, in
+              every editing mode and never in Read. The window header only has
+              room for the mode switch + note tools, so it sits in its own row;
+              what does not fit folds into its More menu. */}
+          {activeTabId && activeEditorMode !== "preview" && (
+            <div className="@container flex h-9 shrink-0 items-center border-b border-border/40 px-1.5">
+              <FormatButtons
+                size="xs"
+                className="flex-1"
+                resolve={() => formatTargetWithin(shortcutRootRef.current)}
+              />
+            </div>
+          )}
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex min-h-0 flex-1">
               {activeTabId ? (
