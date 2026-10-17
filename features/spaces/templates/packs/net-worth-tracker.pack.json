@@ -1,0 +1,1540 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0362",
+ "version": 1,
+ "title": "Net Worth Tracker",
+ "description": "Track accounts, holdings and dated balance snapshots. Tracking only, no advice.",
+ "forWho": "Individuals and households",
+ "icon": {
+  "emoji": "📈"
+ },
+ "cover": {
+  "url": "gallery:photo-misty-mountains",
+  "offsetY": 50
+ },
+ "category": "finance",
+ "tags": [
+  "net worth",
+  "accounts",
+  "holdings",
+  "tracking"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-net-worth-tracker",
+  "catalogueId": "SP0362",
+  "useCase": "Odalys Ferreira records balances monthly to see how her total changes over time.",
+  "industry": "cross_industry",
+  "vertical": "Personal finance",
+  "job": "reporting",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Odalys Ferreira household",
+   "describes": "One household keeping a private record of accounts and balances.",
+   "address": {
+    "line1": "506 Harrow Glen Drive",
+    "city": "Charlotte",
+    "region": "NC",
+    "postalCode": "28203",
+    "country": "US"
+   },
+   "phone": "(704) 555-0171",
+   "website": "ferreira-home.net",
+   "email": "odalys@ferreira-home.net",
+   "timezone": "America/New_York"
+  },
+  "cleanupTag": "use-case:spaces-net-worth-tracker",
+  "tables": [
+   {
+    "token": "account",
+    "name": "Accounts",
+    "labelSingular": "Account",
+    "labelPlural": "Accounts",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "landmark",
+    "titleField": "account_name",
+    "describes": "Every account or asset with its class, institution and latest balance.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "account_name",
+      "label": "Account",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "account_type",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Cash",
+       "Brokerage",
+       "Retirement",
+       "Property",
+       "Loan",
+       "Card"
+      ],
+      "choiceColors": {
+       "Cash": "blue",
+       "Brokerage": "violet",
+       "Retirement": "teal",
+       "Property": "orange",
+       "Loan": "pink",
+       "Card": "yellow"
+      }
+     },
+     {
+      "key": "klass",
+      "label": "Class",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Asset",
+       "Liability"
+      ],
+      "choiceColors": {
+       "Asset": "green",
+       "Liability": "orange"
+      }
+     },
+     {
+      "key": "institution",
+      "label": "Institution",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "current_balance",
+      "label": "Current balance",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000000
+       }
+      ]
+     },
+     {
+      "key": "currency",
+      "label": "Currency",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "USD",
+       "EUR",
+       "GBP"
+      ],
+      "choiceColors": {
+       "USD": "blue",
+       "EUR": "violet",
+       "GBP": "teal"
+      }
+     },
+     {
+      "key": "holdings",
+      "label": "Holdings",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "holding",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "snapshots",
+      "label": "Snapshots",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "snapshot",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "highest_recorded",
+      "label": "Highest recorded",
+      "parityType": "rollup",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "via": "snapshots",
+      "pick": "balance",
+      "agg": "max"
+     }
+    ],
+    "rows": [
+     {
+      "key": "a1",
+      "values": {
+       "account_name": "Everyday checking",
+       "account_type": "Cash",
+       "klass": "Asset",
+       "institution": "Pinecrest Credit Union",
+       "current_balance": 6800,
+       "currency": "USD"
+      }
+     },
+     {
+      "key": "a2",
+      "values": {
+       "account_name": "High-yield savings",
+       "account_type": "Cash",
+       "klass": "Asset",
+       "institution": "Westmoor Bank",
+       "current_balance": 24500,
+       "currency": "USD"
+      }
+     },
+     {
+      "key": "a3",
+      "values": {
+       "account_name": "Brokerage account",
+       "account_type": "Brokerage",
+       "klass": "Asset",
+       "institution": "Larkspur Securities",
+       "current_balance": 58200,
+       "currency": "USD"
+      }
+     },
+     {
+      "key": "a4",
+      "values": {
+       "account_name": "Retirement account",
+       "account_type": "Retirement",
+       "klass": "Asset",
+       "institution": "Harbor Trust",
+       "current_balance": 112400,
+       "currency": "USD"
+      }
+     },
+     {
+      "key": "a5",
+      "values": {
+       "account_name": "Townhouse (estimated value)",
+       "account_type": "Property",
+       "klass": "Asset",
+       "institution": "Self-valued",
+       "current_balance": 385000,
+       "currency": "USD"
+      }
+     },
+     {
+      "key": "a6",
+      "values": {
+       "account_name": "Mortgage",
+       "account_type": "Loan",
+       "klass": "Liability",
+       "institution": "Eastgate Home Loans",
+       "current_balance": 268000,
+       "currency": "USD"
+      }
+     },
+     {
+      "key": "a7",
+      "values": {
+       "account_name": "Auto loan",
+       "account_type": "Loan",
+       "klass": "Liability",
+       "institution": "Pinecrest Credit Union",
+       "current_balance": 11900,
+       "currency": "USD"
+      }
+     },
+     {
+      "key": "a8",
+      "values": {
+       "account_name": "Rewards credit card",
+       "account_type": "Card",
+       "klass": "Liability",
+       "institution": "Westmoor Bank",
+       "current_balance": 1850,
+       "currency": "USD"
+      }
+     }
+    ],
+    "independentOf": {
+     "holdings": "Holdings carry no dates of their own.",
+     "snapshots": "Snapshots are dated readings of the balance."
+    }
+   },
+   {
+    "token": "holding",
+    "name": "Holdings",
+    "labelSingular": "Holding",
+    "labelPlural": "Holdings",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "briefcase",
+    "titleField": "holding_name",
+    "describes": "Positions held inside investment accounts, tracked by cost and current value.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "holding_name",
+      "label": "Holding",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "account",
+      "label": "Account",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "account",
+      "relationMax": 1
+     },
+     {
+      "key": "asset_type",
+      "label": "Asset type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Stock",
+       "Fund",
+       "Crypto",
+       "Bond",
+       "Cash"
+      ],
+      "choiceColors": {
+       "Stock": "blue",
+       "Fund": "violet",
+       "Crypto": "teal",
+       "Bond": "orange",
+       "Cash": "pink"
+      }
+     },
+     {
+      "key": "quantity",
+      "label": "Quantity",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 1000000000
+       }
+      ]
+     },
+     {
+      "key": "cost_basis",
+      "label": "Cost basis",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000000
+       }
+      ]
+     },
+     {
+      "key": "current_value",
+      "label": "Current value",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000000
+       }
+      ]
+     },
+     {
+      "key": "gain",
+      "label": "Gain",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Current value} - {Cost basis}",
+      "unit": "USD"
+     },
+     {
+      "key": "gain_percent",
+      "label": "Gain percent",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "ROUND(({Current value} - {Cost basis}) / {Cost basis} * 100, 1)"
+     }
+    ],
+    "rows": [
+     {
+      "key": "h1",
+      "values": {
+       "holding_name": "Broad market index fund",
+       "account": "a3",
+       "asset_type": "Fund",
+       "quantity": 112.4,
+       "cost_basis": 9300,
+       "current_value": 10850
+      }
+     },
+     {
+      "key": "h2",
+      "values": {
+       "holding_name": "Small-cap fund",
+       "account": "a3",
+       "asset_type": "Fund",
+       "quantity": 64,
+       "cost_basis": 5400,
+       "current_value": 6120
+      }
+     },
+     {
+      "key": "h3",
+      "values": {
+       "holding_name": "Quillon Robotics shares",
+       "account": "a3",
+       "asset_type": "Stock",
+       "quantity": 40,
+       "cost_basis": 3200,
+       "current_value": 4610
+      }
+     },
+     {
+      "key": "h4",
+      "values": {
+       "holding_name": "Municipal bond ladder",
+       "account": "a3",
+       "asset_type": "Bond",
+       "quantity": 30,
+       "cost_basis": 15000,
+       "current_value": 15240
+      }
+     },
+     {
+      "key": "h5",
+      "values": {
+       "holding_name": "Ether holding",
+       "account": "a3",
+       "asset_type": "Crypto",
+       "quantity": 2.5,
+       "cost_basis": 4100,
+       "current_value": 5050
+      }
+     },
+     {
+      "key": "h6",
+      "values": {
+       "holding_name": "Cash sweep",
+       "account": "a3",
+       "asset_type": "Cash",
+       "quantity": 1,
+       "cost_basis": 8500,
+       "current_value": 8500
+      }
+     },
+     {
+      "key": "h7",
+      "values": {
+       "holding_name": "Target-date fund",
+       "account": "a4",
+       "asset_type": "Fund",
+       "quantity": 640,
+       "cost_basis": 88000,
+       "current_value": 96800
+      }
+     },
+     {
+      "key": "h8",
+      "values": {
+       "holding_name": "Company stock plan",
+       "account": "a4",
+       "asset_type": "Stock",
+       "quantity": 120,
+       "cost_basis": 9700,
+       "current_value": 12400
+      }
+     },
+     {
+      "key": "h9",
+      "values": {
+       "holding_name": "Treasury note",
+       "account": "a4",
+       "asset_type": "Bond",
+       "quantity": 10,
+       "cost_basis": 9800,
+       "current_value": 9660
+      }
+     },
+     {
+      "key": "h10",
+      "values": {
+       "holding_name": "Cash reserve",
+       "account": "a4",
+       "asset_type": "Cash",
+       "quantity": 1,
+       "cost_basis": 3200,
+       "current_value": 3200
+      }
+     }
+    ],
+    "independentOf": {
+     "account": "Holdings hold no schedule dates."
+    }
+   },
+   {
+    "token": "snapshot",
+    "name": "Snapshots",
+    "labelSingular": "Snapshot",
+    "labelPlural": "Snapshots",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "camera",
+    "titleField": "snapshot_name",
+    "describes": "Dated balance readings that build the net worth history.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "snapshot_name",
+      "label": "Snapshot",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "account",
+      "label": "Account",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "account",
+      "relationMax": 1
+     },
+     {
+      "key": "snapshot_on",
+      "label": "Date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "balance",
+      "label": "Balance",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000000
+       }
+      ]
+     },
+     {
+      "key": "month_label",
+      "label": "Month",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "DATETIME_FORMAT({Date}, 'MMM YYYY')"
+     }
+    ],
+    "rows": [
+     {
+      "key": "sa1_0",
+      "values": {
+       "snapshot_name": "Everyday checking reading",
+       "account": "a1",
+       "snapshot_on": "@today-60d",
+       "balance": 6528
+      }
+     },
+     {
+      "key": "sa1_1",
+      "values": {
+       "snapshot_name": "Everyday checking reading (mid)",
+       "account": "a1",
+       "snapshot_on": "@today-30d",
+       "balance": 6664
+      }
+     },
+     {
+      "key": "sa1_2",
+      "values": {
+       "snapshot_name": "Everyday checking reading (latest)",
+       "account": "a1",
+       "snapshot_on": "@today-1d",
+       "balance": 6800
+      }
+     },
+     {
+      "key": "sa2_0",
+      "values": {
+       "snapshot_name": "High-yield savings reading",
+       "account": "a2",
+       "snapshot_on": "@today-60d",
+       "balance": 23520
+      }
+     },
+     {
+      "key": "sa2_1",
+      "values": {
+       "snapshot_name": "High-yield savings reading (mid)",
+       "account": "a2",
+       "snapshot_on": "@today-30d",
+       "balance": 24010
+      }
+     },
+     {
+      "key": "sa2_2",
+      "values": {
+       "snapshot_name": "High-yield savings reading (latest)",
+       "account": "a2",
+       "snapshot_on": "@today-1d",
+       "balance": 24500
+      }
+     },
+     {
+      "key": "sa3_0",
+      "values": {
+       "snapshot_name": "Brokerage account reading",
+       "account": "a3",
+       "snapshot_on": "@today-60d",
+       "balance": 55872
+      }
+     },
+     {
+      "key": "sa3_1",
+      "values": {
+       "snapshot_name": "Brokerage account reading (mid)",
+       "account": "a3",
+       "snapshot_on": "@today-30d",
+       "balance": 57036
+      }
+     },
+     {
+      "key": "sa3_2",
+      "values": {
+       "snapshot_name": "Brokerage account reading (latest)",
+       "account": "a3",
+       "snapshot_on": "@today-1d",
+       "balance": 58200
+      }
+     },
+     {
+      "key": "sa4_0",
+      "values": {
+       "snapshot_name": "Retirement account reading",
+       "account": "a4",
+       "snapshot_on": "@today-60d",
+       "balance": 107904
+      }
+     },
+     {
+      "key": "sa4_1",
+      "values": {
+       "snapshot_name": "Retirement account reading (mid)",
+       "account": "a4",
+       "snapshot_on": "@today-30d",
+       "balance": 110152
+      }
+     },
+     {
+      "key": "sa4_2",
+      "values": {
+       "snapshot_name": "Retirement account reading (latest)",
+       "account": "a4",
+       "snapshot_on": "@today-1d",
+       "balance": 112400
+      }
+     },
+     {
+      "key": "sa5_0",
+      "values": {
+       "snapshot_name": "Townhouse (estimated value) reading",
+       "account": "a5",
+       "snapshot_on": "@today-60d",
+       "balance": 369600
+      }
+     },
+     {
+      "key": "sa5_1",
+      "values": {
+       "snapshot_name": "Townhouse (estimated value) reading (mid)",
+       "account": "a5",
+       "snapshot_on": "@today-30d",
+       "balance": 377300
+      }
+     },
+     {
+      "key": "sa5_2",
+      "values": {
+       "snapshot_name": "Townhouse (estimated value) reading (latest)",
+       "account": "a5",
+       "snapshot_on": "@today-1d",
+       "balance": 385000
+      }
+     },
+     {
+      "key": "sa6_0",
+      "values": {
+       "snapshot_name": "Mortgage reading",
+       "account": "a6",
+       "snapshot_on": "@today-60d",
+       "balance": 257280
+      }
+     },
+     {
+      "key": "sa6_1",
+      "values": {
+       "snapshot_name": "Mortgage reading (mid)",
+       "account": "a6",
+       "snapshot_on": "@today-30d",
+       "balance": 262640
+      }
+     },
+     {
+      "key": "sa6_2",
+      "values": {
+       "snapshot_name": "Mortgage reading (latest)",
+       "account": "a6",
+       "snapshot_on": "@today-1d",
+       "balance": 268000
+      }
+     },
+     {
+      "key": "sa7_0",
+      "values": {
+       "snapshot_name": "Auto loan reading",
+       "account": "a7",
+       "snapshot_on": "@today-60d",
+       "balance": 11424
+      }
+     },
+     {
+      "key": "sa7_1",
+      "values": {
+       "snapshot_name": "Auto loan reading (mid)",
+       "account": "a7",
+       "snapshot_on": "@today-30d",
+       "balance": 11662
+      }
+     },
+     {
+      "key": "sa7_2",
+      "values": {
+       "snapshot_name": "Auto loan reading (latest)",
+       "account": "a7",
+       "snapshot_on": "@today-1d",
+       "balance": 11900
+      }
+     },
+     {
+      "key": "sa8_0",
+      "values": {
+       "snapshot_name": "Rewards credit card reading",
+       "account": "a8",
+       "snapshot_on": "@today-60d",
+       "balance": 1776
+      }
+     },
+     {
+      "key": "sa8_1",
+      "values": {
+       "snapshot_name": "Rewards credit card reading (mid)",
+       "account": "a8",
+       "snapshot_on": "@today-30d",
+       "balance": 1813
+      }
+     },
+     {
+      "key": "sa8_2",
+      "values": {
+       "snapshot_name": "Rewards credit card reading (latest)",
+       "account": "a8",
+       "snapshot_on": "@today-1d",
+       "balance": 1850
+      }
+     }
+    ],
+    "independentOf": {
+     "account": "A reading is dated on its own."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "An account contains holdings.",
+    "fromTable": "account",
+    "fromField": "holdings",
+    "toTable": "holding",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "in_account"
+   },
+   {
+    "describes": "An account has dated balance readings.",
+    "fromTable": "account",
+    "fromField": "snapshots",
+    "toTable": "snapshot",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "of_account"
+   },
+   {
+    "describes": "Each holding sits in one account.",
+    "fromTable": "holding",
+    "fromField": "account",
+    "toTable": "account",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "account_holdings"
+   },
+   {
+    "describes": "Each snapshot belongs to one account.",
+    "fromTable": "snapshot",
+    "fromField": "account",
+    "toTable": "account",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "account_snapshots"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "add_snapshot",
+    "name": "Record a balance",
+    "describes": "Add a dated reading for an account.",
+    "audience": "staff",
+    "table": "snapshot",
+    "fields": [
+     {
+      "fieldKey": "snapshot_name",
+      "ask": "What is this reading called?",
+      "required": true
+     },
+     {
+      "fieldKey": "account",
+      "ask": "Which account?",
+      "required": true
+     },
+     {
+      "fieldKey": "snapshot_on",
+      "ask": "On what date?"
+     },
+     {
+      "fieldKey": "balance",
+      "ask": "What is the balance?",
+      "required": true
+     }
+    ],
+    "submitLabel": "Save reading",
+    "confirmation": "Saved."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_accounts",
+    "name": "Accounts",
+    "table": "account",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "class_board",
+    "name": "By class",
+    "table": "account",
+    "kind": "kanban",
+    "groupBy": "klass"
+   },
+   {
+    "token": "all_holdings",
+    "name": "Holdings",
+    "table": "holding",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "holdings_board",
+    "name": "By asset type",
+    "table": "holding",
+    "kind": "kanban",
+    "groupBy": "asset_type"
+   },
+   {
+    "token": "all_snapshots",
+    "name": "Snapshots",
+    "table": "snapshot",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "snapshot_on",
+      "direction": "desc"
+     }
+    ]
+   },
+   {
+    "token": "snapshot_calendar",
+    "name": "Reading dates",
+    "table": "snapshot",
+    "kind": "calendar",
+    "dateField": "snapshot_on",
+    "allDay": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Net worth assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "account",
+     "describes": "Every account with class, type and current balance."
+    },
+    {
+     "name": "related_tables",
+     "table": "holding",
+     "describes": "Holdings inside accounts."
+    }
+   ],
+   "question": {
+    "ask": "How many accounts are liabilities?",
+    "whyItMatters": "Odalys reviews debts each month.",
+    "expect": {
+     "table": "account",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "klass": "Liability"
+     },
+     "answer": 3,
+     "unit": "accounts"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open accounts by class.",
+    "action": {
+     "kind": "open",
+     "surface": "class_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "class_board",
+     "minItems": 8
+    }
+   },
+   {
+    "says": "Open holdings.",
+    "action": {
+     "kind": "open",
+     "surface": "holdings_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "holdings_board",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open snapshot dates.",
+    "action": {
+     "kind": "open",
+     "surface": "snapshot_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "snapshot_calendar",
+     "minItems": 24
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "ferreira-home.net"
+   ],
+   "fictionalStreets": [
+    "Harrow Glen Drive"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "net-worth",
+   "parent": null,
+   "title": "Net Worth Tracker",
+   "icon": {
+    "emoji": "📈"
+   },
+   "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "A record of what you own and owe, nothing more. Update balances monthly, add a snapshot, and watch the line move. This is a tracking sheet and gives no advice."
+      }
+     ],
+     "background": "gray",
+     "props": {
+      "icon": "Landmark"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "account",
+           "view": "all_accounts"
+          },
+          "inline": true,
+          "title": "Accounts",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Assets and liabilities",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "klass",
+             "op": "sum",
+             "field": "current_balance",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "account",
+           "view": "all_accounts"
+          },
+          "inline": true,
+          "title": "Accounts",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Balance by type",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "account_type",
+             "op": "sum",
+             "field": "current_balance"
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "snapshot",
+           "view": "all_snapshots"
+          },
+          "inline": true,
+          "title": "Snapshots",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Balance over time",
+            "layout": "chart",
+            "icon": "ChartLine",
+            "chart": {
+             "type": "line",
+             "groupBy": "snapshot_on",
+             "op": "sum",
+             "field": "balance"
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Accounts"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "account",
+       "view": "all_accounts"
+      },
+      "inline": true,
+      "title": "Accounts",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-a",
+        "name": "By type",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-b",
+        "name": "By class",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "klass"
+       },
+       {
+        "id": "v-g",
+        "name": "Assets by type",
+        "layout": "chart",
+        "icon": "ChartPie",
+        "chart": {
+         "type": "donut",
+         "groupBy": "account_type",
+         "op": "sum",
+         "field": "current_balance",
+         "centerValue": true
+        }
+       }
+      ],
+      "activeViewId": "v-a"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Holdings"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "holding",
+       "view": "all_holdings"
+      },
+      "inline": true,
+      "title": "Holdings",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-h",
+        "name": "All holdings",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-ht",
+        "name": "By asset type",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "asset_type"
+       },
+       {
+        "id": "v-hc",
+        "name": "Value by type",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "asset_type",
+         "op": "sum",
+         "field": "current_value"
+        }
+       }
+      ],
+      "activeViewId": "v-h"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Snapshots"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "snapshot",
+       "view": "all_snapshots"
+      },
+      "inline": true,
+      "title": "Snapshots",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-s",
+        "name": "Latest first",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "snapshot_on",
+          "direction": "desc"
+         }
+        ]
+       },
+       {
+        "id": "v-sc",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "snapshot_on"
+       }
+      ],
+      "activeViewId": "v-s"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:monthly-update"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:net-worth-notes"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "monthly-update",
+   "parent": "net-worth",
+   "title": "Monthly update",
+   "icon": {
+    "emoji": "🗓️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Ten-minute routine"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Update the balance on every account"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Update current value on each holding"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Add a snapshot for each account"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Check that liabilities went down as expected"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Keep values in one currency per account. Use the Currency column to mark any that differ."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Coins"
+     }
+    }
+   ]
+  },
+  {
+   "key": "net-worth-notes",
+   "parent": "net-worth",
+   "title": "How it adds up",
+   "icon": {
+    "emoji": "🧮"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Net worth is the total of your assets minus the total of your liabilities. Class says which is which; liabilities are stored as positive amounts."
+      }
+     ]
+    },
+    {
+     "type": "table",
+     "props": {
+      "headerRow": true,
+      "headerColumn": false,
+      "rows": [
+       {
+        "cells": [
+         [
+          {
+           "text": "Class"
+          }
+         ],
+         [
+          {
+           "text": "Examples"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Asset"
+          }
+         ],
+         [
+          {
+           "text": "Cash, brokerage, retirement, property"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Liability"
+          }
+         ],
+         [
+          {
+           "text": "Mortgage, auto loan, card balance"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "account",
+       "view": "class_board"
+      },
+      "inline": true,
+      "title": "Accounts",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-l",
+        "name": "Liabilities",
+        "layout": "list",
+        "icon": "TrendingDown",
+        "filters": {
+         "klass": "Liability"
+        }
+       }
+      ],
+      "activeViewId": "v-l"
+     }
+    }
+   ]
+  }
+ ]
+}

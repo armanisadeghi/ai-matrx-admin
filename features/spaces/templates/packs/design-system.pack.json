@@ -1,0 +1,1608 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0360",
+ "version": 1,
+ "title": "Design System",
+ "description": "Document tokens, components and usage rules with owners and status.",
+ "forWho": "Design and front-end teams",
+ "icon": {
+  "emoji": "🎨"
+ },
+ "cover": {
+  "url": "gallery:photo-lavender-dusk",
+  "offsetY": 50
+ },
+ "category": "docs",
+ "tags": [
+  "design",
+  "components",
+  "tokens",
+  "documentation"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-design-system",
+  "catalogueId": "SP0360",
+  "useCase": "Yara Delacroix maintains the tokens and components that every Pebblecraft app uses.",
+  "industry": "cross_industry",
+  "vertical": "Design systems",
+  "job": "content",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Pebblecraft Studio",
+   "describes": "A product studio with a shared design system across its apps.",
+   "address": {
+    "line1": "19 Sallow Fen Street",
+    "city": "Portland",
+    "region": "OR",
+    "postalCode": "97209",
+    "country": "US"
+   },
+   "phone": "(503) 555-0100",
+   "website": "pebblecraft.net",
+   "email": "hello@pebblecraft.net",
+   "timezone": "America/Los_Angeles"
+  },
+  "cleanupTag": "use-case:spaces-design-system",
+  "tables": [
+   {
+    "token": "token",
+    "name": "Tokens",
+    "labelSingular": "Token",
+    "labelPlural": "Tokens",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "palette",
+    "titleField": "token_name",
+    "describes": "The named values that every component is built from.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "token_name",
+      "label": "Token",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "layer",
+      "label": "Layer",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Core",
+       "Semantic",
+       "Component"
+      ],
+      "choiceColors": {
+       "Core": "blue",
+       "Semantic": "violet",
+       "Component": "teal"
+      }
+     },
+     {
+      "key": "platform",
+      "label": "Platform",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Web",
+       "Mobile",
+       "Both"
+      ],
+      "choiceColors": {
+       "Web": "blue",
+       "Mobile": "violet",
+       "Both": "teal"
+      }
+     },
+     {
+      "key": "token_type",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Colour",
+       "Type",
+       "Spacing",
+       "Radius",
+       "Shadow"
+      ],
+      "choiceColors": {
+       "Colour": "blue",
+       "Type": "violet",
+       "Spacing": "teal",
+       "Radius": "orange",
+       "Shadow": "pink"
+      }
+     },
+     {
+      "key": "token_value",
+      "label": "Value",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "alias_of",
+      "label": "Alias of",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "token",
+      "relationMax": 1
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Draft",
+       "Stable",
+       "Deprecated"
+      ],
+      "choiceColors": {
+       "Draft": "amber",
+       "Stable": "green",
+       "Deprecated": "red"
+      }
+     }
+    ],
+    "rows": [
+     {
+      "key": "k1",
+      "values": {
+       "token_name": "color-brand-500",
+       "token_type": "Colour",
+       "token_value": "#3B6FD4",
+       "status": "Stable",
+       "layer": "Core",
+       "platform": "Both"
+      }
+     },
+     {
+      "key": "k2",
+      "values": {
+       "token_name": "color-brand-700",
+       "token_type": "Colour",
+       "token_value": "#274C9A",
+       "status": "Draft",
+       "layer": "Core",
+       "platform": "Both"
+      }
+     },
+     {
+      "key": "k3",
+      "values": {
+       "token_name": "color-surface",
+       "token_type": "Colour",
+       "token_value": "#FFFFFF",
+       "status": "Stable",
+       "layer": "Semantic",
+       "platform": "Web"
+      }
+     },
+     {
+      "key": "k4",
+      "values": {
+       "token_name": "color-action",
+       "token_type": "Colour",
+       "token_value": "Brand 500",
+       "status": "Stable",
+       "layer": "Semantic",
+       "platform": "Mobile",
+       "alias_of": "k1"
+      }
+     },
+     {
+      "key": "k5",
+      "values": {
+       "token_name": "font-body",
+       "token_type": "Type",
+       "token_value": "Inter, 16px / 24px",
+       "status": "Stable",
+       "layer": "Core",
+       "platform": "Web"
+      }
+     },
+     {
+      "key": "k6",
+      "values": {
+       "token_name": "font-heading-large",
+       "token_type": "Type",
+       "token_value": "Inter, 28px / 34px, 600",
+       "status": "Stable",
+       "layer": "Semantic",
+       "platform": "Both"
+      }
+     },
+     {
+      "key": "k7",
+      "values": {
+       "token_name": "space-2",
+       "token_type": "Spacing",
+       "token_value": "8px",
+       "status": "Stable",
+       "layer": "Core",
+       "platform": "Mobile"
+      }
+     },
+     {
+      "key": "k8",
+      "values": {
+       "token_name": "space-4",
+       "token_type": "Spacing",
+       "token_value": "16px",
+       "status": "Stable",
+       "layer": "Semantic",
+       "platform": "Web"
+      }
+     },
+     {
+      "key": "k9",
+      "values": {
+       "token_name": "radius-card",
+       "token_type": "Radius",
+       "token_value": "10px",
+       "status": "Draft",
+       "layer": "Component",
+       "platform": "Both"
+      }
+     },
+     {
+      "key": "k10",
+      "values": {
+       "token_name": "shadow-raised",
+       "token_type": "Shadow",
+       "token_value": "0 2px 8px rgba(20,30,60,0.12)",
+       "status": "Draft",
+       "layer": "Component",
+       "platform": "Web"
+      }
+     },
+     {
+      "key": "k11",
+      "values": {
+       "token_name": "color-danger",
+       "token_type": "Colour",
+       "token_value": "#C8402F",
+       "status": "Stable",
+       "layer": "Semantic",
+       "platform": "Mobile"
+      }
+     },
+     {
+      "key": "k12",
+      "values": {
+       "token_name": "space-gutter",
+       "token_type": "Spacing",
+       "token_value": "Space 4",
+       "status": "Deprecated",
+       "layer": "Component",
+       "platform": "Mobile",
+       "alias_of": "k8"
+      }
+     }
+    ],
+    "statusAgrees": [
+     {
+      "relation": "alias_of",
+      "field": "status",
+      "childStatus": [
+       "Stable"
+      ],
+      "parentField": "status",
+      "parentStatus": [
+       "Stable"
+      ]
+     }
+    ]
+   },
+   {
+    "token": "component",
+    "name": "Components",
+    "labelSingular": "Component",
+    "labelPlural": "Components",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "blocks",
+    "titleField": "component_name",
+    "describes": "Each component, its status, owner, links and the tokens it uses.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "component_name",
+      "label": "Component",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "category",
+      "label": "Category",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Actions",
+       "Forms",
+       "Layout",
+       "Overlays",
+       "Feedback",
+       "Data"
+      ],
+      "choiceColors": {
+       "Actions": "blue",
+       "Forms": "violet",
+       "Layout": "teal",
+       "Overlays": "orange",
+       "Feedback": "pink",
+       "Data": "yellow"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Draft",
+       "Beta",
+       "Stable",
+       "Deprecated"
+      ],
+      "choiceColors": {
+       "Draft": "slate",
+       "Beta": "amber",
+       "Stable": "green",
+       "Deprecated": "red"
+      }
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "design_link",
+      "label": "Design link",
+      "parityType": "url",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "code_link",
+      "label": "Code link",
+      "parityType": "url",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "tokens",
+      "label": "Tokens",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "token",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "version",
+      "label": "Version",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "updated_on",
+      "label": "Last updated",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     }
+    ],
+    "rows": [
+     {
+      "key": "p1",
+      "values": {
+       "component_name": "Button",
+       "category": "Actions",
+       "status": "Stable",
+       "owner": "tm-ben",
+       "design_link": "https://design.pebblecraft-demo.net/button",
+       "code_link": "https://code.pebblecraft-demo.net/button",
+       "tokens": [
+        "k1",
+        "k4",
+        "k9"
+       ],
+       "version": "2.4.0",
+       "updated_on": "@today-2d"
+      }
+     },
+     {
+      "key": "p2",
+      "values": {
+       "component_name": "Text field",
+       "category": "Forms",
+       "status": "Stable",
+       "owner": "tm-lola",
+       "design_link": "https://design.pebblecraft-demo.net/text-field",
+       "code_link": "https://code.pebblecraft-demo.net/text-field",
+       "tokens": [
+        "k3",
+        "k5",
+        "k7"
+       ],
+       "version": "2.1.0",
+       "updated_on": "@today-8d"
+      }
+     },
+     {
+      "key": "p3",
+      "values": {
+       "component_name": "Select menu",
+       "category": "Forms",
+       "status": "Beta",
+       "owner": "tm-lola",
+       "design_link": "https://design.pebblecraft-demo.net/select-menu",
+       "code_link": "https://code.pebblecraft-demo.net/select-menu",
+       "tokens": [
+        "k3",
+        "k8",
+        "k9"
+       ],
+       "version": "0.9.2",
+       "updated_on": "@today-14d"
+      }
+     },
+     {
+      "key": "p4",
+      "values": {
+       "component_name": "Card",
+       "category": "Layout",
+       "status": "Stable",
+       "owner": "tm-ben",
+       "design_link": "https://design.pebblecraft-demo.net/card",
+       "code_link": "https://code.pebblecraft-demo.net/card",
+       "tokens": [
+        "k3",
+        "k9",
+        "k10"
+       ],
+       "version": "1.8.0",
+       "updated_on": "@today-20d"
+      }
+     },
+     {
+      "key": "p5",
+      "values": {
+       "component_name": "Modal dialog",
+       "category": "Overlays",
+       "status": "Beta",
+       "owner": "tm-quinn",
+       "design_link": "https://design.pebblecraft-demo.net/modal-dialog",
+       "code_link": "https://code.pebblecraft-demo.net/modal-dialog",
+       "tokens": [
+        "k3",
+        "k10",
+        "k8"
+       ],
+       "version": "0.8.0",
+       "updated_on": "@today-26d"
+      }
+     },
+     {
+      "key": "p6",
+      "values": {
+       "component_name": "Toast notice",
+       "category": "Feedback",
+       "status": "Draft",
+       "owner": "tm-yara",
+       "design_link": "https://design.pebblecraft-demo.net/toast-notice",
+       "code_link": "https://code.pebblecraft-demo.net/toast-notice",
+       "tokens": [
+        "k11",
+        "k10"
+       ],
+       "version": "0.2.0",
+       "updated_on": "@today-32d"
+      }
+     },
+     {
+      "key": "p7",
+      "values": {
+       "component_name": "Data table",
+       "category": "Data",
+       "status": "Stable",
+       "owner": "tm-ben",
+       "design_link": "https://design.pebblecraft-demo.net/data-table",
+       "code_link": "https://code.pebblecraft-demo.net/data-table",
+       "tokens": [
+        "k5",
+        "k7",
+        "k3"
+       ],
+       "version": "3.0.1",
+       "updated_on": "@today-38d"
+      }
+     },
+     {
+      "key": "p8",
+      "values": {
+       "component_name": "Tooltip",
+       "category": "Overlays",
+       "status": "Deprecated",
+       "owner": "tm-quinn",
+       "design_link": "https://design.pebblecraft-demo.net/tooltip",
+       "code_link": "https://code.pebblecraft-demo.net/tooltip",
+       "tokens": [
+        "k5"
+       ],
+       "version": "1.0.0",
+       "updated_on": "@today-44d"
+      }
+     }
+    ],
+    "independentOf": {
+     "owner": "Ownership is independent of status.",
+     "tokens": "A component adopts tokens as they are published."
+    }
+   },
+   {
+    "token": "guideline",
+    "name": "Guidelines",
+    "labelSingular": "Guideline",
+    "labelPlural": "Guidelines",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "book-open-check",
+    "titleField": "title",
+    "describes": "Usage rules attached to the components they apply to.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "title",
+      "label": "Guideline",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "area",
+      "label": "Area",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Actions",
+       "Forms",
+       "Data",
+       "Accessibility"
+      ],
+      "choiceColors": {
+       "Actions": "blue",
+       "Forms": "violet",
+       "Data": "teal",
+       "Accessibility": "orange"
+      }
+     },
+     {
+      "key": "related",
+      "label": "Related components",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "component",
+      "relationMax": 50,
+      "multi": true
+     }
+    ],
+    "rows": [
+     {
+      "key": "g1",
+      "values": {
+       "title": "Use one primary button per view",
+       "area": "Actions",
+       "related": [
+        "p1"
+       ]
+      }
+     },
+     {
+      "key": "g2",
+      "values": {
+       "title": "Label every field and never rely on placeholders",
+       "area": "Forms",
+       "related": [
+        "p2",
+        "p3"
+       ]
+      }
+     },
+     {
+      "key": "g3",
+      "values": {
+       "title": "Error messages say what to do next",
+       "area": "Forms",
+       "related": [
+        "p2"
+       ]
+      }
+     },
+     {
+      "key": "g4",
+      "values": {
+       "title": "Dialogs trap focus and return it on close",
+       "area": "Accessibility",
+       "related": [
+        "p5"
+       ]
+      }
+     },
+     {
+      "key": "g5",
+      "values": {
+       "title": "Keep tables to seven columns before offering a column picker",
+       "area": "Data",
+       "related": [
+        "p7"
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "A token can be an alias of another token.",
+    "fromTable": "token",
+    "fromField": "alias_of",
+    "toTable": "token",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "aliased_by"
+   },
+   {
+    "describes": "Each component has one owner.",
+    "fromTable": "component",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "components_owned"
+   },
+   {
+    "describes": "A component uses several tokens.",
+    "fromTable": "component",
+    "fromField": "tokens",
+    "toTable": "token",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "used_by"
+   },
+   {
+    "describes": "A guideline applies to several components.",
+    "fromTable": "guideline",
+    "fromField": "related",
+    "toTable": "component",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "guided_by"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-yara",
+      "values": {
+       "full_name": "Yara Delacroix",
+       "role": "Design systems lead",
+       "work_email": "yara@pebblecraft.net",
+       "mobile": "(503) 555-0101",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-ben",
+      "values": {
+       "full_name": "Benedikt Sorensen",
+       "role": "Front-end engineer",
+       "work_email": "ben@pebblecraft.net",
+       "mobile": "(503) 555-0102",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-lola",
+      "values": {
+       "full_name": "Lola Fashola",
+       "role": "Product designer",
+       "work_email": "lola@pebblecraft.net",
+       "mobile": "(503) 555-0103",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-quinn",
+      "values": {
+       "full_name": "Quinn Aberdeen",
+       "role": "Accessibility specialist",
+       "work_email": "quinn@pebblecraft.net",
+       "mobile": "(503) 555-0104",
+       "start_date": "@today-18m"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "component_request",
+    "name": "Request a component",
+    "describes": "Teams ask the design system for something new.",
+    "audience": "staff",
+    "table": "component",
+    "fields": [
+     {
+      "fieldKey": "component_name",
+      "ask": "What component do you need?",
+      "required": true
+     },
+     {
+      "fieldKey": "category",
+      "ask": "What kind of component is it?"
+     },
+     {
+      "fieldKey": "design_link",
+      "ask": "Is there a design to look at?"
+     }
+    ],
+    "submitLabel": "Send request",
+    "confirmation": "Thanks. It is on the board as Draft."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_tokens",
+    "name": "Tokens",
+    "table": "token",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "token_board",
+    "name": "By type",
+    "table": "token",
+    "kind": "kanban",
+    "groupBy": "token_type"
+   },
+   {
+    "token": "all_components",
+    "name": "Components",
+    "table": "component",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "component_board",
+    "name": "By status",
+    "table": "component",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "all_guidelines",
+    "name": "Guidelines",
+    "table": "guideline",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Design system assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "component",
+     "describes": "Components with status, owner and version."
+    },
+    {
+     "name": "related_tables",
+     "table": "token",
+     "describes": "Tokens they use."
+    }
+   ],
+   "question": {
+    "ask": "How many components are stable?",
+    "whyItMatters": "Teams should use stable components.",
+    "expect": {
+     "table": "component",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Stable"
+     },
+     "answer": 4,
+     "unit": "components"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the component board.",
+    "action": {
+     "kind": "open",
+     "surface": "component_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "component_board",
+     "minItems": 8
+    }
+   },
+   {
+    "says": "Open tokens by type.",
+    "action": {
+     "kind": "open",
+     "surface": "token_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "token_board",
+     "minItems": 12
+    }
+   },
+   {
+    "says": "Open guidelines.",
+    "action": {
+     "kind": "open",
+     "surface": "all_guidelines"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_guidelines",
+     "minItems": 5
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "pebblecraft.net",
+    "design.pebblecraft-demo.net",
+    "code.pebblecraft-demo.net"
+   ],
+   "fictionalStreets": [
+    "Sallow Fen Street"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "design-system",
+   "parent": null,
+   "title": "Design System",
+   "icon": {
+    "emoji": "🎨"
+   },
+   "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "One home for tokens, components and rules. Start from the foundations, find a component, and check its status before using it."
+      }
+     ],
+     "background": "purple",
+     "props": {
+      "icon": "Palette"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:principles"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:foundations"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:component-page-template"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Components"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "component",
+       "view": "component_board"
+      },
+      "inline": true,
+      "title": "Components",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-g",
+        "name": "Gallery",
+        "layout": "gallery",
+        "icon": "LayoutGrid"
+       },
+       {
+        "id": "v-b",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "v-t",
+        "name": "All components",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-c",
+        "name": "By category",
+        "layout": "chart",
+        "icon": "ChartPie",
+        "chart": {
+         "type": "donut",
+         "groupBy": "category",
+         "op": "count",
+         "centerValue": true
+        }
+       }
+      ],
+      "activeViewId": "v-g"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Tokens"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "token",
+       "view": "token_board"
+      },
+      "inline": true,
+      "title": "Tokens",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-tt",
+        "name": "By type",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "token_type"
+       },
+       {
+        "id": "v-ta",
+        "name": "All tokens",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "v-tt"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Guidelines"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "guideline",
+       "view": "all_guidelines"
+      },
+      "inline": true,
+      "title": "Guidelines",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-gl",
+        "name": "Guidelines",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-ga",
+        "name": "By area",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "area",
+         "op": "count"
+        }
+       }
+      ],
+      "activeViewId": "v-gl"
+     }
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "Changelog"
+      }
+     ],
+     "children": [
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Button 2.4.0: adds a loading state."
+        }
+       ]
+      },
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Card 1.8.0: radius now reads from radius-card."
+        }
+       ]
+      },
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Tooltip deprecated; use the Popover pattern."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "principles",
+   "parent": "design-system",
+   "title": "Principles",
+   "icon": {
+    "emoji": "🧭"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Clear before clever: every screen has one obvious next step."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Consistent: the same thing looks and acts the same everywhere."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Accessible by default: contrast, focus and keyboard are part of done."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Flexible: tokens, not hard-coded values."
+      }
+     ]
+    },
+    {
+     "type": "quote",
+     "text": [
+      {
+       "text": "If a component needs a special case, the system is missing a variant."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "foundations",
+   "parent": "design-system",
+   "title": "Foundations",
+   "icon": {
+    "emoji": "🧱"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Colour"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "token",
+       "view": "all_tokens"
+      },
+      "inline": true,
+      "title": "Tokens",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-c",
+        "name": "Colour",
+        "layout": "grid",
+        "icon": "Palette",
+        "filters": {
+         "token_type": "Colour"
+        }
+       }
+      ],
+      "activeViewId": "v-c"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Type"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "token",
+       "view": "all_tokens"
+      },
+      "inline": true,
+      "title": "Tokens",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-ty",
+        "name": "Type",
+        "layout": "grid",
+        "icon": "Type",
+        "filters": {
+         "token_type": "Type"
+        }
+       }
+      ],
+      "activeViewId": "v-ty"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Spacing"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "token",
+       "view": "all_tokens"
+      },
+      "inline": true,
+      "title": "Tokens",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-s",
+        "name": "Spacing",
+        "layout": "grid",
+        "icon": "Ruler",
+        "filters": {
+         "token_type": "Spacing"
+        }
+       }
+      ],
+      "activeViewId": "v-s"
+     }
+    }
+   ]
+  },
+  {
+   "key": "component-page-template",
+   "parent": "design-system",
+   "title": "Component page (template)",
+   "icon": {
+    "emoji": "📄"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Overview"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "What it is and when to use it."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Anatomy"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Name each part of the component."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Variants"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "table",
+     "props": {
+      "headerRow": true,
+      "headerColumn": false,
+      "rows": [
+       {
+        "cells": [
+         [
+          {
+           "text": "Variant"
+          }
+         ],
+         [
+          {
+           "text": "Use for"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Primary"
+          }
+         ],
+         [
+          {
+           "text": "The main action"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Secondary"
+          }
+         ],
+         [
+          {
+           "text": "Supporting actions"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Quiet"
+          }
+         ],
+         [
+          {
+           "text": "Low emphasis"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "States"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Default, hover, focus, disabled, loading"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Accessibility"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Keyboard behavior, labels, contrast."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Do and do not"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "callout",
+         "text": [
+          {
+           "text": "Do: use the system tokens."
+          }
+         ],
+         "background": "green",
+         "props": {
+          "icon": "Check"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "callout",
+         "text": [
+          {
+           "text": "Do not: override colours in place."
+          }
+         ],
+         "background": "red",
+         "props": {
+          "icon": "X"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Code"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "code",
+     "props": {
+      "language": "tsx"
+     },
+     "text": [
+      {
+       "text": "<Button variant=\"primary\">Save</Button>"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
