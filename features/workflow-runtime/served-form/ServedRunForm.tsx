@@ -147,7 +147,7 @@ export function ServedRunForm({
 
   const feedback = (
     <>
-        {triedToStart && gaps.length > 0 && (
+      {triedToStart && gaps.length > 0 && (
         <p className="mt-2 text-xs text-destructive">
           Still needed:{" "}
           {gaps
@@ -164,11 +164,15 @@ export function ServedRunForm({
       {serverGaps && (
         <div className="mt-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3">
           <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
-            {serverGaps.length === 0
-              ? "The server refused to start this run for want of an input — but it did not say which."
-              : `The server needs ${serverGaps.length} ${
-                  serverGaps.length === 1 ? "input" : "inputs"
-                } before this run can start:`}
+            {simple
+              ? serverGaps.length === 0
+                ? "Something is still missing before this can start."
+                : "Fill these in first:"
+              : serverGaps.length === 0
+                ? "The server refused to start this run for want of an input — but it did not say which."
+                : `The server needs ${serverGaps.length} ${
+                    serverGaps.length === 1 ? "input" : "inputs"
+                  } before this run can start:`}
             <ErrorAlchemyMenu operation="Start this run" />
           </p>
           {serverGaps.length === 0 && !simple && (
