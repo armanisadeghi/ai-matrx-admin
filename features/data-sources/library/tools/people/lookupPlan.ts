@@ -26,6 +26,18 @@ export const PEOPLE_JOBS = {
 
 export type PeopleJobKey = (typeof PEOPLE_JOBS)[keyof typeof PEOPLE_JOBS];
 
+/** The Tools home address for a lookup. The ONE builder: a record that offers a lookup links here. */
+export const TOOLS_HOME_HREF = "/data/library";
+
+/**
+ * A link that opens one lookup with its box filled. It never presses the button (`run` stays off): a link is not
+ * consent to spend, so the person sees the price on the page and presses it themselves.
+ */
+export function toolLookupHref(jobKey: PeopleJobKey, inputs: Record<string, string>): string {
+  const params = new URLSearchParams({ tool: jobKey, with: JSON.stringify(inputs) });
+  return `${TOOLS_HOME_HREF}?${params.toString()}`;
+}
+
 export interface LookupPlan {
   jobKey: PeopleJobKey;
   /** Inputs by the Tool's own field names, ready to prefill its form. */

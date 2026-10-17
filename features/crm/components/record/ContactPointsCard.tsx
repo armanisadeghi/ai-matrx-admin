@@ -70,6 +70,8 @@ import {
 } from "../../types";
 import { SectionCard, SectionEmpty } from "./SectionCard";
 import { CrmRecordCopyButtons } from "./CrmRecordCopyButtons";
+import { toolLookupHref } from "@/features/data-sources/library/tools/people/lookupPlan";
+import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
 import {
   buildContactPointCopyView,
   contactPointsAgentPayload,
@@ -135,6 +137,15 @@ function deliverabilityBadge(point: ContactPoint) {
       {MEDIUM_BLOCK_LABELS[blocks[0]]}
     </span>
   );
+}
+
+/** Where one contact point can be checked (phone line, email deliverability); null for any other channel. */
+function checkHref(point: ContactPoint): string | null {
+  const value = point.medium.value_raw?.trim();
+  if (!value) return null;
+  if (point.channel === "phone") return toolLookupHref("phone_check", { phone: value });
+  if (point.channel === "email") return toolLookupHref("email_verify", { email: value });
+  return null;
 }
 
 export function ContactPointsCard({
@@ -468,6 +479,11 @@ export function ContactPointsCard({
                 )}
                 {deliverabilityBadge(point)}
                 <span className="ml-auto flex shrink-0 items-center">
+                  {/* A number or an address can be checked from the Tools home, with its price shown there. */}
+                  <NewTabLink
+                    href={checkHref(point)}
+                    label={point.channel === "phone" ? "Check this number" : "Check this email"}
+                  />
                   {/* A problem we can detect ships with its one-click fix. */}
                   {isTenantSuppressed(point.medium) && (
                     <Button

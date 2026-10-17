@@ -34,6 +34,8 @@ import {
   type IntelSource,
 } from "../../company-intelligence";
 import { SectionCard } from "./SectionCard";
+import { toolLookupHref } from "@/features/data-sources/library/tools/people/lookupPlan";
+import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
 
 interface CardParty {
   id: string;
@@ -57,7 +59,16 @@ export function CompanyIntelligenceCard({
   });
   const stored = storedIntel(party.attributes);
   return (
-    <SectionCard title="Company intelligence" Icon={Building2}>
+    <SectionCard
+      title="Company intelligence"
+      Icon={Building2}
+      compactAction
+      action={
+        party.primary_domain ? (
+          <NewTabLink href={toolLookupHref("company_profile", { domain: party.primary_domain })} label="Look up the company profile" />
+        ) : undefined
+      }
+    >
       <ul className="divide-y divide-border" data-testid="company-intelligence">
         {INTEL_SOURCES.map((source) => (
           <IntelRow
