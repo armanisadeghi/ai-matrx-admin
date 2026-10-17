@@ -704,6 +704,10 @@ export function ToolRefetchConsole() {
         </div>
       )}
 
+      {/* The same numbers drilled by tool, conversation and day (drill definition tool_refetch). It sits ABOVE
+          the 50-row table: a drill answers where the person is looking, never below a long table (K4). */}
+      <ToolRefetchExplorer window={win} />
+
       <MatrxDataTable
         query={{ mode: "controlled-local", state: table.state, onStateChange: table.onStateChange }}
         data={rows}
@@ -728,8 +732,6 @@ export function ToolRefetchConsole() {
       />
 
       {/* Sources: chat.vw_tool_refetch_summary (all time), chat.vw_tool_refetch + chat.tool_call for windows. */}
-      {/* The same numbers drilled by tool, conversation and day (drill definition tool_refetch). */}
-      <ToolRefetchExplorer window={win} />
     </div>
   );
 }

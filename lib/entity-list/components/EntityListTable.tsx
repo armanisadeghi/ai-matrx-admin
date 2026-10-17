@@ -22,6 +22,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { usePhoneWidth } from "../usePhoneWidth";
 import { MoreVertical, Star } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
 import type {
   ColumnFiltersState,
   MatrxColumnDef,
@@ -214,6 +215,7 @@ function toTableFilters(filters: EntityFilters): ColumnFiltersState {
     if (f.kind === "text") out[id] = { kind: "text", value: f.value };
     else if (f.kind === "select")
       out[id] = { kind: "select", value: f.values[0] ?? "", values: f.values };
+    else if (f.kind === "date") out[id] = f;
     else out[id] = { kind: "boolean", value: f.value };
   }
   return out;
@@ -242,6 +244,18 @@ function fromTableFilters(state: ColumnFiltersState): EntityFilters {
       if (values.length > 0) out[id] = { kind: "select", values };
     } else if (f.kind === "boolean") {
       out[id] = { kind: "boolean", value: f.value };
+    } else if (f.kind === "date") {
+      // The bag carries the RESOLVED window beside the preset, so the list RPC reads instants.
+      const { since, until } = dateFilterBounds(f);
+      if (since || until) {
+        out[id] = {
+          kind: "date",
+          ...(f.preset ? { preset: f.preset } : {}),
+          ...(f.anchor ? { anchor: f.anchor } : {}),
+          ...(since ? { since } : {}),
+          ...(until ? { until } : {}),
+        };
+      }
     }
   }
   return out;

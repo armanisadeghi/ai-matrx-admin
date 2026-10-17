@@ -42098,7 +42098,11 @@ export type Database = {
         Returns: string
       }
       entity_fields: {
-        Args: { p_organization_id: string; p_token: string }
+        Args: {
+          p_include_retired?: boolean
+          p_organization_id: string
+          p_token: string
+        }
         Returns: {
           created_at: string
           created_by: string | null
@@ -105120,6 +105124,10 @@ export type Database = {
         Args: { p_schema: string; p_table: string; p_trigger: string }
         Returns: boolean
       }
+      list_date_filter_ok: {
+        Args: { p_filters: Json; p_key: string; p_value: string }
+        Returns: boolean
+      }
       list_dimension_ids: {
         Args: { p_entity_type: string; p_filters: Json }
         Returns: string[]
@@ -151523,6 +151531,8 @@ export type Database = {
       count_link_edges: {
         Args: {
           p_anchor_text?: string
+          p_created_since?: string
+          p_created_until?: string
           p_http_status_max?: number
           p_http_status_min?: number
           p_is_internal?: boolean

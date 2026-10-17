@@ -124,9 +124,12 @@ passed as `p_tz`; the explorer passes absolute instants for the window and the
 zone only buckets the series. The surface always names the zone it used, and
 says so when the database did not recognise it and fell back to UTC.
 
-## The explorer (`SpendExplorer.tsx` + `explorer/`)
+## The explorer (retired 2026-09-30 onto `/administration/usage`)
 
-Reading order on the page: headline → explorer → the folded honesty tail.
+`SpendExplorer.tsx` and most of `explorer/` no longer exist: the cuts below are now built-in Saved views of the
+usage explorer (see the Change Log, THE FLIP). Only `explorer/WindowPicker.tsx` and `explorer/EstimatedCostPanel.tsx`
+remain on disk; the table is kept as the record of what each piece did, so the usage explorer's views can be checked
+against it. Reading order on this page now: headline → window panels → the folded honesty tail.
 
 | Piece                 | File                                      | What                                                                                                                                                                                                                                                                                        |
 | --------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -249,7 +252,7 @@ boundary—the admin shell itself is structurally non-scrollable.
 | `app/(admin)/administration/billing/{layout,page}.tsx`                                                                             | the Billing domain root                                    |
 | `app/(admin)/administration/billing/spend/page.tsx`                                                                                | the route, super-admin gated server-side                   |
 | `features/admin/spend/SpendDashboard.tsx`                                                                                          | the page: headline → explorer → folded ledgers/gaps/print  |
-| `features/admin/spend/SpendExplorer.tsx` + `explorer/*`                                                                            | the explorer (see the table above)                         |
+| `features/admin/spend/explorer/{WindowPicker,EstimatedCostPanel}.tsx`                                                              | what remains of the retired explorer (see above)           |
 | `features/admin/spend/SpendHeadline.tsx`                                                                                           | THE canonical headline, shared with the popover            |
 | `features/admin/spend/service.ts`                                                                                                  | the three RPC calls + runtime jsonb parsing (never a cast) |
 | `features/admin/spend/types.ts`                                                                                                    | the narrowed payload shapes                                |

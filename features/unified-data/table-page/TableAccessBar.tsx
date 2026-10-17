@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Activity, Check, Copy, Loader2, LockKeyhole } from "lucide-react";
-import { useFields } from "@ai-matrx/records/react";
+import { useFields, useMyLevel } from "@ai-matrx/records/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -26,7 +26,6 @@ import {
   findDuplicates,
   type DuplicateGroup,
   readActivity,
-  readMyTableLevel,
   type ActivityEntry,
 } from "./tableAccessService";
 
@@ -276,51 +275,12 @@ function FindDuplicates({ tableId, organizationId, level }: { tableId: string; o
   );
 }
 
-/**
- * The caller's level on a table is remembered per person and table, so a return visit paints the header's
- * Request edit access / Find duplicates controls in their final state at first paint (no late widening of the
- * header cluster). The live read still runs and corrects the cache; nothing is hidden to avoid the shift.
- */
-const LEVEL_CACHE_PREFIX = "matrx:table-level:";
-function levelCacheKey(userId: string | null, tableId: string): string | null {
-  return userId ? `${LEVEL_CACHE_PREFIX}${userId}:${tableId}` : null;
-}
-function readCachedLevel(key: string | null): string | null {
-  if (!key || typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(key) || null;
-  } catch {
-    return null;
-  }
-}
-function writeCachedLevel(key: string | null, level: string | null): void {
-  if (!key || typeof window === "undefined") return;
-  try {
-    if (level) window.localStorage.setItem(key, level);
-    else window.localStorage.removeItem(key);
-  } catch {
-    /* storage unavailable: the live read is still the truth */
-  }
-}
-
 export function TableAccessBar({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
-  const userId = useAppSelector(selectUserId);
-  const cacheKey = levelCacheKey(userId ?? null, tableId);
-  const [level, setLevel] = useState<string | null>(() => readCachedLevel(cacheKey));
-  useEffect(() => {
-    if (!organizationId) return;
-    let live = true;
-    readMyTableLevel(organizationId, tableId)
-      .then((l) => {
-        if (!live) return;
-        setLevel(l);
-        writeCachedLevel(cacheKey, l);
-      })
-      .catch(() => live && setLevel(null));
-    return () => {
-      live = false;
-    };
-  }, [organizationId, tableId, cacheKey]);
+  // THE CALLER'S LEVEL IS THE TABLE PAGE'S OWN: the grid asks the same question (`useMyLevel(table)`), the page bundle
+  // already carries its answer, and every hook under one records client shares one entry. So the controls that depend on
+  // it (Request edit access, Find duplicates) draw final in the first paint, with no read of their own.
+  const held = useMyLevel(organizationId ? tableId : null);
+  const level: string | null = held.error ? null : (held.data ?? null);
   if (!organizationId) return null;
   return (
     <>
