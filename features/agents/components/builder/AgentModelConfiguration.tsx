@@ -162,8 +162,7 @@ export function AgentModelConfiguration({
         <AgentSkillsButton agentId={agentId} />
         <Button
           type="button"
-          variant="ghost"
-          size="sm"
+          variant="quiet"
           onClick={() => openAdvancedSettings({ agentId })}
         >
           Advanced settings

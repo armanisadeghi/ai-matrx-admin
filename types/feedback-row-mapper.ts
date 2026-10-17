@@ -454,6 +454,7 @@ export function parseFeedbackUserMessageJson(
     return null;
   }
   if (typeof o.sender_type !== "string") return null;
+  if (typeof o.organization_id !== "string") return null;
   // `custom_fields` is a NOT NULL jsonb column and every RPC that feeds this
   // parser returns `row_to_json(<the whole row>)`, so a payload without it is
   // not a `feedback_user_messages` row — reject it like any other bad field
@@ -491,6 +492,7 @@ export function parseFeedbackUserMessageJson(
     return mapFeedbackUserMessageRow({
       id: o.id,
       feedback_id: o.feedback_id,
+      organization_id: o.organization_id,
       content: o.content,
       created_at: o.created_at,
       custom_fields: customFields,

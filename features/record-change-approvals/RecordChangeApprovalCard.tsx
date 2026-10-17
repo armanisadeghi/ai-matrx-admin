@@ -267,7 +267,6 @@ export function RecordChangeApprovalCard({
     standing.kind === "host_run" &&
     (!standing.runState || standing.runState === "failed") ? (
       <Button
-        size="sm"
         variant="outline"
         onClick={() => {
           setDecision({ state: "decided", sentence: "Sent. It runs now." });

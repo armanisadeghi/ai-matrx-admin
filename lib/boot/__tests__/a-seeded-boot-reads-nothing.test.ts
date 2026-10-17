@@ -59,7 +59,8 @@ const ENTRY = (orgId: string) => {
     member_count: COUNTS.find((c) => c.container_id === orgId)!.member_count,
   };
 };
-let pageAnswer = () => ({ organizations: [ENTRY(ORG_A), ENTRY(ORG_B)], total: 2, has_more: false, next_cursor: null, page_size: 50 });
+const FULL_PAGE: { organizations: ReturnType<typeof ENTRY>[]; total: number; has_more: boolean; next_cursor: string | null; page_size: number } = { organizations: [ENTRY(ORG_A), ENTRY(ORG_B)], total: 2, has_more: false, next_cursor: null, page_size: 50 };
+let pageAnswer = () => FULL_PAGE;
 let byIdsAnswer = (ids: string[]) => ({ organizations: ids.filter((id) => ORGS.some((o) => o.id === id)).map(ENTRY) });
 let lastByIds: string[] = [];
 

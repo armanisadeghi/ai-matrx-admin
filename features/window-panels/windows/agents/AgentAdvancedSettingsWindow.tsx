@@ -153,8 +153,7 @@ export default function AgentAdvancedSettingsWindow({
                   />
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
+                    variant="quiet"
                     aria-label={`Remove ${tier.label || key}`}
                     onClick={() => removeTier(key)}
                   >
@@ -164,17 +163,17 @@ export default function AgentAdvancedSettingsWindow({
               </SettingRow>
             ))}
             <div className="flex items-center justify-between px-1 pt-1">
-              <Button type="button" variant="ghost" size="sm" onClick={addTier}>
+              <Button type="button" variant="quiet" onClick={addTier}>
                 <Plus className="h-3.5 w-3.5" /> Add tier
               </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => writeTiers(null)}>
+              <Button type="button" variant="quiet" onClick={() => writeTiers(null)}>
                 Remove tiers
               </Button>
             </div>
           </>
         ) : (
           <SettingRow label="Tiers" line="Off">
-            <Button type="button" variant="ghost" size="sm" onClick={addTier}>
+            <Button type="button" variant="quiet" onClick={addTier}>
               <Plus className="h-3.5 w-3.5" /> Add tier
             </Button>
           </SettingRow>
