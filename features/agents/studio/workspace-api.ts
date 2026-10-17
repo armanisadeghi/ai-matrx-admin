@@ -1,5 +1,6 @@
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi } from "@/lib/api/call-api";
+import { followServerWork } from "@/features/ai-watch/followed-work";
 import type { WorkspaceInput } from "./workspace";
 
 type ApiResult = { data?: unknown; error?: { message?: string } };
@@ -30,6 +31,8 @@ export async function buildFromWorkspace(
   if (result.error) throw failure(result, "The build did not start");
   const d = (result.data ?? {}) as { build_id?: string; says?: string; proof_cases?: number };
   if (!d.build_id) throw new Error("No build came back");
+  // The build runs detached on the server: Watch AI and the Builder panel follow it through the shared door.
+  followServerWork({ kind: "factory_build", id: d.build_id, label: "Agent Factory build · Studio", source: "Studio" });
   return { buildId: d.build_id, says: d.says ?? "", proofCases: d.proof_cases ?? 0 };
 }
 
