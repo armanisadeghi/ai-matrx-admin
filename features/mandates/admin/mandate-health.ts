@@ -35,6 +35,7 @@ import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates"
 
 /** Mandate health, worst-first. Drives the Health column + the drawer banner. */
 export type MandateHealth =
+  | "nothing answers"
   | "code ↔ agent drift"
   | "code truth import failed"
   | "unresolved pin"
@@ -55,6 +56,10 @@ export type MandateHealth =
  * agent that had never been chosen, on EVERY mandate a person creates.
  */
 export const HEALTH_PRIORITY: Record<MandateHealth, number> = {
+  // 🚨 NO RUNG ANSWERS (2026-10-17): no default Holder, no fallback and no
+  // enabled binding — every request for the job is refused. The Agent Studio
+  // assistant sat here while its list row read a calm "no Mandate Holder yet".
+  "nothing answers": -1,
   "code ↔ agent drift": 0,
   "code truth import failed": 1,
   "unresolved pin": 2,
@@ -342,6 +347,18 @@ export function buildRow(
   // real and calm, and it now has its own name.
   const hasPin = Boolean(holder.versionId || holder.holderId);
 
+  // 🚨 NOTHING ANSWERS (2026-10-17, Agent Studio outage). With no default
+  // Holder the job runs only through a fallback job or an ENABLED binding; a
+  // disabled binding answers nobody. When none exists, resolution refuses at
+  // every rung ("no rung answers this job") — that is a red defect, never the
+  // calm "no Mandate Holder yet". A disabled job is refused on purpose and
+  // says so through its status instead.
+  const answersSomewhere = jobAnswersSomewhere(
+    mandate,
+    data.bindingsByMandateId[mandate.id] ?? [],
+  );
+  const nothingAnswers = Boolean(mandate.is_enabled) && !answersSomewhere;
+
   // An agent the console could not resolve is NEVER "ok" — it means the pin
   // points at a row this admin can't read (personal agent under another
   // owner's RLS) or at a deleted record. Silently reporting green there is
@@ -390,7 +407,9 @@ export function buildRow(
     missingOutputKeys(contractForOutput.requiredOutputKeys, schemas[agentId])
       .length > 0);
 
-  const health: MandateHealth = codeAgentDrift
+  const health: MandateHealth = nothingAnswers
+    ? "nothing answers"
+    : codeAgentDrift
     ? "code ↔ agent drift"
     : codeImportFailed
       ? "code truth import failed"
@@ -484,7 +503,24 @@ export function buildRow(
   };
 }
 
+/**
+ * Does ANY rung answer this job? Its own default Holder, a fallback job, or an
+ * enabled, live binding. The ONE rule for "nothing answers" — the admin list
+ * database classifies with the same rule (`mandate._admin_list_rows`).
+ */
+export function jobAnswersSomewhere(
+  mandate: Pick<MandateDefinitionRow, "fallback_mandate_key"> &
+    Parameters<typeof holderOfMandate>[0],
+  bindings: readonly { deleted_at?: string | null; is_enabled?: boolean | null }[],
+): boolean {
+  const holder = holderOfMandate(mandate);
+  if (holder.holderId || holder.versionId) return true;
+  if (mandate.fallback_mandate_key) return true;
+  return bindings.some((b) => !b.deleted_at && b.is_enabled !== false);
+}
+
 export const HEALTH_CLASS: Record<MandateHealth, string> = {
+  "nothing answers": "text-foreground border-destructive/40 bg-destructive/10",
   ok: "text-success-ink border-success/40 bg-success/10",
   // Neutral on purpose — this is the true resting state of a new mandate,
   // not a problem. Nothing red, nothing amber.
@@ -502,6 +538,8 @@ export const HEALTH_CLASS: Record<MandateHealth, string> = {
 
 /** What the admin should do about each unhealthy state — shown, not implied. */
 export const HEALTH_HINT: Partial<Record<MandateHealth, string>> = {
+  "nothing answers":
+    "No default Mandate Holder, fallback or enabled binding — every request for this job is refused.",
   "code ↔ agent drift":
     "The calling code and the bound agent disagree about which variables exist. Values may be dropping before the prompt.",
   "code truth import failed":
@@ -518,7 +556,7 @@ export const HEALTH_HINT: Partial<Record<MandateHealth, string>> = {
   "output contract unmet":
     "The Mandate Holder does not declare every structured output key this job's consumers require. It runs anyway, as chosen, but its output may not fit: an answer that comes back without a required key stops the job with a plain error instead of saving half of it. Give the Mandate Holder an output schema that declares them, or bind one that already does.",
   "no Mandate Holder yet":
-    "Nothing is bound to this mandate yet, which is where every new mandate starts. Choose a Mandate Holder above whenever the intelligence exists.",
+    "No default Mandate Holder — only its fallback or its bindings answer.",
 };
 
 // ── Drift remedy — which "newest" is real, and which button can reach it ─────

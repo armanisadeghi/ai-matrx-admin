@@ -1116,6 +1116,23 @@ function StatusBanner({
       );
     case "unresolved pin":
       return <UnresolvedPinPanel row={row} onSaved={onSaved} />;
+    // 🚨 NO RUNG ANSWERS (2026-10-17): every request for this job is refused.
+    // Red, on every host — never folded into the calm "no holder yet".
+    case "nothing answers":
+      return (
+        <div
+          role="status"
+          data-testid="nothing-answers-banner"
+          className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 type-secondary"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+          <span className="font-medium text-foreground">Nothing answers</span>
+          <span className="text-muted-foreground">{HEALTH_HINT["nothing answers"]}</span>
+          <Button variant="outline" onClick={onOpenRebind}>
+            Choose a Mandate Holder
+          </Button>
+        </div>
+      );
   }
 }
 
@@ -1843,7 +1860,8 @@ export function MandateDetailView({
             onSaved={onSaved}
           />
           <ContractMismatchList mismatches={row.contractMismatches} />
-          {row.health === "code ↔ agent drift" ||
+          {row.health === "nothing answers" ||
+          row.health === "code ↔ agent drift" ||
           row.health === "code truth import failed" ||
           row.health === "code ↔ contract drift" ? (
             <StatusBanner

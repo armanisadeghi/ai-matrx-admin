@@ -113,8 +113,8 @@ export function countMandateStatuses<T>(
 /**
  * The status of one mandate ROW with its live bindings — for surfaces that
  * hold the definition row itself (record page, window, workspace). Same rule
- * as the admin list database: a default Holder, a fallback job, or any live
- * binding fills it.
+ * as the admin list database: a default Holder, a fallback job, or any live,
+ * enabled binding fills it.
  */
 export function mandateStatusOfRow(
   mandate: {
@@ -124,7 +124,7 @@ export function mandateStatusOfRow(
     default_holder_version_id?: string | null;
     fallback_mandate_key?: string | null;
   },
-  liveBindings: readonly { deleted_at?: string | null }[] = [],
+  liveBindings: readonly { deleted_at?: string | null; is_enabled?: boolean | null }[] = [],
 ): MandateStatus {
   return mandateStatusOf({
     deletedAt: mandate.deleted_at ?? null,
@@ -132,6 +132,7 @@ export function mandateStatusOfRow(
     hasHolder:
       Boolean(mandate.default_holder_id || mandate.default_holder_version_id) ||
       Boolean(mandate.fallback_mandate_key) ||
-      liveBindings.some((b) => !b.deleted_at),
+      // A disabled binding answers nobody (2026-10-17).
+      liveBindings.some((b) => !b.deleted_at && b.is_enabled !== false),
   });
 }

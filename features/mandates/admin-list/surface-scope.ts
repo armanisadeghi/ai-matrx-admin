@@ -47,11 +47,13 @@ export function healthSummaryOf(rows: readonly MandateAdminRow[]): MandatesHealt
     code_contract_drift: 0,
     code_truth_import_failed: 0,
     no_holder_yet: 0,
+    nothing_answers: 0,
   };
   for (const row of rows) {
     if (row.defaultVerdict && isBehindLatest(row.defaultVerdict)) health.behind_latest += 1;
     if (row.health === "ok") health.ok += 1;
     else if (row.health === "no Mandate Holder yet") health.no_holder_yet += 1;
+    else if (row.health === "nothing answers") health.nothing_answers += 1;
     else if (row.health === "code ↔ agent drift") health.code_agent_drift += 1;
     else if (row.health === "code ↔ contract drift") health.code_contract_drift += 1;
     else if (row.health === "code truth import failed") health.code_truth_import_failed += 1;

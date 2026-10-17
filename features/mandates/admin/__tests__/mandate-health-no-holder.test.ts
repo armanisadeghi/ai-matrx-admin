@@ -39,8 +39,11 @@ function mandate(overrides: Record<string, unknown>): MandateDefinitionRow {
   } as unknown as MandateDefinitionRow;
 }
 
-describe("holderless mandates read as calm, not broken", () => {
-  it("a mandate with no holder and no version is 'no Mandate Holder yet'", () => {
+// 2026-10-17: a holderless job that NO rung answers (no fallback, no enabled
+// binding) is "nothing answers" — red, but still never "unresolved pin", which
+// would claim a pin that never existed. See nothing-answers-health.test.ts.
+describe("holderless mandates never read as a broken pin", () => {
+  it("a mandate with no holder, no version and no binding is 'nothing answers'", () => {
     const row = buildRow(
       mandate({
         default_agent_id: null,
@@ -50,7 +53,7 @@ describe("holderless mandates read as calm, not broken", () => {
       }),
       EMPTY_DATA,
     );
-    expect(row.health).toBe("no Mandate Holder yet");
+    expect(row.health).toBe("nothing answers");
     expect(row.health).not.toBe("unresolved pin");
     expect(row.agentId).toBeNull();
   });
@@ -79,7 +82,7 @@ describe("holderless mandates read as calm, not broken", () => {
         source: null,
       } as never,
     );
-    expect(row.health).toBe("no Mandate Holder yet");
+    expect(row.health).toBe("nothing answers");
   });
 
   it("a pin whose agent cannot be read is STILL 'unresolved pin'", () => {

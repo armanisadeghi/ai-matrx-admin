@@ -386,6 +386,7 @@ export interface MandatesHealthSummary {
   code_truth_import_failed: number;
   /** Never bound — the resting state of a new mandate, not a defect. */
   no_holder_yet: number;
+  nothing_answers: number;
 }
 
 /** Full detail of the mandate open in the workbench. */

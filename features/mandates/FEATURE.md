@@ -75,6 +75,7 @@ Every admin-suite href is built in `admin-routes.ts` (`adminMandateRecordHref`, 
 
 ## Change log
 
+- **2026-10-17** — Health `nothing answers` (red, worst-first): an enabled job with no default Holder, no fallback and no ENABLED binding refuses every request. One rule, `admin/mandate-health.ts jobAnswersSomewhere`, read by the list/record health, the status (`mandateStatusOfRow`, admin `rows.ts` — a disabled binding no longer counts) and the Health page/tab finding (`code-references/health.ts`, kind `nothing_answers`); DB twin `migrations/mnd_admin_list_nothing_answers_2026_10_17.sql` (also respells the calm facet `no Mandate Holder yet`). Guard `admin/__tests__/nothing-answers-health.test.ts`.
 - **2026-10-13** — `featureLabelOf` moved out of `admin-list/rows.ts` into the light `feature-label.ts` so the spend approvals board shows the same Feature (plus Key and the holder agent's name) without loading the mandate list.
 - **2026-10-08** — `/intelligence/go` + `/administration/intelligence/go`: one resolver for agent / agent-version / workflow / workflow-version ids; `/agents/go` delegates to it (the admin-lane rule had made it send every system agent to the member view). Holder row gains an open-in-new-tab button; agent/workflow pickers there size to their label.
 - **2026-10-08** — Admin list: Model column + filter, Cost (USD) / Points over a URL-backed period with a filtered total (usage ledger via `drill_ask`; database half in `mnd_admin_list_model_and_spend_columns.sql`).
