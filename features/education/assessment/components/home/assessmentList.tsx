@@ -398,6 +398,9 @@ export function buildAssessmentColumns(
         accessorKey: "updated_at",
         header: "Last edited",
         format: { id: "datetime" },
+        // A controlled table offers a date filter only when the column declares it; the window rides the bag to
+        // education.assessment_list_scoped / _facets (platform.list_date_filter_ok).
+        filter: "date",
         cell: (row) => timeCell(row.updated_at),
       },
     },
@@ -410,6 +413,9 @@ export function buildAssessmentColumns(
         accessorKey: "created_at",
         header: "Created",
         format: { id: "datetime" },
+        // A controlled table offers a date filter only when the column declares it; the window rides the bag to
+        // education.assessment_list_scoped / _facets (platform.list_date_filter_ok).
+        filter: "date",
         cell: (row) => timeCell(row.created_at),
       },
     },
