@@ -1,1312 +1,1485 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0350",
- "version": 1,
- "title": "Expense Tracker",
- "description": "Log spending, set category budgets and see where the month went.",
- "forWho": "Individuals and freelancers",
- "icon": {
-  "emoji": "💸"
- },
- "cover": {
-  "url": "gallery:photo-golden-palms",
-  "offsetY": 50
- },
- "category": "finance",
- "tags": [
-  "expenses",
-  "budget",
-  "spending",
-  "categories"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-expense-tracker",
+  "packVersion": 1,
   "catalogueId": "SP0350",
-  "useCase": "Soledad Reyes logs every purchase and checks each month which categories ran over budget.",
-  "industry": "cross_industry",
-  "vertical": "Personal finance",
-  "job": "reporting",
-  "audience": "organization",
-  "teaches": "boards",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Soledad Reyes household",
-   "describes": "One person tracking her household spending.",
-   "address": {
-    "line1": "47 Fennel Court",
-    "city": "Austin",
-    "region": "TX",
-    "postalCode": "78704",
-    "country": "US"
-   },
-   "phone": "(512) 555-0148",
-   "website": "reyes-household.net",
-   "email": "soledad@reyes-household.net",
-   "timezone": "America/Chicago"
-  },
-  "cleanupTag": "use-case:spaces-expense-tracker",
-  "tables": [
-   {
-    "token": "expense",
-    "name": "Expenses",
-    "labelSingular": "Expense",
-    "labelPlural": "Expenses",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "receipt",
-    "titleField": "expense_name",
-    "describes": "Every purchase with its amount, date, category and how it was paid.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "expense_name",
-      "label": "Expense",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "amount",
-      "label": "Amount",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 50000
-       }
-      ]
-     },
-     {
-      "key": "spent_on",
-      "label": "Date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "category",
-      "label": "Category",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "category",
-      "relationMax": 1
-     },
-     {
-      "key": "payment_method",
-      "label": "Payment method",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Card",
-       "Cash",
-       "Bank transfer",
-       "Wallet"
-      ],
-      "choiceColors": {
-       "Card": "blue",
-       "Cash": "green",
-       "Bank transfer": "amber",
-       "Wallet": "red"
-      }
-     },
-     {
-      "key": "month_label",
-      "label": "Month",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "DATETIME_FORMAT({Date}, 'MMMM YYYY')"
-     },
-     {
-      "key": "notes",
-      "label": "Notes",
-      "parityType": "long_text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "recurring",
-      "label": "Recurring",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "e01",
-      "values": {
-       "expense_name": "Sunrise Market weekly shop",
-       "amount": 92.4,
-       "spent_on": "@today-2d",
-       "category": "cat-groc",
-       "payment_method": "Card",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e02",
-      "values": {
-       "expense_name": "Harbor Row apartment rent",
-       "amount": 1850,
-       "spent_on": "@today-9d",
-       "category": "cat-rent",
-       "payment_method": "Bank transfer",
-       "notes": "Monthly rent",
-       "recurring": true
-      }
-     },
-     {
-      "key": "e03",
-      "values": {
-       "expense_name": "Metro monthly pass",
-       "amount": 78,
-       "spent_on": "@today-11d",
-       "category": "cat-trans",
-       "payment_method": "Card",
-       "notes": "",
-       "recurring": true
-      }
-     },
-     {
-      "key": "e04",
-      "values": {
-       "expense_name": "Kestrel Ramen dinner",
-       "amount": 46.8,
-       "spent_on": "@today-4d",
-       "category": "cat-dine",
-       "payment_method": "Card",
-       "notes": "Birthday dinner",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e05",
-      "values": {
-       "expense_name": "Electric and water bill",
-       "amount": 131.25,
-       "spent_on": "@today-14d",
-       "category": "cat-util",
-       "payment_method": "Bank transfer",
-       "notes": "",
-       "recurring": true
-      }
-     },
-     {
-      "key": "e06",
-      "values": {
-       "expense_name": "Cinema tickets",
-       "amount": 31,
-       "spent_on": "@today-6d",
-       "category": "cat-leis",
-       "payment_method": "Cash",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e07",
-      "values": {
-       "expense_name": "Sunrise Market produce and pantry",
-       "amount": 104.15,
-       "spent_on": "@today-9d",
-       "category": "cat-groc",
-       "payment_method": "Card",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e08",
-      "values": {
-       "expense_name": "Fuel top-up",
-       "amount": 54.6,
-       "spent_on": "@today-5d",
-       "category": "cat-trans",
-       "payment_method": "Card",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e09",
-      "values": {
-       "expense_name": "Coffee with Imani",
-       "amount": 12.5,
-       "spent_on": "@today-3d",
-       "category": "cat-dine",
-       "payment_method": "Wallet",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e10",
-      "values": {
-       "expense_name": "Internet service",
-       "amount": 59,
-       "spent_on": "@today-12d",
-       "category": "cat-util",
-       "payment_method": "Card",
-       "notes": "",
-       "recurring": true
-      }
-     },
-     {
-      "key": "e11",
-      "values": {
-       "expense_name": "Climbing gym day pass",
-       "amount": 24,
-       "spent_on": "@today-8d",
-       "category": "cat-leis",
-       "payment_method": "Wallet",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e12",
-      "values": {
-       "expense_name": "Greenleaf farmers stall",
-       "amount": 38.9,
-       "spent_on": "@today-1d",
-       "category": "cat-groc",
-       "payment_method": "Cash",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e13",
-      "values": {
-       "expense_name": "Harbor Row rent, prior cycle",
-       "amount": 1850,
-       "spent_on": "@today-40d",
-       "category": "cat-rent",
-       "payment_method": "Bank transfer",
-       "notes": "Paid on the 1st",
-       "recurring": true
-      }
-     },
-     {
-      "key": "e14",
-      "values": {
-       "expense_name": "Metro 30-day transit pass",
-       "amount": 81.5,
-       "spent_on": "@today-41d",
-       "category": "cat-trans",
-       "payment_method": "Wallet",
-       "notes": "",
-       "recurring": true
-      }
-     },
-     {
-      "key": "e15",
-      "values": {
-       "expense_name": "Sunrise Market bulk run",
-       "amount": 97.3,
-       "spent_on": "@today-37d",
-       "category": "cat-groc",
-       "payment_method": "Card",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e16",
-      "values": {
-       "expense_name": "Power and water statement",
-       "amount": 118.7,
-       "spent_on": "@today-44d",
-       "category": "cat-util",
-       "payment_method": "Bank transfer",
-       "notes": "",
-       "recurring": true
-      }
-     },
-     {
-      "key": "e17",
-      "values": {
-       "expense_name": "Tapas Quillon lunch",
-       "amount": 63.2,
-       "spent_on": "@today-35d",
-       "category": "cat-dine",
-       "payment_method": "Card",
-       "notes": "Team lunch",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e18",
-      "values": {
-       "expense_name": "Concert tickets",
-       "amount": 142,
-       "spent_on": "@today-33d",
-       "category": "cat-leis",
-       "payment_method": "Card",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e19",
-      "values": {
-       "expense_name": "Rideshare to airport",
-       "amount": 41.5,
-       "spent_on": "@today-38d",
-       "category": "cat-trans",
-       "payment_method": "Wallet",
-       "notes": "",
-       "recurring": false
-      }
-     },
-     {
-      "key": "e20",
-      "values": {
-       "expense_name": "Fibre internet plan",
-       "amount": 59,
-       "spent_on": "@today-42d",
-       "category": "cat-util",
-       "payment_method": "Card",
-       "notes": "Plan renews yearly",
-       "recurring": true
-      }
-     }
-    ]
-   },
-   {
-    "token": "category",
-    "name": "Categories",
-    "labelSingular": "Category",
-    "labelPlural": "Categories",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "tags",
-    "titleField": "category_name",
-    "describes": "Spending categories with a monthly budget and what has been logged against each.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "category_name",
-      "label": "Category",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "monthly_budget",
-      "label": "Monthly budget",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 20000
-       }
-      ]
-     },
-     {
-      "key": "group",
-      "label": "Group",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Essentials",
-       "Lifestyle"
-      ],
-      "choiceColors": {
-       "Essentials": "blue",
-       "Lifestyle": "green"
-      }
-     },
-     {
-      "key": "spent_total",
-      "label": "Spent (all logged)",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "expenses",
-      "pick": "amount",
-      "agg": "sum"
-     },
-     {
-      "key": "expenses",
-      "label": "Expenses",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "expense",
-      "relationMax": 50,
-      "multi": true
-     }
-    ],
-    "rows": [
-     {
-      "key": "cat-groc",
-      "values": {
-       "category_name": "Groceries",
-       "monthly_budget": 650,
-       "group": "Essentials"
-      }
-     },
-     {
-      "key": "cat-rent",
-      "values": {
-       "category_name": "Rent",
-       "monthly_budget": 1850,
-       "group": "Essentials"
-      }
-     },
-     {
-      "key": "cat-trans",
-      "values": {
-       "category_name": "Transport",
-       "monthly_budget": 220,
-       "group": "Essentials"
-      }
-     },
-     {
-      "key": "cat-dine",
-      "values": {
-       "category_name": "Dining out",
-       "monthly_budget": 300,
-       "group": "Lifestyle"
-      }
-     },
-     {
-      "key": "cat-util",
-      "values": {
-       "category_name": "Utilities",
-       "monthly_budget": 240,
-       "group": "Essentials"
-      }
-     },
-     {
-      "key": "cat-leis",
-      "values": {
-       "category_name": "Leisure",
-       "monthly_budget": 260,
-       "group": "Lifestyle"
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each expense belongs to one category.",
-    "fromTable": "expense",
-    "fromField": "category",
-    "toTable": "category",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "expenses_in"
-   },
-   {
-    "describes": "A category gathers the expenses logged against it.",
-    "fromTable": "category",
-    "fromField": "expenses",
-    "toTable": "expense",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "in_category"
-   }
-  ],
-  "sharedBlocks": [],
-  "forms": [
-   {
-    "token": "log_expense",
-    "name": "Log an expense",
-    "describes": "A quick way to add a purchase from a phone.",
-    "audience": "staff",
-    "table": "expense",
-    "fields": [
-     {
-      "fieldKey": "expense_name",
-      "ask": "What did you buy?",
-      "required": true
-     },
-     {
-      "fieldKey": "amount",
-      "ask": "How much was it?",
-      "required": true
-     },
-     {
-      "fieldKey": "spent_on",
-      "ask": "On what day did you spend it?"
-     },
-     {
-      "fieldKey": "category",
-      "ask": "Which category?"
-     },
-     {
-      "fieldKey": "payment_method",
-      "ask": "How did you pay?"
-     }
-    ],
-    "submitLabel": "Add expense",
-    "confirmation": "Logged. It shows in this month."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_expenses",
-    "name": "All expenses",
-    "table": "expense",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "spent_on",
-      "direction": "desc"
-     }
-    ]
-   },
-   {
-    "token": "expense_board",
-    "name": "By category",
-    "table": "expense",
-    "kind": "kanban",
-    "groupBy": "payment_method"
-   },
-   {
-    "token": "expense_calendar",
-    "name": "Calendar",
-    "table": "expense",
-    "kind": "calendar",
-    "dateField": "spent_on",
-    "allDay": true
-   },
-   {
-    "token": "all_categories",
-    "name": "Categories",
-    "table": "category",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Expense assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "expense",
-     "describes": "Every logged expense with amount, date and category."
-    },
-    {
-     "name": "related_tables",
-     "table": "category",
-     "describes": "The categories and their budgets."
-    }
-   ],
-   "question": {
-    "ask": "How many recurring expenses are logged?",
-    "whyItMatters": "Soledad checks fixed costs first.",
-    "expect": {
-     "table": "expense",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "recurring": true
-     },
-     "answer": 6,
-     "unit": "expenses"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the expense list.",
-    "action": {
-     "kind": "open",
-     "surface": "all_expenses"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_expenses",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "expense_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "expense_calendar",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the categories.",
-    "action": {
-     "kind": "open",
-     "surface": "all_categories"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_categories",
-     "minItems": 5
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library author (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "reyes-household.net"
-   ],
-   "fictionalStreets": [
-    "Fennel Court"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "expense-tracker",
-   "parent": null,
-   "title": "Expense Tracker",
-   "icon": {
+  "version": 2,
+  "title": "Expense Tracker",
+  "description": "Log spending, set category budgets and see where the month went.",
+  "forWho": "Individuals and freelancers",
+  "icon": {
     "emoji": "💸"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Log each purchase as a row, pick a category, and watch the totals. Budgets live on the categories; the dashboard shows where the month went."
-      }
-     ],
-     "background": "green",
-     "props": {
-      "icon": "Wallet"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Where it goes"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "text",
-         "text": [
-          {
-           "text": "Open the dashboard for spend by category and by payment method."
-          }
-         ]
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:expense-dashboard"
-         }
-        }
-       ]
+  },
+  "category": "finance",
+  "tags": [
+    "expenses",
+    "budget",
+    "spending",
+    "categories"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-expense-tracker",
+    "catalogueId": "SP0350",
+    "useCase": "Soledad Reyes logs every purchase and checks each month which categories ran over budget.",
+    "industry": "cross_industry",
+    "vertical": "Personal finance",
+    "job": "reporting",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Soledad Reyes household",
+      "describes": "One person tracking her household spending.",
+      "address": {
+        "line1": "47 Fennel Court",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78704",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Set up"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "text",
-         "text": [
-          {
-           "text": "Edit category budgets once, then forget them."
-          }
-         ]
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:how-to-track"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Look back"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "text",
-         "text": [
-          {
-           "text": "A monthly check that takes five minutes."
-          }
-         ]
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:monthly-review"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(512) 555-0148",
+      "website": "reyes-household.net",
+      "email": "soledad@reyes-household.net",
+      "timezone": "America/Chicago"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-expense-tracker",
+    "tables": [
       {
-       "text": "Expenses"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "expense",
-       "view": "all_expenses"
-      },
-      "inline": true,
-      "title": "Expenses",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-all",
-        "name": "All",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "spent_on",
-          "direction": "desc"
-         }
-        ]
-       },
-       {
-        "id": "v-board",
-        "name": "By payment",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "payment_method"
-       },
-       {
-        "id": "v-cal",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "spent_on"
-       },
-       {
-        "id": "v-cat",
-        "name": "Spend by category",
-        "layout": "chart",
-        "icon": "ChartPie",
-        "chart": {
-         "type": "donut",
-         "groupBy": "category",
-         "op": "sum",
-         "field": "amount",
-         "centerValue": true
-        }
-       }
-      ],
-      "activeViewId": "v-all"
-     }
-    },
-    {
-     "type": "divider"
-    },
-    {
-     "type": "toggle",
-     "text": [
-      {
-       "text": "Budget by category"
-      }
-     ],
-     "children": [
-      {
-       "type": "database",
-       "props": {
-        "source": {
-         "kind": "template",
-         "table": "category",
-         "view": "all_categories"
-        },
-        "inline": true,
-        "title": "Categories",
-        "linked": true,
-        "showTitle": true,
-        "views": [
-         {
-          "id": "v-t",
-          "name": "Budgets",
-          "layout": "grid",
-          "icon": "Table"
-         },
-         {
-          "id": "v-b",
-          "name": "Budget by group",
-          "layout": "chart",
-          "icon": "ChartColumn",
-          "chart": {
-           "type": "bar",
-           "groupBy": "group",
-           "op": "sum",
-           "field": "monthly_budget"
+        "token": "expense",
+        "name": "Expenses",
+        "labelSingular": "Expense",
+        "labelPlural": "Expenses",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "expense_name",
+        "describes": "Every purchase with its amount, date, category and how it was paid.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "expense_name",
+            "label": "Expense",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "spent_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "category",
+            "relationMax": 1
+          },
+          {
+            "key": "payment_method",
+            "label": "Payment method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card",
+              "Cash",
+              "Bank transfer",
+              "Wallet"
+            ],
+            "choiceColors": {
+              "Card": "blue",
+              "Cash": "green",
+              "Bank transfer": "amber",
+              "Wallet": "red"
+            }
+          },
+          {
+            "key": "month_label",
+            "label": "Month",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATETIME_FORMAT({Date}, 'MMMM YYYY')"
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "recurring",
+            "label": "Recurring",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
-         }
         ],
-        "activeViewId": "v-t"
-       }
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "expense-dashboard",
-   "parent": "expense-tracker",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "expense",
-           "view": "all_expenses"
-          },
-          "inline": true,
-          "title": "Expenses",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "Spend by category",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "category",
-             "op": "sum",
-             "field": "amount",
-             "centerValue": true
+        "rows": [
+          {
+            "key": "e01",
+            "values": {
+              "expense_name": "Sunrise Market weekly shop",
+              "amount": 92.4,
+              "spent_on": "@today",
+              "category": "cat-groc",
+              "payment_method": "Card",
+              "notes": "",
+              "recurring": false
             }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "expense",
-           "view": "all_expenses"
           },
-          "inline": true,
-          "title": "Expenses",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "Spend by payment method",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "payment_method",
-             "op": "sum",
-             "field": "amount"
+          {
+            "key": "e02",
+            "values": {
+              "expense_name": "Harbor Row apartment rent",
+              "amount": 1850,
+              "spent_on": "@today-9d",
+              "category": "cat-rent",
+              "payment_method": "Bank transfer",
+              "notes": "Monthly rent",
+              "recurring": true
             }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "category",
-           "view": "all_categories"
           },
-          "inline": true,
-          "title": "Categories",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "Budget by group",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "group",
-             "op": "sum",
-             "field": "monthly_budget"
+          {
+            "key": "e03",
+            "values": {
+              "expense_name": "Metro monthly pass",
+              "amount": 78,
+              "spent_on": "@today-11d",
+              "category": "cat-trans",
+              "payment_method": "Card",
+              "notes": "",
+              "recurring": true
             }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Largest recent purchases"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "expense",
-       "view": "all_expenses"
-      },
-      "inline": true,
-      "title": "Expenses",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-big",
-        "name": "Biggest first",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "amount",
-          "direction": "desc"
-         }
+          },
+          {
+            "key": "e04",
+            "values": {
+              "expense_name": "Kestrel Ramen dinner",
+              "amount": 46.8,
+              "spent_on": "@today-1d",
+              "category": "cat-dine",
+              "payment_method": "Card",
+              "notes": "Birthday dinner",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e05",
+            "values": {
+              "expense_name": "Electric and water bill",
+              "amount": 131.25,
+              "spent_on": "@today-14d",
+              "category": "cat-util",
+              "payment_method": "Bank transfer",
+              "notes": "",
+              "recurring": true
+            }
+          },
+          {
+            "key": "e06",
+            "values": {
+              "expense_name": "Cinema tickets",
+              "amount": 31,
+              "spent_on": "@today-6d",
+              "category": "cat-leis",
+              "payment_method": "Cash",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e07",
+            "values": {
+              "expense_name": "Sunrise Market produce and pantry",
+              "amount": 104.15,
+              "spent_on": "@today-9d",
+              "category": "cat-groc",
+              "payment_method": "Card",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e08",
+            "values": {
+              "expense_name": "Fuel top-up",
+              "amount": 54.6,
+              "spent_on": "@today-5d",
+              "category": "cat-trans",
+              "payment_method": "Card",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e09",
+            "values": {
+              "expense_name": "Coffee with Imani",
+              "amount": 12.5,
+              "spent_on": "@today-3d",
+              "category": "cat-dine",
+              "payment_method": "Wallet",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e10",
+            "values": {
+              "expense_name": "Internet service",
+              "amount": 59,
+              "spent_on": "@today-12d",
+              "category": "cat-util",
+              "payment_method": "Card",
+              "notes": "",
+              "recurring": true
+            }
+          },
+          {
+            "key": "e11",
+            "values": {
+              "expense_name": "Climbing gym day pass",
+              "amount": 24,
+              "spent_on": "@today-8d",
+              "category": "cat-leis",
+              "payment_method": "Wallet",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e12",
+            "values": {
+              "expense_name": "Greenleaf farmers stall",
+              "amount": 38.9,
+              "spent_on": "@today-1d",
+              "category": "cat-groc",
+              "payment_method": "Cash",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e13",
+            "values": {
+              "expense_name": "Harbor Row rent, prior cycle",
+              "amount": 1850,
+              "spent_on": "@today-40d",
+              "category": "cat-rent",
+              "payment_method": "Bank transfer",
+              "notes": "Paid on the 1st",
+              "recurring": true
+            }
+          },
+          {
+            "key": "e14",
+            "values": {
+              "expense_name": "Metro 30-day transit pass",
+              "amount": 81.5,
+              "spent_on": "@today-41d",
+              "category": "cat-trans",
+              "payment_method": "Wallet",
+              "notes": "",
+              "recurring": true
+            }
+          },
+          {
+            "key": "e15",
+            "values": {
+              "expense_name": "Sunrise Market bulk run",
+              "amount": 97.3,
+              "spent_on": "@today-37d",
+              "category": "cat-groc",
+              "payment_method": "Card",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e16",
+            "values": {
+              "expense_name": "Power and water statement",
+              "amount": 118.7,
+              "spent_on": "@today-44d",
+              "category": "cat-util",
+              "payment_method": "Bank transfer",
+              "notes": "",
+              "recurring": true
+            }
+          },
+          {
+            "key": "e17",
+            "values": {
+              "expense_name": "Tapas Quillon lunch",
+              "amount": 63.2,
+              "spent_on": "@today-35d",
+              "category": "cat-dine",
+              "payment_method": "Card",
+              "notes": "Team lunch",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e18",
+            "values": {
+              "expense_name": "Concert tickets",
+              "amount": 142,
+              "spent_on": "@today-33d",
+              "category": "cat-leis",
+              "payment_method": "Card",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e19",
+            "values": {
+              "expense_name": "Rideshare to airport",
+              "amount": 41.5,
+              "spent_on": "@today-38d",
+              "category": "cat-trans",
+              "payment_method": "Wallet",
+              "notes": "",
+              "recurring": false
+            }
+          },
+          {
+            "key": "e20",
+            "values": {
+              "expense_name": "Fibre internet plan",
+              "amount": 59,
+              "spent_on": "@today-42d",
+              "category": "cat-util",
+              "payment_method": "Card",
+              "notes": "Plan renews yearly",
+              "recurring": true
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New expense",
+            "values": {
+              "payment_method": "Card"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What it was for"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Receipt and notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Where the receipt is kept"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Anything worth remembering if it is questioned later"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
-       }
-      ],
-      "activeViewId": "v-big"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Recurring"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "expense",
-       "view": "all_expenses"
       },
-      "inline": true,
-      "title": "Expenses",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-rec",
-        "name": "Recurring",
-        "layout": "list",
-        "icon": "Repeat",
-        "filters": {
-         "recurring": true
+      {
+        "token": "category",
+        "name": "Categories",
+        "labelSingular": "Category",
+        "labelPlural": "Categories",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "tags",
+        "titleField": "category_name",
+        "describes": "Spending categories with a monthly budget and what has been logged against each.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "category_name",
+            "label": "Category",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "monthly_budget",
+            "label": "Monthly budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "group",
+            "label": "Group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Essentials",
+              "Lifestyle"
+            ],
+            "choiceColors": {
+              "Essentials": "blue",
+              "Lifestyle": "green"
+            }
+          },
+          {
+            "key": "spent_total",
+            "label": "Spent (all logged)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "expenses",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "spent_month",
+            "label": "Spent this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "expenses",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "spent_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "left_month",
+            "label": "Left this month",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Monthly budget} - {Spent this month}"
+          },
+          {
+            "key": "used_pct",
+            "label": "Budget used (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Monthly budget} > 0, ROUND({Spent this month} / {Monthly budget} * 100, 0), 0)"
+          },
+          {
+            "key": "budget_state",
+            "label": "Budget state",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Monthly budget} = 0, \"No budget\", IF({Spent this month} > {Monthly budget}, \"Over budget\", IF({Spent this month} >= {Monthly budget} * 0.8, \"Close to limit\", \"On track\")))"
+          },
+          {
+            "key": "expense_count",
+            "label": "Expenses logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "expenses",
+            "pick": "amount",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cat-groc",
+            "values": {
+              "category_name": "Groceries",
+              "monthly_budget": 650,
+              "group": "Essentials"
+            }
+          },
+          {
+            "key": "cat-rent",
+            "values": {
+              "category_name": "Rent",
+              "monthly_budget": 1850,
+              "group": "Essentials"
+            }
+          },
+          {
+            "key": "cat-trans",
+            "values": {
+              "category_name": "Transport",
+              "monthly_budget": 220,
+              "group": "Essentials"
+            }
+          },
+          {
+            "key": "cat-dine",
+            "values": {
+              "category_name": "Dining out",
+              "monthly_budget": 300,
+              "group": "Lifestyle"
+            }
+          },
+          {
+            "key": "cat-util",
+            "values": {
+              "category_name": "Utilities",
+              "monthly_budget": 240,
+              "group": "Essentials"
+            }
+          },
+          {
+            "key": "cat-leis",
+            "values": {
+              "category_name": "Leisure",
+              "monthly_budget": 260,
+              "group": "Lifestyle"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each expense belongs to one category.",
+        "fromTable": "expense",
+        "fromField": "category",
+        "toTable": "category",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "expenses"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "log_expense",
+        "name": "Log an expense",
+        "describes": "A quick way to add a purchase from a phone.",
+        "audience": "staff",
+        "table": "expense",
+        "fields": [
+          {
+            "fieldKey": "expense_name",
+            "ask": "What did you buy?",
+            "required": true
+          },
+          {
+            "fieldKey": "amount",
+            "ask": "How much was it?",
+            "required": true
+          },
+          {
+            "fieldKey": "spent_on",
+            "ask": "On what day did you spend it?"
+          },
+          {
+            "fieldKey": "category",
+            "ask": "Which category?"
+          },
+          {
+            "fieldKey": "payment_method",
+            "ask": "How did you pay?"
+          }
+        ],
+        "submitLabel": "Add expense",
+        "confirmation": "Logged. It shows in this month."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_expenses",
+        "name": "All expenses",
+        "table": "expense",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "spent_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "expense_board",
+        "name": "By category",
+        "table": "expense",
+        "kind": "kanban",
+        "groupBy": "payment_method"
+      },
+      {
+        "token": "expense_calendar",
+        "name": "Calendar",
+        "table": "expense",
+        "kind": "calendar",
+        "dateField": "spent_on",
+        "allDay": true
+      },
+      {
+        "token": "all_categories",
+        "name": "Categories",
+        "table": "category",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "expense_month",
+        "name": "This month",
+        "table": "expense",
+        "kind": "grid",
+        "within": {
+          "spent_on": {
+            "relative": "this_month"
+          }
+        },
+        "sorts": [
+          {
+            "field": "spent_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "expense_week",
+        "name": "Last 7 days",
+        "table": "expense",
+        "kind": "grid",
+        "within": {
+          "spent_on": {
+            "relative": "past_days",
+            "n": 7
+          }
+        },
+        "sorts": [
+          {
+            "field": "spent_on",
+            "direction": "desc"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Expense assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "expense",
+          "describes": "Every logged expense with amount, date and category."
+        },
+        {
+          "name": "related_tables",
+          "table": "category",
+          "describes": "The categories and their budgets."
         }
-       }
       ],
-      "activeViewId": "v-rec"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many recurring expenses are logged?",
+        "whyItMatters": "Soledad checks fixed costs first.",
+        "expect": {
+          "table": "expense",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "recurring": true
+          },
+          "answer": 6,
+          "unit": "expenses"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the expense list.",
+        "action": {
+          "kind": "open",
+          "surface": "all_expenses"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_expenses",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "expense_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "expense_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the categories.",
+        "action": {
+          "kind": "open",
+          "surface": "all_categories"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_categories",
+          "minItems": 5
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library author (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "reyes-household.net"
+      ],
+      "fictionalStreets": [
+        "Fennel Court"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "how-to-track",
-   "parent": "expense-tracker",
-   "title": "How to track",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "heading",
-     "text": [
-      {
-       "text": "A simple routine"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
+      "key": "expense-tracker",
+      "parent": null,
+      "title": "Expense Tracker",
+      "icon": {
+        "emoji": "💸"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Log each purchase as a row, pick a category, and watch the totals. Budgets live on the categories; the dashboard shows where the month went."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Wallet"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where it goes"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Open the dashboard for spend by category and by payment method."
+                    }
+                  ]
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:expense-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Set up"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Edit category budgets once, then forget them."
+                    }
+                  ]
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-track"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Look back"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "A monthly check that takes five minutes."
+                    }
+                  ]
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:monthly-review"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expenses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "expense",
+              "view": "all_expenses"
+            },
+            "inline": true,
+            "title": "Expenses",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-all",
+                "name": "All",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "spent_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-month",
+                "name": "This month",
+                "layout": "grid",
+                "icon": "CalendarDays",
+                "within": {
+                  "spent_on": {
+                    "relative": "this_month"
+                  }
+                }
+              },
+              {
+                "id": "v-week",
+                "name": "Last 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "spent_on": {
+                    "relative": "past_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
+                "id": "v-board",
+                "name": "By payment",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "payment_method"
+              },
+              {
+                "id": "v-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "spent_on"
+              },
+              {
+                "id": "v-cat",
+                "name": "Spend by category",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "field": "amount",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "v-all"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Budget by category"
+            }
+          ],
+          "children": [
+            {
+              "type": "database",
+              "props": {
+                "source": {
+                  "kind": "template",
+                  "table": "category",
+                  "view": "all_categories"
+                },
+                "inline": true,
+                "title": "Categories",
+                "linked": true,
+                "showTitle": true,
+                "views": [
+                  {
+                    "id": "v-t",
+                    "name": "Budgets",
+                    "layout": "grid",
+                    "icon": "Table"
+                  },
+                  {
+                    "id": "v-b",
+                    "name": "Budget by group",
+                    "layout": "chart",
+                    "icon": "ChartColumn",
+                    "chart": {
+                      "type": "bar",
+                      "groupBy": "group",
+                      "op": "sum",
+                      "field": "monthly_budget"
+                    }
+                  }
+                ],
+                "activeViewId": "v-t"
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Log a purchase the day it happens; the amount and category are enough."
-      }
-     ]
+      "key": "expense-dashboard",
+      "parent": "expense-tracker",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "expense",
+                      "view": "all_expenses"
+                    },
+                    "inline": true,
+                    "title": "Expenses",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "Spend by category",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "amount",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "expense",
+                      "view": "all_expenses"
+                    },
+                    "inline": true,
+                    "title": "Expenses",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "Spend by payment method",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "payment_method",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "category",
+                      "view": "all_categories"
+                    },
+                    "inline": true,
+                    "title": "Categories",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "Budget by group",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "group",
+                          "op": "sum",
+                          "field": "monthly_budget"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Largest recent purchases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "expense",
+              "view": "all_expenses"
+            },
+            "inline": true,
+            "title": "Expenses",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-big",
+                "name": "Biggest first",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "amount",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-big"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recurring"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "expense",
+              "view": "all_expenses"
+            },
+            "inline": true,
+            "title": "Expenses",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-rec",
+                "name": "Recurring",
+                "layout": "list",
+                "icon": "Repeat",
+                "filters": {
+                  "recurring": true
+                }
+              }
+            ],
+            "activeViewId": "v-rec"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Mark rent, bills and passes as Recurring so you can see fixed costs."
-      }
-     ]
+      "key": "how-to-track",
+      "parent": "expense-tracker",
+      "title": "How to track",
+      "icon": {
+        "emoji": "📝"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A simple routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log a purchase the day it happens; the amount and category are enough."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark rent, bills and passes as Recurring so you can see fixed costs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep notes for anything you might question later."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Receipts: attach a photo to the row when a purchase might be returned or claimed."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Paperclip"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Keep notes for anything you might question later."
-      }
-     ]
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Receipts: attach a photo to the row when a purchase might be returned or claimed."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Paperclip"
-     }
+      "key": "monthly-review",
+      "parent": "expense-tracker",
+      "title": "Monthly review",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Open the This month view on the Expenses table, then read each category line in the budget table: Spent this month, Left this month and Budget used (%) are worked out for you."
+            }
+          ],
+          "props": {
+            "icon": "Calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Five-minute check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every purchase from the month is logged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Largest three purchases still feel worth it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any category over its budget has a note on why"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recurring costs match the statements"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notes for next month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write what to change here."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a category keeps running over, either the budget was a guess or the spending is a habit. Decide which one it is, then change the number or change the habit. Writing the reason next to the category is enough; the point is that next month you remember why."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  },
-  {
-   "key": "monthly-review",
-   "parent": "expense-tracker",
-   "title": "Monthly review",
-   "icon": {
-    "emoji": "🔍"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Five-minute check"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Every purchase from the month is logged"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Largest three purchases still feel worth it"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Any category over its budget has a note on why"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Recurring costs match the statements"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Notes for next month"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Write what to change here."
-      }
-     ]
-    }
-   ]
-  }
- ]
+  ]
 }

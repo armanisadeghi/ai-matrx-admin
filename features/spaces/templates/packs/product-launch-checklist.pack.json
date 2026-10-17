@@ -1,1462 +1,1871 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0354",
- "version": 1,
- "title": "Product Launch Checklist",
- "description": "A launch with phased tasks, owners and a progress count that counts down.",
- "forWho": "Product marketing teams",
- "icon": {
-  "emoji": "🚀"
- },
- "cover": {
-  "url": "gallery:photo-desert-dunes",
-  "offsetY": 50
- },
- "category": "projects",
- "tags": [
-  "launch",
-  "checklist",
-  "go-to-market",
-  "tasks"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-product-launch-checklist",
+  "packVersion": 1,
   "catalogueId": "SP0354",
-  "useCase": "Nadia Rahimi runs each product launch from one list with owners and dates.",
-  "industry": "cross_industry",
-  "vertical": "Product marketing",
-  "job": "projects",
-  "audience": "organization",
-  "teaches": "boards",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Solstice Apps",
-   "describes": "A small company making planning software for families and clubs.",
-   "address": {
-    "line1": "318 Marlowe Quay",
-    "city": "Seattle",
-    "region": "WA",
-    "postalCode": "98107",
-    "country": "US"
-   },
-   "phone": "(206) 555-0160",
-   "website": "solstice-apps.net",
-   "email": "hello@solstice-apps.net",
-   "timezone": "America/Los_Angeles"
-  },
-  "cleanupTag": "use-case:spaces-product-launch-checklist",
-  "tables": [
-   {
-    "token": "launch",
-    "name": "Launches",
-    "labelSingular": "Launch",
-    "labelPlural": "Launches",
-    "type": "entity",
-    "display": "list",
-    "weight": "light",
-    "ordered": false,
-    "icon": "rocket",
-    "titleField": "launch_name",
-    "describes": "Each product launch, its date and how far along it is.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "launch_name",
-      "label": "Launch",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "launch_on",
-      "label": "Launch date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Planning",
-       "On track",
-       "At risk",
-       "Launched"
-      ],
-      "choiceColors": {
-       "Planning": "slate",
-       "On track": "green",
-       "At risk": "amber",
-       "Launched": "violet"
-      }
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "budget",
-      "label": "Budget",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 500000
-       }
-      ]
-     },
-     {
-      "key": "tasks",
-      "label": "Tasks",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "task",
-      "relationMax": 50,
-      "multi": true
-     },
-     {
-      "key": "task_total",
-      "label": "Tasks in total",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "tasks",
-      "pick": "task_name",
-      "agg": "count"
-     },
-     {
-      "key": "task_done",
-      "label": "Tasks done",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "tasks",
-      "pick": "task_name",
-      "agg": "count",
-      "filter": {
-       "done": true
-      }
-     }
-    ],
-    "rows": [
-     {
-      "key": "l1",
-      "values": {
-       "launch_name": "Solstice Planner 3.0",
-       "launch_on": "@today+21d",
-       "status": "On track",
-       "owner": "tm-nadia",
-       "budget": 38000
-      }
-     },
-     {
-      "key": "l2",
-      "values": {
-       "launch_name": "Solstice Planner 2.5",
-       "launch_on": "@today-150d",
-       "status": "Launched",
-       "owner": "tm-nadia",
-       "budget": 21500
-      }
-     },
-     {
-      "key": "l3",
-      "values": {
-       "launch_name": "Club Rosters add-on",
-       "launch_on": "@today+110d",
-       "status": "Planning",
-       "owner": "tm-eli",
-       "budget": 15000
-      }
-     }
-    ]
-   },
-   {
-    "token": "task",
-    "name": "Tasks",
-    "labelSingular": "Task",
-    "labelPlural": "Tasks",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "list-checks",
-    "titleField": "task_name",
-    "describes": "Every launch task by phase, owner and due date.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "task_name",
-      "label": "Task",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "phase",
-      "label": "Phase",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Strategy",
-       "Build",
-       "Pre-launch",
-       "Launch day",
-       "Post-launch"
-      ],
-      "choiceColors": {
-       "Strategy": "blue",
-       "Build": "violet",
-       "Pre-launch": "teal",
-       "Launch day": "orange",
-       "Post-launch": "pink"
-      }
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "done",
-      "label": "Done",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "channel",
-      "label": "Channel",
-      "parityType": "multi_select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Email",
-       "Blog",
-       "Social",
-       "PR",
-       "Docs"
-      ],
-      "choiceColors": {
-       "Email": "blue",
-       "Blog": "violet",
-       "Social": "teal",
-       "PR": "orange",
-       "Docs": "pink"
-      },
-      "multi": true
-     },
-     {
-      "key": "days_left",
-      "label": "Days until due",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
-     },
-     {
-      "key": "launch",
-      "label": "Launch",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "launch",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "t1",
-      "values": {
-       "task_name": "Define the launch goal and success numbers",
-       "phase": "Strategy",
-       "owner": "tm-nadia",
-       "due_on": "@today-25d",
-       "done": true,
-       "launch": "l1",
-       "channel": [
-        "Docs"
-       ]
-      }
-     },
-     {
-      "key": "t2",
-      "values": {
-       "task_name": "Write the positioning statement",
-       "phase": "Strategy",
-       "owner": "tm-nadia",
-       "due_on": "@today-22d",
-       "done": true,
-       "launch": "l1",
-       "channel": [
-        "Blog"
-       ]
-      }
-     },
-     {
-      "key": "t3",
-      "values": {
-       "task_name": "Pick the three headline features",
-       "phase": "Strategy",
-       "owner": "tm-eli",
-       "due_on": "@today-20d",
-       "done": true,
-       "launch": "l1",
-       "channel": [
-        "Docs"
-       ]
-      }
-     },
-     {
-      "key": "t4",
-      "values": {
-       "task_name": "Freeze scope for the release candidate",
-       "phase": "Build",
-       "owner": "tm-eli",
-       "due_on": "@today-9d",
-       "done": true,
-       "launch": "l1",
-       "channel": [
-        "Docs"
-       ]
-      }
-     },
-     {
-      "key": "t5",
-      "values": {
-       "task_name": "Finish onboarding flow changes",
-       "phase": "Build",
-       "owner": "tm-carlos",
-       "due_on": "@today-4d",
-       "done": true,
-       "launch": "l1"
-      }
-     },
-     {
-      "key": "t6",
-      "values": {
-       "task_name": "Fix open severity-one bugs",
-       "phase": "Build",
-       "owner": "tm-eli",
-       "due_on": "@today+3d",
-       "done": false,
-       "launch": "l1"
-      }
-     },
-     {
-      "key": "t7",
-      "values": {
-       "task_name": "Beta feedback round with ten customers",
-       "phase": "Pre-launch",
-       "owner": "tm-bea",
-       "due_on": "@today+5d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Email"
-       ]
-      }
-     },
-     {
-      "key": "t8",
-      "values": {
-       "task_name": "Draft the launch blog post",
-       "phase": "Pre-launch",
-       "owner": "tm-june",
-       "due_on": "@today+7d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Blog"
-       ]
-      }
-     },
-     {
-      "key": "t9",
-      "values": {
-       "task_name": "Record a two-minute product video",
-       "phase": "Pre-launch",
-       "owner": "tm-carlos",
-       "due_on": "@today+9d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Social"
-       ]
-      }
-     },
-     {
-      "key": "t10",
-      "values": {
-       "task_name": "Update help center articles",
-       "phase": "Pre-launch",
-       "owner": "tm-bea",
-       "due_on": "@today+10d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Docs"
-       ]
-      }
-     },
-     {
-      "key": "t11",
-      "values": {
-       "task_name": "Brief the support team",
-       "phase": "Pre-launch",
-       "owner": "tm-bea",
-       "due_on": "@today+14d",
-       "done": false,
-       "launch": "l1"
-      }
-     },
-     {
-      "key": "t12",
-      "values": {
-       "task_name": "Send press embargo notes",
-       "phase": "Pre-launch",
-       "owner": "tm-nadia",
-       "due_on": "@today+12d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "PR"
-       ]
-      }
-     },
-     {
-      "key": "t13",
-      "values": {
-       "task_name": "Schedule the announcement email",
-       "phase": "Launch day",
-       "owner": "tm-june",
-       "due_on": "@today+21d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Email"
-       ]
-      }
-     },
-     {
-      "key": "t14",
-      "values": {
-       "task_name": "Publish the blog post and changelog",
-       "phase": "Launch day",
-       "owner": "tm-june",
-       "due_on": "@today+21d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Blog",
-        "Docs"
-       ]
-      }
-     },
-     {
-      "key": "t15",
-      "values": {
-       "task_name": "Post to social channels",
-       "phase": "Launch day",
-       "owner": "tm-carlos",
-       "due_on": "@today+21d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Social"
-       ]
-      }
-     },
-     {
-      "key": "t16",
-      "values": {
-       "task_name": "Switch on the new pricing page",
-       "phase": "Launch day",
-       "owner": "tm-nadia",
-       "due_on": "@today+21d",
-       "done": false,
-       "launch": "l1"
-      }
-     },
-     {
-      "key": "t17",
-      "values": {
-       "task_name": "Monitor errors and support queue",
-       "phase": "Launch day",
-       "owner": "tm-eli",
-       "due_on": "@today+21d",
-       "done": false,
-       "launch": "l1"
-      }
-     },
-     {
-      "key": "t18",
-      "values": {
-       "task_name": "Collect first-week customer quotes",
-       "phase": "Post-launch",
-       "owner": "tm-bea",
-       "due_on": "@today+28d",
-       "done": false,
-       "launch": "l1",
-       "channel": [
-        "Social"
-       ]
-      }
-     },
-     {
-      "key": "t19",
-      "values": {
-       "task_name": "Review launch numbers against the goal",
-       "phase": "Post-launch",
-       "owner": "tm-nadia",
-       "due_on": "@today+35d",
-       "done": false,
-       "launch": "l1"
-      }
-     },
-     {
-      "key": "t20",
-      "values": {
-       "task_name": "Hold the launch retrospective",
-       "phase": "Post-launch",
-       "owner": "tm-nadia",
-       "due_on": "@today+37d",
-       "done": false,
-       "launch": "l1"
-      }
-     }
-    ],
-    "independentOf": {
-     "launch": "Tasks fall before and after the launch date by design."
-    },
-    "statusAgrees": []
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each launch has one owner.",
-    "fromTable": "launch",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "launches_owned"
-   },
-   {
-    "describes": "A launch gathers its tasks.",
-    "fromTable": "launch",
-    "fromField": "tasks",
-    "toTable": "task",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "in_launch"
-   },
-   {
-    "describes": "Each task has one owner.",
-    "fromTable": "task",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "tasks_owned"
-   },
-   {
-    "describes": "Each task belongs to one launch.",
-    "fromTable": "task",
-    "fromField": "launch",
-    "toTable": "launch",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "launch_tasks"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-nadia",
-      "values": {
-       "full_name": "Nadia Rahimi",
-       "role": "Product marketing lead",
-       "work_email": "nadia@solstice-apps.net",
-       "mobile": "(206) 555-0161",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-eli",
-      "values": {
-       "full_name": "Eli Strand",
-       "role": "Engineering manager",
-       "work_email": "eli@solstice-apps.net",
-       "mobile": "(206) 555-0162",
-       "start_date": "@today-4y"
-      }
-     },
-     {
-      "key": "tm-june",
-      "values": {
-       "full_name": "June Okafor",
-       "role": "Content writer",
-       "work_email": "june@solstice-apps.net",
-       "mobile": "(206) 555-0163",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-carlos",
-      "values": {
-       "full_name": "Carlos Mendes",
-       "role": "Designer",
-       "work_email": "carlos@solstice-apps.net",
-       "mobile": "(206) 555-0164",
-       "start_date": "@today-20m"
-      }
-     },
-     {
-      "key": "tm-bea",
-      "values": {
-       "full_name": "Beatrice Lund",
-       "role": "Support lead",
-       "work_email": "bea@solstice-apps.net",
-       "mobile": "(206) 555-0165",
-       "start_date": "@today-5y"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "add_task",
-    "name": "Add a launch task",
-    "describes": "Anyone can suggest a missing task.",
-    "audience": "staff",
-    "table": "task",
-    "fields": [
-     {
-      "fieldKey": "task_name",
-      "ask": "What needs to be done?",
-      "required": true
-     },
-     {
-      "fieldKey": "phase",
-      "ask": "Which phase is it in?"
-     },
-     {
-      "fieldKey": "due_on",
-      "ask": "By when?"
-     }
-    ],
-    "submitLabel": "Add task",
-    "confirmation": "Added to the launch list."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_launches",
-    "name": "Launches",
-    "table": "launch",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_tasks",
-    "name": "All tasks",
-    "table": "task",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "due_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "phase_board",
-    "name": "By phase",
-    "table": "task",
-    "kind": "kanban",
-    "groupBy": "phase"
-   },
-   {
-    "token": "task_calendar",
-    "name": "Calendar",
-    "table": "task",
-    "kind": "calendar",
-    "dateField": "due_on",
-    "allDay": true
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Launch assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "task",
-     "describes": "Every launch task with phase, owner, due date and done flag."
-    },
-    {
-     "name": "related_tables",
-     "table": "launch",
-     "describes": "The launch these tasks belong to."
-    }
-   ],
-   "question": {
-    "ask": "How many launch tasks are still not done?",
-    "whyItMatters": "Nadia checks the gap before the date.",
-    "expect": {
-     "table": "task",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "done": false
-     },
-     "answer": 15,
-     "unit": "tasks"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the phase board.",
-    "action": {
-     "kind": "open",
-     "surface": "phase_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "phase_board",
-     "minItems": 15
-    }
-   },
-   {
-    "says": "Open the calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "task_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "task_calendar",
-     "minItems": 15
-    }
-   },
-   {
-    "says": "Open the launch.",
-    "action": {
-     "kind": "open",
-     "surface": "all_launches"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_launches",
-     "minItems": 1
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library author (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "solstice-apps.net"
-   ],
-   "fictionalStreets": [
-    "Marlowe Quay"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "product-launch",
-   "parent": null,
-   "title": "Product Launch",
-   "icon": {
+  "version": 2,
+  "title": "Product Launch Checklist",
+  "description": "A launch with phased tasks, owners and a progress count that counts down.",
+  "forWho": "Product marketing teams",
+  "icon": {
     "emoji": "🚀"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-desert-dunes",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "One launch, five phases. Tick tasks as they finish and use the board to see what is blocking the date."
-      }
-     ],
-     "background": "orange",
-     "props": {
-      "icon": "Rocket"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Launch"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "launch",
-       "view": "all_launches"
+  },
+  "category": "projects",
+  "tags": [
+    "launch",
+    "checklist",
+    "go-to-market",
+    "tasks"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-product-launch-checklist",
+    "catalogueId": "SP0354",
+    "useCase": "Nadia Rahimi runs each product launch from one list with owners and dates.",
+    "industry": "cross_industry",
+    "vertical": "Product marketing",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Solstice Apps",
+      "describes": "A small company making planning software for families and clubs.",
+      "address": {
+        "line1": "318 Marlowe Quay",
+        "city": "Seattle",
+        "region": "WA",
+        "postalCode": "98107",
+        "country": "US"
       },
-      "inline": true,
-      "title": "Launches",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-l",
-        "name": "Launch",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "v-l"
-     }
+      "phone": "(206) 555-0160",
+      "website": "solstice-apps.net",
+      "email": "hello@solstice-apps.net",
+      "timezone": "America/Los_Angeles"
     },
-    {
-     "type": "columnList",
-     "children": [
+    "cleanupTag": "use-case:spaces-product-launch-checklist",
+    "tables": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "task",
-           "view": "all_tasks"
+        "token": "launch",
+        "name": "Launches",
+        "labelSingular": "Launch",
+        "labelPlural": "Launches",
+        "type": "entity",
+        "display": "list",
+        "weight": "light",
+        "ordered": false,
+        "icon": "rocket",
+        "titleField": "launch_name",
+        "describes": "Each product launch, its date and how far along it is.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "launch_name",
+            "label": "Launch",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
           },
-          "inline": true,
-          "title": "Tasks",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "Tasks by phase",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "phase",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "task",
-           "view": "all_tasks"
+          {
+            "key": "launch_on",
+            "label": "Launch date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
-          "inline": true,
-          "title": "Tasks",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "Tasks by owner",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "owner",
-             "op": "count"
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "On track",
+              "At risk",
+              "Launched"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "On track": "green",
+              "At risk": "amber",
+              "Launched": "violet"
+            },
+            "statusGroups": {
+              "Planning": "todo",
+              "On track": "in_progress",
+              "At risk": "in_progress",
+              "Launched": "in_progress"
             }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Tasks by phase"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "phase_board"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "task_total",
+            "label": "Tasks in total",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "task_done",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "done": true
+            }
+          },
+          {
+            "key": "open_tasks",
+            "label": "Tasks left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Tasks in total} - {Tasks done}"
+          },
+          {
+            "key": "progress",
+            "label": "Launch progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Tasks in total} > 0, ROUND({Tasks done} / {Tasks in total} * 100, 0), 0)"
+          },
+          {
+            "key": "days_to",
+            "label": "Days to launch",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Launch date}, 'days')"
+          },
+          {
+            "key": "readiness",
+            "label": "Readiness",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Launch date} < TODAY(), \"Launched\", IF(AND({Launch progress (%)} >= 50, {Days to launch} >= 14), \"Healthy\", IF({Launch progress (%)} >= 80, \"Healthy\", \"Needs attention\")))"
+          }
+        ],
+        "rows": [
+          {
+            "key": "l1",
+            "values": {
+              "launch_name": "Solstice Planner 3.0",
+              "launch_on": "@today+21d",
+              "status": "On track",
+              "owner": "tm-nadia",
+              "budget": 38000
+            }
+          },
+          {
+            "key": "l2",
+            "values": {
+              "launch_name": "Solstice Planner 2.5",
+              "launch_on": "@today-150d",
+              "status": "Launched",
+              "owner": "tm-nadia",
+              "budget": 21500
+            }
+          },
+          {
+            "key": "l3",
+            "values": {
+              "launch_name": "Club Rosters add-on",
+              "launch_on": "@today+110d",
+              "status": "Planning",
+              "owner": "tm-eli",
+              "budget": 15000
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New launch",
+            "values": {
+              "status": "Planning"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we are launching"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence, written for a customer."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Signups or sales target"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "The date it is judged on"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who is involved"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Owner, design, engineering, support, marketing"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Risks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What could slip the date"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-b",
-        "name": "By phase",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "phase"
-       },
-       {
-        "id": "v-c",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "due_on"
-       },
-       {
-        "id": "v-t",
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Every launch task by phase, owner and due date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Strategy",
+              "Build",
+              "Pre-launch",
+              "Launch day",
+              "Post-launch"
+            ],
+            "choiceColors": {
+              "Strategy": "blue",
+              "Build": "violet",
+              "Pre-launch": "teal",
+              "Launch day": "orange",
+              "Post-launch": "pink"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Email",
+              "Blog",
+              "Social",
+              "PR",
+              "Docs"
+            ],
+            "choiceColors": {
+              "Email": "blue",
+              "Blog": "violet",
+              "Social": "teal",
+              "PR": "orange",
+              "Docs": "pink"
+            },
+            "multi": true
+          },
+          {
+            "key": "days_left",
+            "label": "Days until due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "launch",
+            "label": "Launch",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "launch",
+            "relationMax": 1
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "t1",
+            "values": {
+              "task_name": "Define the launch goal and success numbers",
+              "phase": "Strategy",
+              "owner": "tm-nadia",
+              "due_on": "@today-25d",
+              "done": true,
+              "launch": "l1",
+              "channel": [
+                "Docs"
+              ]
+            }
+          },
+          {
+            "key": "t2",
+            "values": {
+              "task_name": "Write the positioning statement",
+              "phase": "Strategy",
+              "owner": "tm-nadia",
+              "due_on": "@today-22d",
+              "done": true,
+              "launch": "l1",
+              "channel": [
+                "Blog"
+              ]
+            }
+          },
+          {
+            "key": "t3",
+            "values": {
+              "task_name": "Pick the three headline features",
+              "phase": "Strategy",
+              "owner": "tm-eli",
+              "due_on": "@today-20d",
+              "done": true,
+              "launch": "l1",
+              "channel": [
+                "Docs"
+              ]
+            }
+          },
+          {
+            "key": "t4",
+            "values": {
+              "task_name": "Freeze scope for the release candidate",
+              "phase": "Build",
+              "owner": "tm-eli",
+              "due_on": "@today-9d",
+              "done": true,
+              "launch": "l1",
+              "channel": [
+                "Docs"
+              ]
+            }
+          },
+          {
+            "key": "t5",
+            "values": {
+              "task_name": "Finish onboarding flow changes",
+              "phase": "Build",
+              "owner": "tm-carlos",
+              "due_on": "@today-4d",
+              "done": true,
+              "launch": "l1"
+            }
+          },
+          {
+            "key": "t6",
+            "values": {
+              "task_name": "Fix open severity-one bugs",
+              "phase": "Build",
+              "owner": "tm-eli",
+              "due_on": "@today-2d",
+              "done": false,
+              "launch": "l1"
+            }
+          },
+          {
+            "key": "t7",
+            "values": {
+              "task_name": "Beta feedback round with ten customers",
+              "phase": "Pre-launch",
+              "owner": "tm-bea",
+              "due_on": "@today+5d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Email"
+              ]
+            }
+          },
+          {
+            "key": "t8",
+            "values": {
+              "task_name": "Draft the launch blog post",
+              "phase": "Pre-launch",
+              "owner": "tm-june",
+              "due_on": "@today+7d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Blog"
+              ]
+            }
+          },
+          {
+            "key": "t9",
+            "values": {
+              "task_name": "Record a two-minute product video",
+              "phase": "Pre-launch",
+              "owner": "tm-carlos",
+              "due_on": "@today+9d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Social"
+              ]
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "task_name": "Update help center articles",
+              "phase": "Pre-launch",
+              "owner": "tm-bea",
+              "due_on": "@today+10d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Docs"
+              ]
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "task_name": "Brief the support team",
+              "phase": "Pre-launch",
+              "owner": "tm-bea",
+              "due_on": "@today+14d",
+              "done": false,
+              "launch": "l1"
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "task_name": "Send press embargo notes",
+              "phase": "Pre-launch",
+              "owner": "tm-nadia",
+              "due_on": "@today+12d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "PR"
+              ]
+            }
+          },
+          {
+            "key": "t13",
+            "values": {
+              "task_name": "Schedule the announcement email",
+              "phase": "Launch day",
+              "owner": "tm-june",
+              "due_on": "@today+21d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Email"
+              ]
+            }
+          },
+          {
+            "key": "t14",
+            "values": {
+              "task_name": "Publish the blog post and changelog",
+              "phase": "Launch day",
+              "owner": "tm-june",
+              "due_on": "@today+21d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Blog",
+                "Docs"
+              ]
+            }
+          },
+          {
+            "key": "t15",
+            "values": {
+              "task_name": "Post to social channels",
+              "phase": "Launch day",
+              "owner": "tm-carlos",
+              "due_on": "@today+21d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Social"
+              ]
+            }
+          },
+          {
+            "key": "t16",
+            "values": {
+              "task_name": "Switch on the new pricing page",
+              "phase": "Launch day",
+              "owner": "tm-nadia",
+              "due_on": "@today+21d",
+              "done": false,
+              "launch": "l1"
+            }
+          },
+          {
+            "key": "t17",
+            "values": {
+              "task_name": "Monitor errors and support queue",
+              "phase": "Launch day",
+              "owner": "tm-eli",
+              "due_on": "@today+21d",
+              "done": false,
+              "launch": "l1"
+            }
+          },
+          {
+            "key": "t18",
+            "values": {
+              "task_name": "Collect first-week customer quotes",
+              "phase": "Post-launch",
+              "owner": "tm-bea",
+              "due_on": "@today+28d",
+              "done": false,
+              "launch": "l1",
+              "channel": [
+                "Social"
+              ]
+            }
+          },
+          {
+            "key": "t19",
+            "values": {
+              "task_name": "Review launch numbers against the goal",
+              "phase": "Post-launch",
+              "owner": "tm-nadia",
+              "due_on": "@today+35d",
+              "done": false,
+              "launch": "l1"
+            }
+          },
+          {
+            "key": "t20",
+            "values": {
+              "task_name": "Hold the launch retrospective",
+              "phase": "Post-launch",
+              "owner": "tm-nadia",
+              "due_on": "@today+37d",
+              "done": false,
+              "launch": "l1"
+            }
+          }
+        ],
+        "independentOf": {
+          "launch": "Tasks fall before and after the launch date by design."
+        },
+        "statusAgrees": [],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New launch task",
+            "values": {
+              "done": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What done looks like"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First step"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Needs from others"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each launch has one owner.",
+        "fromTable": "launch",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "launches_owned"
+      },
+      {
+        "describes": "Each task has one owner.",
+        "fromTable": "task",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks_owned"
+      },
+      {
+        "describes": "Each task belongs to one launch.",
+        "fromTable": "task",
+        "fromField": "launch",
+        "toTable": "launch",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-nadia",
+            "values": {
+              "full_name": "Nadia Rahimi",
+              "role": "Product marketing lead",
+              "work_email": "nadia@solstice-apps.net",
+              "mobile": "(206) 555-0161",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-eli",
+            "values": {
+              "full_name": "Eli Strand",
+              "role": "Engineering manager",
+              "work_email": "eli@solstice-apps.net",
+              "mobile": "(206) 555-0162",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-june",
+            "values": {
+              "full_name": "June Okafor",
+              "role": "Content writer",
+              "work_email": "june@solstice-apps.net",
+              "mobile": "(206) 555-0163",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-carlos",
+            "values": {
+              "full_name": "Carlos Mendes",
+              "role": "Designer",
+              "work_email": "carlos@solstice-apps.net",
+              "mobile": "(206) 555-0164",
+              "start_date": "@today-20m"
+            }
+          },
+          {
+            "key": "tm-bea",
+            "values": {
+              "full_name": "Beatrice Lund",
+              "role": "Support lead",
+              "work_email": "bea@solstice-apps.net",
+              "mobile": "(206) 555-0165",
+              "start_date": "@today-5y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "add_task",
+        "name": "Add a launch task",
+        "describes": "Anyone can suggest a missing task.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What needs to be done?",
+            "required": true
+          },
+          {
+            "fieldKey": "phase",
+            "ask": "Which phase is it in?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "By when?"
+          }
+        ],
+        "submitLabel": "Add task",
+        "confirmation": "Added to the launch list."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "done",
+            "set": "value",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_launches",
+        "name": "Launches",
+        "table": "launch",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_tasks",
         "name": "All tasks",
-        "layout": "grid",
-        "icon": "Table",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
         "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
         ]
-       },
-       {
-        "id": "v-o",
-        "name": "Not done",
-        "layout": "list",
-        "icon": "Circle",
+      },
+      {
+        "token": "phase_board",
+        "name": "By phase",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "phase"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
         "filters": {
-         "done": false
+          "done": false
         }
-       }
-      ],
-      "activeViewId": "v-b"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:launch-day-run"
-         }
-        }
-       ]
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:launch-messaging"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:launch-retro"
-         }
-        }
-       ]
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "launch-day-run",
-   "parent": "product-launch",
-   "title": "Launch day run sheet",
-   "icon": {
-    "emoji": "⏱️"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Work down this list in order. Anything not ticked by the end of the day moves to the post-launch phase."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Clock"
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "all_tasks"
-      },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-ld",
-        "name": "Launch day tasks",
-        "layout": "list",
-        "icon": "Rocket",
+        "token": "task_overdue",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
         "filters": {
-         "phase": "Launch day"
+          "done": false
         }
-       }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Launch assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every launch task with phase, owner, due date and done flag."
+        },
+        {
+          "name": "related_tables",
+          "table": "launch",
+          "describes": "The launch these tasks belong to."
+        }
       ],
-      "activeViewId": "v-ld"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Checklist"
+      "question": {
+        "ask": "How many launch tasks are still not done?",
+        "whyItMatters": "Nadia checks the gap before the date.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "done": false
+          },
+          "answer": 15,
+          "unit": "tasks"
+        }
       }
-     ],
-     "props": {
-      "level": 2
-     }
     },
-    {
-     "type": "todo",
-     "text": [
+    "walk": [
       {
-       "text": "Staging and production match"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
+        "says": "Open the phase board.",
+        "action": {
+          "kind": "open",
+          "surface": "phase_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "phase_board",
+          "minItems": 15
+        }
+      },
       {
-       "text": "Status page ready"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
+        "says": "Open the calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "task_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_calendar",
+          "minItems": 15
+        }
+      },
       {
-       "text": "Rollback plan reviewed"
+        "says": "Open the launch.",
+        "action": {
+          "kind": "open",
+          "surface": "all_launches"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_launches",
+          "minItems": 1
+        }
       }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Support has the answer sheet"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  },
-  {
-   "key": "launch-messaging",
-   "parent": "product-launch",
-   "title": "Messaging",
-   "icon": {
-    "emoji": "📣"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "One line"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Write the sentence a customer repeats to a friend."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Three proof points"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Proof point one"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Proof point two"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Proof point three"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Channels"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "Channel"
-          }
-         ],
-         [
-          {
-           "text": "Owner"
-          }
-         ],
-         [
-          {
-           "text": "Format"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Email"
-          }
-         ],
-         [
-          {
-           "text": "Content writer"
-          }
-         ],
-         [
-          {
-           "text": "Announcement and follow-up"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Blog"
-          }
-         ],
-         [
-          {
-           "text": "Content writer"
-          }
-         ],
-         [
-          {
-           "text": "Launch post"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Social"
-          }
-         ],
-         [
-          {
-           "text": "Designer"
-          }
-         ],
-         [
-          {
-           "text": "Video and cards"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Docs"
-          }
-         ],
-         [
-          {
-           "text": "Support lead"
-          }
-         ],
-         [
-          {
-           "text": "Updated articles"
-          }
-         ]
-        ]
-       }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library author (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "solstice-apps.net"
+      ],
+      "fictionalStreets": [
+        "Marlowe Quay"
       ]
-     }
-    }
-   ]
+    },
+    "version": 2
   },
-  {
-   "key": "launch-retro",
-   "parent": "product-launch",
-   "title": "Retrospective",
-   "icon": {
-    "emoji": "🔁"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "heading",
-     "text": [
-      {
-       "text": "What went well"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
+      "key": "product-launch",
+      "parent": null,
+      "title": "Product Launch",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One launch, five phases. Tick tasks as they finish and use the board to see what is blocking the date."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Rocket"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Launch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "launch",
+              "view": "all_launches"
+            },
+            "inline": true,
+            "title": "Launches",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-l",
+                "name": "Launch",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-l"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "Tasks by phase",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "phase",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "v-wk",
+                        "name": "Due this week",
+                        "layout": "list",
+                        "icon": "CalendarDays",
+                        "within": {
+                          "due_on": {
+                            "relative": "this_week"
+                          }
+                        },
+                        "filters": {
+                          "done": false
+                        }
+                      },
+                      {
+                        "id": "v-ov",
+                        "name": "Overdue",
+                        "layout": "list",
+                        "icon": "TriangleAlert",
+                        "within": {
+                          "due_on": {
+                            "relative": "before_today"
+                          }
+                        },
+                        "filters": {
+                          "done": false
+                        }
+                      },
+                      {
+                        "id": "v-n7",
+                        "name": "Next 7 days",
+                        "layout": "list",
+                        "icon": "Clock",
+                        "within": {
+                          "due_on": {
+                            "relative": "next_days",
+                            "n": 7
+                          }
+                        },
+                        "filters": {
+                          "done": false
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "Tasks by owner",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "owner",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks by phase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "phase_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-b",
+                "name": "By phase",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "phase"
+              },
+              {
+                "id": "v-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "v-t",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-o",
+                "name": "Not done",
+                "layout": "list",
+                "icon": "Circle",
+                "filters": {
+                  "done": false
+                }
+              }
+            ],
+            "activeViewId": "v-b"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:launch-day-run"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:launch-messaging"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:launch-retro"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Add items"
-      }
-     ]
+      "key": "launch-day-run",
+      "parent": "product-launch",
+      "title": "Launch day run sheet",
+      "icon": {
+        "emoji": "⏱️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Work down this list in order. Anything not ticked by the end of the day moves to the post-launch phase."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Clock"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-ld",
+                "name": "Launch day tasks",
+                "layout": "list",
+                "icon": "Rocket",
+                "filters": {
+                  "phase": "Launch day"
+                }
+              }
+            ],
+            "activeViewId": "v-ld"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Staging and production match"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status page ready"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rollback plan reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Support has the answer sheet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
     },
     {
-     "type": "heading",
-     "text": [
-      {
-       "text": "What to change"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
+      "key": "launch-messaging",
+      "parent": "product-launch",
+      "title": "Messaging",
+      "icon": {
+        "emoji": "📣"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write the messaging before the build is finished. Every other task on the launch list (the email, the post, the docs, the support answers) borrows from these three sections."
+            }
+          ],
+          "props": {
+            "icon": "PenLine"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "One line"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the sentence a customer repeats to a friend."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three proof points"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Proof point one"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Proof point two"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Proof point three"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Channels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Channel"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Format"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Email"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Content writer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Announcement and follow-up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Blog"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Content writer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Launch post"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Social"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Designer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Video and cards"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Docs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Support lead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Updated articles"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who it is for"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Name the one kind of customer who will care most on day one. A launch that speaks to everyone is read by no one."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What we will not say"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Claims we cannot back with a number or a demo"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Promises about dates after launch day"
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Add items"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Numbers vs goal"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Paste signups, activations and revenue next to the goals."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Actions"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Action with an owner and a date"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "launch-retro",
+      "parent": "product-launch",
+      "title": "Retrospective",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Hold this within two weeks of launch, while memory is fresh. Write it with the whole team and keep the tone about the plan, not the people."
+            }
+          ],
+          "props": {
+            "icon": "Flag"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What went well"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add items"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to change"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add items"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers vs goal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Paste signups, activations and revenue next to the goals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Actions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Action with an owner and a date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Where the plan was wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Compare the estimate on the biggest task with how long it took. The gap is usually the same size on the next launch."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep for next time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      ]
     }
-   ]
-  }
- ]
+  ]
 }
