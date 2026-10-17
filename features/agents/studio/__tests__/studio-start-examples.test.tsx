@@ -7,7 +7,16 @@ import { createRoot } from "react-dom/client";
 
 jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn(), back: jest.fn() }) }));
 jest.mock("@/components/official/ProTextarea", () => ({
-  ProTextarea: (props: Record<string, unknown>) => <textarea aria-label={props["aria-label"] as string} readOnly />,
+  ProTextarea: (props: Record<string, unknown>) => (
+    <div>
+      <textarea aria-label={props["aria-label"] as string} readOnly />
+      {props.leading as React.ReactNode}
+    </div>
+  ),
+}));
+jest.mock("@ai-matrx/agents/catalog/react", () => ({
+  AgentListDropdown: () => null,
+  useAgentListCore: () => ({ agents: [], isLoading: false }),
 }));
 jest.mock("@/components/official/VoiceTextarea", () => ({
   VoiceTextarea: (props: Record<string, unknown>) => <textarea aria-label={props["aria-label"] as string} readOnly />,
