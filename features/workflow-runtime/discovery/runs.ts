@@ -35,6 +35,11 @@ export interface RunListRow {
   deliverableKind: string | null;
   /** The organization the run belongs to — the list spans all of them. */
   organizationId: string | null;
+  /**
+   * Review flags this run raised (`workflow.run.review_flag_count`). Null when the
+   * wire row does not carry the column — the list then reads it from the table.
+   */
+  reviewFlagCount: number | null;
 }
 
 function text(value: unknown): string | null {
@@ -92,6 +97,8 @@ export function parseRunListRow(raw: unknown): RunListRow | null {
     parentRunId: text(row.parent_run_id),
     deliverableKind: primaryDeliverableKind(row.result),
     organizationId: text(row.organization_id),
+    reviewFlagCount:
+      typeof row.review_flag_count === "number" ? row.review_flag_count : null,
   };
 }
 

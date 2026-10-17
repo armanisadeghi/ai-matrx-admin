@@ -15,14 +15,7 @@ import type { WithFilledMandates } from "@/features/mandates/filled-by/service";
  * `attachFilledMandates` (one `mnd_filled_by` call), never per row.
  */
 export type WorkflowBrowseRow = WithFilledMandates<
-  Omit<Database["public"]["Functions"]["wfx_list_scoped"]["Returns"][number], "total_count"> & {
-    /**
-     * Step warnings since the last edit. The live `wfx_list_scoped` does not return it
-     * until `migrations/inverse/wfx_warnings_column.sql` (a chair step) is applied and
-     * `database.types.ts` is regenerated; delete this intersection then. Absent reads as 0.
-     */
-    warning_count?: number | null;
-  }
+  Omit<Database["public"]["Functions"]["wfx_list_scoped"]["Returns"][number], "total_count">
 >;
 
 /**

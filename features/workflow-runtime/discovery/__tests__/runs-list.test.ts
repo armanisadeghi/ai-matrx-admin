@@ -42,7 +42,12 @@ describe("parseRunListRow", () => {
       parentRunId: null,
       deliverableKind: "article",
       organizationId: "org-1",
+      reviewFlagCount: null,
     });
+  });
+
+  it("reads the run's review flag count when the wire row carries it", () => {
+    expect(parseRunListRow({ ...ROW, review_flag_count: 3 })?.reviewFlagCount).toBe(3);
   });
 
   it("falls back to created_at when the engine never stamped a start", () => {

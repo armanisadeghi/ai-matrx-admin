@@ -1041,6 +1041,7 @@ export const primaryNavItems: ShellNavItem[] = [
       },
       { label: "Workflow Runs", href: "/workflows/runs", iconName: "Workflow", group: "Workflows", guestHidden: true },
       { label: "Waiting on You", href: "/workflows/waiting", iconName: "Inbox", group: "Workflows", guestHidden: true },
+      { label: "Review", href: "/workflows/review", iconName: "Flag", group: "Workflows", guestHidden: true },
       { label: "Analyze Runs", href: "/workflows/runs/analyze", iconName: "BarChart3", group: "Workflows", guestHidden: true },
       { label: "Workflow Battle", href: "/workflows/battle", iconName: "Swords", group: "Workflows", guestHidden: true },
       { label: "Orchestras", href: "/agents/orchestras", iconName: "Users", group: "Workflows", guestHidden: true },

@@ -94,6 +94,8 @@ import { RunFailureCard } from "./RunFailureCard";
 import { RunHeldSteps } from "./RunHeldSteps";
 import { RunHero } from "./RunHero";
 import { RunJourney } from "./RunJourney";
+import { RunReviewBanner } from "../../review/components/RunReviewBanner";
+import { flagsByNode, useRunFlags } from "../../review/useRunFlags";
 import {
   deliverableSteps,
   describeWorkflowSteps,
@@ -239,6 +241,8 @@ export function RunStage({
   // which owns the dedupe.
   const status = useAppSelector(selectRunStatus(runId));
   const emissions = useAppSelector(selectRunEmissions(runId));
+  // Review flags (workflow.run_log needs_review): re-read as the status moves.
+  const { flags: reviewFlags } = useRunFlags(runId, status);
   /**
    * 🚨 LOADING IS NOT "NO PROMISE" — the distinction the page shift lives in.
    *
@@ -306,6 +310,12 @@ export function RunStage({
       {/* A step that FINISHED with its change held for a person (a new table
           under "Always ask"): the run reads Done, so the decision is drawn
           here, never buried in the result's JSON. */}
+      <RunReviewBanner
+        flags={reviewFlags}
+        definitionId={definitionId}
+        runStatus={status}
+        stepLabels={stepLabels}
+      />
       <RunHeldSteps runId={runId} finishedOnly />
       {/* THE QUESTION (SPEC §4.1). A `panel` question sits here, in the run's
           own column of cards; a `showcase` question is STAGED below instead —
@@ -349,6 +359,7 @@ export function RunStage({
                 runId={runId}
                 steps={steps}
                 syntheticSteps={synthetic}
+                flaggedByNode={flagsByNode(reviewFlags)}
               />
             </div>
           </div>

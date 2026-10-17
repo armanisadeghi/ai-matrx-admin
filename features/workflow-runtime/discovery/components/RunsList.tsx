@@ -19,14 +19,14 @@
  * away too.
  */
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatElapsed } from "@/components/official-candidate/elapsed-time/ElapsedTime";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
-import { ListX } from "lucide-react";
+import { Flag, ListX } from "lucide-react";
 
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
@@ -41,6 +41,7 @@ import {
 import { runDurationMs, type RunListRow } from "../runs";
 import { useRunsList } from "../useRunsList";
 import { useWorkflowFacts } from "../useWorkflowFacts";
+import { fetchRunFlagCounts } from "../../review/service";
 import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
@@ -62,7 +63,14 @@ interface RunRowView extends RunListRow {
    * `service.ts` § WorkflowFacts.
    */
   declaredKind: string | null;
+  /** Review flags this run raised; 0 when none (or not yet read). */
+  flagged: number;
 }
+
+const FLAGGED_FILTER_OPTIONS = [
+  { value: "flagged", label: "Flagged" },
+  { value: "clean", label: "Not flagged" },
+];
 
 const STATUS_FILTER_OPTIONS = [
   "running",
@@ -94,6 +102,25 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
     organizationId: organizationFilter,
   });
   const facts = useWorkflowFacts(rows.map((row) => row.definitionId));
+  // Review flags: the wire row carries `review_flag_count` once the server
+  // model has it; rows without it are read from workflow.run (row security).
+  const missingFlagIds = rows.filter((r) => r.reviewFlagCount === null).map((r) => r.runId);
+  const missingKey = missingFlagIds.join(",");
+  const [flagCounts, setFlagCounts] = useState<Map<string, number>>(new Map());
+  useEffect(() => {
+    if (!missingKey) return undefined;
+    let live = true;
+    void fetchRunFlagCounts(missingKey.split(","))
+      .then((counts) => {
+        if (live) setFlagCounts(counts);
+      })
+      .catch((e: unknown) => {
+        console.error("[runs-list] review flag counts", e);
+      });
+    return () => {
+      live = false;
+    };
+  }, [missingKey]);
   const [clickedRow, setClickedRow] = useState<RunRowView | null>(null);
 
   // The list spans every organization the person belongs to; name each row's.
@@ -109,6 +136,7 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       // The run's own declared kind when the wrapper ever carries one, else
       // the workflow's declaration — the only source a LIST row can have.
       declaredKind: row.deliverableKind ?? fact?.outputKind ?? null,
+      flagged: row.reviewFlagCount ?? flagCounts.get(row.runId) ?? 0,
     };
   });
 
@@ -154,6 +182,28 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       filterOptions: STATUS_FILTER_OPTIONS,
       width: 150,
       cell: (row) => <RunStatusChip status={row.status} />,
+    },
+    {
+      id: "flagged",
+      accessorKey: "flagged",
+      header: "Flagged",
+      width: 90,
+      align: "right",
+      filter: "select",
+      filterOptions: FLAGGED_FILTER_OPTIONS,
+      filterValue: (row) => (row.flagged > 0 ? "flagged" : "clean"),
+      cell: (row) =>
+        row.flagged > 0 ? (
+          <span
+            className="inline-flex items-center gap-1 tabular-nums text-warning"
+            title={`${row.flagged} review ${row.flagged === 1 ? "flag" : "flags"}`}
+          >
+            <Flag className="h-3 w-3" aria-hidden />
+            {row.flagged}
+          </span>
+        ) : (
+          <Muted>—</Muted>
+        ),
     },
     {
       id: "started",

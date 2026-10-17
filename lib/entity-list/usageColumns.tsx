@@ -18,10 +18,10 @@
 // Failures and Cost have no server filter yet, so they declare `filter: false`
 // honestly rather than offering a control that would filter only the page.
 //
-// Warnings is the sixth column, offered only by an entity whose rollup counts
-// warnings (workflows: "Check and Revise" misses written to workflow.run_log,
-// counted since the workflow's last edit, so fixing a step clears it). Sort and
-// filter (the Runs buckets; '0' = none) are both served by the RPC.
+// Review is the sixth column, offered only by an entity whose list counts open
+// review issues (workflows: wfx_list_scoped.review_count = OPEN
+// workflow.review_issue rows). Sort and filter (the Runs buckets; '0' = none)
+// are both served by the RPC under the key `review`.
 
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -51,8 +51,8 @@ export const USAGE_RUNS_FILTER_OPTIONS = [
   { value: "gt20", label: "More than 20" },
 ];
 
-/** Warnings buckets — the same SQL half (`wfx_bucket_matches`); '0' is "none". */
-export const USAGE_WARNINGS_FILTER_OPTIONS = [
+/** Review buckets — the same SQL half (`wfx_bucket_matches`); '0' is "none". */
+export const USAGE_REVIEW_FILTER_OPTIONS = [
   { value: "0", label: "None" },
   ...USAGE_RUNS_FILTER_OPTIONS.slice(1),
 ];
@@ -73,10 +73,10 @@ export interface UsageColumnOptions<TRow> {
   /** Where the last-used time opens, when the last run is a record. */
   lastUsedDoor?: (row: TRow) => UsageDoor | null;
   /**
-   * The Warnings column, for an entity whose rollup counts warnings since its
-   * last edit (RPC sort/filter key `warnings`). Absent = no column.
+   * The Review column, for an entity whose list counts open review issues
+   * (RPC sort/filter key `review`). Absent = no column.
    */
-  warnings?: {
+  review?: {
     read: (row: TRow) => number;
     door?: (row: TRow) => UsageDoor | null;
   };
@@ -89,9 +89,9 @@ export function formatRunsFacet(value: string): string {
   );
 }
 
-export function formatWarningsFacet(value: string): string {
+export function formatReviewFacet(value: string): string {
   return (
-    USAGE_WARNINGS_FILTER_OPTIONS.find((o) => o.value === value)?.label ??
+    USAGE_REVIEW_FILTER_OPTIONS.find((o) => o.value === value)?.label ??
     value
   );
 }
@@ -109,28 +109,28 @@ function DoorLink({ door, children }: { door: UsageDoor; children: ReactNode }) 
   );
 }
 
-function warningsColumn<TRow>(
-  warnings: NonNullable<UsageColumnOptions<TRow>["warnings"]>,
+function reviewColumn<TRow>(
+  review: NonNullable<UsageColumnOptions<TRow>["review"]>,
 ): EntityColumnSpec<TRow> {
   return {
-    id: "warnings",
-    label: "Warnings",
-    facet: "warnings",
-    formatFacetValue: formatWarningsFacet,
+    id: "review",
+    label: "Review",
+    facet: "review",
+    formatFacetValue: formatReviewFacet,
     sortWords: { asc: "fewest first", desc: "most first" },
     column: {
-      id: "warnings",
-      accessorFn: (row) => warnings.read(row),
-      header: "Warnings",
+      id: "review",
+      accessorFn: (row) => review.read(row),
+      header: "Review",
       filter: "select",
-      filterOptions: USAGE_WARNINGS_FILTER_OPTIONS,
+      filterOptions: USAGE_REVIEW_FILTER_OPTIONS,
       width: 90,
       align: "right",
       cell: (row) => {
-        const n = warnings.read(row);
+        const n = review.read(row);
         if (n <= 0) return <Muted>—</Muted>;
-        const door = warnings.door?.(row);
-        const title = `${n} check ${n === 1 ? "warning" : "warnings"} since the last edit`;
+        const door = review.door?.(row);
+        const title = `${n} open ${n === 1 ? "issue" : "issues"} to review`;
         if (door) {
           return (
             <Link
@@ -154,13 +154,13 @@ function warningsColumn<TRow>(
 }
 
 /**
- * The usage columns, in display order. Failures starts hidden; Warnings
+ * The usage columns, in display order. Failures starts hidden; Review
  * follows Failures when the entity counts them.
  */
 export function usageColumns<TRow>(
   options: UsageColumnOptions<TRow>,
 ): EntityColumnSpec<TRow>[] {
-  const { read, lastUsedId, runsDoor, lastUsedDoor, warnings } = options;
+  const { read, lastUsedId, runsDoor, lastUsedDoor, review } = options;
   return [
     {
       id: "runs",
@@ -256,7 +256,7 @@ export function usageColumns<TRow>(
         },
       },
     },
-    ...(warnings ? [warningsColumn(warnings)] : []),
+    ...(review ? [reviewColumn(review)] : []),
     {
       id: "cost",
       label: "Cost",

@@ -104682,7 +104682,6 @@ export type Database = {
           run_count: number
           success_count: number
           total_cost: number
-          warning_count: number
         }[]
       }
       extensibility_knob: {
@@ -118608,6 +118607,7 @@ export type Database = {
           organization_id: string
           organization_name: string
           owner_email: string
+          review_count: number
           run_count: number
           step_count: number
           success_count: number
@@ -118617,7 +118617,6 @@ export type Database = {
           updated_at: string
           version: number
           visibility: string
-          warning_count: number
           workflow_type: string
         }[]
       }
@@ -154420,6 +154419,127 @@ export type Database = {
           },
         ]
       }
+      review_issue: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          definition_id: string
+          deleted_at: string | null
+          edge_id: string | null
+          first_run_id: string | null
+          first_seen_at: string
+          id: string
+          label: string
+          last_message: string | null
+          last_run_id: string | null
+          last_seen_at: string
+          metadata: Json
+          node_id: string | null
+          occurrences: number
+          organization_id: string
+          reopened_at: string | null
+          reopened_count: number
+          resolution_note: string | null
+          run_count: number
+          severity: string
+          signature: string
+          source: string
+          status: string
+          status_changed_at: string | null
+          status_changed_by: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          definition_id: string
+          deleted_at?: string | null
+          edge_id?: string | null
+          first_run_id?: string | null
+          first_seen_at?: string
+          id?: string
+          label: string
+          last_message?: string | null
+          last_run_id?: string | null
+          last_seen_at?: string
+          metadata?: Json
+          node_id?: string | null
+          occurrences?: number
+          organization_id: string
+          reopened_at?: string | null
+          reopened_count?: number
+          resolution_note?: string | null
+          run_count?: number
+          severity?: string
+          signature: string
+          source?: string
+          status?: string
+          status_changed_at?: string | null
+          status_changed_by?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          definition_id?: string
+          deleted_at?: string | null
+          edge_id?: string | null
+          first_run_id?: string | null
+          first_seen_at?: string
+          id?: string
+          label?: string
+          last_message?: string | null
+          last_run_id?: string | null
+          last_seen_at?: string
+          metadata?: Json
+          node_id?: string | null
+          occurrences?: number
+          organization_id?: string
+          reopened_at?: string | null
+          reopened_count?: number
+          resolution_note?: string | null
+          run_count?: number
+          severity?: string
+          signature?: string
+          source?: string
+          status?: string
+          status_changed_at?: string | null
+          status_changed_by?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_issue_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_issue_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_issue_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "v_definition_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       run: {
         Row: {
           agent_id: string | null
@@ -154450,6 +154570,7 @@ export type Database = {
           published_to_web_by: string | null
           recovery_retry_count: number
           request_attribution_complete: boolean
+          review_flag_count: number
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           started_at: string | null
           status: string
@@ -154490,6 +154611,7 @@ export type Database = {
           published_to_web_by?: string | null
           recovery_retry_count?: number
           request_attribution_complete?: boolean
+          review_flag_count?: number
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           started_at?: string | null
           status?: string
@@ -154530,6 +154652,7 @@ export type Database = {
           published_to_web_by?: string | null
           recovery_retry_count?: number
           request_attribution_complete?: boolean
+          review_flag_count?: number
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           started_at?: string | null
           status?: string
@@ -154596,13 +154719,17 @@ export type Database = {
       run_log: {
         Row: {
           attempt: number | null
+          category: string | null
           created_at: string
           created_by: string | null
           definition_id: string | null
+          edge_id: string | null
           id: string
+          issue_id: string | null
           label: string
           message: string
           metadata: Json
+          needs_review: boolean
           node_id: string | null
           occurred_at: string
           organization_id: string
@@ -154610,6 +154737,7 @@ export type Database = {
           payload_kind: string | null
           run_id: string
           severity: string
+          source: string | null
           step: number | null
           updated_at: string
           updated_by: string | null
@@ -154617,13 +154745,17 @@ export type Database = {
         }
         Insert: {
           attempt?: number | null
+          category?: string | null
           created_at?: string
           created_by?: string | null
           definition_id?: string | null
+          edge_id?: string | null
           id?: string
+          issue_id?: string | null
           label: string
           message: string
           metadata?: Json
+          needs_review?: boolean
           node_id?: string | null
           occurred_at?: string
           organization_id: string
@@ -154631,6 +154763,7 @@ export type Database = {
           payload_kind?: string | null
           run_id: string
           severity?: string
+          source?: string | null
           step?: number | null
           updated_at?: string
           updated_by?: string | null
@@ -154638,13 +154771,17 @@ export type Database = {
         }
         Update: {
           attempt?: number | null
+          category?: string | null
           created_at?: string
           created_by?: string | null
           definition_id?: string | null
+          edge_id?: string | null
           id?: string
+          issue_id?: string | null
           label?: string
           message?: string
           metadata?: Json
+          needs_review?: boolean
           node_id?: string | null
           occurred_at?: string
           organization_id?: string
@@ -154652,6 +154789,7 @@ export type Database = {
           payload_kind?: string | null
           run_id?: string
           severity?: string
+          source?: string | null
           step?: number | null
           updated_at?: string
           updated_by?: string | null
@@ -154677,6 +154815,13 @@ export type Database = {
             columns: ["definition_id"]
             isOneToOne: false
             referencedRelation: "v_definition_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "run_log_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "review_issue"
             referencedColumns: ["id"]
           },
           {

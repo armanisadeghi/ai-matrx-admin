@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CalendarClock, PenLine, RotateCcw } from "lucide-react";
+import { CalendarClock, Flag, PenLine, RotateCcw } from "lucide-react";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
@@ -42,6 +42,8 @@ import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useRunViewPreference } from "../board/useRunViewPreference";
+import { fetchOpenIssueCount } from "../../review/service";
+import { workflowReviewHref } from "../../review/hrefs";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import {
   useWorkflowsBasePath,
@@ -185,6 +187,23 @@ export function WorkflowRunPage({
     };
   }, [definitionId, attempt]);
 
+  // Open review issues on this workflow → a header door to its review page.
+  const [openIssues, setOpenIssues] = useState(0);
+  useEffect(() => {
+    if (!definitionId) return undefined;
+    let live = true;
+    void fetchOpenIssueCount(definitionId)
+      .then((n) => {
+        if (live) setOpenIssues(n);
+      })
+      .catch((e: unknown) => {
+        console.error("[workflow-run-page] open review issues", e);
+      });
+    return () => {
+      live = false;
+    };
+  }, [definitionId, runId]);
+
   /**
    * ADOPTED (Volley 5): a started run is announced by ID, whichever branch of
    * the form started it. The served branch calls the contract's own start verb
@@ -248,6 +267,15 @@ export function WorkflowRunPage({
                 { value: "page", label: "Page" },
                 { value: "board", label: "Board" },
               ]}
+            />
+          ) : null}
+          {definitionId && openIssues > 0 ? (
+            <TapTargetButtonTransparent
+              icon={<Flag />}
+              tone="warning"
+              badge={openIssues}
+              ariaLabel={`${openIssues} open ${openIssues === 1 ? "issue" : "issues"} to review`}
+              href={workflowReviewHref(definitionId)}
             />
           ) : null}
           {runId ? (

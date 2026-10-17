@@ -15,6 +15,7 @@
 // `defaultHidden` is a starting point, never a restriction — anything here is
 // one click away in the column picker, and the choice is persisted per user.
 
+import { workflowReviewHref } from "@/features/workflow-runtime/review/hrefs";
 import { Archive, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
@@ -196,9 +197,9 @@ export const WORKFLOW_BROWSE_COLUMNS: EntityColumnSpec<WorkflowBrowseRow>[] = [
         ),
     },
   },
-  // Runs, Last used, Success rate, Failures, Warnings, Cost — THE shared usage
+  // Runs, Last used, Success rate, Failures, Review, Cost — THE shared usage
   // columns (lib/entity-list/usageColumns); the agents list shows the same five
-  // without Warnings.
+  // without Review.
   // THE DOOR LAW: the run count opens `/workflows/[id]/runs` (exactly what it
   // counts) and the last-used time opens that run's own page.
   ...usageColumns<WorkflowBrowseRow>({
@@ -224,13 +225,13 @@ export const WORKFLOW_BROWSE_COLUMNS: EntityColumnSpec<WorkflowBrowseRow>[] = [
             title: `Open the run from ${new Date(row.last_run_at).toLocaleString()}`,
           }
         : null,
-    // Check warnings since the last edit (workflow.run_log via entity_usage);
-    // the count opens the runs that raised them.
-    warnings: {
-      read: (row) => Number(row.warning_count ?? 0),
+    // Open review issues (wfx_list_scoped.review_count); the count opens the
+    // workflow's review page.
+    review: {
+      read: (row) => Number(row.review_count ?? 0),
       door: (row) => ({
-        href: `${currentWorkflowsBasePath()}/${row.id}/runs`,
-        title: "See the runs behind these warnings",
+        href: workflowReviewHref(row.id),
+        title: "See the issues to review",
       }),
     },
   }),

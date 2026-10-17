@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   Check,
+  Flag,
   Loader2,
   RotateCcw,
   SkipForward,
@@ -222,6 +223,7 @@ function JourneyRow({
   latest,
   refused = false,
   syntheticLabels,
+  flagged = 0,
   isLast,
 }: {
   runId: string;
@@ -233,6 +235,8 @@ function JourneyRow({
   /** The step's held change was refused and the run ended here (RUN-PAGE-TAILS). */
   refused?: boolean;
   syntheticLabels?: string[];
+  /** How many review flags this step raised in this run. */
+  flagged?: number;
   isLast: boolean;
 }) {
   // A refused step never finished and never will: it is not "now" any more.
@@ -279,6 +283,16 @@ function JourneyRow({
             {step.label}
           </span>
           <StepReplayBadge runId={runId} nodeId={step.nodeId} />
+          {flagged > 0 ? (
+            <span
+              data-step-flagged={flagged}
+              title={`${flagged} review ${flagged === 1 ? "flag" : "flags"}`}
+              className="inline-flex shrink-0 items-center gap-0.5 self-center text-[11px] tabular-nums text-warning"
+            >
+              <Flag className="h-3 w-3" aria-hidden />
+              {flagged}
+            </span>
+          ) : null}
           <span className="shrink-0 text-[11px] text-muted-foreground">
             {failed ? (
               <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
@@ -363,10 +377,13 @@ export function RunJourney({
   steps,
   /** Authored synthetic sub-step labels per nodeId (from the surface config). */
   syntheticSteps,
+  /** Review flags per nodeId (workflow.run_log needs_review) — a Flag marker on the row. */
+  flaggedByNode,
 }: {
   runId: string;
   steps: RunStepPresentation[];
   syntheticSteps?: Record<string, string[]>;
+  flaggedByNode?: Record<string, number>;
 }) {
   const phases = useAppSelector(selectNodeAggregatePhases(runId));
   const activity = useAppSelector(selectRunActivity(runId));
@@ -410,6 +427,7 @@ export function RunJourney({
           latest={latestByNode[step.nodeId] ?? null}
           refused={refusedNodes.has(step.nodeId)}
           syntheticLabels={syntheticSteps?.[step.nodeId]}
+          flagged={flaggedByNode?.[step.nodeId] ?? 0}
           isLast={index === steps.length - 1}
         />
       ))}
