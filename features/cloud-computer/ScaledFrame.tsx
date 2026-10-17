@@ -35,9 +35,20 @@ export function ScaledFrame({
       }
     };
     measure();
-    const observer = new ResizeObserver(measure);
+    // Measure on the next frame, not inside the observer callback: a scale
+    // set synchronously there re-lays out the panel mid-observation and the
+    // browser reports "ResizeObserver loop completed with undelivered
+    // notifications" (seen in the Error Inspector, 2026-10-16).
+    let raf = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+    };
   }, [width, height]);
 
   return (

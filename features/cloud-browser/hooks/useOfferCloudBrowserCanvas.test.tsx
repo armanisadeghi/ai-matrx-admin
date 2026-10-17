@@ -11,6 +11,12 @@ const openContent = jest.fn();
 jest.mock("@/features/canvas/host/useArtifactCanvas", () => ({
   useArtifactCanvasActions: () => ({ offer, openContent }),
 }));
+// No run in the slice and no Cloud Computer read: the fleet browser pane.
+jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => null }));
+jest.mock("@/features/cloud-computer/service", () => ({
+  getCloudComputer: jest.fn(),
+  lastKnownCloudComputer: () => null,
+}));
 jest.mock("@/features/canvas/hooks/useCanvas", () => ({
   useCanvas: () => ({ open: openContent }),
 }));

@@ -32,9 +32,9 @@ export function longCacheLine(
 ): string {
   if (!hasModel) return "Pick a model first";
   if (!wireFormat) return "Checking this model…";
-  if (wireFormat === "anthropic_chat") return "Claude: kept 1 hour instead of 5 minutes";
+  if (wireFormat === "anthropic_chat") return "Keep the fixed part cached for 1 hour";
   if (wireFormat === "openai_chat" && openaiTakesLongCache(modelName)) {
-    return "OpenAI: kept up to 24 hours";
+    return "Keep the fixed part cached for 24 hours";
   }
   return "No effect on this model";
 }

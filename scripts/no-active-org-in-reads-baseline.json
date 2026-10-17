@@ -251,31 +251,6 @@
       "owner": "scopes",
       "note": "orgId is initialSelection of ContextAssignmentField, the control that sets the active context"
     },
-    "features/secrets/components/VaultItemDetail.tsx::FieldRow::selectOrganizationId#1": {
-      "class": "not-a-list",
-      "owner": "secrets",
-      "note": "currentOrganizationId only part of a draft-context key"
-    },
-    "features/secrets/components/VaultPasswordGenerator.tsx::VaultPasswordGenerator::selectOrganizationId#1": {
-      "class": "not-a-list",
-      "owner": "secrets",
-      "note": "organizationId → fetchVaultGeneratorLimits (limits knob)"
-    },
-    "features/secrets/components/VaultPasswordGenerator.tsx::generate::fetchVaultGeneratorLimits(organizationId, userId)#1": {
-      "class": "not-a-list",
-      "owner": "secrets",
-      "note": "organizationId → fetchVaultGeneratorLimits (limits knob)"
-    },
-    "features/secrets/hooks/use-authenticator.ts::useAuthenticator::selectOrganizationId#1": {
-      "class": "not-a-list",
-      "owner": "secrets",
-      "note": "org/useOrganizationRequired only gates; fetchAuthenticators takes no org"
-    },
-    "features/secrets/hooks/use-authenticator.ts::useAuthenticator::useOrganizationRequired()#1": {
-      "class": "not-a-list",
-      "owner": "secrets",
-      "note": "org/useOrganizationRequired only gates; fetchAuthenticators takes no org"
-    },
     "features/settings/pages/IntegrationsSettingsPage.tsx::IntegrationsWorkspace::selectOrganizationId#1": {
       "class": "write-target",
       "owner": "settings",

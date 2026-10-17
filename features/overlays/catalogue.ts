@@ -318,6 +318,11 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  agentAdvancedSettingsWindow: {
+    label: "Advanced Settings",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
   agentSettingsWindow: {
     label: "Agent Settings Window",
     instanceMode: "singleton",

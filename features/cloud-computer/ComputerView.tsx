@@ -23,8 +23,10 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCloudBrowser } from "@/features/cloud-browser/hooks/useCloudBrowser";
 import { useScreenshotSession } from "@/features/cloud-browser/hooks/useScreenshotSession";
 import { useCloudBrowserTakeover } from "@/features/cloud-browser/hooks/useCloudBrowserTakeover";
+import { useRunViewerSeat } from "@/features/cloud-browser/hooks/useRunViewerSeat";
 import {
   browserActionBlockedReason,
+  isStreamGone,
   mintStreamTicket,
   renewStreamTicket,
 } from "@/features/cloud-browser/service";
@@ -42,8 +44,14 @@ function Centered({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Self-contained: needs nothing from the chat canvas, so the agent dashboard
+ * can mount it as-is. `conversationId` only binds Take control to that chat's
+ * running agent (steer instead of yank).
+ */
 export function ComputerView({ conversationId }: { conversationId?: string }) {
-  const { machine, error, waking, wake, retry } = useCloudComputer();
+  // Opening the Computer IS asking for it: an off machine wakes itself.
+  const { machine, error, waking, wake, retry } = useCloudComputer({ autoWake: true });
 
   if (!machine) {
     return error ? (
@@ -111,7 +119,8 @@ export function ComputerView({ conversationId }: { conversationId?: string }) {
 
 /** The machine is up: its screen as the agent's browser stream. */
 function ComputerScreen({ conversationId }: { conversationId?: string }) {
-  const cb = useCloudBrowser();
+  // Only a run ON the machine: never adopt or start a cold fleet browser here.
+  const cb = useCloudBrowser(undefined, null, "sandbox");
   const agentId = useAppSelector((s) =>
     conversationId ? selectInstanceAgentId(conversationId)(s) : undefined,
   );
@@ -124,11 +133,18 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   const [held, setTicket] = useState<{ ticket: StreamTicketEnvelope; revision: number } | null>(null);
   const [opening, setOpening] = useState(false);
   const [openError, setOpenError] = useState<string | null>(null);
+  // The claim this view held is gone (superseded by another viewer or tab, or
+  // expired): a plain recoverable state, never a frozen picture.
+  const [lost, setLost] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const controller = cb.controller;
   const inControl = controller?.kind === "human" && controller.isMe;
+  const someoneElseInControl = controller?.kind === "human" && !controller.isMe;
   const run = cb.run;
+  // THE ONE-VIEWER RULE (`cloud-browser/runViewer`): this view holds the run's
+  // one viewer seat while it shows the live stream.
+  const seat = useRunViewerSeat(run?.id ?? null);
   const runReady =
     !!run &&
     !["provisioning", "stopping", "stopped", "failed", "failed_persistence"].includes(run.state);
@@ -136,22 +152,36 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
 
   // Watching = the bounded screenshot session (the server mints a live stream
   // only to the person who holds control). Control = the Selkies stream.
+  // No stills while ANY person holds the wheel (the server refuses them,
+  // `controlled_by_other`), and none while a refusal is backing off.
   const shots = useScreenshotSession(run?.id ?? null, false);
   const frame = shots.frames[0] ?? null;
+  const wantsStills = runReady && controller?.kind !== "human";
   useEffect(() => {
-    if (runReady && !inControl && !shots.active) shots.start();
-  }, [runReady, inControl, shots.active]);
+    if (wantsStills && !shots.active && !shots.paused) shots.start();
+    else if (!wantsStills && shots.active) shots.stop();
+  }, [wantsStills, shots.active, shots.paused]);
 
   const revision = controller?.controlRevision ?? 0;
   // A stream belongs to one control revision: once control ends or moves it is
   // simply not the live one (no reset-in-effect needed).
-  const ticket = inControl && held?.revision === revision ? held.ticket : null;
+  const ticket =
+    inControl && !lost && held?.revision === revision ? held.ticket : null;
+  // Another viewer took the seat: drop the stream at once (its claim is about
+  // to be superseded server-side anyway).
+  const seatTaken = !!ticket && seat.elsewhere;
+  useEffect(() => {
+    if (seatTaken) setLost(true);
+  }, [seatTaken]);
 
   const open = useCallback(
     async (takeover: boolean) => {
       if (!run) return;
+      // This is the visible view of the run, so it takes the seat.
+      seat.hold(true);
       setOpening(true);
       setOpenError(null);
+      setLost(false);
       try {
         setTicket({
           ticket: await mintStreamTicket(run.id, "control", takeover),
@@ -170,25 +200,30 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
         setOpening(false);
       }
     },
-    [run, revision],
+    [run, revision, seat],
   );
 
   // Open the control stream once per control revision, so a refusal never loops.
   const attempted = useRef<string | null>(null);
   useEffect(() => {
-    if (!inControl || !runReady || !run || opening || ticket) return;
+    if (!inControl || !runReady || !run || opening || ticket || lost) return;
     const key = `${run.id}:${controller?.controlRevision ?? 0}`;
     if (attempted.current === key) return;
     attempted.current = key;
     void open(false);
-  }, [inControl, runReady, run, opening, ticket, controller?.controlRevision, open]);
+  }, [inControl, runReady, run, opening, ticket, lost, controller?.controlRevision, open]);
 
+  // Renew the claim; the first refusal ends the loop (a superseded ticket
+  // answers 404 on every tick) and the view offers to take control again.
   useEffect(() => {
     if (!ticket?.control) return;
     const timer = window.setInterval(() => {
-      void renewStreamTicket(ticket).catch(() =>
-        setOpenError("The screen connection expired."),
-      );
+      void renewStreamTicket(ticket).catch((e: unknown) => {
+        window.clearInterval(timer);
+        if (isStreamGone(e)) setLost(true);
+        else setOpenError("The screen connection expired.");
+        setTicket(null);
+      });
     }, ticket.control.renewIntervalSeconds * 1000);
     return () => window.clearInterval(timer);
   }, [ticket]);
@@ -225,6 +260,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     try {
       await cb.returnControl();
       setTicket(null);
+      setLost(false);
     } catch (e) {
       toastErrorAlreadyCaptured(
         e instanceof Error ? e.message : "Could not hand the screen back.",
@@ -283,7 +319,14 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               role={openError ? "alert" : "status"}
               className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center text-muted-foreground"
             >
-              {openError ? (
+              {inControl && lost ? (
+                <>
+                  <p className="text-xs">Opened somewhere else</p>
+                  <Button variant="outline" icon={<Hand />} onClick={() => void open(true)}>
+                    Take control again
+                  </Button>
+                </>
+              ) : openError ? (
                 <>
                   <p className="text-xs">
                     {openError} <ErrorAlchemyMenu error={openError} />
@@ -292,6 +335,12 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
                     Show it here
                   </Button>
                 </>
+              ) : someoneElseInControl ? (
+                <p className="text-xs">
+                  {controller?.displayName
+                    ? `${controller.displayName} is in control`
+                    : "Someone is in control"}
+                </p>
               ) : (
                 <p className={cn("text-xs", WAITING)}>
                   {inControl ? "Opening…" : "Loading screen…"}

@@ -66,3 +66,34 @@ describe("useScreenshotSession", () => {
     await hook.unmount();
   });
 });
+
+describe("useScreenshotSession quiet back-off", () => {
+  beforeEach(() => {
+    actions.length = 0;
+    requestScreenshot.mockReset();
+  });
+
+  it.each(["controlled_by_other", "run_state_conflict"])(
+    "a 409 %s pauses the session so a restarting viewer cannot storm",
+    async (code) => {
+      requestScreenshot.mockRejectedValue(
+        new BackendApiError({
+          code,
+          detail: code,
+          userMessage: "A person is controlling this browser right now.",
+          status: 409,
+        }),
+      );
+      const hook = await renderHook(() => useScreenshotSession("run-1"));
+      await hook.act(() => hook.current.start());
+      await settle(hook, () => hook.current.paused, "the session to back off");
+
+      // A viewer that re-starts whenever the session is inactive now gets a
+      // no-op instead of another refused request.
+      await hook.act(() => hook.current.start());
+      await hook.act(() => hook.current.start());
+      expect(requestScreenshot).toHaveBeenCalledTimes(1);
+      await hook.unmount();
+    },
+  );
+});

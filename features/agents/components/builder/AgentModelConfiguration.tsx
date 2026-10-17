@@ -31,6 +31,7 @@ import { AgentSkillsButton } from "@/features/agents/components/skills-managemen
 import { Label } from "@/components/ui/label";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { cn } from "@/lib/utils";
+import { useOpenAgentAdvancedSettingsWindow } from "@/features/overlays/openers/agentAdvancedSettingsWindow";
 
 interface AgentModelConfigurationProps {
   agentId: string;
@@ -40,6 +41,7 @@ export function AgentModelConfiguration({
   agentId,
 }: AgentModelConfigurationProps) {
   const dispatch = useAppDispatch();
+  const openAdvancedSettings = useOpenAgentAdvancedSettingsWindow();
   const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
   const modelMissing = useAppSelector((state) =>
     selectAgentModelMissing(state, agentId),
@@ -157,6 +159,13 @@ export function AgentModelConfiguration({
         <AgentVariablesModal agentId={agentId} />
         <AgentToolsModal agentId={agentId} />
         <AgentSkillsButton agentId={agentId} />
+        <button
+          type="button"
+          className="rounded-md px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          onClick={() => openAdvancedSettings({ agentId })}
+        >
+          Advanced settings
+        </button>
       </div>
     </div>
   );

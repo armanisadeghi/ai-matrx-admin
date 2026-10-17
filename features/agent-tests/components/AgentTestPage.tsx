@@ -20,6 +20,7 @@ import {
   Card,
   CardContent,
   DEFAULT_ARCHIVE_FILTER,
+  ErrorNotice,
   ReadFailure,
   type ArchiveFilterValue,
 } from "@ai-matrx/design-system";
@@ -57,9 +58,6 @@ import { ResultDetail } from "./ResultDetail";
 import { RunProgress } from "./RunProgress";
 import { ResultsTable, RunsTable } from "./AgentTestTables";
 
-function errorText(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
-}
 
 type Read<T> =
   | { state: "loading" }
@@ -110,14 +108,14 @@ function RunOptionsCard({
   onRun: () => Promise<void>;
 }) {
   const [launching, setLaunching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const run = async () => {
     setLaunching(true);
     setError(null);
     try {
       await onRun();
     } catch (err) {
-      setError(errorText(err, "The run did not start."));
+      setError(err);
     } finally {
       setLaunching(false);
     }
@@ -165,7 +163,12 @@ function RunOptionsCard({
             {caseCount > 0 ? `Run ${caseCount} tests` : "Run tests"}
           </Button>
           {error ? (
-            <span className="type-caption text-destructive-ink">{error}</span>
+            <ErrorNotice
+              size="inline"
+              title="The run did not start"
+              error={error}
+              operation="Run agent tests"
+            />
           ) : null}
         </div>
       </CardContent>
@@ -227,7 +230,7 @@ function SelectedRun({
   );
   const [openResultId, setOpenResultId] = useState<string | null>(null);
   const [acting, setActing] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{ error: unknown; what: string } | null>(null);
 
   const status =
     runRead.state === "ready" ? (runRead.data?.status ?? null) : null;
@@ -248,7 +251,7 @@ function SelectedRun({
         }
       } catch (err) {
         if (!controller.signal.aborted)
-          setActionError(errorText(err, "Lost the run's live updates."));
+          setActionError({ error: err, what: "Lost the run's live updates" });
       }
       if (!controller.signal.aborted) reread();
     })();
@@ -261,7 +264,7 @@ function SelectedRun({
     try {
       await work();
     } catch (err) {
-      setActionError(errorText(err, fallback));
+      setActionError({ error: err, what: fallback });
     } finally {
       setActing(false);
     }
@@ -298,7 +301,8 @@ function SelectedRun({
               onClick={() =>
                 void act(async () => {
                   await cancelRun(runId);
-                  reread();
+                  rereadRun();
+                  rereadResults();
                 }, "The run did not stop.")
               }
             >
@@ -313,7 +317,8 @@ function SelectedRun({
               onClick={() =>
                 void act(async () => {
                   await resumeRun(runId);
-                  reread();
+                  rereadRun();
+                  rereadResults();
                 }, "The run did not resume.")
               }
             >
@@ -336,7 +341,13 @@ function SelectedRun({
             </Button>
           ) : null}
           {actionError ? (
-            <span className="type-caption text-destructive-ink">{actionError}</span>
+            <ErrorNotice
+              size="inline"
+              title={actionError.what}
+              error={actionError.error}
+              operation="Agent test run"
+              records={[{ type: "agent_test_run", id: runId }]}
+            />
           ) : null}
         </div>
       ) : null}

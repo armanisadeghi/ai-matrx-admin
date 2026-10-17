@@ -99,7 +99,9 @@ export function useCloudBrowser(
     async (profileId: string, runId?: string | null) => {
       dispatch(setLoading(true));
       try {
-        const snap = await service.loadSnapshot(profileId, runId, { target });
+        const snap = target
+          ? await service.loadSnapshot(profileId, runId, { target })
+          : await service.loadSnapshot(profileId, runId);
         dispatch(hydrateSnapshot(snap));
       } catch (e) {
         dispatch(setError(toLoadError(e)));

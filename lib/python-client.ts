@@ -394,17 +394,18 @@ export interface RequestOptions {
    * thread this through user input.
    */
   cloudFilesBypass?: string;
+  /**
+   * HTTP failures this call site handles as expected domain outcomes. They
+   * still reject (or return when `allowHttpError` is set), but do not enter
+   * the global Error Inspector. Mirrors `callApi.expectedErrorStatuses`.
+   * Honoured by `requestRaw` and `postJson`.
+   */
+  expectedErrorStatuses?: readonly number[];
 }
 
 export interface RawResponseOptions extends RequestOptions {
   /** Return a non-2xx response after capturing it instead of throwing. */
   allowHttpError?: boolean;
-  /**
-   * HTTP failures this call site handles as expected domain outcomes. They
-   * still reject (or return when `allowHttpError` is set), but do not enter
-   * the global Error Inspector. Mirrors `callApi.expectedErrorStatuses`.
-   */
-  expectedErrorStatuses?: readonly number[];
 }
 
 export interface ResponseMeta {
@@ -722,6 +723,13 @@ export async function postJson<T, B = unknown>(
     return { data, meta: meta(response, requestId) };
   } catch (err) {
     if (opts.captureErrors === false) throw err;
+    if (
+      err instanceof BackendApiError &&
+      err.status !== null &&
+      opts.expectedErrorStatuses?.includes(err.status)
+    ) {
+      throw err;
+    }
     failClient(err, "POST", path, url, undefined, opts.signal);
   }
 }

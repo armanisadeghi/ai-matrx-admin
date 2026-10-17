@@ -19,7 +19,6 @@ import { useSessionKnob } from "@ai-matrx/chat/host/prefs-react";
 import type { AgentDefinitionMessage } from "@ai-matrx/chat/agents/types/agent-message-types";
 import {
   FLAG_COMPATIBILITY_KNOB,
-  cacheBoundaryVerdict,
   flagPlacementProblem,
   flagsOf,
   prefillVerdict,
@@ -53,12 +52,6 @@ export function useMessageFlags(agentId: string, messageIndex: number): MessageF
   const isLast = messageIndex === list.length - 1;
 
   const states: Partial<Record<MessageFlagKey, FlagToggleState>> = {
-    cache_boundary: {
-      verdict: cacheBoundaryVerdict(model, profile),
-      placementProblem: flags.cache_boundary
-        ? flagPlacementProblem(list, messageIndex, "cache_boundary")
-        : null,
-    },
     example: {
       // Examples are added as a pair from the builder's "+ Example" button; the
       // header only shows the flag on a message that already is one (to take it off).
