@@ -102,6 +102,9 @@ export function ScaledFrame({
   interactive,
   onLoad,
   controlRef,
+  connectWithinMs,
+  onConnectTimeout,
+  onConnected,
 }: {
   src: string;
   width: number;
@@ -110,6 +113,14 @@ export function ScaledFrame({
   interactive: boolean;
   onLoad?: () => void;
   controlRef?: React.Ref<ScaledFrameHandle>;
+  /**
+   * How long the picture may stay away (connecting or reconnecting) before
+   * `onConnectTimeout` fires, once per wait. Unset = no deadline. A session
+   * that never connects must never sit on "Connecting…" for ever.
+   */
+  connectWithinMs?: number;
+  onConnectTimeout?: () => void;
+  onConnected?: () => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
@@ -144,6 +155,23 @@ export function ScaledFrame({
     }, SILENT_STREAM_REVEAL_MS);
     return () => window.clearTimeout(timer);
   }, [loaded]);
+
+  // The deadline for the picture: re-armed each time it goes away.
+  const timeoutRef = useRef(onConnectTimeout);
+  const connectedRef = useRef(onConnected);
+  useEffect(() => {
+    timeoutRef.current = onConnectTimeout;
+    connectedRef.current = onConnected;
+  }, [onConnectTimeout, onConnected]);
+  useEffect(() => {
+    if (state === "connected") {
+      connectedRef.current?.();
+      return;
+    }
+    if (!connectWithinMs || state === "disconnected") return;
+    const timer = window.setTimeout(() => timeoutRef.current?.(), connectWithinMs);
+    return () => window.clearTimeout(timer);
+  }, [state, connectWithinMs]);
 
   const post = useCallback(
     (cmd: StreamCommand) => {

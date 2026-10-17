@@ -18,6 +18,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
+import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectInstanceAgentId } from "@ai-matrx/chat/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -40,6 +43,15 @@ import { ScaledFrame, type ScaledFrameHandle } from "./ScaledFrame";
 import { liveStream, type HeldStream } from "./liveStream";
 
 const WAITING = "animate-ssr-shimmer-opacity";
+
+/**
+ * How long the screen may stay on "Connecting…" before it opens a fresh stream
+ * (new ticket, new relay credentials), and then before it says it could not
+ * connect. A knob, never a constant (seeded by aidream migration
+ * 20261017230000_cloud_computer_connect_retry_knob.sql).
+ */
+export const CONNECT_RETRY_KNOB = { feature: "cloud_computer", key: "connect_retry_seconds" } as const;
+export const SCREEN_DID_NOT_CONNECT = "The screen did not connect.";
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
@@ -140,6 +152,13 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
 
   const [large, setLarge] = useState(false);
   const frameControl = useRef<ScaledFrameHandle>(null);
+  // Set once this view has opened a fresh stream for a picture that never came.
+  const freshTried = useRef(false);
+  const userId = useAppSelector(selectUserId);
+  const organizationId = useAppSelector(selectActiveOrganizationId);
+  const retrySeconds = useEffectiveKnob(organizationId, userId, CONNECT_RETRY_KNOB);
+  const connectWithinMs =
+    typeof retrySeconds === "number" && retrySeconds > 0 ? retrySeconds * 1000 : undefined;
   const [held, setHeld] = useState<HeldStream | null>(null);
   // Whether the server streams a live picture to a person who is only
   // watching. "no" = an older server (409 `not_controller`): watching falls
@@ -331,6 +350,23 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   const claiming = busy || takeover.phase === "claiming";
   const reopenMode = inControl ? "control" : "view";
 
+  // A stream that never shows a picture: open a fresh one once (a new ticket
+  // carries new relay credentials), then say so with a way out. Never an
+  // endless "Connecting…" (2026-10-17).
+  const onConnectTimeout = () => {
+    if (!freshTried.current) {
+      freshTried.current = true;
+      void open(reopenMode, true);
+      return;
+    }
+    freshTried.current = false;
+    setHeld(null);
+    setOpenError(SCREEN_DID_NOT_CONNECT);
+  };
+  const onConnected = () => {
+    freshTried.current = false;
+  };
+
   return (
     <div className="flex h-full flex-col gap-2 p-2">
       <div className={cn("min-h-0", large ? "flex-1" : "")}>
@@ -352,6 +388,9 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               title={label}
               interactive={inControl && large}
               controlRef={frameControl}
+              connectWithinMs={connectWithinMs}
+              onConnectTimeout={onConnectTimeout}
+              onConnected={onConnected}
             />
           ) : !inControl && frame ? (
             <img
@@ -380,8 +419,12 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
                   <p className="text-xs">
                     {openError} <ErrorAlchemyMenu error={openError} />
                   </p>
-                  <Button variant="outline" onClick={() => void open(reopenMode, true)}>
-                    Show it here
+                  <Button
+                    variant="outline"
+                    icon={openError === SCREEN_DID_NOT_CONNECT ? <RotateCw /> : undefined}
+                    onClick={() => void open(reopenMode, true)}
+                  >
+                    {openError === SCREEN_DID_NOT_CONNECT ? "Try again" : "Show it here"}
                   </Button>
                 </>
               ) : someoneElseInControl && viewSupport === "no" ? (
