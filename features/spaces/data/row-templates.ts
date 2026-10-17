@@ -72,16 +72,28 @@ export async function startNewRow(
 ): Promise<{ ok: true; recordId: string } | { ok: false; message: string }> {
   const written = await args.writeRow(newRowData(args.template, args.viewValues));
   if (!written.ok) return written;
+  await startTemplatePage(db, { ...args, recordId: written.id });
+  return { ok: true, recordId: written.id };
+}
+
+/**
+ * The new row's page from the picked template's body (null = empty). Also used after the whole-record form
+ * made the row (a required column refused the bare write), so a pick lands the same way on both paths.
+ */
+export async function startTemplatePage(
+  db: RowPageDb,
+  args: { organizationId: string; tableId: string; recordId: string; template: RowTemplateChoice | null; onPage?: (spaceId: string, recordId: string) => void },
+): Promise<string> {
   const { spaceId } = await ensureRowPage(db, {
     organizationId: args.organizationId,
     tableId: args.tableId,
-    recordId: written.id,
+    recordId: args.recordId,
     title: "",
     notes: null,
     template: args.template?.body ?? null,
   });
-  args.onPage?.(spaceId, written.id);
-  return { ok: true, recordId: written.id };
+  args.onPage?.(spaceId, args.recordId);
+  return spaceId;
 }
 
 /** "Set as default": this template becomes the one every new row's page starts from. */

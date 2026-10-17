@@ -60,7 +60,7 @@ import { ChartView, choicesOfField } from "./ChartView";
 import { DEFAULT_CHART } from "./first-reads";
 import { blockQuestion, effectiveHidden, kindOf, viewSpec, type ViewWithSummaries } from "./view-spec";
 import { primeOwningRow, useOwningRow } from "./owning-row";
-import { readRowTemplates, setDefaultRowTemplate, startNewRow, templateFor, type NewRowPick } from "./row-templates";
+import { newRowData, readRowTemplates, setDefaultRowTemplate, startNewRow, startTemplatePage, templateFor, type NewRowPick, type RowTemplateChoice } from "./row-templates";
 import type { RowPageDb } from "../embed/row-page";
 import { createClient } from "@/utils/supabase/client";
 import { resolveThisRow, thisRowValues, THIS_ROW, THIS_ROW_LABEL, usesThisRow } from "./this-row";
@@ -149,7 +149,8 @@ function DatabaseFrame({
   const [open, setOpen] = useState<string | null>(null);
   /** The row "+ New" just made: its peek opens with the cursor in its title. */
   const [fresh, setFresh] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
+  /** The whole-record form (a required column refused the bare write), with the New menu's pick. */
+  const [creating, setCreating] = useState<{ template: RowTemplateChoice | null; initial: Record<string, unknown> } | null>(null);
   const [expanded, setExpanded] = useState(false);
   // The toolbar sort is this viewer's own, per view, never written to the view (Notion): it reaches the
   // grid as `sortOverride` (null = the view's saved sort); charts and boards read it from the spec.
@@ -188,7 +189,8 @@ function DatabaseFrame({
   const addRow = (pick: NewRowPick = { kind: "default" }) => {
     // A row added in a "This page's row" view starts linked to that row, so it stays in the view.
     const viewValues = thisRowValues(asked.filters, ownerId);
-    const refused = () => (sample ? toast.info("The sample is read-only. Add your own table to add rows.") : setCreating(true));
+    const refused = (template: RowTemplateChoice | null = null) =>
+      sample ? toast.info("The sample is read-only. Add your own table to add rows.") : setCreating({ template, initial: newRowData(template, viewValues) });
     if (sample || !tableOrg) {
       void client.recordWrite({ table_id: tableId, data: viewValues }).then((res) => {
         if (res.ok) {
@@ -199,26 +201,28 @@ function DatabaseFrame({
       return;
     }
     const db = rowPageDb();
+    let template: RowTemplateChoice | null = null;
     void (pick.kind === "empty" ? Promise.resolve([]) : readRowTemplates(db, tableOrg, tableId))
-      .then((templates) =>
-        startNewRow(db, {
+      .then((templates) => {
+        template = templateFor(pick, templates);
+        return startNewRow(db, {
           organizationId: tableOrg,
           tableId,
-          template: templateFor(pick, templates),
+          template,
           viewValues,
           writeRow: async (data) => {
             const res = await client.recordWrite({ table_id: tableId, data });
             return res.ok ? { ok: true, id: res.data } : { ok: false, message: res.error.message };
           },
           onPage: (spaceId, recordId) => primeOwningRow(spaceId, { recordId, tableId, organizationId: tableOrg }),
-        }),
-      )
+        });
+      })
       .then(
         (res) => {
           if (res.ok) {
             setFresh(res.recordId);
             setOpen(res.recordId);
-          } else refused();
+          } else refused(template);
         },
         (err: unknown) => toast.error(err instanceof Error ? err.message : "The new row's page could not be started."),
       );
@@ -419,10 +423,29 @@ function DatabaseFrame({
 
       {open ? <RecordOpen tableId={tableId} recordId={open} as={props.openAs ?? "side"} fresh={open === fresh} onClose={() => setOpen(null)} /> : null}
 
-      <Dialog open={creating} onOpenChange={setCreating}>
+      <Dialog open={creating !== null} onOpenChange={(o) => (o ? null : setCreating(null))}>
         <DialogContent size="lg">
           <DialogTitle>New {table.data?.name ? `in ${table.data.name}` : "page"}</DialogTitle>
-          <RecordForm tableId={tableId} />
+          {creating ? (
+            <RecordForm
+              tableId={tableId}
+              initial={creating.initial}
+              focusFirstRequired
+              onCancel={() => setCreating(null)}
+              onSaved={(recordId) => {
+                const pickTemplate = creating.template;
+                setCreating(null);
+                // The row exists: its page starts from the pick (Empty page / no template = empty), then it opens.
+                const started = tableOrg
+                  ? startTemplatePage(rowPageDb(), { organizationId: tableOrg, tableId, recordId, template: pickTemplate, onPage: (spaceId) => primeOwningRow(spaceId, { recordId, tableId, organizationId: tableOrg }) })
+                  : Promise.resolve("");
+                void started.then(
+                  () => setOpen(recordId),
+                  (err: unknown) => toast.error(err instanceof Error ? err.message : "The new row's page could not be started."),
+                );
+              }}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
 
