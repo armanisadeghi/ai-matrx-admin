@@ -1,0 +1,1594 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0315",
+ "version": 1,
+ "title": "Support and Feedback Tracker",
+ "description": "Triage customer tickets, track feature requests and link answers to help articles.",
+ "forWho": "Small teams handling customer support",
+ "icon": {
+  "emoji": "🛟"
+ },
+ "cover": {
+  "url": "gallery:photo-pine-forest",
+  "offsetY": 50
+ },
+ "category": "operations",
+ "tags": [
+  "support",
+  "tickets",
+  "feedback",
+  "help center"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-support-feedback-tracker",
+  "catalogueId": "SP0315",
+  "useCase": "Odalys Brennan-Ade handles support at a small software company and uses this to see open tickets by status, who is waiting longest and which feature requests keep coming up.",
+  "industry": "software_it",
+  "vertical": "Customer support",
+  "job": "customer_service",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Pipwick Scheduling Software",
+   "describes": "A four-person software company selling appointment scheduling to salons and clinics, answering support itself.",
+   "address": {
+    "line1": "33 Ferrule Street",
+    "city": "Madison",
+    "region": "WI",
+    "postalCode": "53703",
+    "country": "US"
+   },
+   "phone": "(608) 555-0137",
+   "website": "pipwickapp.net",
+   "email": "support@pipwickapp.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-support-feedback-tracker",
+  "tables": [
+   {
+    "token": "article",
+    "name": "Help articles",
+    "labelSingular": "Help article",
+    "labelPlural": "Help articles",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "book-open",
+    "titleField": "title",
+    "describes": "Answers customers can read themselves.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "title",
+      "label": "Article",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "category",
+      "label": "Category",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Getting started",
+       "Bookings",
+       "Billing",
+       "Notifications",
+       "Account"
+      ],
+      "choiceColors": {
+       "Getting started": "slate",
+       "Bookings": "blue",
+       "Billing": "amber",
+       "Notifications": "violet",
+       "Account": "teal"
+      }
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "reviewed_on",
+      "label": "Last reviewed",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "tickets",
+      "label": "Tickets",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "ticket",
+      "multi": true
+     },
+     {
+      "key": "ticket_count",
+      "label": "Tickets answered",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "tickets",
+      "pick": "subject",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "ar1",
+      "values": {
+       "title": "Connect your calendar",
+       "category": "Getting started",
+       "owner": "tm-bertil",
+       "reviewed_on": "@today-40d",
+       "tickets": [
+        "tc01"
+       ]
+      }
+     },
+     {
+      "key": "ar2",
+      "values": {
+       "title": "Change a booking's time",
+       "category": "Bookings",
+       "owner": "tm-bertil",
+       "reviewed_on": "@today-120d",
+       "tickets": [
+        "tc02"
+       ]
+      }
+     },
+     {
+      "key": "ar3",
+      "values": {
+       "title": "Understand your invoice",
+       "category": "Billing",
+       "owner": "tm-odalys",
+       "reviewed_on": "@today-85d",
+       "tickets": [
+        "tc03",
+        "tc10"
+       ]
+      }
+     },
+     {
+      "key": "ar4",
+      "values": {
+       "title": "Send reminders by text",
+       "category": "Notifications",
+       "owner": "tm-odalys",
+       "reviewed_on": "@today-210d",
+       "tickets": [
+        "tc04"
+       ]
+      }
+     },
+     {
+      "key": "ar5",
+      "values": {
+       "title": "Add a new staff member",
+       "category": "Account",
+       "owner": "tm-bertil",
+       "reviewed_on": "@today-15d",
+       "tickets": [
+        "tc06"
+       ]
+      }
+     }
+    ],
+    "independentOf": {
+     "owner": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "feedback",
+    "name": "Feedback",
+    "labelSingular": "Feedback item",
+    "labelPlural": "Feedback",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "message-square",
+    "titleField": "request",
+    "describes": "Feature requests and how many people asked.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "request",
+      "label": "Request",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "source",
+      "label": "Source",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Customer email",
+       "Chat",
+       "Support ticket"
+      ],
+      "choiceColors": {
+       "Customer email": "slate",
+       "Chat": "blue",
+       "Support ticket": "amber"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "New",
+       "Planned",
+       "Shipped",
+       "Declined"
+      ],
+      "choiceColors": {
+       "New": "slate",
+       "Planned": "blue",
+       "Shipped": "green",
+       "Declined": "red"
+      },
+      "required": true,
+      "default": "New"
+     },
+     {
+      "key": "votes",
+      "label": "Votes",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000
+       }
+      ]
+     },
+     {
+      "key": "theme",
+      "label": "Theme",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Booking",
+       "Design",
+       "Data",
+       "Integration",
+       "Payments",
+       "Notifications"
+      ],
+      "choiceColors": {
+       "Booking": "slate",
+       "Design": "blue",
+       "Data": "amber",
+       "Integration": "violet",
+       "Payments": "teal",
+       "Notifications": "orange"
+      }
+     },
+     {
+      "key": "tickets",
+      "label": "Tickets",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "ticket",
+      "multi": true
+     },
+     {
+      "key": "ticket_count",
+      "label": "Ticket count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "tickets",
+      "pick": "subject",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "fb1",
+      "values": {
+       "request": "Group bookings for classes",
+       "source": "Customer email",
+       "status": "Planned",
+       "votes": 14,
+       "theme": "Booking",
+       "tickets": []
+      }
+     },
+     {
+      "key": "fb2",
+      "values": {
+       "request": "Dark mode for staff view",
+       "source": "Chat",
+       "status": "New",
+       "votes": 9,
+       "theme": "Design",
+       "tickets": []
+      }
+     },
+     {
+      "key": "fb3",
+      "values": {
+       "request": "Export clients to a spreadsheet",
+       "source": "Support ticket",
+       "status": "Planned",
+       "votes": 21,
+       "theme": "Data",
+       "tickets": [
+        "tc07"
+       ]
+      }
+     },
+     {
+      "key": "fb4",
+      "values": {
+       "request": "Two-way calendar sync",
+       "source": "Support ticket",
+       "status": "Shipped",
+       "votes": 32,
+       "theme": "Integration",
+       "tickets": [
+        "tc01"
+       ]
+      }
+     },
+     {
+      "key": "fb5",
+      "values": {
+       "request": "Deposits for new clients",
+       "source": "Customer email",
+       "status": "New",
+       "votes": 18,
+       "theme": "Payments",
+       "tickets": [
+        "tc05"
+       ]
+      }
+     },
+     {
+      "key": "fb6",
+      "values": {
+       "request": "Waitlist when fully booked",
+       "source": "Chat",
+       "status": "Planned",
+       "votes": 25,
+       "theme": "Booking",
+       "tickets": [
+        "tc09"
+       ]
+      }
+     },
+     {
+      "key": "fb7",
+      "values": {
+       "request": "Custom confirmation emails",
+       "source": "Support ticket",
+       "status": "New",
+       "votes": 11,
+       "theme": "Notifications",
+       "tickets": []
+      }
+     },
+     {
+      "key": "fb8",
+      "values": {
+       "request": "Bulk cancel for holidays",
+       "source": "Customer email",
+       "status": "Declined",
+       "votes": 5,
+       "theme": "Booking",
+       "tickets": []
+      }
+     }
+    ]
+   },
+   {
+    "token": "ticket",
+    "name": "Tickets",
+    "labelSingular": "Ticket",
+    "labelPlural": "Tickets",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "life-buoy",
+    "titleField": "subject",
+    "describes": "Every request from a customer.",
+    "subject": "thing",
+    "before": [
+     [
+      "opened_on",
+      "due_on"
+     ]
+    ],
+    "fields": [
+     {
+      "key": "subject",
+      "label": "Subject",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "ticket_id",
+      "label": "Ticket ID",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "type",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Bug",
+       "Question",
+       "Feature request",
+       "Billing",
+       "Account"
+      ],
+      "choiceColors": {
+       "Bug": "slate",
+       "Question": "blue",
+       "Feature request": "amber",
+       "Billing": "violet",
+       "Account": "teal"
+      }
+     },
+     {
+      "key": "priority",
+      "label": "Priority",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Normal",
+       "High",
+       "Urgent"
+      ],
+      "choiceColors": {
+       "Low": "slate",
+       "Normal": "blue",
+       "High": "amber",
+       "Urgent": "red"
+      },
+      "required": true,
+      "default": "Normal"
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "New",
+       "In progress",
+       "Waiting",
+       "Resolved"
+      ],
+      "choiceColors": {
+       "New": "slate",
+       "In progress": "blue",
+       "Waiting": "amber",
+       "Resolved": "green"
+      },
+      "required": true,
+      "default": "New"
+     },
+     {
+      "key": "requester",
+      "label": "Requester",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "requester_email",
+      "label": "Requester email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "opened_on",
+      "label": "Opened",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "age",
+      "label": "Days open",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "DATEDIFF({Opened}, TODAY(), 'days')"
+     },
+     {
+      "key": "assignee",
+      "label": "Assignee",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "article",
+      "label": "Related article",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "article",
+      "relationMax": 1
+     },
+     {
+      "key": "feedback",
+      "label": "Related feedback",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "feedback",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "tc01",
+      "values": {
+       "subject": "Calendar events are duplicating",
+       "ticket_id": "TCK-4000",
+       "type": "Bug",
+       "priority": "Urgent",
+       "status": "In progress",
+       "assignee": "tm-bertil",
+       "article": "ar1",
+       "feedback": "fb4",
+       "requester": "Shona Kwarteng",
+       "requester_email": "shona@customermail.net",
+       "opened_on": "@today-2d",
+       "due_on": "@today-1d"
+      }
+     },
+     {
+      "key": "tc02",
+      "values": {
+       "subject": "How do I move a booking?",
+       "ticket_id": "TCK-4037",
+       "type": "Question",
+       "priority": "Low",
+       "status": "Resolved",
+       "assignee": "tm-bertil",
+       "article": "ar2",
+       "requester": "Dmitri Alvarez",
+       "requester_email": "dmitri@customermail.net",
+       "opened_on": "@today-9d",
+       "due_on": "@today-2d"
+      }
+     },
+     {
+      "key": "tc03",
+      "values": {
+       "subject": "Invoice shows wrong tax",
+       "ticket_id": "TCK-4074",
+       "type": "Billing",
+       "priority": "High",
+       "status": "Waiting",
+       "assignee": "tm-odalys",
+       "article": "ar3",
+       "requester": "Petra Lindgren",
+       "requester_email": "petra@customermail.net",
+       "opened_on": "@today-5d",
+       "due_on": "@today-3d"
+      }
+     },
+     {
+      "key": "tc04",
+      "values": {
+       "subject": "Texts not sending to Canadian numbers",
+       "ticket_id": "TCK-4111",
+       "type": "Bug",
+       "priority": "High",
+       "status": "New",
+       "assignee": "tm-odalys",
+       "article": "ar4",
+       "requester": "Harun Osmani",
+       "requester_email": "harun@customermail.net",
+       "opened_on": "@today-1d",
+       "due_on": "@today+1d"
+      }
+     },
+     {
+      "key": "tc05",
+      "values": {
+       "subject": "Can clients pay a deposit?",
+       "ticket_id": "TCK-4148",
+       "type": "Feature request",
+       "priority": "Normal",
+       "status": "New",
+       "feedback": "fb5",
+       "requester": "Beatrix Njoku",
+       "requester_email": "beatrix@customermail.net",
+       "opened_on": "@today",
+       "due_on": "@today+4d"
+      }
+     },
+     {
+      "key": "tc06",
+      "values": {
+       "subject": "Add a second location",
+       "ticket_id": "TCK-4185",
+       "type": "Account",
+       "priority": "Normal",
+       "status": "In progress",
+       "assignee": "tm-bertil",
+       "article": "ar5",
+       "requester": "Tilda Mercer",
+       "requester_email": "tilda@customermail.net",
+       "opened_on": "@today-3d",
+       "due_on": "@today+1d"
+      }
+     },
+     {
+      "key": "tc07",
+      "values": {
+       "subject": "Export my client list",
+       "ticket_id": "TCK-4222",
+       "type": "Feature request",
+       "priority": "Normal",
+       "status": "Waiting",
+       "assignee": "tm-hattie",
+       "feedback": "fb3",
+       "requester": "Gideon Pfeiffer",
+       "requester_email": "gideon@customermail.net",
+       "opened_on": "@today-7d",
+       "due_on": "@today-3d"
+      }
+     },
+     {
+      "key": "tc08",
+      "values": {
+       "subject": "Password reset email never arrived",
+       "ticket_id": "TCK-4259",
+       "type": "Account",
+       "priority": "High",
+       "status": "Resolved",
+       "assignee": "tm-bertil",
+       "requester": "Anwen Rojas",
+       "requester_email": "anwen@customermail.net",
+       "opened_on": "@today-12d",
+       "due_on": "@today-10d"
+      }
+     },
+     {
+      "key": "tc09",
+      "values": {
+       "subject": "Need a waitlist option",
+       "ticket_id": "TCK-4296",
+       "type": "Feature request",
+       "priority": "Low",
+       "status": "New",
+       "feedback": "fb6",
+       "requester": "Calum Sorensen",
+       "requester_email": "calum@customermail.net",
+       "opened_on": "@today-1d",
+       "due_on": "@today+6d"
+      }
+     },
+     {
+      "key": "tc10",
+      "values": {
+       "subject": "Refund for duplicate charge",
+       "ticket_id": "TCK-4333",
+       "type": "Billing",
+       "priority": "Urgent",
+       "status": "In progress",
+       "assignee": "tm-odalys",
+       "article": "ar3",
+       "requester": "Yara Haddad",
+       "requester_email": "yara@customermail.net",
+       "opened_on": "@today-1d",
+       "due_on": "@today+0d"
+      }
+     }
+    ],
+    "independentOf": {
+     "assignee": "Either record can be created or change status before the other.",
+     "article": "Either record can be created or change status before the other.",
+     "feedback": "Either record can be created or change status before the other."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each ticket belongs to one help article.",
+    "fromTable": "ticket",
+    "fromField": "article",
+    "toTable": "article",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "ticket_by_article"
+   },
+   {
+    "describes": "A help article lists its tickets.",
+    "fromTable": "article",
+    "fromField": "tickets",
+    "toTable": "ticket",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "article_from_tickets"
+   },
+   {
+    "describes": "Each ticket belongs to one feedback item.",
+    "fromTable": "ticket",
+    "fromField": "feedback",
+    "toTable": "feedback",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "ticket_by_feedback"
+   },
+   {
+    "describes": "A feedback item lists its tickets.",
+    "fromTable": "feedback",
+    "fromField": "tickets",
+    "toTable": "ticket",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "feedback_from_tickets"
+   },
+   {
+    "describes": "Each ticket belongs to one team member.",
+    "fromTable": "ticket",
+    "fromField": "assignee",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "ticket_by_assignee"
+   },
+   {
+    "describes": "Each help article belongs to one team member.",
+    "fromTable": "article",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "article_by_owner"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-odalys",
+      "values": {
+       "full_name": "Odalys Brennan-Ade",
+       "role": "Support lead",
+       "work_email": "odalys@pipwickapp.net",
+       "mobile": "(608) 555-0141",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-bertil",
+      "values": {
+       "full_name": "Bertil Nakamura",
+       "role": "Support specialist",
+       "work_email": "bertil@pipwickapp.net",
+       "mobile": "(608) 555-0142",
+       "start_date": "@today-1y"
+      }
+     },
+     {
+      "key": "tm-hattie",
+      "values": {
+       "full_name": "Hattie Osei-Bonsu",
+       "role": "Product manager",
+       "work_email": "hattie@pipwickapp.net",
+       "mobile": "(608) 555-0143",
+       "start_date": "@today-4y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "ticket_intake",
+    "name": "Contact support",
+    "describes": "The form customers use to ask for help.",
+    "audience": "staff",
+    "table": "ticket",
+    "fields": [
+     {
+      "fieldKey": "subject",
+      "ask": "What do you need help with?",
+      "required": true
+     },
+     {
+      "fieldKey": "type",
+      "ask": "What kind of request is it?",
+      "required": true
+     },
+     {
+      "fieldKey": "priority",
+      "ask": "How urgent is it?"
+     },
+     {
+      "fieldKey": "requester",
+      "ask": "What is your name?",
+      "required": true
+     },
+     {
+      "fieldKey": "requester_email",
+      "ask": "What email should we reply to?",
+      "required": true
+     }
+    ],
+    "submitLabel": "Send to support",
+    "confirmation": "Thanks. Your request is in the queue as New."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_ticket",
+    "name": "All tickets",
+    "table": "ticket",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_feedback",
+    "name": "All feedback",
+    "table": "feedback",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_article",
+    "name": "All help articles",
+    "table": "article",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "ticket_board",
+    "name": "Ticket board",
+    "table": "ticket",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "ticket_cal",
+    "name": "Due dates",
+    "table": "ticket",
+    "kind": "calendar",
+    "dateField": "due_on",
+    "allDay": true
+   },
+   {
+    "token": "feedback_board",
+    "name": "Feedback board",
+    "table": "feedback",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "feedback_votes",
+    "name": "Top voted",
+    "table": "feedback",
+    "kind": "grid",
+    "sorts": [
+     {
+      "field": "votes",
+      "direction": "desc"
+     }
+    ]
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Support assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "ticket",
+     "describes": "Every ticket with its type, priority, status and assignee."
+    },
+    {
+     "name": "related_tables",
+     "table": "article",
+     "describes": "The help articles linked to tickets."
+    }
+   ],
+   "question": {
+    "ask": "How many tickets are new?",
+    "whyItMatters": "Odalys clears the new queue before anything else each morning.",
+    "expect": {
+     "table": "ticket",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "New"
+     },
+     "answer": 3,
+     "unit": "tickets"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open ticket board.",
+    "action": {
+     "kind": "open",
+     "surface": "ticket_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "ticket_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open due dates.",
+    "action": {
+     "kind": "open",
+     "surface": "ticket_cal"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "ticket_cal",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open feedback board.",
+    "action": {
+     "kind": "open",
+     "surface": "feedback_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "feedback_board",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "pipwickapp.net",
+    "customermail.net"
+   ],
+   "fictionalStreets": [
+    "Ferrule Street"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "support-feedback-tracker",
+   "parent": null,
+   "title": "Support and Feedback Tracker",
+   "icon": {
+    "emoji": "🛟"
+   },
+   "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Customers send requests through the form. Triage them on the board, link the answer article and attach feature requests to the feedback list."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:reply-guide"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:triage-rules"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:weekly-review"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Tickets"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "ticket",
+       "view": "ticket_board"
+      },
+      "inline": true,
+      "title": "Tickets",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Due dates",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "due_on"
+       },
+       {
+        "id": "view-un",
+        "name": "Unassigned",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": [
+          "New"
+         ]
+        }
+       },
+       {
+        "id": "view-tbl",
+        "name": "All tickets",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Feedback"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "feedback",
+       "view": "feedback_board"
+      },
+      "inline": true,
+      "title": "Feedback",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-top",
+        "name": "Top voted",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "votes",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Help articles"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "article",
+       "view": "all_article"
+      },
+      "inline": true,
+      "title": "Help articles",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-tbl",
+        "name": "All articles",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "reviewed_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-tbl"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "support-feedback-tracker",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "ticket",
+           "view": "all_ticket"
+          },
+          "inline": true,
+          "title": "Tickets by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "Tickets by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "ticket",
+           "view": "all_ticket"
+          },
+          "inline": true,
+          "title": "Tickets by type",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Tickets by type",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "type",
+             "op": "count"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "feedback",
+           "view": "all_feedback"
+          },
+          "inline": true,
+          "title": "Votes by theme",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Votes by theme",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "theme",
+             "op": "sum",
+             "field": "votes"
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Urgent and high priority"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "ticket",
+       "view": "all_ticket"
+      },
+      "inline": true,
+      "title": "Urgent and high priority",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-hi",
+        "name": "Open and urgent",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "priority": [
+          "Urgent",
+          "High"
+         ],
+         "status": [
+          "New",
+          "In progress",
+          "Waiting"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-hi"
+     }
+    }
+   ]
+  },
+  {
+   "key": "reply-guide",
+   "parent": "support-feedback-tracker",
+   "title": "Reply guide",
+   "icon": {
+    "emoji": "💬"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Greet the person by name and repeat the problem in one line."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Give the fix or the next step first."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Link the help article if one exists."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Say when they will hear from you next."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Mark the ticket Waiting if you need their reply."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "triage-rules",
+   "parent": "support-feedback-tracker",
+   "title": "Triage rules",
+   "icon": {
+    "emoji": "🏷️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Urgent: customers cannot book or get paid. Reply within the hour."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "High: a feature is broken for one customer. Reply the same day."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Normal: questions and requests. Reply within a day."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Low: ideas. Acknowledge within three days."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "weekly-review",
+   "parent": "support-feedback-tracker",
+   "title": "Weekly support review",
+   "icon": {
+    "emoji": "📈"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Resolve or close anything stale"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Update votes on the top five requests"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Write an article for the most-asked question"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Share the top themes with product"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  }
+ ]
+}
