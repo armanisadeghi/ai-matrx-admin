@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBrandOptions } from "@/features/marketing/data/hooks";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 
 /**
  * `organizationId` null = brands across ALL the person's organizations, each
@@ -31,7 +31,7 @@ export function BrandPicker({
 }) {
   // access-errors: ok — picker options; a failed read leaves the select empty and the host surface owns its own record errors
   const options = useBrandOptions(organizationId);
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith((options.data ?? []).map((b) => b.organizationId));
   const orgName = new Map(organizations.map((o) => [o.id, o.name]));
   const labelOrg = !organizationId && organizations.length > 1;
   return (

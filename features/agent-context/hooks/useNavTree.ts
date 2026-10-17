@@ -7,7 +7,7 @@
 // unless explicitly invalidated after a mutation.
 
 import { useEffect, useMemo } from "react";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { onlyOpenOrganizations } from "@/features/organizations/organizationsToCreateIn";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -91,12 +91,13 @@ export function useEnsureHierarchyLoaded() {
  */
 export function useOrganizationsToCreateIn() {
   const { orgs, isLoading } = useNavTree();
-  const { organizations: open, loading: openLoading } = useUserOrganizations();
+  // Which tree organizations are LIVE memberships is asked by id (her first page is not all of them).
+  const { organizations: open, loading: openLoading } = useOrganizationsWith(orgs.map((o) => o.id));
   const offered = useMemo(
     () =>
       openLoading
         ? EMPTY_NAV_ORGS
-        : onlyOpenOrganizations(orgs, new Set(open.map((o) => o.id))),
+        : onlyOpenOrganizations(orgs, new Set(open.filter((o) => !o.archivedAt).map((o) => o.id))),
     [orgs, open, openLoading],
   );
   return { orgs: offered, isLoading: isLoading || openLoading };

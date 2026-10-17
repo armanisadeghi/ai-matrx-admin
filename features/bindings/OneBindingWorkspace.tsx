@@ -46,7 +46,7 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { fetchAgentExecutionMinimal } from "@ai-matrx/chat/agents/redux/agent-definition/thunks";
 import { resolveAgentVersionId, fetchAgentVersionSnapshot } from "@/features/agents/redux/builder-versions.thunks";
 import { fetchAgentExecutionFull } from "@/features/agents/redux/builder-tier.thunks";
@@ -312,7 +312,7 @@ function OneMandateBindingWorkspace({
   // The organization the person selected — the only honest seed for the org
   // rung when the bar does not name one.
   const activeOrganizationId = useAppSelector(selectOrganizationId);
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([activeOrganizationId, data?.mandate.organization_id]);
 
   const pinned = pinnedRungs(fixedRung);
   const [chosenRung, setRung] = useState<WorkspaceRung>(
@@ -566,7 +566,7 @@ function BindingDraft({
   const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const userId = useAppSelector(selectUserId);
   const activeOrganizationId = useAppSelector(selectOrganizationId);
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([activeOrganizationId, data.mandate.organization_id]);
   const organizationNames = useMemo(
     () =>
       Object.fromEntries(
