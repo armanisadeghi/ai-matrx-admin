@@ -16,7 +16,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { ExternalLink, ListChecks, Play } from "lucide-react";
+import { ListChecks, Play, SquareArrowOutUpRight } from "lucide-react";
 import {
   Badge,
   Button,
@@ -28,6 +28,7 @@ import {
   Switch,
 } from "@ai-matrx/design-system/controls";
 import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
+import { moneyDigits } from "../model";
 import { ProInput } from "@/components/official/ProInput";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -482,7 +483,7 @@ export function SmartAddRoundPage({
                         target="_blank"
                         className="type-caption inline-flex items-center gap-1 underline"
                       >
-                        Open agent <ExternalLink className="w-3 h-3" />
+                        Open agent <SquareArrowOutUpRight className="w-3.5 h-3.5" aria-hidden />
                       </Link>
                     ) : !judgesLooked && !setId ? (
                       <span className="type-caption text-muted-foreground">Finding…</span>
@@ -582,7 +583,7 @@ function RoundProgress({
             target="_blank"
             className="type-caption inline-flex items-center gap-1 underline"
           >
-            Open run <ExternalLink className="w-3 h-3" />
+            Open run <SquareArrowOutUpRight className="w-3.5 h-3.5" aria-hidden />
           </Link>
         ) : null}
       </div>
@@ -650,7 +651,7 @@ function RoundStrip({
             target="_blank"
             className="type-caption inline-flex items-center gap-1 underline"
           >
-            Open round <ExternalLink className="w-3 h-3" />
+            Open round <SquareArrowOutUpRight className="w-3.5 h-3.5" aria-hidden />
           </Link>
         ) : null}
       </div>
@@ -693,9 +694,10 @@ function TruthList({
                           href={item.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="type-body font-medium hover:underline break-words"
+                          className="type-body font-medium hover:underline break-words inline-flex items-center gap-1.5"
                         >
                           {item.title}
+                          <SquareArrowOutUpRight className="w-3.5 h-3.5 shrink-0 text-muted-foreground" aria-hidden />
                         </a>
                       ) : (
                         <div className="type-body font-medium break-words">
@@ -837,7 +839,7 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
                       </td>
                       <td className="p-2 text-right">{sc.calls}</td>
                       <td className="p-2 text-right">
-                        {formatUsd(sc.cost, { digits: "adaptive" })}
+                        {formatUsd(sc.cost, { digits: moneyDigits(sc.cost) })}
                       </td>
                     </tr>
                   ))}
@@ -879,9 +881,10 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
                       href={item.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="type-body font-medium hover:underline break-words"
+                      className="type-body font-medium hover:underline break-words inline-flex items-center gap-1.5"
                     >
                       {item.title}
+                      <SquareArrowOutUpRight className="w-3.5 h-3.5 shrink-0 text-muted-foreground" aria-hidden />
                     </a>
                   ) : (
                     <div className="type-body font-medium break-words">
@@ -936,9 +939,9 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
                             <Link
                               href={`/work/conversations/${conv}`}
                               target="_blank"
-                              className="underline"
+                              className="underline inline-flex items-center gap-1"
                             >
-                              run
+                              run <SquareArrowOutUpRight className="w-3 h-3" aria-hidden />
                             </Link>
                           </>
                         ) : null}
