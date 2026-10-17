@@ -62,7 +62,7 @@ export function useIssueActions(onChanged: (issue: ReviewIssueRow) => void) {
       rows={3}
       confirmLabel="Mark fixed"
       busy={fixing !== null && busyId === fixing.id}
-      validate={() => null}
+      allowEmpty
       onConfirm={async (value) => {
         if (!fixing) return;
         await apply(fixing, "fixed", value);
