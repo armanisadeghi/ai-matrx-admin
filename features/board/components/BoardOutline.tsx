@@ -52,10 +52,11 @@ function useActiveChapter(
   const [active, setActive] = useState<string | null>(null);
   // A chapter picked in the outline stays highlighted until the person moves the view themselves
   // (the last chapters of a page cannot scroll to the reading line).
-  const [pinned, setPinned] = useState<string | null>(null);
+  const [pin, setPin] = useState<{ id: string; layout: BoardLayoutMode } | null>(null);
+  const pinned = pin && pin.layout === layout ? pin.id : null; // a layout switch drops it
   useEffect(() => {
     if (!pinned) return;
-    const unpin = () => setPinned(null);
+    const unpin = () => setPin(null);
     const opts = { capture: true, passive: true } as const;
     window.addEventListener("wheel", unpin, opts);
     window.addEventListener("keydown", unpin, opts);
@@ -90,7 +91,7 @@ function useActiveChapter(
     compute();
     return store.subscribeFrame(compute);
   }, [store, chapters, layout]);
-  return { active: pinned ?? active, pin: setPinned };
+  return { active: pinned ?? active, pin: (id: string) => setPin({ id, layout }) };
 }
 
 function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fill = false }: OutlineProps & { fill?: boolean }) {

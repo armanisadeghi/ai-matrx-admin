@@ -70,7 +70,7 @@ export function ZoomMenu({ history, className, locked = false }: { history?: His
             className,
           )}
         >
-          {locked ? <span>Page</span> : <span ref={pctRef} />}
+          {locked ? <span key="page">Page</span> : <span key="zoom" ref={pctRef} />}
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
