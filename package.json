@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3299",
+  "version": "0.4.3300",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
