@@ -356,7 +356,7 @@ function recordRequestMethods(): void {
   };
   const original = window.fetch;
   if (typeof original === "function") {
-    window.fetch = function tracedFetch(this: unknown, input: RequestInfo | URL, init?: RequestInit) {
+    window.fetch = function tracedFetch(input: RequestInfo | URL, init?: RequestInit) {
       try {
         const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
         const method = (init?.method ?? (typeof input === "object" && "method" in input ? input.method : "GET")).toUpperCase();
@@ -364,7 +364,7 @@ function recordRequestMethods(): void {
       } catch {
         /* never break a request for the trace */
       }
-      return original.call(this as typeof globalThis, input, init);
+      return original.call(globalThis, input, init);
     } as typeof window.fetch;
   }
   const xhrOpen = XMLHttpRequest.prototype.open;
