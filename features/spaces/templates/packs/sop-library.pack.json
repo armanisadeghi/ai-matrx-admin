@@ -1,1541 +1,1827 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0308",
- "version": 1,
- "title": "SOP Library",
- "description": "Write down how work gets done, with owners, approvers and review dates.",
- "forWho": "Teams documenting their processes",
- "icon": {
-  "emoji": "📚"
- },
- "cover": {
-  "url": "gallery:photo-pine-forest",
-  "offsetY": 50
- },
- "category": "docs",
- "tags": [
-  "sop",
-  "processes",
-  "wiki",
-  "documentation"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sop-library",
+  "packVersion": 1,
   "catalogueId": "SP0308",
-  "useCase": "Odessa Whitlock manages operations for a plumbing company and uses this so every job process has an owner, an approver and a review date that never slips.",
-  "industry": "field_home_services",
-  "vertical": "Process documentation",
-  "job": "compliance_quality",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Greywater Plumbing & Heating",
-   "describes": "A twelve-person home services company with dispatch, field crews and a small back office.",
-   "address": {
-    "line1": "73 Cobblestone Drive",
-    "city": "Spokane",
-    "region": "WA",
-    "postalCode": "99201",
-    "country": "US"
-   },
-   "phone": "(509) 555-0152",
-   "website": "greywaterplumbing.net",
-   "email": "office@greywaterplumbing.net",
-   "timezone": "America/Los_Angeles"
-  },
-  "cleanupTag": "use-case:spaces-sop-library",
-  "tables": [
-   {
-    "token": "sop",
-    "name": "SOPs",
-    "labelSingular": "SOP",
-    "labelPlural": "SOPs",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "book-open",
-    "titleField": "title",
-    "describes": "Every written procedure and who answers for it.",
-    "subject": "thing",
-    "before": [
-     [
-      "last_reviewed",
-      "next_review"
-     ]
-    ],
-    "independentOf": {
-     "approver": "An approver can be anyone senior, regardless of start date.",
-     "owner": "Either record can be created or change status before the other."
-    },
-    "fields": [
-     {
-      "key": "title",
-      "label": "Title",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "sop_id",
-      "label": "SOP ID",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "department",
-      "label": "Department",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Dispatch",
-       "Field work",
-       "Safety",
-       "Office"
-      ],
-      "choiceColors": {
-       "Dispatch": "slate",
-       "Field work": "blue",
-       "Safety": "amber",
-       "Office": "violet"
-      },
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Draft",
-       "In review",
-       "Approved",
-       "Archived"
-      ],
-      "choiceColors": {
-       "Draft": "slate",
-       "In review": "blue",
-       "Approved": "green",
-       "Archived": "amber"
-      },
-      "required": true,
-      "default": "Draft"
-     },
-     {
-      "key": "version",
-      "label": "Version",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "approver",
-      "label": "Approver",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "effective_on",
-      "label": "Effective",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "last_reviewed",
-      "label": "Last reviewed",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "next_review",
-      "label": "Next review",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "audit_note",
-      "label": "Audit note",
-      "parityType": "long_text",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "tags",
-      "label": "Tags",
-      "parityType": "multi_select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Call handling",
-       "Scheduling",
-       "Install",
-       "Safety",
-       "Billing",
-       "Inventory",
-       "Customer care",
-       "Diagnostics"
-      ],
-      "choiceColors": {
-       "Call handling": "slate",
-       "Scheduling": "blue",
-       "Install": "amber",
-       "Safety": "violet",
-       "Billing": "teal",
-       "Inventory": "orange",
-       "Customer care": "yellow",
-       "Diagnostics": "pink"
-      }
-     },
-     {
-      "key": "acknowledgements",
-      "label": "Acknowledgements",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "acknowledgement",
-      "multi": true
-     },
-     {
-      "key": "ack_count",
-      "label": "Sign-offs",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "acknowledgements",
-      "pick": "signoff",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "sp1",
-      "values": {
-       "sop_id": "DSP-EMG",
-       "title": "Taking an emergency call",
-       "department": "Dispatch",
-       "status": "Approved",
-       "version": "2.1",
-       "owner": "tm-liesel",
-       "approver": "tm-odessa",
-       "effective_on": "@today-200d",
-       "last_reviewed": "@today-200d",
-       "next_review": "@today+165d",
-       "tags": [
-        "Call handling"
-       ],
-       "acknowledgements": [
-        "ak1",
-        "ak2"
-       ]
-      }
-     },
-     {
-      "key": "sp2",
-      "values": {
-       "sop_id": "DSP-SCH",
-       "title": "Scheduling a standard service visit",
-       "department": "Dispatch",
-       "status": "Approved",
-       "version": "1.4",
-       "owner": "tm-liesel",
-       "approver": "tm-odessa",
-       "effective_on": "@today-90d",
-       "last_reviewed": "@today-90d",
-       "next_review": "@today+275d",
-       "tags": [
-        "Scheduling"
-       ],
-       "acknowledgements": []
-      }
-     },
-     {
-      "key": "sp3",
-      "values": {
-       "sop_id": "FLD-WHR",
-       "title": "Water heater replacement",
-       "department": "Field work",
-       "status": "Approved",
-       "version": "3.0",
-       "owner": "tm-bram",
-       "approver": "tm-odessa",
-       "effective_on": "@today-400d",
-       "last_reviewed": "@today-400d",
-       "next_review": "@today-35d",
-       "tags": [
-        "Install"
-       ],
-       "acknowledgements": [
-        "ak6"
-       ]
-      }
-     },
-     {
-      "key": "sp4",
-      "values": {
-       "sop_id": "SAF-GAS",
-       "title": "Shutting off and testing gas lines",
-       "department": "Safety",
-       "status": "Approved",
-       "version": "2.2",
-       "owner": "tm-yusuf",
-       "approver": "tm-odessa",
-       "effective_on": "@today-310d",
-       "last_reviewed": "@today-310d",
-       "next_review": "@today+55d",
-       "tags": [
-        "Safety"
-       ],
-       "audit_note": "Reviewed with insurer checklist.",
-       "acknowledgements": [
-        "ak3",
-        "ak4"
-       ]
-      }
-     },
-     {
-      "key": "sp5",
-      "values": {
-       "sop_id": "SAF-CSE",
-       "title": "Trench and confined-space entry",
-       "department": "Safety",
-       "status": "In review",
-       "version": "1.0",
-       "owner": "tm-yusuf",
-       "approver": "tm-odessa",
-       "effective_on": "@today-20d",
-       "last_reviewed": "@today-20d",
-       "next_review": "@today+345d",
-       "tags": [
-        "Safety"
-       ],
-       "acknowledgements": []
-      }
-     },
-     {
-      "key": "sp6",
-      "values": {
-       "sop_id": "OFC-INV",
-       "title": "Invoicing and collecting payment",
-       "department": "Office",
-       "status": "Approved",
-       "version": "1.7",
-       "owner": "tm-rhea",
-       "approver": "tm-odessa",
-       "effective_on": "@today-150d",
-       "last_reviewed": "@today-150d",
-       "next_review": "@today+215d",
-       "tags": [
-        "Billing"
-       ],
-       "acknowledgements": [
-        "ak5"
-       ]
-      }
-     },
-     {
-      "key": "sp7",
-      "values": {
-       "sop_id": "FLD-STK",
-       "title": "Truck stock check each morning",
-       "department": "Field work",
-       "status": "Draft",
-       "version": "0.3",
-       "owner": "tm-bram",
-       "approver": "tm-odessa",
-       "effective_on": "@today-4d",
-       "last_reviewed": "@today-4d",
-       "next_review": "@today+361d",
-       "tags": [
-        "Inventory"
-       ],
-       "acknowledgements": []
-      }
-     },
-     {
-      "key": "sp8",
-      "values": {
-       "sop_id": "OFC-CMP",
-       "title": "Handling a customer complaint",
-       "department": "Office",
-       "status": "Approved",
-       "version": "1.1",
-       "owner": "tm-rhea",
-       "approver": "tm-odessa",
-       "effective_on": "@today-270d",
-       "last_reviewed": "@today-270d",
-       "next_review": "@today+95d",
-       "tags": [
-        "Customer care"
-       ],
-       "acknowledgements": [
-        "ak7"
-       ]
-      }
-     },
-     {
-      "key": "sp9",
-      "values": {
-       "sop_id": "OFC-OLD",
-       "title": "Old paper job sheets",
-       "department": "Office",
-       "status": "Archived",
-       "version": "1.0",
-       "owner": "tm-rhea",
-       "approver": "tm-odessa",
-       "effective_on": "@today-700d",
-       "last_reviewed": "@today-700d",
-       "next_review": "@today-335d",
-       "tags": [
-        "Billing"
-       ],
-       "acknowledgements": []
-      }
-     },
-     {
-      "key": "sp10",
-      "values": {
-       "sop_id": "FLD-CAM",
-       "title": "Using the pipe camera",
-       "department": "Field work",
-       "status": "Approved",
-       "version": "1.2",
-       "owner": "tm-bram",
-       "approver": "tm-odessa",
-       "effective_on": "@today-120d",
-       "last_reviewed": "@today-120d",
-       "next_review": "@today+245d",
-       "tags": [
-        "Diagnostics"
-       ],
-       "acknowledgements": [
-        "ak8"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "token": "acknowledgement",
-    "name": "Acknowledgements",
-    "labelSingular": "Acknowledgement",
-    "labelPlural": "Acknowledgements",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "check-check",
-    "titleField": "signoff",
-    "describes": "Who has read and signed each procedure.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "signoff",
-      "label": "Sign-off",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "signed_on",
-      "label": "Signed on",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "person",
-      "label": "Person",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "sop",
-      "label": "SOP",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "sop",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "ak1",
-      "values": {
-       "sop": "sp1",
-       "signoff": "Bram signed taking an emergency call",
-       "signed_on": "@today-60d",
-       "person": "tm-bram"
-      }
-     },
-     {
-      "key": "ak2",
-      "values": {
-       "sop": "sp1",
-       "signoff": "Yusuf signed taking an emergency call",
-       "signed_on": "@today-58d",
-       "person": "tm-yusuf"
-      }
-     },
-     {
-      "key": "ak3",
-      "values": {
-       "sop": "sp4",
-       "signoff": "Bram signed shutting off and testing gas lines",
-       "signed_on": "@today-40d",
-       "person": "tm-bram"
-      }
-     },
-     {
-      "key": "ak4",
-      "values": {
-       "sop": "sp4",
-       "signoff": "Liesel signed shutting off and testing gas lines",
-       "signed_on": "@today-39d",
-       "person": "tm-liesel"
-      }
-     },
-     {
-      "key": "ak5",
-      "values": {
-       "sop": "sp6",
-       "signoff": "Odessa signed invoicing and collecting payment",
-       "signed_on": "@today-30d",
-       "person": "tm-odessa"
-      }
-     },
-     {
-      "key": "ak6",
-      "values": {
-       "sop": "sp3",
-       "signoff": "Yusuf signed water heater replacement",
-       "signed_on": "@today-100d",
-       "person": "tm-yusuf"
-      }
-     },
-     {
-      "key": "ak7",
-      "values": {
-       "sop": "sp8",
-       "signoff": "Liesel signed handling a customer complaint",
-       "signed_on": "@today-22d",
-       "person": "tm-liesel"
-      }
-     },
-     {
-      "key": "ak8",
-      "values": {
-       "sop": "sp10",
-       "signoff": "Yusuf signed using the pipe camera",
-       "signed_on": "@today-17d",
-       "person": "tm-yusuf"
-      }
-     }
-    ],
-    "independentOf": {
-     "person": "Either record can be created or change status before the other.",
-     "sop": "Either record can be created or change status before the other."
-    }
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each acknowledgement belongs to one sop.",
-    "fromTable": "acknowledgement",
-    "fromField": "sop",
-    "toTable": "sop",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "acknowledgement_by_sop"
-   },
-   {
-    "describes": "A sop lists its acknowledgements.",
-    "fromTable": "sop",
-    "fromField": "acknowledgements",
-    "toTable": "acknowledgement",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "sop_from_acknowledgements"
-   },
-   {
-    "describes": "Each acknowledgement belongs to one team member.",
-    "fromTable": "acknowledgement",
-    "fromField": "person",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "acknowledgement_by_person"
-   },
-   {
-    "describes": "Each sop belongs to one team member.",
-    "fromTable": "sop",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "sop_by_owner"
-   },
-   {
-    "describes": "Each sop belongs to one team member.",
-    "fromTable": "sop",
-    "fromField": "approver",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "sop_by_approver"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-odessa",
-      "values": {
-       "full_name": "Odessa Whitlock",
-       "role": "Operations manager",
-       "work_email": "odessa@greywaterplumbing.net",
-       "mobile": "(509) 555-0161",
-       "start_date": "@today-8y"
-      }
-     },
-     {
-      "key": "tm-bram",
-      "values": {
-       "full_name": "Bram Esterhuizen",
-       "role": "Lead technician",
-       "work_email": "bram@greywaterplumbing.net",
-       "mobile": "(509) 555-0162",
-       "start_date": "@today-6y"
-      }
-     },
-     {
-      "key": "tm-liesel",
-      "values": {
-       "full_name": "Liesel Montrose",
-       "role": "Dispatcher",
-       "work_email": "liesel@greywaterplumbing.net",
-       "mobile": "(509) 555-0163",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-yusuf",
-      "values": {
-       "full_name": "Yusuf Demirci",
-       "role": "Safety officer",
-       "work_email": "yusuf@greywaterplumbing.net",
-       "mobile": "(509) 555-0164",
-       "start_date": "@today-4y"
-      }
-     },
-     {
-      "key": "tm-rhea",
-      "values": {
-       "full_name": "Rhea Ballantyne",
-       "role": "Office and billing",
-       "work_email": "rhea@greywaterplumbing.net",
-       "mobile": "(509) 555-0165",
-       "start_date": "@today-2y"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "sop_request",
-    "name": "Request a procedure",
-    "describes": "Ask for a new SOP to be written.",
-    "audience": "staff",
-    "table": "sop",
-    "fields": [
-     {
-      "fieldKey": "title",
-      "ask": "What process needs writing down?",
-      "required": true
-     },
-     {
-      "fieldKey": "department",
-      "ask": "Which department?",
-      "required": true
-     },
-     {
-      "fieldKey": "owner",
-      "ask": "Who should own it?"
-     }
-    ],
-    "submitLabel": "Send the request",
-    "confirmation": "Thanks. It is in the library as a Draft."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_acknowledgement",
-    "name": "All acknowledgements",
-    "table": "acknowledgement",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_sop",
-    "name": "All sops",
-    "table": "sop",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "sop_board",
-    "name": "SOPs by status",
-    "table": "sop",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "sop_dept",
-    "name": "SOPs by department",
-    "table": "sop",
-    "kind": "kanban",
-    "groupBy": "department"
-   },
-   {
-    "token": "sop_review",
-    "name": "Review calendar",
-    "table": "sop",
-    "kind": "calendar",
-    "dateField": "next_review",
-    "allDay": true
-   },
-   {
-    "token": "ack_log",
-    "name": "Latest sign-offs",
-    "table": "acknowledgement",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "signed_on",
-      "direction": "desc"
-     }
-    ]
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Library assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "sop",
-     "describes": "Every procedure with its owner, status and review dates."
-    },
-    {
-     "name": "related_tables",
-     "table": "acknowledgement",
-     "describes": "Who has signed off each procedure."
-    }
-   ],
-   "question": {
-    "ask": "How many SOPs are approved?",
-    "whyItMatters": "Odessa reports approved procedures to the insurer each year.",
-    "expect": {
-     "table": "sop",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Approved"
-     },
-     "answer": 7,
-     "unit": "sops"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open sops by status.",
-    "action": {
-     "kind": "open",
-     "surface": "sop_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "sop_board",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open sops by department.",
-    "action": {
-     "kind": "open",
-     "surface": "sop_dept"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "sop_dept",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open review calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "sop_review"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "sop_review",
-     "minItems": 3
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "greywaterplumbing.net"
-   ],
-   "fictionalStreets": [
-    "Cobblestone Drive"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "sop-library",
-   "parent": null,
-   "title": "SOP Library",
-   "icon": {
+  "version": 2,
+  "title": "SOP Library",
+  "description": "Write down how work gets done, with owners, approvers and review dates.",
+  "forWho": "Teams documenting their processes",
+  "icon": {
     "emoji": "📚"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-pine-forest",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Every procedure has an owner, an approver and a next review date. Filter by department, check what is overdue and ask people to sign off once approved."
-      }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Lightbulb"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:write-a-sop"
-         }
-        }
-       ]
+  },
+  "category": "docs",
+  "tags": [
+    "sop",
+    "processes",
+    "wiki",
+    "documentation"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sop-library",
+    "catalogueId": "SP0308",
+    "useCase": "Odessa Whitlock manages operations for a plumbing company and uses this so every job process has an owner, an approver and a review date that never slips.",
+    "industry": "field_home_services",
+    "vertical": "Process documentation",
+    "job": "compliance_quality",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Greywater Plumbing & Heating",
+      "describes": "A twelve-person home services company with dispatch, field crews and a small back office.",
+      "address": {
+        "line1": "73 Cobblestone Drive",
+        "city": "Spokane",
+        "region": "WA",
+        "postalCode": "99201",
+        "country": "US"
       },
+      "phone": "(509) 555-0152",
+      "website": "greywaterplumbing.net",
+      "email": "office@greywaterplumbing.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-sop-library",
+    "tables": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:sop-template"
-         }
+        "token": "sop",
+        "name": "SOPs",
+        "labelSingular": "SOP",
+        "labelPlural": "SOPs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "title",
+        "describes": "Every written procedure and who answers for it.",
+        "subject": "thing",
+        "before": [
+          [
+            "last_reviewed",
+            "next_review"
+          ]
+        ],
+        "independentOf": {
+          "approver": "An approver can be anyone senior, regardless of start date.",
+          "owner": "Either record can be created or change status before the other."
         },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:review-day"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "All procedures"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "sop",
-       "view": "sop_board"
-      },
-      "inline": true,
-      "title": "All procedures",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-dept",
-        "name": "By department",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "department"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All SOPs",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "sop_id",
-          "direction": "asc"
-         }
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sop_no",
+            "label": "SOP number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "department",
+            "label": "Department",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Dispatch",
+              "Field work",
+              "Safety",
+              "Office"
+            ],
+            "choiceColors": {
+              "Dispatch": "slate",
+              "Field work": "blue",
+              "Safety": "amber",
+              "Office": "violet"
+            },
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "In review",
+              "Approved",
+              "Archived"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "In review": "blue",
+              "Approved": "green",
+              "Archived": "amber"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "In review": "in_progress",
+              "Approved": "done",
+              "Archived": "done"
+            }
+          },
+          {
+            "key": "version",
+            "label": "Version",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "approver",
+            "label": "Approver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "effective_on",
+            "label": "Effective",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "last_reviewed",
+            "label": "Last reviewed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_review",
+            "label": "Next review",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_review",
+            "label": "Days to next review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Next review}, 'days')"
+          },
+          {
+            "key": "review_state",
+            "label": "Review state",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Archived\", \"Archived\", IF({Next review} < TODAY(), \"Review overdue\", IF(DATEDIFF(TODAY(), {Next review}, \"days\") <= 30, \"Due within 30 days\", \"Current\")))"
+          },
+          {
+            "key": "audit_note",
+            "label": "Audit note",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tags",
+            "label": "Tags",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Call handling",
+              "Scheduling",
+              "Install",
+              "Safety",
+              "Billing",
+              "Inventory",
+              "Customer care",
+              "Diagnostics"
+            ],
+            "choiceColors": {
+              "Call handling": "slate",
+              "Scheduling": "blue",
+              "Install": "amber",
+              "Safety": "violet",
+              "Billing": "teal",
+              "Inventory": "orange",
+              "Customer care": "yellow",
+              "Diagnostics": "pink"
+            }
+          },
+          {
+            "key": "ack_count",
+            "label": "Sign-offs",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "acknowledgements",
+            "pick": "signoff",
+            "agg": "count"
+          },
+          {
+            "key": "updated_at",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approve_btn",
+            "label": "Approve",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "sop_approve"
+            }
+          },
+          {
+            "key": "archive_btn",
+            "label": "Archive",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "sop_archive"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "sp1",
+            "values": {
+              "title": "Taking an emergency call",
+              "department": "Dispatch",
+              "status": "Approved",
+              "version": "2.1",
+              "owner": "tm-liesel",
+              "approver": "tm-odessa",
+              "effective_on": "@today-200d",
+              "last_reviewed": "@today-200d",
+              "next_review": "@today+165d",
+              "tags": [
+                "Call handling"
+              ]
+            }
+          },
+          {
+            "key": "sp2",
+            "values": {
+              "title": "Scheduling a standard service visit",
+              "department": "Dispatch",
+              "status": "Approved",
+              "version": "1.4",
+              "owner": "tm-liesel",
+              "approver": "tm-odessa",
+              "effective_on": "@today-90d",
+              "last_reviewed": "@today-90d",
+              "next_review": "@today+275d",
+              "tags": [
+                "Scheduling"
+              ]
+            }
+          },
+          {
+            "key": "sp3",
+            "values": {
+              "title": "Water heater replacement",
+              "department": "Field work",
+              "status": "Approved",
+              "version": "3.0",
+              "owner": "tm-bram",
+              "approver": "tm-odessa",
+              "effective_on": "@today-400d",
+              "last_reviewed": "@today-400d",
+              "next_review": "@today-35d",
+              "tags": [
+                "Install"
+              ]
+            }
+          },
+          {
+            "key": "sp4",
+            "values": {
+              "title": "Shutting off and testing gas lines",
+              "department": "Safety",
+              "status": "Approved",
+              "version": "2.2",
+              "owner": "tm-yusuf",
+              "approver": "tm-odessa",
+              "effective_on": "@today-310d",
+              "last_reviewed": "@today-310d",
+              "next_review": "@today+20d",
+              "tags": [
+                "Safety"
+              ],
+              "audit_note": "Reviewed with insurer checklist."
+            }
+          },
+          {
+            "key": "sp5",
+            "values": {
+              "title": "Trench and confined-space entry",
+              "department": "Safety",
+              "status": "In review",
+              "version": "1.0",
+              "owner": "tm-yusuf",
+              "approver": "tm-odessa",
+              "effective_on": "@today-20d",
+              "last_reviewed": "@today-20d",
+              "next_review": "@today+345d",
+              "tags": [
+                "Safety"
+              ]
+            }
+          },
+          {
+            "key": "sp6",
+            "values": {
+              "title": "Invoicing and collecting payment",
+              "department": "Office",
+              "status": "Approved",
+              "version": "1.7",
+              "owner": "tm-rhea",
+              "approver": "tm-odessa",
+              "effective_on": "@today-150d",
+              "last_reviewed": "@today-150d",
+              "next_review": "@today+215d",
+              "tags": [
+                "Billing"
+              ]
+            }
+          },
+          {
+            "key": "sp7",
+            "values": {
+              "title": "Truck stock check each morning",
+              "department": "Field work",
+              "status": "Draft",
+              "version": "0.3",
+              "owner": "tm-bram",
+              "approver": "tm-odessa",
+              "effective_on": "@today-4d",
+              "last_reviewed": "@today-4d",
+              "next_review": "@today+361d",
+              "tags": [
+                "Inventory"
+              ]
+            }
+          },
+          {
+            "key": "sp8",
+            "values": {
+              "title": "Handling a customer complaint",
+              "department": "Office",
+              "status": "Approved",
+              "version": "1.1",
+              "owner": "tm-rhea",
+              "approver": "tm-odessa",
+              "effective_on": "@today-270d",
+              "last_reviewed": "@today-270d",
+              "next_review": "@today+95d",
+              "tags": [
+                "Customer care"
+              ]
+            }
+          },
+          {
+            "key": "sp9",
+            "values": {
+              "title": "Old paper job sheets",
+              "department": "Office",
+              "status": "Archived",
+              "version": "1.0",
+              "owner": "tm-rhea",
+              "approver": "tm-odessa",
+              "effective_on": "@today-700d",
+              "last_reviewed": "@today-700d",
+              "next_review": "@today-335d",
+              "tags": [
+                "Billing"
+              ]
+            }
+          },
+          {
+            "key": "sp10",
+            "values": {
+              "title": "Using the pipe camera",
+              "department": "Field work",
+              "status": "Approved",
+              "version": "1.2",
+              "owner": "tm-bram",
+              "approver": "tm-odessa",
+              "effective_on": "@today-120d",
+              "last_reviewed": "@today-120d",
+              "next_review": "@today+245d",
+              "tags": [
+                "Diagnostics"
+              ]
+            }
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New SOP",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Why this procedure exists."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope and roles"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who it applies to and who answers for it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "First step"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Second step"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Required item one"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Required item two"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Troubleshooting"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What to do when something is off."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Change log"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Version, date and what changed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
-       },
-       {
-        "id": "view-cal",
+      },
+      {
+        "token": "acknowledgement",
+        "name": "Acknowledgements",
+        "labelSingular": "Acknowledgement",
+        "labelPlural": "Acknowledgements",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "check-check",
+        "titleField": "signoff",
+        "describes": "Who has read and signed each procedure.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "signoff",
+            "label": "Sign-off",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "signed_on",
+            "label": "Signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "person",
+            "label": "Person",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "sop",
+            "label": "SOP",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sop",
+            "relationMax": 1
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ak1",
+            "values": {
+              "sop": "sp1",
+              "signoff": "Bram signed taking an emergency call",
+              "signed_on": "@today-60d",
+              "person": "tm-bram"
+            }
+          },
+          {
+            "key": "ak2",
+            "values": {
+              "sop": "sp1",
+              "signoff": "Yusuf signed taking an emergency call",
+              "signed_on": "@today-58d",
+              "person": "tm-yusuf"
+            }
+          },
+          {
+            "key": "ak3",
+            "values": {
+              "sop": "sp4",
+              "signoff": "Bram signed shutting off and testing gas lines",
+              "signed_on": "@today-40d",
+              "person": "tm-bram"
+            }
+          },
+          {
+            "key": "ak4",
+            "values": {
+              "sop": "sp4",
+              "signoff": "Liesel signed shutting off and testing gas lines",
+              "signed_on": "@today-39d",
+              "person": "tm-liesel"
+            }
+          },
+          {
+            "key": "ak5",
+            "values": {
+              "sop": "sp6",
+              "signoff": "Odessa signed invoicing and collecting payment",
+              "signed_on": "@today-30d",
+              "person": "tm-odessa"
+            }
+          },
+          {
+            "key": "ak6",
+            "values": {
+              "sop": "sp3",
+              "signoff": "Yusuf signed water heater replacement",
+              "signed_on": "@today-100d",
+              "person": "tm-yusuf"
+            }
+          },
+          {
+            "key": "ak7",
+            "values": {
+              "sop": "sp8",
+              "signoff": "Liesel signed handling a customer complaint",
+              "signed_on": "@today-22d",
+              "person": "tm-liesel"
+            }
+          },
+          {
+            "key": "ak8",
+            "values": {
+              "sop": "sp10",
+              "signoff": "Yusuf signed using the pipe camera",
+              "signed_on": "@today-17d",
+              "person": "tm-yusuf"
+            }
+          }
+        ],
+        "independentOf": {
+          "person": "Either record can be created or change status before the other.",
+          "sop": "Either record can be created or change status before the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "New sign-off",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was read"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The SOP version and the date it was read."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Questions raised"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each acknowledgement belongs to one sop.",
+        "fromTable": "acknowledgement",
+        "fromField": "sop",
+        "toTable": "sop",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "acknowledgements"
+      },
+      {
+        "describes": "Each acknowledgement belongs to one team member.",
+        "fromTable": "acknowledgement",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "acknowledgement_by_person"
+      },
+      {
+        "describes": "Each sop belongs to one team member.",
+        "fromTable": "sop",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sop_by_owner"
+      },
+      {
+        "describes": "Each sop belongs to one team member.",
+        "fromTable": "sop",
+        "fromField": "approver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sop_by_approver"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-odessa",
+            "values": {
+              "full_name": "Odessa Whitlock",
+              "role": "Operations manager",
+              "work_email": "odessa@greywaterplumbing.net",
+              "mobile": "(509) 555-0161",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-bram",
+            "values": {
+              "full_name": "Bram Esterhuizen",
+              "role": "Lead technician",
+              "work_email": "bram@greywaterplumbing.net",
+              "mobile": "(509) 555-0162",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-liesel",
+            "values": {
+              "full_name": "Liesel Montrose",
+              "role": "Dispatcher",
+              "work_email": "liesel@greywaterplumbing.net",
+              "mobile": "(509) 555-0163",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-yusuf",
+            "values": {
+              "full_name": "Yusuf Demirci",
+              "role": "Safety officer",
+              "work_email": "yusuf@greywaterplumbing.net",
+              "mobile": "(509) 555-0164",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-rhea",
+            "values": {
+              "full_name": "Rhea Ballantyne",
+              "role": "Office and billing",
+              "work_email": "rhea@greywaterplumbing.net",
+              "mobile": "(509) 555-0165",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "sop_request",
+        "name": "Request a procedure",
+        "describes": "Ask for a new SOP to be written.",
+        "audience": "staff",
+        "table": "sop",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What process needs writing down?",
+            "required": true
+          },
+          {
+            "fieldKey": "department",
+            "ask": "Which department?",
+            "required": true
+          },
+          {
+            "fieldKey": "owner",
+            "ask": "Who should own it?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is in the library as a Draft."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "sop_approve",
+        "table": "sop",
+        "name": "Approve",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "sop_archive",
+        "table": "sop",
+        "name": "Archive",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Archived"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_acknowledgement",
+        "name": "All acknowledgements",
+        "table": "acknowledgement",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_sop",
+        "name": "All sops",
+        "table": "sop",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "sop_board",
+        "name": "SOPs by status",
+        "table": "sop",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "sop_dept",
+        "name": "SOPs by department",
+        "table": "sop",
+        "kind": "kanban",
+        "groupBy": "department"
+      },
+      {
+        "token": "sop_review",
         "name": "Review calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "next_review"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Needs review"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "sop",
-       "view": "all_sop"
+        "table": "sop",
+        "kind": "calendar",
+        "dateField": "next_review",
+        "allDay": true
       },
-      "inline": true,
-      "title": "Needs review",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-rv",
-        "name": "Draft or in review",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "status": [
-          "Draft",
-          "In review"
-         ]
-        }
-       },
-       {
-        "id": "view-sorted",
-        "name": "Next review first",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "Approved"
-         ]
+      {
+        "token": "ack_log",
+        "name": "Latest sign-offs",
+        "table": "acknowledgement",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "signed_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "sop_overdue",
+        "name": "Review overdue",
+        "table": "sop",
+        "kind": "grid",
+        "within": {
+          "next_review": {
+            "relative": "before_today"
+          }
         },
-        "sorts": [
-         {
-          "field": "next_review",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-rv"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Sign-offs"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "acknowledgement",
-       "view": "ack_log"
-      },
-      "inline": true,
-      "title": "Sign-offs",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-log",
-        "name": "Latest first",
-        "layout": "list",
-        "icon": "List",
-        "sorts": [
-         {
-          "field": "signed_on",
-          "direction": "desc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-log"
-     }
-    }
-   ]
-  },
-  {
-   "key": "dashboard",
-   "parent": "sop-library",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "sop",
-           "view": "all_sop"
-          },
-          "inline": true,
-          "title": "SOPs by status",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c1",
-            "name": "SOPs by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-c1"
-         }
+        "anyOf": {
+          "status": [
+            "Approved",
+            "In review"
+          ]
         }
-       ]
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "sop",
-           "view": "all_sop"
-          },
-          "inline": true,
-          "title": "SOPs by department",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c2",
-            "name": "SOPs by department",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "department",
-             "op": "count"
-            }
-           }
-          ],
-          "activeViewId": "view-c2"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "acknowledgement",
-           "view": "all_acknowledgement"
-          },
-          "inline": true,
-          "title": "Sign-offs by person",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c3",
-            "name": "Sign-offs by person",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "person",
-             "op": "count"
-            }
-           }
-          ],
-          "activeViewId": "view-c3"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Due for review soonest"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "sop",
-       "view": "all_sop"
-      },
-      "inline": true,
-      "title": "Due for review soonest",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-due",
-        "name": "Review order",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": "Approved"
+        "token": "sop_30",
+        "name": "Review in next 30 days",
+        "table": "sop",
+        "kind": "grid",
+        "within": {
+          "next_review": {
+            "relative": "next_days",
+            "n": 30
+          }
         },
-        "sorts": [
-         {
-          "field": "next_review",
-          "direction": "asc"
-         }
-        ]
-       }
+        "anyOf": {
+          "status": [
+            "Approved",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "sop_month",
+        "name": "Review this month",
+        "table": "sop",
+        "kind": "grid",
+        "within": {
+          "next_review": {
+            "relative": "this_month"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Approved",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "ack_week",
+        "name": "Signed this week",
+        "table": "acknowledgement",
+        "kind": "grid",
+        "within": {
+          "signed_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "ack_30",
+        "name": "Signed in last 30 days",
+        "table": "acknowledgement",
+        "kind": "grid",
+        "within": {
+          "signed_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Library assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "sop",
+          "describes": "Every procedure with its owner, status and review dates."
+        },
+        {
+          "name": "related_tables",
+          "table": "acknowledgement",
+          "describes": "Who has signed off each procedure."
+        }
       ],
-      "activeViewId": "view-due"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many SOPs are approved?",
+        "whyItMatters": "Odessa reports approved procedures to the insurer each year.",
+        "expect": {
+          "table": "sop",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Approved"
+          },
+          "answer": 7,
+          "unit": "sops"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open sops by status.",
+        "action": {
+          "kind": "open",
+          "surface": "sop_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sop_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open sops by department.",
+        "action": {
+          "kind": "open",
+          "surface": "sop_dept"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sop_dept",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open review calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "sop_review"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sop_review",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "greywaterplumbing.net"
+      ],
+      "fictionalStreets": [
+        "Cobblestone Drive"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "write-a-sop",
-   "parent": "sop-library",
-   "title": "How to write an SOP",
-   "icon": {
-    "emoji": "✍️"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "State the purpose in one sentence."
-      }
-     ]
+      "key": "sop-library",
+      "parent": null,
+      "title": "SOP Library",
+      "icon": {
+        "emoji": "📚"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every procedure has an owner, an approver and a next review date. Filter by department, check what is overdue and ask people to sign off once approved."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:write-a-sop"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:review-day"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "All procedures"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sop",
+              "view": "sop_board"
+            },
+            "inline": true,
+            "title": "All procedures",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-dept",
+                "name": "By department",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "department"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All SOPs",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "sop_no",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-cal",
+                "name": "Review calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_review"
+              },
+              {
+                "id": "v-ro",
+                "name": "Review overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_review": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Approved",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "v-r30",
+                "name": "Review in next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_review": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Approved",
+                    "In review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Needs review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sop",
+              "view": "all_sop"
+            },
+            "inline": true,
+            "title": "Needs review",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-rv",
+                "name": "Draft or in review",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "Draft",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "view-sorted",
+                "name": "Next review first",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Approved"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "next_review",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-rv"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sign-offs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "acknowledgement",
+              "view": "ack_log"
+            },
+            "inline": true,
+            "title": "Sign-offs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-log",
+                "name": "Latest first",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "signed_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-aw",
+                "name": "Signed in last 30 days",
+                "layout": "list",
+                "icon": "PenLine",
+                "within": {
+                  "signed_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-log"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "List who it applies to and who is responsible."
-      }
-     ]
+      "key": "dashboard",
+      "parent": "sop-library",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "sop",
+                      "view": "all_sop"
+                    },
+                    "inline": true,
+                    "title": "SOPs by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "SOPs by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "sop",
+                      "view": "all_sop"
+                    },
+                    "inline": true,
+                    "title": "SOPs by department",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "SOPs by department",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "department",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "acknowledgement",
+                      "view": "all_acknowledgement"
+                    },
+                    "inline": true,
+                    "title": "Sign-offs by person",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c3",
+                        "name": "Sign-offs by person",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "person",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Due for review soonest"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sop",
+              "view": "all_sop"
+            },
+            "inline": true,
+            "title": "Due for review soonest",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-due",
+                "name": "Review order",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Approved"
+                },
+                "sorts": [
+                  {
+                    "field": "next_review",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-due"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Write numbered steps. One action per step."
-      }
-     ]
+      "key": "write-a-sop",
+      "parent": "sop-library",
+      "title": "How to write an SOP",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "State the purpose in one sentence."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List who it applies to and who is responsible."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write numbered steps. One action per step."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a checklist for anything that must not be missed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Say what to do when it goes wrong."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the version and a short change note."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "If a new hire cannot follow it without asking questions, it is not finished."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "HelpCircle"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Weak: \"Check the equipment before leaving.\" Strong: \"Open the van, scan the tool tag, and tick each tool against the list. If a tool is missing, do not leave; message dispatch with the tag number.\" The strong version has an action, a tool and a stop rule."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it alive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give every SOP one owner and one approver; they may not be the same person."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set the next review date when you approve it, not later."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask the first new person who follows it to mark anything unclear."
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Add a checklist for anything that must not be missed."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Say what to do when it goes wrong."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Record the version and a short change note."
-      }
-     ]
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "If a new hire cannot follow it without asking questions, it is not finished."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "HelpCircle"
-     }
+      "key": "review-day",
+      "parent": "sop-library",
+      "title": "Quarterly review day",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Reading the procedure aloud with the person who does the work finds more problems than any amount of silent proofreading."
+            }
+          ],
+          "props": {
+            "icon": "BookOpen"
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open the review calendar and list what is due"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read each SOP aloud with its owner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update steps that changed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bump the version and reset the next review date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask the team to sign off again"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open the Review overdue view. It should be empty. If something is still there, give it a date and an owner before everyone leaves the room."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  },
-  {
-   "key": "sop-template",
-   "parent": "sop-library",
-   "title": "SOP template",
-   "icon": {
-    "emoji": "🧾"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Purpose"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Why this procedure exists."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Scope and roles"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Who it applies to and who answers for it."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Steps"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "First step"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Second step"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Checklist"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Required item one"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Required item two"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Troubleshooting"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "What to do when something is off."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Change log"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Version, date and what changed."
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "review-day",
-   "parent": "sop-library",
-   "title": "Quarterly review day",
-   "icon": {
-    "emoji": "🗓️"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Open the review calendar and list what is due"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Read each SOP aloud with its owner"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Update steps that changed"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Bump the version and reset the next review date"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Ask the team to sign off again"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  }
- ]
+  ]
 }
