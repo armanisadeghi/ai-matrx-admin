@@ -29,6 +29,7 @@ export function ToolResult({
   onCancel,
   onReopen,
   showRaw = true,
+  showSource = false,
 }: {
   view: ToolCallView | null;
   /** The call could not be sent or read at all (nothing reached the server). */
@@ -37,6 +38,8 @@ export function ToolResult({
   onCancel: () => void;
   /** Read the saved call again (after a lost connection). */
   onReopen?: () => void;
+  /** Name the source beside the answer: only for a `compare` Tool (a leader shown beside other values, R-1); never for a single-answer Tool. */
+  showSource?: boolean;
   /** Builders see the raw data beside the answer; a marketer's look-up leaves it out. */
   showRaw?: boolean;
 }) {
@@ -169,7 +172,7 @@ export function ToolResult({
         ) : null}
         <span className="ml-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground" data-tool-cost="">
           {view.cache !== "none" ? <Badge tone="neutral">Saved answer</Badge> : null}
-          {view.display_source && view.display_source !== "Matrx" ? <Badge tone="neutral">{view.display_source}</Badge> : null}
+          {showSource && view.display_source ? <Badge tone="neutral">{view.display_source}</Badge> : null}
           <span className="font-medium text-foreground">{free ? "No charge" : `Cost ${formatPoints(view.points_charged)}`}</span>
           {seesDollars && view.cost_usd != null ? <span>· {formatAdminUsd(view.cost_usd)}</span> : null}
         </span>

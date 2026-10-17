@@ -75,12 +75,12 @@ describe("ToolResult", () => {
     expect(host.textContent).toContain("Raw data");
   });
 
-  it("a seat that may see dollars sees the vendor cost; a Matrx source label is not shown", () => {
+  it("a seat that may see dollars sees the vendor cost; a source name is never shown for a single-answer Tool", () => {
     seesDollars = true;
-    show(view("succeeded", { output: { domain: "x.org" }, points_charged: 10, cost_usd: 0.02, display_source: "Matrx" }));
+    show(view("succeeded", { output: { domain: "x.org" }, points_charged: 10, cost_usd: 0.02, display_source: "Hunter" }));
     const cost = host.querySelector("[data-tool-cost]")?.textContent ?? "";
     expect(cost).toContain("$0.02");
-    expect(cost).not.toContain("Matrx");
+    expect(cost).not.toContain("Hunter");
   });
 
   it("says a saved answer is saved, and free when nothing was charged", () => {
