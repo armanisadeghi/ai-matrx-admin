@@ -35,6 +35,8 @@ export interface NewTabLinkProps {
   iconClassName?: string;
   /** Text beside the icon ("New tab"). Icon-only when omitted. */
   children?: React.ReactNode;
+  /** Runs after the tab opens (e.g. close the palette that held the link). */
+  onOpen?: () => void;
 }
 
 export function NewTabLink({
@@ -43,6 +45,7 @@ export function NewTabLink({
   className,
   iconClassName,
   children,
+  onOpen,
 }: NewTabLinkProps) {
   if (!href) return null;
   const words = `Open ${label} in a new tab`;
@@ -53,7 +56,10 @@ export function NewTabLink({
       rel="noopener noreferrer"
       prefetch={false}
       data-tap-target
-      onClick={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpen?.();
+      }}
       title={words}
       aria-label={children ? undefined : words}
       className={cn(children ? "inline-flex items-center gap-1.5" : NEW_TAB_CONTROL_CLASS, className)}

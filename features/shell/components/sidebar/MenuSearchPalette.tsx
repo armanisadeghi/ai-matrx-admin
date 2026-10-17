@@ -47,6 +47,7 @@ import {
   type MenuSearchEntry,
 } from "../../utils/menu-search";
 import ShellIcon from "../ShellIcon";
+import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
 
 const RECENT_KEY = "matrx.shell.menuSearch.recent";
 const RECENT_LIMIT = 5;
@@ -213,9 +214,21 @@ export default function MenuSearchPalette({ open, onOpenChange, query, onQueryCh
           </span>
         ) : null}
       </span>
-      {entry.external || entry.openInNewTab ? (
-        <ShellIcon name="ArrowUpRight" size={14} strokeWidth={1.75} className="shrink-0 text-muted-foreground" />
-      ) : null}
+      {entry.panelAction || entry.action ? null : (
+        <NewTabLink
+          href={crossDeploymentHref(entry.href) ?? entry.href}
+          label={entry.label}
+          onOpen={() => {
+            rememberRecent(entry.id);
+            onOpenChange(false);
+          }}
+          className={
+            entry.external || entry.openInNewTab
+              ? undefined
+              : "opacity-0 focus-visible:opacity-100 group-hover:opacity-100 group-data-[selected=true]:opacity-100"
+          }
+        />
+      )}
       <CornerDownLeft
         aria-hidden
         className="!h-3.5 !w-3.5 shrink-0 text-muted-foreground opacity-0 group-data-[selected=true]:opacity-100"
