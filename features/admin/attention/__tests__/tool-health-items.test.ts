@@ -4,7 +4,7 @@
  * was refused, and every row opens the Tool control screen.
  */
 
-import { summarizeToolHealth, toolHealthItems, type ToolHealthRow } from "../sources/tool-health";
+import { summarizeToolHealth, toolHealthItems, toolHealthRecordHref, type ToolHealthRow } from "../sources/tool-health";
 
 const deps = { muteLocally: jest.fn(), unmuteLocally: jest.fn(), now: Date.parse("2026-10-16T23:00:00Z") };
 
@@ -49,10 +49,35 @@ test("summary names one Tool or counts several, and is empty at zero", () => {
 });
 
 test("upkeep findings (a price that may have changed, sources to review) ride the same source with their own words", () => {
-  const [price] = toolHealthItems([row({ kind: "price_drift", severity: "warning", title: "Tool prices", record_href: "/administration/agents/tool-control" })], deps);
+  const [price] = toolHealthItems([row({ kind: "price_drift", severity: "warning", title: "Tool prices", record_href: "/administration/agents/tool-control/alerts/e1" })], deps);
   expect(price.state).toBe("price may have changed");
   expect(price.severity).toBe("warning");
   const [review] = toolHealthItems([row({ kind: "import_candidate", severity: "info", title: "New Tool sources" })], deps);
   expect(review.state).toBe("sources to review");
   expect(review.severity).toBe("info");
+});
+
+/**
+ * DOOR LAW GUARD (Arman 2026-10-10, "every alarm is a record page"): no tool-health item, whatever kind and
+ * whatever the database sent, links to the bare Tool control landing page. Three owner decisions once all
+ * pointed at it. Fails if a kind falls back to the list; passes when each opens its own record.
+ */
+test("no tool-health kind ever links to the bare Tool control landing page", () => {
+  const kinds = ["source_off", "tool_off", "account_off", "breaker_failed", "price_drift", "import_candidate"];
+  const bare = ["/administration/agents/tool-control", "/administration/agents/tool-control/", null as unknown as string];
+  const hrefs = new Set<string>();
+  for (const kind of kinds) {
+    for (const record_href of bare) {
+      const [item] = toolHealthItems([row({ kind, item_key: `tool-health:${kind}-id`, record_href })], deps);
+      const href = item.doors[0].href;
+      expect(href).not.toBe("/administration/agents/tool-control");
+      expect(href).toBe(`/administration/agents/tool-control/alerts/${kind}-id`);
+      hrefs.add(href);
+    }
+  }
+  expect(hrefs.size).toBe(kinds.length);
+});
+
+test("a Tool alarm that names its tool keeps its own Tool link", () => {
+  expect(toolHealthRecordHref(row({}))).toBe("/administration/agents/tool-control?tool=t1");
 });

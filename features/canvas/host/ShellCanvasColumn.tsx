@@ -14,7 +14,8 @@ import "@ai-matrx/canvas/styles.css";
 import "@ai-matrx/canvas/tokens.css";
 import "./canvas-host.css";
 import { useEffect } from "react";
-import { CanvasColumn, useCanvas, useCanvasColumnWidth } from "@ai-matrx/canvas/react";
+import { selectCanvasIsHydrated } from "@ai-matrx/canvas";
+import { CanvasColumn, useCanvas, useCanvasColumnWidth, useCanvasState } from "@ai-matrx/canvas/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { announceSurfaceScopeChange } from "@ai-matrx/chat/surfaces/runtime/surface-chain";
 import { CANVAS_SURFACE_NAME } from "@/features/surfaces/manifests/canvas.surface";
@@ -29,8 +30,14 @@ export function ShellCanvasColumn() {
   // canvas store when the write applies.
   const getWriteHandlers = () => canvasWriteHandlers(canvas);
 
+  const hydrated = useCanvasState(selectCanvasIsHydrated);
+
   useEffect(() => {
+    // Until the saved state lands the column's width is not known: the pre-paint reservation
+    // (CanvasPrepaintScript) holds the page where the restored column will sit, so nothing moves.
+    if (!hydrated) return;
     const root = document.documentElement;
+    root.removeAttribute("data-canvas-reserved");
     if (width === null) {
       // Expanded: the docked inset stays, so the app does not squeeze while the column grows over it.
       root.setAttribute("data-canvas-fullscreen", "");
@@ -39,7 +46,7 @@ export function ShellCanvasColumn() {
       root.removeAttribute("data-canvas-fullscreen");
     }
     root.toggleAttribute("data-canvas-open", width !== 0);
-  }, [width]);
+  }, [width, hydrated]);
 
   // The canvas's values change without re-registering (a tab switched, an item
   // opened or saved): say so, so the composer's value list re-reads them
@@ -61,6 +68,7 @@ export function ShellCanvasColumn() {
       root.style.removeProperty("--shell-canvas-w");
       root.removeAttribute("data-canvas-fullscreen");
       root.removeAttribute("data-canvas-open");
+      root.removeAttribute("data-canvas-reserved");
     },
     [],
   );

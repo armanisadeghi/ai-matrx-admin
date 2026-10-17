@@ -37,6 +37,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
+import { packageKnobClient } from "@/lib/knobs/packageKnobClient";
 import { supabase } from "@/utils/supabase/client";
 
 let sharedPort: VaultPort | null = null;
@@ -71,7 +72,7 @@ function useVaultHost(organizationId: string | null): VaultHostCapabilities {
   const userId = useAppSelector(selectUserId);
   const knobs =
     organizationId && userId
-      ? createVaultKnobs(supabase, { organizationId, userId })
+      ? createVaultKnobs(packageKnobClient(supabase), { organizationId, userId })
       : undefined;
   return knobs ? { identity, openUrl, knobs } : { identity, openUrl };
 }

@@ -42,6 +42,7 @@ import {
 import { readSidePanelWidth } from "@/components/official/side-panel/side-panel-width.server";
 import { readComposerModeCookie } from "@ai-matrx/chat/next/server/composer-mode.server";
 import { ShellCanvasColumn } from "@/features/canvas/host/ShellCanvasColumn";
+import { CanvasPrepaintScript } from "@/features/canvas/host/CanvasPrepaintScript";
 import type { UserData } from "@/utils/userDataMapper";
 import type { BaseReduxState } from "@/types/reduxTypes";
 // CJS flag — also read by next.config.js to alias Sidebar/etc. to stubs.
@@ -147,6 +148,8 @@ export default async function AppShell({
           <ShellUserBlock userData={userData} isAuthenticated={isAuthenticated} />
 
           <main className="shell-main">{children}</main>
+          {/* Before first paint: a canvas saved open reserves its column (no shift when it lands). */}
+          <CanvasPrepaintScript />
 
           {/* A direct child of .shell-root: it publishes --shell-chat-w here. */}
           <ShellChatDock

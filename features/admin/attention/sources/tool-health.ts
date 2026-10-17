@@ -17,6 +17,19 @@ import type { AttentionItem } from "../types";
 export const TOOL_HEALTH_SOURCE_ID = "tool-health";
 export const TOOL_HEALTH_SOURCE_LABEL = "Tools";
 export const TOOL_CONTROL_HREF = "/administration/agents/tool-control";
+/** One alert's own record page, by the alarm row id (the `tool-health:<id>` key's id). */
+export const TOOL_ALERT_RECORD_PATH = `${TOOL_CONTROL_HREF}/alerts`;
+
+/**
+ * Door law (every alarm is a record page): an item NEVER links to the bare Tool control landing page.
+ * The database sends `?tool=<id>` for a source alarm and the alert-record path for the rest; a missing
+ * or bare link (an older database function) falls back to this alarm's own record page.
+ */
+export function toolHealthRecordHref(row: Pick<ToolHealthRow, "item_key" | "record_href">): string {
+  const href = row.record_href;
+  if (href && href !== TOOL_CONTROL_HREF && href !== `${TOOL_CONTROL_HREF}/`) return href;
+  return `${TOOL_ALERT_RECORD_PATH}/${row.item_key.slice(TOOL_HEALTH_SOURCE_ID.length + 1)}`;
+}
 
 export interface ToolHealthRow {
   item_key: string;
@@ -49,7 +62,7 @@ export function toolHealthItems(rows: readonly ToolHealthRow[], deps: ToolHealth
   const now = deps.now ?? Date.now();
   return rows.map((row) => {
     const key = row.item_key;
-    const href = row.record_href ?? TOOL_CONTROL_HREF;
+    const href = toolHealthRecordHref(row);
     return {
       key,
       sourceId: TOOL_HEALTH_SOURCE_ID,
@@ -61,7 +74,7 @@ export function toolHealthItems(rows: readonly ToolHealthRow[], deps: ToolHealth
       about: null,
       fix: row.detail,
       record: null,
-      doors: [{ kind: "control", href, label: "Tool control", what: "State, recent calls and the Verify button for this source." }],
+      doors: [{ kind: "control", href, label: href.includes("/alerts/") ? "This alert" : "Tool control", what: href.includes("/alerts/") ? "What was found, the numbers, and Copy for AI." : "State, recent calls and the Verify button for this source." }],
       impactDeclared: null,
       actions: [],
       copy: {

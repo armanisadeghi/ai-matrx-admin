@@ -116,3 +116,27 @@ describe("the keyword box sends a real list", () => {
     expect(withLists(declared, { keywords: "a\nb", country: "US" })).toEqual({ keywords: ["a", "b"], country: "US" });
   });
 });
+
+import { formatTile, linkTiles, searchTiles } from "../summaries";
+
+describe("the numbers a panel shows at a glance", () => {
+  it("reads links, websites, the followed share and broken links from the answer's own fields", () => {
+    const tiles = linkTiles({ backlinks: 4101, referring_domains: 2478, dofollow_backlinks: 3716, broken_backlinks: 12 });
+    expect(tiles.map((t) => [t.label, formatTile(t)])).toEqual([
+      ["Backlinks", "4,101"],
+      ["Linking websites", "2,478"],
+      ["Followed links", "91%"],
+      ["Broken links", "12"],
+    ]);
+  });
+
+  it("leaves out what the source did not give and never divides by no links", () => {
+    expect(linkTiles({ backlinks: 0, dofollow_backlinks: 0 }).map((t) => t.label)).toEqual(["Backlinks"]);
+    expect(linkTiles(null)).toEqual([]);
+  });
+
+  it("writes money as dollars and big counts compactly", () => {
+    const tiles = searchTiles({ organic_clicks: 22140, organic_value: 83020, ad_budget: 1_250_000, organic_keywords: 26660 });
+    expect(tiles.map((t) => formatTile(t))).toEqual(["22K", "$83K", "$1.3M", "27K"]);
+  });
+});

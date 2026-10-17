@@ -45,6 +45,23 @@
   right: var(--shell-canvas-w, 0px);
 }
 
+/* A restored canvas reserves its column before the client boots (CanvasPrepaintScript): a plain
+   column stands in the strip the page already gave up, until the real column lands over it. */
+@media (min-width: 768px) {
+  :root[data-canvas-reserved] body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--shell-canvas-w, 0px);
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    z-index: 44;
+    pointer-events: none;
+  }
+}
+
 [data-public-layout],
 [data-link-layout] {
   margin-right: var(--shell-canvas-w, 0px);

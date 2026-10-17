@@ -23,6 +23,7 @@ import { ToolResult } from "@/features/data-sources/library/tools/ToolResult";
 import { useToolCall, type ToolCallState } from "@/features/data-sources/library/tools/useToolCall";
 
 import { authorityTiles, bandOf, type AuthorityKey, type AuthorityTile } from "./authority";
+import { formatTile, linkTiles, searchTiles, type StatTile } from "./summaries";
 import { pointsTogether, type SeoTools } from "./seoTools";
 
 type RunKey = AuthorityKey | "linkRows";
@@ -112,6 +113,7 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
         icon={<Link2 className="h-4 w-4" />}
         title="Backlinks"
         price={tools.links}
+        call={links}
         action={
           tools.linkRows ? (
             <Button
@@ -126,16 +128,16 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
           ) : null
         }
       >
-        <Answer call={links} inputs={inputs} idle="Press Check website to count the links pointing at this site." />
+        <Glance call={links} inputs={inputs} idle="Press Check website to count the links to this site." tiles={linkTiles} />
         {linkRows.view || linkRows.clientError ? <Answer call={linkRows} inputs={inputs} idle="" /> : null}
       </Panel>
 
-      <Panel icon={<Megaphone className="h-4 w-4" />} title="Search and ads" price={tools.searchAds}>
-        <Answer call={searchAds} inputs={inputs} idle="Press Check website to see last month's search visits and ad budget." />
+      <Panel icon={<Megaphone className="h-4 w-4" />} title="Search and ads" price={tools.searchAds} call={searchAds}>
+        <Glance call={searchAds} inputs={inputs} idle="Press Check website for last month's visits and ad budget." tiles={searchTiles} />
       </Panel>
 
       {authority.view?.status === "succeeded" ? (
-        <Panel icon={<ShieldCheck className="h-4 w-4" />} title="Authority details" price={tools.authority}>
+        <Panel icon={<ShieldCheck className="h-4 w-4" />} title="Authority details" price={tools.authority} call={authority}>
           {detail ? (
             <Answer call={authority} inputs={inputs} idle="" />
           ) : (
@@ -158,16 +160,26 @@ function Panel({
   icon,
   title,
   price,
+  call,
   action,
   children,
 }: {
   icon: React.ReactNode;
   title: string;
   price?: CatalogToolHit;
+  call?: ToolCallState;
   action?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const cost = price ? toolPriceText(price) : null;
+  // Before the press the Tool's own price; after it, what that answer really cost.
+  const answered = call?.view != null && (call.view.status === "succeeded" || call.view.status === "empty");
+  const cost = answered
+    ? call.view!.points_charged > 0
+      ? `Cost ${formatPoints(call.view!.points_charged)}`
+      : "No charge"
+    : price
+      ? toolPriceText(price)
+      : null;
   return (
     <section aria-label={title} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2">
@@ -175,7 +187,7 @@ function Panel({
           {icon}
         </span>
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        {cost ? <span className="text-xs text-muted-foreground">{cost}</span> : null}
+        {cost ? <span className="text-xs text-muted-foreground" data-panel-cost="">{cost}</span> : null}
         <span className="ml-auto">{action}</span>
       </div>
       {children}
@@ -195,6 +207,44 @@ function Answer({ call, inputs, idle }: { call: ToolCallState; inputs: Record<st
       onRunAgain={() => void call.run(inputs)}
       onCancel={call.stop}
     />
+  );
+}
+
+/** A finished answer as a few big numbers, its whole kind one press away; anything else is the Tools home's own states. */
+function Glance({
+  call,
+  inputs,
+  idle,
+  tiles,
+}: {
+  call: ToolCallState;
+  inputs: Record<string, unknown>;
+  idle: string;
+  tiles: (output: unknown) => StatTile[];
+}) {
+  const [open, setOpen] = useState(false);
+  if (call.view?.status !== "succeeded") return <Answer call={call} inputs={inputs} idle={idle} />;
+  const stats = tiles(call.view.output);
+  return (
+    <div className="flex flex-col gap-3">
+      {stats.length > 0 ? (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" data-glance="">
+          {stats.map((tile) => (
+            <div key={tile.label} className="flex flex-col rounded-lg border border-border bg-background px-3 py-2">
+              <span className="text-2xl font-semibold tabular-nums text-foreground">{formatTile(tile)}</span>
+              <span className="text-xs text-muted-foreground">{tile.label}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {open ? (
+        <Answer call={call} inputs={inputs} idle="" />
+      ) : (
+        <Button variant="quiet" className="self-start" onClick={() => setOpen(true)}>
+          Show the details
+        </Button>
+      )}
+    </div>
   );
 }
 
