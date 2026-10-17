@@ -1,6 +1,11 @@
 import { openOverlay } from "@ai-matrx/summon";
 import type { OverlayId } from "@ai-matrx/summon";
-import { appOverlayDefinition } from "@/features/overlays/definitions/register";
+// Plain-data metadata only (id / instance / windowId). Never `definitions/register` or
+// `definitions/registry` here: they import every overlay definition, and each definition's
+// `render: () => import(...)` drags that window's whole implementation into any graph that
+// reaches this file (the knowledge command bar reaches it from a lab page: the lab build went
+// from seconds to an 8 GB OOM, v0.4.3309).
+import { OVERLAY_META_INDEX } from "@/features/overlays/definitions/overlay-meta-index";
 import {
   TOOLS_GRID_TILES,
   type TileContext,
@@ -30,7 +35,7 @@ export function activateToolsGridTile(
 
   if (!tile.overlayId) return false;
 
-  const entry = appOverlayDefinition(tile.overlayId);
+  const entry = OVERLAY_META_INDEX.find((row) => row.id === tile.overlayId);
   if (!entry) {
     // eslint-disable-next-line no-console
     console.warn(
