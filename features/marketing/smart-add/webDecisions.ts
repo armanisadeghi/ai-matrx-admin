@@ -23,6 +23,8 @@ import { persistAnswer, type PersistContext, type Persisted, type PersistOptions
 import { focusFromEvidence, type Answer, type FocusItem } from "./validate/queue";
 import type { EvidenceField, EvidenceItem } from "./evidence";
 import { webIdentity, type SuggestContext, type WebChoice } from "./webKinds";
+import { retractSavedAnswer } from "./validate/savedAnswers";
+import type { WebMark } from "./runMemory";
 
 /** Which answer a web relationship is: Ours adds the site, Not us lands on the NO LIST, anything else is Related. */
 export function answerForWebChoice(kind: Pick<BrandRelationKind, "key" | "routesTo">): { answer: Answer; relationKey: string | null } {
@@ -43,6 +45,8 @@ export interface WebSaveStatus {
 
 interface Held {
   choice: WebChoice | null;
+  /** Ask me later / Ignore: a decision too, kept on the finding's row. */
+  mark: WebMark | null;
   /** The person's name a Founder / Key person answer was saved with ("" = none yet). */
   name: string;
   /** This visit's save (its undo takes the answer back); null for an answer restored from an earlier visit. */
@@ -55,8 +59,11 @@ export interface WebDecisionSaverDeps {
   kinds: () => BrandRelationKind[];
   suggest: () => SuggestContext;
   persist: (item: FocusItem, answer: Answer, opts: PersistOptions) => Promise<Persisted>;
-  /** A saved answer the person cleared again (restored from an earlier visit): its row goes back to undecided. */
-  reopen: (key: string) => Promise<void>;
+  /**
+   * An answer saved on an earlier visit that the person changes or clears: it is taken back first (the site, person
+   * link, competitor, listing or backlink it created; never anything a person made) and its row goes back to undecided.
+   */
+  retract: (key: string) => Promise<void>;
   onStatus: (key: string, status: WebSaveStatus) => void;
   /** Said out loud and filed (validate/notSaved.ts), never only a console line. */
   onFailed: (item: EvidenceItem, label: string, error: unknown) => void;
@@ -79,14 +86,22 @@ export class WebDecisionSaver {
   }
 
   /** Answers already saved on an earlier visit: shown answered, never written again unless changed. */
-  markRestored(key: string, choice: WebChoice): void {
+  markRestored(key: string, answer: { choice: WebChoice } | { mark: WebMark }): void {
     if (this.held.has(key)) return;
-    this.held.set(key, { choice, name: "", persisted: null, state: "saved", error: null });
+    this.held.set(key, {
+      choice: "choice" in answer ? answer.choice : null,
+      mark: "mark" in answer ? answer.mark : null,
+      name: "",
+      persisted: null,
+      state: "saved",
+      error: null,
+    });
   }
 
-  decide(item: EvidenceItem, choice: WebChoice | null, name = ""): Promise<void> {
+  /** A choice, a mark (Ask me later / Ignore), or neither (cleared). */
+  decide(item: EvidenceItem, choice: WebChoice | null, name = "", mark: WebMark | null = null): Promise<void> {
     const prev = this.chains.get(item.key) ?? Promise.resolve();
-    const run = prev.catch(() => undefined).then(() => this.saveOne(item, choice, name.trim()));
+    const run = prev.catch(() => undefined).then(() => this.saveOne(item, choice, name.trim(), choice ? null : mark));
     this.chains.set(item.key, run);
     return run;
   }
@@ -96,20 +111,28 @@ export class WebDecisionSaver {
     this.deps.onStatus(key, { state: h.state, error: h.error });
   }
 
-  private async saveOne(item: EvidenceItem, choice: WebChoice | null, name: string): Promise<void> {
+  private async saveOne(item: EvidenceItem, choice: WebChoice | null, name: string, mark: WebMark | null): Promise<void> {
     const before = this.held.get(item.key);
     const kind = choice ? this.deps.kinds().find((k) => k.key === choice.kind) : undefined;
     if (choice && !kind) {
-      this.set(item.key, { choice, name, persisted: before?.persisted ?? null, state: "failed", error: `Unknown relationship ${choice.kind}` });
+      this.set(item.key, { choice, mark, name, persisted: before?.persisted ?? null, state: "failed", error: `Unknown relationship ${choice.kind}` });
       this.deps.onFailed(item, item.label ?? item.value, new Error(`Unknown relationship ${choice.kind}`));
       return;
     }
-    this.set(item.key, { choice, name, persisted: before?.persisted ?? null, state: "saving", error: null });
+    this.set(item.key, { choice, mark, name, persisted: before?.persisted ?? null, state: "saving", error: null });
     try {
-      // A changed answer takes the earlier one back first (its exclusion, site, person, competitor), then saves anew.
+      // A changed answer takes the earlier one back first (its exclusion, site, person, competitor, backlink), then
+      // saves anew — this visit's by its own undo, an earlier visit's from what its row recorded.
       if (before?.persisted) await before.persisted.undo();
+      else if (before && (before.choice || before.mark)) await this.deps.retract(item.key);
+      if (mark && !choice) {
+        const focus = focusFromEvidence(item, this.deps.kinds(), this.deps.suggest());
+        if (!focus) throw new Error("This result cannot be saved");
+        const persisted = await this.deps.persist(focus, mark === "later" ? "later" : "ignore", { recordMark: true });
+        this.set(item.key, { choice: null, mark, name, persisted, state: "saved", error: null });
+        return;
+      }
       if (!choice || !kind) {
-        if (before && !before.persisted && before.choice) await this.deps.reopen(item.key);
         this.held.delete(item.key);
         this.deps.onStatus(item.key, { state: "saved", error: null });
         return;
@@ -123,9 +146,9 @@ export class WebDecisionSaver {
         // Founder / Key person on a page: the decision is kept now; the person is made once a name is given.
         ...(isPersonKind(kind) ? { value: name || undefined, allowUnnamed: true } : {}),
       });
-      this.set(item.key, { choice, name, persisted, state: "saved", error: null });
+      this.set(item.key, { choice, mark: null, name, persisted, state: "saved", error: null });
     } catch (error) {
-      this.set(item.key, { choice, name, persisted: null, state: "failed", error: extractErrorMessage(error) });
+      this.set(item.key, { choice, mark, name, persisted: null, state: "failed", error: extractErrorMessage(error) });
       this.deps.onFailed(item, item.label ?? item.value, error);
     }
   }
@@ -138,11 +161,18 @@ export class WebDecisionSaver {
     items: EvidenceItem[],
     choices: Record<string, WebChoice>,
     names: (key: string) => string,
+    marks: Record<string, WebMark> = {},
   ): Promise<{ saved: string[]; failed: { key: string; error: string }[] }> {
     await Promise.all([...this.chains.values()].map((c) => c.catch(() => undefined)));
     const redo: Promise<void>[] = [];
     for (const item of items) {
       const choice = choices[item.key];
+      const mark = marks[item.key];
+      if (!choice && mark) {
+        const h = this.held.get(item.key);
+        if (!h || h.state === "failed" || h.mark !== mark || h.choice) redo.push(this.decide(item, null, "", mark));
+        continue;
+      }
       if (!choice) continue;
       const h = this.held.get(item.key);
       const kind = this.deps.kinds().find((k) => k.key === choice.kind);
@@ -159,7 +189,7 @@ export class WebDecisionSaver {
     const saved: string[] = [];
     const failed: { key: string; error: string }[] = [];
     for (const item of items) {
-      if (!choices[item.key]) continue;
+      if (!choices[item.key] && !marks[item.key]) continue;
       const h = this.held.get(item.key);
       if (h?.state === "saved") saved.push(item.key);
       else failed.push({ key: item.key, error: h?.error ?? "Not saved" });
@@ -175,7 +205,10 @@ export interface WebDecisionRow {
   url: string;
   label: string;
   host: string;
+  /** "" for an Ask me later / Ignore row (it has no relationship yet). */
   relationKey: string;
+  /** Ask me later / Ignore: a decision with no relationship. */
+  mark: WebMark | null;
   sentiment: "positive" | "neutral" | "negative" | null;
   status: string;
   /** What the run found it as (web_page / mention / listing / website …). */
@@ -215,16 +248,26 @@ export function toWebDecisionRow(row: {
 }): WebDecisionRow | null {
   const value = rec(row.value);
   const url = str(row.url) ?? str(value.text);
-  if (!url || !row.relation_key) return null;
   const context = rec(row.context);
   const answer = rec(context.answer);
+  // A mark is only a mark while the row still says so (an answer taken back leaves it undecided).
+  const mark: WebMark | null =
+    row.relation_key || !url
+      ? null
+      : answer.answer === "later" && row.status === "pending"
+        ? "later"
+        : answer.answer === "ignore" && row.status === "dismissed"
+          ? "ignored"
+          : null;
+  if (!url || (!row.relation_key && !mark)) return null;
   const sentiment = row.sentiment === "positive" || row.sentiment === "neutral" || row.sentiment === "negative" ? row.sentiment : null;
   return {
     id: row.id,
     url: /^https?:\/\//i.test(url) ? url : `https://${url}`,
     label: str(value.label) ?? str(value.handle) ?? hostOf(url),
     host: hostOf(url),
-    relationKey: row.relation_key,
+    relationKey: row.relation_key ?? "",
+    mark,
     sentiment,
     status: row.status,
     field: row.guessed_kind,
@@ -245,7 +288,8 @@ export async function listBrandWebDecisions(brandId: string): Promise<WebDecisio
         .select("id, url, value, context, relation_key, sentiment, status, guessed_kind, reviewed_at, source", { count: "exact" })
         .eq("brand_id", brandId)
         .eq("category", "link")
-        .not("relation_key", "is", null)
+        // Answered with a relationship, or kept as Ask me later / Ignore.
+        .or("relation_key.not.is.null,context->answer->>answer.in.(later,ignore)")
         .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .order("id", { ascending: true })
@@ -269,21 +313,25 @@ export function matchSavedWebDecisions(items: EvidenceItem[], rows: WebDecisionR
   const out: Record<string, WebChoice> = {};
   for (const item of items) {
     const hit = byKey.get(item.key) ?? byAddress.get(webIdentity(item.url ?? item.value));
-    if (hit) out[item.key] = { kind: hit.relationKey, sentiment: hit.sentiment };
+    if (hit && hit.relationKey) out[item.key] = { kind: hit.relationKey, sentiment: hit.sentiment };
   }
   return out;
 }
 
-/** "Reopen" a decision restored from an earlier visit: the row goes back to an undecided candidate. */
-export async function reopenWebDecision(brandId: string, evidenceKey: string): Promise<void> {
-  const db = await authenticatedWebDb(supabase);
-  const { error } = await db
-    .from("discovered_item")
-    .update({ status: "pending", relation_key: null, sentiment: null, reviewed_at: null })
-    .eq("brand_id", brandId)
-    .eq("context->>evidence_key", evidenceKey)
-    .is("deleted_at", null);
-  if (error) throw new Error(error.message);
+/** The saved Ask me later / Ignore for each run finding (same matching as the answers; pure; tested). */
+export function matchSavedWebMarks(items: EvidenceItem[], rows: WebDecisionRow[]): Record<string, WebMark> {
+  const byKey = new Map<string, WebDecisionRow>();
+  const byAddress = new Map<string, WebDecisionRow>();
+  for (const r of rows) {
+    if (r.evidenceKey) byKey.set(r.evidenceKey, r);
+    byAddress.set(webIdentity(r.url), r);
+  }
+  const out: Record<string, WebMark> = {};
+  for (const item of items) {
+    const hit = byKey.get(item.key) ?? byAddress.get(webIdentity(item.url ?? item.value));
+    if (hit?.mark) out[item.key] = hit.mark;
+  }
+  return out;
 }
 
 /** The finding a saved row was, rebuilt so the ONE answer path can answer it again. */
@@ -329,6 +377,9 @@ export async function changeWebDecision(
       .eq("id", row.id);
     if (error) throw new Error(error.message);
   }
+  // The earlier answer is taken back first: what it created (a site, a person link, a competitor, a backlink) goes,
+  // anything a person made stays.
+  await retractSavedAnswer(ctx.getBrand().id, ctx.kinds, { rowId: row.id });
   const wasExcluded = ctx.kinds.find((k) => k.key === row.relationKey)?.routesTo === "exclusion";
   if (wasExcluded && kind.routesTo !== "exclusion") {
     const { error } = await db

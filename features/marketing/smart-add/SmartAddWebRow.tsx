@@ -9,8 +9,8 @@
  * `web.brand_relation_kind`; the rule-based suggestion (webKinds.suggestKind, no AI) glows with its
  * reason on hover and is never set for the person. Answers flow back through `onChoose` into the same
  * `webChoices` state as before, so create-time persistence (relations.routeWebChoices), the validation
- * page and the Builder panel feed are unchanged. Ask me later / Ignore stay pending: unanswered
- * results are kept as candidates at create, exactly as before.
+ * page and the Builder panel feed are unchanged. Ask me later / Ignore: at Create they stay pending (unanswered
+ * results are kept as candidates); in Enrich they are saved on the finding's row like any answer.
  */
 
 import { Globe } from "lucide-react";
@@ -88,7 +88,8 @@ export function SmartAddWebRow({
   kinds: BrandRelationKind[];
   choices: Record<string, WebChoice>;
   ctx: SuggestContext;
-  onChoose: (item: EvidenceItem, choice: WebChoice | null) => void;
+  /** `mark` is Ask me later / Ignore when the answer is one of those (choice is then null). */
+  onChoose: (item: EvidenceItem, choice: WebChoice | null, mark?: WebMark | null) => void;
   /** Ask me later / Ignore: the person's place in the review, kept by the session so a reload returns to it. */
   marks?: Record<string, WebMark>;
   onMark?: (key: string, mark: WebMark | null) => void;
@@ -143,8 +144,9 @@ export function SmartAddWebRow({
           onAnswer: (key, answer) => {
             const item = byKey.get(key);
             if (!item) return;
-            onMark(key, answer && answer.status !== "answered" ? answer.status : null);
-            onChoose(item, answer?.status === "answered" ? { kind: answer.kind, sentiment: answer.sentiment } : null);
+            const mark = answer && answer.status !== "answered" ? answer.status : null;
+            onMark(key, mark);
+            onChoose(item, answer?.status === "answered" ? { kind: answer.kind, sentiment: answer.sentiment } : null, mark);
           },
         }
       : null,

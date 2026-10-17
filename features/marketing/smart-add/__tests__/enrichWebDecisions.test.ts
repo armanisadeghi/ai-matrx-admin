@@ -7,7 +7,7 @@
  */
 
 type Row = Record<string, unknown> & { id: string; deleted_at: string | null };
-const tables: Record<string, Row[]> = { discovered_item: [], brand_exclusion: [] };
+const tables: Record<string, Row[]> = { discovered_item: [], brand_exclusion: [], site: [] };
 let nextId = 1;
 
 function dedupKey(r: Row): string {
@@ -27,6 +27,7 @@ function query(table: string, op: "select" | "insert" | "update", payload?: Reco
   b.in = (col: string, vals: unknown[]) => (filters.push((r) => vals.includes(field(r, col))), b);
   b.is = (col: string, val: unknown) => (filters.push((r) => (field(r, col) ?? null) === val), b);
   b.not = (col: string, _op: string, val: unknown) => (filters.push((r) => (field(r, col) ?? null) !== val), b);
+  b.or = () => b;
   b.order = () => b;
   b.range = () => b;
   b.limit = (n: number) => ((limit = n), b);
@@ -66,13 +67,19 @@ jest.mock("@/utils/supabase/webDb", () => ({
   }),
 }));
 const promoted: string[] = [];
+/** What the server's promotion "creates" on its next call (the test sets it per answer). */
+let nextCreated: Record<string, string[]> = {};
+const emptyIds = () => ({ competitor: [], person: [], location: [], listing: [], keyword: [], backlink: [], offering: [], industry: [], typed_fact: [] });
 jest.mock("../promote", () => ({
+  ...jest.requireActual("../promote"),
   promoteSmartAddFindings: jest.fn(async (brandId: string) => {
     promoted.push(brandId);
-    return { landed: {}, alreadyHome: {}, keptOnBrand: {}, createdIds: {}, problems: [] };
+    const createdIds = { ...emptyIds(), ...nextCreated };
+    nextCreated = {};
+    return { landed: {}, alreadyHome: {}, keptOnBrand: {}, createdIds, problems: [] };
   }),
-  promotedHomes: () => [],
-  undoPromotion: jest.fn(),
+  promotedHomes: (r: { createdIds: Record<string, string[]> }) => Object.entries(r.createdIds).flatMap(([t, ids]) => ids.map((id) => `home.${t}:${id}`)),
+  undoPromotion: jest.fn(async () => undefined),
 }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
 jest.mock("@/features/marketing/data/service", () => ({
@@ -86,7 +93,7 @@ jest.mock("@/features/marketing/data/service", () => ({
 jest.mock("../siteOwnership", () => ({ claimSite: jest.fn(async () => ({ kind: "claimed", site: { id: "site-1" } })) }));
 jest.mock("../siteOwnershipLive", () => ({ liveSiteClaimDeps: {} }));
 jest.mock("@/features/education/kits/systemRuns", () => ({ startSystemRun: jest.fn(async () => ({})) }));
-jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: { remove: jest.fn(async () => ({ ok: true })) } }));
+jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: { remove: jest.fn(async () => ({ ok: true })), add: jest.fn(async () => ({ ok: true })) } }));
 jest.mock("@/lib/redux/store-singleton", () => ({ getStoreSingleton: jest.fn(() => ({ getState: () => ({}) })) }));
 const linked: string[] = [];
 jest.mock("../relations", () => ({
@@ -107,11 +114,14 @@ import type { BrandRelationKind } from "@/features/marketing/data/service";
 import type { MarketingBrand } from "@/features/marketing/types";
 import type { EvidenceItem } from "../evidence";
 import { persistAnswer } from "../validate/persist";
+import { undoPromotion } from "../promote";
+import { deleteSite } from "@/features/marketing/data/service";
 import type { WebChoice } from "../webKinds";
 import {
   answerForWebChoice,
   listBrandWebDecisions,
   matchSavedWebDecisions,
+  matchSavedWebMarks,
   webDecisionCounts,
   WebDecisionSaver,
   type WebSaveStatus,
@@ -160,7 +170,7 @@ function makeSaver(statuses: Record<string, WebSaveStatus>, failures: string[]) 
     suggest: () => ({ foundAccounts: [], ourHandles: [], ourHosts: [], ourAccounts: [], name: "Ritual", place: null }),
     persist: (item, answer, opts) =>
       persistAnswer({ organizationId: brand.organization_id, getBrand: () => brand, setBrand: (b) => void (brand = b), kinds: KINDS }, item, answer, opts),
-    reopen: async () => undefined,
+    retract: async () => undefined,
     onStatus: (key, s) => void (statuses[key] = s),
     onFailed: (item, _label, error) => void failures.push(`${item.key}: ${String((error as Error)?.message ?? error)}`),
   });
@@ -169,6 +179,10 @@ function makeSaver(statuses: Record<string, WebSaveStatus>, failures: string[]) 
 beforeEach(() => {
   tables.discovered_item.length = 0;
   tables.brand_exclusion.length = 0;
+  tables.site.length = 0;
+  nextCreated = {};
+  (undoPromotion as jest.Mock).mockClear();
+  (deleteSite as jest.Mock).mockClear();
   promoted.length = 0;
   linked.length = 0;
 });
@@ -250,7 +264,7 @@ describe("Enrich web decisions reach the brand", () => {
         if (fail) throw new Error("permission denied for table discovered_item");
         return persistAnswer({ organizationId: "org-brand", getBrand: () => brand, setBrand: (b) => void (brand = b), kinds: KINDS }, item, answer, opts);
       },
-      reopen: async () => undefined,
+      retract: async () => undefined,
       onStatus: (key, s) => void (statuses[key] = s),
       onFailed: (item, _label, error) => void failures.push(`${item.key}: ${(error as Error).message}`),
     });
@@ -262,5 +276,155 @@ describe("Enrich web decisions reach the brand", () => {
     const flushed = await saver.flush([item], { [item.key]: { kind: "backlink", sentiment: null } }, () => "");
     expect(flushed).toEqual({ saved: [item.key], failed: [] });
     expect(tables.discovered_item.filter((r) => r.relation_key === "backlink")).toHaveLength(1);
+  });
+});
+
+// ── Gaps closed after the first walk: a changed answer undoes what the old one created; Ask me later / Ignore are saved ──
+
+/** A second visit: a fresh saver (nothing held in memory) that only knows the brand's saved rows. */
+function reopenedSaver(statuses: Record<string, WebSaveStatus>, failures: string[]) {
+  return makeSaverWithRetract(statuses, failures);
+}
+
+function makeSaverWithRetract(statuses: Record<string, WebSaveStatus>, failures: string[]) {
+  // The REAL retract (validate/savedAnswers.ts) over the same in-memory rows.
+  const { retractSavedAnswer } = jest.requireActual("../validate/savedAnswers") as typeof import("../validate/savedAnswers");
+  return new WebDecisionSaver({
+    kinds: () => KINDS,
+    suggest: () => ({ foundAccounts: [], ourHandles: [], ourHosts: [], ourAccounts: [], name: "Ritual", place: null }),
+    persist: (item, answer, opts) =>
+      persistAnswer({ organizationId: brand.organization_id, getBrand: () => brand, setBrand: (b) => void (brand = b), kinds: KINDS }, item, answer, opts),
+    retract: async (key) => void (await retractSavedAnswer("b1", KINDS, { evidenceKey: key })),
+    onStatus: (key, s) => void (statuses[key] = s),
+    onFailed: (item, _label, error) => void failures.push(`${item.key}: ${String((error as Error)?.message ?? error)}`),
+  });
+}
+
+describe("changing an answer takes back what it created", () => {
+  it("this visit: Backlink -> Mentions us removes the backlink row the first answer created", async () => {
+    const failures: string[] = [];
+    const saver = makeSaverWithRetract({}, failures);
+    const item = result(2);
+    nextCreated = { backlink: ["bl-1"] };
+    await saver.decide(item, { kind: "backlink", sentiment: null });
+    await saver.decide(item, { kind: "mention", sentiment: "positive" });
+    expect(failures).toEqual([]);
+    expect((undoPromotion as jest.Mock).mock.calls.some(([ids]) => ids.backlink?.includes("bl-1"))).toBe(true);
+  });
+
+  it("a LATER visit: the created ids were kept on the answer's row, so a restored answer changed there undoes them too", async () => {
+    const failures: string[] = [];
+    const item = result(3);
+    // Visit 1: the answer creates a backlink and a competitor row.
+    nextCreated = { backlink: ["bl-9"], competitor: ["comp-4"] };
+    await makeSaverWithRetract({}, failures).decide(item, { kind: "backlink", sentiment: null });
+    const row = tables.discovered_item.find((r) => r.relation_key === "backlink") as Row;
+    expect(((row.context as { answer: { promoted: Record<string, string[]> } }).answer.promoted)).toEqual({ backlink: ["bl-9"], competitor: ["comp-4"] });
+    (undoPromotion as jest.Mock).mockClear();
+    // Visit 2: nothing in memory; the answer comes back from the saved row, and is then changed.
+    const saved = await listBrandWebDecisions("b1");
+    const saver = reopenedSaver({}, failures);
+    saver.markRestored(item.key, { choice: matchSavedWebDecisions([item], saved)[item.key] });
+    await saver.decide(item, { kind: "not_us", sentiment: null });
+    expect(failures).toEqual([]);
+    const undone = (undoPromotion as jest.Mock).mock.calls.map(([ids]) => ids);
+    expect(undone.some((ids) => ids.backlink?.includes("bl-9") && ids.competitor?.includes("comp-4"))).toBe(true);
+    const after = tables.discovered_item.find((r) => r.relation_key === "not_us") as Row;
+    expect(after).toBeTruthy();
+    expect((after.context as { answer: { promoted?: unknown } }).answer.promoted).toBeUndefined();
+  });
+
+  it("clearing a restored answer undoes it and leaves the finding undecided", async () => {
+    const failures: string[] = [];
+    const item = result(4);
+    nextCreated = { backlink: ["bl-2"] };
+    await makeSaverWithRetract({}, failures).decide(item, { kind: "backlink", sentiment: null });
+    (undoPromotion as jest.Mock).mockClear();
+    const saver = reopenedSaver({}, failures);
+    saver.markRestored(item.key, { choice: { kind: "backlink", sentiment: null } });
+    await saver.decide(item, null);
+    expect((undoPromotion as jest.Mock).mock.calls.some(([ids]) => ids.backlink?.includes("bl-2"))).toBe(true);
+    const row = tables.discovered_item.find((r) => (r.context as { evidence_key?: string }).evidence_key === item.key) as Row;
+    expect(row.status).toBe("pending");
+    expect(row.relation_key).toBeNull();
+    expect((await listBrandWebDecisions("b1")).filter((r) => r.relationKey)).toHaveLength(0);
+  });
+
+  it("a website the brand already tracked (a person's) is never deleted when the answer is changed; one the answer made is", async () => {
+    const failures: string[] = [];
+    // The person added item 6's site by hand before; item 7's site did not exist.
+    tables.site.push({ id: "site-1", brand_id: "b1", domain: "site6.example", deleted_at: null });
+    // A site's own root page is what "Ours" adds as a website.
+    const root = (n: number): EvidenceItem => ({ ...result(n), key: `web_page:site${n}.example`, value: `https://site${n}.example`, url: `https://site${n}.example` });
+    const mine = root(6);
+    const fresh = root(7);
+    const saver = makeSaverWithRetract({}, failures);
+    await saver.decide(mine, { kind: "ours", sentiment: null });
+    await saver.decide(fresh, { kind: "ours", sentiment: null });
+    await saver.decide(mine, { kind: "backlink", sentiment: null });
+    expect(deleteSite).not.toHaveBeenCalled();
+    await saver.decide(fresh, { kind: "backlink", sentiment: null });
+    expect(deleteSite).toHaveBeenCalledTimes(1);
+    expect(failures).toEqual([]);
+  });
+});
+
+describe("Ask me later and Ignore are decisions too", () => {
+  it("are saved on the finding's row, listed on the brand, restored on reopen, and changeable", async () => {
+    const failures: string[] = [];
+    const later = result(11);
+    const ignored = result(12);
+    const answered = result(13);
+    const saver = makeSaverWithRetract({}, failures);
+    await saver.decide(later, null, "", "later");
+    await saver.decide(ignored, null, "", "ignored");
+    await saver.decide(answered, { kind: "backlink", sentiment: null });
+    expect(failures).toEqual([]);
+    const rowOf = (it: EvidenceItem) => tables.discovered_item.find((r) => (r.context as { evidence_key?: string }).evidence_key === it.key) as Row;
+    expect(rowOf(later).status).toBe("pending");
+    expect((rowOf(later).context as { answer: { answer: string } }).answer.answer).toBe("later");
+    expect(rowOf(later).reviewed_at).toBeTruthy();
+    expect(rowOf(ignored).status).toBe("dismissed");
+
+    // Listed on the brand's On the web tab beside the answered one.
+    const saved = await listBrandWebDecisions("b1");
+    expect(saved.map((r) => [r.label, r.mark]).sort()).toEqual([["Result 11", "later"], ["Result 12", "ignored"], ["Result 13", null]]);
+    // A reopened review shows them again: marks as marks, the answer as an answer.
+    expect(matchSavedWebMarks([later, ignored, answered], saved)).toEqual({ [later.key]: "later", [ignored.key]: "ignored" });
+    expect(Object.keys(matchSavedWebDecisions([later, ignored, answered], saved))).toEqual([answered.key]);
+
+    // On the next visit: Ask me later changed to an answer, Ignore cleared.
+    const next = reopenedSaver({}, failures);
+    next.markRestored(later.key, { mark: "later" });
+    next.markRestored(ignored.key, { mark: "ignored" });
+    await next.decide(later, { kind: "mention", sentiment: "neutral" });
+    await next.decide(ignored, null);
+    expect(failures).toEqual([]);
+    const after = await listBrandWebDecisions("b1");
+    expect(after.find((r) => r.label === "Result 11")).toMatchObject({ relationKey: "mention", mark: null });
+    expect(after.find((r) => r.label === "Result 12")).toBeUndefined();
+  });
+
+  it("a mark that failed to save is retried by Apply's flush", async () => {
+    const failures: string[] = [];
+    const item = result(14);
+    let fail = true;
+    const saver = new WebDecisionSaver({
+      kinds: () => KINDS,
+      suggest: () => ({ foundAccounts: [], ourHandles: [], ourHosts: [], ourAccounts: [], name: "Ritual", place: null }),
+      persist: async (focus, answer, opts) => {
+        if (fail) throw new Error("offline");
+        return persistAnswer({ organizationId: "org-brand", getBrand: () => brand, setBrand: (b) => void (brand = b), kinds: KINDS }, focus, answer, opts);
+      },
+      retract: async () => undefined,
+      onStatus: () => undefined,
+      onFailed: (_i, _l, error) => void failures.push((error as Error).message),
+    });
+    await saver.decide(item, null, "", "later");
+    expect(failures).toEqual(["offline"]);
+    fail = false;
+    const flushed = await saver.flush([item], {}, () => "", { [item.key]: "later" });
+    expect(flushed).toEqual({ saved: [item.key], failed: [] });
+    expect(tables.discovered_item).toHaveLength(1);
   });
 });

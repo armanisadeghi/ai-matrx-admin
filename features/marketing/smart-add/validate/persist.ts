@@ -15,7 +15,8 @@
  *   Not us                  → web.brand_exclusion
  *   Correct / edited (fact) → web.business_fact (resolved_fact_id; source `discovered`, provenance in
  *                             metadata), or its web.brand profile key (aliases, service area, competitors)
- *   Ask me later            → nothing (stays pending)
+ *   Ask me later            → nothing (stays pending); on a web result (recordMark) its row keeps answer "later"
+ *   Ignore                  → status dismissed, no relationship (a web result kept as a decision)
  */
 
 import { foundByForSource } from "../factIdentity";
@@ -71,6 +72,12 @@ export interface PersistOptions {
    * made once a name is given (answered again with `value`). Without it a missing name is refused.
    */
   allowUnnamed?: boolean;
+  /**
+   * "Ask me later" / "Ignore" on a web result are decisions too: with this set, a later is kept on the finding's row
+   * (still pending, answer "later") instead of writing nothing, so a reopened review and the brand's On the web tab
+   * show it. Off by default: the validation queue's Ask me later keeps writing nothing.
+   */
+  recordMark?: boolean;
 }
 
 export interface PersistContext {
@@ -212,7 +219,7 @@ async function recordDiscovered(
     const context = { ...(isJsonRecord(was.context) ? was.context : {}), answer: answerCtx } as Json;
     const { error } = await w
       .from("discovered_item")
-      .update({ deleted_at: null, status, relation_key, sentiment, reviewed_at: status === "pending" ? null : at, context, ...resolved })
+      .update({ deleted_at: null, status, relation_key, sentiment, reviewed_at: status === "pending" && answer !== "later" ? null : at, context, ...resolved })
       .eq("id", was.id);
     // access-errors: ok — a write failure on the person's own answer, shown as "Not saved"
     if (error) throw new Error(error.message);
@@ -269,7 +276,7 @@ async function recordDiscovered(
       status,
       relation_key,
       sentiment,
-      reviewed_at: status === "pending" ? null : at,
+      reviewed_at: status === "pending" && answer !== "later" ? null : at,
       ...resolved,
     })
     .select("id")
@@ -342,17 +349,30 @@ function startIngest(
 async function addSite(ctx: PersistContext, url: string): Promise<{ id: string | null; note?: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const parsed = normalizeWebsiteUrl(url);
+  const host = parsed.hostname.toLowerCase();
+  // A site the brand already tracks is a person's (or an earlier answer's): the RPC hands it back, and taking this answer
+  // back must never delete it. Only a site this answer creates is recorded as its home and removed by its undo.
+  const existing = await (await db())
+    .from("site")
+    .select("id")
+    .eq("brand_id", brand.id)
+    .eq("domain", host)
+    .is("deleted_at", null)
+    .limit(1)
+    .maybeSingle();
+  if (existing.error) throw new Error(existing.error.message);
   const claim = await claimSite(liveSiteClaimDeps, {
     organizationId: ctx.organizationId,
     brandId: brand.id,
     rootUrl: parsed.toString(),
-    host: parsed.hostname.toLowerCase(),
+    host,
   });
   // A site another brand tracks stays with it (never reassigned here); this brand got its own website row.
   if (claim.kind === "tracked-elsewhere") return { id: null, note: claim.note, undo: async () => {} };
   const site = claim.site;
   // The crawl every confirmed site gets (as on Create), on the server; never blocks the answer.
   startIngest(ctx, site.id, { sites: [site.id] });
+  if (existing.data?.id === site.id) return { id: null, undo: async () => {} };
   return { id: site.id, undo: async () => deleteSite(site.id) };
 }
 
@@ -580,16 +600,59 @@ export async function persistAnswer(
 }
 
 /**
+ * One promotion at a time per brand: the server reconciles EVERY confirmed finding on each call, so two overlapping
+ * calls would credit one answer's new rows to the other, and taking an answer back would miss its rows (or the
+ * other's). Serialized, each call's `createdIds` belong to the answer that triggered it.
+ */
+const promoting = new Map<string, Promise<unknown>>();
+
+async function promoteOnce(brandId: string): Promise<Awaited<ReturnType<typeof promoteSmartAddFindings>>> {
+  const turn = (promoting.get(brandId) ?? Promise.resolve()).catch(() => undefined).then(() => promoteSmartAddFindings(brandId));
+  promoting.set(brandId, turn);
+  try {
+    return await turn;
+  } finally {
+    if (promoting.get(brandId) === turn) promoting.delete(brandId);
+  }
+}
+
+/**
+ * The rows a promotion created are kept on the answer's own row (context.answer.promoted), so taking the answer back
+ * on a LATER visit (a reopened Enrich, the brand page's table) removes exactly them — never a row a person made.
+ */
+async function recordPromoted(discoveredId: string, createdIds: Record<string, string[]>): Promise<void> {
+  const w = await db();
+  const current = await w.from("discovered_item").select("context").eq("id", discoveredId).maybeSingle();
+  if (current.error) throw new Error(current.error.message);
+  const context = isJsonRecord(current.data?.context) ? current.data.context : {};
+  const answer = isJsonRecord(context.answer) ? context.answer : {};
+  const promoted = Object.fromEntries(Object.entries(createdIds).filter(([, ids]) => ids.length));
+  const { error } = await w
+    .from("discovered_item")
+    .update({ context: { ...context, answer: { ...answer, promoted } } as unknown as Json })
+    .eq("id", discoveredId);
+  if (error) throw new Error(error.message);
+}
+
+/**
  * A confirmed answer lands in the brand's home tables through the server's ONE promotion (promote.ts): the person
- * linked, the location added, the listing, the keyword, the rival. Undo removes exactly the rows that promotion
- * created, then the answer. The answer is already saved, so a promotion that fails is said, never thrown.
+ * linked, the location added, the listing, the keyword, the rival, the backlink. Undo removes exactly the rows that
+ * promotion created, then the answer; the ids are also kept on the answer's row for a later visit. The answer is
+ * already saved, so a promotion that fails is said, never thrown.
  */
 async function withPromotion(ctx: PersistContext, persisted: Persisted): Promise<Persisted> {
   try {
-    const promoted = await promoteSmartAddFindings(ctx.getBrand().id);
+    const promoted = await promoteOnce(ctx.getBrand().id);
     for (const problem of promoted.problems) toast.error(problem);
     const homes = promotedHomes(promoted);
     if (!homes.length) return persisted;
+    if (persisted.discoveredId) {
+      try {
+        await recordPromoted(persisted.discoveredId, promoted.createdIds);
+      } catch (error) {
+        toast.error(`Saved, but changing this answer later may leave its pages behind: ${extractErrorMessage(error)}`);
+      }
+    }
     return {
       ...persisted,
       homes: [...persisted.homes, ...homes],
@@ -658,7 +721,7 @@ async function persistAnswerOnce(
   const ev = item.evidence;
   let siteId: string | null = null;
 
-  if (answer === "later") return { discoveredId: null, homes, undo: async () => undefined };
+  if (answer === "later" && !opts.recordMark) return { discoveredId: null, homes, undo: async () => undefined };
   if (item.key.startsWith(GAP_PREFIX)) return persistGap(ctx, item, answer, value);
 
   if (answer === "ours" && item.kind === "account" && ev) {
