@@ -13,7 +13,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { FilePlus, LayoutGrid, LayoutTemplate, ListTree, Pencil, Plus, Rows3, Shapes } from "lucide-react";
 import { ChatCanvasWorkspace } from "@ai-matrx/chat/canvas/workspace/ChatCanvasWorkspace";
 import type { CanvasWorkspaceLayout } from "@ai-matrx/chat/canvas/workspace/workspace-cookies";
@@ -25,9 +25,9 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { BoardOrganizationProvider } from "../items/board-organization";
 import { BoardChatsProvider, BoardHomeChatFiler } from "../items/board-chats";
 import { type SavedBoardTarget, useSavedBoard } from "../persistence/useSavedBoard";
-import { BOARD_TOKEN, CANVAS_LAYOUT_SETTING, LAYOUT_SETTING } from "../persistence/boardsService";
+import { BOARD_TOKEN, CANVAS_LAYOUT_SETTING, CHAPTER_ORDER_SETTING, LAYOUT_SETTING } from "../persistence/boardsService";
 import { usePageFamily } from "../persistence/usePageFamily";
-import { type BoardLayoutMode, layoutModeOf, parseCanvasSnapshot } from "../engine/page-layout";
+import { type BoardLayoutMode, layoutModeOf, parseCanvasSnapshot, parseChapterOrder } from "../engine/page-layout";
 import type { BoardPreset } from "../presets/board-preset";
 import { useCreateBoard } from "../persistence/useCreateBoard";
 import { listTemplateIds } from "@/features/spaces/state/templates";
@@ -89,9 +89,13 @@ export function BoardPage({
   // Page layout (`settings.layout`) and the canvas it keeps (`settings.canvas_layout`).
   const layout: BoardLayoutMode = layoutModeOf(ready?.board.settings[LAYOUT_SETTING]);
   const canvasLayout = parseCanvasSnapshot(ready?.board.settings[CANVAS_LAYOUT_SETTING]);
-  const setLayout = (next: BoardLayoutMode) => {
-    if (!ready || next === layout) return;
-    void ready.updateSettings({ [LAYOUT_SETTING]: next === "page" ? "page" : null }).catch(() => undefined);
+  const chapterOrder = parseChapterOrder(ready?.board.settings[CHAPTER_ORDER_SETTING]);
+  // The switch itself lives with the board (it keeps the canvas first): `UserBoard` fills this in.
+  const layoutSwitch = useRef<((next: BoardLayoutMode) => Promise<void>) | null>(null);
+  const setLayout = (next: BoardLayoutMode): Promise<void> => {
+    const run = layoutSwitch.current;
+    if (!run) return Promise.reject(new Error("The board is still opening."));
+    return run(next);
   };
   // The outline: open by default in page layout, a toggle on the canvas (per open board, per layout).
   const [outlinePick, setOutlinePick] = useState<{ key: string; open: boolean } | null>(null);
@@ -156,7 +160,7 @@ export function BoardPage({
               </DropdownMenuItem>
             )}
             {ready && (
-              <DropdownMenuItem onSelect={() => setLayout(layout === "page" ? "canvas" : "page")}>
+              <DropdownMenuItem onSelect={() => void setLayout(layout === "page" ? "canvas" : "page").catch(() => undefined)}>
                 {layout === "page" ? <Shapes className="mr-2 h-4 w-4" /> : <Rows3 className="mr-2 h-4 w-4" />}
                 {layout === "page" ? "Canvas layout" : "Page layout"}
               </DropdownMenuItem>
@@ -238,7 +242,9 @@ export function BoardPage({
                       onCamera={ready.saveCamera}
                       layout={layout}
                       canvasLayout={canvasLayout}
-                      onKeepCanvas={(snapshot) => void ready.updateSettings({ [CANVAS_LAYOUT_SETTING]: snapshot }).catch(() => undefined)}
+                      chapterOrder={chapterOrder}
+                      saveLayout={(patch) => ready.updateSettings(patch, { optimistic: false })}
+                      layoutSwitch={layoutSwitch}
                       outline={{
                         open: outlineOpen,
                         onOpenChange: setOutlineOpen,

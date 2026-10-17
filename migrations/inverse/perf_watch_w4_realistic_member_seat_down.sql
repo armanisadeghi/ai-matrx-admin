@@ -1,6 +1,6 @@
--- chair-step: inverse of perf_watch_w4_realistic_member_seat.sql — soft-deletes the twelve @stress twins, un-retires views@member@large and re-pins every changed @member twin to test@test.com (marker samples stay as history).
+-- chair-step: inverse of perf_watch_w4_realistic_member_seat.sql — soft-deletes the twelve @stress twins, re-activates views@member@large and re-pins every changed @member twin to test@test.com (marker samples stay as history).
 update ops.proof_check set deleted_at = now(), is_active = false where slug like 'door:%@stress%' and deleted_at is null;
-update ops.proof_check set deleted_at = null, is_active = true where slug = 'door:custom.views@member@large';
+update ops.proof_check set is_active = true where slug = 'door:custom.views@member@large';
 do $w4d$
 declare p record;
 begin

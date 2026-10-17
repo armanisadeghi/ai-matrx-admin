@@ -44,8 +44,28 @@ interface OutlineProps {
 }
 
 /** The chapter being read: in page layout the last one whose top passed the upper third; on the canvas the one under the view's centre. */
-function useActiveChapter(store: BoardCameraStore | null, chapters: readonly BoardFrame[], layout: BoardLayoutMode): string | null {
+function useActiveChapter(
+  store: BoardCameraStore | null,
+  chapters: readonly BoardFrame[],
+  layout: BoardLayoutMode,
+): { active: string | null; pin: (id: string) => void } {
   const [active, setActive] = useState<string | null>(null);
+  // A chapter picked in the outline stays highlighted until the person moves the view themselves
+  // (the last chapters of a page cannot scroll to the reading line).
+  const [pinned, setPinned] = useState<string | null>(null);
+  useEffect(() => {
+    if (!pinned) return;
+    const unpin = () => setPinned(null);
+    const opts = { capture: true, passive: true } as const;
+    window.addEventListener("wheel", unpin, opts);
+    window.addEventListener("keydown", unpin, opts);
+    window.addEventListener("touchmove", unpin, opts);
+    return () => {
+      window.removeEventListener("wheel", unpin, opts);
+      window.removeEventListener("keydown", unpin, opts);
+      window.removeEventListener("touchmove", unpin, opts);
+    };
+  }, [pinned]);
   useEffect(() => {
     if (!store) return;
     const compute = () => {
@@ -55,7 +75,10 @@ function useActiveChapter(store: BoardCameraStore | null, chapters: readonly Boa
       let next: string | null;
       if (layout === "page") {
         const line = screenToWorld(cam, size.w / 2, top + (size.h - top) / 3).y;
-        next = activeChapter(chapters, line);
+        // At the top of the page the first chapter is the one being read, however short it is.
+        const first = chapters[0];
+        const atTop = first ? first.rect.y * cam.z + cam.y >= top : false;
+        next = atTop ? first.id : activeChapter(chapters, line);
       } else {
         const c = screenToWorld(cam, size.w / 2, size.h / 2);
         next =
@@ -67,14 +90,15 @@ function useActiveChapter(store: BoardCameraStore | null, chapters: readonly Boa
     compute();
     return store.subscribeFrame(compute);
   }, [store, chapters, layout]);
-  return active;
+  return { active: pinned ?? active, pin: setPinned };
 }
 
 function OutlineBody({ frames, store, layout, pages, onMoveChapter, onClose, fill = false }: OutlineProps & { fill?: boolean }) {
   const chapters = chapterOrder(frames);
-  const active = useActiveChapter(store, chapters, layout);
+  const { active, pin } = useActiveChapter(store, chapters, layout);
   const go = (f: BoardFrame) => {
     if (!store) return;
+    pin(f.id);
     if (layout === "page") store.pageScrollTo(f.rect.y - 56);
     else store.fitItem(frameKey(f.id), 48);
     store.select(f.id);

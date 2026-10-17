@@ -78,8 +78,11 @@ export type SavedBoardState =
         /** The row's settings as this tab knows them (changes show at once, then save). */
         settings: JsonObject;
       };
-      /** Merge into the board's settings (`null` removes a key): shown at once, saved in order. */
-      updateSettings: (patch: Record<string, JsonValue | null>) => Promise<void>;
+      /**
+       * Merge into the board's settings (`null` removes a key), saved in order. Shown at once, or with
+       * `optimistic: false` only once the write landed (a failed write then changes nothing here).
+       */
+      updateSettings: (patch: Record<string, JsonValue | null>, opts?: { optimistic?: boolean }) => Promise<void>;
       /** Debounced autosave (~800ms); last write wins within the tab. Pass a
        * builder to defer building the document until the write goes out. */
       save: (doc: BoardDocument | (() => BoardDocument)) => void;
@@ -404,7 +407,8 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
     );
   };
 
-  const updateSettings = (patch: Record<string, JsonValue | null>): Promise<void> => {
+  const updateSettings = (patch: Record<string, JsonValue | null>, opts: { optimistic?: boolean } = {}): Promise<void> => {
+    const optimistic = opts.optimistic !== false;
     const apply = (cur: JsonObject): JsonObject => {
       const next: JsonObject = { ...cur };
       for (const [k, v] of Object.entries(patch)) {
@@ -413,7 +417,9 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
       }
       return next;
     };
-    setPhase((p) => (p && p.status === "ready" && p.board.id === board.id ? { ...p, settings: apply(p.settings) } : p));
+    const show = () =>
+      setPhase((p) => (p && p.status === "ready" && p.board.id === board.id ? { ...p, settings: apply(p.settings) } : p));
+    if (optimistic) show();
     const run = settingsChain.current.then(async () => {
       // A board still being created: its row must exist first.
       if (landing.current) await landing.current.catch(() => undefined);
@@ -421,6 +427,7 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
       if (guard.current?.id === board.id && saved.version > guard.current.version) {
         guard.current = { ...guard.current, version: saved.version };
       }
+      if (!optimistic) show();
     });
     settingsChain.current = run.catch(() => undefined);
     return run.catch((error: unknown) => {

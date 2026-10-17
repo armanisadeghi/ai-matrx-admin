@@ -1,5 +1,3 @@
--- based-on: ops.perf_watch_declare(text,text,text,jsonb,numeric,text,integer,text,text) live 2026-10-17
--- chair-step: soft-deletes one perf watch (door:custom.views@member@large) because the realistic seat is not in the organization that owns its pinned table; the watch keeps its history as a deleted row and the same door stays probed by its @stress twin.
 --
 -- perf_watch_w4_realistic_member_seat.sql
 --
@@ -17,7 +15,7 @@
 --   3. The old seat stays as `<slug>` with `@member` renamed `@stress`: label "stress seat (1,531
 --      organizations)", seat test@test.com, budget 2500 ms p95 of its own (a stress ceiling, not a
 --      real-user budget), owner PERF-WATCH-STRESS, so it can never page as a real-user regression.
---   4. door:custom.views@member@large is retired: its pinned table belongs to Rincon Plumbing, which the
+--   4. door:custom.views@member@large is switched off (is_active = false, history kept): its pinned table belongs to Rincon Plumbing, which the
 --      realistic seat is not a member of (and adding it would make 3 organizations); its @stress twin
 --      keeps the door measured.
 -- Other @member twins (notes, conversations, files, knobs, ...) read the seat's OWN data and are out of
@@ -53,7 +51,7 @@ begin
               p.budget_ms, p.budget_stat, p.live_every_seconds, p.owner, p.source_feature);
   end loop;
   -- 3. retire the one the realistic seat cannot reach
-  update ops.proof_check set deleted_at = now(), is_active = false
+  update ops.proof_check set is_active = false
    where slug = 'door:custom.views@member@large' and deleted_at is null;
   select count(*) into v_n from ops.proof_check where slug like 'door:%@stress%' and deleted_at is null;
   if v_n <> 12 then raise exception 'expected 12 stress twins, found %', v_n; end if;

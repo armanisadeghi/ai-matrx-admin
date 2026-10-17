@@ -68,6 +68,7 @@ import { ParkedShelf } from "../components/ParkedShelf";
 import { Minimap, ZoomHud } from "../components/BoardChrome";
 import type { AddTileInput, BoardPagesHost, BoardToolHost, EditTileInput } from "../tools/useBoardAgentTools";
 import type { BoardLayoutMode, CanvasSnapshot } from "../engine/page-layout";
+import type { JsonValue } from "@/types/json";
 import { PAGE_LABEL_ROOM, usePageLayout } from "./usePageLayout";
 import { BoardOutline, type OutlinePages } from "../components/BoardOutline";
 import {
@@ -139,7 +140,9 @@ export function UserBoard({
   preset,
   layout: layoutMode = "canvas",
   canvasLayout = null,
-  onKeepCanvas,
+  chapterOrder = null,
+  saveLayout,
+  layoutSwitch,
   outline,
   pagesHost,
 }: {
@@ -162,8 +165,12 @@ export function UserBoard({
   layout?: BoardLayoutMode;
   /** The canvas positions kept while in page layout (the board's settings). */
   canvasLayout?: CanvasSnapshot | null;
-  /** Keep (or, with null, forget) the canvas positions — called on each switch of layout. */
-  onKeepCanvas?: (snapshot: CanvasSnapshot | null) => void;
+  /** The page's chapter order as page layout was last left (settings). */
+  chapterOrder?: readonly string[] | null;
+  /** Write layout settings in one write, resolving once it landed (`usePageLayout` switchLayout). */
+  saveLayout?: (patch: Record<string, JsonValue | null>) => Promise<void>;
+  /** Filled with this board's layout switch, for the host's title menu. */
+  layoutSwitch?: { current: ((next: BoardLayoutMode) => Promise<void>) | null };
   /** The outline rail (chapters + pages): shown or not, and the board's pages. Absent = no outline. */
   outline?: { open: boolean; onOpenChange: (open: boolean) => void; pages: OutlinePages | null };
   /** Layout and pages for the agent tools (`board_set_layout`, `board_add_page`). */
@@ -210,7 +217,8 @@ export function UserBoard({
     store,
     layout: layoutMode,
     snapshot: canvasLayout,
-    onKeepCanvas,
+    chapterOrder,
+    saveLayout,
     restoredView: viewerCamera !== null,
   });
   const [layersOpen, setLayersOpen] = useState(false);
@@ -814,8 +822,17 @@ export function UserBoard({
     },
     editTile: (tile, input) => agentEdit(tile, input),
     describe: (tile) => describeItem(tile.source),
-    ...(pagesHost ? { pages: pagesHost } : {}),
+    ...(pagesHost ? { pages: { ...pagesHost, setLayout: pageLayout.switchLayout } } : {}),
   };
+
+
+  useEffect(() => {
+    if (!layoutSwitch) return;
+    layoutSwitch.current = pageLayout.switchLayout;
+    return () => {
+      if (layoutSwitch.current === pageLayout.switchLayout) layoutSwitch.current = null;
+    };
+  });
 
   // Lines are context: a chat tile reads which tiles are joined to it, and builds its own context
   // from the live board (`items/connected-sources.tsx`). Stable; reads the latest host at call time.

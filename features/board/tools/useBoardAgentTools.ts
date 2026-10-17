@@ -197,7 +197,8 @@ export interface BoardPagesHost {
   layout: BoardLayoutMode;
   /** The board's pages: its parent and siblings, or its own child pages. `current` marks this one. */
   pages: readonly { id: string; title: string; parent_id: string | null; current: boolean }[];
-  setLayout: (mode: BoardLayoutMode) => void;
+  /** Resolves once the layout is saved (the canvas kept first); rejects when it was not. */
+  setLayout: (mode: BoardLayoutMode) => Promise<void>;
   /** Make a child page (a new board under this one, or a sibling when this is a page) and open it. */
   addPage: (title?: string) => Promise<{ id: string; title: string }>;
 }
@@ -356,13 +357,17 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     };
   };
 
-  const setLayoutTool = (input: unknown) => {
+  const setLayoutTool = async (input: unknown) => {
     const pages = host.pages;
     if (!pages) return fail("This board has no page layout (only saved boards do).");
     const mode = record(input).layout;
     if (mode !== "page" && mode !== "canvas") return fail('layout must be "page" or "canvas".');
     if (pages.layout === mode) return { ok: true, layout: mode, changed: false };
-    pages.setLayout(mode);
+    try {
+      await pages.setLayout(mode);
+    } catch (e) {
+      return fail(`The layout was not changed: ${e instanceof Error ? e.message : "the save did not land"}. Nothing moved; try again.`);
+    }
     return { ok: true, layout: mode, changed: true };
   };
 

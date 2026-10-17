@@ -242,3 +242,107 @@ describe("pages in the boards list", () => {
     expect(parentBoardIdOf(settingsForCopy(settings, { dropBrand: true }))).toBeNull();
   });
 });
+
+// ── review fixes (2026-10-17) ────────────────────────────────────────────────
+
+import { act, createElement } from "react";
+import { createRoot } from "react-dom/client";
+import { interruptedLeave, parseChapterOrder } from "../engine/page-layout";
+import { usePageLayout, pageScene } from "../home/usePageLayout";
+import type { JsonValue } from "@/types/json";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+type Tile = { id: string; rect: Rect };
+const seed = () => {
+  const c = canvas();
+  return new BoardStore<Tile>({
+    tiles: c.tiles.map((t) => ({ id: t.id, rect: t.rect })),
+    frames: c.frames.map((f) => ({ id: f.id, title: f.id, rect: f.rect })),
+  });
+};
+
+function mountLayout(board: BoardStore<Tile>, saveLayout: (patch: Record<string, JsonValue | null>) => Promise<void>) {
+  const api: { current: ReturnType<typeof usePageLayout<Tile>> | null } = { current: null };
+  let props = { layout: "canvas" as "canvas" | "page", snapshot: null as ReturnType<typeof canvasSnapshot> | null, order: null as string[] | null };
+  function Probe() {
+    api.current = usePageLayout({ board, store: null, layout: props.layout, snapshot: props.snapshot, chapterOrder: props.order, saveLayout, restoredView: false });
+    return null;
+  }
+  const root = createRoot(document.createElement("div"));
+  act(() => root.render(createElement(Probe)));
+  const rerender = (next: Partial<typeof props>) => {
+    props = { ...props, ...next };
+    act(() => root.render(createElement(Probe)));
+  };
+  return { api, rerender, unmount: () => act(() => root.unmount()) };
+}
+
+describe("switching layouts keeps the canvas safe (A1, A6)", () => {
+  it("into page layout: ONE settings write carries the layout AND the kept canvas, nothing moves before it lands", async () => {
+    const board = seed();
+    const before = JSON.stringify(pageScene(board));
+    const patches: Record<string, JsonValue | null>[] = [];
+    let land!: () => void;
+    const { api, unmount } = mountLayout(board, (patch) => {
+      patches.push(patch);
+      return new Promise<void>((r) => (land = r));
+    });
+    let done!: Promise<void>;
+    act(() => {
+      done = api.current!.switchLayout("page");
+    });
+    expect(patches).toHaveLength(1);
+    expect(patches[0].layout).toBe("page");
+    expect(parseCanvasSnapshot(patches[0].canvas_layout)).toEqual(canvasSnapshot(canvas()));
+    expect(JSON.stringify(pageScene(board))).toBe(before);
+    land();
+    await act(() => done);
+    unmount();
+  });
+
+  it("a write that does not land rejects and leaves the board as it was", async () => {
+    const board = seed();
+    const before = JSON.stringify(pageScene(board));
+    const { api, unmount } = mountLayout(board, () => Promise.reject(new Error("offline")));
+    await expect(api.current!.switchLayout("page")).rejects.toThrow("offline");
+    expect(JSON.stringify(pageScene(board))).toBe(before);
+    unmount();
+  });
+
+  it("undo never crosses a switch, and leaving writes the page's chapter order with the layout", async () => {
+    const board = seed();
+    const patches: Record<string, JsonValue | null>[] = [];
+    const { api, rerender, unmount } = mountLayout(board, async (patch) => {
+      patches.push(patch);
+    });
+    board.moveTile("nA", 120, 120);
+    expect(board.getLayout().canUndo).toBe(true);
+    const kept = canvasSnapshot(pageScene(board));
+    rerender({ layout: "page", snapshot: kept });
+    expect(board.getLayout().canUndo).toBe(false);
+    await act(() => api.current!.switchLayout("canvas"));
+    expect(patches.at(-1)).toMatchObject({ layout: null });
+    expect(parseChapterOrder(patches.at(-1)!.chapter_order)).toEqual(chapterOrder(board.read().frames).map((f) => f.id));
+    rerender({ layout: "canvas" });
+    expect(board.getLayout().canUndo).toBe(false);
+    unmount();
+  });
+});
+
+describe("chapter order and an unfinished switch back (A2)", () => {
+  it("a stored order wins for the frames it names; a frame made since keeps its own slot", () => {
+    const scene = canvas();
+    const plan = planPageLayout(scene, ["frame:D", "frame:C", "frame:B"]);
+    expect(plan.chapters).toEqual(["frame:A", "frame:D", "frame:C", "frame:B"]);
+  });
+
+  it("a canvas board still sitting in its page arrangement with a kept canvas is an unfinished switch", () => {
+    const scene = canvas();
+    const kept = canvasSnapshot(scene);
+    const paged = applied(scene, planPageLayout(scene).moves);
+    expect(interruptedLeave(paged, kept, null)).toBe(true);
+    expect(interruptedLeave(scene, kept, null)).toBe(false);
+    expect(interruptedLeave(paged, null, null)).toBe(false);
+  });
+});
