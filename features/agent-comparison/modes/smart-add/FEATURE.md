@@ -74,6 +74,10 @@ production; Jev sees one.
 
 ## Change log
 
+- 2026-10-16 — the four Jev judges are SYSTEM agents (builtin, Matrx System org, created through the
+  agent-definition funnel with owner=None; the personal copies are archived). The Jev picker opens on the
+  System tab; the Real round tab looks them up in the system lane.
+
 - 2026-10-16 — Real round tab: one real Smart Add round, its identity / entity / we-think judgments replayed
   through Jev, blind truth, per-judgment scoreboard (`round-model.ts`, `round-service.ts`, `SmartAddRoundPage`).
   Open: clearing a mark leaves its label on Jev's answer (no unlabel door); not yet walked on localhost.

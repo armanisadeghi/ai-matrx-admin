@@ -65,6 +65,8 @@ import { isRoundMetadata } from "../round-model";
 import { SmartAddRoundPage } from "./SmartAddRoundPage";
 
 const POLL_MS = 2000;
+/** The Jev judges are platform (system) agents; the picker opens on them and can still reach the rest. */
+const JEV_PICKER_TABS = ["system", "mine", "shared", "all"] as const;
 const SYSTEMS: SystemKey[] = ["holder", "jev", "reference"];
 const SYSTEM_HINT: Record<SystemKey, string> = {
   holder: "Gemini 3.8 Flash, 25 results per call",
@@ -634,6 +636,8 @@ function SetupPanel({
                   <>
                     <AgentListDropdown
                       consumerId="smart-add-bench-jev"
+                      initialTab="system"
+                      visibleTabs={JEV_PICKER_TABS}
                       activeAgentId={bench.agents.jev}
                       label={bench.agents.jev ? "Change Jev agent" : "Pick the Jev agent"}
                       onSelect={(agentId) =>

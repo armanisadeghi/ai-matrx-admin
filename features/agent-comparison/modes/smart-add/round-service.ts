@@ -53,7 +53,8 @@ export async function resolveRoundJudges(): Promise<{ agents: Record<Judgment, s
   for (const judgment of JUDGMENTS) {
     const tags = JEV_TAGS[judgment];
     const { data, error } = await client.rpc("agx_list_scoped", {
-      p_scope: "all",
+      // The Jev judges are platform (system) agents — "all" is every lane the person owns or shares.
+      p_scope: "system",
       p_filters: { tags: { values: [tags[tags.length - 1]] } },
       p_sort: "updated",
       p_dir: "desc",
