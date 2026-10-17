@@ -26,6 +26,7 @@ const context = await browser.newContext({
 });
 const page = await context.newPage();
 const bad = [];
+page.on("response", (r) => r.status() >= 400 && /matrxserver|\/api\//.test(r.url()) && bad.push(`${r.status()} ${r.url().slice(0, 140)}`));
 page.on("console", (m) => m.type() === "error" && bad.push(m.text().slice(0, 200)));
 await page.goto(open, { waitUntil: "commit", timeout: 180000 }).catch(() => {});
 await page.waitForTimeout(4000);

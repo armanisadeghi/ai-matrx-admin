@@ -650,12 +650,14 @@ const matrxLintPlugin = {
         type: "suggestion",
         docs: {
           description:
-            "Disallow Wand / Sparkles / Bot icons from lucide-react.",
+            "Disallow Wand / Sparkles / Bot icons, and whole-set namespace imports, from lucide-react.",
         },
         schema: [],
         messages: {
           banned:
             "'{{name}}' from lucide-react is banned (AI-cliché icon). Pick a domain-specific Lucide icon, or use a custom icon from @/components/icons.",
+          wholeSet:
+            "`import * as` from lucide-react pulls all ~3,700 icons into every chunk that reaches this file. Look an icon up by name with resolveIcon (@/features/scopes/utils/resolveIcon) or IconResolver (@ai-matrx/icons) — the one lazy door to the full set.",
         },
       },
       create(context) {
@@ -663,6 +665,10 @@ const matrxLintPlugin = {
           ImportDeclaration(node) {
             if (node.source.value !== "lucide-react") return;
             for (const spec of node.specifiers) {
+              if (spec.type === "ImportNamespaceSpecifier" && node.importKind !== "type") {
+                context.report({ node: spec, messageId: "wholeSet" });
+                continue;
+              }
               if (
                 spec.type === "ImportSpecifier" &&
                 spec.imported.type === "Identifier" &&

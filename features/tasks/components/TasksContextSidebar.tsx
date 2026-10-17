@@ -20,7 +20,7 @@ import {
   ChevronDown,
   SlidersHorizontal,
 } from "lucide-react";
-import * as icons from "lucide-react";
+import { resolveIcon } from "@/features/scopes/utils/resolveIcon";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectProjects,
@@ -91,19 +91,6 @@ type LucideIcon = React.ComponentType<{
   style?: React.CSSProperties;
 }>;
 
-function resolveIcon(name: string | undefined): LucideIcon {
-  if (!name) return CircleDashed;
-  const pascal = name
-    .split(/[-_\s]+/)
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join("");
-  // MATRX-EXCEPTION: dynamic Lucide icon-by-name lookup — `import * as icons`
-  // is the full module namespace (icon components + non-component exports),
-  // so there is no narrower structural type to guard against; same pattern
-  // used codebase-wide (e.g. features/scopes/utils/resolveIcon.ts).
-  const Icon = (icons as unknown as Record<string, LucideIcon>)[pascal];
-  return Icon ?? CircleDashed;
-}
 
 const GROUP_MODES: { mode: TaskGroupBy; label: string; icon: LucideIcon }[] = [
   { mode: "project", label: TASK_GROUP_BY_LABELS.project, icon: FolderKanban },
@@ -415,7 +402,7 @@ export default function TasksContextSidebar() {
 
           {/* Context: each scope type with explicit clickable scopes */}
           {scopeTypesOrdered.map((type) => {
-            const Icon = resolveIcon(type.icon);
+            const Icon = type.icon ? resolveIcon(type.icon) : CircleDashed;
             const opts = scopesByType.get(type.id) ?? [];
             const selectedOfType = opts.filter((s) =>
               selectedScopeIds.has(s.id),

@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "8286b6bf6bac";
+export const KIND_REGISTRY_FINGERPRINT = "1b6095248173";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -11673,6 +11673,7 @@ export interface WechatAccount {
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+  row_key?: string | null;
   followers?: number | null;
   account_id?: string | null;
   avatar_url?: string | null;
@@ -61275,7 +61276,7 @@ export interface WebViewportMetaV1 {
 /**
  * Official WeChat accounts that match a keyword, with followers and reach.
  *  *
- *  * Kind `wechat_accounts` (registry v1).
+ *  * Kind `wechat_accounts` (registry v2).
  */
 export interface WechatAccounts {
   items?: WechatAccount[];

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Folder } from "lucide-react";
-import * as icons from "lucide-react";
+import { resolveIcon } from "@/features/scopes/utils/resolveIcon";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -14,14 +14,6 @@ import { cn } from "@/utils/cn";
 
 type LucideIcon = React.ComponentType<{ className?: string }>;
 
-function resolveIcon(name: string): LucideIcon {
-  const pascalName = name
-    .split(/[-_\s]+/)
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join("");
-  const Icon = (icons as unknown as Record<string, LucideIcon>)[pascalName];
-  return Icon ?? Folder;
-}
 
 interface ScopeTagsDisplayProps {
   entityType: string;

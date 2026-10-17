@@ -1,7 +1,7 @@
 "use client";
 
 import { createElement, useState } from "react";
-import * as icons from "lucide-react";
+import { resolveIcon } from "@/features/scopes/utils/resolveIcon";
 import {
   Plus,
   Folder,
@@ -43,13 +43,6 @@ type LucideIcon = React.ComponentType<{
   style?: React.CSSProperties;
 }>;
 
-function resolveIcon(name: string): LucideIcon {
-  const pascalName = name
-    .split(/[-_\s]+/)
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join("");
-  return (icons as unknown as Record<string, LucideIcon>)[pascalName] ?? Folder;
-}
 
 function hexToRgba(hex: string, alpha: number): string {
   const clean = hex.replace("#", "");
