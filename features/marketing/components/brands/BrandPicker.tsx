@@ -31,7 +31,7 @@ export function BrandPicker({
 }) {
   // access-errors: ok — picker options; a failed read leaves the select empty and the host surface owns its own record errors
   const options = useBrandOptions(organizationId);
-  const { organizations } = useOrganizationsWith((options.data ?? []).map((b) => b.organizationId));
+  const { organizations } = useOrganizationsWith((options.data ?? []).map((b) => b.organization_id));
   const orgName = new Map(organizations.map((o) => [o.id, o.name]));
   const labelOrg = !organizationId && organizations.length > 1;
   return (
