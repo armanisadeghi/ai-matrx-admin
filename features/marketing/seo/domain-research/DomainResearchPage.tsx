@@ -536,7 +536,7 @@ function OverviewTiles({ data }: { data: DomainOverviewData }) {
   const backlinksHint =
     data.backlinks_source === "stored_backlink_summary"
       ? `Your stored summary · ${shortDate(data.backlinks_as_of)}`
-      : data.backlinks_source === "dataforseo_backlinks_summary"
+      : data.backlinks_source
         ? `Backlinks estimate · ${shortDate(data.backlinks_as_of)}`
         : "Unknown";
   const market = MARKETS[data.market.location_code] ?? `Location ${data.market.location_code}`;
