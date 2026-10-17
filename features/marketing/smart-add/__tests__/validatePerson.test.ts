@@ -9,8 +9,10 @@ jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/utils/supabase/webDb", () => ({
   authenticatedWebDb: async () => {
     const b: Record<string, unknown> = {};
-    for (const m of ["eq", "in", "is", "limit", "select"]) b[m] = () => b;
+    for (const m of ["eq", "in", "is", "not", "order", "limit", "select"]) b[m] = () => b;
     b.single = async () => ({ data: { id: "row-1" }, error: null });
+    // The revive lookup (a soft-deleted row of the same finding): none here.
+    b.maybeSingle = async () => ({ data: null, error: null });
     b.then = (resolve: (v: unknown) => void) => resolve({ data: [], error: null });
     return { from: () => ({ select: () => b, insert: () => b, update: () => b }) };
   },

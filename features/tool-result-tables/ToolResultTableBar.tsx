@@ -12,6 +12,8 @@ import { Table2 } from "lucide-react";
 import { KIND_KEY } from "@ai-matrx/content-ir";
 import { Button, Switch } from "@ai-matrx/design-system/controls";
 
+import { getTableMetadata } from "@/features/data-tables/service";
+import { isServiceFailure } from "@/features/data-tables/types";
 import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -19,13 +21,15 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { appendResultRows, type AppendOutcome } from "./appendResultRows";
 import { asGrid, describeRows } from "./rowsFromKind";
 import { useKindSchema } from "./useKindSchema";
-import { useToolTableBinding } from "./toolTableBinding";
+import { useToolTableBinding, type ToolTableBinding } from "./toolTableBinding";
 
 type Props = {
   callId: string;
   toolId: string | null;
   toolName: string | null;
   output: unknown;
+  /** When the call finished (ISO); "Add every run" only fires for a run that just finished, never for an old call being reopened. */
+  finishedAt?: string | null;
 };
 
 function sentence(o: AppendOutcome): string {
@@ -36,13 +40,13 @@ function sentence(o: AppendOutcome): string {
   return parts.join(" · ");
 }
 
-export function ToolResultTableBar({ callId, toolId, toolName, output }: Props) {
+export function ToolResultTableBar({ callId, toolId, toolName, output, finishedAt }: Props) {
   const userId = useAppSelector(selectUserId) ?? null;
   const marker = output !== null && typeof output === "object" ? (output as Record<string, unknown>)[KIND_KEY] : null;
   const kind = typeof marker === "string" ? marker : null;
   const schema = useKindSchema(kind);
   const described = describeRows(output, schema);
-  const { binding, ready, save } = useToolTableBinding(userId, toolId);
+  const { binding, ready, loadFailed, save } = useToolTableBinding(userId, toolId);
   const openSaveToTable = useOpenSaveToTable();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -51,16 +55,30 @@ export function ToolResultTableBar({ callId, toolId, toolName, output }: Props) 
   async function addToBound() {
     if (!binding || !described) return;
     setBusy(true);
-    const outcome = await appendResultRows(binding.tableId, described);
-    setBusy(false);
-    setNote(sentence(outcome));
-    if (outcome.success && outcome.tableName && outcome.tableName !== binding.tableName) {
-      await save({ ...binding, tableName: outcome.tableName });
+    try {
+      const outcome = await appendResultRows(binding.tableId, described);
+      setNote(sentence(outcome));
+      if (outcome.success && outcome.tableName && outcome.tableName !== binding.tableName) {
+        await save({ ...binding, tableName: outcome.tableName });
+      }
+    } catch (err) {
+      setNote(err instanceof Error ? err.message : "That didn't save.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function keep(next: ToolTableBinding | null) {
+    try {
+      await save(next);
+    } catch (err) {
+      setNote(err instanceof Error ? err.message : "That didn't save.");
     }
   }
 
   useEffect(() => {
-    if (!ready || !binding?.auto || !described || autoDone.current === callId) return;
+    const fresh = finishedAt ? Date.now() - new Date(finishedAt).getTime() < 90_000 : false;
+    if (!ready || !binding?.auto || !described || !fresh || autoDone.current === callId) return;
     autoDone.current = callId;
     void addToBound();
     // one append per finished call
@@ -68,6 +86,13 @@ export function ToolResultTableBar({ callId, toolId, toolName, output }: Props) 
   }, [ready, binding?.auto, callId, described?.rows.length]);
 
   if (!described || !userId || !toolId || !ready) return null;
+  if (loadFailed) {
+    return (
+      <div data-tool-table-bar="" className="rounded-xl border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+        Your saved table could not be read. Reload to try again.
+      </div>
+    );
+  }
 
   function chooseTable() {
     if (!openSaveToTable || !described) return;
@@ -75,7 +100,9 @@ export function ToolResultTableBar({ callId, toolId, toolName, output }: Props) 
       grid: { ...asGrid(described), from: "answer" },
       title: toolName ?? "Tool answer",
       onSaved: async (event) => {
-        await save({ tableId: event.tableId, tableName: event.tableName, auto: binding?.auto ?? false });
+        const meta = event.tableName ? null : await getTableMetadata({ tableId: event.tableId });
+        const tableName = event.tableName ?? (meta && !isServiceFailure(meta) ? meta.data.table.table_name : null);
+        await keep({ tableId: event.tableId, tableName, auto: binding?.auto ?? false });
         setNote("Saved. Next time it's one press.");
       },
     });
@@ -96,7 +123,7 @@ export function ToolResultTableBar({ callId, toolId, toolName, output }: Props) 
             Change table
           </Button>
           <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-            <Switch checked={binding.auto} onCheckedChange={(auto: boolean) => void save({ ...binding, auto })} aria-label="Add every run" />
+            <Switch checked={binding.auto} onCheckedChange={(auto: boolean) => void keep({ ...binding, auto })} aria-label="Add every run" />
             Add every run
           </label>
         </>

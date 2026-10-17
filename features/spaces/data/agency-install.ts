@@ -111,7 +111,7 @@ async function withInstalledKeys(tables: AgencyTables, organizationId: string): 
 
 /** The gallery's host steps after template_install (its agent, extra agents, workflows), with the
  *  same ports the gallery's TemplatePreview builds. Throws, by name, when the assistant was not made. */
-async function runHostSteps(answer: TemplateDoorAnswer, orgId: string, dispatch: AppDispatch): Promise<void> {
+export async function runHostSteps(answer: TemplateDoorAnswer, orgId: string, dispatch: AppDispatch, what = "The sample's assistant"): Promise<void> {
   if (!hostStepsPending(answer)) return;
   const supabase = createClient();
   const result = await addInstalledAgent(answer, orgId, {
@@ -135,7 +135,7 @@ async function runHostSteps(answer: TemplateDoorAnswer, orgId: string, dispatch:
       return data as TemplateDoorAnswer;
     },
   });
-  if (!result.ok) throw new Error(`The sample's assistant was not made: ${result.why}`);
+  if (!result.ok) throw new Error(`${what} was not made: ${result.why}`);
 }
 
 /** What an upgrade did, in words: "1 table, 1 field converted, 1 field retired, 1 view, 4 rows, 4 links". */

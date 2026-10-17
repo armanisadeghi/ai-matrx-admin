@@ -7,6 +7,7 @@
 // Blocks are filters only: what a person may open is the database's answer, never this code's.
 
 import { templatePreview, type TemplatePreview } from "@ai-matrx/records/memory";
+import type { TemplateSpec } from "@ai-matrx/records/templates";
 
 import type { SpaceDataSource } from "../contract";
 import type { AgencyTables, AgencyToken } from "./agency-install";
@@ -15,12 +16,33 @@ import { AGENCY_SAMPLE_ID, AGENCY_SPEC } from "./agency-spec";
 /** The day the sample's dates are read against (its rows carry absolute 2026 dates). */
 const SAMPLE_TODAY = "2026-10-05";
 
-let preview: TemplatePreview | null = null;
+const worlds = new Map<string, TemplatePreview>();
 
 /** The agency sample, installed into memory once per page load. */
 export function agencySample(): TemplatePreview {
-  preview ??= templatePreview(AGENCY_SPEC, { today: SAMPLE_TODAY });
-  return preview;
+  let w = worlds.get(AGENCY_SAMPLE_ID);
+  if (!w) {
+    w = templatePreview(AGENCY_SPEC, { today: SAMPLE_TODAY });
+    worlds.set(AGENCY_SAMPLE_ID, w);
+  }
+  return w;
+}
+
+/** A template pack's tables in memory (the gallery preview), made once per id per page load. Read-only. */
+export function registerSampleWorld(id: string, spec: TemplateSpec): TemplatePreview {
+  let w = worlds.get(id);
+  if (!w) {
+    w = templatePreview(spec);
+    worlds.set(id, w);
+  }
+  return w;
+}
+
+/** The in-memory world a block's `props.sample` names, or null (a real table, or a world this tab never made). */
+export function sampleWorld(id: string | undefined | null): TemplatePreview | null {
+  if (!id) return null;
+  if (id === AGENCY_SAMPLE_ID) return agencySample();
+  return worlds.get(id) ?? null;
 }
 
 /** The sample table a token names ("client", "nps_survey", "client_win", "task"). */

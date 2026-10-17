@@ -60,6 +60,19 @@ import { liveSiteClaimDeps } from "../siteOwnershipLive";
 import { resolveAccountInput } from "../../social/account-input";
 import { GAP_PREFIX, type Answer, type FocusItem } from "./queue";
 
+/** How one answer is saved. `relationKey` for Related; `value` for an edited fact or a person's name. */
+export interface PersistOptions {
+  relationKey?: string | null;
+  value?: string;
+  /** A mention's tone (web.brand_relation_kind.has_sentiment): kept on the finding's row. */
+  sentiment?: "positive" | "neutral" | "negative" | null;
+  /**
+   * Founder / Key person on a PAGE with no name yet: the decision is kept on the finding's row now and the person is
+   * made once a name is given (answered again with `value`). Without it a missing name is refused.
+   */
+  allowUnnamed?: boolean;
+}
+
 export interface PersistContext {
   organizationId: string;
   /** The brand as last written (its version moves with every write). */
@@ -109,6 +122,7 @@ async function recordDiscovered(
   value: string,
   resolved: { resolved_property_id?: string; resolved_fact_id?: string },
   trail: { homes: string[]; before: Record<string, Json> } = { homes: [], before: {} },
+  sentiment: PersistOptions["sentiment"] = null,
 ): Promise<{ id: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const w = await db();
@@ -128,7 +142,7 @@ async function recordDiscovered(
   // Every saved row this card answers: the finding and each copy folded into it (fold.ts) — settled together.
   const existing = await w
     .from("discovered_item")
-    .select("id, status, relation_key, reviewed_at, context, resolved_property_id, resolved_fact_id")
+    .select("id, status, relation_key, sentiment, reviewed_at, context, resolved_property_id, resolved_fact_id")
     .eq("brand_id", brand.id)
     .eq("source", "smart_add")
     .in("context->>evidence_key", [item.key, ...item.twins])
@@ -150,6 +164,7 @@ async function recordDiscovered(
           .update({
             status: before.status,
             relation_key: before.relation_key,
+            sentiment: before.sentiment,
             reviewed_at: before.reviewed_at,
             context: before.context,
             resolved_property_id: before.resolved_property_id,
@@ -168,7 +183,7 @@ async function recordDiscovered(
       } as Json;
       const { error } = await w
         .from("discovered_item")
-        .update({ status, relation_key, reviewed_at: at, context, ...(isLead ? resolved : {}) })
+        .update({ status, relation_key, sentiment, reviewed_at: at, context, ...(isLead ? resolved : {}) })
         .eq("id", before.id);
       if (error) {
         await restore().catch(() => undefined);
@@ -178,6 +193,40 @@ async function recordDiscovered(
       done.push(before);
     }
     return { id: lead.id, undo: restore };
+  }
+  // An answer taken back (Undo, or changed in the enrich review) soft-deleted its row; the dedup index is not partial,
+  // so answering the same finding again REVIVES that row — a fresh insert would collide (23505) and the answer be lost.
+  const gone = await w
+    .from("discovered_item")
+    .select("id, status, relation_key, sentiment, reviewed_at, context, resolved_property_id, resolved_fact_id, deleted_at")
+    .eq("brand_id", brand.id)
+    .eq("source", "smart_add")
+    .eq("context->>evidence_key", item.key)
+    .not("deleted_at", "is", null)
+    .order("deleted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (gone.error) throw new Error(gone.error.message);
+  if (gone.data) {
+    const was = gone.data;
+    const context = { ...(isJsonRecord(was.context) ? was.context : {}), answer: answerCtx } as Json;
+    const { error } = await w
+      .from("discovered_item")
+      .update({ deleted_at: null, status, relation_key, sentiment, reviewed_at: status === "pending" ? null : at, context, ...resolved })
+      .eq("id", was.id);
+    // access-errors: ok — a write failure on the person's own answer, shown as "Not saved"
+    if (error) throw new Error(error.message);
+    return {
+      id: was.id,
+      undo: async () => {
+        const { error: e } = await (await db())
+          .from("discovered_item")
+          .update({ deleted_at: new Date().toISOString() })
+          .eq("id", was.id);
+        // access-errors: ok — an undo write on the person's own answer; the tray shows "Not saved"
+        if (e) throw new Error(e.message);
+      },
+    };
   }
   const ev = item.evidence;
   const inserted = await w
@@ -198,7 +247,16 @@ async function recordDiscovered(
             reason: item.fact.reason,
             evidence_urls: item.fact.evidence_urls,
           }
-        : { text: value, label: ev?.label ?? null, handle: ev?.handle ?? null, followers: ev?.followers ?? null }) as Json,
+        : {
+            text: value,
+            label: ev?.label ?? null,
+            handle: ev?.handle ?? null,
+            followers: ev?.followers ?? null,
+            // A web result keeps what the search said and what the server recognized the page as (Create's row,
+            // relations.routeWebChoices): the recognition homes read `site_kind` (aidream brand_profile/recognitions.py).
+            ...(ev?.snippet ? { snippet: ev.snippet } : {}),
+            ...(ev?.siteKind ? { site_kind: { ...ev.siteKind } } : {}),
+          }) as Json,
       context: {
         evidence_key: item.key,
         where: item.source,
@@ -210,6 +268,7 @@ async function recordDiscovered(
       confidence: ev?.confidence ?? null,
       status,
       relation_key,
+      sentiment,
       reviewed_at: status === "pending" ? null : at,
       ...resolved,
     })
@@ -386,7 +445,7 @@ async function settleKeptFact(
   return true;
 }
 
-async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id: string | null; undo: () => Promise<void> }> {
+async function addExclusion(ctx: PersistContext, item: FocusItem, relationKey = "not_us"): Promise<{ id: string | null; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const ev = item.evidence;
   const url = item.openUrl;
@@ -411,7 +470,7 @@ async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id:
       match_value: match.value,
       url: item.kind === "name" ? null : url,
       label: item.title ?? item.value,
-      relation_key: "not_us",
+      relation_key: relationKey,
       source: "smart_add",
       context: { from: "smart_add.validate", where: item.source, suggested: item.suggestion ?? null, at: new Date().toISOString() } as unknown as Json,
     })
@@ -505,7 +564,7 @@ export async function persistAnswer(
   ctx: PersistContext,
   item: FocusItem,
   answer: Answer,
-  opts: { relationKey?: string | null; value?: string } = {},
+  opts: PersistOptions = {},
 ): Promise<Persisted> {
   const slot = `${ctx.getBrand().id}:${item.key}`;
   const turn = (saving.get(slot) ?? Promise.resolve())
@@ -589,7 +648,7 @@ async function persistAnswerOnce(
   ctx: PersistContext,
   item: FocusItem,
   answer: Answer,
-  opts: { relationKey?: string | null; value?: string } = {},
+  opts: PersistOptions = {},
 ): Promise<Persisted> {
   const homes: string[] = [];
   const undos: (() => Promise<void>)[] = [];
@@ -685,7 +744,12 @@ async function persistAnswerOnce(
       // MKT-043: Founder / Key person makes the person and links them to the brand, the same path Create uses.
       // The name is the person's (typed, or the account's own name) — never a page title.
       const name = (opts.value?.trim() || (item.kind === "account" ? (item.title ?? item.value) : "")).trim();
-      if (!name) throw new Error(`${kind.label} needs the person's name.`);
+      if (!name && !opts.allowUnnamed) throw new Error(`${kind.label} needs the person's name.`);
+    }
+    // No name yet (allowUnnamed): only the decision is kept below; the person is made when the name is given.
+    const personName = (opts.value?.trim() || (item.kind === "account" ? (item.title ?? item.value) : "")).trim();
+    if (kind && (kind.routesTo === "owns" || kind.routesTo === "key_person") && personName) {
+      const name = personName;
       const page = item.kind === "web" || item.kind === "website";
       const person = await linkPersonToBrand(
         ctx.organizationId,
@@ -724,6 +788,12 @@ async function persistAnswerOnce(
       }, before);
       homes.push(`web.brand.profile.competitors:${ctx.getBrand().id}`);
       undos.push(undo);
+    }
+    // Namesake (and any other "not us" kind) lands on the brand's NO LIST with its own relationship.
+    if (kind?.routesTo === "exclusion") {
+      const ex = await addExclusion(ctx, item, kind.key);
+      if (ex.id) homes.push(`web.brand_exclusion:${ex.id}`);
+      undos.push(ex.undo);
     }
   }
   if (answer === "not_us") {
@@ -782,7 +852,7 @@ async function persistAnswerOnce(
   }
 
   try {
-    const discovered = await recordDiscovered(ctx, item, answer, opts.relationKey ?? null, value, resolved, { homes: [...homes], before });
+    const discovered = await recordDiscovered(ctx, item, answer, opts.relationKey ?? null, value, resolved, { homes: [...homes], before }, opts.sentiment ?? null);
     homes.unshift(`web.discovered_item:${discovered.id}`);
     undos.unshift(discovered.undo);
     // Provenance: the site exists because of this decision (the account's is resolved_property_id).

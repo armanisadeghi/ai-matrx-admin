@@ -28,7 +28,7 @@ import { getJson } from "@/lib/python-client";
 import { GiveToAgentDialog } from "./GiveToAgentDialog";
 import { ToolResult } from "./ToolResult";
 import { KeepInCrm, AddressStatus } from "./people/KeepInCrm";
-import { emailVerdictWords, kindOf, nextSteps, type NextStep } from "./people/lookupPlan";
+import { checkedPhone, emailVerdictWords, kindOf, nextSteps, type NextStep } from "./people/lookupPlan";
 import { FollowUpCard, NextSteps, type FollowUp } from "./people/ToolFollowUps";
 import { jobFamilyOf, reliabilityFacts, speedText } from "./toolFacts";
 import { useToolCall } from "./useToolCall";
@@ -44,6 +44,23 @@ function readDraft(userId: string, toolId: string): Record<string, unknown> {
     return {};
   }
 }
+const callInputsKey = (userId: string, callId: string) => `tools-home:call-inputs:${userId}:${callId}`;
+function readCallInputs(userId: string, callId: string): Record<string, unknown> {
+  try {
+    const raw = window.sessionStorage.getItem(callInputsKey(userId, callId));
+    return raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+function writeCallInputs(userId: string, callId: string, values: Record<string, unknown>) {
+  try {
+    window.sessionStorage.setItem(callInputsKey(userId, callId), JSON.stringify(values));
+  } catch {
+    // Private window or full storage: the box just stays empty after a reload.
+  }
+}
+
 function writeDraft(userId: string, toolId: string, values: Record<string, unknown>) {
   try {
     window.sessionStorage.setItem(draftKey(userId, toolId), JSON.stringify(values));
@@ -101,7 +118,7 @@ export function ToolPage({
   const [values, setValues] = useState<Record<string, unknown>>(() => {
     if (typeof window === "undefined" || !userId) return {};
     // A stored call page starts with an empty box: the typed draft belongs to a different question than the answer shown.
-    return { ...(callId ? {} : readDraft(userId, toolId)), ...readWith(params.get("with")) };
+    return { ...(callId ? readCallInputs(userId, callId) : readDraft(userId, toolId)), ...readWith(params.get("with")) };
   });
   const [giving, setGiving] = useState(false);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
@@ -126,7 +143,11 @@ export function ToolPage({
     replaceAddressWithoutNavigating(`${window.location.pathname}?${next.toString()}`);
   };
 
-  const call = useToolCall(realToolId, pin);
+  const call = useToolCall(realToolId, (id) => {
+    // What was asked is kept with the call, so a reload refills the box and the save knows who it was about.
+    if (userId) writeCallInputs(userId, id, merged);
+    pin(id);
+  });
   const view = call.view;
 
   const run = (overrides: Record<string, unknown> = {}, spendApprovalId?: string) => {
@@ -164,6 +185,8 @@ export function ToolPage({
     return String((v.output as Record<string, unknown>).email ?? "").toLowerCase() === answerEmail.toLowerCase();
   });
   const confirmedEmail = confirmed ? answerEmail : null;
+  // The number a phone check found real, if one ran under this answer.
+  const confirmedPhone = Object.values(followViews).map((v) => (v?.status === "succeeded" ? checkedPhone(v.output) : null)).find(Boolean) ?? null;
   const verdictView = Object.values(followViews).find((v) => v?.status === "succeeded" && kindOf(v.output) === "email_verdict" && String((v.output as Record<string, unknown>).email ?? "").toLowerCase() === answerEmail.toLowerCase());
 
   const family = jobFamilyOf(card?.job_family);
@@ -252,7 +275,7 @@ export function ToolPage({
             {view?.status === "succeeded" ? (
               <>
                 <AddressStatus output={view.output} verdict={verdictView?.output} />
-                <KeepInCrm output={view.output} inputs={merged} confirmedEmail={confirmedEmail} />
+                <KeepInCrm output={view.output} inputs={merged} confirmedEmail={confirmedEmail} confirmedPhone={confirmedPhone} />
                 <NextSteps steps={nextSteps(view.output)} started={startedKeys} onPick={pickStep} />
               </>
             ) : null}

@@ -20,6 +20,40 @@ export interface BuildRow {
   built_at: string;
 }
 
+/** One build as the drill reads it: the flat set every rollup is a sum of. */
+export interface BuildCell {
+  id: string;
+  package: string;
+  ecosystem: string;
+  trigger: string;
+  dispatcher: string;
+  reason: string;
+  outcome: string;
+  builtAt: string;
+  minutes: number;
+  noopMinutes: number;
+  noopUsd: number;
+  /** 100 for a no-op build, 0 otherwise: its average over a group is the no-op %. */
+  noopPct: number;
+}
+
+export function toCells(rows: BuildRow[]): BuildCell[] {
+  return rows.map((r, i) => ({
+    id: `${i}`,
+    package: r.package,
+    ecosystem: r.ecosystem,
+    trigger: r.trigger,
+    dispatcher: r.requested_by ?? "",
+    reason: r.reason ?? "",
+    outcome: r.outcome,
+    builtAt: r.built_at,
+    minutes: Number(r.billed_minutes) || 0,
+    noopMinutes: r.no_op ? Number(r.billed_minutes) || 0 : 0,
+    noopUsd: r.no_op ? Number(r.cost_usd) || 0 : 0,
+    noopPct: r.no_op ? 100 : 0,
+  }));
+}
+
 export interface PackageWaste {
   id: string;
   ecosystem: string;

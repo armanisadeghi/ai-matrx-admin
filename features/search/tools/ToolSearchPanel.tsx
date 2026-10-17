@@ -15,6 +15,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Loader2, SearchX } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { pickPrimary } from "@ai-matrx/chat/mandates/invoke/simple-box";
+import type { ServedInput } from "@ai-matrx/chat/mandates/invoke/served-input";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
@@ -37,6 +38,9 @@ import {
 } from "./searchToolPlan";
 
 type FormQuery = ReturnType<typeof useToolRunForm>;
+
+/** Every kind of text a box can be told it holds: a pick fits whichever the Tool wants. */
+const ANY_TEXT: ServedInput["detect"] = ["handle", "url", "domain", "keyword", "email", "person_name", "phone"];
 
 /** The first live Tool of the lane's job; while none is, the first one that answers at all. */
 function pickTool(lane: ToolLane, forms: readonly FormQuery[]): { jobKey: string; form: ToolRunForm } | "loading" | null {
@@ -91,6 +95,10 @@ function LaneBox({
   }, [callId, toolId]);
 
   const finder = useLaneFinder(lane.id);
+  // A picked thing shows its name in the box while the Tool is given its link: the box must not say
+  // "looks like a name — this wants a website" about a choice the person just made.
+  const showingPick = primary != null && picked != null && String(merged[primary.name] ?? "").trim() === picked.label;
+  const boxInputs = showingPick ? inputs.map((i) => (i === primary ? { ...i, detect: ANY_TEXT } : i)) : inputs;
   const run = (overrides: Record<string, unknown> = {}, spendApprovalId?: string) => {
     const typedText = primary ? String(overrides[primary.name] ?? merged[primary.name] ?? "") : "";
     // What the Tool is given: the thing picked from the finder (while the box still shows its name), else the text.
@@ -127,7 +135,7 @@ function LaneBox({
         </p>
       ) : null}
       <SimpleBoxForm
-        inputs={inputs}
+        inputs={boxInputs}
         values={merged}
         onChange={(name, value) => {
           setValues((prev) => ({ ...prev, [name]: value }));
@@ -242,10 +250,11 @@ export function ToolSearchPanel({ tab, seed }: { tab: ToolTab; seed: string }) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5" data-tool-tab={tab}>
       {lanes.length > 1 ? (
+        <div className="max-w-full overflow-x-auto scrollbar-none">
         <Tabs
           aria-label="Where to read them"
           variant="capsule"
-          className="flex-wrap"
+          className="flex-nowrap"
           value={laneId}
           onValueChange={(next: string) => {
             setLaneId(next);
@@ -253,6 +262,7 @@ export function ToolSearchPanel({ tab, seed }: { tab: ToolTab; seed: string }) {
           }}
           data={lanes.map((l) => ({ value: l.id, label: l.label }))}
         />
+        </div>
       ) : null}
       <LaneBox
         key={lane.id}

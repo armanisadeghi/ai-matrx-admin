@@ -47,7 +47,9 @@ export function scan(files: ReadonlyArray<{ path: string; text: string }>): Find
         out.push({ file: path, line, rule: "old-grid", text: say });
       }
       if (
-        /^@ai-matrx\/records-ui$/.test(from) &&
+        // The root, or the app's one lazy door to it (records-ui front door, 2026-10-16: every screen
+        // reaches the app through `recordsUiLazy`, so a TablePage mount names that module now).
+        /^@ai-matrx\/records-ui$|(^|\/)records-ui-host\/recordsUiLazy$/.test(from) &&
         !/^import\s+type\b/.test(stmt) &&
         /[{,]\s*TablePage\s*[,}]/.test(stmt.replace(/\btype\s+TablePage\b/g, "")) &&
         path !== THE_TABLE_PAGE &&

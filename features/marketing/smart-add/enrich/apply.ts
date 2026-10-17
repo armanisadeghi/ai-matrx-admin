@@ -19,6 +19,7 @@
 import {
   createBrandAsset,
   deleteBrandAsset,
+  getBrand,
   updateBrand,
   updateBrandAsset,
   type BrandRelationKind,
@@ -147,7 +148,10 @@ export async function applyEnrichChanges(input: {
   kinds: BrandRelationKind[];
   onBrand: (brand: MarketingBrand) => void;
 }): Promise<AppliedChange[]> {
-  let brand = input.snapshot.brand;
+  // The brand as the server holds it now: the web answers saved during the review (a competitor on the profile, a
+  // site) and background runs move its version after the snapshot was read; a stale version would refuse every write.
+  let brand = await getBrand(input.snapshot.brand.id);
+  input.onBrand(brand);
   const ctx: PersistContext = {
     // Writes carry the brand's organization, never the active one.
     organizationId: input.snapshot.brand.organization_id,

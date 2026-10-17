@@ -363,14 +363,14 @@ function Section({ title, children, onAdd }: { title: string; children: React.Re
 
 /** Notion's sidebar "Templates": opens the template picker (I2). */
 function TemplatesButton() {
-  const { sample } = useSpaces();
+  const { sample, packs } = useSpaces();
   const [open, setOpen] = useState(false);
   return (
     <>
       <button type="button" className="spaces-nav-row" onClick={() => setOpen(true)}>
         <LayoutTemplate size={17} />
         Templates
-        {sample.adding ? <span className="ml-auto type-secondary text-muted-foreground">{sample.progress}</span> : null}
+        {sample.adding || packs.stage ? <span className="ml-auto type-secondary text-muted-foreground">{packs.stage ?? sample.progress}</span> : null}
       </button>
       <TemplateGallery open={open} onOpenChange={setOpen} />
     </>

@@ -1471,6 +1471,14 @@
 .spaces-db-new-more { display: inline-flex; align-items: center; padding: 0 6px; border-left: 1px solid var(--spaces-on-accent-rule); }
 .spaces-db-new-main:hover, .spaces-db-new-more:hover { background: var(--spaces-accent-hover); }
 .spaces-db-body { min-width: 0; overflow-x: auto; }
+/* The inline database sits inside the rich-text editor, whose stylesheet carries ProseMirror's own
+   UNLAYERED table rules (`.ProseMirror table { width:100%; table-layout:fixed; overflow:hidden }`,
+   `.ProseMirror td, th { position:relative }`). Unlayered beats every layered utility, so the data
+   table lost its own widths and its pinned Actions column stopped being sticky: a table wider than
+   its block pushed Actions off the right edge (406px past it at 708px). The table takes its own
+   layered layout back here. Proof: design-system demo/actions-fit-proof.html?pm=1&hostfix=1. */
+.spaces-db-frame .spaces-db-body table { width: revert-layer; table-layout: revert-layer; overflow: revert-layer; border-collapse: revert-layer; }
+.spaces-db-frame .spaces-db-body th, .spaces-db-frame .spaces-db-body td { position: revert-layer; vertical-align: revert-layer; box-sizing: revert-layer; }
 /* A database in a narrow column (Notion): the frame never grows past its column — the toolbar wraps
    onto its own lines and keeps every control inside the frame (it spilled out to the right of a 128px
    column), the frame's padding shrinks, and the table scrolls sideways inside the body. The block's
@@ -2051,3 +2059,37 @@ button.spaces-page-prop-name:hover { background: var(--spaces-hover); }
 .spaces-home-row-icon > *, .spaces-home-row-icon svg, .spaces-home-row-icon img { max-width: 20px; max-height: 20px; }
 .spaces-home-card-icon { width: 30px; height: 30px; }
 .spaces-home-card-icon > *, .spaces-home-card-icon svg, .spaces-home-card-icon img { max-width: 30px; max-height: 30px; }
+
+/* ── Template gallery (sidebar/TemplateGallery.tsx): rail, card grid, read-only page preview ── */
+.spaces-tg-body { display: grid; grid-template-columns: 240px minmax(0, 1fr); height: 100%; min-height: 0; }
+.spaces-tg-rail { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--spaces-rule); background: hsl(var(--muted) / 0.35); }
+.spaces-tg-search { padding: 14px 12px 8px; }
+.spaces-tg-cats { flex: 1 1 auto; overflow-y: auto; padding: 4px 6px 12px; }
+.spaces-tg-rail-row { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 30px; padding: 4px 8px; border-radius: 6px; font-size: 14px; color: hsl(var(--foreground)); }
+.spaces-tg-rail-row:hover { background: hsl(var(--foreground) / 0.06); }
+.spaces-tg-rail-row[data-active="true"] { background: hsl(var(--foreground) / 0.08); font-weight: 500; }
+.spaces-tg-main { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.spaces-tg-scroll { flex: 1 1 auto; overflow-y: auto; padding: 22px 52px 32px 28px; }
+.spaces-tg-heading { margin: 0 0 16px; }
+.spaces-tg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.spaces-tg-card { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 148px; padding: 14px; border: 1px solid var(--spaces-rule); border-radius: 10px; background: hsl(var(--card)); text-align: left; transition: box-shadow 120ms ease, border-color 120ms ease; }
+.spaces-tg-card:hover { border-color: hsl(var(--foreground) / 0.22); box-shadow: 0 2px 10px hsl(var(--foreground) / 0.08); }
+.spaces-tg-card-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; }
+.spaces-tg-card-title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.spaces-tg-card-line { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.spaces-tg-card-foot { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+.spaces-tg-preview { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+.spaces-tg-bar { display: flex; align-items: center; gap: 8px; padding: 10px 52px 10px 10px; border-bottom: 1px solid var(--spaces-rule); }
+.spaces-tg-bar-icon { display: inline-flex; }
+.spaces-tg-preview-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); flex: 1 1 auto; min-height: 0; }
+.spaces-tg-pages { overflow-y: auto; padding: 10px 6px; border-right: 1px solid var(--spaces-rule); }
+.spaces-tg-pages-head { padding: 2px 8px 8px; }
+.spaces-tg-page { overflow-y: auto; min-width: 0; position: relative; }
+.spaces-tg-page > .spaces-content { padding-bottom: 48px; }
+@media (max-width: 767px) {
+  .spaces-tg-body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+  .spaces-tg-rail { border-right: 0; border-bottom: 1px solid var(--spaces-rule); max-height: 34dvh; }
+  .spaces-tg-preview-body { grid-template-columns: 1fr; }
+  .spaces-tg-pages { display: none; }
+  .spaces-tg-scroll { padding: 16px; }
+}

@@ -74,3 +74,16 @@ describe("CoveragePanel", () => {
     expect(html).toContain("0%");
   });
 });
+
+describe("CoveragePanel with unlike sources", () => {
+  it("says the sources name fields differently instead of listing hundreds of rows", () => {
+    const b = battle(false);
+    const rows = Array.from({ length: 60 }, (_, i) => ({
+      path: `field_${i}`, rates: { L1: i % 2 === 0 ? 1 : 0, L2: i % 2 === 0 ? 0 : 1 }, only_in: null, missing_in: [],
+    }));
+    b.summary = { ...b.summary!, coverage: rows };
+    const html = renderToStaticMarkup(<CoveragePanel battle={b} lanes={b.lanes} revealed={false} />);
+    expect(html).toContain("name their fields differently");
+    expect(html).not.toContain("field_10");
+  });
+});

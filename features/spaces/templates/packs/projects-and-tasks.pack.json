@@ -1,0 +1,1757 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0002",
+ "version": 1,
+ "title": "Projects & Tasks",
+ "description": "Projects, tasks, owners and due dates on a board, a calendar and a timeline.",
+ "forWho": "Small teams running client or internal projects",
+ "icon": {
+  "emoji": "🗂️"
+ },
+ "cover": {
+  "url": "gallery:photo-misty-mountains",
+  "offsetY": 50
+ },
+ "category": "projects",
+ "tags": [
+  "projects",
+  "tasks",
+  "kanban",
+  "timeline",
+  "team"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-projects-and-tasks",
+  "catalogueId": "SP0002",
+  "useCase": "Priya Natarajan leads a six-person product design studio and uses this to see every client project, who owns each task, what is blocked and what is due this week.",
+  "industry": "cross_industry",
+  "vertical": "Project management",
+  "job": "projects",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Lanternfield Studio",
+   "describes": "A small product design studio that designs and builds websites and apps for local businesses.",
+   "address": {
+    "line1": "218 Quillmoss Row",
+    "city": "Portland",
+    "region": "OR",
+    "postalCode": "97214",
+    "country": "US"
+   },
+   "phone": "(503) 555-0162",
+   "website": "lanternfieldstudio.net",
+   "email": "hello@lanternfieldstudio.net",
+   "timezone": "America/Los_Angeles"
+  },
+  "cleanupTag": "use-case:spaces-projects-and-tasks",
+  "tables": [
+   {
+    "token": "project",
+    "name": "Projects",
+    "labelSingular": "Project",
+    "labelPlural": "Projects",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "folder-kanban",
+    "titleField": "project_name",
+    "describes": "Every client and studio project, who leads it and when it is due.",
+    "subject": "thing",
+    "before": [
+     [
+      "start_on",
+      "due_on"
+     ]
+    ],
+    "fields": [
+     {
+      "key": "project_name",
+      "label": "Project",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Planning",
+       "In progress",
+       "On hold",
+       "Done"
+      ],
+      "choiceColors": {
+       "Planning": "slate",
+       "In progress": "blue",
+       "On hold": "amber",
+       "Done": "green"
+      },
+      "required": true,
+      "default": "Planning"
+     },
+     {
+      "key": "priority",
+      "label": "Priority",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Medium",
+       "High",
+       "Urgent"
+      ],
+      "choiceColors": {
+       "Low": "slate",
+       "Medium": "amber",
+       "High": "orange",
+       "Urgent": "red"
+      }
+     },
+     {
+      "key": "lead",
+      "label": "Lead",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "start_on",
+      "label": "Start",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "budget",
+      "label": "Budget",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 250000
+       }
+      ]
+     }
+    ],
+    "rows": [
+     {
+      "key": "pr-bellwater",
+      "values": {
+       "project_name": "Bellwater Dental website refresh",
+       "status": "In progress",
+       "priority": "High",
+       "lead": "tm-mateo",
+       "start_on": "@today-24d",
+       "due_on": "@today+18d",
+       "budget": 18500
+      }
+     },
+     {
+      "key": "pr-onboard",
+      "values": {
+       "project_name": "Mobile app onboarding v2",
+       "status": "In progress",
+       "priority": "Urgent",
+       "lead": "tm-hannah",
+       "start_on": "@today-15d",
+       "due_on": "@today+12d",
+       "budget": 32000
+      }
+     },
+     {
+      "key": "pr-copperline",
+      "values": {
+       "project_name": "Copperline Coffee brand guidelines",
+       "status": "Done",
+       "priority": "Medium",
+       "lead": "tm-mateo",
+       "start_on": "@today-60d",
+       "due_on": "@today-8d",
+       "budget": 9400
+      }
+     },
+     {
+      "key": "pr-research",
+      "values": {
+       "project_name": "Customer interviews, round 3",
+       "status": "In progress",
+       "priority": "Medium",
+       "lead": "tm-samir",
+       "start_on": "@today-10d",
+       "due_on": "@today+20d",
+       "budget": 6800
+      }
+     },
+     {
+      "key": "pr-q4site",
+      "values": {
+       "project_name": "Q4 marketing site launch",
+       "status": "Planning",
+       "priority": "High",
+       "lead": "tm-grace",
+       "start_on": "@today+6d",
+       "due_on": "@today+48d",
+       "budget": 24000
+      }
+     },
+     {
+      "key": "pr-ds",
+      "values": {
+       "project_name": "Studio design system",
+       "status": "On hold",
+       "priority": "Low",
+       "lead": "tm-jonas",
+       "start_on": "@today-40d",
+       "due_on": "@today+30d",
+       "budget": 12000
+      }
+     },
+     {
+      "key": "pr-analytics",
+      "values": {
+       "project_name": "Client analytics dashboard",
+       "status": "Planning",
+       "priority": "Medium",
+       "lead": "tm-jonas",
+       "start_on": "@today+12d",
+       "due_on": "@today+55d",
+       "budget": 27500
+      }
+     },
+     {
+      "key": "pr-holiday",
+      "values": {
+       "project_name": "Holiday campaign landing page",
+       "status": "In progress",
+       "priority": "High",
+       "lead": "tm-priya",
+       "start_on": "@today-5d",
+       "due_on": "@today+25d",
+       "budget": 7200
+      }
+     }
+    ]
+   },
+   {
+    "token": "task",
+    "name": "Tasks",
+    "labelSingular": "Task",
+    "labelPlural": "Tasks",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "list-checks",
+    "titleField": "task_name",
+    "describes": "Every piece of work, the project it belongs to, who owns it and when it is due.",
+    "subject": "thing",
+    "before": [
+     [
+      "start_on",
+      "due_on"
+     ]
+    ],
+    "independentOf": {
+     "project": "A task can be planned before its project starts or run past its due day when the scope moves.",
+     "assignee": "Any teammate can pick up a task, whenever they joined."
+    },
+    "statusAgrees": [
+     {
+      "relation": "project",
+      "field": "status",
+      "childStatus": [
+       "To do",
+       "In progress",
+       "Blocked"
+      ],
+      "parentField": "status",
+      "parentStatus": [
+       "Planning",
+       "In progress",
+       "On hold"
+      ]
+     }
+    ],
+    "fields": [
+     {
+      "key": "task_name",
+      "label": "Task",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "project",
+      "label": "Project",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "project",
+      "relationMax": 1
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "To do",
+       "In progress",
+       "Blocked",
+       "Done"
+      ],
+      "choiceColors": {
+       "To do": "slate",
+       "In progress": "blue",
+       "Blocked": "red",
+       "Done": "green"
+      },
+      "required": true,
+      "default": "To do"
+     },
+     {
+      "key": "priority",
+      "label": "Priority",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Medium",
+       "High",
+       "Urgent"
+      ],
+      "choiceColors": {
+       "Low": "slate",
+       "Medium": "amber",
+       "High": "orange",
+       "Urgent": "red"
+      }
+     },
+     {
+      "key": "assignee",
+      "label": "Assignee",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "start_on",
+      "label": "Start",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "estimate",
+      "label": "Estimate (hours)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 200
+       }
+      ]
+     }
+    ],
+    "rows": [
+     {
+      "key": "tk-01",
+      "values": {
+       "task_name": "Audit current Bellwater pages",
+       "project": "pr-bellwater",
+       "status": "Done",
+       "priority": "Medium",
+       "assignee": "tm-mateo",
+       "start_on": "@today-24d",
+       "due_on": "@today-20d",
+       "estimate": 4
+      }
+     },
+     {
+      "key": "tk-02",
+      "values": {
+       "task_name": "Wireframe new booking flow",
+       "project": "pr-bellwater",
+       "status": "Done",
+       "priority": "High",
+       "assignee": "tm-mateo",
+       "start_on": "@today-19d",
+       "due_on": "@today-12d",
+       "estimate": 10
+      }
+     },
+     {
+      "key": "tk-03",
+      "values": {
+       "task_name": "Write service page copy",
+       "project": "pr-bellwater",
+       "status": "In progress",
+       "priority": "Medium",
+       "assignee": "tm-grace",
+       "start_on": "@today-6d",
+       "due_on": "@today+4d",
+       "estimate": 6
+      }
+     },
+     {
+      "key": "tk-04",
+      "values": {
+       "task_name": "Build page templates",
+       "project": "pr-bellwater",
+       "status": "In progress",
+       "priority": "High",
+       "assignee": "tm-hannah",
+       "start_on": "@today-3d",
+       "due_on": "@today+10d",
+       "estimate": 16
+      }
+     },
+     {
+      "key": "tk-05",
+      "values": {
+       "task_name": "Accessibility review",
+       "project": "pr-bellwater",
+       "status": "To do",
+       "priority": "Medium",
+       "assignee": "tm-jonas",
+       "start_on": "@today+9d",
+       "due_on": "@today+14d",
+       "estimate": 5
+      }
+     },
+     {
+      "key": "tk-06",
+      "values": {
+       "task_name": "Launch checklist and redirects",
+       "project": "pr-bellwater",
+       "status": "To do",
+       "priority": "High",
+       "assignee": "tm-grace",
+       "start_on": "@today+14d",
+       "due_on": "@today+18d",
+       "estimate": 3
+      }
+     },
+     {
+      "key": "tk-07",
+      "values": {
+       "task_name": "Map drop-off in current onboarding",
+       "project": "pr-onboard",
+       "status": "Done",
+       "priority": "High",
+       "assignee": "tm-samir",
+       "start_on": "@today-15d",
+       "due_on": "@today-11d",
+       "estimate": 6
+      }
+     },
+     {
+      "key": "tk-08",
+      "values": {
+       "task_name": "Design three-step welcome",
+       "project": "pr-onboard",
+       "status": "Done",
+       "priority": "Urgent",
+       "assignee": "tm-mateo",
+       "start_on": "@today-11d",
+       "due_on": "@today-5d",
+       "estimate": 12
+      }
+     },
+     {
+      "key": "tk-09",
+      "values": {
+       "task_name": "Build welcome screens",
+       "project": "pr-onboard",
+       "status": "In progress",
+       "priority": "Urgent",
+       "assignee": "tm-hannah",
+       "start_on": "@today-4d",
+       "due_on": "@today+5d",
+       "estimate": 20
+      }
+     },
+     {
+      "key": "tk-10",
+      "values": {
+       "task_name": "Push permission prompt timing",
+       "project": "pr-onboard",
+       "status": "Blocked",
+       "priority": "High",
+       "assignee": "tm-jonas",
+       "start_on": "@today-2d",
+       "due_on": "@today+6d",
+       "estimate": 4
+      }
+     },
+     {
+      "key": "tk-11",
+      "values": {
+       "task_name": "Usability test with 5 people",
+       "project": "pr-onboard",
+       "status": "To do",
+       "priority": "High",
+       "assignee": "tm-samir",
+       "start_on": "@today+6d",
+       "due_on": "@today+9d",
+       "estimate": 8
+      }
+     },
+     {
+      "key": "tk-12",
+      "values": {
+       "task_name": "Ship to beta group",
+       "project": "pr-onboard",
+       "status": "To do",
+       "priority": "Urgent",
+       "assignee": "tm-grace",
+       "start_on": "@today+10d",
+       "due_on": "@today+12d",
+       "estimate": 2
+      }
+     },
+     {
+      "key": "tk-13",
+      "values": {
+       "task_name": "Logo usage rules",
+       "project": "pr-copperline",
+       "status": "Done",
+       "priority": "Medium",
+       "assignee": "tm-mateo",
+       "start_on": "@today-60d",
+       "due_on": "@today-45d",
+       "estimate": 8
+      }
+     },
+     {
+      "key": "tk-14",
+      "values": {
+       "task_name": "Color and type pages",
+       "project": "pr-copperline",
+       "status": "Done",
+       "priority": "Medium",
+       "assignee": "tm-mateo",
+       "start_on": "@today-45d",
+       "due_on": "@today-30d",
+       "estimate": 10
+      }
+     },
+     {
+      "key": "tk-15",
+      "values": {
+       "task_name": "Packaging examples",
+       "project": "pr-copperline",
+       "status": "Done",
+       "priority": "Low",
+       "assignee": "tm-mateo",
+       "start_on": "@today-30d",
+       "due_on": "@today-12d",
+       "estimate": 6
+      }
+     },
+     {
+      "key": "tk-16",
+      "values": {
+       "task_name": "Hand off guideline PDF",
+       "project": "pr-copperline",
+       "status": "Done",
+       "priority": "Medium",
+       "assignee": "tm-grace",
+       "start_on": "@today-12d",
+       "due_on": "@today-8d",
+       "estimate": 2
+      }
+     },
+     {
+      "key": "tk-17",
+      "values": {
+       "task_name": "Recruit interview participants",
+       "project": "pr-research",
+       "status": "Done",
+       "priority": "Medium",
+       "assignee": "tm-samir",
+       "start_on": "@today-10d",
+       "due_on": "@today-4d",
+       "estimate": 5
+      }
+     },
+     {
+      "key": "tk-18",
+      "values": {
+       "task_name": "Run eight interviews",
+       "project": "pr-research",
+       "status": "In progress",
+       "priority": "Medium",
+       "assignee": "tm-samir",
+       "start_on": "@today-3d",
+       "due_on": "@today+8d",
+       "estimate": 14
+      }
+     },
+     {
+      "key": "tk-19",
+      "values": {
+       "task_name": "Synthesize themes",
+       "project": "pr-research",
+       "status": "To do",
+       "priority": "Medium",
+       "assignee": "tm-samir",
+       "start_on": "@today+9d",
+       "due_on": "@today+15d",
+       "estimate": 10
+      }
+     },
+     {
+      "key": "tk-20",
+      "values": {
+       "task_name": "Share findings with the team",
+       "project": "pr-research",
+       "status": "To do",
+       "priority": "Low",
+       "assignee": "tm-priya",
+       "start_on": "@today+16d",
+       "due_on": "@today+20d",
+       "estimate": 2
+      }
+     },
+     {
+      "key": "tk-21",
+      "values": {
+       "task_name": "Agree launch scope",
+       "project": "pr-q4site",
+       "status": "To do",
+       "priority": "High",
+       "assignee": "tm-grace",
+       "start_on": "@today+6d",
+       "due_on": "@today+9d",
+       "estimate": 3
+      }
+     },
+     {
+      "key": "tk-22",
+      "values": {
+       "task_name": "Moodboard and direction",
+       "project": "pr-q4site",
+       "status": "To do",
+       "priority": "Medium",
+       "assignee": "tm-mateo",
+       "start_on": "@today+10d",
+       "due_on": "@today+18d",
+       "estimate": 8
+      }
+     },
+     {
+      "key": "tk-23",
+      "values": {
+       "task_name": "Component inventory",
+       "project": "pr-ds",
+       "status": "Done",
+       "priority": "Low",
+       "assignee": "tm-jonas",
+       "start_on": "@today-40d",
+       "due_on": "@today-30d",
+       "estimate": 6
+      }
+     },
+     {
+      "key": "tk-24",
+      "values": {
+       "task_name": "Button and form tokens",
+       "project": "pr-ds",
+       "status": "Blocked",
+       "priority": "Low",
+       "assignee": "tm-jonas",
+       "start_on": "@today-20d",
+       "due_on": "@today+10d",
+       "estimate": 8
+      }
+     },
+     {
+      "key": "tk-25",
+      "values": {
+       "task_name": "Pick the charting library",
+       "project": "pr-analytics",
+       "status": "To do",
+       "priority": "Medium",
+       "assignee": "tm-jonas",
+       "start_on": "@today+12d",
+       "due_on": "@today+16d",
+       "estimate": 4
+      }
+     },
+     {
+      "key": "tk-26",
+      "values": {
+       "task_name": "Define the first six metrics",
+       "project": "pr-analytics",
+       "status": "To do",
+       "priority": "Medium",
+       "assignee": "tm-priya",
+       "start_on": "@today+14d",
+       "due_on": "@today+20d",
+       "estimate": 3
+      }
+     },
+     {
+      "key": "tk-27",
+      "values": {
+       "task_name": "Campaign concept",
+       "project": "pr-holiday",
+       "status": "Done",
+       "priority": "High",
+       "assignee": "tm-priya",
+       "start_on": "@today-5d",
+       "due_on": "@today-2d",
+       "estimate": 5
+      }
+     },
+     {
+      "key": "tk-28",
+      "values": {
+       "task_name": "Hero illustration",
+       "project": "pr-holiday",
+       "status": "In progress",
+       "priority": "High",
+       "assignee": "tm-mateo",
+       "start_on": "@today-1d",
+       "due_on": "@today+7d",
+       "estimate": 9
+      }
+     },
+     {
+      "key": "tk-29",
+      "values": {
+       "task_name": "Landing page build",
+       "project": "pr-holiday",
+       "status": "To do",
+       "priority": "High",
+       "assignee": "tm-hannah",
+       "start_on": "@today+6d",
+       "due_on": "@today+15d",
+       "estimate": 12
+      }
+     },
+     {
+      "key": "tk-30",
+      "values": {
+       "task_name": "Email announcement draft",
+       "project": "pr-holiday",
+       "status": "In progress",
+       "priority": "Medium",
+       "assignee": "tm-grace",
+       "start_on": "@today-1d",
+       "due_on": "@today+5d",
+       "estimate": 3
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "One person leads each project.",
+    "fromTable": "project",
+    "fromField": "lead",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "projects_led"
+   },
+   {
+    "describes": "Each task belongs to one project.",
+    "fromTable": "task",
+    "fromField": "project",
+    "toTable": "project",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "tasks"
+   },
+   {
+    "describes": "Each task has one assignee.",
+    "fromTable": "task",
+    "fromField": "assignee",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "tasks_assigned"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-priya",
+      "values": {
+       "full_name": "Priya Natarajan",
+       "role": "Studio lead",
+       "work_email": "priya@lanternfieldstudio.net",
+       "mobile": "(503) 555-0170",
+       "start_date": "@today-6y"
+      }
+     },
+     {
+      "key": "tm-mateo",
+      "values": {
+       "full_name": "Mateo Alvarez",
+       "role": "Designer",
+       "work_email": "mateo@lanternfieldstudio.net",
+       "mobile": "(503) 555-0171",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-hannah",
+      "values": {
+       "full_name": "Hannah Okafor",
+       "role": "Engineer",
+       "work_email": "hannah@lanternfieldstudio.net",
+       "mobile": "(503) 555-0172",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-jonas",
+      "values": {
+       "full_name": "Jonas Lindqvist",
+       "role": "Engineer",
+       "work_email": "jonas@lanternfieldstudio.net",
+       "mobile": "(503) 555-0173",
+       "start_date": "@today-14m"
+      }
+     },
+     {
+      "key": "tm-grace",
+      "values": {
+       "full_name": "Grace Whitfield",
+       "role": "Producer",
+       "work_email": "grace@lanternfieldstudio.net",
+       "mobile": "(503) 555-0174",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-samir",
+      "values": {
+       "full_name": "Samir Haddad",
+       "role": "Researcher",
+       "work_email": "samir@lanternfieldstudio.net",
+       "mobile": "(503) 555-0175",
+       "start_date": "@today-9m"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "task_request",
+    "name": "Request a task",
+    "describes": "How anyone at the studio asks for a piece of work to be added to a project.",
+    "audience": "staff",
+    "table": "task",
+    "fields": [
+     {
+      "fieldKey": "task_name",
+      "ask": "What needs to be done?",
+      "required": true
+     },
+     {
+      "fieldKey": "project",
+      "ask": "Which project is it for?"
+     },
+     {
+      "fieldKey": "priority",
+      "ask": "How urgent is it?"
+     },
+     {
+      "fieldKey": "due_on",
+      "ask": "When is it needed by?"
+     }
+    ],
+    "submitLabel": "Add the task",
+    "confirmation": "Thanks. It is on the board as To do."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_projects",
+    "name": "All projects",
+    "table": "project",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "due_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "project_board",
+    "name": "By status",
+    "table": "project",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "project_timeline",
+    "name": "Timeline",
+    "table": "project",
+    "kind": "timeline",
+    "startField": "start_on",
+    "endField": "due_on"
+   },
+   {
+    "token": "all_tasks",
+    "name": "All tasks",
+    "table": "task",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "due_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "task_board",
+    "name": "Board",
+    "table": "task",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "task_calendar",
+    "name": "Calendar",
+    "table": "task",
+    "kind": "calendar",
+    "dateField": "due_on",
+    "allDay": true
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Project assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "task",
+     "describes": "Every task, its project, owner, status and due day."
+    },
+    {
+     "name": "related_tables",
+     "table": "project",
+     "describes": "The projects the tasks belong to."
+    }
+   ],
+   "question": {
+    "ask": "How many tasks are blocked right now?",
+    "whyItMatters": "Priya clears blockers first thing every Monday.",
+    "expect": {
+     "table": "task",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Blocked"
+     },
+     "answer": 2,
+     "unit": "tasks"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the task board: every task in its status column.",
+    "action": {
+     "kind": "open",
+     "surface": "task_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "task_board",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open the project timeline.",
+    "action": {
+     "kind": "open",
+     "surface": "project_timeline"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "project_timeline",
+     "minItems": 8
+    }
+   },
+   {
+    "says": "Open the task calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "task_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "task_calendar",
+     "minItems": 10
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-16",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "lanternfieldstudio.net"
+   ],
+   "fictionalStreets": [
+    "Quillmoss Row"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "projects-and-tasks",
+   "parent": null,
+   "title": "Projects & Tasks",
+   "icon": {
+    "emoji": "🗂️"
+   },
+   "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Plan projects, split them into tasks and see the week at a glance. Open a project to see its tasks."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:weekly-review"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:how-we-work"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:team"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Projects"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "project",
+       "view": "project_board"
+      },
+      "inline": true,
+      "title": "Projects",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "groupField": "status",
+        "icon": "SquareKanban"
+       },
+       {
+        "id": "view-timeline",
+        "name": "Timeline",
+        "layout": "timeline",
+        "dateField": "start_on",
+        "icon": "ChartGantt"
+       },
+       {
+        "id": "view-table",
+        "name": "All projects",
+        "layout": "grid",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ],
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Tasks"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "task",
+       "view": "task_board"
+      },
+      "inline": true,
+      "title": "Tasks",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Board",
+        "layout": "kanban",
+        "groupField": "status",
+        "icon": "SquareKanban"
+       },
+       {
+        "id": "view-calendar",
+        "name": "Calendar",
+        "layout": "calendar",
+        "dateField": "due_on",
+        "icon": "Calendar"
+       },
+       {
+        "id": "view-timeline",
+        "name": "Timeline",
+        "layout": "timeline",
+        "dateField": "start_on",
+        "icon": "ChartGantt"
+       },
+       {
+        "id": "view-table",
+        "name": "All tasks",
+        "layout": "grid",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ],
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "projects-and-tasks",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "task",
+           "view": "all_tasks"
+          },
+          "inline": true,
+          "title": "Tasks",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-status",
+            "name": "Tasks by status",
+            "layout": "chart",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            },
+            "icon": "ChartPie"
+           }
+          ],
+          "activeViewId": "view-status"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "project",
+           "view": "all_projects"
+          },
+          "inline": true,
+          "title": "Projects",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-status",
+            "name": "Projects by status",
+            "layout": "chart",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            },
+            "icon": "ChartPie"
+           }
+          ],
+          "activeViewId": "view-status"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "task",
+           "view": "all_tasks"
+          },
+          "inline": true,
+          "title": "Tasks",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-hours",
+            "name": "Hours by priority",
+            "layout": "chart",
+            "chart": {
+             "type": "bar",
+             "groupBy": "priority",
+             "op": "sum",
+             "field": "estimate"
+            },
+            "icon": "ChartColumn"
+           }
+          ],
+          "activeViewId": "view-hours"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Blocked"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "task",
+       "view": "all_tasks"
+      },
+      "inline": true,
+      "title": "Tasks",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-blocked",
+        "name": "Blocked",
+        "layout": "list",
+        "filters": {
+         "status": "Blocked"
+        },
+        "icon": "CircleAlert"
+       }
+      ],
+      "activeViewId": "view-blocked"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Due soon"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "task",
+       "view": "all_tasks"
+      },
+      "inline": true,
+      "title": "Tasks",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-open",
+        "name": "Not done",
+        "layout": "grid",
+        "filters": {
+         "status": [
+          "To do",
+          "In progress",
+          "Blocked"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ],
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-open"
+     }
+    }
+   ]
+  },
+  {
+   "key": "how-we-work",
+   "parent": "projects-and-tasks",
+   "title": "How we work",
+   "icon": {
+    "emoji": "📘"
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "How the studio runs a project, from first call to launch."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Statuses"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "To do",
+       "bold": true
+      },
+      {
+       "text": " — agreed and waiting for someone to start it."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "In progress",
+       "bold": true
+      },
+      {
+       "text": " — someone is on it this week."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Blocked",
+       "bold": true
+      },
+      {
+       "text": " — it needs an answer or another task first. Say what in the task's page."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Done",
+       "bold": true
+      },
+      {
+       "text": " — shipped or handed over."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Priorities"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Urgent means this week or the client is waiting. High is this sprint. Medium and Low fill the gaps."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Rules of thumb"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "Keep tasks small"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "If a task is more than two days of work, split it so progress shows on the board."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "One owner per task"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "A task with two owners has none. Pick one and mention the other in its page."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "Write the next step"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Every blocked task says what would unblock it and who can do that."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "weekly-review",
+   "parent": "projects-and-tasks",
+   "title": "Weekly review",
+   "icon": {
+    "emoji": "🔁"
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Every Monday, 20 minutes, the whole team."
+      }
+     ]
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Clear blocked tasks first"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Move finished work to Done"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Check the timeline for projects ending in two weeks"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Pick the three things that matter most this week"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Notes"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text"
+    }
+   ]
+  },
+  {
+   "key": "team",
+   "parent": "projects-and-tasks",
+   "title": "Team",
+   "icon": {
+    "emoji": "👥"
+   },
+   "blocks": [
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "team_member",
+       "view": "all_team"
+      },
+      "inline": true,
+      "title": "Team",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-table",
+        "name": "Team",
+        "layout": "grid",
+        "icon": "Users"
+       }
+      ],
+      "activeViewId": "view-table"
+     }
+    }
+   ]
+  }
+ ]
+}

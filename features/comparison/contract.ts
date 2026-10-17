@@ -12,7 +12,7 @@
  * A refusal is an `error` event `{ code, user_message, limit? }` (or a 400 before the stream opens).
  */
 
-export type FieldType = "rating" | "number" | "int" | "percent" | "text" | "hours" | "url" | "date";
+export type FieldType = "rating" | "number" | "int" | "percent" | "money" | "text" | "hours" | "url" | "date";
 export type Direction = "higher_better" | "lower_better" | "none";
 export type KindStatus = "live" | "coming";
 
@@ -23,6 +23,53 @@ export interface CompareField {
   direction: Direction;
   is_primary: boolean;
   help: string;
+  /** The facet this field is read from ("" = the kind's own source); results group fields by it. */
+  facet?: string;
+  facet_label?: string;
+}
+
+/** An optional extra source a kind's items can gather: an on/off option with its cost, before any run. */
+export interface FacetInfo {
+  key: string;
+  label: string;
+  help: string;
+  default_on: boolean;
+  speed: "fast" | "slow";
+  typical_seconds: number | null;
+  /** Points this facet adds per item, at the organization's rate. */
+  points_per_item: number;
+  /** Labels of the fields it adds. */
+  adds: string[];
+}
+
+export interface FacetQuote {
+  key: string;
+  label: string;
+  on: boolean;
+  points: number;
+  usd: number | null;
+  usd_display: string | null;
+  speed: "fast" | "slow";
+  typical_seconds: number | null;
+  adds: string[];
+}
+
+/** What one facet gave one item. */
+export interface ItemFacet {
+  key: string;
+  label: string;
+  status: "done" | "failed" | "off";
+  error: string | null;
+  points: number;
+  seconds: number | null;
+  source_url: string | null;
+  table_id: string | null;
+}
+
+export interface HiddenField {
+  key: string;
+  label: string;
+  reason: "missing" | "constant";
 }
 
 export interface LookupField {
@@ -51,6 +98,10 @@ export interface ComparisonKindInfo {
   fields: CompareField[];
   primary_field: string;
   discovery_note: string;
+  /** Extra sources each item can gather (companies), each an on/off option. */
+  facets?: FacetInfo[];
+  /** Sites an item's link may come from ("Amazon", "Instagram"). */
+  supported_sites?: string[];
 }
 
 export interface ComparisonQuote {
@@ -67,6 +118,8 @@ export interface ComparisonQuote {
   total_usd_display: string | null;
   records_by_item: number[];
   note: string;
+  /** Every facet with its cost for the whole list; the total counts the ones that are on. */
+  facets?: FacetQuote[];
 }
 
 export interface ComparedValue {
@@ -107,6 +160,9 @@ export interface ComparedItem {
   error: string | null;
   needs_choice: boolean;
   candidates: PlaceCandidate[];
+  /** The site the facts came from ("Amazon", "Instagram"); mixed platforms are labelled. */
+  source_label?: string | null;
+  facets?: ItemFacet[];
 }
 
 export interface ComparisonResult {
@@ -122,6 +178,10 @@ export interface ComparisonResult {
   total_points: number;
   generated_at: string | null;
   notices: string[];
+  /** The facets that were on for this run. */
+  facets?: FacetInfo[];
+  /** Fields not shown: no item had them, or every item had the same value. */
+  hidden_fields?: HiddenField[];
 }
 
 export interface ComparisonItemInput {
@@ -251,7 +311,45 @@ function parseField(v: unknown): CompareField {
     direction: (str(o.direction) || "none") as Direction,
     is_primary: bool(o.is_primary),
     help: str(o.help),
+    facet: str(o.facet),
+    facet_label: str(o.facet_label),
   };
+}
+
+const speedOf = (v: unknown): "fast" | "slow" => (v === "slow" ? "slow" : "fast");
+
+function parseFacetInfo(v: unknown): FacetInfo {
+  const o = obj(v);
+  return {
+    key: str(o.key), label: str(o.label), help: str(o.help), default_on: bool(o.default_on),
+    speed: speedOf(o.speed), typical_seconds: numOrNull(o.typical_seconds),
+    points_per_item: num(o.points_per_item), adds: strList(o.adds),
+  };
+}
+
+function parseFacetQuote(v: unknown): FacetQuote {
+  const o = obj(v);
+  return {
+    key: str(o.key), label: str(o.label), on: bool(o.on), points: num(o.points), usd: numOrNull(o.usd),
+    usd_display: strOrNull(o.usd_display), speed: speedOf(o.speed), typical_seconds: numOrNull(o.typical_seconds),
+    adds: strList(o.adds),
+  };
+}
+
+function parseItemFacet(v: unknown): ItemFacet {
+  const o = obj(v);
+  const status = str(o.status);
+  return {
+    key: str(o.key), label: str(o.label),
+    status: status === "failed" || status === "off" ? status : "done",
+    error: strOrNull(o.error), points: num(o.points), seconds: numOrNull(o.seconds),
+    source_url: strOrNull(o.source_url), table_id: strOrNull(o.table_id),
+  };
+}
+
+function parseHidden(v: unknown): HiddenField {
+  const o = obj(v);
+  return { key: str(o.key), label: str(o.label), reason: str(o.reason) === "constant" ? "constant" : "missing" };
 }
 
 function parseLookupField(v: unknown): LookupField {
@@ -279,6 +377,8 @@ export function parseKind(v: unknown): ComparisonKindInfo {
     fields: list(o.fields, parseField),
     primary_field: str(o.primary_field),
     discovery_note: str(o.discovery_note),
+    facets: list(o.facets, parseFacetInfo),
+    supported_sites: strList(o.supported_sites),
   };
 }
 
@@ -302,6 +402,7 @@ export function parseQuote(raw: unknown): ComparisonQuote {
     total_usd_display: strOrNull(o.total_usd_display),
     records_by_item: Array.isArray(o.records_by_item) ? o.records_by_item.map(num) : [],
     note: str(o.note),
+    facets: list(o.facets, parseFacetQuote),
   };
 }
 
@@ -348,6 +449,8 @@ function parseItem(v: unknown): ComparedItem {
     error: strOrNull(o.error),
     needs_choice: bool(o.needs_choice),
     candidates: list(o.candidates, parseCandidate),
+    source_label: strOrNull(o.source_label),
+    facets: list(o.facets, parseItemFacet),
   };
 }
 
@@ -367,6 +470,8 @@ export function parseResult(raw: unknown): ComparisonResult | null {
     total_points: num(o.total_points),
     generated_at: strOrNull(o.generated_at),
     notices: strList(o.notices),
+    facets: list(o.facets, parseFacetInfo),
+    hidden_fields: list(o.hidden_fields, parseHidden),
   };
 }
 

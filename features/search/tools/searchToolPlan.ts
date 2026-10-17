@@ -17,7 +17,7 @@ export type ToolTab = "deep" | "reviews" | "answers";
 export const TOOL_TABS: readonly ToolTab[] = ["deep", "reviews", "answers"];
 
 export const TOOL_TAB_LABEL: Record<ToolTab, string> = {
-  deep: "Deep",
+  deep: "Deep search",
   reviews: "Reviews",
   answers: "AI answers",
 };

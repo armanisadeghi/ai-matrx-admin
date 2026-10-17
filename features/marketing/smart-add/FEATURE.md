@@ -95,6 +95,7 @@ A card needs two independent HOSTS. Each finding's witness is the host it was re
 
 ## Change Log
 
+- 2026-10-17 — Enrich web answers are saved the moment they are given (`webDecisions.ts` `WebDecisionSaver` → `validate/persist.ts` → promotion; `enrich/useEnrichWebDecisions.ts`), restored on a reopened Enrich, flushed at Apply and counted on "Changes to your brand"; the brand page's On the web tab (`components/brands/BrandWebDecisionsSection.tsx`) lists every web answer by relationship and changes one in place. Before this, Enrich kept them only in memory and Apply wrote none (40+ answers lost on 2026-10-17). A re-answer after Undo revives its soft-deleted row (the dedup index is not partial). Guard: `__tests__/enrichWebDecisions.test.ts`.
 - 2026-10-16 — Nothing dies: an enrich round is named on the brand as it starts (`registerBrandSmartAddRuns`), so the findings it makes later land and promote like Create's; the Discovery inbox starts every fact on its server-rule kind (never a dead Confirm), confirms a kept fact in place (no duplicate) and promotes after every confirm; products and services open the Offerings screen from the inbox.
 - 2026-10-16 — Fact evidence addresses are only ever complete: a cut-off streamed address is dropped or replaced by the one that completes it (`completeUrls`, at parse and in `grownFact`). Guard: `__tests__/factEvidenceUrlsComplete.test.ts`.
 - 2026-10-16 — Found-first door (`/smart-add/found`, VISION Part 23): card grid of certain facts, one "Looks right" with a way out, then the full review in place on the same session.

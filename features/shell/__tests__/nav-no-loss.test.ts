@@ -251,6 +251,8 @@ const CREATE_ACTIONS_BEFORE_DOMAIN_TREE: readonly string[] = [
  * then the tree's "Product — what users see" order, then the ONE Industries menu, then the temporary Other pen.
  */
 const DOMAIN_ORDER = [
+  // Arman, 2026-10-16: the most important areas first; Web and Utilities sit low,
+  // beside Computer and Integrations, never in the middle of the main areas.
   "Workspace",
   "Agents",
   "Applets",
@@ -259,20 +261,20 @@ const DOMAIN_ORDER = [
   "Intelligence",
   "Masterwork",
   "Knowledge",
-  "Web",
   "Content",
-  "Utilities",
   "Data",
   "Files",
   "Media",
   "Audio",
   "Code",
-  "Computer",
   "Publish",
   "Communications",
   "CRM",
   "Marketing",
   "Human Resources",
+  "Web",
+  "Utilities",
+  "Computer",
   "Integrations",
   "Account",
   "Industries",

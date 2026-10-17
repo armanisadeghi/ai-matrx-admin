@@ -25,6 +25,57 @@ import { applyEnrichChanges, type AppliedChange } from "./apply";
 import { diffCounts, type ChangeChoice, type EnrichChange } from "./diff";
 import type { BrandSnapshot, KnownFact } from "./known";
 import { loadNewFindings, type FindingSummary } from "./newFindings";
+import type { WebChoice } from "../webKinds";
+import { webDecisionCounts, type WebSaveStatus } from "../webDecisions";
+
+/** Enrich's "On the web" answers: already saved on the brand as they were given; Apply only makes sure of it. */
+export interface EnrichWebReview {
+  choices: WebChoice[];
+  statuses: Record<string, WebSaveStatus>;
+  flush: () => Promise<{ saved: string[]; failed: { key: string; error: string }[] }>;
+}
+
+/** Where the brand shows every web answer, grouped by relationship. */
+export const brandOnTheWebHref = (brandId: string) => `${marketingRoutes.brand(brandId)}?tab=on_the_web`;
+
+/** "Websites decided: 40 · 12 Ours · 9 Backlink …", opening the brand's On the web section. */
+function WebDecisionsRow({
+  brandId,
+  web,
+  kinds,
+  result,
+}: {
+  brandId: string;
+  web: EnrichWebReview;
+  kinds: BrandRelationKind[];
+  result: { saved: string[]; failed: { key: string; error: string }[] } | null;
+}) {
+  const counts = webDecisionCounts(web.choices, kinds);
+  if (!counts.total) return null;
+  const states = Object.values(web.statuses);
+  const saving = states.filter((s) => s.state === "saving").length;
+  const failed = result ? result.failed.length : states.filter((s) => s.state === "failed").length;
+  return (
+    <RowGroup title="On the web" data-testid="enrich-web-decisions">
+      <Link href={brandOnTheWebHref(brandId)} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50" data-testid="enrich-web-decisions-link">
+        <span className="w-28 shrink-0 text-xs text-muted-foreground">Websites decided</span>
+        <span className="shrink-0 text-sm tabular-nums" data-testid="enrich-web-decisions-total">
+          {counts.total}
+        </span>
+        <span className="min-w-0 truncate text-sm text-muted-foreground">{counts.parts.map((p) => `${p.count} ${p.label}`).join(" · ")}</span>
+        <span className="ml-auto shrink-0 text-xs" data-testid="enrich-web-decisions-state">
+          {failed ? (
+            <span className="text-destructive">{`${failed} not saved`}</span>
+          ) : saving ? (
+            <span className="text-muted-foreground">Saving…</span>
+          ) : (
+            <span className="text-muted-foreground">Saved</span>
+          )}
+        </span>
+      </Link>
+    </RowGroup>
+  );
+}
 
 function Value({ fact, item }: { fact?: KnownFact | null; item?: EvidenceItem | null }) {
   const image = fact?.imageUrl ?? (item?.field === "logo" ? (item.image_url ?? item.value) : null);
@@ -110,18 +161,21 @@ export function ChangesReview({
   kinds,
   onBack,
   onBrand,
+  web,
 }: {
   snapshot: BrandSnapshot;
   changes: EnrichChange[];
   kinds: BrandRelationKind[];
   onBack: () => void;
   onBrand: (brand: MarketingBrand) => void;
+  web?: EnrichWebReview;
 }) {
   const [choices, setChoices] = useState<Record<string, ChangeChoice>>({});
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState<AppliedChange[] | null>(null);
   const [undone, setUndone] = useState<Set<string>>(new Set());
   const [showSame, setShowSame] = useState(false);
+  const [webResult, setWebResult] = useState<{ saved: string[]; failed: { key: string; error: string }[] } | null>(null);
   const foundQuery = useQuery({
     queryKey: ["marketing", "enrich-new-findings", snapshot.brand.id, snapshot.readAt],
     queryFn: () => loadNewFindings(snapshot),
@@ -135,6 +189,7 @@ export function ChangesReview({
   const choiceOf = (c: EnrichChange) => choices[c.id] ?? c.defaultChoice;
   const set = (id: string, c: ChangeChoice) => setChoices((cur) => ({ ...cur, [id]: c }));
   const pending = changes.filter((c) => c.kind !== "unchanged" && choiceOf(c) === "apply").length;
+  const webCount = web?.choices.length ?? 0;
   const conflicts = changes.filter((c) => c.kind === "conflict");
   const replaces = changes.filter((c) => c.kind === "replace");
   const adds = changes.filter((c) => c.kind === "add");
@@ -143,6 +198,10 @@ export function ChangesReview({
   const confirm = async () => {
     setApplying(true);
     try {
+      // The web answers were saved as they were given; anything still saving, failed or waiting on a name lands now.
+      const webSaved = web ? await web.flush() : null;
+      setWebResult(webSaved);
+      if (webSaved?.failed.length) toast.error(`${webSaved.failed.length} web answer${webSaved.failed.length === 1 ? "" : "s"} could not be saved`);
       const out = await applyEnrichChanges({ snapshot, changes, choices, kinds, onBrand });
       setApplied(out);
       const failed = out.filter((r) => !r.ok);
@@ -174,7 +233,7 @@ export function ChangesReview({
           </Button>
         </div>
         <RowGroup title={`${applied.filter((r) => r.ok).length} applied`}>
-          {applied.length === 0 ? <p className="px-3 py-2 text-sm text-muted-foreground">No changes chosen</p> : null}
+          {applied.length === 0 ? <p className="px-3 py-2 text-sm text-muted-foreground">{webCount ? "No other changes chosen" : "No changes chosen"}</p> : null}
           {applied.map((r) => (
             <div key={r.change.id} className="flex items-center gap-3 px-3 py-2" data-testid="enrich-applied-row">
               <span className="w-28 shrink-0 text-xs text-muted-foreground">
@@ -195,6 +254,7 @@ export function ChangesReview({
             </div>
           ))}
         </RowGroup>
+        {web ? <WebDecisionsRow brandId={snapshot.brand.id} web={web} kinds={kinds} result={webResult} /> : null}
         <NewFindings found={found} />
       </div>
     );
@@ -262,9 +322,11 @@ export function ChangesReview({
         </RowGroup>
       ) : null}
 
+      {web ? <WebDecisionsRow brandId={snapshot.brand.id} web={web} kinds={kinds} result={null} /> : null}
+
       <NewFindings found={found} />
 
-      {counts.add + counts.replace + counts.conflict + found.length === 0 ? <p className="text-sm text-muted-foreground">Nothing new found</p> : null}
+      {counts.add + counts.replace + counts.conflict + found.length + webCount === 0 ? <p className="text-sm text-muted-foreground">Nothing new found</p> : null}
 
       <div>
         <DisclosureHeader open={showSame} onClick={() => setShowSame((v) => !v)} title="Unchanged" meta={String(counts.unchanged)} />
@@ -281,8 +343,8 @@ export function ChangesReview({
       </div>
 
       <div className="flex items-center justify-end gap-2">
-        <Button variant="primary" onClick={() => void confirm()} disabled={applying || pending === 0} data-testid="enrich-confirm">
-          {applying ? "Saving…" : `Apply ${pending} change${pending === 1 ? "" : "s"}`}
+        <Button variant="primary" onClick={() => void confirm()} disabled={applying || pending + webCount === 0} data-testid="enrich-confirm">
+          {applying ? "Saving…" : pending === 0 ? "Finish" : `Apply ${pending} change${pending === 1 ? "" : "s"}`}
         </Button>
       </div>
     </div>

@@ -64,3 +64,22 @@ describe("a Tool answer read as table rows", () => {
     expect(describeRows("text")).toBeNull();
   });
 });
+
+import { rowsForColumns } from "../appendResultRows";
+
+describe("rows written in the words the target column takes", () => {
+  const described = { rowsKey: "items", headers: ["Decision maker", "Confidence"], keyHeader: "Decision maker", rows: [{ "Decision maker": true, Confidence: 85 }] };
+  const field = (field_name: string, data_type: string, format?: string) =>
+    ({ id: field_name, field_name, display_name: field_name, data_type, field_order: 0, is_required: false, metadata: format ? { format: { id: format } } : null }) as never;
+
+  it("writes a boolean as words into a choice column whatever its data type", () => {
+    const rows = rowsForColumns(described, { "Decision maker": "decision_maker", Confidence: "confidence" }, [field("decision_maker", "boolean", "choice"), field("confidence", "number")]);
+    expect(rows[0]["Decision maker"]).toBe("true");
+    expect(rows[0].Confidence).toBe(85);
+  });
+
+  it("keeps a real boolean for a boolean column", () => {
+    const rows = rowsForColumns(described, { "Decision maker": "decision_maker" }, [field("decision_maker", "boolean")]);
+    expect(rows[0]["Decision maker"]).toBe(true);
+  });
+});

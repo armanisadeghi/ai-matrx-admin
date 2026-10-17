@@ -17,7 +17,7 @@ import { primeObjectOrganization, readObjectOrganizationAnswer, useObjectOrganiz
 import { useSeededWhere } from "../page/space-seed-context";
 
 import { usePublishedRows } from "./published-rows";
-import { agencySample } from "./sources";
+import { sampleWorld } from "./sources";
 
 /**
  * The sample's live port. The in-memory world lives in this tab only: nothing outside it can change
@@ -26,15 +26,23 @@ import { agencySample } from "./sources";
  */
 const SAMPLE_REALTIME: NonNullable<RecordsConfig["realtime"]> = { subscribeRecords: () => () => undefined };
 
-let sampleConfig: RecordsConfig | null = null;
-function sampleRecordsConfig(): RecordsConfig {
-  sampleConfig ??= { ...agencySample().config, realtime: SAMPLE_REALTIME };
-  return sampleConfig;
+const sampleConfigs = new Map<string, RecordsConfig>();
+function sampleRecordsConfig(id: string): RecordsConfig | null {
+  const world = sampleWorld(id);
+  if (!world) return null;
+  let config = sampleConfigs.get(id);
+  if (!config) {
+    config = { ...world.config, realtime: SAMPLE_REALTIME };
+    sampleConfigs.set(id, config);
+  }
+  return config;
 }
 
-function SampleMount({ children }: { children: ReactNode }) {
+function SampleMount({ sample, children, held }: { sample: string; children: ReactNode; held: (line: string) => ReactNode }) {
+  const config = sampleRecordsConfig(sample);
+  if (!config) return <>{held("This sample isn’t loaded on this page.")}</>;
   return (
-    <RecordsMount config={sampleRecordsConfig()} letTheStoreDecideRights>
+    <RecordsMount config={config} letTheStoreDecideRights>
       {children}
     </RecordsMount>
   );
@@ -76,13 +84,19 @@ export function DataMount({
   children,
   held,
 }: {
-  sample: boolean;
+  /** The in-memory world the table lives in (`props.sample`); null = a real table. */
+  sample: string | null;
   tableId: string;
   children: ReactNode;
   held: (line: string, retry?: () => void) => ReactNode;
 }) {
   const published = usePublishedRows();
-  if (sample) return <SampleMount>{children}</SampleMount>;
+  if (sample)
+    return (
+      <SampleMount sample={sample} held={held}>
+        {children}
+      </SampleMount>
+    );
   // A page on the web: the rows the page itself published (content.space_public_view), never a live read.
   if (published) {
     const config = published.get(tableId);

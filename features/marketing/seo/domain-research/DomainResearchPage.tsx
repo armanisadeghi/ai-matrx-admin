@@ -191,7 +191,7 @@ export function DomainResearchPage() {
       />
       <div className="h-full overflow-hidden">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll>
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 p-3">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 pt-3">
             <DomainSearch
               initial={host ?? ""}
               onSubmit={(d) => go(hrefFor({ d }))}

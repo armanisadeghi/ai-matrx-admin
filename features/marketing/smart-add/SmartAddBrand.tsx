@@ -189,6 +189,7 @@ import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink
 import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
 import { computeEnrichDiff } from "./enrich/diff";
 import { ChangesReview } from "./enrich/ChangesReview";
+import { useEnrichWebDecisions } from "./enrich/useEnrichWebDecisions";
 import { browserImageUrl } from "@/lib/media/external-image";
 import type { SmartAddAddressBinding } from "./useSmartAddAddress";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress } from "./smartAddUrl";
@@ -250,6 +251,9 @@ function resumeTyped(a: SmartAddAddress): { seeds: RoundSeeds; keys: { website: 
 }
 
 /** `url`: the Smart Add page's address binding (useSmartAddAddress); absent in enrich and the lab. */
+/** A second identical round start within this window is a duplicate wake, not a new question. */
+const DUPLICATE_START_WINDOW_MS = 10_000;
+
 export function SmartAddBrand({
   onCreated,
   onValidating,
@@ -382,6 +386,9 @@ export function SmartAddBrand({
   // Sign-up welcome: every round's subject is stable (`signup_welcome:<user id>`, then `…:2`…), so a reload finds it.
   const welcomeRoundCount = useRef(0);
   const groundedSent = useRef(false);
+  // Identical round starts fired within seconds (several effects can wake on one change) bill the same
+  // lookups twice. Fingerprint → start time; a failed start forgets its print so Retry still works.
+  const recentStarts = useRef(new Map<string, number>());
   const [affiliations, setAffiliations] = useState<string[]>([]);
   // Anchor cards answered "Namesake" (a different person with my name): web.brand_relation_kind `namesake`.
   const [namesakes, setNamesakes] = useState<Set<string>>(new Set());
@@ -435,6 +442,10 @@ export function SmartAddBrand({
       person,
     });
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound && !email) return;
+    const startPrint = JSON.stringify([seeds, woken, firstData, find, groundedRound, email]);
+    const startedAt = recentStarts.current.get(startPrint);
+    if (startedAt !== undefined && Date.now() - startedAt < DUPLICATE_START_WINDOW_MS) return;
+    recentStarts.current.set(startPrint, Date.now());
     emailPending.current = "";
     factsSaw.current = facts.saw;
     firstData = facts.wake;
@@ -518,6 +529,7 @@ export function SmartAddBrand({
       if (find) anchorRunId.current = runId;
     } catch (error) {
       if (groundedRound) groundedSent.current = false;
+      recentStarts.current.delete(startPrint);
       setRounds((r) => r.map((x) => (x.id === id ? { ...x, error: plainStartError(error) } : x)));
     }
   };
@@ -1152,6 +1164,16 @@ export function SmartAddBrand({
     return (webPersonNames[key] ?? row?.guess ?? "").trim();
   };
   const webSuggestions = Object.fromEntries(webItems.map((i) => [i.key, suggestKind(i, relationKinds, webCtx)]));
+  // Enrich: the brand exists, so every web answer is saved on it the moment it is given, and its earlier answers show
+  // again on the results they match (enrich/useEnrichWebDecisions.ts). Create keeps its own path (routeWebChoices).
+  const enrichWeb = useEnrichWebDecisions({
+    brand: enrich?.snapshot.brand ?? null,
+    kinds: relationKinds,
+    suggest: webCtx,
+    webItems,
+    choices: webChoices,
+    setChoices: setWebChoices,
+  });
   useEffect(() => {
     if (!builder.isActive) return;
     // The publisher is admin-only code: it loads on first use, never for anyone else.
@@ -2042,6 +2064,11 @@ export function SmartAddBrand({
           snapshot={enrich.snapshot}
           changes={enrichDiff}
           kinds={relationKinds}
+          web={
+            enrichWeb
+              ? { choices: webItems.flatMap((i) => (webChoices[i.key] ? [webChoices[i.key]] : [])), statuses: enrichWeb.statuses, flush: () => enrichWeb.flush(webPersonName) }
+              : undefined
+          }
           onBack={() => setReviewing(false)}
           onBrand={() => onCreated?.(enrich.snapshot.brand)}
         />
@@ -2388,9 +2415,10 @@ export function SmartAddBrand({
         kinds={relationKinds}
         choices={webChoices}
         ctx={webCtx}
-        onChoose={(item, choice) =>
-          setWebChoices(({ [item.key]: _drop, ...rest }) => (choice ? { ...rest, [item.key]: choice } : rest))
-        }
+        onChoose={(item, choice) => {
+          setWebChoices(({ [item.key]: _drop, ...rest }) => (choice ? { ...rest, [item.key]: choice } : rest));
+          enrichWeb?.decide(item, choice);
+        }}
         marks={webMarks}
         onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}
         backlinks={allBacklinks}

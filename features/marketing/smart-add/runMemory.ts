@@ -16,6 +16,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@ai-matrx/chat/host/identity";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { supabase } from "@/utils/supabase/client";
+import { toast } from "@/lib/toast";
 import type { Json } from "@/types/database.types";
 import type { Decision, EvidenceItem } from "./evidence";
 import type { RelatedCandidate } from "./relations";
@@ -147,14 +148,20 @@ export function useRunMemory(sessionId: string | null, answers: RunAnswers, rest
     if (!hasRow.current && isEmptyAnswers(answers)) return;
     lastSaved.current = body;
     void (async () => {
-      const organizationId = await ensureOrgId(null);
+      const organizationId = await ensureOrgId(null).catch((e: unknown) => {
+        lastSaved.current = "";
+        toast.error("Your answers are not saved yet", { description: e instanceof Error ? e.message : String(e) });
+        return null;
+      });
+      if (!organizationId) return;
       const { error } = await surfaceTable().upsert(
         { user_id: userId, created_by: userId, updated_by: userId, organization_id: organizationId, feature: SMART_ADD_FEATURE, surface_key: sessionId, state: { ...answers, at: new Date().toISOString() } as unknown as Json },
         { onConflict: "user_id,feature,surface_key" },
       );
       if (error) {
         lastSaved.current = "";
-        console.error("Smart Add: could not save this session's answers", error.message);
+        // Said to the person, never only a console line: their answers are not on the server yet (the next change retries).
+        toast.error("Your answers are not saved yet", { description: error.message });
       } else hasRow.current = true;
     })();
   }, [body, sessionId, userId, readyFor]);

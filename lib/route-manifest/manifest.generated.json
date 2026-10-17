@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1461,
+  "routeCount": 1464,
   "routes": [
     {
       "pattern": "/",
@@ -334,6 +334,11 @@
       "source": "app/(admin)/administration/agents/tool-control/page.tsx"
     },
     {
+      "pattern": "/administration/agents/tool-control/alerts/[id]",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/tool-control/alerts/[id]/page.tsx"
+    },
+    {
       "pattern": "/administration/ai",
       "status": "live",
       "source": "app/(admin)/administration/ai/page.tsx"
@@ -622,6 +627,11 @@
       "pattern": "/administration/billing/approvals/[kind]/[subjectId]",
       "status": "live",
       "source": "app/(admin)/administration/billing/approvals/[kind]/[subjectId]/page.tsx"
+    },
+    {
+      "pattern": "/administration/billing/build-waste",
+      "status": "live",
+      "source": "app/(admin)/administration/billing/build-waste/page.tsx"
     },
     {
       "pattern": "/administration/billing/held-runs/[id]",
@@ -4913,6 +4923,11 @@
       "pattern": "/marketing/[brandId]/socials/post/[postId]",
       "status": "live",
       "source": "app/(core)/marketing/[brandId]/socials/post/[postId]/page.tsx"
+    },
+    {
+      "pattern": "/marketing/[brandId]/socials/research",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/socials/research/page.tsx"
     },
     {
       "pattern": "/marketing/[brandId]/socials/studio",

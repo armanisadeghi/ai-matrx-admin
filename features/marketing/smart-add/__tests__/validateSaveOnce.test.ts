@@ -11,13 +11,15 @@ function builder(op: "select" | "insert" | "update", payload?: Record<string, un
   const state = { id: null as string | null };
   const b: Record<string, unknown> = {};
   const chain = () => b;
-  for (const m of ["eq", "in", "is", "limit"]) {
+  for (const m of ["eq", "in", "is", "not", "order", "limit"]) {
     b[m] = (col?: string, val?: unknown) => {
       if (m === "eq" && col === "id") state.id = val as string;
       return chain();
     };
   }
   b.select = () => b;
+  // The revive lookup (a soft-deleted row of the same finding): none here.
+  b.maybeSingle = async () => ({ data: null, error: null });
   b.single = async () => {
     await tick();
     const row: Row = { id: `row-${nextId++}`, context: (payload?.context as Record<string, unknown>) ?? {}, status: String(payload?.status) };

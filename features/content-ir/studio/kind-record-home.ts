@@ -48,7 +48,7 @@ export async function kindRecordClient(
   // Loaded only when an organization's answer is the store, so the older path pays nothing.
   const [{ createRecordsClient }, { personActor, recordsDataSource }] = await Promise.all([
     import("@ai-matrx/records/core"),
-    import("@ai-matrx/records-ui"),
+    import("@ai-matrx/records-ui/data-source"),
   ]);
   const client = createRecordsClient({
     dataSource: recordsDataSource(createClient()),

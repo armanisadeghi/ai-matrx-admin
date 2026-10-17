@@ -182,7 +182,7 @@ async function tableBlockSeed(reads: PageReads, { props }: DatabaseOnPage): Prom
   const tableId = props.source.tableId;
   const where = await reads.where(tableId);
   if (!where) return null;
-  if (!where.organizationId || props.sample === AGENCY_SAMPLE_ID) return { tableId, where: where.where, records: null };
+  if (!where.organizationId || props.sample) return { tableId, where: where.where, records: null };
   const view = activeView(props.views, props.activeViewId);
   // "This page's row" is resolved in the browser (data/owning-row.tsx); the server never asks the store
   // with the token, so the block draws its own first page.

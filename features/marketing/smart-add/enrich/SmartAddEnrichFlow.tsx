@@ -3,7 +3,8 @@
 /**
  * Enrich an existing brand through Smart Add (ENRICH.md): read the brand once, show "What we already know",
  * then run the normal Smart Add flow seeded with the checked facts, ending on "Changes to your brand".
- * Leaving midway writes nothing to the brand; the run's own records stay (resume or discard from its run page).
+ * Leaving midway writes nothing to the brand's basics; "On the web" answers are saved as they are given
+ * (useEnrichWebDecisions.ts). The run's own records stay (resume or discard from its run page).
  */
 
 import { useEffect, useState } from "react";
