@@ -267,6 +267,7 @@ export const TRANSCRIPT_COLUMNS: EntityColumnSpec<TranscriptListRow>[] = [
   {
     id: "updated",
     label: "Updated",
+    // table-filter-off: the transcripts list filters dates by relative buckets on the server (DATE_FILTER_OPTIONS)
     column: {
       id: "updated",
       accessorKey: "updated_at",
@@ -283,6 +284,7 @@ export const TRANSCRIPT_COLUMNS: EntityColumnSpec<TranscriptListRow>[] = [
     id: "created",
     label: "Created",
     defaultHidden: true,
+    // table-filter-off: the transcripts list filters dates by relative buckets on the server (DATE_FILTER_OPTIONS)
     column: {
       id: "created",
       accessorKey: "created_at",

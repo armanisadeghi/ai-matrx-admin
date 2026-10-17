@@ -95,6 +95,7 @@ const columns: MatrxColumnDef<NpmPackageCatalogRow>[] = [
       ),
     width: 130,
   },
+  // table-filter-off: holds a package path, not a set of states
   {
     id: "source",
     accessorFn: (row) => row.repositoryDirectory ?? "",

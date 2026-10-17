@@ -162,7 +162,8 @@ export function SourceResultsTable({
       ),
     },
     {
-      id: "page",
+      // table-filter-off: holds the page title and URL, not a set of sources
+      id: "source",
       header: "Source",
       label: "Source",
       accessorFn: (source) => source.title || source.hostname || source.url,

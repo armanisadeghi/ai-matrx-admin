@@ -573,6 +573,7 @@ export default function BatchScrapePage() {
     },
     // Purpose: retain Source doors, notices, and kept state in the domain cell
     // while making their visible words filterable. Decision-maker: surface owner, 2026-09-28.
+    // table-filter-off: a free-text source (title or URL), searched as text
     {
       id: "source",
       header: "Source",

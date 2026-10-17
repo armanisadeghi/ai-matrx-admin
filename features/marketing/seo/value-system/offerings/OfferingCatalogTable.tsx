@@ -241,6 +241,7 @@ export function OfferingCatalogTable({
         </span>
       ),
     },
+    // table-filter-off: mixed free text, searched as text
     {
       accessorKey: "worthSource",
       header: "Worth used",

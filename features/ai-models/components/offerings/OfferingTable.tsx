@@ -183,6 +183,7 @@ export default function OfferingTable({
         <ProviderModelIdCell value={offering.provider_model_id} />
       ),
     },
+    // table-filter-off: a numeric rank, filtered as a number
     {
       accessorKey: "priority",
       header: "Priority",

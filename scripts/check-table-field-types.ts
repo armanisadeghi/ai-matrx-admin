@@ -111,10 +111,16 @@ export function scanSource(file: string, text: string, map: Record<string, { typ
                 (!dbType && ENUM_NAME.test(name) && !NOT_ENUM.has(name) && !/^(is|has|can|should|max|min|total|num|count)_/.test(name))
               ? "enum"
               : null;
-        if (expected) {
+        const declaredFilter = filterValue(node);
+        const declaredFormat = formatId(node);
+        // A column that DECLARES a number/boolean type is not an enum, whatever its name says.
+        const declaredScalar =
+          declaredFilter === "number" || declaredFilter === "boolean" ||
+          (typeof declaredFormat === "string" && /^(number|decimal|currency|percent|integer|rating|duration|progress|file_size|boolean)$/.test(declaredFormat));
+        if (expected && !(expected === "enum" && declaredScalar)) {
           const line = sf.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-          const fmt = formatId(node);
-          const filter = filterValue(node);
+          const fmt = declaredFormat;
+          const filter = declaredFilter;
           const nearby = lines.slice(Math.max(0, line - 2), line + 12).join("\n");
           // A reviewed exception says why, on the column: `// table-filter-off: <reason>` (the field is
           // filtered another way, or is not what its name suggests). Never rename a column to pass.
@@ -162,6 +168,7 @@ function selfTest(): void {
     [`const c = [{ accessorKey: "status", header: "Status", filter: "select" }];`, null],
     [`// table-filter-off: a fixed one-day report\nconst c = [{ accessorKey: "created_at", header: "Created", filter: false }];`, null],
     [`const c = [{ accessorKey: "name", header: "Name" }];`, null],
+    [`const c = [{ accessorKey: "priority", header: "Priority", filter: "number" }];`, null],
     [`const c = [{\n  // table-filter-off: holds free text, not a state\n  accessorKey: "state", header: "State" }];`, null],
   ];
   let failed = 0;

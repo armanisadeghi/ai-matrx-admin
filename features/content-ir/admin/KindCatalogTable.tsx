@@ -230,6 +230,7 @@ export default function KindCatalogTable({ rows }: { rows: KindBoardRow[] }) {
 
   const columns = useMemo((): MatrxColumnDef<KindBoardRow>[] => {
     return [
+      // table-filter-off: a kind identifier from an open registry, searched as text
       {
         accessorKey: "kind",
         header: "Kind",

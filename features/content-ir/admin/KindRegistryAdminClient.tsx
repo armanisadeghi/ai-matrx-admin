@@ -205,6 +205,7 @@ export default function KindRegistryAdminClient() {
           </span>
         ),
       },
+      // table-filter-off: a type name from an open registry, searched as text
       {
         accessorKey: "type",
         header: "Type",

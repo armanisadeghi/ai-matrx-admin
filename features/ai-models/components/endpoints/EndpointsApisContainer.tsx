@@ -850,6 +850,7 @@ export default function EndpointsApisContainer() {
           <span className="text-muted-foreground">—</span>
         ),
     },
+    // table-filter-off: a numeric rank, filtered as a number
     {
       accessorKey: "priority",
       header: "Priority",

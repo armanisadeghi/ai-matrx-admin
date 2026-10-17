@@ -784,6 +784,7 @@ function EdgesTab({
   }, [edgeKind, orgId, edgesNonce]);
 
   const edgeColumns: MatrxColumnDef<KgEdgeRow>[] = [
+    // table-filter-off: holds kind plus name text, not a set of states
     {
       id: "source",
       header: "Source",

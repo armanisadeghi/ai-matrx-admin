@@ -150,6 +150,7 @@ export function SiteAnalysisTable() {
         </div>
       ),
     },
+    // table-filter-off: the server source applies only a text filter on category
     {
       id: "category",
       accessorKey: "category",

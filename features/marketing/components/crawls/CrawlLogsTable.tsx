@@ -82,6 +82,7 @@ export function CrawlLogsTable({ crawlId }: { crawlId: string }) {
         </span>
       ),
     },
+    // table-filter-off: the server source applies only a text filter on event_type
     {
       id: "event_type",
       accessorKey: "event_type",

@@ -141,6 +141,7 @@ export function ReviewIssuesTable({
     {
       id: "first_seen_at",
       accessorKey: "first_seen_at",
+      format: { id: "datetime" },
       header: "First seen",
       width: 110,
       align: "right",
@@ -150,6 +151,7 @@ export function ReviewIssuesTable({
     {
       id: "last_seen_at",
       accessorKey: "last_seen_at",
+      format: { id: "datetime" },
       header: "Last seen",
       width: 110,
       align: "right",

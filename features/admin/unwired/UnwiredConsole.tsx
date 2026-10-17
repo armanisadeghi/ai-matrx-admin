@@ -74,6 +74,7 @@ export function UnwiredConsole({ report, history, problems }: UnwiredConsoleProp
         </span>
       ),
     },
+    // table-filter-off: holds a file:line location, not a set of states
     {
       id: "source",
       accessorFn: (finding) => `${finding.file}:${finding.line}`,

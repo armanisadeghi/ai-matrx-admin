@@ -147,7 +147,8 @@ function resultColumns(): MatrxColumnDef<ReferenceResultRow>[] {
   const mono = "font-mono";
   return [
     {
-      id: "snippet",
+      // table-filter-off: holds the quoted snippet text, not a set of states
+      id: "state",
       header: "State",
       accessorFn: (r) => r.snippet ?? "",
       filter: "text",

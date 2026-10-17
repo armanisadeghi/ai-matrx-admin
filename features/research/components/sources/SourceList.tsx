@@ -996,6 +996,7 @@ export default function SourceList() {
         </div>
       ),
     },
+    // table-filter-off: a numeric rank, filtered as a number
     {
       id: "priority",
       header: PRIORITY_SCORE_LABEL,
@@ -1038,6 +1039,7 @@ export default function SourceList() {
         );
       },
     },
+    // table-filter-off: holds the source title or URL, not a set of sources
     {
       id: "source",
       header: "Source",

@@ -1059,6 +1059,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
                   data={agentEnvRows}
                   columns={[
                     { id: "key", accessorKey: "key", header: "name" },
+                    // table-filter-off: holds an environment value, not a set of states
                     { id: "state", accessorKey: "state", header: "value" },
                   ]}
                   getRowId={(row) => row.key}

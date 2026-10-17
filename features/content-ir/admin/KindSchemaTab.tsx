@@ -39,6 +39,7 @@ const FIELD_COLUMNS: MatrxColumnDef<FieldRow>[] = [
       </span>
     ),
   },
+  // table-filter-off: a free-form type expression, searched as text
   {
     accessorKey: "type",
     header: "Type",
