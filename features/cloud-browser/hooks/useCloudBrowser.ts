@@ -67,6 +67,9 @@ export function useCloudBrowser(
   initialProfileId?: string,
   /** The exact run to show, when the opener knows it (see `loadSnapshot`). */
   initialRunId?: string | null,
+  /** Show (or start) only a run on this target — the Computer tab passes
+   *  `"sandbox"` so its screen is the person's own machine. */
+  target?: service.StartTarget,
 ) {
   const dispatch = useAppDispatch();
   const { userId, activeUserName } = useUser();
@@ -96,13 +99,13 @@ export function useCloudBrowser(
     async (profileId: string, runId?: string | null) => {
       dispatch(setLoading(true));
       try {
-        const snap = await service.loadSnapshot(profileId, runId);
+        const snap = await service.loadSnapshot(profileId, runId, { target });
         dispatch(hydrateSnapshot(snap));
       } catch (e) {
         dispatch(setError(toLoadError(e)));
       }
     },
-    [dispatch],
+    [dispatch, target],
   );
 
   useEffect(() => {

@@ -29,6 +29,7 @@ import { useCloudBrowser } from "../hooks/useCloudBrowser";
 import { useCloudBrowserTakeover } from "../hooks/useCloudBrowserTakeover";
 import { useCloudBrowserProfileContextSync } from "../hooks/useCloudBrowserProfileContextSync";
 import { useScreenshotSession } from "../hooks/useScreenshotSession";
+import { useRunViewerSeat } from "../hooks/useRunViewerSeat";
 import {
   dismissHandoff,
   mintStreamTicket,
@@ -182,8 +183,21 @@ export function CloudBrowserBody({
     : false;
   const canDelete = cb.activeProfile?.accessLevel === "admin";
 
+  // THE ONE-VIEWER RULE (`../runViewer`): another mounted viewer of this run
+  // (the Computer tab) owns the live picture; this pane never claims over it
+  // unless the person presses "Show it here".
+  const seat = useRunViewerSeat(cb.run?.id ?? null);
+  const seatLost = !!ticket && seat.elsewhere;
+  useEffect(() => {
+    if (seatLost) setTicket(null);
+  }, [seatLost]);
+
   const openStream = useCallback(async (takeover = false) => {
     if (!cb.run) return;
+    if (!seat.hold(takeover)) {
+      setStreamError({ message: "Shown in another tab.", openElsewhere: true });
+      return;
+    }
     setConnecting(true);
     setStreamError(null);
     try {
@@ -208,7 +222,7 @@ export function CloudBrowserBody({
     } finally {
       setConnecting(false);
     }
-  }, [cb.run]);
+  }, [cb.run, seat]);
 
   // Whenever THIS person is driving and no live view is open, open it — once
   // per control revision, so a refused open never retries itself in a loop.

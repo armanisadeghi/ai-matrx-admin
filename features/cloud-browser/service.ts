@@ -617,8 +617,18 @@ const startRunAttempts = new Map<string, {
   organizationId: string;
 }>();
 
-async function startRun(profileId?: string): Promise<string> {
-  const key = profileId || "__personal_default__";
+/**
+ * Where a person's start lands. The Cloud Browser panel keeps the fleet; the
+ * Computer tab passes `"sandbox"` so the screen is the person's own machine's
+ * Chrome (the server keeps an explicit target).
+ */
+export type StartTarget = "browser_fleet" | "sandbox";
+
+async function startRun(
+  profileId?: string,
+  target: StartTarget = "browser_fleet",
+): Promise<string> {
+  const key = `${profileId || "__personal_default__"}:${target}`;
   const existing = startRunInFlight.get(key);
   if (existing) return existing;
 
@@ -638,7 +648,7 @@ async function startRun(profileId?: string): Promise<string> {
     const { data } = await postJson<unknown>("/browser-manager/runs", {
       profile_id: profileId || null,
       mode: "handoff_capable",
-      execution_target: "browser_fleet",
+      execution_target: target,
       activation_key: start.activationKey,
     }, { organizationId: start.organizationId });
     // A response is the durable receipt. Only now is a future start allowed to
@@ -746,7 +756,10 @@ export async function loadSnapshot(
    * which is the wrong browser as soon as a profile has more than one.
    */
   requestedRunId?: string | null,
+  /** Show (or start) only a run on this target — the Computer tab's machine. */
+  options: { target?: StartTarget } = {},
 ): Promise<CloudBrowserSnapshot> {
+  const target = options.target ?? "browser_fleet";
   const me = await userId();
   const pinnedRunResult = requestedRunId
     ? await supabase
@@ -775,7 +788,7 @@ export async function loadSnapshot(
   // one we just made (the fleet admits exactly one).
   let openedRunId: string | null = null;
   if (!selected && !requestedRunId) {
-    openedRunId = await startRun();
+    openedRunId = await startRun(undefined, target);
     profiles = await listProfiles();
     selected = profiles.find((item) => item.isOwnDefault) ?? profiles[0];
   }
@@ -785,19 +798,24 @@ export async function loadSnapshot(
     // The queued-start poll must observe its own terminal result too. The
     // handoff-only loader above deliberately remains live-only.
     ? { data: pinnedRun ? [pinnedRun] : [], error: null }
-    : await supabase
-        .schema("browser")
-        .from("run")
-        .select("*")
-        .eq("profile_id", selected.id)
-        .in("state", [...LIVE_STATES])
-        .is("deleted_at", null)
-        .order("started_at", { ascending: false })
-        .limit(1);
+    : await (() => {
+        const live = supabase
+          .schema("browser")
+          .from("run")
+          .select("*")
+          .eq("profile_id", selected.id)
+          .in("state", [...LIVE_STATES])
+          .is("deleted_at", null);
+        // The machine view never adopts a fleet run (that was a second cold
+        // browser beside the machine); the fleet panel keeps its old pick.
+        return (target === "sandbox" ? live.eq("execution_target", "sandbox") : live)
+          .order("started_at", { ascending: false })
+          .limit(1);
+      })();
   if (runQuery.error) throw runQuery.error;
   let activeRow = runQuery.data[0] ?? null;
   if (!runQuery.data.length && !requestedRunId) {
-    const openedId = openedRunId ?? (await startRun(selected.id));
+    const openedId = openedRunId ?? (await startRun(selected.id, target));
     const opened = await supabase
       .schema("browser")
       .from("run")
@@ -1042,7 +1060,9 @@ async function streamRequest(
       allowHttpError: true,
       // A claimed view is an expected domain outcome handled below, not an
       // Error Inspector incident. Other stream refusals stay captured there.
-      expectedErrorStatuses: [409],
+      // 404/410 on renew = the claim was superseded or expired, handled by
+      // the viewer as "Take control again" (`isStreamGone`).
+      expectedErrorStatuses: operation === "renew" ? [404, 409, 410] : [409],
     },
   );
   if (!response.ok) throw await streamConnectError(response);
@@ -1094,6 +1114,22 @@ async function streamConnectError(
     // Not JSON (an edge/CDN page): the status is all we have.
   }
   return new StreamConnectError(fallback, null, response.status);
+}
+/**
+ * The live view this ticket claimed is gone: its claim was superseded by a
+ * newer one (another viewer or tab took control) or expired. Today the stream
+ * answers 404 `not_found`; the typed `superseded` / `taken_over` codes are
+ * accepted as they ship. Recoverable with one press: claim again.
+ */
+export function isStreamGone(error: unknown): boolean {
+  if (!(error instanceof StreamConnectError)) return false;
+  return (
+    error.status === 404 ||
+    error.status === 410 ||
+    error.code === "superseded" ||
+    error.code === "taken_over" ||
+    error.code === "superseded_by_takeover"
+  );
 }
 export async function claimStreamTicket(
   ticket: StreamTicketEnvelope,
@@ -1402,6 +1438,9 @@ export async function requestScreenshot(
   const { data } = await postJson<unknown>(
     `/browser-manager/runs/${runId}/screenshot`,
     {},
+    // 409 = a person holds the wheel / the run is changing state: states the
+    // viewer backs off from quietly, never Error Inspector incidents.
+    { expectedErrorStatuses: [409] },
   );
   const value = record(data);
   return {

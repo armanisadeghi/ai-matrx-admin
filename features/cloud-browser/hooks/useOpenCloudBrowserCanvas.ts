@@ -19,8 +19,18 @@
 import { useCallback } from "react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { useArtifactCanvasActions } from "@/features/canvas/host/useArtifactCanvas";
-import { buildCloudComputerCanvasContent } from "@/features/cloud-computer/useOpenCloudComputerCanvas";
+import {
+  buildCloudComputerCanvasContent,
+  cloudComputerCanvasSourceId,
+} from "@/features/cloud-computer/useOpenCloudComputerCanvas";
+import {
+  getCloudComputer,
+  lastKnownCloudComputer,
+} from "@/features/cloud-computer/service";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectRun } from "../redux/selectors";
 import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CloudBrowserRun } from "../types";
 
 export interface OpenCloudBrowserCanvasOptions {
   initialProfileId?: string | null;
@@ -35,10 +45,36 @@ export interface OpenCloudBrowserCanvasOptions {
   conversationId?: string | null;
 }
 
-/** Stable per-chat canvas identity, so opening twice shows/hides one item
- *  rather than stacking browsers. */
-export function cloudBrowserCanvasSourceId(conversationId: string): string {
+function fleetBrowserSourceId(conversationId: string): string {
   return `cloud-browser:${conversationId}`;
+}
+
+/**
+ * Whether this open belongs in the Computer tab instead of a Cloud Browser
+ * pane — THE ONE-VIEWER RULE (2026-10-16): a machine run is shown only by the
+ * Computer tab, never by a second pane that would claim the same run and
+ * supersede the stream the person is typing in. A named fleet run stays in the
+ * Cloud Browser; an open with no run follows the person's machine.
+ * `machineExists` is `null` while the machine has not been read yet.
+ */
+export function browserBelongsToComputer(input: {
+  sliceRun: Pick<CloudBrowserRun, "id" | "executionTarget"> | null;
+  runId?: string | null;
+  machineExists: boolean | null;
+}): boolean {
+  const { sliceRun, runId, machineExists } = input;
+  if (runId) return sliceRun?.id === runId && sliceRun.executionTarget === "sandbox";
+  if (sliceRun?.executionTarget === "sandbox") return true;
+  return machineExists === true;
+}
+
+/** Stable per-chat canvas identity, so opening twice shows/hides one item
+ *  rather than stacking browsers. For a person with a Cloud Computer the
+ *  browser IS the Computer tab, so the composer's browser pill toggles that. */
+export function cloudBrowserCanvasSourceId(conversationId: string): string {
+  return lastKnownCloudComputer()?.exists
+    ? cloudComputerCanvasSourceId(conversationId)
+    : fleetBrowserSourceId(conversationId);
 }
 
 /** The one payload both verbs use, so offering then opening shows ONE pane. */
@@ -56,7 +92,7 @@ export function buildCloudBrowserCanvasContent(
       title: "Cloud Browser",
       conversationId,
       sourceMessageId: conversationId
-        ? cloudBrowserCanvasSourceId(conversationId)
+        ? fleetBrowserSourceId(conversationId)
         : undefined,
     },
   };
@@ -65,13 +101,33 @@ export function buildCloudBrowserCanvasContent(
 export function useOpenCloudBrowserCanvas() {
   const { open } = useCanvas();
   const { offer } = useArtifactCanvasActions();
+  const sliceRun = useAppSelector(selectRun);
   return useCallback(
     (opts: OpenCloudBrowserCanvasOptions = {}) => {
-      open(buildCloudBrowserCanvasContent(opts));
-      // The person's Cloud Computer sits beside the browser as its own tab.
-      offer(buildCloudComputerCanvasContent({ conversationId: opts.conversationId }));
+      const computer = buildCloudComputerCanvasContent({
+        conversationId: opts.conversationId,
+      });
+      const decide = (machineExists: boolean | null) => {
+        if (browserBelongsToComputer({ sliceRun, runId: opts.runId, machineExists })) {
+          open(computer);
+          return;
+        }
+        open(buildCloudBrowserCanvasContent(opts));
+        // The person's Cloud Computer sits beside the browser as its own tab.
+        offer(computer);
+      };
+      const known = lastKnownCloudComputer();
+      if (known || opts.runId) {
+        decide(known ? known.exists : null);
+        return;
+      }
+      // Not read yet in this session: one read decides (a person's click).
+      void getCloudComputer().then(
+        (machine) => decide(machine.exists),
+        () => decide(null),
+      );
     },
-    [open, offer],
+    [open, offer, sliceRun],
   );
 }
 
@@ -86,10 +142,16 @@ export function useOpenCloudBrowserCanvas() {
  */
 export function useOfferCloudBrowserCanvas() {
   const { offer } = useArtifactCanvasActions();
+  const sliceRun = useAppSelector(selectRun);
   return useCallback(
     (opts: OpenCloudBrowserCanvasOptions = {}) => {
-      offer(buildCloudBrowserCanvasContent(opts));
+      const machineExists = lastKnownCloudComputer()?.exists ?? null;
+      offer(
+        browserBelongsToComputer({ sliceRun, runId: opts.runId, machineExists })
+          ? buildCloudComputerCanvasContent({ conversationId: opts.conversationId })
+          : buildCloudBrowserCanvasContent(opts),
+      );
     },
-    [offer],
+    [offer, sliceRun],
   );
 }

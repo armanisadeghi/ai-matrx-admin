@@ -52,13 +52,28 @@ export function parseCloudComputer(raw: unknown): CloudComputer {
   };
 }
 
+/**
+ * The last machine read in this browser session, so the browser openers can
+ * decide synchronously that a person's browser IS their Computer tab
+ * (`useOpenCloudBrowserCanvas`). A cache of a server read, never a source of
+ * truth: `null` means "not read yet".
+ */
+let lastKnown: CloudComputer | null = null;
+export function lastKnownCloudComputer(): CloudComputer | null {
+  return lastKnown;
+}
+function remember(machine: CloudComputer): CloudComputer {
+  lastKnown = machine;
+  return machine;
+}
+
 export async function getCloudComputer(): Promise<CloudComputer> {
   const { data } = await getJson<unknown>("/browser-manager/cloud-computer");
-  return parseCloudComputer(data);
+  return remember(parseCloudComputer(data));
 }
 
 /** `initiation` is required: "user" only when a person's click wakes the machine. */
 export async function wakeCloudComputer(initiation: "user" | "auto"): Promise<CloudComputer> {
   const { data } = await postJson<unknown>("/browser-manager/cloud-computer/wake", { initiation });
-  return parseCloudComputer(data);
+  return remember(parseCloudComputer(data));
 }

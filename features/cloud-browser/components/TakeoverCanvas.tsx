@@ -68,6 +68,9 @@ export function TakeoverCanvas({
     if (!ticket?.control) return;
     const renew = window.setInterval(() => {
       void renewStreamTicket(ticket).catch(() => {
+        // A dead claim stays dead: stop renewing it (a superseded ticket
+        // answered 404 on every tick, 2026-10-16) and offer Reconnect.
+        window.clearInterval(renew);
         setConnectionError({
           sessionId: ticket.streamSessionId,
           message:

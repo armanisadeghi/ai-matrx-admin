@@ -1,5 +1,10 @@
 -- chair-step: undo hostrun_a_an_approved_bulk_job_runs_once.sql — restores custom.work_approval_kinds, custom.work_approval_request, custom.work_approval_decide, custom._workdoors_approval_guard and custom.agent_change_trust as they were on production 2026-10-16 before it, and drops custom.work_approval_host_run / custom.work_approval_host_run_done. Reopens: an agent's bulk copy or import into an existing table under `ask` has no approval that runs it. Delete pending host_run approvals first (the guard would refuse them).
 -- lane: HOST-RUN
+-- based-on: custom.work_approval_kinds() 703035370fbfbe365e5011cf83b8ae13f4bdc577b0a8aedce90a2760214855eb
+-- based-on: custom.work_approval_request(uuid, uuid, jsonb, text, uuid, text, uuid) cb21bde3ddf78f5c34d7e64faf841b0e0449d2e7bcb5b7a8b0302eff4b45a220
+-- based-on: custom.work_approval_decide(uuid, uuid, boolean, text) c732741ad6e20ecfb2be404613fc4cff9f0913643a93c38355d17a50edee3975
+-- based-on: custom._workdoors_approval_guard() d5914261c366ec0fed7b2299c7c7019e3029c7d95a426e4acd55b31e203d14f7
+-- based-on: custom.agent_change_trust(uuid, uuid) fda4a4c6360273b183b47e0be348d2aba0f8ca7d31b845a30243b8eebeb54c8a
 
 CREATE OR REPLACE FUNCTION custom.work_approval_kinds()
  RETURNS text[]
@@ -823,5 +828,6 @@ begin
 end
 $function$;
 
+DELETE FROM platform.client_callable_door WHERE schema_name = 'custom' AND function_name IN ('work_approval_host_run', 'work_approval_host_run_done');
 DROP FUNCTION IF EXISTS custom.work_approval_host_run_done(uuid, uuid, boolean, text, jsonb);
 DROP FUNCTION IF EXISTS custom.work_approval_host_run(uuid, text, uuid, uuid);

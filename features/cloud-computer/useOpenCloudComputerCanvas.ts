@@ -4,6 +4,11 @@ import { useCallback } from "react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import type { CanvasContent } from "@/features/canvas/canvasContent";
 
+/** The Computer tab's per-chat canvas identity. */
+export function cloudComputerCanvasSourceId(conversationId: string): string {
+  return `cloud-computer:${conversationId}`;
+}
+
 /** The Computer tab's canvas item — one per chat. */
 export function buildCloudComputerCanvasContent(
   opts: { conversationId?: string | null } = {},
@@ -16,7 +21,7 @@ export function buildCloudComputerCanvasContent(
       title: "Computer",
       conversationId,
       sourceMessageId: conversationId
-        ? `cloud-computer:${conversationId}`
+        ? cloudComputerCanvasSourceId(conversationId)
         : undefined,
     },
   };
