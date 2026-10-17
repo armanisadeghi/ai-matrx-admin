@@ -240,7 +240,7 @@ function paintedHeightOf(blockId: string | undefined): number {
 export function DatabaseHost({ children, blockId, layout, painted, serverDrawn }: { children: ReactNode; blockId?: string; layout?: string; painted?: PaintedSize[]; serverDrawn?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const hold = useHeldHeight(blockId, ref, painted ?? [], !serverDrawn, layout);
-  // useKeepPaintedHeight(ref, blockId);
+  useKeepPaintedHeight(ref, blockId);
   return (
     <div
       ref={ref}

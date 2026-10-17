@@ -55,6 +55,10 @@ import { kindServerDataFromStoredValue } from "@ai-matrx/rich-content/kinds/reac
 import { storedKindValue } from "./storedKindValue";
 import type { ArtifactRendererProps } from "./types";
 import { ArtifactBlockAttach } from "@/features/canvas/output/ArtifactBlockAttach";
+import { SavedArtifactEdit } from "@/components/mardown-display/blocks/artifact/SavedArtifactEdit";
+import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
+import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 
 type ArtifactRendererComponent = React.ComponentType<ArtifactRendererProps>;
 
@@ -116,12 +120,15 @@ export function hasArtifactRenderer(
  */
 function attachable(canvasType: string, props: ArtifactRendererProps): boolean {
   return (
-    props.mode !== "canvas" &&
+    attachFramed(canvasType, props) &&
     Boolean(props.conversationId) &&
-    !props.isStreamActive &&
-    !props.isPublic &&
-    canvasType !== "html"
+    !props.isStreamActive
   );
+}
+
+/** Whether the block carries the attach wrapper at all — fixed for the block's whole life. */
+function attachFramed(canvasType: string, props: ArtifactRendererProps): boolean {
+  return props.mode !== "canvas" && !props.isPublic && canvasType !== "html";
 }
 
 function artifactTitle(canvasType: string, metadata: Record<string, unknown> | undefined): string {
@@ -130,6 +137,46 @@ function artifactTitle(canvasType: string, metadata: Record<string, unknown> | u
 }
 
 export function ArtifactRender({
+  canvasType,
+  ...props
+}: ArtifactRendererProps & { canvasType: string }) {
+  // A SAVED chat answer's artifact (BlockRenderer Stage 3b: the materialized `<artifact id>`
+  // keeps the live block's ArtifactRender) draws its saved row by id — an edit made in the canvas
+  // shows here too — WITHOUT swapping the element: until the row answers, the answer's own copy of
+  // the value draws (it is the same value the row was written from), never a loader card.
+  const savedRowId =
+    props.mode === "inline" && !props.isStreamActive && isMaterializedArtifactId(props.artifactId)
+      ? props.artifactId!.trim()
+      : null;
+  const savedRow = useCanvasItem(savedRowId, {
+    resolve: getArtifactDef(canvasType)?.userEditable ? "latest" : "exact",
+    reportUnavailable: false,
+  }).row;
+  const stored = savedRow
+    ? (savedRow.content as { data?: unknown; type?: string; metadata?: unknown } | string | null)
+    : null;
+  const rowRaw = savedRow ? storedPayloadText(stored) : null;
+  return (
+    <SavedArtifactEdit rowId={savedRow && rowRaw ? savedRow.id : null} raw={rowRaw ?? ""} stored={stored}>
+      {(shownRaw) => (
+        <ArtifactRenderBody
+          canvasType={canvasType}
+          {...(savedRow && rowRaw ? { ...props, raw: shownRaw, data: undefined, serverData: undefined } : props)}
+        />
+      )}
+    </SavedArtifactEdit>
+  );
+}
+
+/** `canvas_items.content` → the payload text (`{ data }` object or a whole string). */
+function storedPayloadText(stored: { data?: unknown } | string | null): string {
+  if (stored && typeof stored === "object" && "data" in stored) {
+    return typeof stored.data === "string" ? stored.data : JSON.stringify(stored.data ?? "");
+  }
+  return typeof stored === "string" ? stored : JSON.stringify(stored ?? "");
+}
+
+function ArtifactRenderBody({
   canvasType,
   ...props
 }: ArtifactRendererProps & { canvasType: string }) {
@@ -156,6 +203,17 @@ export function ArtifactRender({
   const finalProps = structuredServerData
     ? { ...props, serverData: structuredServerData }
     : props;
+  // ONE ELEMENT FROM FIRST TOKEN TO SAVED ANSWER (Arman, 2026-10-14). The attach wrapper's
+  // presence is decided by what never changes over a block's life (surface, publicness, type);
+  // whether its actions show (`enabled`) is what changes. Choosing the wrapper by
+  // `isStreamActive` gave the finished block a new parent the frame it settled — React unmounted
+  // the streamed component and mounted a fresh copy (live /chat, 2026-10-17).
+  const framed = attachFramed(canvasType, finalProps);
+  const body = (
+    <Suspense fallback={<MatrxMiniLoader />}>
+      <R {...finalProps} />
+    </Suspense>
+  );
   // The ONE host of block state: every interactive kind below reads its record,
   // identity and kind through `useBlockState()` — never through ids it plumbs itself.
   return (
@@ -168,24 +226,21 @@ export function ArtifactRender({
       content={finalProps.serverData ?? finalProps.data ?? finalProps.raw}
       streaming={!!finalProps.isStreamActive}
     >
-      {attachable(canvasType, finalProps) ? (
+      {framed ? (
         <ArtifactBlockAttach
           type={canvasType}
           data={finalProps.serverData ?? finalProps.data ?? finalProps.raw}
           title={artifactTitle(canvasType, finalProps.metadata)}
-          conversationId={finalProps.conversationId!}
+          conversationId={finalProps.conversationId ?? ""}
           messageId={finalProps.messageId}
           blockIndex={finalProps.blockIndex}
           artifactId={finalProps.artifactId}
+          enabled={attachable(canvasType, finalProps)}
         >
-          <Suspense fallback={<MatrxMiniLoader />}>
-            <R {...finalProps} />
-          </Suspense>
+          {body}
         </ArtifactBlockAttach>
       ) : (
-        <Suspense fallback={<MatrxMiniLoader />}>
-          <R {...finalProps} />
-        </Suspense>
+        body
       )}
     </BlockStateHost>
   );

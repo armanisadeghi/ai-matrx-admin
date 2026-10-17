@@ -1,1798 +1,2384 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0302",
- "version": 2,
- "title": "Freelance Client Portal",
- "description": "Share deliverables, approvals and invoices with each freelance client on one private page.",
- "forWho": "Solo freelancers delivering work to clients",
- "icon": {
-  "emoji": "🪟"
- },
- "cover": {
-  "url": "gallery:photo-misty-mountains",
-  "offsetY": 50
- },
- "category": "clients",
- "tags": [
-  "clients",
-  "portal",
-  "sharing",
-  "updates"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-client-portal",
+  "packVersion": 1,
   "catalogueId": "SP0302",
-  "useCase": "Mira Dalgaard runs client delivery at a web studio and uses this so every client can see their open tasks, approved files and latest update without chasing emails.",
-  "industry": "cross_industry",
-  "vertical": "Client delivery",
-  "job": "customer_service",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Ashgrove Digital",
-   "describes": "A three-person web studio that gives every client a private progress page.",
-   "address": {
-    "line1": "15 Tallow Court",
-    "city": "Burlington",
-    "region": "VT",
-    "postalCode": "05401",
-    "country": "US"
-   },
-   "phone": "(802) 555-0126",
-   "website": "ashgrovedigital.net",
-   "email": "team@ashgrovedigital.net",
-   "timezone": "America/New_York"
-  },
-  "cleanupTag": "use-case:spaces-client-portal",
-  "tables": [
-   {
-    "token": "client",
-    "name": "Clients",
-    "labelSingular": "Client",
-    "labelPlural": "Clients",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "building-2",
-    "titleField": "client_name",
-    "describes": "One row per client; each is the start of their portal.",
-    "subject": "thing",
-    "before": [
-     [
-      "kickoff_on",
-      "launch_on"
-     ]
-    ],
-    "fields": [
-     {
-      "key": "client_name",
-      "label": "Client",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Onboarding",
-       "Active",
-       "On hold",
-       "Complete"
-      ],
-      "choiceColors": {
-       "Onboarding": "slate",
-       "Active": "green",
-       "On hold": "blue",
-       "Complete": "amber"
-      },
-      "required": true,
-      "default": "Onboarding"
-     },
-     {
-      "key": "contact",
-      "label": "Main contact",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "kickoff_on",
-      "label": "Kickoff",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "launch_on",
-      "label": "Target launch",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "tasks",
-      "label": "Tasks",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "task",
-      "multi": true
-     },
-     {
-      "key": "files",
-      "label": "Files",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "file",
-      "multi": true
-     },
-     {
-      "key": "updates",
-      "label": "Updates",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "update",
-      "multi": true
-     },
-     {
-      "key": "task_count",
-      "label": "Task count",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "tasks",
-      "pick": "task_name",
-      "agg": "count"
-     },
-     {
-      "key": "open_tasks",
-      "label": "Waiting on client",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "tasks",
-      "pick": "task_name",
-      "agg": "count",
-      "filter": {
-       "status": "Waiting on client"
-      }
-     },
-     {
-      "key": "file_count",
-      "label": "File count",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "files",
-      "pick": "file_name",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "cl1",
-      "values": {
-       "client_name": "Bluff Creek Farm",
-       "status": "Active",
-       "contact": "Anneliese Brouwer",
-       "email": "anneliese@bluffcreekfarm.net",
-       "kickoff_on": "@today-35d",
-       "launch_on": "@today+21d",
-       "tasks": [
-        "tk01",
-        "tk02",
-        "tk03",
-        "tk04",
-        "tk05"
-       ],
-       "files": [
-        "f1",
-        "f2",
-        "f3",
-        "f4"
-       ],
-       "updates": [
-        "u1",
-        "u2"
-       ]
-      }
-     },
-     {
-      "key": "cl2",
-      "values": {
-       "client_name": "Halvorsen & Pike Law",
-       "status": "Onboarding",
-       "contact": "Desmond Pike",
-       "email": "desmond@halvorsenlaw.net",
-       "kickoff_on": "@today-4d",
-       "launch_on": "@today+60d",
-       "tasks": [
-        "tk06",
-        "tk07",
-        "tk08",
-        "tk09"
-       ],
-       "files": [
-        "f5",
-        "f6"
-       ],
-       "updates": [
-        "u3"
-       ]
-      }
-     },
-     {
-      "key": "cl3",
-      "values": {
-       "client_name": "Pinecrest Family Dental",
-       "status": "Complete",
-       "contact": "Dr. Soraya Nwosu",
-       "email": "soraya@pinecrestdental.net",
-       "kickoff_on": "@today-120d",
-       "launch_on": "@today-40d",
-       "tasks": [
-        "tk10",
-        "tk11"
-       ],
-       "files": [
-        "f7"
-       ],
-       "updates": [
-        "u4"
-       ]
-      }
-     },
-     {
-      "key": "cl4",
-      "values": {
-       "client_name": "Larkspur Bookshop",
-       "status": "On hold",
-       "contact": "Emeka Larkspur",
-       "email": "emeka@larkspurbooks.net",
-       "kickoff_on": "@today-50d",
-       "launch_on": "@today+90d",
-       "tasks": [
-        "tk12"
-       ],
-       "files": [
-        "f8"
-       ],
-       "updates": [
-        "u5"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "token": "task",
-    "name": "Tasks",
-    "labelSingular": "Task",
-    "labelPlural": "Tasks",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "list-checks",
-    "titleField": "task_name",
-    "describes": "Work for each client; only items marked visible show on their portal.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "task_name",
-      "label": "Task",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "To do",
-       "In progress",
-       "Waiting on client",
-       "Done"
-      ],
-      "choiceColors": {
-       "To do": "slate",
-       "In progress": "blue",
-       "Waiting on client": "amber",
-       "Done": "green"
-      },
-      "required": true,
-      "default": "To do"
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "visible",
-      "label": "Visible to client",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "assignee",
-      "label": "Assigned to",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "client",
-      "label": "Client",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "client",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "tk01",
-      "values": {
-       "client": "cl1",
-       "task_name": "Collect product photos for the shop",
-       "status": "Waiting on client",
-       "due_on": "@today+3d",
-       "visible": true,
-       "assignee": "Anneliese"
-      }
-     },
-     {
-      "key": "tk02",
-      "values": {
-       "client": "cl1",
-       "task_name": "Build seasonal produce page",
-       "status": "In progress",
-       "due_on": "@today+9d",
-       "visible": true,
-       "assignee": "Teo"
-      }
-     },
-     {
-      "key": "tk03",
-      "values": {
-       "client": "cl1",
-       "task_name": "Set up online order form",
-       "status": "In progress",
-       "due_on": "@today+12d",
-       "visible": true,
-       "assignee": "Teo"
-      }
-     },
-     {
-      "key": "tk04",
-      "values": {
-       "client": "cl1",
-       "task_name": "Write About the farm copy",
-       "status": "Done",
-       "due_on": "@today-8d",
-       "visible": true,
-       "assignee": "Mira"
-      }
-     },
-     {
-      "key": "tk05",
-      "values": {
-       "client": "cl1",
-       "task_name": "Internal: configure staging server",
-       "status": "In progress",
-       "due_on": "@today+2d",
-       "visible": false,
-       "assignee": "Teo"
-      }
-     },
-     {
-      "key": "tk06",
-      "values": {
-       "client": "cl2",
-       "task_name": "Approve sitemap",
-       "status": "Waiting on client",
-       "due_on": "@today+4d",
-       "visible": true,
-       "assignee": "Desmond"
-      }
-     },
-     {
-      "key": "tk07",
-      "values": {
-       "client": "cl2",
-       "task_name": "Draft practice area pages",
-       "status": "To do",
-       "due_on": "@today+14d",
-       "visible": true,
-       "assignee": "Mira"
-      }
-     },
-     {
-      "key": "tk08",
-      "values": {
-       "client": "cl2",
-       "task_name": "Internal: legal disclaimer review",
-       "status": "To do",
-       "due_on": "@today+10d",
-       "visible": false,
-       "assignee": "Mira"
-      }
-     },
-     {
-      "key": "tk09",
-      "values": {
-       "client": "cl2",
-       "task_name": "Kickoff workshop notes",
-       "status": "Done",
-       "due_on": "@today-3d",
-       "visible": true,
-       "assignee": "Mira"
-      }
-     },
-     {
-      "key": "tk10",
-      "values": {
-       "client": "cl3",
-       "task_name": "Final launch checklist",
-       "status": "Done",
-       "due_on": "@today-42d",
-       "visible": true,
-       "assignee": "Mira"
-      }
-     },
-     {
-      "key": "tk11",
-      "values": {
-       "client": "cl3",
-       "task_name": "Hand over admin logins",
-       "status": "Done",
-       "due_on": "@today-40d",
-       "visible": true,
-       "assignee": "Teo"
-      }
-     },
-     {
-      "key": "tk12",
-      "values": {
-       "client": "cl4",
-       "task_name": "Resume design after pause",
-       "status": "To do",
-       "due_on": "@today+30d",
-       "visible": true,
-       "assignee": "Mira"
-      }
-     }
-    ],
-    "independentOf": {
-     "client": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "file",
-    "name": "Files",
-    "labelSingular": "File",
-    "labelPlural": "Files",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "paperclip",
-    "titleField": "file_name",
-    "describes": "Deliverables, contracts and assets shared with each client.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "file_name",
-      "label": "File",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "type",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Deliverable",
-       "Contract",
-       "Asset",
-       "Invoice"
-      ],
-      "choiceColors": {
-       "Deliverable": "slate",
-       "Contract": "blue",
-       "Asset": "amber",
-       "Invoice": "violet"
-      }
-     },
-     {
-      "key": "approved",
-      "label": "Approved by client",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "shared_on",
-      "label": "Shared on",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "link",
-      "label": "Link",
-      "parityType": "url",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "client",
-      "label": "Client",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "client",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "f1",
-      "values": {
-       "client": "cl1",
-       "file_name": "Homepage design v2",
-       "type": "Deliverable",
-       "approved": true,
-       "shared_on": "@today-6d",
-       "link": "https://files.ashgrovedigital.net/f1"
-      }
-     },
-     {
-      "key": "f2",
-      "values": {
-       "client": "cl1",
-       "file_name": "Signed service agreement",
-       "type": "Contract",
-       "approved": true,
-       "shared_on": "@today-35d",
-       "link": "https://files.ashgrovedigital.net/f2"
-      }
-     },
-     {
-      "key": "f3",
-      "values": {
-       "client": "cl1",
-       "file_name": "Brand colour guide",
-       "type": "Asset",
-       "approved": true,
-       "shared_on": "@today-30d",
-       "link": "https://files.ashgrovedigital.net/f3"
-      }
-     },
-     {
-      "key": "f4",
-      "values": {
-       "client": "cl1",
-       "file_name": "Invoice 2 of 3",
-       "type": "Invoice",
-       "approved": false,
-       "shared_on": "@today-2d",
-       "link": "https://files.ashgrovedigital.net/f4"
-      }
-     },
-     {
-      "key": "f5",
-      "values": {
-       "client": "cl2",
-       "file_name": "Sitemap proposal",
-       "type": "Deliverable",
-       "approved": false,
-       "shared_on": "@today-1d",
-       "link": "https://files.ashgrovedigital.net/f5"
-      }
-     },
-     {
-      "key": "f6",
-      "values": {
-       "client": "cl2",
-       "file_name": "Signed engagement letter",
-       "type": "Contract",
-       "approved": true,
-       "shared_on": "@today-4d",
-       "link": "https://files.ashgrovedigital.net/f6"
-      }
-     },
-     {
-      "key": "f7",
-      "values": {
-       "client": "cl3",
-       "file_name": "Final site handover pack",
-       "type": "Deliverable",
-       "approved": true,
-       "shared_on": "@today-40d",
-       "link": "https://files.ashgrovedigital.net/f7"
-      }
-     },
-     {
-      "key": "f8",
-      "values": {
-       "client": "cl4",
-       "file_name": "Wireframes round one",
-       "type": "Deliverable",
-       "approved": true,
-       "shared_on": "@today-48d",
-       "link": "https://files.ashgrovedigital.net/f8"
-      }
-     }
-    ],
-    "independentOf": {
-     "client": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "update",
-    "name": "Updates",
-    "labelSingular": "Update",
-    "labelPlural": "Updates",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "megaphone",
-    "titleField": "headline",
-    "describes": "Short notes the studio posts to a client's portal.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "headline",
-      "label": "Headline",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "posted_on",
-      "label": "Posted",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "author",
-      "label": "Author",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "summary",
-      "label": "Summary",
-      "parityType": "long_text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "client",
-      "label": "Client",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "client",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "u1",
-      "values": {
-       "client": "cl1",
-       "headline": "Homepage design is ready for your review",
-       "posted_on": "@today-6d",
-       "author": "Mira",
-       "summary": "Version two is in the shared folder. Please leave comments by the end of the week."
-      }
-     },
-     {
-      "key": "u2",
-      "values": {
-       "client": "cl1",
-       "headline": "Order form scoped",
-       "posted_on": "@today-14d",
-       "author": "Teo",
-       "summary": "We will use a simple pickup-time form rather than card payments for launch."
-      }
-     },
-     {
-      "key": "u3",
-      "values": {
-       "client": "cl2",
-       "headline": "Kickoff recap",
-       "posted_on": "@today-3d",
-       "author": "Mira",
-       "summary": "Agreed goals: clearer practice area pages and an easy way to book a consult."
-      }
-     },
-     {
-      "key": "u4",
-      "values": {
-       "client": "cl3",
-       "headline": "Site is live",
-       "posted_on": "@today-40d",
-       "author": "Teo",
-       "summary": "Everything moved over cleanly. Thank you for the great collaboration."
-      }
-     },
-     {
-      "key": "u5",
-      "values": {
-       "client": "cl4",
-       "headline": "Project paused at your request",
-       "posted_on": "@today-20d",
-       "author": "Mira",
-       "summary": "We will pick up from wireframes when you are ready."
-      }
-     }
-    ],
-    "independentOf": {
-     "client": "Either record can be created or change status before the other."
-    }
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each task belongs to one client.",
-    "fromTable": "task",
-    "fromField": "client",
-    "toTable": "client",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "task_by_client"
-   },
-   {
-    "describes": "A client lists its tasks.",
-    "fromTable": "client",
-    "fromField": "tasks",
-    "toTable": "task",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "client_from_tasks"
-   },
-   {
-    "describes": "Each file belongs to one client.",
-    "fromTable": "file",
-    "fromField": "client",
-    "toTable": "client",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "file_by_client"
-   },
-   {
-    "describes": "A client lists its files.",
-    "fromTable": "client",
-    "fromField": "files",
-    "toTable": "file",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "client_from_files"
-   },
-   {
-    "describes": "Each update belongs to one client.",
-    "fromTable": "update",
-    "fromField": "client",
-    "toTable": "client",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "update_by_client"
-   },
-   {
-    "describes": "A client lists its updates.",
-    "fromTable": "client",
-    "fromField": "updates",
-    "toTable": "update",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "client_from_updates"
-   }
-  ],
-  "sharedBlocks": [],
-  "forms": [
-   {
-    "token": "task_request",
-    "name": "Client request",
-    "describes": "How a client or teammate asks for a new piece of work.",
-    "audience": "staff",
-    "table": "task",
-    "fields": [
-     {
-      "fieldKey": "task_name",
-      "ask": "What do you need?",
-      "required": true
-     },
-     {
-      "fieldKey": "client",
-      "ask": "Which client is it for?",
-      "required": true
-     },
-     {
-      "fieldKey": "due_on",
-      "ask": "When do you need it?"
-     }
-    ],
-    "submitLabel": "Send the request",
-    "confirmation": "Thanks. It is on the board as To do."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_update",
-    "name": "All updates",
-    "table": "update",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_file",
-    "name": "All files",
-    "table": "file",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_task",
-    "name": "All tasks",
-    "table": "task",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_client",
-    "name": "All clients",
-    "table": "client",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "client_board",
-    "name": "Clients by status",
-    "table": "client",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "client_timeline",
-    "name": "Delivery timeline",
-    "table": "client",
-    "kind": "timeline",
-    "startField": "kickoff_on",
-    "endField": "launch_on"
-   },
-   {
-    "token": "task_board",
-    "name": "Task board",
-    "table": "task",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "task_calendar",
-    "name": "Task calendar",
-    "table": "task",
-    "kind": "calendar",
-    "dateField": "due_on",
-    "allDay": true
-   },
-   {
-    "token": "update_log",
-    "name": "Latest updates",
-    "table": "update",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "posted_on",
-      "direction": "desc"
-     }
-    ]
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Portal assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "task",
-     "describes": "Every task, its client, status and due day."
-    },
-    {
-     "name": "related_tables",
-     "table": "client",
-     "describes": "The clients each task is for."
-    }
-   ],
-   "question": {
-    "ask": "How many tasks are waiting on a client?",
-    "whyItMatters": "Mira nudges clients on Mondays.",
-    "expect": {
-     "table": "task",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Waiting on client"
-     },
-     "answer": 2,
-     "unit": "tasks"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open clients by status.",
-    "action": {
-     "kind": "open",
-     "surface": "client_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "client_board",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open delivery timeline.",
-    "action": {
-     "kind": "open",
-     "surface": "client_timeline"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "client_timeline",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open task board.",
-    "action": {
-     "kind": "open",
-     "surface": "task_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "task_board",
-     "minItems": 3
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "ashgrovedigital.net",
-    "bluffcreekfarm.net",
-    "halvorsenlaw.net",
-    "pinecrestdental.net",
-    "larkspurbooks.net"
-   ],
-   "fictionalStreets": [
-    "Tallow Court"
-   ]
-  },
-  "version": 2
- },
- "pages": [
-  {
-   "key": "freelance-client-portal",
-   "parent": null,
-   "title": "Freelance Client Portal",
-   "icon": {
+  "version": 3,
+  "title": "Freelance Client Portal",
+  "description": "Share deliverables, approvals and invoices with each freelance client on one private page.",
+  "forWho": "Solo freelancers delivering work to clients",
+  "icon": {
     "emoji": "🪟"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-misty-mountains",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "One row per client. Open a client to see their tasks, files and updates together. Tick Visible to client on a task to show it on their page."
-      }
-     ],
-     "background": "green",
-     "props": {
-      "icon": "Lightbulb"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:sample-portal"
-         }
-        }
-       ]
+  },
+  "category": "clients",
+  "tags": [
+    "clients",
+    "portal",
+    "sharing",
+    "updates"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-client-portal",
+    "catalogueId": "SP0302",
+    "useCase": "Mira Dalgaard runs client delivery at a web studio and uses this so every client can see their open tasks, approved files and latest update without chasing emails.",
+    "industry": "cross_industry",
+    "vertical": "Client delivery",
+    "job": "customer_service",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Ashgrove Digital",
+      "describes": "A three-person web studio that gives every client a private progress page.",
+      "address": {
+        "line1": "15 Tallow Court",
+        "city": "Burlington",
+        "region": "VT",
+        "postalCode": "05401",
+        "country": "US"
       },
+      "phone": "(802) 555-0126",
+      "website": "ashgrovedigital.net",
+      "email": "team@ashgrovedigital.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-client-portal",
+    "tables": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:setup-guide"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:approvals"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Clients"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "client",
-       "view": "client_board"
-      },
-      "inline": true,
-      "title": "Clients",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-tl",
-        "name": "Delivery timeline",
-        "layout": "timeline",
-        "icon": "ChartGantt",
-        "dateField": "kickoff_on"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All clients",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Tasks"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "task_board"
-      },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-cal",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "due_on"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All tasks",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "One row per client; each is the start of their portal.",
+        "subject": "thing",
+        "before": [
+          [
+            "kickoff_on",
+            "launch_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Onboarding",
+              "Active",
+              "On hold",
+              "Complete"
+            ],
+            "choiceColors": {
+              "Onboarding": "slate",
+              "Active": "green",
+              "On hold": "blue",
+              "Complete": "amber"
+            },
+            "required": true,
+            "default": "Onboarding",
+            "statusGroups": {
+              "Onboarding": "todo",
+              "Active": "in_progress",
+              "On hold": "in_progress",
+              "Complete": "done"
+            }
+          },
+          {
+            "key": "contact",
+            "label": "Main contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kickoff_on",
+            "label": "Kickoff",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "launch_on",
+            "label": "Target launch",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_launch",
+            "label": "Days to launch",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Target launch}, 'days')"
+          },
+          {
+            "key": "task_count",
+            "label": "Tasks in total",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "tasks_done",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "progress",
+            "label": "Delivery progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Tasks in total} > 0, ROUND({Tasks done} / {Tasks in total} * 100, 0), 0)"
+          },
+          {
+            "key": "open_tasks",
+            "label": "Waiting on client",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Waiting on client"
+            }
+          },
+          {
+            "key": "file_count",
+            "label": "Files shared",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "files",
+            "pick": "file_name",
+            "agg": "count"
+          },
+          {
+            "key": "files_ok",
+            "label": "Files approved",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "files",
+            "pick": "file_name",
+            "agg": "count",
+            "filter": {
+              "approved": true
+            }
+          },
+          {
+            "key": "approved_pct",
+            "label": "Approved (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Files shared} > 0, ROUND({Files approved} / {Files shared} * 100, 0), 0)"
+          },
+          {
+            "key": "update_count",
+            "label": "Updates posted",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "updates",
+            "pick": "headline",
+            "agg": "count"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "updated_at",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cl1",
+            "values": {
+              "client_name": "Bluff Creek Farm",
+              "status": "Active",
+              "contact": "Anneliese Brouwer",
+              "email": "anneliese@bluffcreekfarm.net",
+              "kickoff_on": "@today-35d",
+              "launch_on": "@today+21d"
+            }
+          },
+          {
+            "key": "cl2",
+            "values": {
+              "client_name": "Halvorsen & Pike Law",
+              "status": "Onboarding",
+              "contact": "Desmond Pike",
+              "email": "desmond@halvorsenlaw.net",
+              "kickoff_on": "@today-4d",
+              "launch_on": "@today+60d"
+            }
+          },
+          {
+            "key": "cl3",
+            "values": {
+              "client_name": "Pinecrest Family Dental",
+              "status": "Complete",
+              "contact": "Dr. Soraya Nwosu",
+              "email": "soraya@pinecrestdental.net",
+              "kickoff_on": "@today-120d",
+              "launch_on": "@today-40d"
+            }
+          },
+          {
+            "key": "cl4",
+            "values": {
+              "client_name": "Larkspur Bookshop",
+              "status": "On hold",
+              "contact": "Emeka Larkspur",
+              "email": "emeka@larkspurbooks.net",
+              "kickoff_on": "@today-50d",
+              "launch_on": "@today+90d"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Onboarding"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we are building"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The outcome, in the client’s words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Kickoff"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed proposal and deposit received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Brand assets collected"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Kickoff call booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Portal page copied and shared"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Files"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "file",
-       "view": "all_file"
       },
-      "inline": true,
-      "title": "Files",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-tbl",
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Work for each client; only items marked visible show on their portal.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Waiting on client",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Waiting on client": "amber",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Waiting on client": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "visible",
+            "label": "Visible to client",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "assignee",
+            "label": "Assigned to",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
+          },
+          {
+            "key": "created_at",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tk01",
+            "values": {
+              "client": "cl1",
+              "task_name": "Collect product photos for the shop",
+              "status": "Waiting on client",
+              "due_on": "@today+3d",
+              "visible": true,
+              "assignee": "Anneliese"
+            }
+          },
+          {
+            "key": "tk02",
+            "values": {
+              "client": "cl1",
+              "task_name": "Build seasonal produce page",
+              "status": "In progress",
+              "due_on": "@today+9d",
+              "visible": true,
+              "assignee": "Teo"
+            }
+          },
+          {
+            "key": "tk03",
+            "values": {
+              "client": "cl1",
+              "task_name": "Set up online order form",
+              "status": "In progress",
+              "due_on": "@today+12d",
+              "visible": true,
+              "assignee": "Teo"
+            }
+          },
+          {
+            "key": "tk04",
+            "values": {
+              "client": "cl1",
+              "task_name": "Write About the farm copy",
+              "status": "Done",
+              "due_on": "@today-8d",
+              "visible": true,
+              "assignee": "Mira"
+            }
+          },
+          {
+            "key": "tk05",
+            "values": {
+              "client": "cl1",
+              "task_name": "Internal: configure staging server",
+              "status": "In progress",
+              "due_on": "@today-1d",
+              "visible": false,
+              "assignee": "Teo"
+            }
+          },
+          {
+            "key": "tk06",
+            "values": {
+              "client": "cl2",
+              "task_name": "Approve sitemap",
+              "status": "Waiting on client",
+              "due_on": "@today+4d",
+              "visible": true,
+              "assignee": "Desmond"
+            }
+          },
+          {
+            "key": "tk07",
+            "values": {
+              "client": "cl2",
+              "task_name": "Draft practice area pages",
+              "status": "To do",
+              "due_on": "@today+14d",
+              "visible": true,
+              "assignee": "Mira"
+            }
+          },
+          {
+            "key": "tk08",
+            "values": {
+              "client": "cl2",
+              "task_name": "Internal: legal disclaimer review",
+              "status": "To do",
+              "due_on": "@today+10d",
+              "visible": false,
+              "assignee": "Mira"
+            }
+          },
+          {
+            "key": "tk09",
+            "values": {
+              "client": "cl2",
+              "task_name": "Kickoff workshop notes",
+              "status": "Done",
+              "due_on": "@today-3d",
+              "visible": true,
+              "assignee": "Mira"
+            }
+          },
+          {
+            "key": "tk10",
+            "values": {
+              "client": "cl3",
+              "task_name": "Final launch checklist",
+              "status": "Done",
+              "due_on": "@today-42d",
+              "visible": true,
+              "assignee": "Mira"
+            }
+          },
+          {
+            "key": "tk11",
+            "values": {
+              "client": "cl3",
+              "task_name": "Hand over admin logins",
+              "status": "Done",
+              "due_on": "@today-40d",
+              "visible": true,
+              "assignee": "Teo"
+            }
+          },
+          {
+            "key": "tk12",
+            "values": {
+              "client": "cl4",
+              "task_name": "Resume design after pause",
+              "status": "To do",
+              "due_on": "@today+30d",
+              "visible": true,
+              "assignee": "Mira"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New task",
+            "values": {
+              "status": "To do",
+              "visible": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What done looks like"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we need from the client"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "file",
+        "name": "Files",
+        "labelSingular": "File",
+        "labelPlural": "Files",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "paperclip",
+        "titleField": "file_name",
+        "describes": "Deliverables, contracts and assets shared with each client.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "file_name",
+            "label": "File",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Deliverable",
+              "Contract",
+              "Asset",
+              "Invoice"
+            ],
+            "choiceColors": {
+              "Deliverable": "slate",
+              "Contract": "blue",
+              "Asset": "amber",
+              "Invoice": "violet"
+            }
+          },
+          {
+            "key": "approved",
+            "label": "Approved by client",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shared_on",
+            "label": "Shared on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_waiting",
+            "label": "Days since shared",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Shared on}, TODAY(), 'days')"
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "approve_btn",
+            "label": "Mark approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "file_approved"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "f1",
+            "values": {
+              "client": "cl1",
+              "file_name": "Homepage design v2",
+              "type": "Deliverable",
+              "approved": true,
+              "shared_on": "@today-6d",
+              "link": "https://files.ashgrovedigital.net/f1"
+            }
+          },
+          {
+            "key": "f2",
+            "values": {
+              "client": "cl1",
+              "file_name": "Signed service agreement",
+              "type": "Contract",
+              "approved": true,
+              "shared_on": "@today-35d",
+              "link": "https://files.ashgrovedigital.net/f2"
+            }
+          },
+          {
+            "key": "f3",
+            "values": {
+              "client": "cl1",
+              "file_name": "Brand colour guide",
+              "type": "Asset",
+              "approved": true,
+              "shared_on": "@today-30d",
+              "link": "https://files.ashgrovedigital.net/f3"
+            }
+          },
+          {
+            "key": "f4",
+            "values": {
+              "client": "cl1",
+              "file_name": "Invoice 2 of 3",
+              "type": "Invoice",
+              "approved": false,
+              "shared_on": "@today-2d",
+              "link": "https://files.ashgrovedigital.net/f4"
+            }
+          },
+          {
+            "key": "f5",
+            "values": {
+              "client": "cl2",
+              "file_name": "Sitemap proposal",
+              "type": "Deliverable",
+              "approved": false,
+              "shared_on": "@today-1d",
+              "link": "https://files.ashgrovedigital.net/f5"
+            }
+          },
+          {
+            "key": "f6",
+            "values": {
+              "client": "cl2",
+              "file_name": "Signed engagement letter",
+              "type": "Contract",
+              "approved": true,
+              "shared_on": "@today-4d",
+              "link": "https://files.ashgrovedigital.net/f6"
+            }
+          },
+          {
+            "key": "f7",
+            "values": {
+              "client": "cl3",
+              "file_name": "Final site handover pack",
+              "type": "Deliverable",
+              "approved": true,
+              "shared_on": "@today-40d",
+              "link": "https://files.ashgrovedigital.net/f7"
+            }
+          },
+          {
+            "key": "f8",
+            "values": {
+              "client": "cl4",
+              "file_name": "Wireframes round one",
+              "type": "Deliverable",
+              "approved": true,
+              "shared_on": "@today-48d",
+              "link": "https://files.ashgrovedigital.net/f8"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New file",
+            "values": {
+              "approved": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What this is"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we need from the client"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Approve, or tell us what to change"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "update",
+        "name": "Updates",
+        "labelSingular": "Update",
+        "labelPlural": "Updates",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "megaphone",
+        "titleField": "headline",
+        "describes": "Short notes the studio posts to a client's portal.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "headline",
+            "label": "Headline",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "posted_on",
+            "label": "Posted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "u1",
+            "values": {
+              "client": "cl1",
+              "headline": "Homepage design is ready for your review",
+              "posted_on": "@today-6d",
+              "author": "Mira",
+              "summary": "Version two is in the shared folder. Please leave comments by the end of the week."
+            }
+          },
+          {
+            "key": "u2",
+            "values": {
+              "client": "cl1",
+              "headline": "Order form scoped",
+              "posted_on": "@today-14d",
+              "author": "Teo",
+              "summary": "We will use a simple pickup-time form rather than card payments for launch."
+            }
+          },
+          {
+            "key": "u3",
+            "values": {
+              "client": "cl2",
+              "headline": "Kickoff recap",
+              "posted_on": "@today-3d",
+              "author": "Mira",
+              "summary": "Agreed goals: clearer practice area pages and an easy way to book a consult."
+            }
+          },
+          {
+            "key": "u4",
+            "values": {
+              "client": "cl3",
+              "headline": "Site is live",
+              "posted_on": "@today-40d",
+              "author": "Teo",
+              "summary": "Everything moved over cleanly. Thank you for the great collaboration."
+            }
+          },
+          {
+            "key": "u5",
+            "values": {
+              "client": "cl4",
+              "headline": "Project paused at your request",
+              "posted_on": "@today-20d",
+              "author": "Mira",
+              "summary": "We will pick up from wireframes when you are ready."
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Client update",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What happened this week"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is next"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we need from you"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each task belongs to one client.",
+        "fromTable": "task",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each file belongs to one client.",
+        "fromTable": "file",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "files"
+      },
+      {
+        "describes": "Each update belongs to one client.",
+        "fromTable": "update",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "updates"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "task_request",
+        "name": "Client request",
+        "describes": "How a client or teammate asks for a new piece of work.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What do you need?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which client is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When do you need it?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is on the board as To do."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "file_approved",
+        "table": "file",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "approved",
+            "set": "value",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_update",
+        "name": "All updates",
+        "table": "update",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_file",
         "name": "All files",
-        "layout": "grid",
-        "icon": "Table",
+        "table": "file",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients by status",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_timeline",
+        "name": "Delivery timeline",
+        "table": "client",
+        "kind": "timeline",
+        "startField": "kickoff_on",
+        "endField": "launch_on"
+      },
+      {
+        "token": "task_board",
+        "name": "Task board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Task calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "update_log",
+        "name": "Latest updates",
+        "table": "update",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "shared_on",
-          "direction": "desc"
-         }
+          {
+            "field": "posted_on",
+            "direction": "desc"
+          }
         ]
-       },
-       {
-        "id": "view-app",
-        "name": "Approved",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "approved": true
-        }
-       }
-      ],
-      "activeViewId": "view-tbl"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Updates"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "update",
-       "view": "update_log"
-      },
-      "inline": true,
-      "title": "Updates",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-log",
-        "name": "Latest first",
-        "layout": "list",
-        "icon": "List",
-        "sorts": [
-         {
-          "field": "posted_on",
-          "direction": "desc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-log"
-     }
-    }
-   ]
-  },
-  {
-   "key": "dashboard",
-   "parent": "freelance-client-portal",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "client",
-           "view": "all_client"
-          },
-          "inline": true,
-          "title": "Clients by status",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c1",
-            "name": "Clients by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-c1"
-         }
-        }
-       ]
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "task",
-           "view": "all_task"
-          },
-          "inline": true,
-          "title": "Tasks by status",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c2",
-            "name": "Tasks by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-c2"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "file",
-           "view": "all_file"
-          },
-          "inline": true,
-          "title": "Files by type",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c3",
-            "name": "Files by type",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "type",
-             "op": "count"
-            }
-           }
-          ],
-          "activeViewId": "view-c3"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Waiting on clients"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "all_task"
-      },
-      "inline": true,
-      "title": "Waiting on clients",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-w",
-        "name": "Waiting on client",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "status": "Waiting on client"
-        }
-       }
-      ],
-      "activeViewId": "view-w"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Files not yet approved"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "file",
-       "view": "all_file"
-      },
-      "inline": true,
-      "title": "Files not yet approved",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-na",
-        "name": "Needs approval",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "approved": false
-        }
-       }
-      ],
-      "activeViewId": "view-na"
-     }
-    }
-   ]
-  },
-  {
-   "key": "sample-portal",
-   "parent": "freelance-client-portal",
-   "title": "Sample portal: Bluff Creek Farm",
-   "icon": {
-    "emoji": "🌾"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "This is what a client sees. Share only this page, never the admin home. Copy it for each client and change the filters."
-      }
-     ],
-     "background": "green",
-     "props": {
-      "icon": "Eye"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Your open tasks"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "task_board"
-      },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-vis",
-        "name": "Visible tasks",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "visible": true,
-         "status": [
-          "To do",
-          "In progress",
-          "Waiting on client"
-         ]
+        "token": "tk_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
         },
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-vis"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Files and deliverables"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "file",
-       "view": "all_file"
-      },
-      "inline": true,
-      "title": "Files",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-f",
-        "name": "Shared files",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "approved": true
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Waiting on client"
+          ]
         }
-       }
-      ],
-      "activeViewId": "view-f"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Latest updates"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "update",
-       "view": "update_log"
       },
-      "inline": true,
-      "title": "Updates",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-u",
-        "name": "Newest first",
-        "layout": "list",
-        "icon": "List",
-        "sorts": [
-         {
-          "field": "posted_on",
-          "direction": "desc"
-         }
-        ]
-       }
+      {
+        "token": "tk_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Waiting on client"
+          ]
+        }
+      },
+      {
+        "token": "tk_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Waiting on client"
+          ]
+        }
+      },
+      {
+        "token": "up_week",
+        "name": "Posted this week",
+        "table": "update",
+        "kind": "grid",
+        "within": {
+          "posted_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "file_week",
+        "name": "Shared this week",
+        "table": "file",
+        "kind": "grid",
+        "within": {
+          "shared_on": {
+            "relative": "this_week"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Portal assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every task, its client, status and due day."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The clients each task is for."
+        }
       ],
-      "activeViewId": "view-u"
-     }
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Questions? Reply to the latest update or email the studio."
+      "question": {
+        "ask": "How many tasks are waiting on a client?",
+        "whyItMatters": "Mira nudges clients on Mondays.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Waiting on client"
+          },
+          "answer": 2,
+          "unit": "tasks"
+        }
       }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Mail"
-     }
-    }
-   ]
+    },
+    "walk": [
+      {
+        "says": "Open clients by status.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open delivery timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "client_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_timeline",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "ashgrovedigital.net",
+        "bluffcreekfarm.net",
+        "halvorsenlaw.net",
+        "pinecrestdental.net",
+        "larkspurbooks.net"
+      ],
+      "fictionalStreets": [
+        "Tallow Court"
+      ]
+    },
+    "version": 3
   },
-  {
-   "key": "setup-guide",
-   "parent": "freelance-client-portal",
-   "title": "Set up a client portal",
-   "icon": {
-    "emoji": "🛠️"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Add the client as a row and set the status to Onboarding."
-      }
-     ]
+      "key": "freelance-client-portal",
+      "parent": null,
+      "title": "Freelance Client Portal",
+      "icon": {
+        "emoji": "🪟"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One row per client. Open a client to see their tasks, files and updates together. Tick Visible to client on a task to show it on their page."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sample-portal"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:setup-guide"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:approvals"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-tl",
+                "name": "Delivery timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "kickoff_on"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-to",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "v-tw",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "v-t7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Files"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "file",
+              "view": "all_file"
+            },
+            "inline": true,
+            "title": "Files",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-tbl",
+                "name": "All files",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "shared_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-app",
+                "name": "Approved",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "approved": true
+                }
+              },
+              {
+                "id": "v-fw",
+                "name": "Shared this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "shared_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-tbl"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Updates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "update",
+              "view": "update_log"
+            },
+            "inline": true,
+            "title": "Updates",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-log",
+                "name": "Latest first",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "posted_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-uw",
+                "name": "Posted this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "posted_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-log"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Copy the sample portal page and rename it."
-      }
-     ]
+      "key": "dashboard",
+      "parent": "freelance-client-portal",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Clients by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "file",
+                      "view": "all_file"
+                    },
+                    "inline": true,
+                    "title": "Files by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c3",
+                        "name": "Files by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "type",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waiting on clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Waiting on clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-w",
+                "name": "Waiting on client",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Waiting on client"
+                }
+              }
+            ],
+            "activeViewId": "view-w"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Files not yet approved"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "file",
+              "view": "all_file"
+            },
+            "inline": true,
+            "title": "Files not yet approved",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-na",
+                "name": "Needs approval",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "approved": false
+                }
+              }
+            ],
+            "activeViewId": "view-na"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Add a filter so every list shows only that client."
-      }
-     ]
+      "key": "sample-portal",
+      "parent": "freelance-client-portal",
+      "title": "Sample portal: Bluff Creek Farm",
+      "icon": {
+        "emoji": "🌾"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This is what a client sees. Share only this page, never the admin home. Copy it for each client and change the filters."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Eye"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your open tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-vis",
+                "name": "Visible tasks",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "visible": true,
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-vis"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Files and deliverables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "file",
+              "view": "all_file"
+            },
+            "inline": true,
+            "title": "Files",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-f",
+                "name": "Shared files",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "approved": true
+                }
+              }
+            ],
+            "activeViewId": "view-f"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Latest updates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "update",
+              "view": "update_log"
+            },
+            "inline": true,
+            "title": "Updates",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u",
+                "name": "Newest first",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "posted_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-u"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Questions? Reply to the latest update or email the studio."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Mail"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Tick Visible to client on the tasks you want them to see."
-      }
-     ]
+      "key": "setup-guide",
+      "parent": "freelance-client-portal",
+      "title": "Set up a client portal",
+      "icon": {
+        "emoji": "🛠️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the client as a row and set the status to Onboarding."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Copy the sample portal page and rename it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a filter so every list shows only that client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tick Visible to client on the tasks you want them to see."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Share the page link, not the admin home."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Keep internal tasks unticked. They stay hidden from the portal."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "EyeOff"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the client sees"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Only the tasks ticked Visible to client, the files marked approved, and the updates you post. They never see the admin home or the other clients. Check the portal page signed out before you send the link."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping it current"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Post one short update a week even when nothing changed; silence is what makes clients nervous."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move a task to Waiting on client the moment you need something, so the dashboard shows it."
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Share the page link, not the admin home."
-      }
-     ]
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Keep internal tasks unticked. They stay hidden from the portal."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "EyeOff"
-     }
+      "key": "approvals",
+      "parent": "freelance-client-portal",
+      "title": "Approval checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "An approval is a record that someone said yes. Capture it in the file row so that nobody has to search email later."
+            }
+          ],
+          "props": {
+            "icon": "CheckCircle"
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deliverable uploaded and linked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Short summary written in Updates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client emailed the link"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Approval ticked once they reply"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next task moved to In progress"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If the client does not answer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 3: a one-line reminder with the link."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 7: a call or message, and a note in the update log."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the dependent task to Waiting on client so the schedule is honest."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  },
-  {
-   "key": "approvals",
-   "parent": "freelance-client-portal",
-   "title": "Approval checklist",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Deliverable uploaded and linked"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Short summary written in Updates"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Client emailed the link"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Approval ticked once they reply"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Next task moved to In progress"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  }
- ]
+  ]
 }

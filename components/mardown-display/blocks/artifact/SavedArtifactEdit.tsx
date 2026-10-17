@@ -33,7 +33,13 @@ import { canvasItemsService, type UpdateCanvasItemInput } from "@/features/canva
 import { toast } from "@/lib/toast";
 
 interface SavedArtifactEditProps {
-  rowId: string;
+  /**
+   * The saved row the block draws, or null while there is none (a live block, a row still
+   * loading): then the block's own answer write passes straight through. Rendering this provider
+   * ALWAYS (row or not) keeps the drawn component under the same parent from the first token to
+   * the saved answer — a provider that appeared only once the row loaded remounted it.
+   */
+  rowId: string | null;
   /** The row's text payload as drawn (`content.data`, or the whole string content). */
   raw: string;
   /** The row's stored `content` (`{ data, type, metadata }` or a string). */
@@ -48,7 +54,7 @@ export function SavedArtifactEdit({ rowId, raw, stored, children }: SavedArtifac
   const textPayload =
     typeof stored === "string" ||
     (stored !== null && typeof stored === "object" && typeof (stored as { data?: unknown }).data === "string");
-  const writable = Boolean(answer && textPayload && shownRaw && answer.source.includes(shownRaw));
+  const writable = Boolean(rowId && answer && textPayload && shownRaw && answer.source.includes(shownRaw));
 
   // Toast actions run after later renders: they read the latest values here.
   const latest = useRef({ answer, shownRaw, stored, rowId, writable });
@@ -58,17 +64,18 @@ export function SavedArtifactEdit({ rowId, raw, stored, children }: SavedArtifac
 
   const write = (next: string, undoable: boolean) => {
     const now = latest.current;
-    if (!now.answer || !now.writable || next === now.shownRaw) return;
+    const rowNow = now.rowId;
+    if (!rowNow || !now.answer || !now.writable || next === now.shownRaw) return;
     const prev = now.shownRaw;
-    setShown({ rowId: now.rowId, raw: next });
+    setShown({ rowId: rowNow, raw: next });
     // Optimistic: the next render sees the new text before the effect runs.
     latest.current = { ...now, shownRaw: next };
     now.answer.write(now.answer.source.replace(prev, next));
     const content = (
       typeof now.stored === "string" ? next : { ...(now.stored as Record<string, unknown>), data: next }
     ) as UpdateCanvasItemInput["content"];
-    void canvasItemsService.update(now.rowId, { content }).then(({ error }) => {
-      invalidateCanvasItemCache(now.rowId);
+    void canvasItemsService.update(rowNow, { content }).then(({ error }) => {
+      invalidateCanvasItemCache(rowNow);
       if (error) {
         toast.error("The change was not saved to the saved artifact.", {
           description: error instanceof Error ? error.message : String((error as { message?: unknown })?.message ?? error),
@@ -80,6 +87,13 @@ export function SavedArtifactEdit({ rowId, raw, stored, children }: SavedArtifac
     }
   };
 
+  if (!rowId) {
+    return (
+      <BlockEditProvider source={answer?.source ?? null} replace={answer ? (_source: string, next: string) => answer.write(next) : null}>
+        {children(raw)}
+      </BlockEditProvider>
+    );
+  }
   return (
     <BlockEditProvider source={writable ? shownRaw : null} replace={writable ? (_source: string, next: string) => write(next, true) : null}>
       {children(shownRaw)}

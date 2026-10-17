@@ -1,2696 +1,3792 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0300",
- "version": 1,
- "title": "Freelancer OS",
- "description": "Run clients, projects, tasks, time and invoices from one home page.",
- "forWho": "Solo freelancers and independent consultants",
- "icon": {
-  "emoji": "🧑‍💻"
- },
- "cover": {
-  "url": "gallery:photo-pine-forest",
-  "offsetY": 50
- },
- "category": "clients",
- "tags": [
-  "freelance",
-  "clients",
-  "invoices",
-  "time"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-freelancer-os",
+  "packVersion": 1,
   "catalogueId": "SP0300",
-  "useCase": "Quenby Hollis is a freelance brand and web designer who uses this to see every client, what is due this week, hours logged and which invoices are still unpaid.",
-  "industry": "cross_industry",
-  "vertical": "Freelance operations",
-  "job": "billing",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Quenby Hollis Design",
-   "describes": "A one-person brand and web design practice working with small local businesses.",
-   "address": {
-    "line1": "47 Alderwick Lane",
-    "city": "Asheville",
-    "region": "NC",
-    "postalCode": "28801",
-    "country": "US"
-   },
-   "phone": "(828) 555-0143",
-   "website": "quenbyhollis.net",
-   "email": "hello@quenbyhollis.net",
-   "timezone": "America/New_York"
-  },
-  "cleanupTag": "use-case:spaces-freelancer-os",
-  "tables": [
-   {
-    "token": "client",
-    "name": "Clients",
-    "labelSingular": "Client",
-    "labelPlural": "Clients",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "users",
-    "titleField": "client_name",
-    "describes": "Every person or business you work for, and what they have been billed.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "client_name",
-      "label": "Client",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Lead",
-       "Active",
-       "Paused",
-       "Past"
-      ],
-      "choiceColors": {
-       "Lead": "slate",
-       "Active": "green",
-       "Paused": "blue",
-       "Past": "red"
-      },
-      "required": true,
-      "default": "Active"
-     },
-     {
-      "key": "company",
-      "label": "Company",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "phone",
-      "label": "Phone",
-      "parityType": "phone",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "website",
-      "label": "Website",
-      "parityType": "url",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "source",
-      "label": "Source",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Referral",
-       "Website",
-       "Social",
-       "Past client",
-       "Event"
-      ],
-      "choiceColors": {
-       "Referral": "slate",
-       "Website": "blue",
-       "Social": "amber",
-       "Past client": "violet",
-       "Event": "teal"
-      }
-     },
-     {
-      "key": "projects",
-      "label": "Projects",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "project",
-      "multi": true
-     },
-     {
-      "key": "invoices",
-      "label": "Invoices",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "invoice",
-      "multi": true
-     },
-     {
-      "key": "total_billed",
-      "label": "Total billed",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "invoices",
-      "pick": "amount",
-      "agg": "sum"
-     },
-     {
-      "key": "invoice_count",
-      "label": "Invoice count",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "invoices",
-      "pick": "amount",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "c-tidewater",
-      "values": {
-       "client_name": "Odette Marsh",
-       "status": "Active",
-       "company": "Tidewater Bakery",
-       "email": "odette@tidewaterbakery.net",
-       "phone": "(828) 555-0121",
-       "website": "https://tidewaterbakery.net",
-       "source": "Referral",
-       "projects": [
-        "p-bakery-brand"
-       ],
-       "invoices": [
-        "i01",
-        "i08"
-       ]
-      }
-     },
-     {
-      "key": "c-kestrel",
-      "values": {
-       "client_name": "Dr. Ivo Brandt",
-       "status": "Active",
-       "company": "Kestrel Physiotherapy",
-       "email": "ivo@kestrelphysio.net",
-       "phone": "(828) 555-0132",
-       "website": "https://kestrelphysio.net",
-       "source": "Website",
-       "projects": [
-        "p-physio-site"
-       ],
-       "invoices": [
-        "i02",
-        "i03"
-       ]
-      }
-     },
-     {
-      "key": "c-northfield",
-      "values": {
-       "client_name": "Lucía Ferreira",
-       "status": "Active",
-       "company": "Northfield Bikes",
-       "email": "lucia@northfieldbikes.net",
-       "phone": "(828) 555-0147",
-       "website": "https://northfieldbikes.net",
-       "source": "Event",
-       "projects": [
-        "p-bikes-menu",
-        "p-bikes-retainer"
-       ],
-       "invoices": [
-        "i04",
-        "i05"
-       ]
-      }
-     },
-     {
-      "key": "c-pellam",
-      "values": {
-       "client_name": "Rashid Pellam",
-       "status": "Paused",
-       "company": "Pellam Surveying",
-       "email": "rashid@pellamsurvey.net",
-       "phone": "(828) 555-0158",
-       "source": "Past client",
-       "projects": [
-        "p-pellam-logo"
-       ],
-       "invoices": [
-        "i06"
-       ]
-      }
-     },
-     {
-      "key": "c-wren",
-      "values": {
-       "client_name": "Hana Wrenfield",
-       "status": "Past",
-       "company": "Wrenfield Yoga",
-       "email": "hana@wrenfieldyoga.net",
-       "phone": "(828) 555-0164",
-       "source": "Social",
-       "projects": [
-        "p-yoga-site"
-       ],
-       "invoices": [
-        "i07"
-       ]
-      }
-     },
-     {
-      "key": "c-orrin",
-      "values": {
-       "client_name": "Tomasz Orrin",
-       "status": "Lead",
-       "company": "Orrin Joinery",
-       "email": "tomasz@orrinjoinery.net",
-       "phone": "(828) 555-0170",
-       "source": "Referral",
-       "projects": [],
-       "invoices": []
-      }
-     }
-    ]
-   },
-   {
-    "token": "project",
-    "name": "Projects",
-    "labelSingular": "Project",
-    "labelPlural": "Projects",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "folder-kanban",
-    "titleField": "project_name",
-    "describes": "Each piece of client work with its budget and dates.",
-    "subject": "thing",
-    "before": [
-     [
-      "start_on",
-      "due_on"
-     ]
-    ],
-    "fields": [
-     {
-      "key": "project_name",
-      "label": "Project",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Proposed",
-       "In progress",
-       "In review",
-       "Done"
-      ],
-      "choiceColors": {
-       "Proposed": "slate",
-       "In progress": "blue",
-       "In review": "amber",
-       "Done": "green"
-      },
-      "required": true,
-      "default": "Proposed"
-     },
-     {
-      "key": "type",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Branding",
-       "Website",
-       "Print",
-       "Retainer"
-      ],
-      "choiceColors": {
-       "Branding": "slate",
-       "Website": "blue",
-       "Print": "amber",
-       "Retainer": "violet"
-      }
-     },
-     {
-      "key": "start_on",
-      "label": "Start",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "budget",
-      "label": "Budget",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "client",
-      "label": "Client",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "client",
-      "relationMax": 1
-     },
-     {
-      "key": "tasks",
-      "label": "Tasks",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "task",
-      "multi": true
-     },
-     {
-      "key": "time_entries",
-      "label": "Time entries",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "time_entry",
-      "multi": true
-     },
-     {
-      "key": "hours_logged",
-      "label": "Hours logged",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "time_entries",
-      "pick": "hours",
-      "agg": "sum"
-     },
-     {
-      "key": "task_count",
-      "label": "Task count",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "tasks",
-      "pick": "task_name",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "p-bakery-brand",
-      "values": {
-       "client": "c-tidewater",
-       "project_name": "Tidewater rebrand and packaging",
-       "status": "In progress",
-       "type": "Branding",
-       "start_on": "@today-30d",
-       "due_on": "@today+16d",
-       "budget": 6800,
-       "tasks": [
-        "t01",
-        "t02",
-        "t03",
-        "t04",
-        "t14"
-       ],
-       "time_entries": [
-        "e01",
-        "e02",
-        "e03"
-       ]
-      }
-     },
-     {
-      "key": "p-physio-site",
-      "values": {
-       "client": "c-kestrel",
-       "project_name": "Kestrel booking website",
-       "status": "In review",
-       "type": "Website",
-       "start_on": "@today-45d",
-       "due_on": "@today+4d",
-       "budget": 9400,
-       "tasks": [
-        "t05",
-        "t06",
-        "t07",
-        "t08"
-       ],
-       "time_entries": [
-        "e04",
-        "e05",
-        "e06"
-       ]
-      }
-     },
-     {
-      "key": "p-bikes-menu",
-      "values": {
-       "client": "c-northfield",
-       "project_name": "Northfield seasonal catalogue",
-       "status": "In progress",
-       "type": "Print",
-       "start_on": "@today-12d",
-       "due_on": "@today+28d",
-       "budget": 3200,
-       "tasks": [
-        "t09",
-        "t10"
-       ],
-       "time_entries": [
-        "e07"
-       ]
-      }
-     },
-     {
-      "key": "p-bikes-retainer",
-      "values": {
-       "client": "c-northfield",
-       "project_name": "Northfield monthly social kit",
-       "status": "In progress",
-       "type": "Retainer",
-       "start_on": "@today-90d",
-       "due_on": "@today+60d",
-       "budget": 1800,
-       "tasks": [
-        "t11",
-        "t12"
-       ],
-       "time_entries": [
-        "e08"
-       ]
-      }
-     },
-     {
-      "key": "p-pellam-logo",
-      "values": {
-       "client": "c-pellam",
-       "project_name": "Pellam logo refresh",
-       "status": "Done",
-       "type": "Branding",
-       "start_on": "@today-120d",
-       "due_on": "@today-70d",
-       "budget": 2400,
-       "tasks": [
-        "t13"
-       ],
-       "time_entries": [
-        "e09"
-       ]
-      }
-     },
-     {
-      "key": "p-yoga-site",
-      "values": {
-       "client": "c-wren",
-       "project_name": "Wrenfield class schedule page",
-       "status": "Done",
-       "type": "Website",
-       "start_on": "@today-200d",
-       "due_on": "@today-160d",
-       "budget": 2100,
-       "tasks": [],
-       "time_entries": []
-      }
-     }
-    ],
-    "independentOf": {
-     "client": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "task",
-    "name": "Tasks",
-    "labelSingular": "Task",
-    "labelPlural": "Tasks",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "list-checks",
-    "titleField": "task_name",
-    "describes": "Work items under each project.",
-    "subject": "thing",
-    "childDates": [
-     {
-      "relation": "project",
-      "field": "due_on",
-      "parentField": "start_on"
-     }
-    ],
-    "independentOf": {
-     "project": "A task may be due before the project's final due date."
-    },
-    "fields": [
-     {
-      "key": "task_name",
-      "label": "Task",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "To do",
-       "In progress",
-       "Waiting on client",
-       "Done"
-      ],
-      "choiceColors": {
-       "To do": "slate",
-       "In progress": "blue",
-       "Waiting on client": "amber",
-       "Done": "green"
-      },
-      "required": true,
-      "default": "To do"
-     },
-     {
-      "key": "priority",
-      "label": "Priority",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Low",
-       "Medium",
-       "High"
-      ],
-      "choiceColors": {
-       "Low": "slate",
-       "Medium": "blue",
-       "High": "amber"
-      }
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "estimate",
-      "label": "Estimate (hours)",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 200
-       }
-      ]
-     },
-     {
-      "key": "done",
-      "label": "Done",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "project",
-      "label": "Project",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "project",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "t01",
-      "values": {
-       "project": "p-bakery-brand",
-       "task_name": "Finalise logo lockups",
-       "status": "In progress",
-       "priority": "High",
-       "due_on": "@today+2d",
-       "estimate": 6,
-       "done": false
-      }
-     },
-     {
-      "key": "t02",
-      "values": {
-       "project": "p-bakery-brand",
-       "task_name": "Box and bag packaging dielines",
-       "status": "To do",
-       "priority": "Medium",
-       "due_on": "@today+9d",
-       "estimate": 10,
-       "done": false
-      }
-     },
-     {
-      "key": "t03",
-      "values": {
-       "project": "p-bakery-brand",
-       "task_name": "Colour palette sign-off",
-       "status": "Waiting on client",
-       "priority": "High",
-       "due_on": "@today+1d",
-       "estimate": 2,
-       "done": false
-      }
-     },
-     {
-      "key": "t04",
-      "values": {
-       "project": "p-bakery-brand",
-       "task_name": "Brand discovery workshop",
-       "status": "Done",
-       "priority": "Medium",
-       "due_on": "@today-24d",
-       "estimate": 4,
-       "done": true
-      }
-     },
-     {
-      "key": "t05",
-      "values": {
-       "project": "p-physio-site",
-       "task_name": "Booking form copy and validation",
-       "status": "In progress",
-       "priority": "High",
-       "due_on": "@today+1d",
-       "estimate": 5,
-       "done": false
-      }
-     },
-     {
-      "key": "t06",
-      "values": {
-       "project": "p-physio-site",
-       "task_name": "Mobile layout QA",
-       "status": "To do",
-       "priority": "Medium",
-       "due_on": "@today+3d",
-       "estimate": 3,
-       "done": false
-      }
-     },
-     {
-      "key": "t07",
-      "values": {
-       "project": "p-physio-site",
-       "task_name": "Therapist profile photos",
-       "status": "Waiting on client",
-       "priority": "Low",
-       "due_on": "@today+2d",
-       "estimate": 1,
-       "done": false
-      }
-     },
-     {
-      "key": "t08",
-      "values": {
-       "project": "p-physio-site",
-       "task_name": "Homepage design round two",
-       "status": "Done",
-       "priority": "High",
-       "due_on": "@today-14d",
-       "estimate": 8,
-       "done": true
-      }
-     },
-     {
-      "key": "t09",
-      "values": {
-       "project": "p-bikes-menu",
-       "task_name": "Catalogue grid and cover concept",
-       "status": "In progress",
-       "priority": "Medium",
-       "due_on": "@today+10d",
-       "estimate": 12,
-       "done": false
-      }
-     },
-     {
-      "key": "t10",
-      "values": {
-       "project": "p-bikes-menu",
-       "task_name": "Product photo retouching list",
-       "status": "To do",
-       "priority": "Low",
-       "due_on": "@today+18d",
-       "estimate": 6,
-       "done": false
-      }
-     },
-     {
-      "key": "t11",
-      "values": {
-       "project": "p-bikes-retainer",
-       "task_name": "Plan the post series for the upcoming issue",
-       "status": "To do",
-       "priority": "Medium",
-       "due_on": "@today+5d",
-       "estimate": 3,
-       "done": false
-      }
-     },
-     {
-      "key": "t12",
-      "values": {
-       "project": "p-bikes-retainer",
-       "task_name": "Story templates for sale week",
-       "status": "Done",
-       "priority": "Medium",
-       "due_on": "@today-3d",
-       "estimate": 2,
-       "done": true
-      }
-     },
-     {
-      "key": "t13",
-      "values": {
-       "project": "p-pellam-logo",
-       "task_name": "Deliver final file pack",
-       "status": "Done",
-       "priority": "Low",
-       "due_on": "@today-70d",
-       "estimate": 1,
-       "done": true
-      }
-     },
-     {
-      "key": "t14",
-      "values": {
-       "project": "p-bakery-brand",
-       "task_name": "Send invoice for second milestone",
-       "status": "To do",
-       "priority": "High",
-       "due_on": "@today+0d",
-       "estimate": 1,
-       "done": false
-      }
-     }
-    ]
-   },
-   {
-    "token": "time_entry",
-    "name": "Time log",
-    "labelSingular": "Time entry",
-    "labelPlural": "Time entries",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "clock",
-    "titleField": "entry",
-    "describes": "Hours spent, with the rate they were billed at.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "entry",
-      "label": "What you did",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "worked_on",
-      "label": "Date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "hours",
-      "label": "Hours",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 24
-       }
-      ]
-     },
-     {
-      "key": "billable",
-      "label": "Billable",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "rate",
-      "label": "Hourly rate",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 500
-       }
-      ]
-     },
-     {
-      "key": "amount",
-      "label": "Amount",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "IF({Billable}, {Hours} * {Hourly rate}, 0)"
-     },
-     {
-      "key": "project",
-      "label": "Project",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "project",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "e01",
-      "values": {
-       "project": "p-bakery-brand",
-       "entry": "Discovery workshop with Odette",
-       "worked_on": "@today-24d",
-       "hours": 3.5,
-       "billable": true,
-       "rate": 85
-      }
-     },
-     {
-      "key": "e02",
-      "values": {
-       "project": "p-bakery-brand",
-       "entry": "Logo sketching and first round",
-       "worked_on": "@today-18d",
-       "hours": 6,
-       "billable": true,
-       "rate": 85
-      }
-     },
-     {
-      "key": "e03",
-      "values": {
-       "project": "p-bakery-brand",
-       "entry": "Revisions after feedback",
-       "worked_on": "@today-7d",
-       "hours": 4,
-       "billable": true,
-       "rate": 85
-      }
-     },
-     {
-      "key": "e04",
-      "values": {
-       "project": "p-physio-site",
-       "entry": "Homepage design round two",
-       "worked_on": "@today-14d",
-       "hours": 7.5,
-       "billable": true,
-       "rate": 90
-      }
-     },
-     {
-      "key": "e05",
-      "values": {
-       "project": "p-physio-site",
-       "entry": "Booking form build",
-       "worked_on": "@today-5d",
-       "hours": 5,
-       "billable": true,
-       "rate": 90
-      }
-     },
-     {
-      "key": "e06",
-      "values": {
-       "project": "p-physio-site",
-       "entry": "Client call about opening hours",
-       "worked_on": "@today-2d",
-       "hours": 0.5,
-       "billable": false,
-       "rate": 90
-      }
-     },
-     {
-      "key": "e07",
-      "values": {
-       "project": "p-bikes-menu",
-       "entry": "Catalogue layout exploration",
-       "worked_on": "@today-6d",
-       "hours": 5,
-       "billable": true,
-       "rate": 80
-      }
-     },
-     {
-      "key": "e08",
-      "values": {
-       "project": "p-bikes-retainer",
-       "entry": "Story templates for sale week",
-       "worked_on": "@today-3d",
-       "hours": 2,
-       "billable": true,
-       "rate": 80
-      }
-     },
-     {
-      "key": "e09",
-      "values": {
-       "project": "p-pellam-logo",
-       "entry": "Final file pack and handover",
-       "worked_on": "@today-70d",
-       "hours": 1.5,
-       "billable": true,
-       "rate": 75
-      }
-     }
-    ],
-    "independentOf": {
-     "project": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "invoice",
-    "name": "Invoices",
-    "labelSingular": "Invoice",
-    "labelPlural": "Invoices",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "receipt",
-    "titleField": "invoice_no",
-    "describes": "What you have billed, when it is due and whether it was paid.",
-    "subject": "thing",
-    "before": [
-     [
-      "issued_on",
-      "due_on"
-     ]
-    ],
-    "datePairs": [
-     {
-      "earlier": "project.start_on",
-      "later": "issued_on"
-     },
-     {
-      "earlier": "issued_on",
-      "later": "paid_on",
-      "onlyWhen": {
-       "field": "status",
-       "values": [
-        "Paid"
-       ]
-      }
-     }
-    ],
-    "statusImplies": [
-     {
-      "field": "status",
-      "when": [
-       "Paid"
-      ],
-      "filled": [
-       "paid_on"
-      ]
-     }
-    ],
-    "fields": [
-     {
-      "key": "invoice_no",
-      "label": "Invoice number",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Draft",
-       "Sent",
-       "Paid",
-       "Overdue"
-      ],
-      "choiceColors": {
-       "Draft": "slate",
-       "Sent": "green",
-       "Paid": "blue",
-       "Overdue": "red"
-      },
-      "required": true,
-      "default": "Draft"
-     },
-     {
-      "key": "amount",
-      "label": "Amount",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "issued_on",
-      "label": "Issued",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "paid_on",
-      "label": "Paid on",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "days_open",
-      "label": "Days until due",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
-     },
-     {
-      "key": "client",
-      "label": "Client",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "client",
-      "relationMax": 1
-     },
-     {
-      "key": "project",
-      "label": "Project",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "project",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "i01",
-      "values": {
-       "client": "c-tidewater",
-       "project": "p-bakery-brand",
-       "invoice_no": "INV-1041",
-       "status": "Paid",
-       "amount": 2720,
-       "issued_on": "@today-30d",
-       "due_on": "@today-16d",
-       "paid_on": "@today-18d"
-      }
-     },
-     {
-      "key": "i02",
-      "values": {
-       "client": "c-kestrel",
-       "project": "p-physio-site",
-       "invoice_no": "INV-1042",
-       "status": "Paid",
-       "amount": 3760,
-       "issued_on": "@today-40d",
-       "due_on": "@today-26d",
-       "paid_on": "@today-27d"
-      }
-     },
-     {
-      "key": "i03",
-      "values": {
-       "client": "c-kestrel",
-       "project": "p-physio-site",
-       "invoice_no": "INV-1048",
-       "status": "Sent",
-       "amount": 2820,
-       "issued_on": "@today-6d",
-       "due_on": "@today+8d"
-      }
-     },
-     {
-      "key": "i04",
-      "values": {
-       "client": "c-northfield",
-       "project": "p-bikes-retainer",
-       "invoice_no": "INV-1049",
-       "status": "Overdue",
-       "amount": 1800,
-       "issued_on": "@today-35d",
-       "due_on": "@today-5d"
-      }
-     },
-     {
-      "key": "i05",
-      "values": {
-       "client": "c-northfield",
-       "project": "p-bikes-menu",
-       "invoice_no": "INV-1051",
-       "status": "Draft",
-       "amount": 1600,
-       "issued_on": "@today-1d",
-       "due_on": "@today+13d"
-      }
-     },
-     {
-      "key": "i06",
-      "values": {
-       "client": "c-pellam",
-       "project": "p-pellam-logo",
-       "invoice_no": "INV-0988",
-       "status": "Paid",
-       "amount": 2400,
-       "issued_on": "@today-70d",
-       "due_on": "@today-56d",
-       "paid_on": "@today-60d"
-      }
-     },
-     {
-      "key": "i07",
-      "values": {
-       "client": "c-wren",
-       "project": "p-yoga-site",
-       "invoice_no": "INV-0951",
-       "status": "Paid",
-       "amount": 2100,
-       "issued_on": "@today-160d",
-       "due_on": "@today-146d",
-       "paid_on": "@today-150d"
-      }
-     },
-     {
-      "key": "i08",
-      "values": {
-       "client": "c-tidewater",
-       "project": "p-bakery-brand",
-       "invoice_no": "INV-1052",
-       "status": "Sent",
-       "amount": 2040,
-       "issued_on": "@today-2d",
-       "due_on": "@today+12d"
-      }
-     }
-    ],
-    "independentOf": {
-     "client": "Either record can be created or change status before the other.",
-     "project": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "lead",
-    "name": "Leads",
-    "labelSingular": "Lead",
-    "labelPlural": "Leads",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "target",
-    "titleField": "lead_name",
-    "describes": "People who might become clients.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "lead_name",
-      "label": "Lead",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "stage",
-      "label": "Stage",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "New",
-       "Contacted",
-       "Proposal",
-       "Won",
-       "Lost"
-      ],
-      "choiceColors": {
-       "New": "slate",
-       "Contacted": "blue",
-       "Proposal": "amber",
-       "Won": "green",
-       "Lost": "red"
-      },
-      "required": true,
-      "default": "New"
-     },
-     {
-      "key": "source",
-      "label": "Source",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Referral",
-       "Website",
-       "Social",
-       "Event"
-      ],
-      "choiceColors": {
-       "Referral": "slate",
-       "Website": "blue",
-       "Social": "amber",
-       "Event": "violet"
-      }
-     },
-     {
-      "key": "value",
-      "label": "Estimated value",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "follow_up",
-      "label": "Next follow-up",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "l1",
-      "values": {
-       "lead_name": "Orrin Joinery — workshop site",
-       "stage": "Proposal",
-       "source": "Referral",
-       "value": 5200,
-       "follow_up": "@today+3d",
-       "email": "tomasz@orrinjoinery.net"
-      }
-     },
-     {
-      "key": "l2",
-      "values": {
-       "lead_name": "Fenwick Pottery — online shop",
-       "stage": "Contacted",
-       "source": "Social",
-       "value": 7800,
-       "follow_up": "@today+1d",
-       "email": "studio@fenwickpottery.net"
-      }
-     },
-     {
-      "key": "l3",
-      "values": {
-       "lead_name": "Alder & Finch Optical — brand refresh",
-       "stage": "New",
-       "source": "Website",
-       "value": 4300,
-       "follow_up": "@today+6d",
-       "email": "info@alderfinchoptical.net"
-      }
-     },
-     {
-      "key": "l4",
-      "values": {
-       "lead_name": "Marlow Climbing Gym — signage",
-       "stage": "Won",
-       "source": "Event",
-       "value": 3100,
-       "follow_up": "@today+14d",
-       "email": "front@marlowclimb.net"
-      }
-     },
-     {
-      "key": "l5",
-      "values": {
-       "lead_name": "Tessaly Tea Co. — packaging",
-       "stage": "Lost",
-       "source": "Referral",
-       "value": 2900,
-       "follow_up": "@today-9d",
-       "email": "orders@tessalytea.net"
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each project belongs to one client.",
-    "fromTable": "project",
-    "fromField": "client",
-    "toTable": "client",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "project_by_client"
-   },
-   {
-    "describes": "A client lists its projects.",
-    "fromTable": "client",
-    "fromField": "projects",
-    "toTable": "project",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "client_from_projects"
-   },
-   {
-    "describes": "Each task belongs to one project.",
-    "fromTable": "task",
-    "fromField": "project",
-    "toTable": "project",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "task_by_project"
-   },
-   {
-    "describes": "A project lists its tasks.",
-    "fromTable": "project",
-    "fromField": "tasks",
-    "toTable": "task",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "project_from_tasks"
-   },
-   {
-    "describes": "Each time entry belongs to one project.",
-    "fromTable": "time_entry",
-    "fromField": "project",
-    "toTable": "project",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "time_entry_by_project"
-   },
-   {
-    "describes": "A project lists its time entries.",
-    "fromTable": "project",
-    "fromField": "time_entries",
-    "toTable": "time_entry",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "project_from_time_entries"
-   },
-   {
-    "describes": "Each invoice belongs to one client.",
-    "fromTable": "invoice",
-    "fromField": "client",
-    "toTable": "client",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "invoice_by_client"
-   },
-   {
-    "describes": "A client lists its invoices.",
-    "fromTable": "client",
-    "fromField": "invoices",
-    "toTable": "invoice",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "client_from_invoices"
-   },
-   {
-    "describes": "Each invoice belongs to one project.",
-    "fromTable": "invoice",
-    "fromField": "project",
-    "toTable": "project",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "invoice_by_project"
-   }
-  ],
-  "sharedBlocks": [],
-  "forms": [
-   {
-    "token": "task_request",
-    "name": "Add a task",
-    "describes": "Quickly capture a new piece of work against a project.",
-    "audience": "staff",
-    "table": "task",
-    "fields": [
-     {
-      "fieldKey": "task_name",
-      "ask": "What needs doing?",
-      "required": true
-     },
-     {
-      "fieldKey": "project",
-      "ask": "Which project?"
-     },
-     {
-      "fieldKey": "due_on",
-      "ask": "When is it due?"
-     },
-     {
-      "fieldKey": "priority",
-      "ask": "How important is it?"
-     }
-    ],
-    "submitLabel": "Add the task",
-    "confirmation": "Thanks. It is on the board as To do."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_lead",
-    "name": "All leads",
-    "table": "lead",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_invoice",
-    "name": "All invoices",
-    "table": "invoice",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_time_entry",
-    "name": "All time entries",
-    "table": "time_entry",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_task",
-    "name": "All tasks",
-    "table": "task",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_project",
-    "name": "All projects",
-    "table": "project",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_client",
-    "name": "All clients",
-    "table": "client",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "client_board",
-    "name": "By status",
-    "table": "client",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "project_board",
-    "name": "Project board",
-    "table": "project",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "project_timeline",
-    "name": "Project timeline",
-    "table": "project",
-    "kind": "timeline",
-    "startField": "start_on",
-    "endField": "due_on"
-   },
-   {
-    "token": "task_board",
-    "name": "Task board",
-    "table": "task",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "task_calendar",
-    "name": "Task calendar",
-    "table": "task",
-    "kind": "calendar",
-    "dateField": "due_on",
-    "allDay": true
-   },
-   {
-    "token": "invoice_board",
-    "name": "Invoice board",
-    "table": "invoice",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "invoice_calendar",
-    "name": "Due dates",
-    "table": "invoice",
-    "kind": "calendar",
-    "dateField": "due_on",
-    "allDay": true
-   },
-   {
-    "token": "time_log",
-    "name": "Time by date",
-    "table": "time_entry",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "worked_on",
-      "direction": "desc"
-     }
-    ]
-   },
-   {
-    "token": "lead_board",
-    "name": "Lead board",
-    "table": "lead",
-    "kind": "kanban",
-    "groupBy": "stage"
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Freelance assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "invoice",
-     "describes": "Every invoice with its client, amount, due date and status."
-    },
-    {
-     "name": "related_tables",
-     "table": "client",
-     "describes": "The clients being billed."
-    }
-   ],
-   "question": {
-    "ask": "How many invoices are overdue?",
-    "whyItMatters": "Quenby chases late payers every Monday morning.",
-    "expect": {
-     "table": "invoice",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Overdue"
-     },
-     "answer": 1,
-     "unit": "invoices"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open by status.",
-    "action": {
-     "kind": "open",
-     "surface": "client_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "client_board",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open project board.",
-    "action": {
-     "kind": "open",
-     "surface": "project_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "project_board",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open project timeline.",
-    "action": {
-     "kind": "open",
-     "surface": "project_timeline"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "project_timeline",
-     "minItems": 3
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "quenbyhollis.net",
-    "tidewaterbakery.net",
-    "kestrelphysio.net",
-    "northfieldbikes.net",
-    "pellamsurvey.net",
-    "wrenfieldyoga.net",
-    "orrinjoinery.net",
-    "fenwickpottery.net",
-    "alderfinchoptical.net",
-    "marlowclimb.net",
-    "tessalytea.net"
-   ],
-   "fictionalStreets": [
-    "Alderwick Lane"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "freelancer-os",
-   "parent": null,
-   "title": "Freelancer OS",
-   "icon": {
+  "version": 2,
+  "title": "Freelancer OS",
+  "description": "Run clients, projects, tasks, time and invoices from one home page.",
+  "forWho": "Solo freelancers and independent consultants",
+  "icon": {
     "emoji": "🧑‍💻"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-pine-forest",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Start here each morning: check what is due today, chase anything unpaid, then log your hours before you close the laptop."
-      }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Lightbulb"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:how-it-works"
-         }
-        }
-       ]
+  },
+  "category": "clients",
+  "tags": [
+    "freelance",
+    "clients",
+    "invoices",
+    "time"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-freelancer-os",
+    "catalogueId": "SP0300",
+    "useCase": "Quenby Hollis is a freelance brand and web designer who uses this to see every client, what is due this week, hours logged and which invoices are still unpaid.",
+    "industry": "cross_industry",
+    "vertical": "Freelance operations",
+    "job": "billing",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Quenby Hollis Design",
+      "describes": "A one-person brand and web design practice working with small local businesses.",
+      "address": {
+        "line1": "47 Alderwick Lane",
+        "city": "Asheville",
+        "region": "NC",
+        "postalCode": "28801",
+        "country": "US"
       },
+      "phone": "(828) 555-0143",
+      "website": "quenbyhollis.net",
+      "email": "hello@quenbyhollis.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-freelancer-os",
+    "tables": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:weekly-review"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:client-onboarding"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Today"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "all_task"
-      },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-today",
-        "name": "Open tasks",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "status": [
-          "To do",
-          "In progress",
-          "Waiting on client"
-         ]
-        },
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
-        ]
-       },
-       {
-        "id": "view-cal",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "due_on"
-       },
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       }
-      ],
-      "activeViewId": "view-today"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Projects"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "project",
-       "view": "project_board"
-      },
-      "inline": true,
-      "title": "Projects",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-tl",
-        "name": "Timeline",
-        "layout": "timeline",
-        "icon": "ChartGantt",
-        "dateField": "start_on"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All projects",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Every person or business you work for, and what they have been billed.",
+        "subject": "thing",
+        "fields": [
           {
-           "text": "Clients"
-          }
-         ],
-         "props": {
-          "level": 2
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "client",
-           "view": "client_board"
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
           },
-          "inline": true,
-          "title": "Clients",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-board",
-            "name": "By status",
-            "layout": "kanban",
-            "icon": "SquareKanban",
-            "groupField": "status"
-           },
-           {
-            "id": "view-tbl",
-            "name": "All clients",
-            "layout": "grid",
-            "icon": "Table"
-           }
-          ],
-          "activeViewId": "view-board"
-         }
-        }
-       ]
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lead",
+              "Active",
+              "Paused",
+              "Past"
+            ],
+            "choiceColors": {
+              "Lead": "slate",
+              "Active": "green",
+              "Paused": "blue",
+              "Past": "red"
+            },
+            "required": true,
+            "default": "Active",
+            "statusGroups": {
+              "Lead": "todo",
+              "Active": "in_progress",
+              "Paused": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "website",
+            "label": "Website",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral",
+              "Website",
+              "Social",
+              "Past client",
+              "Event"
+            ],
+            "choiceColors": {
+              "Referral": "slate",
+              "Website": "blue",
+              "Social": "amber",
+              "Past client": "violet",
+              "Event": "teal"
+            }
+          },
+          {
+            "key": "total_billed",
+            "label": "Total billed (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "paid_total",
+            "label": "Paid (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "owed",
+            "label": "Balance owed (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Total billed (USD)} - {Paid (USD)}"
+          },
+          {
+            "key": "invoice_count",
+            "label": "Invoices",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "memo",
+            "agg": "count"
+          },
+          {
+            "key": "project_count",
+            "label": "Projects",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_name",
+            "agg": "count"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "c-tidewater",
+            "values": {
+              "client_name": "Odette Marsh",
+              "status": "Active",
+              "company": "Tidewater Bakery",
+              "email": "odette@tidewaterbakery.net",
+              "phone": "(828) 555-0121",
+              "website": "https://tidewaterbakery.net",
+              "source": "Referral"
+            }
+          },
+          {
+            "key": "c-kestrel",
+            "values": {
+              "client_name": "Dr. Ivo Brandt",
+              "status": "Active",
+              "company": "Kestrel Physiotherapy",
+              "email": "ivo@kestrelphysio.net",
+              "phone": "(828) 555-0132",
+              "website": "https://kestrelphysio.net",
+              "source": "Website"
+            }
+          },
+          {
+            "key": "c-northfield",
+            "values": {
+              "client_name": "Lucía Ferreira",
+              "status": "Active",
+              "company": "Northfield Bikes",
+              "email": "lucia@northfieldbikes.net",
+              "phone": "(828) 555-0147",
+              "website": "https://northfieldbikes.net",
+              "source": "Event"
+            }
+          },
+          {
+            "key": "c-pellam",
+            "values": {
+              "client_name": "Rashid Pellam",
+              "status": "Paused",
+              "company": "Pellam Surveying",
+              "email": "rashid@pellamsurvey.net",
+              "phone": "(828) 555-0158",
+              "source": "Past client"
+            }
+          },
+          {
+            "key": "c-wren",
+            "values": {
+              "client_name": "Hana Wrenfield",
+              "status": "Past",
+              "company": "Wrenfield Yoga",
+              "email": "hana@wrenfieldyoga.net",
+              "phone": "(828) 555-0164",
+              "source": "Social"
+            }
+          },
+          {
+            "key": "c-orrin",
+            "values": {
+              "client_name": "Tomasz Orrin",
+              "status": "Lead",
+              "company": "Orrin Joinery",
+              "email": "tomasz@orrinjoinery.net",
+              "phone": "(828) 555-0170",
+              "source": "Referral"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Active"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Onboarding"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed proposal and deposit received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Shared folder and brand assets collected"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Kickoff call booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Project and first tasks created"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment terms written on the first invoice"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who to talk to"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Name, role and the best way to reach them."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "project_name",
+        "describes": "Each piece of client work with its budget and dates.",
+        "subject": "thing",
+        "before": [
+          [
+            "start_on",
+            "due_on"
+          ]
+        ],
+        "fields": [
           {
-           "text": "Leads"
-          }
-         ],
-         "props": {
-          "level": 2
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "lead",
-           "view": "lead_board"
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
           },
-          "inline": true,
-          "title": "Leads",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-board",
-            "name": "By stage",
-            "layout": "kanban",
-            "icon": "SquareKanban",
-            "groupField": "stage"
-           },
-           {
-            "id": "view-tbl",
-            "name": "All leads",
-            "layout": "grid",
-            "icon": "Table",
-            "sorts": [
-             {
-              "field": "follow_up",
-              "direction": "asc"
-             }
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Proposed",
+              "In progress",
+              "In review",
+              "Done"
+            ],
+            "choiceColors": {
+              "Proposed": "slate",
+              "In progress": "blue",
+              "In review": "amber",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Proposed",
+            "statusGroups": {
+              "Proposed": "todo",
+              "In progress": "in_progress",
+              "In review": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Branding",
+              "Website",
+              "Print",
+              "Retainer"
+            ],
+            "choiceColors": {
+              "Branding": "slate",
+              "Website": "blue",
+              "Print": "amber",
+              "Retainer": "violet"
+            }
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_left",
+            "label": "Days to due date",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "budget",
+            "label": "Budget (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
             ]
-           }
-          ],
-          "activeViewId": "view-board"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Money"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "invoice",
-       "view": "invoice_board"
-      },
-      "inline": true,
-      "title": "Invoices",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-cal",
-        "name": "Due dates",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "due_on"
-       },
-       {
-        "id": "view-unpaid",
-        "name": "Unpaid",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "Sent",
-          "Overdue"
-         ]
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "hours_logged",
+            "label": "Hours logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "time_entries",
+            "pick": "hours",
+            "agg": "sum"
+          },
+          {
+            "key": "tasks_total",
+            "label": "Tasks in total",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "tasks_done",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Tasks in total} > 0, ROUND({Tasks done} / {Tasks in total} * 100, 0), 0)"
+          },
+          {
+            "key": "hours_month",
+            "label": "Hours this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "time_entries",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "worked_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "est_hours",
+            "label": "Estimated hours",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "estimate",
+            "agg": "sum"
+          },
+          {
+            "key": "hours_left",
+            "label": "Hours left vs estimate",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Estimated hours} - {Hours logged}"
+          },
+          {
+            "key": "invoiced",
+            "label": "Invoiced (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "left_to_bill",
+            "label": "Left to invoice (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Budget (USD)} > {Invoiced (USD)}, {Budget (USD)} - {Invoiced (USD)}, 0)"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "p-bakery-brand",
+            "values": {
+              "client": "c-tidewater",
+              "project_name": "Tidewater rebrand and packaging",
+              "status": "In progress",
+              "type": "Branding",
+              "start_on": "@today-30d",
+              "due_on": "@today+16d",
+              "budget": 6800
+            }
+          },
+          {
+            "key": "p-physio-site",
+            "values": {
+              "client": "c-kestrel",
+              "project_name": "Kestrel booking website",
+              "status": "In review",
+              "type": "Website",
+              "start_on": "@today-45d",
+              "due_on": "@today+4d",
+              "budget": 9400
+            }
+          },
+          {
+            "key": "p-bikes-menu",
+            "values": {
+              "client": "c-northfield",
+              "project_name": "Northfield seasonal catalogue",
+              "status": "In progress",
+              "type": "Print",
+              "start_on": "@today-12d",
+              "due_on": "@today+28d",
+              "budget": 3200
+            }
+          },
+          {
+            "key": "p-bikes-retainer",
+            "values": {
+              "client": "c-northfield",
+              "project_name": "Northfield monthly social kit",
+              "status": "In progress",
+              "type": "Retainer",
+              "start_on": "@today-90d",
+              "due_on": "@today+60d",
+              "budget": 1800
+            }
+          },
+          {
+            "key": "p-pellam-logo",
+            "values": {
+              "client": "c-pellam",
+              "project_name": "Pellam logo refresh",
+              "status": "Done",
+              "type": "Branding",
+              "start_on": "@today-120d",
+              "due_on": "@today-70d",
+              "budget": 2400
+            }
+          },
+          {
+            "key": "p-yoga-site",
+            "values": {
+              "client": "c-wren",
+              "project_name": "Wrenfield class schedule page",
+              "status": "Done",
+              "type": "Website",
+              "start_on": "@today-200d",
+              "due_on": "@today-160d",
+              "budget": 2100
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
         },
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New project",
+            "values": {
+              "status": "Proposed"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What is included and what is not."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Deliverables"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Kickoff checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Deposit invoice sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Assets received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First milestone date agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
-       },
-       {
-        "id": "view-tbl",
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Work items under each project.",
+        "subject": "thing",
+        "childDates": [
+          {
+            "relation": "project",
+            "field": "due_on",
+            "parentField": "start_on"
+          }
+        ],
+        "independentOf": {
+          "project": "A task may be due before the project's final due date."
+        },
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Waiting on client",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Waiting on client": "amber",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Waiting on client": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "blue",
+              "High": "amber"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "estimate",
+            "label": "Estimate (hours)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
+          },
+          {
+            "key": "created_at",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "project": "p-bakery-brand",
+              "task_name": "Finalise logo lockups",
+              "status": "In progress",
+              "priority": "High",
+              "due_on": "@today+2d",
+              "estimate": 6
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "project": "p-bakery-brand",
+              "task_name": "Box and bag packaging dielines",
+              "status": "To do",
+              "priority": "Medium",
+              "due_on": "@today+9d",
+              "estimate": 10
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "project": "p-bakery-brand",
+              "task_name": "Colour palette sign-off",
+              "status": "Waiting on client",
+              "priority": "High",
+              "due_on": "@today-2d",
+              "estimate": 2
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "project": "p-bakery-brand",
+              "task_name": "Brand discovery workshop",
+              "status": "Done",
+              "priority": "Medium",
+              "due_on": "@today-24d",
+              "estimate": 4
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "project": "p-physio-site",
+              "task_name": "Booking form copy and validation",
+              "status": "In progress",
+              "priority": "High",
+              "due_on": "@today+1d",
+              "estimate": 5
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "project": "p-physio-site",
+              "task_name": "Mobile layout QA",
+              "status": "To do",
+              "priority": "Medium",
+              "due_on": "@today+3d",
+              "estimate": 3
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "project": "p-physio-site",
+              "task_name": "Therapist profile photos",
+              "status": "Waiting on client",
+              "priority": "Low",
+              "due_on": "@today+2d",
+              "estimate": 1
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "project": "p-physio-site",
+              "task_name": "Homepage design round two",
+              "status": "Done",
+              "priority": "High",
+              "due_on": "@today-14d",
+              "estimate": 8
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "project": "p-bikes-menu",
+              "task_name": "Catalogue grid and cover concept",
+              "status": "In progress",
+              "priority": "Medium",
+              "due_on": "@today+10d",
+              "estimate": 12
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "project": "p-bikes-menu",
+              "task_name": "Product photo retouching list",
+              "status": "To do",
+              "priority": "Low",
+              "due_on": "@today+18d",
+              "estimate": 6
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "project": "p-bikes-retainer",
+              "task_name": "Plan the post series for the upcoming issue",
+              "status": "To do",
+              "priority": "Medium",
+              "due_on": "@today+5d",
+              "estimate": 3
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "project": "p-bikes-retainer",
+              "task_name": "Story templates for sale week",
+              "status": "Done",
+              "priority": "Medium",
+              "due_on": "@today-3d",
+              "estimate": 2
+            }
+          },
+          {
+            "key": "t13",
+            "values": {
+              "project": "p-pellam-logo",
+              "task_name": "Deliver final file pack",
+              "status": "Done",
+              "priority": "Low",
+              "due_on": "@today-70d",
+              "estimate": 1
+            }
+          },
+          {
+            "key": "t14",
+            "values": {
+              "project": "p-bakery-brand",
+              "task_name": "Send invoice for second milestone",
+              "status": "To do",
+              "priority": "High",
+              "due_on": "@today+0d",
+              "estimate": 1
+            }
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New task",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What done looks like"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Needs from the client"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "time_entry",
+        "name": "Time log",
+        "labelSingular": "Time entry",
+        "labelPlural": "Time entries",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clock",
+        "titleField": "entry",
+        "describes": "Hours spent, with the rate they were billed at.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "entry",
+            "label": "What you did",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "worked_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 24
+              }
+            ]
+          },
+          {
+            "key": "billable",
+            "label": "Billable",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rate",
+            "label": "Hourly rate",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Billable}, {Hours} * {Hourly rate}, 0)"
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "e01",
+            "values": {
+              "project": "p-bakery-brand",
+              "entry": "Discovery workshop with Odette",
+              "worked_on": "@today-24d",
+              "hours": 3.5,
+              "billable": true,
+              "rate": 85
+            }
+          },
+          {
+            "key": "e02",
+            "values": {
+              "project": "p-bakery-brand",
+              "entry": "Logo sketching and first round",
+              "worked_on": "@today-18d",
+              "hours": 6,
+              "billable": true,
+              "rate": 85
+            }
+          },
+          {
+            "key": "e03",
+            "values": {
+              "project": "p-bakery-brand",
+              "entry": "Revisions after feedback",
+              "worked_on": "@today-7d",
+              "hours": 4,
+              "billable": true,
+              "rate": 85
+            }
+          },
+          {
+            "key": "e04",
+            "values": {
+              "project": "p-physio-site",
+              "entry": "Homepage design round two",
+              "worked_on": "@today-14d",
+              "hours": 7.5,
+              "billable": true,
+              "rate": 90
+            }
+          },
+          {
+            "key": "e05",
+            "values": {
+              "project": "p-physio-site",
+              "entry": "Booking form build",
+              "worked_on": "@today-5d",
+              "hours": 5,
+              "billable": true,
+              "rate": 90
+            }
+          },
+          {
+            "key": "e06",
+            "values": {
+              "project": "p-physio-site",
+              "entry": "Client call about opening hours",
+              "worked_on": "@today-2d",
+              "hours": 0.5,
+              "billable": false,
+              "rate": 90
+            }
+          },
+          {
+            "key": "e07",
+            "values": {
+              "project": "p-bikes-menu",
+              "entry": "Catalogue layout exploration",
+              "worked_on": "@today-6d",
+              "hours": 5,
+              "billable": true,
+              "rate": 80
+            }
+          },
+          {
+            "key": "e08",
+            "values": {
+              "project": "p-bikes-retainer",
+              "entry": "Story templates for sale week",
+              "worked_on": "@today-3d",
+              "hours": 2,
+              "billable": true,
+              "rate": 80
+            }
+          },
+          {
+            "key": "e09",
+            "values": {
+              "project": "p-pellam-logo",
+              "entry": "Final file pack and handover",
+              "worked_on": "@today-70d",
+              "hours": 1.5,
+              "billable": true,
+              "rate": 75
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Time entry",
+            "values": {
+              "billable": true
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What I did"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Output"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Link or file"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "memo",
+        "describes": "What you have billed, when it is due and whether it was paid.",
+        "subject": "thing",
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "datePairs": [
+          {
+            "earlier": "project.start_on",
+            "later": "issued_on"
+          },
+          {
+            "earlier": "issued_on",
+            "later": "paid_on",
+            "onlyWhen": {
+              "field": "status",
+              "values": [
+                "Paid"
+              ]
+            }
+          }
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Sent"
+            ],
+            "filled": [
+              "issued_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "memo",
+            "label": "Work billed",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "invoice_no",
+            "label": "Invoice number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Paid",
+              "Overdue"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "green",
+              "Paid": "blue",
+              "Overdue": "red"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Paid": "done",
+              "Overdue": "in_progress"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_late",
+            "label": "Days late",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Due} < TODAY(), {Status} != \"Paid\"), DATEDIFF({Due}, TODAY(), \"days\"), 0)"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "created_at",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "updated_at",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "sent_btn",
+            "label": "Mark sent",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_sent"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "i01",
+            "values": {
+              "client": "c-tidewater",
+              "project": "p-bakery-brand",
+              "status": "Paid",
+              "amount": 2720,
+              "issued_on": "@today-30d",
+              "due_on": "@today-16d",
+              "paid_on": "@today-18d",
+              "memo": "Bakery brand identity, milestone one"
+            }
+          },
+          {
+            "key": "i02",
+            "values": {
+              "client": "c-kestrel",
+              "project": "p-physio-site",
+              "status": "Paid",
+              "amount": 3760,
+              "issued_on": "@today-40d",
+              "due_on": "@today-26d",
+              "paid_on": "@today-27d",
+              "memo": "Physio site, design phase"
+            }
+          },
+          {
+            "key": "i03",
+            "values": {
+              "client": "c-kestrel",
+              "project": "p-physio-site",
+              "status": "Sent",
+              "amount": 2820,
+              "issued_on": "@today-6d",
+              "due_on": "@today+8d",
+              "memo": "Physio site, build phase"
+            }
+          },
+          {
+            "key": "i04",
+            "values": {
+              "client": "c-northfield",
+              "project": "p-bikes-retainer",
+              "status": "Overdue",
+              "amount": 1800,
+              "issued_on": "@today-35d",
+              "due_on": "@today-5d",
+              "memo": "Retainer, last month"
+            }
+          },
+          {
+            "key": "i05",
+            "values": {
+              "client": "c-northfield",
+              "project": "p-bikes-menu",
+              "status": "Draft",
+              "amount": 1600,
+              "due_on": "@today+13d",
+              "memo": "Menu redesign, deposit"
+            }
+          },
+          {
+            "key": "i06",
+            "values": {
+              "client": "c-pellam",
+              "project": "p-pellam-logo",
+              "status": "Paid",
+              "amount": 2400,
+              "issued_on": "@today-70d",
+              "due_on": "@today-56d",
+              "paid_on": "@today-60d",
+              "memo": "Logo project, final"
+            }
+          },
+          {
+            "key": "i07",
+            "values": {
+              "client": "c-wren",
+              "project": "p-yoga-site",
+              "status": "Paid",
+              "amount": 2100,
+              "issued_on": "@today-160d",
+              "due_on": "@today-146d",
+              "paid_on": "@today-150d",
+              "memo": "Yoga studio site"
+            }
+          },
+          {
+            "key": "i08",
+            "values": {
+              "client": "c-tidewater",
+              "project": "p-bakery-brand",
+              "status": "Sent",
+              "amount": 2040,
+              "issued_on": "@today-2d",
+              "due_on": "@today+12d",
+              "memo": "Bakery brand identity, milestone two"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "project": "Either record can be created or change status before the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "New invoice",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Line items"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Description"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Hours or quantity"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Rate"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Line total"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Payment terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Half up front, half on delivery, due within the number of days agreed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "lead",
+        "name": "Leads",
+        "labelSingular": "Lead",
+        "labelPlural": "Leads",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "lead_name",
+        "describes": "People who might become clients.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "lead_name",
+            "label": "Lead",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Contacted",
+              "Proposal",
+              "Won",
+              "Lost"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Contacted": "blue",
+              "Proposal": "amber",
+              "Won": "green",
+              "Lost": "red"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Contacted": "in_progress",
+              "Proposal": "in_progress",
+              "Won": "done",
+              "Lost": "done"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral",
+              "Website",
+              "Social",
+              "Event"
+            ],
+            "choiceColors": {
+              "Referral": "slate",
+              "Website": "blue",
+              "Social": "amber",
+              "Event": "violet"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Estimated value (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "follow_up",
+            "label": "Next follow-up",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to",
+            "label": "Days to follow-up",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Next follow-up}, 'days')"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "won_btn",
+            "label": "Mark won",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_won"
+            }
+          },
+          {
+            "key": "lost_btn",
+            "label": "Mark lost",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_lost"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "l1",
+            "values": {
+              "lead_name": "Orrin Joinery — workshop site",
+              "stage": "Proposal",
+              "source": "Referral",
+              "value": 5200,
+              "follow_up": "@today+3d",
+              "email": "tomasz@orrinjoinery.net"
+            }
+          },
+          {
+            "key": "l2",
+            "values": {
+              "lead_name": "Fenwick Pottery — online shop",
+              "stage": "Contacted",
+              "source": "Social",
+              "value": 7800,
+              "follow_up": "@today-2d",
+              "email": "studio@fenwickpottery.net"
+            }
+          },
+          {
+            "key": "l3",
+            "values": {
+              "lead_name": "Alder & Finch Optical — brand refresh",
+              "stage": "New",
+              "source": "Website",
+              "value": 4300,
+              "follow_up": "@today+6d",
+              "email": "info@alderfinchoptical.net"
+            }
+          },
+          {
+            "key": "l4",
+            "values": {
+              "lead_name": "Marlow Climbing Gym — signage",
+              "stage": "Won",
+              "source": "Event",
+              "value": 3100,
+              "follow_up": "@today+14d",
+              "email": "front@marlowclimb.net"
+            }
+          },
+          {
+            "key": "l5",
+            "values": {
+              "lead_name": "Tessaly Tea Co. — packaging",
+              "stage": "Lost",
+              "source": "Referral",
+              "value": 2900,
+              "follow_up": "@today-9d",
+              "email": "orders@tessalytea.net"
+            }
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New lead",
+            "values": {
+              "stage": "New"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they need"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How we met"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each project belongs to one client.",
+        "fromTable": "project",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "projects"
+      },
+      {
+        "describes": "Each task belongs to one project.",
+        "fromTable": "task",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each time entry belongs to one project.",
+        "fromTable": "time_entry",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "time_entries"
+      },
+      {
+        "describes": "Each invoice belongs to one client.",
+        "fromTable": "invoice",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each invoice belongs to one project.",
+        "fromTable": "invoice",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "task_request",
+        "name": "Add a task",
+        "describes": "Quickly capture a new piece of work against a project.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What needs doing?",
+            "required": true
+          },
+          {
+            "fieldKey": "project",
+            "ask": "Which project?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When is it due?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How important is it?"
+          }
+        ],
+        "submitLabel": "Add the task",
+        "confirmation": "Thanks. It is on the board as To do."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_sent",
+        "table": "invoice",
+        "name": "Mark sent",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sent"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "project_done",
+        "table": "project",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lead_won",
+        "table": "lead",
+        "name": "Mark won",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Won"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lead_lost",
+        "table": "lead",
+        "name": "Mark lost",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Lost"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_lead",
+        "name": "All leads",
+        "table": "lead",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_invoice",
         "name": "All invoices",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Time log"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "time_entry",
-       "view": "time_log"
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
       },
-      "inline": true,
-      "title": "Time entries",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-tbl",
-        "name": "Latest first",
-        "layout": "grid",
-        "icon": "Table",
+      {
+        "token": "all_time_entry",
+        "name": "All time entries",
+        "table": "time_entry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "By status",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_board",
+        "name": "Project board",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_timeline",
+        "name": "Project timeline",
+        "table": "project",
+        "kind": "timeline",
+        "startField": "start_on",
+        "endField": "due_on"
+      },
+      {
+        "token": "task_board",
+        "name": "Task board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Task calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoice board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_calendar",
+        "name": "Due dates",
+        "table": "invoice",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "time_log",
+        "name": "Time by date",
+        "table": "time_entry",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "worked_on",
-          "direction": "desc"
-         }
+          {
+            "field": "worked_on",
+            "direction": "desc"
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-tbl"
-     }
-    }
-   ]
-  },
-  {
-   "key": "dashboard",
-   "parent": "freelancer-os",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "invoice",
-           "view": "all_invoice"
-          },
-          "inline": true,
-          "title": "Invoices",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-st",
-            "name": "Invoices by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-st"
-         }
-        }
-       ]
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "project",
-           "view": "all_project"
-          },
-          "inline": true,
-          "title": "Projects",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-pst",
-            "name": "Projects by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-pst"
-         }
-        }
-       ]
+        "token": "lead_board",
+        "name": "Lead board",
+        "table": "lead",
+        "kind": "kanban",
+        "groupBy": "stage"
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "lead",
-           "view": "all_lead"
-          },
-          "inline": true,
-          "title": "Leads",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-ls",
-            "name": "Leads by stage",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "stage",
-             "op": "count"
-            }
-           }
-          ],
-          "activeViewId": "view-ls"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Hours by project"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "time_entry",
-       "view": "time_log"
-      },
-      "inline": true,
-      "title": "Time entries",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-hrs",
-        "name": "Hours by project",
-        "layout": "chart",
-        "icon": "ChartColumn",
-        "chart": {
-         "type": "hbar",
-         "groupBy": "project",
-         "op": "sum",
-         "field": "hours"
-        }
-       }
-      ],
-      "activeViewId": "view-hrs"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Late or waiting"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "invoice",
-       "view": "all_invoice"
-      },
-      "inline": true,
-      "title": "Invoices",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-od",
+        "token": "task_over",
         "name": "Overdue",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "status": "Overdue"
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Waiting on client"
+          ]
         }
-       }
-      ],
-      "activeViewId": "view-od"
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "all_task"
       },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-wait",
-        "name": "Waiting on client",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "status": "Waiting on client"
+      {
+        "token": "task_today",
+        "name": "Due today",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Waiting on client"
+          ]
         }
-       }
-      ],
-      "activeViewId": "view-wait"
-     }
-    }
-   ]
-  },
-  {
-   "key": "how-it-works",
-   "parent": "freelancer-os",
-   "title": "How it works",
-   "icon": {
-    "emoji": "📖"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "The loop"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "A lead becomes a client when they say yes. Move the lead to Won and add them under Clients."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Create a project for each piece of work and give it a budget and dates."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Break the project into tasks. Mark them done as you go."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Log billable time as you work, with the rate you quoted."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Issue an invoice at each milestone and keep its status honest."
-      }
-     ]
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Overdue invoices are the ones past their due date and not yet paid. Change the status the day you notice."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Clock"
-     }
-    }
-   ]
-  },
-  {
-   "key": "weekly-review",
-   "parent": "freelancer-os",
-   "title": "Weekly review",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Every Friday, ten minutes."
-      }
-     ]
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Clear the tasks waiting on clients with a gentle nudge."
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Log any hours you forgot."
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Send invoices for finished milestones."
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Follow up on every lead whose date has passed."
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Pick the three priorities for next week."
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "all_task"
       },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-hi",
-        "name": "High priority open",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "priority": "High",
-         "done": false
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Waiting on client"
+          ]
         }
-       }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Waiting on client"
+          ]
+        }
+      },
+      {
+        "token": "inv_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "inv_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "inv_paid",
+        "name": "Paid this month",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "paid_on": {
+            "relative": "this_month"
+          }
+        },
+        "filters": {
+          "status": "Paid"
+        }
+      },
+      {
+        "token": "time_week",
+        "name": "This week",
+        "table": "time_entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "time_month",
+        "name": "This month",
+        "table": "time_entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "lead_over",
+        "name": "Overdue follow-ups",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "follow_up": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "New",
+            "Contacted",
+            "Proposal"
+          ]
+        }
+      },
+      {
+        "token": "lead_week",
+        "name": "Follow up this week",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "follow_up": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "New",
+            "Contacted",
+            "Proposal"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Freelance assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "invoice",
+          "describes": "Every invoice with its client, amount, due date and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The clients being billed."
+        }
       ],
-      "activeViewId": "view-hi"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many invoices are overdue?",
+        "whyItMatters": "Quenby chases late payers every Monday morning.",
+        "expect": {
+          "table": "invoice",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Overdue"
+          },
+          "answer": 1,
+          "unit": "invoices"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open by status.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open project board.",
+        "action": {
+          "kind": "open",
+          "surface": "project_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open project timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "project_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_timeline",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "quenbyhollis.net",
+        "tidewaterbakery.net",
+        "kestrelphysio.net",
+        "northfieldbikes.net",
+        "pellamsurvey.net",
+        "wrenfieldyoga.net",
+        "orrinjoinery.net",
+        "fenwickpottery.net",
+        "alderfinchoptical.net",
+        "marlowclimb.net",
+        "tessalytea.net"
+      ],
+      "fictionalStreets": [
+        "Alderwick Lane"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "client-onboarding",
-   "parent": "freelancer-os",
-   "title": "Client onboarding checklist",
-   "icon": {
-    "emoji": "🤝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "text",
-     "text": [
-      {
-       "text": "Run through this for every new client before the first invoice goes out."
-      }
-     ]
+      "key": "freelancer-os",
+      "parent": null,
+      "title": "Freelancer OS",
+      "icon": {
+        "emoji": "🧑‍💻"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start here each morning: check what is due today, chase anything unpaid, then log your hours before you close the laptop."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-it-works"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-review"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-today",
+                "name": "Open tasks",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-today",
+                "name": "Due today",
+                "layout": "list",
+                "icon": "Sun",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "v-ov",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "v-wk",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              },
+              {
+                "id": "v-n7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "project_board"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-tl",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "start_on"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All projects",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "lead_board"
+            },
+            "inline": true,
+            "title": "Leads",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By stage",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All leads",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "follow_up",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-lo",
+                "name": "Overdue follow-ups",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "New",
+                    "Contacted",
+                    "Proposal"
+                  ]
+                }
+              },
+              {
+                "id": "v-lw",
+                "name": "Follow up this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "New",
+                    "Contacted",
+                    "Proposal"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-cal",
+                "name": "Due dates",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "view-unpaid",
+                "name": "Unpaid",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-tbl",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-io",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "v-iw",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "v-ip",
+                "name": "Paid this month",
+                "layout": "list",
+                "icon": "CircleCheck",
+                "within": {
+                  "paid_on": {
+                    "relative": "this_month"
+                  }
+                },
+                "filters": {
+                  "status": "Paid"
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "time_entry",
+              "view": "time_log"
+            },
+            "inline": true,
+            "title": "Time entries",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-tbl",
+                "name": "Latest first",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "worked_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-tw",
+                "name": "This week",
+                "layout": "grid",
+                "icon": "CalendarDays",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "v-tm",
+                "name": "This month",
+                "layout": "grid",
+                "icon": "Calendar",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-tbl"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Signed proposal and deposit received"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "dashboard",
+      "parent": "freelancer-os",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-st",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-st"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_project"
+                    },
+                    "inline": true,
+                    "title": "Projects",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-pst",
+                        "name": "Projects by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-pst"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_lead"
+                    },
+                    "inline": true,
+                    "title": "Leads",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-ls",
+                        "name": "Leads by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-ls"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hours by project"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "time_entry",
+              "view": "time_log"
+            },
+            "inline": true,
+            "title": "Time entries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-hrs",
+                "name": "Hours by project",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "project",
+                  "op": "sum",
+                  "field": "hours"
+                }
+              }
+            ],
+            "activeViewId": "view-hrs"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late or waiting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-od",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "view-od"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-wait",
+                "name": "Waiting on client",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Waiting on client"
+                }
+              }
+            ],
+            "activeViewId": "view-wait"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Shared folder and brand assets collected"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "how-it-works",
+      "parent": "freelancer-os",
+      "title": "How it works",
+      "icon": {
+        "emoji": "📖"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The loop"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A lead becomes a client when they say yes. Move the lead to Won and add them under Clients."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create a project for each piece of work and give it a budget and dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Break the project into tasks. Mark them done as you go."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log billable time as you work, with the rate you quoted."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Issue an invoice at each milestone and keep its status honest."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Overdue invoices are the ones past their due date and not yet paid. Change the status the day you notice."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Clock"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What is worked out for you"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Client: total billed, paid and balance owed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Project: progress, hours against the estimate, and what is left to invoice."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoice: days late, from the due date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lead: days to the next follow-up."
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Kickoff call booked"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Project and first tasks created"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Payment terms written on the first invoice"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Keep terms short: half up front, half on delivery works for most small projects."
-      }
-     ],
-     "background": "green",
-     "props": {
-      "icon": "Info"
-     }
+      "key": "weekly-review",
+      "parent": "freelancer-os",
+      "title": "Weekly review",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every Friday, ten minutes. The point is to leave the weekend without loose ends."
+            }
+          ],
+          "props": {
+            "icon": "CalendarCheck"
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clear the tasks waiting on clients with a gentle nudge."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Log any hours you forgot."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send invoices for finished milestones."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Follow up on every lead whose date has passed."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick the three priorities for next week."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-hi",
+                "name": "High priority open",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "priority": "High"
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Waiting on client"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-hi"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why Friday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A Friday review turns the week into a list of things that are done and a short list of three priorities for Monday. Clients who are waiting on you hear from you before the weekend; clients who are late hear from you while the invoice is still fresh."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  }
- ]
+  ]
 }
