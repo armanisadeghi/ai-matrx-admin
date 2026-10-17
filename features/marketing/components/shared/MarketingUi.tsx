@@ -34,6 +34,7 @@ import type { BackendFailureExplanation } from "@ai-matrx/api";
 import { durationMsBetween, formatDurationMs } from "@ai-matrx/kit/format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 
 export function formatDate(value: string | null): string {
   if (!value) return "—";
@@ -441,8 +442,11 @@ export function SectionCard({
   collapsible = false,
   defaultOpen = true,
   anchor,
+  about,
 }: {
   title: string;
+  /** What this card is for — opens in a Peek beside the title, never as text on the card. */
+  about?: string;
   /** Link action (`href`) or in-place action (`onClick`). */
   action?:
     { label: string; href: string } | { label: string; onClick: () => void };
@@ -487,7 +491,10 @@ export function SectionCard({
       )}
     >
       <div className="flex min-h-10 shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-border px-3 py-1">
-        <h2 className="min-w-0 type-title text-foreground">{title}</h2>
+        <div className="flex min-w-0 items-center gap-1">
+          <h2 className="min-w-0 type-title text-foreground">{title}</h2>
+          {about ? <AboutPeek title={title} about={about} /> : null}
+        </div>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1">
           {copy ? <CopyButtons size="icon" {...copy} /> : null}
           {headerExtra}

@@ -124,7 +124,7 @@ export default async function BrandIdentityPage({
 
   return (
     <div className="h-full overflow-y-auto bg-textured">
-      <div className="mx-auto w-full max-w-5xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
+      <div className="mx-auto w-full max-w-6xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
         {/* One fixed line: the admin input chips arriving later sit beside the title and never grow the header. */}
         <header className="mb-4 flex h-9 flex-nowrap items-center gap-x-4 overflow-x-auto">
           <h1
@@ -137,27 +137,24 @@ export default async function BrandIdentityPage({
           <BrandGuideInputs brandId={brand.id} brandName={brand.name} organizationId={brand.organization_id} />
         </header>
         <BrandVisualSuggestions brandId={brand.id} organizationId={brand.organization_id} />
-        <div className="grid gap-3 sm:grid-cols-2">
+        {/* Room cards: icon and name on one line, the room's line under both, full width. */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => {
             const Icon = room.icon;
             return (
               <Card key={room.name} className="p-0">
                 <Link
                   href={room.href}
-                  className="flex h-full gap-3 rounded-xl p-4 transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="flex h-full flex-col gap-2 rounded-xl p-4 transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
-                    <Icon className="h-4 w-4" aria-hidden />
+                  <span className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
+                      <Icon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="min-w-0 truncate text-sm font-medium text-foreground">{room.name}</span>
                   </span>
-                  <span className="min-w-0">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">
-                        {room.name}
-                      </span>
-                    </span>
-                    <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
-                      {room.description}
-                    </span>
+                  <span className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">
+                    {room.description}
                   </span>
                 </Link>
               </Card>
