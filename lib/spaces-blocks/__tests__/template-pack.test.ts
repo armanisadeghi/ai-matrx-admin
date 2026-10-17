@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { checkPack } from "../template-pack-check";
-import { resolvePackBlocks, type SpaceTemplatePack } from "../template-pack";
+import { relativeWindowDays, resolvePackBlocks, type SpaceTemplatePack } from "../template-pack";
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../../features/spaces/templates/packs/projects-and-tasks.pack.json"), "utf8")) as SpaceTemplatePack;
 const fresh = () => JSON.parse(JSON.stringify(PACK)) as SpaceTemplatePack;
@@ -78,5 +78,87 @@ describe("resolvePackBlocks", () => {
     expect((out[5].props as unknown as DbProps).source).toEqual({ kind: "table", tableId: "T-T" });
     expect(json).toContain('"spaceId":"P-D"');
     expect(new Set(json.match(/"id":"id\d+"/g)).size).toBe(json.match(/"id":"id\d+"/g)!.length);
+  });
+});
+
+// BLOCK-FILTERS: a pack block view declares relative days ("within"), "me" and "anyOf" by field KEY; the checker
+// names every wrong one at its path, and the install folds them (with the view's filters) into a field-id `where`.
+describe("block view filter words", () => {
+  const tasksDb = (p: SpaceTemplatePack) => p.pages[0].blocks[5].props as unknown as DbProps;
+  const withView = (view: Record<string, unknown>) => {
+    const p = fresh();
+    tasksDb(p).views.push({ id: "view-x", name: "X", layout: "grid", ...view });
+    return p;
+  };
+  const vat = "pages[0] (projects-and-tasks).blocks[5].props.views[4]";
+  it("passes a good Due this week and Overdue view", () => {
+    expect(checkPack(withView({ within: { due_on: { relative: "this_week" } } }))).toEqual([]);
+    expect(checkPack(withView({ within: { due_on: { relative: "before_today" } }, anyOf: { status: ["To do", "In progress"] } }))).toEqual([]);
+  });
+  it("names a day range on a field that is not a date", () => {
+    expect(ats(withView({ within: { status: { relative: "this_week" } } }))).toContain(`${vat}.within.status`);
+  });
+  it("names an unknown field key and a bad word", () => {
+    const at = ats(withView({ within: { due: { relative: "this_week" }, due_on: { relative: "soonish" } } }));
+    expect(at).toEqual(expect.arrayContaining([`${vat}.within.due`, `${vat}.within.due_on.relative`]));
+  });
+  it("names a missing or stray n", () => {
+    expect(ats(withView({ within: { due_on: { relative: "next_days" } } }))).toContain(`${vat}.within.due_on.n`);
+    expect(ats(withView({ within: { due_on: { relative: "today", n: 3 } } }))).toContain(`${vat}.within.due_on.n`);
+  });
+  it("names me on a column that is not a signed-in person", () => {
+    expect(ats(withView({ me: ["assignee"] }))).toContain(`${vat}.me[0]`);
+  });
+  it("names an anyOf value that is not a choice, a hand-written where, and a chart view", () => {
+    expect(ats(withView({ anyOf: { status: ["Someday"] } }))).toContain(`${vat}.anyOf.status`);
+    expect(ats(withView({ where: { op: "and", args: [] } }))).toContain(`${vat}.where`);
+    expect(ats(withView({ layout: "chart", chart: { type: "donut", groupBy: "status", op: "count" }, within: { due_on: { relative: "today" } } }))).toContain(`${vat}.layout`);
+  });
+
+  const block = (view: Record<string, unknown>) => [{ type: "database", props: { source: { kind: "template", table: "task" }, inline: true, views: [{ id: "v", name: "V", layout: "grid", ...view }] } }];
+  const where = (out: ReturnType<typeof resolvePackBlocks>) => (out[0].props as unknown as DbProps).views[0];
+  it("installs the words as a field-id where, the view's filters folded in", () => {
+    const out = resolvePackBlocks(block({ filters: { priority: "High" }, within: { due_on: { relative: "next_days", n: 7 } }, anyOf: { status: ["To do"] }, me: ["owner"] }), {
+      tables: { task: { tableId: "T", viewIds: {}, fieldIds: { due_on: "F-DUE", status: "F-ST", priority: "F-PR", owner: "F-OW" } } },
+      pages: {},
+      newId: () => "b",
+    });
+    const v = where(out);
+    expect(v.filters).toBeUndefined();
+    expect(v.within).toBeUndefined();
+    expect(v.where).toEqual({
+      op: "and",
+      args: [
+        { op: "eq", args: [{ field: "F-PR" }, { const: "High" }] },
+        { op: "or", args: [{ op: "eq", args: [{ field: "F-ST" }, { const: "To do" }] }] },
+        { op: "within", args: [{ field: "F-DUE" }, { const: { relative: "next_days", n: 7 } }] },
+        { op: "eq", args: [{ field: "F-OW" }, { const: { me: true } }] },
+      ],
+    });
+  });
+  it("leaves a view with no words as it was", () => {
+    const out = resolvePackBlocks(block({ filters: { status: "Done" } }), { tables: { task: { tableId: "T", viewIds: {} } }, pages: {}, newId: () => "b" });
+    expect(where(out)).toEqual({ id: "v", name: "V", layout: "grid", filters: { status: "Done" } });
+  });
+  it("asks the preview's memory rows for the values inside the window", () => {
+    const values = ["2026-10-12", "2026-10-14T09:30:00Z", "2026-10-19", "2026-10-11", null];
+    const out = resolvePackBlocks(block({ within: { due_on: { relative: "this_week" } } }), {
+      tables: { task: { tableId: "T", viewIds: {}, sample: "w", fieldIds: { due_on: "F" }, preview: { today: "2026-10-15", valuesOf: () => values } } },
+      pages: {},
+      newId: () => "b",
+    });
+    // Week of Wed 2026-10-15 = Mon 10-12 .. Sun 10-18.
+    expect(where(out).where).toEqual({ op: "and", args: [{ op: "or", args: [{ op: "eq", args: [{ field: "F" }, { const: "2026-10-12" }] }, { op: "eq", args: [{ field: "F" }, { const: "2026-10-14T09:30:00Z" }] }] }] });
+  });
+});
+
+describe("relativeWindowDays", () => {
+  it("matches the store's half-open day ranges (weeks from Monday)", () => {
+    const t = "2026-10-15";
+    expect(relativeWindowDays({ relative: "today" }, t)).toEqual({ from: t, to: "2026-10-16" });
+    expect(relativeWindowDays({ relative: "next_week" }, t)).toEqual({ from: "2026-10-19", to: "2026-10-26" });
+    expect(relativeWindowDays({ relative: "last_month" }, t)).toEqual({ from: "2026-09-01", to: "2026-10-01" });
+    expect(relativeWindowDays({ relative: "before_today" }, t)).toEqual({ to: t });
+    expect(relativeWindowDays({ relative: "past_days", n: 3 }, t)).toEqual({ from: "2026-10-12", to: t });
   });
 });

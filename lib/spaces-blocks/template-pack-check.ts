@@ -22,6 +22,7 @@ import { buildSpaceSnapshotSchema } from "./jsonSchema";
 import { validateSnapshot } from "./schema";
 import {
   LEGACY_PACK_IDS,
+  PACK_RELATIVE_DAYS,
   PAGE_TOKEN,
   SPACE_PACK_ID,
   SPACE_PACK_VERSION,
@@ -250,6 +251,8 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
           else if (view.table !== src.table) say(`${at}.props.source.view`, `The view "${src.view}" is on the table "${view.table}", not "${src.table}".`);
         }
         const fields = new Set((table?.fields ?? []).map((f) => f.key));
+        const typeOf = new Map((table?.fields ?? []).map((f) => [f.key, String(f.parityType)] as const));
+        const choicesOf = new Map((table?.fields ?? []).map((f) => [f.key, (f as { choices?: unknown }).choices] as const));
         const views = Array.isArray(props.views) ? (props.views as Array<Record<string, unknown>>) : [];
         if (!views.length) say(`${at}.props.views`, 'Give the block at least one view: [{ "id": "view-table", "name": "Table", "layout": "grid" }].');
         const ids = new Set<string>();
@@ -274,6 +277,7 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
             field(v.chart.groupBy, "chart.groupBy");
             field(v.chart.field, "chart.field");
           }
+          checkFilterWords(v, vat, src.table, fields, typeOf, choicesOf, say);
           if ((v.layout === "kanban" || v.layout === "board") && !str(v.groupField)) say(`${vat}.groupField`, "A board groups by a choice field: name it in groupField.");
           if ((v.layout === "calendar" || v.layout === "timeline") && !str(v.dateField)) say(`${vat}.dateField`, `A ${String(v.layout)} view places rows by a date field: name it in dateField.`);
         });
@@ -282,4 +286,74 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
     }
     if (Array.isArray(b.children)) checkTokens(b.children, `${at}.children`, w, say);
   });
+}
+
+const DATE_KINDS = ["datetime", "date", "created_time", "modified_time"];
+const PERSON_KINDS = ["member", "created_by", "modified_by"];
+/** Layouts whose body asks the store with the view's `where` (a chart and a form read `filters` only). */
+const WHERE_LAYOUTS = ["grid", "kanban", "board", "gallery", "list", "calendar", "timeline"];
+
+/** A block view's `within` / `me` / `anyOf` (by field key), as the install folds them into its `where`. */
+function checkFilterWords(
+  v: Record<string, unknown>,
+  vat: string,
+  table: string,
+  fields: Set<string>,
+  typeOf: Map<string, string>,
+  choicesOf: Map<string, unknown>,
+  say: (at: string, says: string) => void,
+) {
+  const has = v.within !== undefined || v.me !== undefined || v.anyOf !== undefined;
+  if (v.where !== undefined) say(`${vat}.where`, 'A pack never writes `where` (it names fields by install-time id). Write "within", "me" or "anyOf" by field key; the install builds the where.');
+  if (!has) return;
+  if (!WHERE_LAYOUTS.includes(String(v.layout))) say(`${vat}.layout`, `A ${String(v.layout)} view reads only "filters"; put within / me / anyOf on a grid, board, list, gallery, calendar or timeline view.`);
+  const filters = isObj(v.filters) ? v.filters : {};
+  if (Object.values(filters).includes("@this-row")) say(`${vat}.filters`, "\"This page's row\" cannot sit beside within / me / anyOf; keep the view to one or the other.");
+  const known = (key: string, at: string) => {
+    if (fields.has(key)) return true;
+    say(at, `"${key}" is not a field of "${table}". Fields: ${[...fields].join(", ")}.`);
+    return false;
+  };
+  if (v.within !== undefined) {
+    if (!isObj(v.within)) say(`${vat}.within`, 'Write within as { "<date field key>": { "relative": "this_week" } }.');
+    else
+      for (const [key, w] of Object.entries(v.within)) {
+        const at = `${vat}.within.${key}`;
+        if (!known(key, at)) continue;
+        if (!DATE_KINDS.includes(typeOf.get(key) ?? "")) say(at, `"${key}" is a ${typeOf.get(key)} field; a day range reads a date, datetime, created_time or modified_time field.`);
+        if (key in filters) say(at, `"${key}" is in both filters and within; keep it in one.`);
+        const rel = isObj(w) ? w.relative : undefined;
+        if (!(PACK_RELATIVE_DAYS as readonly string[]).includes(String(rel))) {
+          say(`${at}.relative`, `"${String(rel)}" is not a day range. Use one of: ${PACK_RELATIVE_DAYS.join(", ")}.`);
+          continue;
+        }
+        const n = (w as { n?: unknown }).n;
+        if (rel === "next_days" || rel === "past_days") {
+          if (!Number.isInteger(n) || (n as number) < 1 || (n as number) > 3660) say(`${at}.n`, `${String(rel)} counts a whole number of days, 1 to 3660 ("n": 7).`);
+        } else if (n !== undefined) say(`${at}.n`, `n is only for next_days / past_days; "${String(rel)}" is a fixed range. Remove n.`);
+      }
+  }
+  if (v.me !== undefined) {
+    if (!Array.isArray(v.me) || !v.me.length || v.me.some((k) => !str(k))) say(`${vat}.me`, 'Write me as a list of person field keys: ["owner"].');
+    else
+      v.me.forEach((key: string, j: number) => {
+        const at = `${vat}.me[${j}]`;
+        if (known(key, at) && !PERSON_KINDS.includes(typeOf.get(key) ?? ""))
+          say(at, `"${key}" is a ${typeOf.get(key)} field; "me" matches a signed-in member, so name a member, created_by or modified_by field (a Team table row is not a signed-in person).`);
+      });
+  }
+  if (v.anyOf !== undefined) {
+    if (!isObj(v.anyOf)) say(`${vat}.anyOf`, 'Write anyOf as { "<field key>": ["Choice one", "Choice two"] }.');
+    else
+      for (const [key, vals] of Object.entries(v.anyOf)) {
+        const at = `${vat}.anyOf.${key}`;
+        if (!known(key, at)) continue;
+        if (!Array.isArray(vals) || !vals.length || vals.some((x) => typeof x !== "string")) say(at, 'Give anyOf a list of the values to match: ["To do", "Doing"].');
+        else {
+          const choices = choicesOf.get(key);
+          if (Array.isArray(choices)) vals.forEach((x) => (choices.includes(x) ? null : say(at, `"${String(x)}" is not a choice of "${key}". Choices: ${choices.join(", ")}.`)));
+        }
+        if (key in filters) say(at, `"${key}" is in both filters and anyOf; keep it in one.`);
+      }
+  }
 }

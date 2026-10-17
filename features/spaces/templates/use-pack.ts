@@ -81,7 +81,15 @@ export const previewWorldId = (t: Pick<SpaceTemplateCard, "catalogue_id" | "vers
 export function previewTables(t: SpaceTemplateFull): Record<string, ResolvedTable> {
   const world = previewWorldId(t);
   const preview = registerSampleWorld(world, t.spec);
-  return Object.fromEntries(preview.tables.map((x) => [x.token, { tableId: x.id, viewIds: {}, sample: world }]));
+  const today = preview.world.today;
+  return Object.fromEntries(
+    preview.world.tables.map((x) => {
+      const fieldIds = Object.fromEntries(x.fields.map((f) => [String(f.data["key"]), f.id]));
+      // The memory store answers no relative-day node: the block view asks for the sample values that fall in it.
+      const valuesOf = (key: string) => [...x.rows.values()].map((r) => r[key]);
+      return [x.token, { tableId: x.id, viewIds: {}, sample: world, fieldIds, preview: { today, valuesOf } }];
+    }),
+  );
 }
 
 /** The template's pages as previewable docs (root first), over the in-memory tables. */
@@ -113,7 +121,7 @@ function tablesFrom(answer: TemplateDoorAnswer, spec: TemplateSpec): Record<stri
   return out;
 }
 
-/** Each installed table's field keys mapped from the spec's by label (an upgraded install renames a converted column). */
+/** Each installed table's field keys mapped from the spec's by label (an upgraded install renames a converted column), and their field ids. */
 async function withInstalledKeys(tables: Record<string, ResolvedTable>, spec: TemplateSpec, organizationId: string): Promise<Record<string, ResolvedTable>> {
   const db = storeDoors(createClient());
   const out = { ...tables };
@@ -121,13 +129,16 @@ async function withInstalledKeys(tables: Record<string, ResolvedTable>, spec: Te
     Object.entries(tables).map(async ([token, table]) => {
       const { data, error } = await db.applicableFields(organizationId, table.tableId);
       if (error) throw new Error(`We couldn't read the template's table fields: ${error.message}`);
-      const installed = ((data ?? []) as unknown as Array<{ data?: { key?: string; label?: string } }>).map((r) => r.data ?? {});
+      const installed = ((data ?? []) as unknown as Array<{ id?: string; data?: { key?: string; label?: string } }>).map((r) => ({ id: r.id, ...(r.data ?? {}) }));
       const keys: Record<string, string> = {};
+      // A block view's `where` names fields by id (template-pack.ts packViewWhere): this install's key → id.
+      const fieldIds: Record<string, string> = {};
       for (const f of allTables(spec).find((t) => t.token === token)?.fields ?? []) {
         const hit = installed.find((x) => x.label === f.label);
         if (hit?.key && hit.key !== f.key) keys[f.key] = hit.key;
+        if (hit?.id) fieldIds[hit.key ?? f.key] = hit.id;
       }
-      if (Object.keys(keys).length) out[token] = { ...table, keys };
+      out[token] = { ...table, ...(Object.keys(keys).length ? { keys } : {}), fieldIds };
     }),
   );
   return out;

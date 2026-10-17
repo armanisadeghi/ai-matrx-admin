@@ -214,6 +214,8 @@ export interface DatabaseView {
   /** Property keys this view hides. */
   hiddenFields?: string[];
   chart?: DatabaseChartSettings;
+  /** The view's nested question in the store's Rule shape (fields by id; records-ui Condition), asked instead of `filters`. */
+  where?: Record<string, unknown> | null;
 }
 
 export interface DatabaseProps extends Record<string, unknown> {
