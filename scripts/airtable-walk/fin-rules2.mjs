@@ -1,0 +1,12 @@
+import { store } from "./store.mjs";
+const { client } = await store();
+const jobs = "e740f9c2-4f45-4550-a66f-d77f5da413f7";
+const show = (w, r) => console.log(w.padEnd(34), r.ok ? "OK " + JSON.stringify(r.data).slice(0, 100) : "REFUSED " + (r.error?.message ?? JSON.stringify(r.error)).slice(0, 200));
+const w = "3aeb3cdb-b1d4-418e-ae69-6a3007ee91ff";
+show("stale expectedVersion", await client.recordUpdate({ record_id: w, patch: { job: "x" }, expectedVersion: 1 }));
+const jf = (await client.fields({ table_id: jobs })).data; const sku = jf.find((f) => f.key === "sku");
+show("add unique rule to sku", await client.fieldUpdate({ field_id: sku.id, patch: { rules: [{ kind: "unique" }] } }));
+show("dup sku after rule", await client.recordWrite({ table_id: jobs, data: { job: "Rules C", sku: (await client.listPage({ table_id: jobs, limit: 100 })).data.rows.find((r) => r.id === w).document.sku } }));
+show("delete (archive) record", await client.recordDelete({ record_id: w }));
+const la = await client.listArchived({ table_id: jobs }); console.log("archived list", la.ok, JSON.stringify(la.data ?? la.error).slice(0, 200));
+show("restore", await client.recordRestore({ record_id: w }));
