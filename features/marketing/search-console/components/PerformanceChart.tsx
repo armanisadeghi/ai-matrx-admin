@@ -196,15 +196,15 @@ export function PerformanceChart({
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="var(--border)"
+            stroke="hsl(var(--border))"
             vertical={false}
           />
           <XAxis
             dataKey="day"
             tickFormatter={shortDay}
             interval={tickInterval}
-            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-            axisLine={{ stroke: "var(--border)" }}
+            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+            axisLine={{ stroke: "hsl(var(--border))" }}
             tickLine={false}
           />
           <YAxis

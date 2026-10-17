@@ -92,11 +92,11 @@ export function injectSelectionStyles(svg: SVGSVGElement): void {
     [data-mmkind="node"][data-mmselected="true"] circle,
     [data-mmkind="node"][data-mmselected="true"] polygon,
     [data-mmkind="node"][data-mmselected="true"] path:first-of-type {
-      stroke: var(--primary) !important;
+      stroke: hsl(var(--primary)) !important;
       stroke-width: 2.5px !important;
     }
     [data-mmkind="edge"][data-mmselected="true"] {
-      stroke: var(--primary) !important;
+      stroke: hsl(var(--primary)) !important;
       stroke-width: 3px !important;
     }
   `;

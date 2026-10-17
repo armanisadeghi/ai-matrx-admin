@@ -182,14 +182,14 @@ export const EnhancedChip = ({
         if (!glow) return {};
 
         const glowColors = {
-            default: 'var(--foreground)',
-            primary: 'var(--primary)',
-            secondary: 'var(--brand-secondary)',
-            destructive: 'var(--destructive)',
+            default: 'hsl(var(--foreground))',
+            primary: 'hsl(var(--primary))',
+            secondary: 'hsl(var(--brand-secondary))',
+            destructive: 'hsl(var(--destructive))',
             success: 'rgb(34 197 94)',
-            outline: 'var(--border)',
-            ghost: 'var(--muted)',
-            link: 'var(--primary)',
+            outline: 'hsl(var(--border))',
+            ghost: 'hsl(var(--muted))',
+            link: 'hsl(var(--primary))',
             warning: 'rgb(234 179 8)',
             info: 'rgb(59 130 246)',
             purple: 'rgb(168 85 247)',

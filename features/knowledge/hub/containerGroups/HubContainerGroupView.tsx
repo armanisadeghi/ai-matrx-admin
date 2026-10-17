@@ -531,7 +531,7 @@ function CatalogGroup({ group, set }: { group: Group; set: (k: string, v: string
           type="checkbox"
           checked={!entitledOnly}
           onChange={(e) => set("all", e.target.checked ? "1" : null)}
-          className="h-3.5 w-3.5 accent-[var(--primary)]"
+          className="h-3.5 w-3.5 accent-[hsl(var(--primary))]"
         />
         Show everything in the Library, not just my industry
       </label>

@@ -203,7 +203,7 @@ export function UpgradeModal({
                     className={cn(
                       "group flex items-center justify-between gap-4 rounded-xl border px-4 py-3 text-left transition-all",
                       active
-                        ? "border-foreground bg-foreground/[0.03] shadow-[inset_0_0_0_1px_var(--foreground)]"
+                        ? "border-foreground bg-foreground/[0.03] shadow-[inset_0_0_0_1px_hsl(var(--foreground))]"
                         : "border-border/70 hover:border-foreground/40 hover:bg-accent/30",
                     )}
                   >

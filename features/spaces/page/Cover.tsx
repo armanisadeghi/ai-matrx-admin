@@ -41,7 +41,7 @@ function coverStyle(cover: CoverValue, url: string | null, offsetY: number): Rea
   if (url) {
     return { backgroundImage: `url("${url.replace(/"/g, "%22")}")`, backgroundSize: "cover", backgroundPosition: `center ${offsetY}%` };
   }
-  return { background: "var(--muted)" };
+  return { background: "hsl(var(--muted))" };
 }
 
 export function CoverPicker({ onPick, children }: { onPick: (cover: CoverValue | null) => void; children: React.ReactNode }) {

@@ -66,7 +66,7 @@ export function installColumnAutocomplete(api: AutocompleteApi, isEnabled: () =>
       chip.setAttribute("data-sheet-autocomplete", "");
       chip.setAttribute("role", "status");
       chip.style.cssText =
-        "position:fixed;z-index:2000;padding:2px 8px;font-size:12px;border-radius:6px;pointer-events:none;background:var(--popover,#fff);color:var(--popover-foreground,#111);border:1px solid var(--border,#ccc);box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap";
+        "position:fixed;z-index:2000;padding:2px 8px;font-size:12px;border-radius:6px;pointer-events:none;background:hsl(var(--popover,0 0% 100%));color:hsl(var(--popover-foreground,0 0% 7%));border:1px solid hsl(var(--border,0 0% 80%));box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap";
       document.body.appendChild(chip);
     }
     chip.textContent = `${text}   Tab to accept`;

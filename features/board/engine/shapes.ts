@@ -197,8 +197,8 @@ export function strokeWidthOf(shape: Pick<BoardShape, "style">): number {
 
 /** The CSS colour for a palette key; `alpha` for a fill tint. Light + dark come from the theme. */
 export function shapeColorCss(color: ShapeColor, alpha = 1): string {
-  const channels = color === "ink" ? "var(--foreground)" : `var(--board-accent-${color})`;
-  return alpha === 1 ? `hsl(${channels})` : `hsl(${channels} / ${alpha})`;
+  const token = color === "ink" ? "--foreground" : `--board-accent-${color}`;
+  return alpha === 1 ? `hsl(var(${token}))` : `hsl(var(${token}) / ${alpha})`;
 }
 
 /** The fill tint's alpha (tldraw's "semi" fill: the colour reads, text on it stays readable). */
