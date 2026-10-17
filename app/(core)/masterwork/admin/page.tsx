@@ -5,7 +5,7 @@ import type { FeatureAdminMap } from "@/features/admin/types/featureAdminMap";
 
 /**
  * Every Masterwork window panel refuses to render without a `rulebookId` in its
- * overlay payload (OverlayController guards `!rulebookId` on all four), and the
+ * overlay payload (OverlayWorldHost guards `!rulebookId` on all four), and the
  * admin map's generic launcher has no Rulebook to hand it. So these rows say
  * where they open from and door through to the Rulebook list, instead of
  * offering four buttons that could never work.

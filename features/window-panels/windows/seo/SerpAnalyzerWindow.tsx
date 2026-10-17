@@ -12,7 +12,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
  * SerpAnalyzerWindow — the canonical Metadata Analyzer in a floating window.
  *
  * Open from anywhere with `useOpenSerpAnalyzerWindow({ url, title,
- * description })` (features/overlays/openers/serpAnalyzerWindow.tsx) to push a
+ * description })` (features/overlays/definitions/serpAnalyzerWindow.overlay.tsx) to push a
  * page's metadata into the full analyzer: inputs, deterministic pixel/char
  * analysis, Google chrome + desktop + mobile SERP previews, recommendations.
  *

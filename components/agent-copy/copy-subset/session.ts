@@ -2,7 +2,7 @@
  * copy-subset sessions — the module-scope registry that keeps rows, column
  * definitions, and callbacks OUT of Redux.
  *
- * Functions cannot travel through `openOverlay` data (the overlaySlice guard
+ * Functions cannot travel through `openOverlay` data (the summon overlay state guard
  * strips them and screams), and a row array does not belong in global state.
  * `callbackManager` groups carry EVENTS, not a data snapshot, so this is a
  * sibling channel with the same shape: the opener registers the caller's

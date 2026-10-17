@@ -14,7 +14,7 @@
  * never a hand-written list of windows, which would go stale the first time a
  * window was added:
  *
- *  1. Every `isWindow: true` overlay has a row in `windowRegistryMetadata.ts`.
+ *  1. Every `isWindow: true` overlay has a row in `features/overlays/definitions/<id>.overlay.ts (window block)`.
  *     Without one it cannot declare an address AT ALL (nor a mobile
  *     presentation, nor a preservation contract). The agenda and the approval
  *     queue both shipped with no row.
@@ -36,7 +36,7 @@ import baseline from "../registry/window-address-baseline.json";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
 /** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
-const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
+const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );
 /** The old window-metadata rows, read from the definitions: windows with a window id, other overlays with a link. */
@@ -75,7 +75,7 @@ const metadataByOverlayId = new Map(
 );
 
 const windowOverlayIds = Object.entries(
-  OVERLAY_CATALOGUE as Record<string, { isWindow?: boolean }>,
+  OVERLAYS_BY_ID as Record<string, { isWindow?: boolean }>,
 )
   .filter(([, entry]) => entry.isWindow)
   .map(([overlayId]) => overlayId);
@@ -108,8 +108,8 @@ describe("every window has an address (R35)", () => {
     expect({
       windowsWithNoRegistryRow: fresh,
       remedy:
-        "Add a row to features/window-panels/registry/windowRegistryMetadata.ts " +
-        "with a urlSync key and a hydrator in url-sync/initUrlHydration.ts.",
+        "Give its definition (features/overlays/definitions/<id>.overlay.ts) a window block " +
+        "with a link key and a hydrator in features/overlays/definitions/<id>.link.ts.",
     }).toEqual({ windowsWithNoRegistryRow: [], remedy: expect.any(String) });
   });
 
@@ -121,7 +121,7 @@ describe("every window has an address (R35)", () => {
       windowsWithASubjectAndNoAddress: fresh,
       remedy:
         "Declare `urlSync: { key: \"<snake_key>\" }` on the registry row, register a " +
-        "hydrator in url-sync/initUrlHydration.ts, and pass `urlSyncId={<the subject id>}` " +
+        "hydrator in features/overlays/definitions/<id>.link.ts, and pass `urlSyncId={<the subject id>}` " +
         "on the WindowPanel so the address carries the subject. If the window genuinely " +
         "cannot be addressed, add it to `addressless` in window-address-baseline.json " +
         "WITH the reason.",

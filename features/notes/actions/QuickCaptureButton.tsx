@@ -23,8 +23,8 @@ interface QuickCaptureButtonProps {
 }
 
 /**
- * Opens the global Quick Save to Notes dialog (OverlayController).
- * Parent tree must include Redux + OverlayController (authenticated Providers or PublicProviders).
+ * Opens the global Quick Save to Notes dialog (OverlayWorldHost).
+ * Parent tree must include Redux + OverlayWorldHost (authenticated Providers or PublicProviders).
  */
 export function QuickCaptureButton({
   defaultContent = "",

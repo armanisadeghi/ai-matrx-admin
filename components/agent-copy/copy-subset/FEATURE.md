@@ -16,7 +16,7 @@ Every Copy-for-AI control gets one more menu row, **Filter & sort before copying
 |---|---|---|
 | `useCopySubsetVariant()` | `useCopySubsetVariant.ts` | Returns a factory `(getSource, overrides?) => Alchemy Menu variant`. Pass it through `CopyButtons` `aiVariants`. The getter runs at click time. |
 | `CopySubsetSource<T>` | `types.ts` | `{ label, location, kind, rows: T[] \| () => Promise<T[]>, columns?, getRowId?, serializer?, initialSelectedIds?, defaultFormat?, onCopied? }`. No `columns` → inferred from the first 200 rows' keys. No `getRowId` → snapshot index. No `serializer` → generic envelope (records + Markdown summary + shaping attributes). |
-| Overlay | `features/overlays/catalogue.ts` `copySubsetWindow` · `features/overlays/openers/copySubsetWindow.tsx` (`useOpenCopySubsetWindow` / `CopySubsetWindowController`) · `OverlayController.tsx` block · `CopySubsetWindow.tsx` | Multi-instance WindowPanel. Bound with `onClose` (never `overlayId`), so window persistence never restores a session-less window. |
+| Overlay | `features/overlays/definitions/registry.ts` `copySubsetWindow` · `features/overlays/definitions/copySubsetWindow.overlay.tsx` (`useOpenCopySubsetWindow` / `CopySubsetWindowController`) · `OverlayWorldHost.tsx` block · `CopySubsetWindow.tsx` | Multi-instance WindowPanel. Bound with `onClose` (never `overlayId`), so window persistence never restores a session-less window. |
 
 Pure core: `serialize.ts` (formats, size, column inference), `model.ts` (`computeCopySubset` / `copySubsetText` through the real `filterAndSortRows`), `session.ts` (the module-scope registry).
 

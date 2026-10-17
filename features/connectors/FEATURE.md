@@ -67,8 +67,8 @@ is limited to immediately usable providers.
 
 **Routes**
 
-- `features/overlays/openers/connectorConsentDialog.tsx` — the ONE door to "Choose what to connect" (`useOpenConnectorConsentDialog`).
-- `features/connectors/import/` — **the two Google import panels** (Google-native PLAN §4.5, §4.7). `GoogleContactsImportPanel.tsx` (search → the field map → save through the governed party resolver) and `GoogleTasksImportPanel.tsx` (task lists, checkboxes, already-imported badges, the server's honest count line). `service.ts` is the client half of `/google-import/*`; `types.ts` holds its `*Pending` stand-in contracts and the remedy that removes them; `contract.ts` is the ONE adapter that narrows what steers copy (the field-action set, the match state) with a runtime check, so a state a newer server sends can never render blank; `field-labels.ts` turns a column key into words and writes the provenance sentence, shared by both panels; `read-failure.ts` + `GoogleImportReadFailureNotice.tsx` are the ONE fourth-state posture both panels render when the read did not happen. Openers: `features/overlays/openers/googleImportWindows.tsx` (`useOpenGoogleContactsImport`, `useOpenGoogleTasksImport`); window entries `features/window-panels/windows/google-import/*`.
+- `features/overlays/definitions/connectorConsentDialog.overlay.tsx` — the ONE door to "Choose what to connect" (`useOpenConnectorConsentDialog`).
+- `features/connectors/import/` — **the two Google import panels** (Google-native PLAN §4.5, §4.7). `GoogleContactsImportPanel.tsx` (search → the field map → save through the governed party resolver) and `GoogleTasksImportPanel.tsx` (task lists, checkboxes, already-imported badges, the server's honest count line). `service.ts` is the client half of `/google-import/*`; `types.ts` holds its `*Pending` stand-in contracts and the remedy that removes them; `contract.ts` is the ONE adapter that narrows what steers copy (the field-action set, the match state) with a runtime check, so a state a newer server sends can never render blank; `field-labels.ts` turns a column key into words and writes the provenance sentence, shared by both panels; `read-failure.ts` + `GoogleImportReadFailureNotice.tsx` are the ONE fourth-state posture both panels render when the read did not happen. Openers: `features/overlays/definitions/` (`useOpenGoogleContactsImport`, `useOpenGoogleTasksImport`); window entries `features/window-panels/windows/google-import/*`.
 - `features/window-panels/windows/connectors/LiveIntegrationsWindow.tsx` — floating host for the shared integrations directory; fullscreen on mobile.
 - `app/(dev)/demos/connector-strip/page.dev.tsx` — every strip state side by side (nothing / some / all connected, compact, surface filters, raised intents).
 
@@ -167,7 +167,7 @@ where every item opens at the provider.
 ### (g) Bringing a Google contact or task IN
 
 Both panels are the WINDOW presentation (Arman, 2026-09-17: "The default is the
-window"), registered in `windowRegistryMetadata` with
+window"), registered in `features/overlays/definitions/<id>.overlay.ts (window block)` with
 `mobilePresentation: "drawer"` so a phone gets the bottom sheet, and opened in
 place from the People list and the Tasks header — never a route, which would
 lose the list behind it.

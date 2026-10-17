@@ -931,6 +931,10 @@ if $STRICT; then
         # common-docs retired-words.json; ONE-HOME, 2026-10-02). Baseline ratchet: exits 1 only on a NEW use; advisory here.
         "Retired word used (old schema or actor-tier name)|pnpm check:retired-words"
         "Retired-words guard self-test|pnpm check:retired-words:self-test"
+        # OVERLAY INDEX (2026-10-17): overlay-definitions.gen.ts + overlay-meta-index.ts are generated
+        # from features/overlays/definitions; stale or a definition missing from registry.ts = exit 1.
+        # Fix: `pnpm gen:overlays`. Proven red (label edit, unlisted definition) then green.
+        "Overlay index generated from the definitions is fresh|pnpm check:overlays"
         # ZERO-WIDTH LAYERS — a fixed-width child in a width-less absolute
         # (pan/zoom) layer is squeezed to 0px by the phone max-width default
         # (2026-09-28: org charts, React Flow). Zero findings; advisory here.
@@ -1707,6 +1711,10 @@ else
         # common-docs retired-words.json; ONE-HOME, 2026-10-02). Baseline ratchet: exits 1 only on a NEW use; advisory here.
         "Retired word used (old schema or actor-tier name)|pnpm check:retired-words"
         "Retired-words guard self-test|pnpm check:retired-words:self-test"
+        # OVERLAY INDEX (2026-10-17): overlay-definitions.gen.ts + overlay-meta-index.ts are generated
+        # from features/overlays/definitions; stale or a definition missing from registry.ts = exit 1.
+        # Fix: `pnpm gen:overlays`. Proven red (label edit, unlisted definition) then green.
+        "Overlay index generated from the definitions is fresh|pnpm check:overlays"
         # ZERO-WIDTH LAYERS — a fixed-width child in a width-less absolute
         # (pan/zoom) layer is squeezed to 0px by the phone max-width default
         # (2026-09-28: org charts, React Flow). Zero findings; advisory here.

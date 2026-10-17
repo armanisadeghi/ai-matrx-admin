@@ -58,7 +58,7 @@ Plan: `common-docs/projects/knowledge-system/KNOWLEDGE-HUB.md` §5.1.
 - `CommandBarHotkey.tsx` — the ONE ⌘K / Ctrl+K listener, mounted once by `DeferredIslands` (AppShell).
   Respects `preventDefault()` from pages that own ⌘K (Markdown Studio, PDF Studio).
 - `KnowledgeCommandBar.tsx` — the bar, rendered by the overlay controller (`knowledgeCommandBar`;
-  opener `features/overlays/openers/knowledgeCommandBar.tsx`, callbacks
+  opener `features/overlays/definitions/knowledgeCommandBar.overlay.tsx`, callbacks
   `features/overlays/callbacks/knowledgeCommandBar.ts`). Chips come from the shared parser
   `features/knowledge/api/knowledgeQueryText.ts`; search from the one client
   `features/knowledge/api/knowledgeSearch.ts` (`searchKnowledge`).

@@ -2,17 +2,17 @@
 
 > Chunk row file for [`../../PANEL_INVENTORY.md`](../../PANEL_INVENTORY.md). Covers the **Content & Data** panels: the 3 content-editor windows, the markdown-editor window, and the data/list panels (Quick Data, List Manager, Picklist V1/V2) plus the Working Document panel. Legend ✓ present · ◑ partial · ✗ missing · — n/a. Action `Priority` = P0/P1/P2; `Effort` = S/M/L.
 >
-> Filled 2026-06-23. Deep-read each component + `registry/windowRegistryMetadata.ts` entry + opener (`features/overlays/openers/*`) + Tools-Grid tile.
+> Filled 2026-06-23. Deep-read each component + `features/overlays/definitions/<id>.overlay.ts (window block)` entry + opener (`features/overlays/definitions/*`) + Tools-Grid tile.
 
 ## Panel identity & sources (key)
 
-| Panel (overlayId) | Component file | Renders core | Opener (`features/overlays/openers/`) | Registry line |
+| Panel (overlayId) | Component file | Renders core | Opener (`features/overlays/definitions/`) | Registry line |
 |---|---|---|---|---|
 | `contentEditorWindow` | `windows/content-editors/ContentEditorWindow.tsx` | `@/components/official/content-editor/ContentEditor` | `useOpenContentEditorWindow({variant:"editor"})` (canonical at `windows/content-editors/useOpenContentEditorWindow.ts`, re-exported) | 912 |
 | `contentEditorListWindow` | `windows/content-editors/ContentEditorListWindow.tsx` | `ContentEditor` + `ContentEditorList` | same hook, `variant:"list"` | 928 |
 | `contentEditorWorkspaceWindow` | `windows/content-editors/ContentEditorWorkspaceWindow.tsx` | `ContentEditorTabsWithList` | same hook, `variant:"workspace"` | 945 |
 | `markdownEditorWindow` | `windows/MarkdownEditorWindow.tsx` | `MarkdownClassificationTester` (**debug harness, not an editor**) | `useOpenMarkdownEditorWindow()` | 588 |
-| `markdownEditor` (widget) | controller in `openers/markdownEditor.tsx` | `FullscreenMarkdownEditor` (markdown-classification variant — also the debug harness) | `useOpenFullscreenMarkdownEditor()` | 1137 |
+| `markdownEditor` (widget) | controller in `definitions/markdownEditor.overlay.tsx` | `FullscreenMarkdownEditor` (markdown-classification variant — also the debug harness) | `useOpenFullscreenMarkdownEditor()` | 1137 |
 | `quickDataWindow` | `windows/QuickDataWindow.tsx` | `@/features/quick-actions/components/QuickDataSheet` → `LocatedTableViewer` | `useOpenQuickDataWindow()` | 167 |
 | `quickData` (sheet) | controller in `openers/quickData.tsx` | `QuickDataSheet` (same core, sheet chrome) | `useOpenQuickDataSheet()` | 1335 |
 | `listManagerWindow` | `windows/ListManagerWindow.tsx` | `@/features/data-tables/pick-lists/components/ListManagerFloatingWorkspace` | `useOpenListManagerWindow()` | 356 |
@@ -66,7 +66,7 @@
 | `contentEditorListWindow` | ✓ | cb ✓ | portable | ✓ "Content List" (content) | tile may vanish if windows merge | ~1 + grid | thin usage | resolve via consolidation (P1·M) |
 | `contentEditorWorkspaceWindow` | ✓ | cb ✓ | portable | ✓ "Content Workspace" (content) | tile may vanish if windows merge | ~1 + grid | thin usage | resolve via consolidation (P1·M) |
 | `markdownEditorWindow` | ✓ | none | portable | ✓ "Markdown" (content) — **mislabeled as a user editor** | tile promises an editor, delivers a debug tool | ~2 (CreatorMenu) | users expecting an editor get a classifier | retarget/relabel tile (P1·S) |
-| `markdownEditor` (widget) | ✓ | none | portable | ✗ MISSING tile | fullscreen variant of same debug harness; no grid presence | ~2 (CreatorMenu, OverlayController) | redundant with the window debug variant | dedupe the two debug variants (P2·S) |
+| `markdownEditor` (widget) | ✓ | none | portable | ✗ MISSING tile | fullscreen variant of same debug harness; no grid presence | ~2 (CreatorMenu, OverlayWorldHost) | redundant with the window debug variant | dedupe the two debug variants (P2·S) |
 | `quickDataWindow` | ✓ | none | portable | ✓ "Data Tables" (general) | ok | **~12** (csv/json/table markdown blocks, data-review SendToMenu) — well-distributed | strong; the model for distributing a data panel | — |
 | `quickData` (sheet) | ✓ | none | portable | ✗ MISSING tile | sheet duplicate of the window | ~3 (quick-actions, shell user menu) | redundant presentation | collapse into window (P2·S) |
 | `listManagerWindow` | ✓ | none | portable | ✓ "List Manager" (general) | ok as a tile; but it duplicates picklists | ~2 (url-hydration, self) | under-used + duplicative | converge onto picklist core (P1·L) |
@@ -88,7 +88,7 @@
 
 5. **Quick Data window vs sheet = chrome-only fork.** `quickDataWindow` and the `quickData` sheet render the same `QuickDataSheet` core with different overlay chrome. Same is structurally true of the markdown window vs widget. Collapse each pair to one panel with a presentation prop. (P2·S)
 
-6. **Menu gaps & orphans.** No orphans in this chunk — **every panel has an opener** in `features/overlays/openers/` (an earlier search missed them because openers live there, not under `features/window-panels/openers/`). MISSING Tools-Grid tiles: `picklistManagerV1Window`, `picklistManagerV2Window` (both flagged in the master doc — gated on the canonical decision), `workingDocumentWindow` (correctly absent — it needs a `conversationId`, so a context-less grid tile makes no sense), the `quickData` sheet, and the `markdownEditor` widget (redundant). **Zero surface registration and zero std header controls (agents/help) across all 11 panels** — `workingDocumentWindow` is the highest-value surface candidate since it is already conversation/agent-bound.
+6. **Menu gaps & orphans.** No orphans in this chunk — **every panel has an opener** in `features/overlays/definitions/` (an earlier search missed them because openers live there, not under `features/window-panels/openers/`). MISSING Tools-Grid tiles: `picklistManagerV1Window`, `picklistManagerV2Window` (both flagged in the master doc — gated on the canonical decision), `workingDocumentWindow` (correctly absent — it needs a `conversationId`, so a context-less grid tile makes no sense), the `quickData` sheet, and the `markdownEditor` widget (redundant). **Zero surface registration and zero std header controls (agents/help) across all 11 panels** — `workingDocumentWindow` is the highest-value surface candidate since it is already conversation/agent-bound.
 
 ## Change Log
 - 2026-06-23 — Created. Tables A/B/C filled for the Content & Data chunk (11 panel identities). Key verdicts: content-editor 3-window merge-to-modes (already one opener); picklist V1/V2/V3 + List Manager = P0 4-way duplicate over `udt_picklists`; markdownEditorWindow = misnamed debug harness (not a real-editor duplicate) with a falsely-labeled content tile; all data panels forked (no Redux), List Manager polls 5s; quickData window/sheet + markdown window/widget are chrome-only forks; no orphans (all have openers), no surfaces/std-controls anywhere.

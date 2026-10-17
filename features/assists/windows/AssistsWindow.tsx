@@ -8,7 +8,7 @@
  * off is one click from the bell, over whatever page they are on (notifications
  * ruling 3, 2026-10-01). Never a second renderer.
  *
- * Rendered only behind the lazy overlay boundary (`OverlayController`).
+ * Rendered only behind the lazy overlay boundary (`OverlayWorldHost`).
  */
 
 import { WindowPanel } from "@ai-matrx/summon/window";

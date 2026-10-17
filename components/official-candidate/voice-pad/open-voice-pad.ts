@@ -10,7 +10,7 @@ import type { VoicePadOverlayVariant } from "@/lib/redux/slices/voicePadSlice";
  *
  * The third overlay that shares the voice-pad slice — "transcriptionCleanup"
  * (the "Transcription Cleanup" window) — has its own opener at
- * `features/overlays/openers/transcriptionCleanup.tsx`.
+ * `features/overlays/definitions/transcriptionCleanup.overlay.tsx`.
  *
  * Every variant supports multiple coexisting instances. `instanceId` defaults
  * to "default" for toggle-style callers that expect singleton behavior.

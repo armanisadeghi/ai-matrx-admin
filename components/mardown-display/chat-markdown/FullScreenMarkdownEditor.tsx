@@ -145,7 +145,7 @@ interface FullScreenMarkdownEditorProps {
   primaryActions?: EditorPrimaryAction[];
   onPrimaryAction?: (actionId: string, content: string) => void | Promise<void>;
   /** Called on every content change. Use this to sync edits to an external
-   *  store (e.g. Redux overlayDataSlice) so content survives close/reopen. */
+   *  store (e.g. Redux summon overlay state) so content survives close/reopen. */
   onChange?: (newContent: string) => void;
   analysisData?: Record<string, unknown>;
   messageId?: string;
@@ -1078,7 +1078,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
   };
 
   // Central content setter — always fires the optional onChange so external
-  // stores (e.g. overlayDataSlice) can track in-progress edits without waiting
+  // stores (e.g. summon overlay state) can track in-progress edits without waiting
   // for an explicit save.
   const handleContentChange = useCallback((newContent: string) => {
     setEditedContent(newContent);

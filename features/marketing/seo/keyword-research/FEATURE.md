@@ -212,7 +212,7 @@ before adding any keyword field or per-keyword display anywhere.
   by the workbench AND
   `features/window-panels/windows/seo/KeywordResearchWindow.tsx` (open from
   anywhere: `useOpenKeywordResearchWindow({ primaryKeyword, autoRun })` in
-  `features/overlays/openers/keywordResearchWindow.tsx`; `?panels=keyword_research`).
+  `features/overlays/definitions/keywordResearchWindow.overlay.tsx`; `?panels=keyword_research`).
   `autoRun` only on an explicit user gesture — a run is a paid pipeline.
   Its super-admin **Non-writing render replay** links both output kinds to the
   canonical Shape stream simulator. That simulator exercises partial and

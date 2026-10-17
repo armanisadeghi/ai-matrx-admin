@@ -2,8 +2,8 @@
 
 /**
  * @deprecated Inline War Room subtask windows — use `useOpenTaskEditorWindow`
- * from `@/features/overlays/openers/taskEditorWindow` instead. Kept as a thin
- * shim for any legacy call sites; new code must go through OverlayController.
+ * from `@/features/overlays/definitions/taskEditorWindow` instead. Kept as a thin
+ * shim for any legacy call sites; new code must go through OverlayWorldHost.
  */
 
 import { useEffect } from "react";

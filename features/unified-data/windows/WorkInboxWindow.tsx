@@ -11,7 +11,7 @@
  * 2026-10-01). Opening a record goes to a NEW TAB: a window opened over a page
  * never moves that page.
  *
- * Rendered only behind the lazy overlay boundary (`OverlayController`).
+ * Rendered only behind the lazy overlay boundary (`OverlayWorldHost`).
  */
 
 import Link from "next/link";

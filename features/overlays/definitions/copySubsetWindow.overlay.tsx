@@ -11,7 +11,7 @@
  * - `<CopySubsetWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close.
  *
- * Rows and functions never enter `openOverlay` data: the overlaySlice guard
+ * Rows and functions never enter `openOverlay` data: the summon overlay state guard
  * would strip the functions, and a row array is not global state.
  */
 

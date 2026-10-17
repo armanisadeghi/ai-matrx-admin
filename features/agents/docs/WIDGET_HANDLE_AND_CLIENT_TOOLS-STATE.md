@@ -79,7 +79,7 @@
 
 | File | Change |
 |---|---|
-| [`utils/callbackManager.ts`](../../../utils/callbackManager.ts) | Added `get<T>(id)`, `unregister(id)`, `registerWidgetHandle(handle)` |
+| [`@ai-matrx/summon/handles`](../../../`@ai-matrx/summon/handles`) | Added `get<T>(id)`, `unregister(id)`, `registerWidgetHandle(handle)` |
 | [`../aidream/apps/shared/chat/src/agents/types/conversation-invocation.types.ts`](../types/conversation-invocation.types.ts) | `ConversationInvocationCallbacks`: 5 fields → 2 (`widgetHandleId`, `originalText`) |
 | [`../aidream/apps/shared/chat/src/agents/types/instance.types.ts`](../types/instance.types.ts) | `InstanceUIState.callbackGroupId` → `widgetHandleId`. `ManagedAgentOptions`: removed `onComplete`/`onTextReplace`/`onTextInsertBefore`/`onTextInsertAfter`; added `widgetHandleId`. `AGENT_EXECUTION_DEFAULTS` same. |
 | [`../aidream/apps/shared/chat/src/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice.ts`](../redux/execution-system/instance-ui-state/instance-ui-state.slice.ts) | Rename everywhere. `setCallbackGroupId` → `setWidgetHandleId`. `destroyInstance` extraReducer uses `callbackManager.unregister` (not `removeGroup`). |
@@ -224,7 +224,7 @@ Phase 9 smoke tests are documented but manual. A lightweight Jest/Vitest suite c
 
 - **Per-conversation fan-out.** Concurrent POSTs across different `conversationId`s don't batch together. Intentional — conversations are independent.
 - **Microtask window.** Tools that resolve synchronously in the same JS tick coalesce. A tool that takes 50+ms resolves in its own POST. Acceptable — most widget operations are `setState` calls.
-- **`removeGroup` preserved for non-widget groups.** `utils/callbackManager.ts` still exports `removeGroup`; it's used by legitimate group-callback consumers like `hooks/useOrchestrateSave.ts` (save orchestration). The widget-handle cleanup uses `unregister`, not `removeGroup`.
+- **`removeGroup` preserved for non-widget groups.** `@ai-matrx/summon/handles` still exports `removeGroup`; it's used by legitimate group-callback consumers like `hooks/useOrchestrateSave.ts` (save orchestration). The widget-handle cleanup uses `unregister`, not `removeGroup`.
 - **Sub-agents without handle.** Noted in §3.4 above.
 - **Docs lag.** `TODO-widget-tools-plan.md` kept unchanged as historical provenance; readers should defer to `WIDGET_HANDLE_SYSTEM.md` + this doc for current state.
 

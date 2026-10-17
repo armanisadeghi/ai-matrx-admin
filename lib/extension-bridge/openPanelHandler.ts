@@ -9,7 +9,7 @@
  * This module owns the translation:
  *   1. Validate the inbound payload with `OpenPanelPayloadSchema`.
  *   2. Confirm `panelId` is a registered overlayId (`isOverlayId` — a key of
- *      `OVERLAY_CATALOGUE` in `features/overlays/catalogue.ts`).
+ *      `APP_OVERLAYS` in `features/overlays/definitions/registry.ts`).
  *   3. Dispatch the existing `openOverlay({ overlayId, instanceId, data })`
  *      Redux action — exactly the same path every in-app caller takes.
  *

@@ -34,9 +34,9 @@ owns, authorized by a `users.integration_connection_resources` row.
 | `associationWrites.ts` | The `covers` edge to `seo_map_topic`, through the ONE chokepoint. |
 | `knobs.ts` | `google.youtube.preview_target_keyword_required`. |
 
-Window (four files, the `siteAnalyticsWindow` pattern): `features/overlays/catalogue.ts` ·
-`features/overlays/openers/brandChannelWindow.tsx` ·
-`features/overlays/OverlayController.tsx` ·
+Window (four files, the `siteAnalyticsWindow` pattern): `features/overlays/definitions/registry.ts` ·
+`features/overlays/definitions/brandChannelWindow.overlay.tsx` ·
+`features/overlays/host/OverlayWorldHost.tsx` ·
 `features/window-panels/windows/marketing/BrandChannelWindow.tsx`.
 
 ## Data model
@@ -116,13 +116,13 @@ binding's three answers, and the panel in every state.
   (V-22 NEW-6), the brand binding, the knob and the migration file. Neither
   migration is applied — the chair applies both.
 - 2026-09-19 — `brandChannelWindow` (registered in `features/overlays/catalogue.ts` /
-  `OverlayController.tsx` / `openers/brandChannelWindow.tsx` /
+  `OverlayWorldHost.tsx` / `definitions/brandChannelWindow.overlay.tsx` /
   `features/window-panels/windows/marketing/BrandChannelWindow.tsx`) got its
-  missing address: a row in `features/window-panels/registry/windowRegistryMetadata.ts`
+  missing address: a row in `features/overlays/definitions/<id>.overlay.ts (window block)`
   (`urlSync: { key: "brand_channel" }`, singleton, `preservation.requiredDataKeys:
   ["brandId"]` — same shape as `siteTrackingWindow`, since the window is meaningless
   without its brand) and a hydrator in
-  `features/window-panels/url-sync/initUrlHydration.ts` reopening it from
+  `features/overlays/definitions/<id>.link.ts` reopening it from
   `?panels=brand_channel:<brandId>`. The `everyWindowHasAnAddress` (R35) guard
   was red on `brandChannelWindow` before this and is green after.
 - 2026-10-09 — Bind list (commit `6a90cb191b`, SOC-CLEANUP): each owned channel

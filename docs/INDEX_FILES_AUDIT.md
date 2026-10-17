@@ -171,7 +171,7 @@
 - `features/notes/components/NoteTabItem.tsx`
 - `features/notes/components/NotesLayout.tsx`
 - `features/notes/components/mobile/NoteEditorDock.tsx`
-- `features/overlays/OverlayController.tsx`
+- `features/overlays/host/OverlayWorldHost.tsx`
 - `features/sharing/index.ts`
 - `features/tasks/components/TaskDetailPage.tsx`
 - `features/tasks/components/TaskDetailsPanel.tsx`
@@ -229,7 +229,7 @@
 - `features/content-templates/components/UserContentTemplateManager.tsx`
 - `features/education/tutor/components/TutorSettingsPanel.tsx`
 - `features/organizations/components/OrganizationCard.tsx`
-- `features/overlays/OverlayController.tsx`
+- `features/overlays/host/OverlayWorldHost.tsx`
 - `features/settings/route-shell/SettingsRouteSidebar.tsx`
 - `features/settings/route-shell/SettingsTabContent.tsx`
 - `features/window-panels/windows/iframe/BrowserWorkbenchWindow.tsx`

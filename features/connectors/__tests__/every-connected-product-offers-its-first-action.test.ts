@@ -10,10 +10,10 @@ import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 import type { OverlayId } from "@ai-matrx/summon";
 
 /** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
-const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
+const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );
-const isOverlayId = (id: string): id is OverlayId => id in OVERLAY_CATALOGUE;
+const isOverlayId = (id: string): id is OverlayId => id in OVERLAYS_BY_ID;
 
 
 /** Every provider config the app ships. The census walks all of them. */
@@ -121,7 +121,7 @@ describe("every product a person can switch on offers its first useful action", 
         expect(overlays.map((entry) => entry.key)).toContain("contacts");
         for (const entry of overlays) {
           expect(isOverlayId(entry.action.overlayId)).toBe(true);
-          expect(OVERLAY_CATALOGUE[entry.action.overlayId].isWindow).toBe(true);
+          expect(OVERLAYS_BY_ID[entry.action.overlayId].isWindow).toBe(true);
           expect(entry.action.label.trim().length).toBeGreaterThan(0);
         }
       });

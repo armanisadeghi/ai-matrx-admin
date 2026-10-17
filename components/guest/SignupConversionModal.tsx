@@ -5,7 +5,7 @@
  * `guest_ai_allowance_used` (lib/guest/guest-ai-allowance.ts).
  *
  * Opened only through the `guestAiAllowance` overlay
- * (features/overlays/openers/guestAiAllowance.tsx), never rendered by a
+ * (features/overlays/definitions/guestAiAllowance.overlay.tsx), never rendered by a
  * feature. It is a reminder, never a wall: "Not now" closes it and every
  * non-AI feature keeps working. "Create free account" keeps the current page
  * as the return destination (utils/auth/FEATURE.md via `useLoginHref`).

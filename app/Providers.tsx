@@ -249,7 +249,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   all live inside <AudioSystemHost /> above. */}
                                           {/* File preview is delivered via a registered
                                   WindowPanel (`filePreviewWindow`) mounted by
-                                  the OverlayController — no host needed
+                                  the OverlayWorldHost — no host needed
                                   here. Anywhere in the app:
                                     import { openFilePreview } from
                                       "@/features/files/components/preview/openFilePreview";

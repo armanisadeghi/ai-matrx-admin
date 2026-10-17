@@ -14,13 +14,13 @@ Source: `features/notes/actions/`. Import from `@/features/notes` (barrel re-exp
 
 | Export | Purpose |
 |--------|---------|
-| **QuickCaptureButton** | Toolbar control that dispatches `openSaveToNotes` so `OverlayController` opens the global quick-save flow. Needs Redux + overlay stack. |
-| **QuickNoteSaveModal** | Controlled dialog: edit content, pick folder, create vs update (append/overwrite). `OverlayController` wraps it with `NotesProvider` when opened globally. |
+| **QuickCaptureButton** | Toolbar control that dispatches `openSaveToNotes` so `OverlayWorldHost` opens the global quick-save flow. Needs Redux + overlay stack. |
+| **QuickNoteSaveModal** | Controlled dialog: edit content, pick folder, create vs update (append/overwrite). `OverlayWorldHost` wraps it with `NotesProvider` when opened globally. |
 | **QuickSaveModal** | Alias of `QuickNoteSaveModal` — same component, shorter name for call sites. |
 | **SaveToScratchButton** | One-click `NotesAPI.create` into the **Scratch** folder (no modal). |
 | **SaveSelectionButton** | On click, reads `window.getSelection()`, saves to a folder (default Scratch), clears selection. |
 | **QuickNotesButton** | Icon button calling `useQuickActions().openQuickNotes()` (opens quick-notes overlay). |
-| **QuickNotesSheet** | In-overlay compact notes UI (editor + folder/note picker). Consumed by `OverlayController`; can be composed elsewhere inside `NotesProvider`. |
+| **QuickNotesSheet** | In-overlay compact notes UI (editor + folder/note picker). Consumed by `OverlayWorldHost`; can be composed elsewhere inside `NotesProvider`. |
 | **CategoryNotesModal** | Folder-scoped modal: list/search notes in one `folder_name`, optional create/edit/delete/import, `onSelectNote` for picking a note into another flow. Requires `NotesProvider` ancestor. |
 | **WindowNotesBody** | Lightweight single-note editor for embedding in draggable windows / panels. Includes own `NotesProvider`, auto-save, auto-label, tree-view picker, and new-note button. No external provider needed. |
 | **NotesTreeView** | VS Code-style folder/note tree with single-folder expand, inline note creation, inline folder creation, and `onSelectNote`/`onSelectFolder` callbacks. Requires `NotesProvider` ancestor. |
@@ -28,7 +28,7 @@ Source: `features/notes/actions/`. Import from `@/features/notes` (barrel re-exp
 | **NotesWindow** | Standalone-demo self-contained `WindowPanel` with `NotesTreeView` sidebar + single-note editor (bundles own `NotesProvider`, accepts all `WindowPanelProps`). **Not the canonical floating window** — that is `features/window-panels/windows/notes/NotesWindow.tsx`, which delegates chrome to `WindowPanel` slots: the view-mode menu + version-history toggle are wired into `actionsRight` (via `NoteViewControls`) and the per-note metadata bar into `footer` (via `NoteMetadataBar`). The sidebar toggle is the built-in `WindowPanel` control. Still future: an in-header save and a full rich-document action surface. |
 | **SidebarNotesToggle** | Shell sidebar button that toggles a floating `NotesWindow`. Renders the window via portal on toggle. No provider needed. |
 
-**Also common (not in this folder):** many features call `openSaveToNotes` from `@/lib/redux/slices/overlaySlice` directly instead of using `QuickCaptureButton`.
+**Also common (not in this folder):** many features call `openSaveToNotes` from `@ai-matrx/summon` directly instead of using `QuickCaptureButton`.
 
 ---
 
@@ -39,12 +39,12 @@ Counts are **distinct files** that reference the symbol or mount the component (
 | Export | Usages | Reference files |
 |--------|--------|-----------------|
 | **QuickCaptureButton** | 0 | — *(none yet)* |
-| **QuickNoteSaveModal** | 1 | `components/overlays/OverlayController.tsx` (dynamic import + `NotesProvider` wrapper) |
+| **QuickNoteSaveModal** | 1 | `features/overlays/host/OverlayWorldHost.tsx` (dynamic import + `NotesProvider` wrapper) |
 | **QuickSaveModal** | 0 | — *(alias only; use `QuickNoteSaveModal` path above)* |
 | **SaveToScratchButton** | 0 | — |
 | **SaveSelectionButton** | 0 | — |
 | **QuickNotesButton** | 0 | — |
-| **QuickNotesSheet** | 1 | `components/overlays/OverlayController.tsx` (dynamic import + `NotesProvider` wrapper) |
+| **QuickNotesSheet** | 1 | `features/overlays/host/OverlayWorldHost.tsx` (dynamic import + `NotesProvider` wrapper) |
 | **CategoryNotesModal** | 2 | `app/(authenticated)/(admin-auth)/administration/ui/official-components/component-displays/category-notes-modal.tsx`, `app/(authenticated)/(admin-auth)/administration/database/components/enhanced-sql-editor.tsx` |
 | **WindowNotesBody** | 1 | `app/(dev)/demos/window-demo/window-bodies/NotesWindowBody.tsx` |
 | **NotesTreeView** | 2 | `features/notes/actions/WindowNotesBody.tsx`, `features/notes/actions/NotesWindow.tsx` |

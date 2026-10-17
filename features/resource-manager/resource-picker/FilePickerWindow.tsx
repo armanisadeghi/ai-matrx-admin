@@ -11,7 +11,7 @@
 // choosing files.
 //
 // IMPORT LAZILY. `WindowPanel` asserts it was parsed in a lazy chunk
-// (features/window-panels/utils/lazy-bundle-guard) because window-panel
+// (@ai-matrx/summon/window lazy-bundle-guard) because window-panel
 // files transitively pull 100+ lazy component references. Callers must use
 // `next/dynamic`, never a static import — see features/window-panels
 // FEATURE.md → "Bundle invariant".

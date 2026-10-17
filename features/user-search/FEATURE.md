@@ -68,7 +68,7 @@ User Search is the canonical account-selection control. It keeps inline typing i
 **Primitives reused**
 
 - Components: `Input`, `Button`, `MatrxDataTable`, `WindowPanel`, `AdminUserRef`.
-- Redux: canonical `overlaySlice` open/close actions.
+- Redux: canonical `summon overlay state` open/close actions.
 - Services: existing `/api/admin/users`; no parallel user-directory endpoint.
 
 **Primitives introduced**

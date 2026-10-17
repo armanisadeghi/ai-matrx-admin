@@ -46,7 +46,7 @@ The social OAuth browser bridge admits the exact `https://localhost:3000` origin
 - `useSetting<T>(path)` — read/write any setting. `[value, setter]`. Throws at init if the path's slice isn't registered.
 - `useSettingPersistence(path)` — returns `"synced" | "local-only" | "session"` for surfacing badges.
 - `useSettingsSearch(query, { isAdmin })` — ranked hits (label > keyword > description).
-- `usePreferencesModal()` — Phase 8 shim, same API as the deleted legacy hook but dispatches into overlaySlice.
+- `usePreferencesModal()` — Phase 8 shim, same API as the deleted legacy hook but dispatches into summon overlay state.
 - `useSettingsPresentation()` — returns `{ presentation: "route" | "window" | "drawer", closeShell?, setActiveTabId? }`. Defaults to `"route"` outside a provider, so route pages "just work."
 - `useSettingsNavigate()` — returns `(href, event?, options?)`. Smart navigation that closes the shell first when called from inside the window/drawer; in route mode it's a plain `router.push`. Cmd/Ctrl/Shift/middle-click always opens a new tab and leaves the shell open.
 - `useSettingsTabNavigate()` — switches the active settings tab in-place inside the shell; on a route it navigates to the tab's own `/user-settings/...` URL (or a custom href).
@@ -79,7 +79,7 @@ The social OAuth browser bridge admits the exact `https://localhost:3000` origin
 - `theme` (`styles/themes/themeSlice.ts`) — stored `{ mode: "light" | "dark" | "system" }`; persistence: **synced** (boot-critical: pre-paint localStorage). UI painting uses the separate resolved `light | dark` value, so an OS change never overwrites the saved System preference.
 - `adminPreferences` (`lib/redux/preferences/adminPreferencesSlice.ts`) — admin-only backend host override and desktop delegation target override (`desktopTargetInstanceId`); persistence: **local-only** (flagged for sync migration).
 - `layout` (`lib/redux/slices/layoutSlice.ts`) — layoutStyle + isInWindow; persistence: **local-only** (flagged for sync migration).
-- `windowManager` (`lib/redux/slices/windowManagerSlice.ts`) — action-only writes (`toggleHidden`, `restoreAll`); persistence: **session**.
+- `windowManager` (`@ai-matrx/summon`) — action-only writes (`toggleHidden`, `restoreAll`); persistence: **session**.
 
 ---
 
@@ -111,8 +111,8 @@ Trigger: `dispatch(openOverlay({ overlayId: "userPreferencesWindow", data?: { in
 
 Path:
 
-- The explicit `OverlayController` block for `userPreferencesWindow` reads its `isOpen` from `overlaySlice`, lazy-loads `SettingsShellOverlay`, and mounts it only while the overlay is open.
-- The resolved component is `SettingsShellOverlay` (Phase 8), which ignores the passed props and reads `overlaySlice` directly so it also catches the legacy `userPreferences` modal id.
+- The explicit `OverlayWorldHost` block for `userPreferencesWindow` reads its `isOpen` from `summon overlay state`, lazy-loads `SettingsShellOverlay`, and mounts it only while the overlay is open.
+- The resolved component is `SettingsShellOverlay` (Phase 8), which ignores the passed props and reads `summon overlay state` directly so it also catches the legacy `userPreferences` modal id.
 - The overlay adapter computes `initialTabId` (remapping legacy tab ids when needed) and renders `<SettingsShell isOpen initialTabId isAdmin onClose />`.
 - On desktop: `SettingsShell` renders a `WindowPanel` with `<SettingsTree>` in the sidebar and `<SettingsTabHost>` in the body.
 - On mobile (`useIsMobile()` → true): `SettingsShell` mounts `<SettingsDrawerNav>` instead — iOS-style push-nav. When `initialTabId` comes from a setting door or legacy deep link, the drawer initializes its stack to the leaf's full ancestor path so the requested control opens directly instead of stopping at the Settings root.
@@ -246,7 +246,7 @@ state (the platform retention floor is `never`).
 
 - **Depends on:**
   - `features/window-panels` — `WindowPanel`, `UrlPanelManager`, and static window metadata.
-  - `lib/redux/slices/overlaySlice` — open/close dispatching.
+  - `@ai-matrx/summon` — open/close dispatching.
   - `lib/redux/preferences/userPreferencesSlice` — primary write target.
   - `lib/sync/*` — warm-cache + boot-critical persistence engine.
   - `components/official/settings/*` — primitives library.

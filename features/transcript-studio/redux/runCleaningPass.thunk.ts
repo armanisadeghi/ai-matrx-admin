@@ -9,7 +9,7 @@
  *      "running" in real time and so failures are auditable.
  *   3. Dispatch `launchAgentExecution` with the cleaning shortcut and the
  *      `prior_cleaned_suffix` / `raw_window` / `session_title` / `module_id`
- *      scope. Display mode = "background" so the OverlayController stays out
+ *      scope. Display mode = "background" so the OverlayWorldHost stays out
  *      of the way and the response comes back as `responseText`.
  *   4. Strip the `[[RESUME]]` marker from the response and apply via
  *      `applyCleanupRun` (DB) + `cleanedSegmentApplied` (Redux). Both

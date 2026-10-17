@@ -105,7 +105,7 @@ viewer at `/react`. Its own contract doc is
 
 - **Window:** `features/window-panels/windows/DiffViewerWindow.tsx`
   (overlayId `diffViewerWindow`, multi-instance, ephemeral). Open via
-  `useOpenDiffViewerWindow()` (`features/overlays/openers/diffViewerWindow.tsx`).
+  `useOpenDiffViewerWindow()` (`features/overlays/definitions/diffViewerWindow.overlay.tsx`).
 - **Pick-two flow state:** `@ai-matrx/chat/agents/redux/diff-compare/diff-compare.slice` (package-owned, mounted by `chatReducers`)
   (`setCompareBase`, `openCompareWithBase` thunk).
 - **Menu actions (RichDocument):** `features/rich-document/actions/handlers/compare.ts`

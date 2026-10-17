@@ -153,7 +153,7 @@ Renders the `item_presentation` render block — a ```json fence keyed by `item_
 
 **Primitives reused**
 - Components: `components/ui/*`, framer-motion.
-- Hooks: `useOpenAgentRunWindow`, `useOpenNoteInfoWindow`, `useOpenFilePreviewWindow`, `useOpenPicklistManagerV2Window` (`features/overlays/openers/*`).
+- Hooks: `useOpenAgentRunWindow`, `useOpenNoteInfoWindow`, `useOpenFilePreviewWindow`, `useOpenPicklistManagerV2Window` (`features/overlays/definitions/*`).
 - Infra: the render-block registry/splitter, the `skl_*` + `content_blocks` platform tables, the `_schema_migrations` ledger.
 
 **Primitives introduced**

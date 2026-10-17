@@ -43,7 +43,7 @@ export function createFindReplaceCallbackGroup(
   // `Callback<T>` (a function), but this group object is intentionally
   // stored as a non-callable payload — retrieved via `get`, never
   // `trigger`ed (same convention as `registerWidgetHandle` in
-  // utils/callbackManager.ts). No function value exists to pass honestly.
+  // `@ai-matrx/summon/handles`). No function value exists to pass honestly.
   const callbackGroupId = callbackManager.register(
     group as unknown as () => void,
   );

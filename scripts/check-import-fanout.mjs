@@ -16,11 +16,9 @@ import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 
 export const MAX_TARGETS = 20;
-// Sanctioned: windows/overlays open one at a time on user action (lazyOverlay), so per-item chunks
-// are the point there. Adding a file here needs the same reason, written beside it.
-export const SANCTIONED = new Map([
-  ["features/overlays/OverlayController.tsx", "lazyOverlay: each window opens alone on user action"],
-]);
+// Sanctioned fan-outs. Empty since overlays moved to features/overlays/definitions (each definition
+// lazy-loads only its own render module). Adding a file here needs its reason, written beside it.
+export const SANCTIONED = new Map([]);
 
 const RUNTIME = /(?:\bawait\s+import|=>\s*import|\(\s*import)\(\s*(["'`])([^"'`]+)\1\s*\)|\bimport\(\s*(["'`])([^"'`]+)\3\s*\)\s*\.then\b/g;
 

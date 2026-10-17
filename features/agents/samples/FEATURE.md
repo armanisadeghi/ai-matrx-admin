@@ -67,7 +67,7 @@ agent builder. Do not re-add chips, bars, or strips to any run surface.
   single floating FlaskConical icon directly above the Smart Agent input in
   `AgentBuilderRightPanel.tsx`, opening the non-blocking Test cases
   `WindowPanel` (`features/window-panels/windows/agents/AgentTestCasesWindow.tsx`
-  via `features/overlays/openers/agentTestCasesWindow.tsx`; catalogue singleton
+  via `features/overlays/definitions/agentTestCasesWindow.overlay.tsx`; catalogue singleton
   `agentTestCasesWindow`, registry slug `agent-test-cases-window`, ephemeral,
   fullscreen on mobile). "Use"
   prefills the live instance through the SAME slices typing uses

@@ -78,18 +78,18 @@ counted, collapsed group — context items are never presented as messages or as
 "inputs the user gave". The turn model failing to load is an enhancement
 failure only — the window falls back to `GroupedInputsView` over the descend
 payload with an honest banner.
-| `features/overlays/openers/reviewWalkWindow.tsx` | multi-instance opener hook; dispatches `openReviewWalk` |
+| `features/overlays/definitions/reviewWalkWindow.overlay.tsx` | multi-instance opener hook; dispatches `openReviewWalk` |
 | `address.ts` | the two identities in one place: instance id `review-walk\|{unit_kind}\|{unit_id}` and address `?panels=review_walk:<unitKind>.<unitId>` (+ parser, `isWalkUnitKind`, exhaustive over the server's `UnitKind`) |
 | `openReviewWalk.ts` | the ONE open primitive (thunk) — opener and URL hydrator both use it, so the same unit already floating is focused (un-minimised + raised), never duplicated or overwritten |
 | `walkTitle.ts` | the window title (`<role> · <detail> · <agent>` — e.g. `Live · Pair 3 · …` — else agent, else unit kind; 40-char budget; the labels ride the address and the saved window, a link without them falls back to the agent name) and `nextStackIndex` (lowest free cascade slot, so a new walk never lands on an open one) |
 
 Overlay registration: `reviewWalkWindow` in
-`features/overlays/catalogue.ts` (`multi`, window — its key is the overlay id), a gated multi-instance
-block in `features/overlays/OverlayController.tsx` (accepts every `WalkUnitKind`, `wf_node_outcome`
-included), a registry row `review-walk-window` in `features/window-panels/registry/windowRegistryMetadata.ts`
+`features/overlays/definitions/registry.ts` (`multi`, window — its key is the overlay id), a gated multi-instance
+block in `features/overlays/host/OverlayWorldHost.tsx` (accepts every `WalkUnitKind`, `wf_node_outcome`
+included), a registry row `review-walk-window` in `features/overlays/definitions/<id>.overlay.ts (window block)`
 (multi; `mobilePresentation: "fullscreen"`; `urlSync.key: "review_walk"`; preserved on
 `unitKind`+`unitId` (required) plus `agentId`/`agentName`/`roleLabel`/`detailLabel`), and the `review_walk` hydrator in
-`features/window-panels/url-sync/initUrlHydration.ts`.
+`features/overlays/definitions/<id>.link.ts`.
 
 ## Address (deep link + restore)
 

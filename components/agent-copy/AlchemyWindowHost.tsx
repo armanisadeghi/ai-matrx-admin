@@ -11,7 +11,7 @@
  *
  * Boot-safe: this file is in the root provider graph, so `WindowPanel` (a window-panel core file)
  * loads lazily in `AlchemyWindowFrames.tsx` the first time a window opens — never in the boot
- * bundle (features/window-panels lazy-bundle-guard).
+ * bundle (the lazy-bundle-guard in @ai-matrx/summon/window).
  */
 
 import { lazy, Suspense, useSyncExternalStore } from "react";

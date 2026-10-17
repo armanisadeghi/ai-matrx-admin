@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
 /** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
-const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
+const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );
 
@@ -21,8 +21,8 @@ const ROOT = process.cwd();
 
 describe("copySubsetWindow overlay registration", () => {
   it("is in the catalogue as a multi-instance window", () => {
-    expect(OVERLAY_CATALOGUE).toHaveProperty("copySubsetWindow");
-    const entry = (OVERLAY_CATALOGUE as Record<string, unknown>)
+    expect(OVERLAYS_BY_ID).toHaveProperty("copySubsetWindow");
+    const entry = (OVERLAYS_BY_ID as Record<string, unknown>)
       .copySubsetWindow as { instanceMode: string; isWindow: boolean };
     expect(entry.instanceMode).toBe("multi");
     expect(entry.isWindow).toBe(true);

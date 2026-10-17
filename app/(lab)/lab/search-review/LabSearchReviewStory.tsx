@@ -36,7 +36,7 @@ const KINDS: BrandRelationKind[] = [
 const ITEMS = fixtureEvidence();
 const CTX = { ourHosts: ["fullspecstaff.com"], ourAccounts: [], name: "Full Spectrum Search Group" };
 
-/** The lab has no AppShell, so the story mounts the window itself (the app's OverlayController does this). */
+/** The lab has no AppShell, so the story mounts the window itself (the app's OverlayWorldHost does this). */
 export function LabSearchReviewStory() {
   const dispatch = useAppDispatch();
   const [choices, setChoices] = useState<Record<string, WebChoice>>({});

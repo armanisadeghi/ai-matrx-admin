@@ -19,7 +19,7 @@
  * `AgentVariablesManager` — so "this editor is open" kept in the manager's
  * `useState` died on every phone rotate, and the editor vanished with no
  * notice (the old Dialog died the same way). The open state now lives in the
- * overlay slice, rendered by `OverlayController` at the top of the tree, above
+ * overlay slice, rendered by `OverlayWorldHost` at the top of the tree, above
  * any responsive layout switch. One `WindowPanel` owns both presentations
  * (floating on desktop, the registry's `mobilePresentation: "drawer"` below
  * the breakpoint) — never a second hand-rolled Drawer branch.
@@ -131,7 +131,7 @@ export default function AgentVariableEditorWindow({
       id="agent-variable-editor-window"
       overlayId={OVERLAY_ID}
       // R35 — the link someone copies from this window names the variable it is
-      // showing, not just "an editor is open" (`url-sync/initUrlHydration.ts`
+      // showing, not just "an editor is open" (`features/overlays/definitions/<id>.link.ts`
       // hydrates the pair back).
       urlSyncId={variableEditorInstanceId({ agentId, variableName })}
       title={title}

@@ -11,7 +11,7 @@
  * This file is the lazily loaded boundary that binds the WINDOW SHELL
  * (`WindowPanel`) right above the presentation; the light host binding in
  * `detail/DetailHost.tsx` (mounted in app/Providers.tsx) carries everything
- * else. Reached only through `OverlayController`'s `lazyOverlay` block.
+ * else. Reached only through `OverlayWorldHost`'s `lazyOverlay` block.
  */
 
 "use client";

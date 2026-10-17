@@ -181,7 +181,7 @@ A user cannot ask for a capability they do not know exists, so the unconnected
 state is the pitch plus a one-click connect, never an error and never a dead row.
 
 **Connecting never leaves the page.** `useOpenGoogleConnectWindow()`
-(`features/overlays/openers/googleConnectWindow.tsx`) raises
+(`features/overlays/definitions/googleConnectWindow.overlay.tsx`) raises
 `GoogleConnectWindow`, a floating panel that connects, enables sending, and runs
 Picker over whatever the user was doing. Call it from anywhere Google is needed.
 It is NOT a second implementation — it calls the same `useConnectGoogle` and

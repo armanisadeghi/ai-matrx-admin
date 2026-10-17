@@ -47,7 +47,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
  * KeywordResearchWindow — the canonical keyword research runner in a
  * floating window, openable from ANY surface via
  * `useOpenKeywordResearchWindow({ primaryKeyword, autoRun })`
- * (features/overlays/openers/keywordResearchWindow.tsx).
+ * (features/overlays/definitions/keywordResearchWindow.overlay.tsx).
  *
  * Hosts the shared KeywordResearchLauncher (input → live key-by-key
  * kind-component stream → durable summary) over its own

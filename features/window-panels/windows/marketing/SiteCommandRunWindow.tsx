@@ -12,7 +12,7 @@
  * the durable record a reload rejoins.
  *
  * It reads the run from the module store by identity (site + command + target)
- * rather than taking it as data, because `OverlayController` renders it at the
+ * rather than taking it as data, because `OverlayWorldHost` renders it at the
  * root of the tree — outside the marketing site provider that owns the run.
  */
 
@@ -48,7 +48,7 @@ export interface SiteCommandRunWindowProps {
   onClose: () => void;
   siteId: string;
   /**
-   * Already narrowed by `OverlayController` before this window renders; the
+   * Already narrowed by `OverlayWorldHost` before this window renders; the
    * guard below is the second lock, not the first.
    */
   mode: string;

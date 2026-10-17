@@ -10,7 +10,7 @@
  * any; it needs none, because the workspace carries its own heading row.
  *
  * Rendered ONLY behind the lazy overlay boundary
- * (`features/overlays/OverlayController.tsx` → `lazyOverlay`) — never
+ * (`features/overlays/host/OverlayWorldHost.tsx` → `lazyOverlay`) — never
  * static-imported from a route, layout or provider (the bundle invariant).
  */
 

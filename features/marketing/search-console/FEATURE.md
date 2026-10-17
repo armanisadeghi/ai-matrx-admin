@@ -118,7 +118,7 @@ UI deliberately beyond it. Status: **live core** (2026-07-30).
   additive. A change that makes a panel drill mutate the host table's
   filters, sort, or scroll is a regression, not a simplification.
 - `windows/GscDrilldownWindow.tsx` + overlay id `gscDrilldownWindow`
-  (multi-instance; opener `features/overlays/openers/gscDrilldownWindow.tsx`
+  (multi-instance; opener `features/overlays/definitions/gscDrilldownWindow.overlay.tsx`
   derives a deterministic instanceId per slice, so identical drills focus
   the existing panel while distinct slices float side by side). **A panel is
   a COMPLETE view, not a screenshot**: it owns its own period strip, its own
@@ -130,7 +130,7 @@ UI deliberately beyond it. Status: **live core** (2026-07-30).
   panel. Body is `WhyScoreBody` from the value system; there is no second
   explanation of a score in this app.
 - Both panels are registered `mobilePresentation: "drawer"` + `ephemeral`
-  in `windowRegistryMetadata.ts`: on mobile they are bottom sheets you swipe
+  in `features/overlays/definitions/<id>.overlay.ts (window block)`: on mobile they are bottom sheets you swipe
   away back to the table you were reading, which is the same promise the
   floating panel makes on desktop.
 

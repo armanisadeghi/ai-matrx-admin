@@ -354,7 +354,7 @@ export function useCodeFileManager(): UseCodeFileManagerResult {
   const openFileIdsInEditor = useCallback(
     (ids: string[], title?: string) => {
       if (ids.length === 0) return;
-      // Lazy import to avoid circular dependency with overlaySlice in tests.
+      // Lazy import to avoid circular dependency with summon overlay state in tests.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { openOverlay } = require("@ai-matrx/summon");
       dispatch(

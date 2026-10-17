@@ -11,7 +11,7 @@
 // THE CENSUS (every unit below must declare):
 //   route   every route in lib/route-manifest/manifest.generated.json — dynamic AND static (C4: /notes,
 //           /code, /transcripts/processor show records addressed by a query string, not a segment)
-//   window  every component OverlayController.tsx lazy-loads (the window panels)
+//   window  every component OverlayWorldHost.tsx lazy-loads (the window panels)
 //   peek    every features/organizations/peek/kinds/*Peek.tsx (M3)
 //
 // A FILE DECLARES, in one of three ways:

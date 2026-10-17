@@ -132,7 +132,7 @@ via `refineDetail` (`detail.tsx`). Bodies: `components/CandidateRunBody.tsx`,
 ## Related features
 
 - Depends on: `lib/detail` (`@ai-matrx/detail`), `features/item-presentation`, `features/review-walk`
-  (F2), `features/overlays/openers/diffViewerWindow`, `features/notifications` (F1).
+  (F2), `features/overlays/definitions/diffViewerWindow`, `features/notifications` (F1).
 - Depended on by: F4 (mandate list column, record tab, impact rows).
 
 ---

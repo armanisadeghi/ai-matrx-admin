@@ -59,7 +59,7 @@ Cross-repo product plan: [`common-docs/systems/chat/ai-work/projects/ai-work-hub
 - `layout.tsx` is the persistent shell: reads the panel-layout cookie (`panels:agent-connections:v1`, versioned — bump on layout-shape changes) server-side, renders `<AgentConnectionsRouteShell>` (react-resizable-panels v4) with the sidebar mounted once. Each `page.tsx` mounts its section component directly.
 - **Every sidebar section MUST have a route directory.** The sidebar renders `<Link>`s straight from `SIDEBAR_SECTIONS`; a listed section without a `page.tsx` is a 404 (the Prompts route was exactly this gap until 2026-08-09).
 
-**Overlay** — `agentConnectionsWindow` (opener `features/overlays/openers/agentConnectionsWindow.tsx`, component `features/window-panels/windows/agents/AgentConnectionsWindow.tsx`). Same sidebar + section components; navigation via Redux (`ui` slice) instead of the URL.
+**Overlay** — `agentConnectionsWindow` (opener `features/overlays/definitions/agentConnectionsWindow.overlay.tsx`, component `features/window-panels/windows/agents/AgentConnectionsWindow.tsx`). Same sidebar + section components; navigation via Redux (`ui` slice) instead of the URL.
 
 **Components** (`components/`)
 

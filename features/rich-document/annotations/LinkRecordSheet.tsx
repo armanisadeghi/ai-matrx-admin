@@ -53,7 +53,7 @@ export const STORE_RECORD_TOKEN = "record";
 
 /**
  * The same ONE picker, pointed at any registered record — the right-click "Link a record…" verb
- * (features/overlays/openers/linkRecordSheet.tsx) opens it on whatever entity the menu targets.
+ * (features/overlays/definitions/linkRecordSheet.overlay.tsx) opens it on whatever entity the menu targets.
  * No sidecar needed: the target's token decides which kinds are offered.
  */
 export function LinkRecordPickerSheet({

@@ -10,8 +10,8 @@ Moved from the repo root 2026-07-22 (doc-consolidation campaign).
 
 | Item | Location | What it is |
 |------|----------|------------|
-| **Overlay controller** | `components/overlays/OverlayController.tsx` | Orchestrates global overlays (modals, panels, instance UIs) from Redux `overlaySlice`. |
-| **Window panel system** | `features/window-panels/` | Floating/resizable sidebar windows, registry, URL sync, persistence (`WindowPanel.tsx`, `windows/*`, `lib/redux/slices/windowManagerSlice.ts`). |
+| **Overlay controller** | `features/overlays/host/OverlayWorldHost.tsx` | Orchestrates global overlays (modals, panels, instance UIs) from Redux `summon overlay state`. |
+| **Window panel system** | `features/window-panels/` | Floating/resizable sidebar windows, registry, URL sync, persistence (`WindowPanel.tsx`, `windows/*`, `@ai-matrx/summon`). |
 
 ---
 

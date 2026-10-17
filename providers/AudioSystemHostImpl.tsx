@@ -11,7 +11,7 @@
  * here fragments the chunk graph for zero benefit. The only tolerated inner
  * dynamics are condition-gated rare-event leaves INSIDE the children (the
  * recovery toast body, the audio modal body), which follow the
- * OverlayController leaf pattern.
+ * OverlayWorldHost leaf pattern.
  *
  * Contents:
  *   1. AudioDeviceProviderImpl — devicechange/permission listeners, persisted

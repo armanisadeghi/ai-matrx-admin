@@ -16,7 +16,7 @@ Captured via `wc -l` on `main` @ `c943733c5`.
 |------|-----|-------|
 | `features/window-panels/WindowPanel.tsx` | 1,456 | Shell — to be decomposed in Phase 6 |
 | `features/window-panels/components/SidebarWindowToggle.tsx` | 1,402 | Tools grid — eagerly loaded, 56 Lucide icons; targeted by Phase 3 |
-| `components/overlays/OverlayController.tsx` | 2,586 | Hand-written render branches; replaced by `UnifiedOverlayController` in Phase 2 |
+| `features/overlays/host/OverlayWorldHost.tsx` | 2,586 | Hand-written render branches; replaced by `UnifiedOverlayController` in Phase 2 |
 | `features/window-panels/registry/windowRegistry.ts` | 794 | Pure data — expanded (not replaced) in Phase 1 |
 | `features/window-panels/WindowPersistenceManager.tsx` | 246 | GC effect added in Phase 4 |
 | `features/window-panels/WindowTray.tsx` | 216 | Responsive chip sizing in Phase 5 |
@@ -35,8 +35,8 @@ Captured via `wc -l` on `main` @ `c943733c5`.
 
 | File | LOC | Notes |
 |------|-----|-------|
-| `lib/redux/slices/overlaySlice.ts` | 865 | Drift removal + instance GC in Phase 4 |
-| `lib/redux/slices/windowManagerSlice.ts` | 490 | Restore-clamp in Phase 5; possible split in Phase 13 |
+| `@ai-matrx/summon` | 865 | Drift removal + instance GC in Phase 4 |
+| `@ai-matrx/summon` | 490 | Restore-clamp in Phase 5; possible split in Phase 13 |
 
 ### URL sync
 
@@ -44,7 +44,7 @@ Captured via `wc -l` on `main` @ `c943733c5`.
 |------|-----|-------|
 | `features/window-panels/url-sync/UrlPanelManager.tsx` | — | Drops LS sidecar in Phase 4; reads registry in Phase 8 |
 | `features/window-panels/url-sync/UrlPanelRegistry.ts` | — | Registry of hydrator functions |
-| `features/window-panels/url-sync/initUrlHydration.ts` | — | Audit + fill in Phase 8 |
+| `features/overlays/definitions/<id>.link.ts` | — | Audit + fill in Phase 8 |
 | `features/window-panels/url-sync/useUrlSync.ts` | — | Reads registry in Phase 8 |
 
 ### Totals
@@ -55,18 +55,18 @@ Captured via `wc -l` on `main` @ `c943733c5`.
 | `features/window-panels/**` LOC | 22,817 |
 | `windows/` components (recursive) | 75 files |
 | Registered overlays (registry) | 59 |
-| `dynamic()` imports in `OverlayController.tsx` | ~102 |
-| `useAppSelector` calls in `OverlayController.tsx` | ~98 |
+| `dynamic()` imports in `OverlayWorldHost.tsx` | ~102 |
+| `useAppSelector` calls in `OverlayWorldHost.tsx` | ~98 |
 | Lucide icons statically imported in `SidebarWindowToggle.tsx` | 56 |
 
 ### Expected post-Phase-12 deltas (targets)
 
 | File/metric | Before | Target after | Delta |
 |-------------|--------|--------------|-------|
-| `OverlayController.tsx` (renamed to `UnifiedOverlayController.tsx`) | 2,586 | ≤ 250 | −2,300+ |
+| `OverlayWorldHost.tsx` (renamed to `UnifiedOverlayController.tsx`) | 2,586 | ≤ 250 | −2,300+ |
 | `SidebarWindowToggle.tsx` (splits) | 1,402 | ≤ 400 (index) | −1,000+ |
 | `WindowPanel.tsx` (split) | 1,456 | ≤ 250 (index) | −1,200+ |
-| `overlaySlice.ts` (`initialState` drift removed) | 865 | ≤ 450 | −400+ |
+| `summon overlay state.ts` (`initialState` drift removed) | 865 | ≤ 450 | −400+ |
 | Dead-code files (FloatingPanel, withGlobalState, usePanelPersistence, TODO-persistence-spec, INVENTORY) | 235 + 119 + 54 + ~350 | 0 | −750+ |
 | Files to add window (PR-to-add) | 4 | 2 | — |
 | Initial-bundle growth from window-panels system | — | 0 | 0 |
@@ -132,8 +132,8 @@ Used as a sanity-check reference for Phase 2 (unified controller) and Phase 4 (i
 ## Known hot spots entering modernization
 
 1. **`SidebarWindowToggle.tsx` eagerly loaded for every authenticated user** — 1,402 lines + 56 icons. The single biggest bundle win is available in Phase 3.
-2. **`OverlayController.tsx` hand-maintained** — every new window requires edits in 4 places; drift is inevitable. Phase 2 collapses to one registry loop.
-3. **`overlaySlice.ts` `initialState` must be hand-synced with the registry** — audit flagged 47-key initial state. Phase 4 starts empty.
+2. **`OverlayWorldHost.tsx` hand-maintained** — every new window requires edits in 4 places; drift is inevitable. Phase 2 collapses to one registry loop.
+3. **`summon overlay state.ts` `initialState` must be hand-synced with the registry** — audit flagged 47-key initial state. Phase 4 starts empty.
 4. **`usePanelPersistence.ts` + localStorage sidecar still active** — running alongside the DB path. Phase 4 kills it with a one-time migration.
 5. **Mobile is 50% done** — `useIsMobile()` branch exists but hardcodes fullscreen. Phase 5 adds drawer + card + safe tray.
 6. **Heavy-session windows lose state on reload** — acknowledged in `INVENTORY.md:166`. Phase 7 addresses with `heavySnapshot` + `onReopenAfterReload`.

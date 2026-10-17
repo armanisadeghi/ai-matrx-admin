@@ -2055,12 +2055,11 @@ export default [
     },
   },
   {
-    // Overlay overhaul rule #1: no JSX prop spread inside the
-    // OverlayController Impl. The whole reason the Impl exists is to
-    // make prop wiring explicit so TypeScript catches dispatch /
-    // component prop-shape drift at compile time — a single `{...spread}`
-    // anywhere in here would defeat the point. See
-    // docs/OVERLAY_WINDOW_OVERHAUL.md.
+    // No JSX prop spread inside an overlay render module
+    // (definitions/<id>.render.tsx). Render modules exist to make prop
+    // wiring explicit so TypeScript catches dispatch / component
+    // prop-shape drift at compile time — a single `{...spread}` would
+    // defeat the point. See features/overlays/FEATURE.md.
     files: ["features/overlays/definitions/*.render.tsx"],
     rules: {
       // Flat config REPLACES (not merges) the rule per file, so this
@@ -2086,20 +2085,19 @@ export default [
         {
           selector: "JSXSpreadAttribute",
           message:
-            "No JSX prop spread in an overlay render module — wire every prop by name. Spread reintroduces the dispatch/component drift bug class this file exists to eliminate. See docs/OVERLAY_WINDOW_OVERHAUL.md.",
+            "No JSX prop spread in an overlay render module — wire every prop by name. Spread reintroduces the dispatch/component drift bug class render modules exist to eliminate. See features/overlays/FEATURE.md.",
         },
       ],
     },
   },
   {
     files: [
-      // The explicit overlay controller — by design, this file directly
-      // imports every window/overlay component (one `dynamic()` per
-      // entry). The "no direct windows/* import" rule exists to keep
-      // those imports out of route bundles; the controller IS the one
-      // sanctioned place that loads them (lazily). The legacy
-      // UnifiedOverlayController / OverlaySurface / windowRegistry.ts
-      // files that used to share this exemption are deleted.
+      // Overlay render modules — each one imports its window/overlay
+      // component directly. The "no direct windows/* import" rule exists
+      // to keep those imports out of route bundles; a render module is
+      // the sanctioned place because its definition loads it lazily
+      // (`render: () => import("./<id>.render")`). Definitions
+      // (*.overlay.ts) stay under the ban: registry.ts loads them eagerly.
       "features/overlays/definitions/*.render.tsx",
     ],
     rules: {

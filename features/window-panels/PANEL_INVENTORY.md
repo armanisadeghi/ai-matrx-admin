@@ -79,7 +79,7 @@ Legend: ✓ present · ◑ partial · ✗ missing · — n/a. Action `Priority` 
 
 ## 7. Method for the fill-in (Phase 2)
 
-~120 registered panels (`registry/windowRegistryMetadata.ts` `STATIC_REGISTRY`). Chunk by domain; one subagent per chunk **deep-reads each panel** and writes its A/B/C rows to `docs/inventory/<chunk>.md`. This master doc indexes the chunks (below) and carries the synthesis. Subagents do NOT edit `WindowPanel.tsx`/FEATURE.md/SKILL.md (the footer + docs agents own those).
+~120 registered panels (`features/overlays/definitions/<id>.overlay.ts (window block)` `STATIC_REGISTRY`). Chunk by domain; one subagent per chunk **deep-reads each panel** and writes its A/B/C rows to `docs/inventory/<chunk>.md`. This master doc indexes the chunks (below) and carries the synthesis. Subagents do NOT edit `WindowPanel.tsx`/FEATURE.md/SKILL.md (the footer + docs agents own those).
 
 ### Chunk index (fill-in status)
 

@@ -10,7 +10,7 @@
  *
  *   • A compact list (title + completion checkbox + priority dot) with a
  *     rapid-entry input that chains create-on-Enter.
- *   • Click a row → `useOpenTaskEditorWindow({ taskId })` via OverlayController.
+ *   • Click a row → `useOpenTaskEditorWindow({ taskId })` via OverlayWorldHost.
  *
  * Everything persists through the canonical tasks primitives — no War Room
  * task store, no fakes:

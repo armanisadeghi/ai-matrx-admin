@@ -9,7 +9,7 @@
  * column chooser in the sidebar; a format switch, live counts, and a live
  * size estimate of the exact text the Copy button will write in the footer.
  *
- * Opened only through the overlay system (`features/overlays/openers/
+ * Opened only through the overlay system (`features/overlays/definitions/
  * copySubsetWindow.tsx`). The panel is bound with `onClose` (page-local),
  * never `overlayId`, so window persistence never restores a window whose
  * session is gone; a missing session renders an honest message + remedy.

@@ -32,7 +32,7 @@ controls, never hidden — see `features/shell/FEATURE.md`.
 | `presentation.ts` · `grouping.ts` | Titles (subject → event-type label → humanised key, never the raw key), plain previews, buckets, categories/icons, times; client grouping (target, or event family for updates). |
 | `service.ts` | Door calls with an honest fallback to the pre-triage doors (`triage: false` → Done/Snooze/Snoozed/Done-tab absent). |
 
-Windows that wrap canonical lists (registered in `features/overlays/catalogue.ts`, metadata, `OverlayController`, openers): `notificationsInboxWindow` (this workspace), `assistsWindow` (`features/assists/windows`, wraps `AssistsManager`), `workInboxWindow` (`features/unified-data/windows`, wraps records-ui `ActionInbox`, all organizations, records open in a new tab), `waitingRunsWindow` (`features/workflow-runtime/discovery/windows`, wraps `WaitingInbox`).
+Windows that wrap canonical lists (registered in `features/overlays/definitions/registry.ts`, metadata, `OverlayWorldHost`, openers): `notificationsInboxWindow` (this workspace), `assistsWindow` (`features/assists/windows`, wraps `AssistsManager`), `workInboxWindow` (`features/unified-data/windows`, wraps records-ui `ActionInbox`, all organizations, records open in a new tab), `waitingRunsWindow` (`features/workflow-runtime/discovery/windows`, wraps `WaitingInbox`).
 
 ## The doors
 

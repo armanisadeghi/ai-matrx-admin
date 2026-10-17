@@ -56,7 +56,7 @@ delete / categorise / ingest, plus the per-agent `skill_config` picker.
 - `AgentSkillsWindow` — **non-blocking** floating window hosting
   `SkillConfigPicker` for the agent builder
   (`features/window-panels/windows/agents/AgentSkillsWindow.tsx`, overlay id
-  `agentSkillsWindow`, opener `features/overlays/openers/agentSkillsWindow.tsx`).
+  `agentSkillsWindow`, opener `features/overlays/definitions/agentSkillsWindow.overlay.tsx`).
   Triggered by `AgentSkillsButton`
   (`features/agents/components/skills-management/AgentSkillsButton.tsx`).
   It replaced the blocking `AgentSkillsModal` Dialog — **do not reintroduce a

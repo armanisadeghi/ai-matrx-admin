@@ -171,11 +171,11 @@ describe("V15 — blob-cache worker registers on the first file-bytes fetch", ()
 });
 
 describe("V14 — the overlay world loads on the first open, never at idle", () => {
-  test("the idle core no longer mounts OverlayController or PersonPeekHost", () => {
+  test("the idle core no longer mounts OverlayWorldHost or PersonPeekHost", () => {
     const core = code("app/DeferredSingletonCore.tsx");
-    expect(core).not.toMatch(/OverlayController|PersonPeekHost/);
+    expect(core).not.toMatch(/OverlayWorldHost|PersonPeekHost/);
     const world = code("app/DeferredOverlayWorld.tsx");
-    expect(world).toMatch(/<OverlayController \/>/);
+    expect(world).toMatch(/<OverlayWorldHost \/>/);
     expect(world).toMatch(/<PersonPeekHost \/>/);
   });
 

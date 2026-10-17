@@ -20,8 +20,8 @@ meant to be one.
 
 ## Entry points
 
-- **Overlay id** `galleryWindow` (`features/overlays/catalogue.ts`),
-  rendered by `features/overlays/OverlayController.tsx`.
+- **Overlay id** `galleryWindow` (`features/overlays/definitions/registry.ts`),
+  rendered by `features/overlays/host/OverlayWorldHost.tsx`.
 - **Shell** `features/window-panels/windows/image/GalleryWindow.tsx` — the
   `WindowPanel` chrome, the surface provider, the window's context menu, and the
   agent write handlers.
@@ -31,9 +31,9 @@ meant to be one.
 - **Opened from** the window Tools grid
   (`features/window-panels/tools-grid/toolsGridTiles.ts`) and the image-manager
   Tools tab, plus the generated opener
-  `features/overlays/openers/galleryWindow.tsx`.
+  `features/overlays/definitions/galleryWindow.overlay.tsx`.
 - **Mobile** `mobilePresentation: "fullscreen"`, sidebar as a drawer
-  (`windowRegistryMetadata.ts`).
+  (`features/overlays/definitions/<id>.overlay.ts (window block)`).
 
 ## Data
 

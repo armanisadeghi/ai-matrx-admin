@@ -25,7 +25,7 @@
  *    the same frame) + `chat.request_snapshot`, shown only where no live capture
  *    exists and always labelled a recorded copy.
  *
- * Open it with ONE call: `useWatchAiRun()(…)` (features/overlays/openers/aiWatchWindow.tsx).
+ * Open it with ONE call: `useWatchAiRun()(…)` (features/overlays/definitions/aiWatchWindow.overlay.tsx).
  */
 
 import { useEffect, useState } from "react";

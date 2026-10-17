@@ -613,8 +613,6 @@ export function analyze(host: SourceHost): Analysis {
 
 // ─── Surfaces ─────────────────────────────────────────────────────────────────
 
-export const OVERLAY_CONTROLLER = "features/overlays/OverlayController.tsx";
-const WINDOW_REGISTRY = "features/window-panels/registry/windowRegistryMetadata.ts";
 const ROUTE_FILE = /^app\/(.*\/)?(page|layout|template|default|not-found|error|global-error|loading)\.(tsx|ts|jsx|js)$/;
 const API_FILE = /^app\/(.*\/)?route\.(ts|js)$/;
 const OPENER_FILE = featureRegExp(/^features\/overlays\/definitions\/[^/]+\.overlay\.tsx?$/);
@@ -639,62 +637,6 @@ export function rootSurfaceOf(rel: string): string | null {
   return null;
 }
 
-/** OverlayController lazy imports: target file → "overlay <overlayId> (label)". */
-function overlaySurfaceMap(a: Analysis): Map<string, string> {
-  const out = new Map<string, string>();
-  if (!a.facts.has(OVERLAY_CONTROLLER)) return out;
-  const text = a.host.read(OVERLAY_CONTROLLER);
-  const lines = text.split("\n");
-  const labels = new Map<string, string>();
-  if (a.facts.has(WINDOW_REGISTRY)) {
-    const reg = a.host.read(WINDOW_REGISTRY);
-    const re = /overlayId:\s*"([^"]+)"[\s\S]{0,200}?label:\s*"([^"]+)"/g;
-    for (let m = re.exec(reg); m; m = re.exec(reg)) labels.set(m[1], m[2]);
-  }
-  const sf = ts.createSourceFile(OVERLAY_CONTROLLER, text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
-  const findImport = (n: ts.Node): string | null => {
-    let spec: string | null = null;
-    const v = (x: ts.Node): void => {
-      if (spec) return;
-      if (ts.isCallExpression(x) && x.expression.kind === ts.SyntaxKind.ImportKeyword) {
-        const a0 = x.arguments[0];
-        if (a0 && ts.isStringLiteralLike(a0)) spec = a0.text;
-      }
-      ts.forEachChild(x, v);
-    };
-    v(n);
-    return spec;
-  };
-  const options = loadCompilerOptions(a.host.root);
-  for (const st of sf.statements) {
-    if (!ts.isVariableStatement(st)) continue;
-    for (const d of st.declarationList.declarations) {
-      if (!ts.isIdentifier(d.name) || !d.initializer) continue;
-      const spec = findImport(d.initializer);
-      if (!spec) continue;
-      const r = ts.resolveModuleName(spec, path.join(a.host.root, OVERLAY_CONTROLLER), options, ts.sys).resolvedModule;
-      if (!r) continue;
-      const target = path.relative(a.host.root, r.resolvedFileName).split(path.sep).join("/");
-      const name = d.name.text;
-      // overlayId: the nearest `isOpenById.<id>` above the component's first JSX use.
-      let overlayId: string | null = null;
-      const useIdx = lines.findIndex((l) => l.includes(`<${name}`) && !l.includes(`<${name}.`));
-      if (useIdx >= 0) {
-        for (let i = useIdx; i >= Math.max(0, useIdx - 25) && !overlayId; i--) {
-          const m = /isOpenById\.(\w+)|isOpenById\[\s*"([^"]+)"\s*\]|\{\/\*\s*(\w+)\s*\*\/\}/.exec(lines[i]);
-          if (m) overlayId = m[1] ?? m[2] ?? m[3] ?? null;
-        }
-      }
-      const id = overlayId ?? name.charAt(0).toLowerCase() + name.slice(1);
-      const label = labels.get(id);
-      const surface = `overlay ${id}${label ? ` (${label})` : ""}`;
-      const prev = out.get(target);
-      out.set(target, prev && prev !== surface ? `${prev} · ${surface}` : surface);
-    }
-  }
-  return out;
-}
-
 /** For each requested file, the surfaces (routes, overlays, openers) that reach it. */
 export function surfacesFor(a: Analysis, files: Iterable<string>): Map<string, Set<string>> {
   const reverse = new Map<string, Set<string>>();
@@ -704,7 +646,6 @@ export function surfacesFor(a: Analysis, files: Iterable<string>): Map<string, S
       reverse.get(e.target)!.add(f);
     }
   }
-  const overlays = overlaySurfaceMap(a);
   const memo = new Map<string, Set<string>>();
   const out = new Map<string, Set<string>>();
   for (const start of files) {
@@ -722,12 +663,7 @@ export function surfacesFor(a: Analysis, files: Iterable<string>): Map<string, S
         found.add(root);
         continue;
       }
-      if (cur === OVERLAY_CONTROLLER) continue;
       for (const imp of reverse.get(cur) ?? []) {
-        if (imp === OVERLAY_CONTROLLER) {
-          found.add(overlays.get(cur) ?? "overlay (OverlayController, static)");
-          continue;
-        }
         if (!seen.has(imp)) {
           seen.add(imp);
           queue.push(imp);

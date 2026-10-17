@@ -269,7 +269,7 @@ web_site|plan_node|web_page`, all `container_side='none'` so the relationship
 - **A page's research is ATTACH or START, and the server always adds the
   site's.** NodePanel's Research lineage section pairs the attach list with
   "Run research for this page" → `useOpenPageResearchWindow(...)`
-  (`features/overlays/openers/pageResearchWindow.tsx` →
+  (`features/overlays/definitions/pageResearchWindow.overlay.tsx` →
   `features/window-panels/windows/marketing/PageResearchWindow.tsx`), a compact
   launcher over the SAME research service functions as the full wizard
   (`createTopic` → `addKeywords` → `runPipeline` → `generateDocument`), never a
@@ -983,8 +983,8 @@ always took `page_ids`. The defect was a surface ignoring what it had.
 - 2026-08-24 — **Per-page research: "Run research for this page."** New
   `PageResearchWindow` (`features/window-panels/windows/marketing/`) +
   `useOpenPageResearchWindow` opener + the six registration points
-  (the id list, `windowRegistryMetadata.ts`, `catalogue.ts`, and the lazy
-  import / isOpen / data / render blocks in `OverlayController.tsx`). It is a
+  (the id list, `features/overlays/definitions/<id>.overlay.ts (window block)`, `catalogue.ts`, and the lazy
+  import / isOpen / data / render blocks in `OverlayWorldHost.tsx`). It is a
   COMPACT launcher over the existing research service (`createTopic` →
   `addKeywords` → `runPipeline` → `generateDocument`) — not a fork of
   `ResearchInitForm` — seeded

@@ -27,7 +27,7 @@
  * incoming activity appends in real time regardless of the active tab.
  *
  * This file is a leaf, loaded ONLY behind the lazy overlay boundary
- * (`lazyOverlay` in OverlayController). It imports NO TTS SDK — only SDK-free
+ * (`lazyOverlay` in OverlayWorldHost). It imports NO TTS SDK — only SDK-free
  * hooks/selectors and the recording provider context.
  */
 

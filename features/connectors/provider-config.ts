@@ -91,7 +91,7 @@ export type ConnectorFirstAction =
   | { kind: "route"; label: string; href: string }
   /**
    * A catalogued overlay the surface opens IN PLACE — the one door to a window
-   * that has no route of its own (`features/overlays/catalogue.ts`).
+   * that has no route of its own (`features/overlays/definitions/registry.ts`).
    *
    * 🚨 `needs` names every context key the window's BODY reads off overlay
    * data as an identity (e.g. Tasks import needs the organization it writes
@@ -533,7 +533,7 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
       scopes: [...GOOGLE_IDENTITY_SCOPES, GOOGLE_SCOPE.contactsReadonly],
       attachableResourceTypes: [],
       stopsOnRevoke: "importing a contact from this Google account",
-      // The Google Contacts import window (`features/overlays/openers/
+      // The Google Contacts import window (`features/overlays/definitions/
       // googleImportWindows.tsx`, `useOpenGoogleContactsImport`) is the real
       // door — the same shape Tasks' row already uses for its own import.
       // `/crm/import` is the NATIVE CSV/vCard wizard (`app/(core)/crm/
@@ -637,7 +637,7 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
       scopes: [...GOOGLE_IDENTITY_SCOPES, GOOGLE_SCOPE.tasksReadonly],
       attachableResourceTypes: [],
       stopsOnRevoke: "importing tasks from this Google account",
-      // The Google Tasks import window (`features/overlays/openers/
+      // The Google Tasks import window (`features/overlays/definitions/
       // googleImportWindows.tsx`) was already built and the row offered no way in.
       // Its body reads `organizationId` off overlay data and refuses to load
       // without it (`GoogleTasksImportPanel`) — `needs` is how this button

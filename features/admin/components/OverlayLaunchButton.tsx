@@ -6,7 +6,7 @@
 // (window panel, modal, sheet) directly from an admin map card. Dispatches
 // the `openOverlay` action from the overlay slice — same path every opener
 // hook ultimately funnels into. Per-overlay typed openers exist in
-// `features/overlays/openers/*` for typed callers; this generic button is
+// `features/overlays/definitions/*` for typed callers; this generic button is
 // intended only for admin tooling that lists overlays by id.
 
 import { useCallback } from "react";

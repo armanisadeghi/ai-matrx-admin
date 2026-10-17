@@ -463,7 +463,7 @@ Each surface lists the legacy sites it reaches, EXCLUDING the shared files above
 
 ### opener fullScreenEditor
 
-- [ ] `features/overlays/openers/fullScreenEditor.tsx:33` — **FullScreenMarkdownEditor (16-tab editor)** (BANNED) — `@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor` (type-only)
+- [ ] `features/overlays/definitions/fullScreenEditor.overlay.tsx:33` — **FullScreenMarkdownEditor (16-tab editor)** (BANNED) — `@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor` (type-only)
 
 ### overlay adminIndicator (Admin Indicator)
 

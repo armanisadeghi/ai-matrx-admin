@@ -315,7 +315,7 @@ canonical words (Rulebook · a Masterwork · Build · Audition · Scout · Appro
 - `build/BuildWindow.tsx` — "Build a Masterwork" as a WindowPanel (streams
   `POST /masterworks/build` as a durable run; progress through
   `LiveRunProgress`; result carries doors + `TryMasterworkBox`). Openers:
-  `features/overlays/openers/masterworkBuildWindow.tsx`; run + progress
+  `features/overlays/definitions/masterworkBuildWindow.overlay.tsx`; run + progress
   translation: `build/useBuildRun.ts`; page callbacks: `build/callbacks.ts`.
 - `components/detail/RedPenDialog.tsx` — THE RED-PEN LANE (`red_pen`, live
   2026-09-15). Somebody else's work goes in (paste, or a plain-text/Markdown

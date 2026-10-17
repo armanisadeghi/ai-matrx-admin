@@ -55,7 +55,7 @@ export interface OpenImageViewerPayload {
  * Imperative opener — dispatches `openOverlay` and nothing else. It never
  * imports `ImageViewerWindow`, so a caller gets the open path without pulling
  * `<WindowPanel>` and the rest of the window-panels chunk graph into its
- * bundle. `OverlayController`'s per-overlay `dynamic()` still owns the only
+ * bundle. `OverlayWorldHost`'s per-overlay `dynamic()` still owns the only
  * import of the component itself.
  *
  * Defaults `instanceId` to `"default"` so repeat clicks reuse ONE viewer

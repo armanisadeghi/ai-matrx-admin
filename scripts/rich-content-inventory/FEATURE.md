@@ -37,9 +37,9 @@ Wired as two ADVISORY rows in `scripts/run-release-gates.sh` (non-strict list, t
 - **Scope:** `app components features lib utils hooks providers actions constants types config`;
   tests, stories, `__tests__`, `__mocks__`, `.d.ts` excluded. Type-only imports count as sites but are not walked.
 - **Surfaces:** importers are walked up to `app/**/{page,layout,template,…}` (route/layout),
-  `app/**/route.ts` (api), `features/overlays/openers/*` (opener), and the lazy imports inside
-  `features/overlays/OverlayController.tsx` (overlay `<overlayId>` + its window-registry label). The walk
-  never passes THROUGH OverlayController. A file reached by more than 10 surfaces is listed once under
+  `app/**/route.ts` (api), `features/overlays/definitions/*` (opener), and the lazy imports inside
+  `features/overlays/host/OverlayWorldHost.tsx` (overlay `<overlayId>` + its window-registry label). The walk
+  never passes THROUGH OverlayWorldHost. A file reached by more than 10 surfaces is listed once under
   "Shared files" instead of under every surface.
 
 ## Known limits

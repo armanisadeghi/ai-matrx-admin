@@ -14,7 +14,7 @@
  *
  * Persistence: the `activeSessionId` is the only window-specific datum we
  * remember. Geometry + open/close + z-index are handled by the window-panels
- * subsystem via the registry's `defaultData` + Redux `windowManagerSlice`.
+ * subsystem via the registry's `defaultData` + Redux `summon window state`.
  */
 
 import { useCallback } from "react";

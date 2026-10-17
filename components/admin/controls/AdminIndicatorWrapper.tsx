@@ -7,7 +7,7 @@
  *
  * The floating admin chip itself (`<AdminIndicator/>`) is now registered
  * as `overlayId: "adminIndicator"` in `windowRegistry.ts` and rendered by
- * the unified `OverlayController`. This wrapper retains:
+ * the unified `OverlayWorldHost`. This wrapper retains:
  *   1. AdminDebugContextCollector — always-on for super admins; captures
  *      pathname, console errors, and browser metadata for the
  *      copy-context workflow.

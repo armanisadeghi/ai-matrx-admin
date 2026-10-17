@@ -30,7 +30,7 @@
  * audio system. Everything inside `AudioSystemHostImpl` imports statically —
  * except leaves that are themselves condition-gated on rare events (the
  * recovery toast body, the audio modal body), which follow the
- * OverlayController leaf pattern.
+ * OverlayWorldHost leaf pattern.
  */
 
 import dynamic from "next/dynamic";

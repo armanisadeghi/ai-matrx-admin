@@ -2,7 +2,7 @@
 
 /**
  * ChangeReviewOverlay — the `changeReviewWindow` overlay: THE review window for archiving or moving any record,
- * opened from anywhere by `useOpenChangeReviewWindow()` (features/overlays/openers/changeReviewWindow.tsx).
+ * opened from anywhere by `useOpenChangeReviewWindow()` (features/overlays/definitions/changeReviewWindow.overlay.tsx).
  * A finished move's toast carries "Undo move" (the engine walks it back by its plan); a finished archive's
  * toast carries "Undo" (restore by plan).
  */

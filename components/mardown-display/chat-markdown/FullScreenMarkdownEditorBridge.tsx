@@ -5,7 +5,7 @@
  *
  * `UnifiedOverlayController` -> `OverlaySurface` spreads the overlay's `data`
  * payload onto the registered component as props. Our overlay data shape
- * (defined by `openFullScreenEditor` in `lib/redux/slices/overlaySlice.ts`)
+ * (defined by `openFullScreenEditor` in `@ai-matrx/summon`)
  * uses keys `content` and the surface injects `onClose` — but
  * `FullScreenMarkdownEditor` exposes its props as `initialContent` and
  * `onCancel`. Without an adapter, the editor mounted with `initialContent`
@@ -13,12 +13,12 @@
  * which felt like a hard freeze).
  *
  * This bridge mirrors the legacy glue code that used to live inline in
- * `components/overlays/OverlayController.tsx` (deleted 2026-05-06 — only
+ * `features/overlays/host/OverlayWorldHost.tsx` (deleted 2026-05-06 — only
  * `UnifiedOverlayController` is mounted in `app/DeferredSingletons.tsx` and
  * `app/(public)/PublicProviders.tsx`). It:
  *
  *   1. maps `content` → `initialContent` and `onClose` → `onCancel`
- *   2. wires `onChange` to mirror every keystroke into `overlayDataSlice` so
+ *   2. wires `onChange` to mirror every keystroke into `summon overlay state` so
  *      content survives close/reopen for the same `instanceId`
  *   3. dispatches the right save thunk based on `mode`:
  *        - "assistant-message" → `editMessage` against `cx_message`

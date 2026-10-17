@@ -126,7 +126,7 @@ export default function DeferredSingletonCore() {
 
   return (
     <>
-      {/* OverlayController + PersonPeekHost are NOT here: they are the overlay world
+      {/* OverlayWorldHost + PersonPeekHost are NOT here: they are the overlay world
           (app/DeferredOverlayWorld.tsx), loaded by the wrapper on the first open. */}
       {/* G1: files any `__kind` drawn as raw text (never-raw law). */}
       <KindLeakSentinel />
@@ -138,7 +138,7 @@ export default function DeferredSingletonCore() {
       {/* Render-free. THE reader/writer of `?panels=` — the deep-link channel
           for floating windows (`?panels=notes`, `?panels=vault:<id>`, …).
           Mounted GLOBALLY and unallowlisted: it owns every key that has a
-          hydrator in url-sync/initUrlHydration.ts, on every authenticated
+          hydrator in features/overlays/definitions/<id>.link.ts, on every authenticated
           route. It was route-scoped to /marketing/keyword-research from
           2026-08-27 until 2026-08-30, which made every other `?panels=` link
           on every other route a silent no-op — no window, no warning. Never

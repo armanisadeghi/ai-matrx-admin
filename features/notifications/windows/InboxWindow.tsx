@@ -6,7 +6,7 @@
  * workspace (`../components/InboxWorkspace`); the organization filter lives in
  * the window's own state, because a window never writes the page's address.
  *
- * Rendered only behind the lazy overlay boundary (`OverlayController`).
+ * Rendered only behind the lazy overlay boundary (`OverlayWorldHost`).
  */
 
 import { useState } from "react";

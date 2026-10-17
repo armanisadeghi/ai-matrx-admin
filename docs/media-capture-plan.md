@@ -20,7 +20,7 @@
 | Output sink store | `features/audio/audioOutputSink.ts` + `useOutputSinkRef` | Review playback routes through the selected speaker (`setSinkId` feature-detected; Safari no-ops) |
 | Device preferences | `userPreferences.audioDevices` module, `lib/redux/preferences/userPreferencesSlice.ts` | Flat id+label pairs, `""` = system default, synced tier. Superseded by `mediaDevices` in Phase 4 |
 | Devices UI panel | `features/audio/components/devices/AudioDevicesPanel.tsx` | Mic/speaker selects, permission row, live meter, speaker test — gains a camera section (control-window variant) |
-| Audio control window | `features/window-panels/windows/AudioControlWindow.tsx`, overlayId `"audioControlWindow"`, openers in `features/overlays/openers/audioControlWindow.tsx` | Expands into the Media control window under the same overlayId |
+| Audio control window | `features/window-panels/windows/AudioControlWindow.tsx`, overlayId `"audioControlWindow"`, openers in `features/overlays/definitions/audioControlWindow.overlay.tsx` | Expands into the Media control window under the same overlayId |
 | Universal file handler | `features/files/handler/handler.ts` — `fileHandler.upload({kind:"blob"\|"file"}, opts)` | The ONLY cloud boundary. `UploadOpts.metadata` flows verbatim into `files.files.metadata` JSONB; no new `FileSource` variant needed |
 | Object-URL registry | `lib/media/object-url-registry.ts` | All local preview URLs via `createTrackedObjectUrl`; revoked explicitly on every terminal path |
 | Durable rendering | `<InlineMediaRef>` + `lib/media/{signed-url,durability}.ts` | Persist `file_id`, never signed URLs; renders re-mint on failure |

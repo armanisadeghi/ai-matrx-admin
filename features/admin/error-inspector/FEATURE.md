@@ -433,9 +433,9 @@ UI self-gates on `selectIsAdminDebugger` (any admin level, on EVERY page — adm
 
 ## Registration sites (keep in sync)
 
-`features/window-panels/registry/windowRegistryMetadata.ts` ·
-`features/overlays/catalogue.ts` ·
-`features/overlays/OverlayController.tsx` (lazy import + `isOpenById` +
+`features/overlays/definitions/<id>.overlay.ts (window block)` ·
+`features/overlays/definitions/registry.ts` ·
+`features/overlays/host/OverlayWorldHost.tsx` (lazy import + `isOpenById` +
 `dataById` + render block).
 
 ## Relationship to adminDebugSlice

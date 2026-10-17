@@ -106,7 +106,7 @@ export function AgentInterfaceVariationsWindow(props: PlaceholderProps) {
 
 // AgentCreateAppWindow used to be a coming-soon placeholder here. It now
 // lives in `AgentCreateAppWindow.tsx` with a real implementation, wired
-// directly from OverlayController.
+// directly from OverlayWorldHost.
 
 export function AgentDataStorageWindow(props: PlaceholderProps) {
   return (
@@ -130,14 +130,14 @@ export function AgentDataStorageWindow(props: PlaceholderProps) {
 // AgentFindUsagesWindow + AgentAdminFindUsagesWindow used to be coming-soon
 // placeholders here. They now live in `AgentFindUsagesWindow.tsx` /
 // `AgentAdminFindUsagesWindow.tsx` with real implementations (the find-usages
-// + drift detection engine), wired directly from OverlayController.
+// + drift detection engine), wired directly from OverlayWorldHost.
 
 // ── Admin placeholders ─────────────────────────────────────────────────────
 
 // AgentConvertSystemWindow used to be a coming-soon placeholder here.
 // It now lives in `AgentConvertSystemWindow.tsx` with a real implementation,
-// wired directly from OverlayController.
+// wired directly from OverlayWorldHost.
 
 // AgentAdminShortcutWindow used to be a coming-soon placeholder here.
 // It now lives in `AgentShortcutQuickCreateWindow.tsx` with a real
-// implementation, and is wired directly from OverlayController.
+// implementation, and is wired directly from OverlayWorldHost.

@@ -22,8 +22,8 @@ common-docs `projects/unified-source-input/` (DESIGN.md § "The follow-up page";
   `sources.review_threshold_chars` (100,000). Hosts call it with `totalChars(manifest)` from
   `@ai-matrx/agents/sources` and open the review with `reason: "large"`.
 - **`<SourceReview>`** — the canonical body; a page may render it inline.
-- Overlay `sourceReviewWindow` (`features/overlays/catalogue.ts`, controller block in
-  `OverlayController.tsx`, opener `features/overlays/openers/sourceReviewWindow.tsx`) renders
+- Overlay `sourceReviewWindow` (`features/overlays/definitions/registry.ts`, controller block in
+  `OverlayWorldHost.tsx`, opener `features/overlays/definitions/sourceReviewWindow.overlay.tsx`) renders
   `SourceReviewWindow` → the package Dialog (non-blocking window on desktop, bottom sheet on a
   phone) wrapping `<SourceReview>`.
 - Server: `POST /sources/manifest` (sizes, states, forms, parts — never bodies) and

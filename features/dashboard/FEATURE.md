@@ -65,7 +65,7 @@
 - **Vocabulary:** `FavoriteKind` = canonical **`EntityType | "nav"`** (`features/scopes/types.ts`) — no parallel union; a new favoritable type is added to `platform.entity_types` (then `EntityType`), never invented here.
 - **Button:** `<PinButton item={...} />` (`components/favorites/PinButton.tsx`) — drop on any card/row/header to pin anything.
 - **Sidebar:** `FavoritesNavGroup` (`features/shell/components/sidebar/FavoritesNavGroup.tsx`) — the dual purpose. Reuses `NavFlyoutGroup`; reads pins from Redux; the flyout panel only renders on hover/click (nothing renders until interacted, no query ever). Always appends a **"Manage favorites"** action (nav-action id `manage-favorites` → `navActions.ts`) at the bottom of the flyout.
-- **Manager:** `FavoritesManagerPanel` (`components/favorites/FavoritesManagerPanel.tsx`) — a checklist of every nav destination (`flattenNavDestinations()`) plus "other pins"; check/uncheck to pin/unpin. Shown as the `favoritesManagerWindow` overlay (`features/window-panels/windows/FavoritesManagerWindow.tsx` + opener `features/overlays/openers/favoritesManagerWindow.tsx`). Opened from the sidebar Favorites flyout.
+- **Manager:** `FavoritesManagerPanel` (`components/favorites/FavoritesManagerPanel.tsx`) — a checklist of every nav destination (`flattenNavDestinations()`) plus "other pins"; check/uncheck to pin/unpin. Shown as the `favoritesManagerWindow` overlay (`features/window-panels/windows/FavoritesManagerWindow.tsx` + opener `features/overlays/definitions/favoritesManagerWindow.overlay.tsx`). Opened from the sidebar Favorites flyout.
 
 ---
 

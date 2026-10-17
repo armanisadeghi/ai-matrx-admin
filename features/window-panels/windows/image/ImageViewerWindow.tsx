@@ -10,11 +10,11 @@
  * The dispatcher helper used to live here too, but importing it from a
  * route-level consumer would pull <WindowPanel> and the entire window-
  * panels chunk graph along with it. It now lives in
- * `@/features/overlays/openers/imageViewer` — the openers layer, which has no
+ * `@/features/overlays/definitions/imageViewer` — the openers layer, which has no
  * window-panel-system imports. Consumers import the helper from there:
  *
  *   import { openImageViewer } from
- *     "@/features/overlays/openers/imageViewer";
+ *     "@/features/overlays/definitions/imageViewer";
  */
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
@@ -512,7 +512,7 @@ export function ImageViewerWindow({
 }
 
 // `openImageViewer` + its payload type live in
-// `features/overlays/openers/imageViewer.tsx` — the sanctioned openers layer,
+// `features/overlays/definitions/imageViewer.overlay.tsx` — the sanctioned openers layer,
 // which has no window-panel-system imports. Route-level consumers MUST import
 // the helper from there. The back-compat re-export that used to live here was
 // a trap: it pulled this whole window component (and its <WindowPanel>

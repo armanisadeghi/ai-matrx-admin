@@ -187,7 +187,7 @@ button with the consequence sentence in a `ConfirmDialog`; `batch` = checkboxes 
 
 ## 5. The topic panel (R13) and the map window
 
-- Overlay id **`topicalMapTopicPanel`** (`features/overlays/catalogue.ts`): `{ label: "Topic",
+- Overlay id **`topicalMapTopicPanel`** (`features/overlays/definitions/registry.ts`): `{ label: "Topic",
   instanceMode: "multi", isWindow: true }`. Metadata slug `topical-map-topic-panel`,
   `mobilePresentation: "drawer"`, `defaultData: { mapId: "", slug: "", siteId: null }`,
   `preservation.dataKeys: ["mapId","slug","siteId"]`, `urlSync: { key: "topic" }`.
@@ -196,7 +196,7 @@ button with the consequence sentence in a `ConfirmDialog`; `batch` = checkboxes 
   `topical-map-topic` canvas tab keyed `<mapId>|<slug>` (`canvas/topicKind.ts`) and the overlay
   instance closes; both around ONE `<TopicDetailBody host=… />`. While knobs load nothing is framed;
   a knob error is announced with a toast.
-- Opener `features/overlays/openers/topicalMapTopicPanel.tsx`: `useOpenTopicPanel()` →
+- Opener `features/overlays/definitions/topicalMapTopicPanel.overlay.tsx`: `useOpenTopicPanel()` →
   `(args: { mapId: string; slug: string; siteId?: string | null }) => void`.
 - `panel/TopicDetailBody.tsx`: `{ mapId: string; slug: string; siteId: string | null; host: MapHost; readOnly?: boolean }`.
   Phase 0 ships a typed stub that says "The topic panel is being built" with the topic's name and

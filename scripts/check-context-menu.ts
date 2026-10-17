@@ -166,12 +166,12 @@ const SKIP: Array<{ match: RegExp; reason: string }> = [
   { match: /__tests__|\.test\.tsx?$|\.stories\.tsx?$/, reason: "not a surface" },
   { match: /^app\/\(auth-pages\)\//, reason: "login/signup — no records shown" },
   {
-    match: featureRegExp(/^features\/overlays\/(openers|registry)\//),
+    match: featureRegExp(/^features\/overlays\/definitions\/(?![^/]+\.render\.tsx$)/),
     reason:
-      "opener HOOKS and the id registry — they dispatch overlays, they render no surface",
+      "overlay definitions, links and the registry — they declare and open overlays, they render no surface",
   },
   {
-    match: featureRegExp(/^features\/overlays\/(OverlayController|surfaces)\b/),
+    match: featureRegExp(/^features\/overlays\/(host|surfaces)\b/),
     reason: "the overlay host/chrome — the CONTENT it hosts is the surface",
   },
   {

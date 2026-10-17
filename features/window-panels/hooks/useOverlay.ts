@@ -4,11 +4,11 @@
  * useOverlay — factory hooks for subscribing to and mutating overlay state.
  *
  * These replace the 98 inline `useAppSelector(s => selectIsOverlayOpen(s, "..."))`
- * + `selectOverlayData(...)` calls in the legacy OverlayController. Each hook
+ * + `selectOverlayData(...)` calls in the legacy OverlayWorldHost. Each hook
  * subscribes to only the slice it needs, keeping OverlaySurface re-renders
  * tightly scoped per overlay.
  *
- * Signature mirrors the selectors in overlaySlice.ts — a thin, typed wrapper.
+ * Signature mirrors the selectors in summon overlay state.ts — a thin, typed wrapper.
  */
 import { useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

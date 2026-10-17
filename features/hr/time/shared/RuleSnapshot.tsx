@@ -97,7 +97,7 @@ export function RuleSnapshotProvider({ children }: { children: ReactNode }) {
   /**
    * 🚨 OPENING IS NOT ENOUGH — THE WINDOW MUST BE REVEALED (G2 T-4).
    *
-   * `windowManagerSlice` says this in its own words: *"an open dispatch only updated overlay-slice
+   * `summon window state` says this in its own words: *"an open dispatch only updated overlay-slice
    * data; if the window was minimized, dragged off-screen, or suppressed by `windowsHidden`, the
    * user saw nothing."* That is precisely the reported symptom — the click handler fires, no error
    * reaches the console, and no overlay appears — and it is **per-browser session state**, which is

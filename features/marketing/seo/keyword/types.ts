@@ -12,7 +12,7 @@
  *                      intelligence-window launcher).
  * - `KeywordIntelPanel` / the `keywordWindow` overlay — the full tabbed
  *   keyword intelligence surface, openable from anywhere via
- *   `useOpenKeywordWindow` (features/overlays/openers/keywordWindow.tsx).
+ *   `useOpenKeywordWindow` (features/overlays/definitions/keywordWindow.overlay.tsx).
  * - `buildKeywordBrief` — the condensed keyword+data payload for AI/agent/copy
  *   consumers.
  */

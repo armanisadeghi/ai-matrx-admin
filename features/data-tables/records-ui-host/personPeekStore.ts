@@ -1,7 +1,7 @@
 /**
  * The person-peek request store — tiny on purpose. `openPersonPeek` (records-ui `openPerson`) writes
  * here; `PersonPeekHost` reads it. The deferred-singleton wrapper watches `personPeekRequested` so
- * the overlay world (OverlayController + PersonPeekHost) loads on the FIRST request, never at idle.
+ * the overlay world (OverlayWorldHost + PersonPeekHost) loads on the FIRST request, never at idle.
  * No React, no Supabase, no peek UI: this module is in every signed-in route's boot bundle.
  */
 

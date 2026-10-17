@@ -5,7 +5,7 @@
  *
  * WHY THIS IS NOT COMPONENT STATE. Two consumers need the same run: the
  * surface that launched it (to disable its button and report the result) and
- * the floating `SiteCommandRunWindow`, which `OverlayController` renders at the
+ * the floating `SiteCommandRunWindow`, which `OverlayWorldHost` renders at the
  * ROOT of the tree — outside the marketing site provider entirely. A run also
  * has to survive the launching component unmounting when the user navigates to
  * another tab of the same site while it works.

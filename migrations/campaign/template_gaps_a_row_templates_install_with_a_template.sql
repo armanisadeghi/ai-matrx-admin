@@ -1,8 +1,7 @@
 -- additive: yes
 --
--- chair-step: it REPLACES one function body, `custom._template_doors()`, adding one door name
---   (`row_template_declare`) to the closed list `custom.template_install` may call. Nothing is dropped,
---   no grant moves, no row is touched. Inverse: migrations/inverse/template_gaps_a_row_templates_install_with_a_template_down.sql.
+-- It REPLACES one function body, `custom._template_doors()`, adding one door name (`row_template_declare`).
+-- Inverse: migrations/inverse/template_gaps_a_row_templates_install_with_a_template_down.sql.
 --
 -- TEMPLATE-GAPS (a) — A TEMPLATE PACK CAN SHIP ROW TEMPLATES.
 -- The Spaces lead rebuilt ~85 Notion templates; every tracker in Notion opens each row as a page that

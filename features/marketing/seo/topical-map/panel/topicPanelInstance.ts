@@ -4,9 +4,9 @@
  *
  * ONE owner of the format, because two places have to agree on it and they are
  * in different features: the opener
- * (`features/overlays/openers/topicalMapTopicPanel.tsx`) mints the instance id
+ * (`features/overlays/definitions/topicalMapTopicPanel.overlay.tsx`) mints the instance id
  * when someone clicks a topic, and the URL hydrator
- * (`features/window-panels/url-sync/initUrlHydration.ts`) reads it back out of
+ * (`features/overlays/definitions/<id>.link.ts`) reads it back out of
  * `?panels=topic:<instanceId>` after a reload. A second hand-written split in
  * the hydrator would be a copy of this format that drifts the day the id gains
  * a third part.

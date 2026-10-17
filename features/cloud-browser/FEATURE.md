@@ -117,8 +117,8 @@ live form. When an agent-raised capture card is open, it takes precedence.
   a standing input-bar button) opens the same non-persisted canvas as every later
   conversation; an active run shows as the context-rail pill above the input.
 - **Overlay:** `cloudBrowserWindow` — `useOpenCloudBrowserWindow()` /
-  `<CloudBrowserWindowController>` (`features/overlays/openers/cloudBrowserWindow.tsx`),
-  wired into `OverlayController.tsx` + `catalogue.ts` (whose key is the overlay id).
+  `<CloudBrowserWindowController>` (`features/overlays/definitions/cloudBrowserWindow.overlay.tsx`),
+  wired into `OverlayWorldHost.tsx` + `catalogue.ts` (whose key is the overlay id).
 - **Panel:** `components/CloudBrowserWindow.tsx` (a `WindowPanel`).
 - **Notification deep link:** `?cloudBrowserHandoff={handoffId}` on any route
   (the server points it at `/chat[/{conversationId}]`), read by

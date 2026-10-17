@@ -16,6 +16,8 @@
     "build:sw": "tsx features/files/cache/service-worker/build-sw.ts",
     "build:kind-sandbox": "tsx features/content-ir/sandbox/build-kind-sandbox.ts",
     "harness:kind-sandbox": "tsx features/content-ir/sandbox/make-acceptance-harness.ts",
+    "gen:overlays": "OVERLAY_INDEX_WRITE=1 jest --no-coverage features/overlays/definitions/__tests__/overlayIndexIsGenerated.test.ts",
+    "check:overlays": "jest --no-coverage features/overlays/definitions/__tests__/overlayIndexIsGenerated.test.ts",
     "gen:kind-sandbox-safelist": "tsx features/content-ir/sandbox/generate-class-safelist.ts",
     "check:host-parity": "node scripts/check-host-parity.mjs",
     "check:host-parity:self-test": "node scripts/check-host-parity.mjs --self-test",

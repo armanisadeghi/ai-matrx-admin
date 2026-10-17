@@ -10,7 +10,7 @@
  * never ride in the tab's data.
  *
  * So the opener registers its handlers HERE, through the platform's one
- * callback registry (`utils/callbackManager`), and puts only their string ids
+ * callback registry (`@ai-matrx/summon/handles`), and puts only their string ids
  * in the content. The renderer resolves the ids back to functions at render
  * time. When the opener is gone — it closed, it unmounted, the page reloaded —
  * the ids resolve to nothing and the renderer shows an honest one-line state

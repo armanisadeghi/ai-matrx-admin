@@ -27,7 +27,7 @@
  * standalone `WindowPanel` carrying no `overlayId` — as soon as the read
  * resolved, so the `siteQuickViewWindow`-bound panel UNMOUNTED at that moment:
  * the overlay stopped owning the window on screen (its `onCollectData`, its
- * tray row, its restore and its close from the `OverlayController` all applied
+ * tray row, its restore and its close from the `OverlayWorldHost` all applied
  * to a panel that was gone), and the chrome blinked out while the lazy peek
  * module loaded. The fix is the SLOTS contract read literally — the panel is
  * the chrome and the content is `children`, so `id`, `overlayId` and

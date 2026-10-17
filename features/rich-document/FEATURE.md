@@ -109,7 +109,7 @@ This feature owns no database tables. It composes content originating elsewhere 
 2. `resolveActions` includes it in the visible set alongside the built-ins.
 3. Click → `run` dispatches `openOverlay` with the standard shape.
 
-**Constraint** — `overlayId` must already be a key of `features/overlays/catalogue.ts` and rendered by the controller. To add a new overlay, follow `features/overlays/FEATURE.md` — the 3-file process.
+**Constraint** — `overlayId` must already be a key of `features/overlays/definitions/registry.ts` and rendered by the controller. To add a new overlay, follow `features/overlays/FEATURE.md` — the 3-file process.
 
 ---
 
@@ -155,7 +155,7 @@ assertions in addition to the Content IR route matrix.
 
 ## Related features
 
-- **Depends on:** `components/mardown-display/` (the content engine), `lib/redux/slices/overlaySlice.ts` (overlay dispatch), `features/overlays/` (overlay registration), `components/icons/tap-buttons` (button primitives for inline variants), `features/tts/components/StreamingSpeakerButton` (TTS inline button), `features/notes/service/notesApi` (save-to-notes), `features/code-files/service/codeFilesApi` (save-to-code), `features/tasks/redux/taskAssociationsSlice` (save-to-task).
+- **Depends on:** `components/mardown-display/` (the content engine), `@ai-matrx/summon` (overlay dispatch), `features/overlays/` (overlay registration), `components/icons/tap-buttons` (button primitives for inline variants), `features/tts/components/StreamingSpeakerButton` (TTS inline button), `features/notes/service/notesApi` (save-to-notes), `features/code-files/service/codeFilesApi` (save-to-code), `features/tasks/redux/taskAssociationsSlice` (save-to-task).
 - **Depended on by:** _(post-migration)_ `../aidream/apps/shared/chat/src/agents/components/messages-display/assistant/AgentAssistantMessage.tsx`, `features/notes/components/*Preview*`, `features/prompts/components/results-display/*`, `components/socket-io/presets/preset-manager/responses/admin-tabs/*`, `features/scraper/parts/recipes/*`, and ~25 more consumer sites.
 - **Cross-links:** `features/overlays/FEATURE.md` (overlay registration contract), `components/mardown-display/chat-markdown/REACT_RENDER_CONTRACT.md` (engine block protocol), `components/mardown-display/GUIDE.md` (engine event-mode vs legacy-mode).
 
@@ -169,7 +169,7 @@ assertions in addition to the Content IR route matrix.
 
 - Types: `AppDispatch` (`lib/redux/store.ts`), `RootState` (`lib/redux/rootReducer.ts`), `ServerProcessedBlock` (`components/mardown-display/chat-markdown/EnhancedChatMarkdown`), `TypedStreamEvent` (`components/mardown-display/chat-markdown/types`).
 - Components: `MarkdownStream` (`components/MarkdownStream`) — the content engine, dynamically imported.
-- Redux slices / selectors: dispatches `openOverlay` / `closeOverlay` from `lib/redux/slices/overlaySlice`; subscribes to `state.userAuth.id` and `state.userAuth.isAdmin`. _(Phase 1+)_ dispatches `editMessage`, `deleteMessage`, `forkConversation` from `../aidream/apps/shared/chat/src/agents/redux/execution-system/message-crud/*` via the chat-message source adapter; calls `NotesAPI.update` via the note adapter; etc.
+- Redux slices / selectors: dispatches `openOverlay` / `closeOverlay` from `@ai-matrx/summon`; subscribes to `state.userAuth.id` and `state.userAuth.isAdmin`. _(Phase 1+)_ dispatches `editMessage`, `deleteMessage`, `forkConversation` from `../aidream/apps/shared/chat/src/agents/redux/execution-system/message-crud/*` via the chat-message source adapter; calls `NotesAPI.update` via the note adapter; etc.
 - Hooks: `useAppDispatch` / `useAppSelector` (`lib/redux/hooks`), `useId` (React 19), `useRef` / `useLayoutEffect` / `useEffect` (React).
 
 **Primitives introduced** — every new type, component, slice, or hook this feature added.

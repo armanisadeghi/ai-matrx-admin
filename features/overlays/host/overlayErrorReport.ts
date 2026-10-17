@@ -5,7 +5,7 @@
  * summary and (b) an exhaustive, xml-structured "Copy for AI" payload that an
  * admin can hand straight to an LLM to debug. The whole point: when an overlay
  * silently fails to render in production (almost always a `next/dynamic` chunk
- * load failure — see the OverlayController FEATURE notes), the admin gets SO
+ * load failure — see the OverlayWorldHost FEATURE notes), the admin gets SO
  * much context that the fix is obvious.
  *
  * The AI payload is built with the shared {@link buildAgentPayload} envelope so

@@ -12,7 +12,7 @@
  *   slot's *joiner*, and a unit kind never contains a `.`.
  *
  * Pure module: no React, no Redux — safe to import from boot code
- * (`url-sync/initUrlHydration.ts`).
+ * (`features/overlays/definitions/<id>.link.ts`).
  */
 import type { WalkUnitKind } from "./types";
 

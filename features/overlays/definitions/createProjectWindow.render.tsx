@@ -7,7 +7,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
 
         const data = overlayData as Record<string, unknown> | null | undefined;
         console.log(
-          "[Track New Project] 11, OverlayController.tsx — rendering <CreateProjectWindow />",
+          "[Track New Project] 11, OverlayWorldHost.tsx — rendering <CreateProjectWindow />",
           { instanceId: instanceId },
         );
         return (

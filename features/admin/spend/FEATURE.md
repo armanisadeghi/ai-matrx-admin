@@ -260,9 +260,9 @@ boundary—the admin shell itself is structurally non-scrollable.
 | `migrations/spend_dashboard_admin_rpcs.sql`, `spend_popover_knobs.sql`, `spend_explorer_admin_rpc.sql`, `spend_explorer_knobs.sql` | the database half                                          |
 
 Registered in `features/admin/constants/admin-categories.ts` +
-`admin-navigation.ts` (domain `billing`), `features/overlays/catalogue.ts`,
-`features/window-panels/registry/windowRegistryMetadata.ts`, and
-`features/overlays/OverlayController.tsx`.
+`admin-navigation.ts` (domain `billing`), `features/overlays/definitions/registry.ts`,
+`features/overlays/definitions/<id>.overlay.ts (window block)`, and
+`features/overlays/host/OverlayWorldHost.tsx`.
 
 ## Known gaps this feature NAMES but does not fix
 

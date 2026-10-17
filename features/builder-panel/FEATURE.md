@@ -21,7 +21,7 @@ The admin window that shows everything a page has and can do. Product truth:
 | `features/builder-panel/hooks/*` | `useRequestLog`, `useRunTruth` (re-reads while a run is going) |
 | `features/builder-panel/components/*` | Story sidebar + story detail (Sent · Received · What we took from it), Values list (group icons) + entry detail, Page calls, Activity, Workflow, Mandates, AI calls, Provision, proposal card; every value through `BuilderJson` (= `JsonInspector`) |
 | `features/window-panels/windows/admin/BuilderPanelWindow.tsx` | The window (lazy overlay `builderPanelWindow`) |
-| `features/overlays/openers/builderPanelWindow.tsx` | `useOpenBuilderPanel`, `useToggleBuilderPanel` |
+| `features/overlays/definitions/builderPanelWindow.overlay.tsx` | `useOpenBuilderPanel`, `useToggleBuilderPanel` |
 | `features/shell/components/controls/SidebarBuilderToggle.tsx` | Sidebar admin item with dot + count; mobile row in `AdminMobileMenu` |
 
 ## Publishing from a page

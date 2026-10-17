@@ -6,7 +6,7 @@
 // <VoicePadWrapper /> mount used to live here and double-rendered every
 // open voice-pad instance because the registry was already mounting it.
 // Do NOT add a wrapper here — register the overlay in
-// `windowRegistry.ts` + `windowRegistryMetadata.ts` and let
+// `windowRegistry.ts` + `features/overlays/definitions/<id>.overlay.ts (window block)` and let
 // `UnifiedOverlayController` handle it. (Bug found 2026-04-29.)
 
 // ⌘K "Search your knowledge" — a keydown listener and the overlay opener,

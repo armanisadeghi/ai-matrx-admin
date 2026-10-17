@@ -10,7 +10,7 @@ platform shows the EXACT values available there and the expected output instead 
   earlier captures picker, and the **Expected output** section (kind schema + example, each copyable).
 - `ProvisionCaptures.tsx` — buttons for each capture of a point for a subject ("At Create", "After setup", "Captured").
 - Window: `features/window-panels/windows/provision/ProvisionWindow.tsx`, overlay `provisionWindow`, opener
-  `features/overlays/openers/provisionWindow.tsx` (`useOpenProvisionWindow()(snapshotId, title)`), address
+  `features/overlays/definitions/provisionWindow.overlay.tsx` (`useOpenProvisionWindow()(snapshotId, title)`), address
   `?panels=provision:<snapshot id>` (the window passes `urlSyncId={snapshotId}`).
 
 - `BrandGuideInputs.tsx` — the four brand-guide points (`brand_guide.voice` / `.messaging` / `.audience` / `.words`): Capture

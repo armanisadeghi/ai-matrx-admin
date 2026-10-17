@@ -513,7 +513,7 @@ sal` and an invented id comes back as the handler's error. Handlers in
   `_due_date` / `_labels` as DRAFTS and `panel_add_subtasks` as an ENTITY
   action registered by `TaskDetailsPanel`. **THE reference for why an overlay
   must not reuse a route surface's target NAMES.** This window floats over
-  whatever page the user is on, and `OverlayController` mounts it from
+  whatever page the user is on, and `OverlayWorldHost` mounts it from
   `DeferredSingletonCore` — an app-level singleton — so its provider registers
   shallow and a ROUTE's provider can out-depth it. `applySurfaceWrite` resolves
   a name against the deepest surface that DECLARES it, so had these been

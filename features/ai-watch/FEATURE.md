@@ -27,7 +27,7 @@ a new run clears a pick and never shows an older run's call). The page's run ids
 `sessionStorage` (`matrx:ai-watch:runs:<pathname>`).
 
 **Openers**
-- `useWatchAiRun()` / `watchAiRunAction()` — `features/overlays/openers/aiWatchWindow.tsx`
+- `useWatchAiRun()` / `watchAiRunAction()` — `features/overlays/definitions/aiWatchWindow.overlay.tsx`
   (`requestId` · `userRequestId` · `workflowRunId` + `nodeId` · `conversationId`) — every door only
   moves the ONE window's selection.
 - Chat package: the host opener `openAiWatchWindow` is registered in `providers/ChatHostAdapter.tsx`

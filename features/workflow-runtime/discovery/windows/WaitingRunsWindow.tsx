@@ -8,7 +8,7 @@
  * window over a page never moves that page.
  * Opened from the bell's All places strip (notifications ruling 3).
  *
- * Rendered only behind the lazy overlay boundary (`OverlayController`).
+ * Rendered only behind the lazy overlay boundary (`OverlayWorldHost`).
  */
 
 import { WindowPanel } from "@ai-matrx/summon/window";

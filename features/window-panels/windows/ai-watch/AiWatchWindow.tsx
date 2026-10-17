@@ -3,7 +3,7 @@
 /**
  * AiWatchWindow — the floating frame around Watch AI. Everything it shows (and the rules for who may see it)
  * lives in `features/ai-watch/useAiWatchPanel.tsx`, shared with the canvas tab (MKT-104). Open it with ONE call:
- * `useWatchAiRun()(…)` (features/overlays/openers/aiWatchWindow.tsx).
+ * `useWatchAiRun()(…)` (features/overlays/definitions/aiWatchWindow.overlay.tsx).
  */
 
 import { useEffect } from "react";

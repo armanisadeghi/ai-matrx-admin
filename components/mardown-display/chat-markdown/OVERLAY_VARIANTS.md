@@ -26,7 +26,7 @@ These two are the main “duplicate product” surfaces: same overlay primitive,
 
 | Export | File | Shell | What it actually is |
 |--------|------|-------|---------------------|
-| **FullscreenMarkdownEditor** *(lowercase **screen**)* | `components/mardown-display/markdown-classification/FullscreenMarkdownEditor.tsx` | Custom `fixed` backdrop + header (**not** `FullScreenOverlay`) | **MarkdownClassificationTester** (classification admin). Used from `OverlayController`, socket accordion. |
+| **FullscreenMarkdownEditor** *(lowercase **screen**)* | `components/mardown-display/markdown-classification/FullscreenMarkdownEditor.tsx` | Custom `fixed` backdrop + header (**not** `FullScreenOverlay`) | **MarkdownClassificationTester** (classification admin). Used from `OverlayWorldHost`, socket accordion. |
 | **FullScreenEditor** | `features/prompts/components/FullScreenEditor.tsx` | **Radix `Dialog`**, not `FullScreenOverlay` | Prompt builder (messages, variables, tools, model settings). Not a markdown-only overlay. |
 | **FullScreenAppletPreview** | `features/applet/builder/previews/FullScreenAppletPreview.tsx` | Custom full-screen preview chrome | Live applet preview, unrelated to markdown editing. |
 

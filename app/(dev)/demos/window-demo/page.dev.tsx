@@ -6,7 +6,7 @@ import { WindowPanel } from "@ai-matrx/summon/window";
 // imported here: a direct import of the component would pull it (and its whole
 // window-panels chunk graph) into this route's bundle, which is exactly what
 // the `features/window-panels/windows/**` import ban exists to prevent.
-// OverlayController owns the only import of the component itself.
+// OverlayWorldHost owns the only import of the component itself.
 import {
   useOpenNotesWindow,
   type NotesWindowHandle,
@@ -119,7 +119,7 @@ export default function WindowDemoPage() {
         </div>
       </div>
 
-      {/* The real Notes window renders from OverlayController, opened above. */}
+      {/* The real Notes window renders from OverlayWorldHost, opened above. */}
 
       {/* ── Demo Windows (placeholder bodies) ─────────────────────────────── */}
       {DEMO_WINDOWS.map((def, i) => {

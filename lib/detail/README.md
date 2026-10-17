@@ -97,8 +97,8 @@ its title (`EntityDoorControls`). A bare uuid never prints as text when it can o
 docked / page) · `detailTypeBinding.ts` (`resolveType` = the item-presentation registry, THE
 type map) · `detailOverlayData.ts` (overlay payload + page query) · `DetailPageRoute.tsx`.
 Overlay entry: `features/window-panels/windows/detail/DetailWindow.tsx`; opener
-`features/overlays/openers/detailWindow.tsx`; docked = `detail/canvas/` (`record-peek` kind); metadata in
-`registry/windowRegistryMetadata.ts`; hydrator `detail` in `url-sync/initUrlHydration.ts`.
+`features/overlays/definitions/detailWindow.overlay.tsx`; docked = `detail/canvas/` (`record-peek` kind); metadata in
+`features/overlays/definitions/<id>.overlay.ts (window block)`; hydrator `detail` in `features/overlays/definitions/<id>.link.ts`.
 
 ## Follow-up census — bespoke detail panels to converge onto this primitive
 

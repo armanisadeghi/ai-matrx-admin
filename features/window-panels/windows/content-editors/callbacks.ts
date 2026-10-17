@@ -2,7 +2,7 @@
  * Content Editor window callbacks.
  *
  * These windows talk back to the page that opened them via the global
- * `callbackManager` (see `utils/callbackManager.ts`). The contract is:
+ * `callbackManager` (see `@ai-matrx/summon/handles`). The contract is:
  *
  *   1. The caller creates a callback GROUP via `createContentEditorCallbackGroup`
  *      and registers any subset of lifecycle handlers (onChange, onSave, etc.).

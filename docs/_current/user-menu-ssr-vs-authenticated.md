@@ -58,7 +58,7 @@ All items are **hardcoded** in `UserMenuPanel.tsx` (no `navigation-links` import
 
 - Direct Messages → **`/messages`**
 - Notifications — button (currently only closes menu; no `NotificationDropdown` integration)
-- Announcements → `openAnnouncements()` (`overlaySlice`)
+- Announcements → `openAnnouncements()` (`summon overlay state`)
 - Submit Feedback → local state opens `FeedbackDialog` (`features/ssr-trials/components/FeedbackDialog.tsx`, dynamically imported `ssr: false`)
 
 **Admin-only** (`selectIsAdmin`)
@@ -69,7 +69,7 @@ All items are **hardcoded** in `UserMenuPanel.tsx` (no `navigation-links` import
 **Account**
 
 - Light / Dark mode — toggles `document.documentElement` class, `localStorage`, and **`theme` cookie** (server-visible pattern for SSR theming).
-- Preferences → `openUserPreferences()` (`overlaySlice`)
+- Preferences → `openUserPreferences()` (`summon overlay state`)
 
 **Sign out**
 
@@ -202,7 +202,7 @@ Creator tools (`CreatorMenu`, layout submenu) | No | Yes (broker-gated) | No |
 
 - Both ultimately depend on **Redux user** (and overlays) for actions.
 - Quick actions share the **same overlay ids** (`quickNotes`, `quickTasks`, etc.) — SSR dispatches `openOverlay` directly; authenticated code uses `useQuickActions()` which dispatches the same.
-- Both can show **admin indicator** toggle via `overlaySlice` / `adminIndicator`.
+- Both can show **admin indicator** toggle via `summon overlay state` / `adminIndicator`.
 - **Initial admin flag on user slice** is populated from server session data in both layouts when the user is logged in (`getUserSessionData` / `mapUserData`).
 
 ### 3.3 Architecture: how they differ

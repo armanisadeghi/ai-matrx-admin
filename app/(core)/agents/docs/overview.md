@@ -221,7 +221,7 @@ app/(a)/agents/[id]/run/page.tsx  (Server Component)
 | Past conversations list | `agent-conversations` slice — `fetchAgentConversations` thunk, `makeSelectAgentConversations` |
 | Latest conversation ID | `aggregate.selectors` — `selectLatestConversationId` |
 | Conversation message history | `fetchConversationHistory` from `cx-chat/redux/thunks` |
-| Overlay windows (settings, run history, import) | `overlaySlice` — `openAgentSettingsWindow`, `openAgentRunHistoryWindow`, `openAgentImportWindow`, `openAgentContentWindow` |
+| Overlay windows (settings, run history, import) | `summon overlay state` — `openAgentSettingsWindow`, `openAgentRunHistoryWindow`, `openAgentImportWindow`, `openAgentContentWindow` |
 | Agent launcher (instance bootstrap) | `useAgentLauncher` hook (in `../aidream/apps/shared/chat/src/agents/hooks/`) |
 | Dirty-state guard | `selectAgentIsDirty` — used in `AgentModeController` and `AgentSaveStatus` to prevent unsaved-changes data loss |
 

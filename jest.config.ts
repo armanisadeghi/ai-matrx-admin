@@ -225,6 +225,10 @@ const config: Config = {
     // @ai-matrx/agents (0.54+) builds its root as CJS only (dist/index.cjs, no index.js).
     "^@ai-matrx/agents$":
       "<rootDir>/node_modules/@ai-matrx/agents/dist/index.cjs",
+    // THE RECORDS-UI FRONT DOOR, SYNCHRONOUS UNDER JEST (2026-10-17): suites mock the records-ui root
+    // and render at once; the app's lazy door would hand them the mock a tick late. Why, in the shim's header.
+    "^@/features/data-tables/records-ui-host/recordsUiLazy$":
+      "<rootDir>/features/data-tables/records-ui-host/__tests__/recordsUiLazy.jest-shim.tsx",
     "^@/(.*)$": "<rootDir>/$1",
   },
   // Transform ESM-only `uuid` instead of ignoring it. The lookahead must

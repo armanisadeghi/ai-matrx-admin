@@ -12,7 +12,7 @@
  * `callbackManager` — the opener registers a callback GROUP and passes only the
  * serialisable `callbackGroupId` string through Redux. Functions NEVER travel
  * through `openOverlay` data (overlay hard rule #5). This replaced the dead
- * `onSave={undefined}` stub in OverlayController that silently broke every
+ * `onSave={undefined}` stub in OverlayWorldHost that silently broke every
  * editor save. See `features/overlays/callbacks/fullScreenEditor.ts`.
  *
  * Two save paths, mutually exclusive (the bridge prefers the callback):
@@ -179,7 +179,7 @@ export function FullScreenMarkdownEditorBridgeController(
   return null;
 }
 
-/** Which message a full-screen edit belongs to (moved from the app's overlaySlice). */
+/** Which message a full-screen edit belongs to (moved from the app's summon overlay state). */
 export type FullScreenEditorMode =
   | "assistant-message"
   | "user-message"

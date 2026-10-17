@@ -4,7 +4,7 @@
 >
 > Panels covered (10): `messagesWindow`, `singleMessageWindow`, `quickChatWindow`, `transcriptStudioWindow`, `voicePad`, `voicePadAdvanced`, `aiVoiceWindow`, `scraperWindow`, `newsWindow`, `dictionarySelectorWindow`.
 >
-> Status: FILLED 2026-06-23 (deep-read of each component + registry entry + opener + OverlayController block + Tools-Grid tile).
+> Status: FILLED 2026-06-23 (deep-read of each component + registry entry + opener + OverlayWorldHost block + Tools-Grid tile).
 
 ---
 
@@ -13,7 +13,7 @@
 This chunk is not one domain — it's **three families plus two singletons**, and the consolidation story is per-family:
 
 1. **Human messaging** (`messagesWindow`, `singleMessageWindow`) — Supabase user-to-user DMs. Built on `features/messaging/` (`ChatThread` → `useSupabaseMessaging` → `MessageBubble`/`MessageInput`/`OnlineIndicator`, realtime via `postgres_changes`). **This is NOT the agent chat-core** and correctly so — different domain (people, not agents). `messagesWindow` = list+thread; `singleMessageWindow` = one thread, multi-instance. Clean master/detail split.
-2. **Agent chat** (`quickChatWindow`) — the lone agent-chat panel here, and it **fully reuses the canonical agent chat-core** (`AgentConversationColumn` + `useAgentLauncher` + `ChatHistorySidebar`, the same primitives `/chat` uses). The one anomaly: it's registered `kind:"window"` but the OverlayController renders it inside a `SidePanelSurface`, **not** a `WindowPanel` — so it is a side panel wearing a window's registry entry.
+2. **Agent chat** (`quickChatWindow`) — the lone agent-chat panel here, and it **fully reuses the canonical agent chat-core** (`AgentConversationColumn` + `useAgentLauncher` + `ChatHistorySidebar`, the same primitives `/chat` uses). The one anomaly: it's registered `kind:"window"` but the OverlayWorldHost renders it inside a `SidePanelSurface`, **not** a `WindowPanel` — so it is a side panel wearing a window's registry entry.
 3. **Voice / transcription studio** (`voicePad`, `voicePadAdvanced`, `aiVoiceWindow`, `transcriptStudioWindow`, + the sibling `transcriptionCleanup` which is in the Notes/Tasks chunk's slice but lives in this family) — all share `voicePadSlice` or the transcript-studio stack. `transcriptStudioWindow` reuses the canonical `StudioView` (same component as the `/transcription/studio` route, DB-backed redux). The voice-pad pair is the classic competing-duplicate question (see verdict below).
 4. **Data-fetch utility singletons** (`scraperWindow`, `newsWindow`) — quick-execute panels that fire an API and show results. Scraper is the most surface-mature panel in the chunk (registered surface + agent context menu); News is the least (local `useState`, server action, no redux, no agent wiring).
 5. **Context selector** (`dictionarySelectorWindow`) — not a feature-mirror panel; a compact non-blocking picker for the dictionary context on transcription/TTS surfaces, writing to per-surface user-state. The model for "modal replaced by a draggable panel."
@@ -84,7 +84,7 @@ This chunk is not one domain — it's **three families plus two singletons**, an
 
 2. **Chat-core reuse — clean, by family.** `quickChatWindow` fully reuses the canonical agent chat-core (`AgentConversationColumn` + `useAgentLauncher` + `ChatHistorySidebar`, mirrors `/chat`). `messagesWindow`/`singleMessageWindow` deliberately do NOT — they're human-to-human Supabase DMs (`ChatThread`/`useSupabaseMessaging`/realtime), a justified separate domain, and they share their own core cleanly (list + detail both use `ChatThread`). No forks of the agent core in this chunk.
 
-3. **`quickChatWindow` registry↔render drift (P1·S).** Registered `kind:"window"` but the OverlayController renders it inside a `SidePanelSurface`, not a `WindowPanel`. It also has **no Tools-Grid tile** (a genuine missing tile per PANEL_INVENTORY §6). Reconcile its identity (real window vs declared side panel) and add the tile.
+3. **`quickChatWindow` registry↔render drift (P1·S).** Registered `kind:"window"` but the OverlayWorldHost renders it inside a `SidePanelSurface`, not a `WindowPanel`. It also has **no Tools-Grid tile** (a genuine missing tile per PANEL_INVENTORY §6). Reconcile its identity (real window vs declared side panel) and add the tile.
 
 4. **Scraper "grid-only, 0 bespoke call sites" pattern CONFIRMED — and it's the worst-placed of the high-value panels.** `scraperWindow` is the _most_ agent-ready panel in the chunk (only one here that's a **registered surface** `matrx-user/scraper`, with full agent context-menu + SurfaceValues + RAG ingest) yet has **zero** bespoke call sites — Tools-Grid only. It should fire from agent-builder / RAG / research / agent-context flows ("pull sample data", "index this page"). Same grid-only gap (less severe) for `aiVoiceWindow`, `messagesWindow`, `newsWindow`.
 

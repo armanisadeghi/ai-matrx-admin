@@ -5,7 +5,7 @@
  * WHAT HAPPENED (2026-10-01). `features/data-tables/pick-lists/components/PickListWindowBody.tsx` imported
  * `@/app/(core)/data/[tableId]/page` to mount the table page inside a window. The admin build
  * (Vercel `ai-matrx-manage`, MATRX_PROFILE=admin) PARKS app/(core) out of the tree, and the window
- * is reachable from the root layout (OverlayController), so manage.aimatrx.com failed to build on
+ * is reachable from the root layout (OverlayWorldHost), so manage.aimatrx.com failed to build on
  * main: "Module not found: Can't resolve '@/app/(core)/data/[tableId]/page'". Locally nothing is
  * ever parked (THE PARK LAW in next.config.js), so no local build or tsc can see it.
  *

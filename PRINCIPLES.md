@@ -120,7 +120,7 @@ These are the failure modes agents repeat in this codebase. Every one is a viola
 **Look here first.**
 
 - **Store:** [`lib/redux/store.ts`](./lib/redux/store.ts) + [`lib/redux/hooks.ts`](./lib/redux/hooks.ts). Always use `useAppDispatch` / `useAppSelector` / `useAppStore` — never untyped variants.
-- **Cross-cutting slices:** [`lib/redux/slices/`](./lib/redux/slices/) — `overlaySlice`, `windowManagerSlice`, `layoutSlice`, `userAuthSlice`, `userProfileSlice`, `userPreferencesSlice`, `agentCacheSlice`, `artifactsSlice`, `entitySystemSlice`, `apiConfigSlice`, etc. (33 slices total).
+- **Cross-cutting slices:** [`lib/redux/slices/`](./lib/redux/slices/) — `summon overlay state`, `summon window state`, `layoutSlice`, `userAuthSlice`, `userProfileSlice`, `userPreferencesSlice`, `agentCacheSlice`, `artifactsSlice`, `entitySystemSlice`, `apiConfigSlice`, etc. (33 slices total).
 - **Feature-scoped slices:** [`features/*/redux/`](./features/) — e.g. `../aidream/apps/shared/chat/src/agents/redux/agent-definition/`, `../aidream/apps/shared/chat/src/agents/redux/execution-system/`.
 - **Entity-store layer:** [`lib/redux/entity-store.ts`](./lib/redux/entity-store.ts) and `lib/redux/entity/` — the generic entity-manager pattern. If your data is "rows of a Supabase table," the entity layer is probably the right home.
 - **Selectors:** every slice exports memoized selectors via `createSelector`. **Every property has its own selector.** Don't `useSelector(state => state.foo.bar.baz)` — find or add a named selector.

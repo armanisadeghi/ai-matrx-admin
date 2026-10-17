@@ -43,5 +43,5 @@ skill (rule 6 + caveat).
   from ubiquitous toolStateEffects → +14GB RSS, +50% compile, 12 OOM'd builds.
 - Tests A-E (2026-07-28): removing/inlining dynamic edges by heuristic — all
   five regressed; combined probe >15min vs 8.8min baseline.
-- Provider dedup (v0.4.216): two files each compiling OverlayController+deps →
+- Provider dedup (v0.4.216): two files each compiling OverlayWorldHost+deps →
   one shared file → ~3min saved. The shape every future win takes.

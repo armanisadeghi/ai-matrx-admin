@@ -34,7 +34,7 @@ import { unavailableHere } from "@ai-matrx/context-menu/engine";
  * live research) in one floating tabbed panel.
  *
  * Open from anywhere with `useOpenKeywordWindow({ phrase, organizationId,
- * siteId, pageId, brandId, tab })` (features/overlays/openers/keywordWindow.tsx). Site-scoped
+ * siteId, pageId, brandId, tab })` (features/overlays/definitions/keywordWindow.overlay.tsx). Site-scoped
  * tabs light up when a site binding is supplied. The window contributes zero
  * business logic — the body is `KeywordIntelPanel`
  * (features/marketing/seo/keyword/).

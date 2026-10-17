@@ -15,7 +15,7 @@ Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/intel
 | `…/[mandateKey]{,/overrides}` | `record-next/MandateRecordPage`, `overrides-simple/OverridesPreviewPage` | system-seat record, simple Overrides |
 | `…/dashboard` · `…/health` · `…/unconverted` · `…/window` | `dashboard/MandateDashboard`, `code-references/MandateHealthPage`, `code-references/UnconvertedCallsPage`, `record-next/WindowPreviewPage` | reached from the list header (`admin-list/MandateAdminPagesNav`) |
 | `…/new` · `…/advanced` · `…/references` | `authoring/NewMandatePage`, `admin/advanced/AdvancedMandateCrud`, `admin/MandateReferenceBoardView` | reached from the list header. The retired `/administration/mandates/**` addresses only redirect here (next.config.js); guard `pnpm check:retired-admin-mandate-links` |
-| window | `features/window-panels/windows/mandates/MandateWindow.tsx` (opener `features/overlays/openers/mandateWindow.tsx`); new copy `windows/mandates-next/MandateWindowNext.tsx` | Yours pane = person; Admin pane = `MandateDetailView` |
+| window | `features/window-panels/windows/mandates/MandateWindow.tsx` (opener `features/overlays/definitions/mandateWindow.overlay.tsx`); new copy `windows/mandates-next/MandateWindowNext.tsx` | Yours pane = person; Admin pane = `MandateDetailView` |
 
 Every admin-suite href is built in `admin-routes.ts` (`adminMandateRecordHref`, `ADMIN_MANDATES_*`) — never hand-built. Route → surface: `../aidream/apps/shared/chat/src/surfaces/utils/route-to-surface.ts` `resolveMandateSuiteSurface` (record pages at every seat → `matrx-admin/mandate-workspace`; the suite's other pages → `matrx-admin/mandates`; member lists → none).
 

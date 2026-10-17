@@ -1,3 +1,5 @@
+> **Retired 2026-10-17.** This roadmap described the pre-summon overlay system (OverlayController, openers/, catalogue.ts, the overlay slices). All of it was replaced by `@ai-matrx/summon` (commit d6c82fcfc98). Current truth: [`features/overlays/FEATURE.md`](../../../features/overlays/FEATURE.md). Kept only as history.
+
 # Overlay & Window Roadmap
 
 > Companion to [`features/overlays/FEATURE.md`](../features/overlays/FEATURE.md), [`features/window-panels/FEATURE.md`](../features/window-panels/FEATURE.md), and [`docs/archive/2026/OVERLAY_WINDOW_OVERHAUL.md`](./archive/2026/OVERLAY_WINDOW_OVERHAUL.md). This doc is the **honest list of what's still rough** in the post-overhaul state plus where the system can grow.

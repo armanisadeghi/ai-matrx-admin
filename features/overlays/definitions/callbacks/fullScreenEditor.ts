@@ -9,7 +9,7 @@
  * editor emits a typed save event on that group.
  *
  * This is the missing primitive that made "Edit", "Edit & resubmit", and the
- * overflow-menu "Edit content" silently no-op: the OverlayController correctly
+ * overflow-menu "Edit content" silently no-op: the OverlayWorldHost correctly
  * refused to pass an `onSave` function through Redux and hard-coded
  * `onSave={undefined}`, but no callback-group channel existed to replace it.
  *

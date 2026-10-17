@@ -2,7 +2,7 @@
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
 /** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
-const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
+const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );
 /** The old window-metadata rows, read from the definitions: windows with a window id, other overlays with a link. */
@@ -16,8 +16,8 @@ const ALL_WINDOW_STATIC_METADATA = APP_OVERLAYS.filter((d) => (d.window ? d.wind
 
 describe("the overlay catalogue is the one id list", () => {
   it("carries both Google import windows", () => {
-    expect(OVERLAY_CATALOGUE).toHaveProperty("googleContactsImportWindow");
-    expect(OVERLAY_CATALOGUE).toHaveProperty("googleTasksImportWindow");
+    expect(OVERLAYS_BY_ID).toHaveProperty("googleContactsImportWindow");
+    expect(OVERLAYS_BY_ID).toHaveProperty("googleTasksImportWindow");
   });
 
   it("carries every overlay id the window registry declares", () => {
@@ -25,7 +25,7 @@ describe("the overlay catalogue is the one id list", () => {
       typeof entry.overlayId === "string" ? entry.overlayId : "",
     )
       .filter((id) => id !== "")
-      .filter((id) => !(id in OVERLAY_CATALOGUE));
+      .filter((id) => !(id in OVERLAYS_BY_ID));
 
     expect(missing).toEqual([]);
   });

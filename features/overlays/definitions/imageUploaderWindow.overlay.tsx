@@ -4,7 +4,7 @@
  * Opener for the `imageUploaderWindow` overlay.
  *
  * Re-exports the canonical hand-written opener from window-panels/windows/image/
- * so callers in the new `features/overlays/openers/` location get the full
+ * so callers in the new `features/overlays/definitions/` location get the full
  * callback-aware API (`onUploaded`, `onCleared`, etc., wired through the
  * callback registry). The codegen-generated stub for this overlay was
  * replaced because it would have lost the callback contract.
