@@ -1,0 +1,1880 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0211",
+  "version": 1,
+  "title": "Travel Planner",
+  "description": "Trips with itinerary, bookings, packing and places in one hub.",
+  "forWho": "Travelers planning trips",
+  "icon": {
+    "emoji": "🧳"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "travel",
+    "trips",
+    "packing"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-travel-planner",
+    "catalogueId": "SP0211",
+    "useCase": "Anya Petrov plans a long weekend and a bigger trip at the same time and keeps every booking in one place.",
+    "industry": "cross_industry",
+    "vertical": "Travel planning",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-travel-planner",
+    "tables": [
+      {
+        "token": "trip",
+        "name": "Trips",
+        "labelSingular": "Trip",
+        "labelPlural": "Trips",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "plane",
+        "titleField": "trip_name",
+        "describes": "Each trip with its dates, budget, bookings, plans and packing.",
+        "subject": "thing",
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "trip_name",
+            "label": "Trip",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "destination",
+            "label": "Destination",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Dreaming",
+              "Planning",
+              "Booked",
+              "Done"
+            ],
+            "choiceColors": {
+              "Dreaming": "slate",
+              "Planning": "blue",
+              "Booked": "green",
+              "Done": "amber"
+            },
+            "default": "Dreaming"
+          },
+          {
+            "key": "starts_on",
+            "label": "Leaving",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Returning",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "bookings",
+            "label": "Bookings",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "booking",
+            "multi": true
+          },
+          {
+            "key": "plan_items",
+            "label": "Plan items",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "itinerary",
+            "multi": true
+          },
+          {
+            "key": "pack_list",
+            "label": "Packing items",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "packing",
+            "multi": true
+          },
+          {
+            "key": "booking_total",
+            "label": "All bookings cost",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "cost",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "plan_count",
+            "label": "Planned activities",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_items",
+            "pick": "activity",
+            "agg": "count"
+          },
+          {
+            "key": "items_to_pack",
+            "label": "Items still to pack",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pack_list",
+            "pick": "packing_name",
+            "agg": "count",
+            "filter": {
+              "packed": false
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "tr1",
+            "values": {
+              "trip_name": "Lisbon long weekend",
+              "destination": "Lisbon, Portugal",
+              "status": "Booked",
+              "starts_on": "@today+40d",
+              "ends_on": "@today+45d",
+              "budget": 2400
+            }
+          },
+          {
+            "key": "tr2",
+            "values": {
+              "trip_name": "Autumn in Kyoto",
+              "destination": "Kyoto, Japan",
+              "status": "Planning",
+              "starts_on": "@today+150d",
+              "ends_on": "@today+162d",
+              "budget": 5200
+            }
+          },
+          {
+            "key": "tr3",
+            "values": {
+              "trip_name": "Coastal road trip",
+              "destination": "Oregon coast, USA",
+              "status": "Done",
+              "starts_on": "@today-70d",
+              "ends_on": "@today-64d",
+              "budget": 1500
+            }
+          }
+        ]
+      },
+      {
+        "token": "itinerary",
+        "name": "Itinerary",
+        "labelSingular": "Plan item",
+        "labelPlural": "Itinerary",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "route",
+        "titleField": "activity",
+        "describes": "The plan day by day: what, when, where and whether it is booked.",
+        "subject": "thing",
+        "independentOf": {
+          "trip": "Planned activities can be noted before the trip dates are final."
+        },
+        "fields": [
+          {
+            "key": "activity",
+            "label": "Activity",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "trip",
+            "label": "Trip",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "trip",
+            "relationMax": 1
+          },
+          {
+            "key": "when",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Arrival",
+              "Sightseeing",
+              "Food",
+              "Culture",
+              "Relax",
+              "Departure"
+            ],
+            "choiceColors": {
+              "Arrival": "slate",
+              "Sightseeing": "blue",
+              "Food": "green",
+              "Culture": "amber",
+              "Relax": "red",
+              "Departure": "violet"
+            }
+          },
+          {
+            "key": "cost",
+            "label": "Cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "place",
+            "label": "Location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "booked",
+            "label": "Booked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "it01",
+            "values": {
+              "activity": "Land and settle into the apartment",
+              "trip": "tr1",
+              "when": "@today+40d 15:00",
+              "category": "Arrival",
+              "cost": 0,
+              "place": "Alfama",
+              "booked": true
+            }
+          },
+          {
+            "key": "it02",
+            "values": {
+              "activity": "Tram 28 and the old town",
+              "trip": "tr1",
+              "when": "@today+41d 10:00",
+              "category": "Sightseeing",
+              "cost": 0,
+              "place": "Graca",
+              "booked": false
+            }
+          },
+          {
+            "key": "it03",
+            "values": {
+              "activity": "Pastry tasting at Confeitaria Aurora",
+              "trip": "tr1",
+              "when": "@today+41d 15:30",
+              "category": "Food",
+              "cost": 18,
+              "place": "Baixa",
+              "booked": false
+            }
+          },
+          {
+            "key": "it04",
+            "values": {
+              "activity": "Day trip to Sintra",
+              "trip": "tr1",
+              "when": "@today+42d 09:00",
+              "category": "Sightseeing",
+              "cost": 45,
+              "place": "Sintra",
+              "booked": true
+            }
+          },
+          {
+            "key": "it05",
+            "values": {
+              "activity": "Fado dinner",
+              "trip": "tr1",
+              "when": "@today+42d 20:00",
+              "category": "Food",
+              "cost": 70,
+              "place": "Alfama",
+              "booked": true
+            }
+          },
+          {
+            "key": "it06",
+            "values": {
+              "activity": "Sunset at the viewpoint",
+              "trip": "tr1",
+              "when": "@today+43d 18:30",
+              "category": "Relax",
+              "cost": 0,
+              "place": "Miradouro",
+              "booked": false
+            }
+          },
+          {
+            "key": "it07",
+            "values": {
+              "activity": "Flight home",
+              "trip": "tr1",
+              "when": "@today+45d 11:20",
+              "category": "Departure",
+              "cost": 0,
+              "place": "Airport",
+              "booked": true
+            }
+          },
+          {
+            "key": "it08",
+            "values": {
+              "activity": "Fushimi shrine at dawn",
+              "trip": "tr2",
+              "when": "@today+152d 06:30",
+              "category": "Sightseeing",
+              "cost": 0,
+              "place": "Fushimi",
+              "booked": false
+            }
+          },
+          {
+            "key": "it09",
+            "values": {
+              "activity": "Tea ceremony",
+              "trip": "tr2",
+              "when": "@today+153d 14:00",
+              "category": "Culture",
+              "cost": 55,
+              "place": "Gion",
+              "booked": true
+            }
+          },
+          {
+            "key": "it10",
+            "values": {
+              "activity": "Bamboo grove walk",
+              "trip": "tr2",
+              "when": "@today+154d 09:00",
+              "category": "Relax",
+              "cost": 0,
+              "place": "Arashiyama",
+              "booked": false
+            }
+          },
+          {
+            "key": "it11",
+            "values": {
+              "activity": "Cooking class",
+              "trip": "tr2",
+              "when": "@today+156d 11:00",
+              "category": "Food",
+              "cost": 85,
+              "place": "Nishiki",
+              "booked": false
+            }
+          },
+          {
+            "key": "it12",
+            "values": {
+              "activity": "Cannon Beach morning walk",
+              "trip": "tr3",
+              "when": "@today-68d 08:00",
+              "category": "Relax",
+              "cost": 0,
+              "place": "Cannon Beach",
+              "booked": true
+            }
+          },
+          {
+            "key": "it13",
+            "values": {
+              "activity": "Lighthouse tour",
+              "trip": "tr3",
+              "when": "@today-66d 13:00",
+              "category": "Sightseeing",
+              "cost": 12,
+              "place": "Yaquina Head",
+              "booked": true
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Bookings",
+        "labelSingular": "Booking",
+        "labelPlural": "Bookings",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "ticket",
+        "titleField": "booking_name",
+        "describes": "Flights, stays, cars and tickets with their codes and costs.",
+        "subject": "thing",
+        "before": [
+          [
+            "from_on",
+            "to_on"
+          ]
+        ],
+        "independentOf": {
+          "trip": "Bookings are made well before a trip starts."
+        },
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "trip",
+            "label": "Trip",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "trip",
+            "relationMax": 1
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Flight",
+              "Hotel",
+              "Car",
+              "Ticket"
+            ],
+            "choiceColors": {
+              "Flight": "slate",
+              "Hotel": "blue",
+              "Car": "green",
+              "Ticket": "amber"
+            }
+          },
+          {
+            "key": "confirmation",
+            "label": "Confirmation code",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cost",
+            "label": "Cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "from_on",
+            "label": "From",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "to_on",
+            "label": "To",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "bk1",
+            "values": {
+              "booking_name": "Return flights to Lisbon",
+              "trip": "tr1",
+              "type": "Flight",
+              "confirmation": "QX7K2M",
+              "cost": 486,
+              "from_on": "@today+40d",
+              "to_on": "@today+45d"
+            }
+          },
+          {
+            "key": "bk2",
+            "values": {
+              "booking_name": "Apartment in Alfama",
+              "trip": "tr1",
+              "type": "Hotel",
+              "confirmation": "AB-93021",
+              "cost": 540,
+              "from_on": "@today+40d",
+              "to_on": "@today+45d"
+            }
+          },
+          {
+            "key": "bk3",
+            "values": {
+              "booking_name": "Sintra day ticket",
+              "trip": "tr1",
+              "type": "Ticket",
+              "confirmation": "SN-4471",
+              "cost": 45,
+              "from_on": "@today+42d",
+              "to_on": "@today+42d"
+            }
+          },
+          {
+            "key": "bk4",
+            "values": {
+              "booking_name": "Flights to Kyoto",
+              "trip": "tr2",
+              "type": "Flight",
+              "confirmation": "ZD1P8R",
+              "cost": 1180,
+              "from_on": "@today+150d",
+              "to_on": "@today+162d"
+            }
+          },
+          {
+            "key": "bk5",
+            "values": {
+              "booking_name": "Machiya guesthouse",
+              "trip": "tr2",
+              "type": "Hotel",
+              "confirmation": "KY-20817",
+              "cost": 1420,
+              "from_on": "@today+150d",
+              "to_on": "@today+162d"
+            }
+          },
+          {
+            "key": "bk6",
+            "values": {
+              "booking_name": "Rail pass",
+              "trip": "tr2",
+              "type": "Ticket",
+              "confirmation": "JR-55302",
+              "cost": 320,
+              "from_on": "@today+150d",
+              "to_on": "@today+162d"
+            }
+          },
+          {
+            "key": "bk7",
+            "values": {
+              "booking_name": "Rental car for the coast",
+              "trip": "tr3",
+              "type": "Car",
+              "confirmation": "CR-77204",
+              "cost": 290,
+              "from_on": "@today-70d",
+              "to_on": "@today-64d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "packing",
+        "name": "Packing list",
+        "labelSingular": "Packing item",
+        "labelPlural": "Packing list",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "luggage",
+        "titleField": "packing_name",
+        "describes": "Everything to take, ticked off as it goes in the bag.",
+        "subject": "thing",
+        "independentOf": {
+          "trip": "Packing lists are made any time."
+        },
+        "fields": [
+          {
+            "key": "packing_name",
+            "label": "Packing item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "trip",
+            "label": "Trip",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "trip",
+            "relationMax": 1
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Documents",
+              "Electronics",
+              "Clothing",
+              "Toiletries",
+              "Other"
+            ],
+            "choiceColors": {
+              "Documents": "slate",
+              "Electronics": "blue",
+              "Clothing": "green",
+              "Toiletries": "amber",
+              "Other": "red"
+            }
+          },
+          {
+            "key": "packed",
+            "label": "Packed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "quantity",
+            "label": "Quantity",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "key": "pk01",
+            "values": {
+              "packing_name": "Passport",
+              "trip": "tr1",
+              "category": "Documents",
+              "packed": true,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk02",
+            "values": {
+              "packing_name": "Travel adapter",
+              "trip": "tr1",
+              "category": "Electronics",
+              "packed": true,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk03",
+            "values": {
+              "packing_name": "Comfortable walking shoes",
+              "trip": "tr1",
+              "category": "Clothing",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk04",
+            "values": {
+              "packing_name": "Light rain jacket",
+              "trip": "tr1",
+              "category": "Clothing",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk05",
+            "values": {
+              "packing_name": "Sunscreen",
+              "trip": "tr1",
+              "category": "Toiletries",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk06",
+            "values": {
+              "packing_name": "Phone charger",
+              "trip": "tr1",
+              "category": "Electronics",
+              "packed": true,
+              "quantity": 2
+            }
+          },
+          {
+            "key": "pk07",
+            "values": {
+              "packing_name": "Printed booking codes",
+              "trip": "tr1",
+              "category": "Documents",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk08",
+            "values": {
+              "packing_name": "Warm layers for evenings",
+              "trip": "tr2",
+              "category": "Clothing",
+              "packed": false,
+              "quantity": 3
+            }
+          },
+          {
+            "key": "pk09",
+            "values": {
+              "packing_name": "Rail pass voucher",
+              "trip": "tr2",
+              "category": "Documents",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk10",
+            "values": {
+              "packing_name": "Pocket wifi",
+              "trip": "tr2",
+              "category": "Electronics",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk11",
+            "values": {
+              "packing_name": "Small gift for the host",
+              "trip": "tr2",
+              "category": "Other",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk12",
+            "values": {
+              "packing_name": "Camera",
+              "trip": "tr2",
+              "category": "Electronics",
+              "packed": false,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk13",
+            "values": {
+              "packing_name": "Hiking socks",
+              "trip": "tr3",
+              "category": "Clothing",
+              "packed": true,
+              "quantity": 4
+            }
+          },
+          {
+            "key": "pk14",
+            "values": {
+              "packing_name": "Cooler bag",
+              "trip": "tr3",
+              "category": "Other",
+              "packed": true,
+              "quantity": 1
+            }
+          },
+          {
+            "key": "pk15",
+            "values": {
+              "packing_name": "Road map",
+              "trip": "tr3",
+              "category": "Documents",
+              "packed": true,
+              "quantity": 1
+            }
+          }
+        ]
+      },
+      {
+        "token": "place",
+        "name": "Places",
+        "labelSingular": "Place",
+        "labelPlural": "Places",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map-pin",
+        "titleField": "place_name",
+        "describes": "Spots you want to see, saved before you decide when to go.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "place_name",
+            "label": "Place",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Food",
+              "Sightseeing",
+              "Culture",
+              "Relax"
+            ],
+            "choiceColors": {
+              "Food": "slate",
+              "Sightseeing": "blue",
+              "Culture": "green",
+              "Relax": "amber"
+            }
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visited",
+            "label": "Visited",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "why",
+            "label": "Why go",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pl1",
+            "values": {
+              "place_name": "Time Out Market",
+              "type": "Food",
+              "link": "https://places.lifeledger.net/time-out-market",
+              "visited": false,
+              "why": "Many food stalls under one roof"
+            }
+          },
+          {
+            "key": "pl2",
+            "values": {
+              "place_name": "Pena Palace",
+              "type": "Sightseeing",
+              "link": "https://places.lifeledger.net/pena-palace",
+              "visited": false,
+              "why": "Colorful hilltop palace"
+            }
+          },
+          {
+            "key": "pl3",
+            "values": {
+              "place_name": "Livraria Bertrand",
+              "type": "Culture",
+              "link": "https://places.lifeledger.net/livraria-bertrand",
+              "visited": false,
+              "why": "One of the oldest bookshops"
+            }
+          },
+          {
+            "key": "pl4",
+            "values": {
+              "place_name": "Nishiki Market",
+              "type": "Food",
+              "link": "https://places.lifeledger.net/nishiki",
+              "visited": false,
+              "why": "Pickles, tofu and sweets"
+            }
+          },
+          {
+            "key": "pl5",
+            "values": {
+              "place_name": "Philosopher's Path",
+              "type": "Relax",
+              "link": "https://places.lifeledger.net/philosophers-path",
+              "visited": false,
+              "why": "Quiet canal stroll"
+            }
+          },
+          {
+            "key": "pl6",
+            "values": {
+              "place_name": "Haystack Rock",
+              "type": "Sightseeing",
+              "link": "https://places.lifeledger.net/haystack",
+              "visited": true,
+              "why": "Iconic sea stack at low tide"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A plan item is for one trip.",
+        "fromTable": "itinerary",
+        "fromField": "trip",
+        "toTable": "trip",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "plans_of"
+      },
+      {
+        "describes": "A booking is for one trip.",
+        "fromTable": "booking",
+        "fromField": "trip",
+        "toTable": "trip",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings_of"
+      },
+      {
+        "describes": "A packing item is for one trip.",
+        "fromTable": "packing",
+        "fromField": "trip",
+        "toTable": "trip",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "packing_of"
+      },
+      {
+        "describes": "A trip lists its bookings.",
+        "fromTable": "trip",
+        "fromField": "bookings",
+        "toTable": "booking",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "trip_bookings"
+      },
+      {
+        "describes": "A trip lists its plan items.",
+        "fromTable": "trip",
+        "fromField": "plan_items",
+        "toTable": "itinerary",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "trip_plans"
+      },
+      {
+        "describes": "A trip lists its packing items.",
+        "fromTable": "trip",
+        "fromField": "pack_list",
+        "toTable": "packing",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "trip_packing"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_place",
+        "name": "Save a place",
+        "describes": "Add a spot to see.",
+        "audience": "staff",
+        "table": "place",
+        "fields": [
+          {
+            "fieldKey": "place_name",
+            "ask": "What is it called?",
+            "required": true
+          },
+          {
+            "fieldKey": "type",
+            "ask": "What kind of place?"
+          },
+          {
+            "fieldKey": "link",
+            "ask": "Where can you read about it?"
+          },
+          {
+            "fieldKey": "why",
+            "ask": "Why go?"
+          }
+        ],
+        "submitLabel": "Save place",
+        "confirmation": "Saved."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_trips",
+        "name": "All trips",
+        "table": "trip",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "trip_board",
+        "name": "By status",
+        "table": "trip",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "trip_timeline",
+        "name": "Timeline",
+        "table": "trip",
+        "kind": "timeline",
+        "startField": "starts_on",
+        "endField": "ends_on"
+      },
+      {
+        "token": "all_plans",
+        "name": "Itinerary",
+        "table": "itinerary",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "when",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "plan_calendar",
+        "name": "Calendar",
+        "table": "itinerary",
+        "kind": "calendar",
+        "dateField": "when"
+      },
+      {
+        "token": "plan_category",
+        "name": "By category",
+        "table": "itinerary",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_bookings",
+        "name": "Bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_type",
+        "name": "By type",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "type"
+      },
+      {
+        "token": "all_packing",
+        "name": "Packing list",
+        "table": "packing",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "pack_category",
+        "name": "By category",
+        "table": "packing",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_places",
+        "name": "Places",
+        "table": "place",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "trip",
+          "describes": "Every trip with dates and budget."
+        },
+        {
+          "name": "related_tables",
+          "table": "booking",
+          "describes": "The bookings made for each trip."
+        }
+      ],
+      "question": {
+        "ask": "How many trips are booked?",
+        "whyItMatters": "Anya checks what is locked in before planning more.",
+        "expect": {
+          "table": "trip",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Booked"
+          },
+          "answer": 1,
+          "unit": "trips"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open trips by status.",
+        "action": {
+          "kind": "open",
+          "surface": "trip_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "trip_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open the itinerary calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open bookings.",
+        "action": {
+          "kind": "open",
+          "surface": "all_bookings"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_bookings",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "travel-planner",
+      "parent": null,
+      "title": "Travel Planner",
+      "icon": {
+        "emoji": "🧳"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One hub for every trip: dates and budget up top, then the plan, bookings and packing list. Open a trip to filter the views."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Trips"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "trip",
+              "view": "all_trips"
+            },
+            "inline": true,
+            "title": "Trips",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-2",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-3",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on"
+              },
+              {
+                "id": "view-4",
+                "name": "All trips",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Itinerary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "itinerary",
+                      "view": "all_plans"
+                    },
+                    "inline": true,
+                    "title": "Itinerary",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-5",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "when"
+                      },
+                      {
+                        "id": "view-6",
+                        "name": "By category",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "category"
+                      },
+                      {
+                        "id": "view-7",
+                        "name": "All plans",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "when",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Bookings"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_bookings"
+                    },
+                    "inline": true,
+                    "title": "Bookings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-8",
+                        "name": "All bookings",
+                        "layout": "grid",
+                        "icon": "Table"
+                      },
+                      {
+                        "id": "view-9",
+                        "name": "By type",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "type"
+                      },
+                      {
+                        "id": "view-10",
+                        "name": "Cost by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "type",
+                          "op": "sum",
+                          "field": "cost",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-8"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Packing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "packing",
+                      "view": "all_packing"
+                    },
+                    "inline": true,
+                    "title": "Packing list",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-11",
+                        "name": "To pack",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "filters": {
+                          "packed": false
+                        }
+                      },
+                      {
+                        "id": "view-12",
+                        "name": "By category",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "category"
+                      }
+                    ],
+                    "activeViewId": "view-11"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Places to see"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "place",
+                      "view": "all_places"
+                    },
+                    "inline": true,
+                    "title": "Places",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-13",
+                        "name": "Places",
+                        "layout": "gallery",
+                        "icon": "LayoutGrid"
+                      },
+                      {
+                        "id": "view-14",
+                        "name": "Not yet visited",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "visited": false
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-13"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:budget-check"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:before-you-go"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "budget-check",
+      "parent": "travel-planner",
+      "title": "Budget check",
+      "icon": {
+        "emoji": "💶"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Compare what is booked with what you planned to spend."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "trip",
+              "view": "all_trips"
+            },
+            "inline": true,
+            "title": "Trips",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-15",
+                "name": "Booked cost by trip",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "trip_name",
+                  "op": "sum",
+                  "field": "booking_total"
+                }
+              },
+              {
+                "id": "view-16",
+                "name": "Budgets",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-15"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_bookings"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-17",
+                "name": "Cost by type",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "type",
+                  "op": "sum",
+                  "field": "cost"
+                }
+              }
+            ],
+            "activeViewId": "view-17"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Costs here only record what you enter; they are not recommendations."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Info"
+          }
+        }
+      ]
+    },
+    {
+      "key": "before-you-go",
+      "parent": "travel-planner",
+      "title": "Before you go",
+      "icon": {
+        "emoji": "✈️"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A short list to run through a week before leaving."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check passport validity"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm every booking code"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Share the itinerary with a friend"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notify the bank of travel dates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Download offline maps"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pack the bag from the list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "packing",
+              "view": "all_packing"
+            },
+            "inline": true,
+            "title": "Packing list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-18",
+                "name": "Still to pack",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "packed": false
+                }
+              }
+            ],
+            "activeViewId": "view-18"
+          }
+        }
+      ]
+    }
+  ]
+}

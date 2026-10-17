@@ -1,0 +1,1691 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0212",
+  "version": 1,
+  "title": "Job Application Tracker",
+  "description": "Pipeline board for roles, contacts and interviews with follow-up dates.",
+  "forWho": "Job seekers",
+  "icon": {
+    "emoji": "💼"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "jobs",
+    "career",
+    "pipeline"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-job-tracker",
+    "catalogueId": "SP0212",
+    "useCase": "Selma Ortiz applies to a dozen design roles at once and keeps each one's next step and contact in one place.",
+    "industry": "cross_industry",
+    "vertical": "Job search",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-job-tracker",
+    "tables": [
+      {
+        "token": "contact",
+        "name": "Contacts",
+        "labelSingular": "Contact",
+        "labelPlural": "Contacts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "contact",
+        "titleField": "contact_name",
+        "describes": "The people who can open doors or answer questions about a role.",
+        "subject": "person",
+        "fields": [
+          {
+            "key": "contact_name",
+            "label": "Contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email_addr",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone_no",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_contact",
+            "label": "Last contacted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "applications",
+            "label": "Applications",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "application",
+            "multi": true
+          },
+          {
+            "key": "app_count",
+            "label": "Applications linked",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "applications",
+            "pick": "role_title",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "c1",
+            "values": {
+              "contact_name": "Renata Kowalczyk",
+              "role": "Talent partner",
+              "company": "Halyard Software",
+              "email_addr": "renata@halyardsoft.net",
+              "phone_no": "(206) 555-0114",
+              "last_contact": "@today-9d"
+            }
+          },
+          {
+            "key": "c2",
+            "values": {
+              "contact_name": "Idris Mbeki",
+              "role": "Hiring manager",
+              "company": "Ember Health",
+              "email_addr": "idris@emberhealth.net",
+              "phone_no": "(312) 555-0172",
+              "last_contact": "@today-4d"
+            }
+          },
+          {
+            "key": "c3",
+            "values": {
+              "contact_name": "Colette Brandt",
+              "role": "Recruiter",
+              "company": "Northfield Labs",
+              "email_addr": "colette@northfieldlabs.net",
+              "phone_no": "(415) 555-0133",
+              "last_contact": "@today-21d"
+            }
+          },
+          {
+            "key": "c4",
+            "values": {
+              "contact_name": "Yusuf Demir",
+              "role": "Former colleague",
+              "company": "Tidewater Analytics",
+              "email_addr": "yusuf@tidewateranalytics.net",
+              "phone_no": "(503) 555-0188",
+              "last_contact": "@today-30d"
+            }
+          },
+          {
+            "key": "c5",
+            "values": {
+              "contact_name": "Mei-Ling Shaw",
+              "role": "Referral",
+              "company": "Orchard Cloud",
+              "email_addr": "meiling@orchardcloud.net",
+              "phone_no": "(425) 555-0126",
+              "last_contact": "@today-12d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "application",
+        "name": "Applications",
+        "labelSingular": "Application",
+        "labelPlural": "Applications",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "company",
+        "describes": "Every role you are chasing, from wishlist to accepted offer.",
+        "subject": "thing",
+        "before": [
+          [
+            "applied_on",
+            "next_step_on"
+          ]
+        ],
+        "independentOf": {
+          "contact": "A contact can be met before or after applying."
+        },
+        "fields": [
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "role_title",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wishlist",
+              "Applied",
+              "Screening",
+              "Interview",
+              "Offer",
+              "Rejected",
+              "Accepted"
+            ],
+            "choiceColors": {
+              "Wishlist": "slate",
+              "Applied": "blue",
+              "Screening": "teal",
+              "Interview": "violet",
+              "Offer": "green",
+              "Rejected": "red",
+              "Accepted": "amber"
+            },
+            "default": "Wishlist"
+          },
+          {
+            "key": "applied_on",
+            "label": "Applied",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "LinkedIn",
+              "Referral",
+              "Company site",
+              "Recruiter"
+            ],
+            "choiceColors": {
+              "LinkedIn": "slate",
+              "Referral": "blue",
+              "Company site": "green",
+              "Recruiter": "amber"
+            }
+          },
+          {
+            "key": "salary_min",
+            "label": "Salary from",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "salary_max",
+            "label": "Salary to",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "remote",
+            "label": "Work style",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Remote",
+              "Hybrid",
+              "On-site"
+            ],
+            "choiceColors": {
+              "Remote": "slate",
+              "Hybrid": "blue",
+              "On-site": "green"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "blue",
+              "High": "green"
+            }
+          },
+          {
+            "key": "next_step",
+            "label": "Next step",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_step_on",
+            "label": "Next step on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "resume",
+            "label": "Resume version",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Resume v1",
+              "Resume v2",
+              "Resume v3"
+            ],
+            "choiceColors": {
+              "Resume v1": "slate",
+              "Resume v2": "blue",
+              "Resume v3": "green"
+            }
+          },
+          {
+            "key": "posting",
+            "label": "Job posting",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "contact",
+            "relationMax": 1
+          },
+          {
+            "key": "interviews",
+            "label": "Interviews",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "interview",
+            "multi": true
+          },
+          {
+            "key": "interview_count",
+            "label": "Interview count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "interviews",
+            "pick": "interview_name",
+            "agg": "count"
+          },
+          {
+            "key": "days_since",
+            "label": "Days since applied",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Applied}, TODAY(), 'days')",
+            "source": "formula",
+            "computeOn": "read"
+          }
+        ],
+        "rows": [
+          {
+            "key": "a1",
+            "values": {
+              "company": "Halyard Software",
+              "role_title": "Product designer",
+              "status": "Interview",
+              "source": "Referral",
+              "salary_min": 115000,
+              "salary_max": 140000,
+              "location": "Seattle, WA",
+              "remote": "Hybrid",
+              "priority": "High",
+              "next_step": "Prepare portfolio walkthrough",
+              "next_step_on": "@today+3d",
+              "resume": "Resume v3",
+              "posting": "https://jobs.lifeledger.net/a1",
+              "applied_on": "@today-24d",
+              "contact": "c1"
+            }
+          },
+          {
+            "key": "a2",
+            "values": {
+              "company": "Ember Health",
+              "role_title": "Senior UX researcher",
+              "status": "Screening",
+              "source": "LinkedIn",
+              "salary_min": 120000,
+              "salary_max": 145000,
+              "location": "Chicago, IL",
+              "remote": "Remote",
+              "priority": "High",
+              "next_step": "Send availability for the call",
+              "next_step_on": "@today+1d",
+              "resume": "Resume v2",
+              "posting": "https://jobs.lifeledger.net/a2",
+              "applied_on": "@today-14d",
+              "contact": "c2"
+            }
+          },
+          {
+            "key": "a3",
+            "values": {
+              "company": "Northfield Labs",
+              "role_title": "Design lead",
+              "status": "Offer",
+              "source": "Recruiter",
+              "salary_min": 150000,
+              "salary_max": 170000,
+              "location": "San Francisco, CA",
+              "remote": "Hybrid",
+              "priority": "High",
+              "next_step": "Review offer letter",
+              "next_step_on": "@today+4d",
+              "resume": "Resume v3",
+              "posting": "https://jobs.lifeledger.net/a3",
+              "applied_on": "@today-40d",
+              "contact": "c3"
+            }
+          },
+          {
+            "key": "a4",
+            "values": {
+              "company": "Tidewater Analytics",
+              "role_title": "Product designer",
+              "status": "Applied",
+              "source": "Referral",
+              "salary_min": 105000,
+              "salary_max": 125000,
+              "location": "Portland, OR",
+              "remote": "On-site",
+              "priority": "Medium",
+              "next_step": "Follow up if quiet",
+              "next_step_on": "@today+6d",
+              "resume": "Resume v3",
+              "posting": "https://jobs.lifeledger.net/a4",
+              "applied_on": "@today-8d",
+              "contact": "c4"
+            }
+          },
+          {
+            "key": "a5",
+            "values": {
+              "company": "Orchard Cloud",
+              "role_title": "UX designer",
+              "status": "Applied",
+              "source": "Company site",
+              "salary_min": 100000,
+              "salary_max": 120000,
+              "location": "Remote",
+              "remote": "Remote",
+              "priority": "Medium",
+              "next_step": "Check application portal",
+              "next_step_on": "@today+7d",
+              "resume": "Resume v2",
+              "posting": "https://jobs.lifeledger.net/a5",
+              "applied_on": "@today-6d",
+              "contact": "c5"
+            }
+          },
+          {
+            "key": "a6",
+            "values": {
+              "company": "Brightloom",
+              "role_title": "Design systems designer",
+              "status": "Wishlist",
+              "source": "Company site",
+              "salary_min": 110000,
+              "salary_max": 135000,
+              "location": "Austin, TX",
+              "remote": "Hybrid",
+              "priority": "Medium",
+              "next_step": "Tailor resume and apply",
+              "next_step_on": "@today+2d",
+              "resume": "Resume v3",
+              "posting": "https://jobs.lifeledger.net/a6"
+            }
+          },
+          {
+            "key": "a7",
+            "values": {
+              "company": "Pinecrest Games",
+              "role_title": "Interaction designer",
+              "status": "Rejected",
+              "source": "LinkedIn",
+              "salary_min": 95000,
+              "salary_max": 115000,
+              "location": "Remote",
+              "remote": "Remote",
+              "priority": "Low",
+              "next_step": "Ask for feedback",
+              "next_step_on": "@today+10d",
+              "resume": "Resume v1",
+              "posting": "https://jobs.lifeledger.net/a7",
+              "applied_on": "@today-35d"
+            }
+          },
+          {
+            "key": "a8",
+            "values": {
+              "company": "Fernwood Bank",
+              "role_title": "Product designer",
+              "status": "Rejected",
+              "source": "Company site",
+              "salary_min": 110000,
+              "salary_max": 130000,
+              "location": "Denver, CO",
+              "remote": "On-site",
+              "priority": "Low",
+              "next_step": "None",
+              "next_step_on": "@today+30d",
+              "resume": "Resume v1",
+              "posting": "https://jobs.lifeledger.net/a8",
+              "applied_on": "@today-50d"
+            }
+          },
+          {
+            "key": "a9",
+            "values": {
+              "company": "Kestrel Mobility",
+              "role_title": "UX designer",
+              "status": "Accepted",
+              "source": "Referral",
+              "salary_min": 118000,
+              "salary_max": 128000,
+              "location": "Remote",
+              "remote": "Remote",
+              "priority": "High",
+              "next_step": "Start date confirmed",
+              "next_step_on": "@today+20d",
+              "resume": "Resume v2",
+              "posting": "https://jobs.lifeledger.net/a9",
+              "applied_on": "@today-70d"
+            }
+          },
+          {
+            "key": "a10",
+            "values": {
+              "company": "Lumen Education",
+              "role_title": "Product designer",
+              "status": "Wishlist",
+              "source": "LinkedIn",
+              "salary_min": 98000,
+              "salary_max": 118000,
+              "location": "Remote",
+              "remote": "Remote",
+              "priority": "Low",
+              "next_step": "Research the team",
+              "next_step_on": "@today+12d",
+              "resume": "Resume v3",
+              "posting": "https://jobs.lifeledger.net/a10"
+            }
+          },
+          {
+            "key": "a11",
+            "values": {
+              "company": "Saltmarsh Studio",
+              "role_title": "Senior designer",
+              "status": "Screening",
+              "source": "Referral",
+              "salary_min": 125000,
+              "salary_max": 150000,
+              "location": "New York, NY",
+              "remote": "Hybrid",
+              "priority": "Medium",
+              "next_step": "Complete take-home brief",
+              "next_step_on": "@today+5d",
+              "resume": "Resume v3",
+              "posting": "https://jobs.lifeledger.net/a11",
+              "applied_on": "@today-10d"
+            }
+          },
+          {
+            "key": "a12",
+            "values": {
+              "company": "Crestline Insurance",
+              "role_title": "UX researcher",
+              "status": "Applied",
+              "source": "Company site",
+              "salary_min": 102000,
+              "salary_max": 122000,
+              "location": "Remote",
+              "remote": "Remote",
+              "priority": "Low",
+              "next_step": "Wait for reply",
+              "next_step_on": "@today+9d",
+              "resume": "Resume v2",
+              "posting": "https://jobs.lifeledger.net/a12",
+              "applied_on": "@today-3d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "interview",
+        "name": "Interviews",
+        "labelSingular": "Interview",
+        "labelPlural": "Interviews",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "interview_name",
+        "describes": "Each call or visit, with prep notes and how it went.",
+        "subject": "thing",
+        "independentOf": {
+          "application": "Interviews are scheduled whenever the company offers a slot."
+        },
+        "fields": [
+          {
+            "key": "interview_name",
+            "label": "Interview",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "application",
+            "label": "Application",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "application",
+            "relationMax": 1
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Phone",
+              "Video",
+              "On-site"
+            ],
+            "choiceColors": {
+              "Phone": "slate",
+              "Video": "blue",
+              "On-site": "green"
+            }
+          },
+          {
+            "key": "when",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "prep",
+            "label": "Prep notes",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "outcome",
+            "label": "Outcome",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Went well",
+              "Mixed",
+              "Not a fit"
+            ],
+            "choiceColors": {
+              "Pending": "slate",
+              "Went well": "blue",
+              "Mixed": "green",
+              "Not a fit": "amber"
+            },
+            "default": "Pending"
+          }
+        ],
+        "rows": [
+          {
+            "key": "iv1",
+            "values": {
+              "interview_name": "Recruiter phone screen",
+              "application": "a1",
+              "format": "Phone",
+              "when": "@today-18d 10:00",
+              "prep": "Talk through motivation and salary range",
+              "outcome": "Went well"
+            }
+          },
+          {
+            "key": "iv2",
+            "values": {
+              "interview_name": "Portfolio walkthrough with design team",
+              "application": "a1",
+              "format": "Video",
+              "when": "@today+3d 14:00",
+              "prep": "Pick two case studies, rehearse 20 minutes",
+              "outcome": "Pending"
+            }
+          },
+          {
+            "key": "iv3",
+            "values": {
+              "interview_name": "Panel interview",
+              "application": "a3",
+              "format": "On-site",
+              "when": "@today-28d 13:00",
+              "prep": "Bring printed work samples",
+              "outcome": "Went well"
+            }
+          },
+          {
+            "key": "iv4",
+            "values": {
+              "interview_name": "Final conversation with the VP",
+              "application": "a3",
+              "format": "Video",
+              "when": "@today-21d 09:30",
+              "prep": "Questions about team growth",
+              "outcome": "Went well"
+            }
+          },
+          {
+            "key": "iv5",
+            "values": {
+              "interview_name": "Intro call with hiring manager",
+              "application": "a2",
+              "format": "Phone",
+              "when": "@today+1d 11:00",
+              "prep": "Learn about research ops",
+              "outcome": "Pending"
+            }
+          },
+          {
+            "key": "iv6",
+            "values": {
+              "interview_name": "Take-home design brief review",
+              "application": "a11",
+              "format": "Video",
+              "when": "@today+6d 15:00",
+              "prep": "Walk through decisions, not just visuals",
+              "outcome": "Pending"
+            }
+          },
+          {
+            "key": "iv7",
+            "values": {
+              "interview_name": "Culture conversation",
+              "application": "a9",
+              "format": "Video",
+              "when": "@today-60d 16:00",
+              "prep": "Ask about remote norms",
+              "outcome": "Went well"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "An application may have a contact.",
+        "fromTable": "application",
+        "fromField": "contact",
+        "toTable": "contact",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "applications_via"
+      },
+      {
+        "describes": "An interview belongs to one application.",
+        "fromTable": "interview",
+        "fromField": "application",
+        "toTable": "application",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "interviews_of"
+      },
+      {
+        "describes": "A contact lists their applications.",
+        "fromTable": "contact",
+        "fromField": "applications",
+        "toTable": "application",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "contact_applications"
+      },
+      {
+        "describes": "An application lists its interviews.",
+        "fromTable": "application",
+        "fromField": "interviews",
+        "toTable": "interview",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "application_interviews"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_app",
+        "name": "Add an application",
+        "describes": "Save a role you are chasing.",
+        "audience": "staff",
+        "table": "application",
+        "fields": [
+          {
+            "fieldKey": "company",
+            "ask": "Which company?",
+            "required": true
+          },
+          {
+            "fieldKey": "role_title",
+            "ask": "What is the role?"
+          },
+          {
+            "fieldKey": "status",
+            "ask": "Where does it stand?"
+          },
+          {
+            "fieldKey": "posting",
+            "ask": "Where is the job posting?"
+          }
+        ],
+        "submitLabel": "Save role",
+        "confirmation": "Added to the pipeline."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_apps",
+        "name": "All applications",
+        "table": "application",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "app_board",
+        "name": "Pipeline",
+        "table": "application",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "app_followup",
+        "name": "Follow-up calendar",
+        "table": "application",
+        "kind": "calendar",
+        "dateField": "next_step_on",
+        "allDay": true
+      },
+      {
+        "token": "app_priority",
+        "name": "By priority",
+        "table": "application",
+        "kind": "kanban",
+        "groupBy": "priority"
+      },
+      {
+        "token": "all_contacts",
+        "name": "Contacts",
+        "table": "contact",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_interviews",
+        "name": "Interviews",
+        "table": "interview",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "when",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "interview_calendar",
+        "name": "Calendar",
+        "table": "interview",
+        "kind": "calendar",
+        "dateField": "when"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "application",
+          "describes": "Every application with its status and next step."
+        },
+        {
+          "name": "related_tables",
+          "table": "interview",
+          "describes": "Interviews for each application."
+        }
+      ],
+      "question": {
+        "ask": "How many applications are in the interview stage?",
+        "whyItMatters": "Selma prepares for these first.",
+        "expect": {
+          "table": "application",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Interview"
+          },
+          "answer": 1,
+          "unit": "applications"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the pipeline.",
+        "action": {
+          "kind": "open",
+          "surface": "app_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "app_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the follow-up calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "app_followup"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "app_followup",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the interview calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "interview_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "interview_calendar",
+          "minItems": 5
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "job-tracker",
+      "parent": null,
+      "title": "Job Application Tracker",
+      "icon": {
+        "emoji": "💼"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Move each role through the pipeline, record every interview, and keep a next step on every live application."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pipeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_apps"
+            },
+            "inline": true,
+            "title": "Applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Pipeline",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-2",
+                "name": "By priority",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "priority"
+              },
+              {
+                "id": "view-3",
+                "name": "All applications",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-4",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-ups due"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "application",
+                      "view": "all_apps"
+                    },
+                    "inline": true,
+                    "title": "Applications",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-5",
+                        "name": "Next steps",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "filters": {
+                          "status": [
+                            "Wishlist",
+                            "Applied",
+                            "Screening",
+                            "Interview",
+                            "Offer"
+                          ]
+                        },
+                        "sorts": [
+                          {
+                            "field": "next_step_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-6",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "next_step_on"
+                      }
+                    ],
+                    "activeViewId": "view-5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Interviews"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "interview",
+                      "view": "all_interviews"
+                    },
+                    "inline": true,
+                    "title": "Interviews",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-7",
+                        "name": "Upcoming",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "filters": {
+                          "outcome": "Pending"
+                        },
+                        "sorts": [
+                          {
+                            "field": "when",
+                            "direction": "asc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-8",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "when"
+                      }
+                    ],
+                    "activeViewId": "view-7"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contacts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "contact",
+              "view": "all_contacts"
+            },
+            "inline": true,
+            "title": "Contacts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-9",
+                "name": "Contacts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-10",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "view-9"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:search-stats"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:interview-prep"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "search-stats",
+      "parent": "job-tracker",
+      "title": "Search stats",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "application",
+                      "view": "all_apps"
+                    },
+                    "inline": true,
+                    "title": "Applications",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-11",
+                        "name": "Roles by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-11"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "application",
+                      "view": "all_apps"
+                    },
+                    "inline": true,
+                    "title": "Applications",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-12",
+                        "name": "Where roles came from",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-12"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "application",
+                      "view": "all_apps"
+                    },
+                    "inline": true,
+                    "title": "Applications",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-13",
+                        "name": "Work style",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "remote",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-13"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Applied but quiet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_apps"
+            },
+            "inline": true,
+            "title": "Applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-14",
+                "name": "Waiting to hear",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Applied"
+                },
+                "sorts": [
+                  {
+                    "field": "applied_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-14"
+          }
+        }
+      ]
+    },
+    {
+      "key": "interview-prep",
+      "parent": "job-tracker",
+      "title": "Interview prep",
+      "icon": {
+        "emoji": "🎤"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Before every interview, run this list."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Re-read the job posting and note three keywords"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick two stories that show impact"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prepare three questions for the interviewer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Test audio, video and the meeting link"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send a thank-you note afterward"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Story outline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Prompt"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What was going on"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you did"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Result"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What changed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_apps"
+            },
+            "inline": true,
+            "title": "Applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-15",
+                "name": "Application checklist",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Interview"
+                }
+              }
+            ],
+            "activeViewId": "view-15"
+          }
+        }
+      ]
+    }
+  ]
+}

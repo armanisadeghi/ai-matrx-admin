@@ -1,0 +1,1948 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0210",
+  "version": 1,
+  "title": "Workout Log",
+  "description": "Log sessions, exercises and sets with totals, personal bests and body metrics.",
+  "forWho": "Lifters and runners",
+  "icon": {
+    "emoji": "💪"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "fitness",
+    "workout",
+    "training"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-workout-log",
+    "catalogueId": "SP0210",
+    "useCase": "Marcus Oyelaran logs each session and checks which lifts are moving up month to month.",
+    "industry": "cross_industry",
+    "vertical": "Fitness tracking",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-workout-log",
+    "tables": [
+      {
+        "token": "exercise",
+        "name": "Exercises",
+        "labelSingular": "Exercise",
+        "labelPlural": "Exercises",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "dumbbell",
+        "titleField": "exercise_name",
+        "describes": "The movements you train, with your heaviest logged lift for each.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "exercise_name",
+            "label": "Exercise",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "muscle",
+            "label": "Muscle group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Legs",
+              "Chest",
+              "Back",
+              "Shoulders",
+              "Full body",
+              "Hips",
+              "Core",
+              "Spine"
+            ],
+            "choiceColors": {
+              "Legs": "slate",
+              "Chest": "blue",
+              "Back": "green",
+              "Shoulders": "amber",
+              "Full body": "red",
+              "Hips": "violet",
+              "Core": "teal",
+              "Spine": "orange"
+            }
+          },
+          {
+            "key": "equipment",
+            "label": "Equipment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Barbell",
+              "Dumbbell",
+              "Bodyweight",
+              "Rower",
+              "None"
+            ],
+            "choiceColors": {
+              "Barbell": "slate",
+              "Dumbbell": "blue",
+              "Bodyweight": "green",
+              "Rower": "amber",
+              "None": "red"
+            }
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Strength",
+              "Cardio",
+              "Mobility"
+            ],
+            "choiceColors": {
+              "Strength": "slate",
+              "Cardio": "blue",
+              "Mobility": "green"
+            }
+          },
+          {
+            "key": "cue",
+            "label": "Form cue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "learned_on",
+            "label": "Learned",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "sets_logged",
+            "label": "Logged sets",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "set_entry",
+            "multi": true
+          },
+          {
+            "key": "best_weight",
+            "label": "Heaviest lift (lb)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sets_logged",
+            "pick": "weight",
+            "agg": "max"
+          },
+          {
+            "key": "total_sets",
+            "label": "Set count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sets_logged",
+            "pick": "set_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "e1",
+            "values": {
+              "exercise_name": "Back squat",
+              "muscle": "Legs",
+              "equipment": "Barbell",
+              "type": "Strength",
+              "cue": "Knees track over toes",
+              "learned_on": "@today-40d"
+            }
+          },
+          {
+            "key": "e2",
+            "values": {
+              "exercise_name": "Bench press",
+              "muscle": "Chest",
+              "equipment": "Barbell",
+              "type": "Strength",
+              "cue": "Shoulder blades pinched",
+              "learned_on": "@today-77d"
+            }
+          },
+          {
+            "key": "e3",
+            "values": {
+              "exercise_name": "Deadlift",
+              "muscle": "Back",
+              "equipment": "Barbell",
+              "type": "Strength",
+              "cue": "Push the floor away",
+              "learned_on": "@today-114d"
+            }
+          },
+          {
+            "key": "e4",
+            "values": {
+              "exercise_name": "Overhead press",
+              "muscle": "Shoulders",
+              "equipment": "Barbell",
+              "type": "Strength",
+              "cue": "Ribs down, glutes tight",
+              "learned_on": "@today-151d"
+            }
+          },
+          {
+            "key": "e5",
+            "values": {
+              "exercise_name": "Pull-up",
+              "muscle": "Back",
+              "equipment": "Bodyweight",
+              "type": "Strength",
+              "cue": "Full hang at the bottom",
+              "learned_on": "@today-188d"
+            }
+          },
+          {
+            "key": "e6",
+            "values": {
+              "exercise_name": "Dumbbell row",
+              "muscle": "Back",
+              "equipment": "Dumbbell",
+              "type": "Strength",
+              "cue": "Elbow to the hip",
+              "learned_on": "@today-225d"
+            }
+          },
+          {
+            "key": "e7",
+            "values": {
+              "exercise_name": "Walking lunge",
+              "muscle": "Legs",
+              "equipment": "Dumbbell",
+              "type": "Strength",
+              "cue": "Long stride, upright torso",
+              "learned_on": "@today-262d"
+            }
+          },
+          {
+            "key": "e8",
+            "values": {
+              "exercise_name": "Easy run",
+              "muscle": "Full body",
+              "equipment": "None",
+              "type": "Cardio",
+              "cue": "Nose-breathing pace",
+              "learned_on": "@today-299d"
+            }
+          },
+          {
+            "key": "e9",
+            "values": {
+              "exercise_name": "Rowing intervals",
+              "muscle": "Full body",
+              "equipment": "Rower",
+              "type": "Cardio",
+              "cue": "Drive with legs first",
+              "learned_on": "@today-336d"
+            }
+          },
+          {
+            "key": "e10",
+            "values": {
+              "exercise_name": "Hip mobility flow",
+              "muscle": "Hips",
+              "equipment": "None",
+              "type": "Mobility",
+              "cue": "Slow circles, no forcing",
+              "learned_on": "@today-373d"
+            }
+          },
+          {
+            "key": "e11",
+            "values": {
+              "exercise_name": "Plank",
+              "muscle": "Core",
+              "equipment": "Bodyweight",
+              "type": "Strength",
+              "cue": "Squeeze everything tight",
+              "learned_on": "@today-410d"
+            }
+          },
+          {
+            "key": "e12",
+            "values": {
+              "exercise_name": "Cat-cow and thoracic rotation",
+              "muscle": "Spine",
+              "equipment": "None",
+              "type": "Mobility",
+              "cue": "Move from the mid-back",
+              "learned_on": "@today-447d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "workout",
+        "name": "Workouts",
+        "labelSingular": "Workout",
+        "labelPlural": "Workouts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "activity",
+        "titleField": "workout_name",
+        "describes": "Every session with how long it lasted, how hard it felt and what you lifted.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "workout_name",
+            "label": "Workout",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Strength",
+              "Cardio",
+              "Mobility"
+            ],
+            "choiceColors": {
+              "Strength": "slate",
+              "Cardio": "blue",
+              "Mobility": "green"
+            }
+          },
+          {
+            "key": "duration",
+            "label": "Duration (min)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "effort",
+            "label": "Effort (1-10)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sets",
+            "label": "Sets",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "set_entry",
+            "multi": true
+          },
+          {
+            "key": "volume",
+            "label": "Total volume (lb)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sets",
+            "pick": "volume",
+            "agg": "sum"
+          },
+          {
+            "key": "set_count",
+            "label": "Sets done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sets",
+            "pick": "set_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "w1",
+            "values": {
+              "workout_name": "Push day",
+              "on": "@today-14d",
+              "type": "Strength",
+              "duration": 62,
+              "effort": 7,
+              "notes": "Felt strong, benched a new best"
+            }
+          },
+          {
+            "key": "w2",
+            "values": {
+              "workout_name": "Pull day",
+              "on": "@today-12d",
+              "type": "Strength",
+              "duration": 58,
+              "effort": 8,
+              "notes": "Grip gave out on deadlifts"
+            }
+          },
+          {
+            "key": "w3",
+            "values": {
+              "workout_name": "Leg day",
+              "on": "@today-10d",
+              "type": "Strength",
+              "duration": 70,
+              "effort": 9,
+              "notes": "Squats heavy but clean"
+            }
+          },
+          {
+            "key": "w4",
+            "values": {
+              "workout_name": "Easy run along the river",
+              "on": "@today-9d",
+              "type": "Cardio",
+              "duration": 40,
+              "effort": 5,
+              "notes": "Conversation pace"
+            }
+          },
+          {
+            "key": "w5",
+            "values": {
+              "workout_name": "Push day, heavier",
+              "on": "@today-7d",
+              "type": "Strength",
+              "duration": 60,
+              "effort": 7,
+              "notes": "Added a rep to every set"
+            }
+          },
+          {
+            "key": "w6",
+            "values": {
+              "workout_name": "Intervals on the rower",
+              "on": "@today-5d",
+              "type": "Cardio",
+              "duration": 30,
+              "effort": 9,
+              "notes": "Four rounds, tough"
+            }
+          },
+          {
+            "key": "w7",
+            "values": {
+              "workout_name": "Pull day, higher reps",
+              "on": "@today-3d",
+              "type": "Strength",
+              "duration": 57,
+              "effort": 7,
+              "notes": "Pull-ups moving well"
+            }
+          },
+          {
+            "key": "w8",
+            "values": {
+              "workout_name": "Mobility and core",
+              "on": "@today-1d",
+              "type": "Mobility",
+              "duration": 35,
+              "effort": 3,
+              "notes": "Hips finally loosening"
+            }
+          }
+        ]
+      },
+      {
+        "token": "set_entry",
+        "name": "Sets",
+        "labelSingular": "Set",
+        "labelPlural": "Sets",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-ordered",
+        "titleField": "set_name",
+        "describes": "One row per set: the exercise, the weight and the reps.",
+        "subject": "thing",
+        "independentOf": {
+          "workout": "A set belongs to the workout it was done in.",
+          "exercise": "Any exercise can appear in any workout."
+        },
+        "fields": [
+          {
+            "key": "set_name",
+            "label": "Set",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "workout",
+            "label": "Workout",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "workout",
+            "relationMax": 1
+          },
+          {
+            "key": "exercise",
+            "label": "Exercise",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "exercise",
+            "relationMax": 1
+          },
+          {
+            "key": "set_no",
+            "label": "Set number",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "key": "reps",
+            "label": "Reps",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "weight",
+            "label": "Weight (lb)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "volume",
+            "label": "Volume (lb)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Reps} * {Weight (lb)}",
+            "source": "formula",
+            "computeOn": "read"
+          }
+        ],
+        "rows": [
+          {
+            "key": "s01",
+            "values": {
+              "set_name": "Bench press, set A of workout w1",
+              "workout": "w1",
+              "exercise": "e2",
+              "set_no": 1,
+              "reps": 10,
+              "weight": 135
+            }
+          },
+          {
+            "key": "s02",
+            "values": {
+              "set_name": "Bench press, set B of workout w1",
+              "workout": "w1",
+              "exercise": "e2",
+              "set_no": 2,
+              "reps": 8,
+              "weight": 155
+            }
+          },
+          {
+            "key": "s03",
+            "values": {
+              "set_name": "Bench press, set C of workout w1",
+              "workout": "w1",
+              "exercise": "e2",
+              "set_no": 3,
+              "reps": 6,
+              "weight": 165
+            }
+          },
+          {
+            "key": "s04",
+            "values": {
+              "set_name": "Bench press, set D of workout w1",
+              "workout": "w1",
+              "exercise": "e2",
+              "set_no": 4,
+              "reps": 5,
+              "weight": 165
+            }
+          },
+          {
+            "key": "s05",
+            "values": {
+              "set_name": "Overhead press, set A of workout w1",
+              "workout": "w1",
+              "exercise": "e4",
+              "set_no": 1,
+              "reps": 10,
+              "weight": 75
+            }
+          },
+          {
+            "key": "s06",
+            "values": {
+              "set_name": "Overhead press, set B of workout w1",
+              "workout": "w1",
+              "exercise": "e4",
+              "set_no": 2,
+              "reps": 8,
+              "weight": 85
+            }
+          },
+          {
+            "key": "s07",
+            "values": {
+              "set_name": "Overhead press, set C of workout w1",
+              "workout": "w1",
+              "exercise": "e4",
+              "set_no": 3,
+              "reps": 7,
+              "weight": 85
+            }
+          },
+          {
+            "key": "s08",
+            "values": {
+              "set_name": "Deadlift, set A of workout w2",
+              "workout": "w2",
+              "exercise": "e3",
+              "set_no": 1,
+              "reps": 8,
+              "weight": 185
+            }
+          },
+          {
+            "key": "s09",
+            "values": {
+              "set_name": "Deadlift, set B of workout w2",
+              "workout": "w2",
+              "exercise": "e3",
+              "set_no": 2,
+              "reps": 5,
+              "weight": 225
+            }
+          },
+          {
+            "key": "s10",
+            "values": {
+              "set_name": "Deadlift, set C of workout w2",
+              "workout": "w2",
+              "exercise": "e3",
+              "set_no": 3,
+              "reps": 3,
+              "weight": 245
+            }
+          },
+          {
+            "key": "s11",
+            "values": {
+              "set_name": "Dumbbell row, set A of workout w2",
+              "workout": "w2",
+              "exercise": "e6",
+              "set_no": 1,
+              "reps": 10,
+              "weight": 50
+            }
+          },
+          {
+            "key": "s12",
+            "values": {
+              "set_name": "Dumbbell row, set B of workout w2",
+              "workout": "w2",
+              "exercise": "e6",
+              "set_no": 2,
+              "reps": 10,
+              "weight": 55
+            }
+          },
+          {
+            "key": "s13",
+            "values": {
+              "set_name": "Dumbbell row, set C of workout w2",
+              "workout": "w2",
+              "exercise": "e6",
+              "set_no": 3,
+              "reps": 9,
+              "weight": 55
+            }
+          },
+          {
+            "key": "s14",
+            "values": {
+              "set_name": "Back squat, set A of workout w3",
+              "workout": "w3",
+              "exercise": "e1",
+              "set_no": 1,
+              "reps": 8,
+              "weight": 185
+            }
+          },
+          {
+            "key": "s15",
+            "values": {
+              "set_name": "Back squat, set B of workout w3",
+              "workout": "w3",
+              "exercise": "e1",
+              "set_no": 2,
+              "reps": 6,
+              "weight": 205
+            }
+          },
+          {
+            "key": "s16",
+            "values": {
+              "set_name": "Back squat, set C of workout w3",
+              "workout": "w3",
+              "exercise": "e1",
+              "set_no": 3,
+              "reps": 5,
+              "weight": 225
+            }
+          },
+          {
+            "key": "s17",
+            "values": {
+              "set_name": "Walking lunge, set A of workout w3",
+              "workout": "w3",
+              "exercise": "e7",
+              "set_no": 1,
+              "reps": 12,
+              "weight": 40
+            }
+          },
+          {
+            "key": "s18",
+            "values": {
+              "set_name": "Walking lunge, set B of workout w3",
+              "workout": "w3",
+              "exercise": "e7",
+              "set_no": 2,
+              "reps": 12,
+              "weight": 40
+            }
+          },
+          {
+            "key": "s19",
+            "values": {
+              "set_name": "Bench press, set A of workout w5",
+              "workout": "w5",
+              "exercise": "e2",
+              "set_no": 1,
+              "reps": 10,
+              "weight": 135
+            }
+          },
+          {
+            "key": "s20",
+            "values": {
+              "set_name": "Bench press, set B of workout w5",
+              "workout": "w5",
+              "exercise": "e2",
+              "set_no": 2,
+              "reps": 9,
+              "weight": 155
+            }
+          },
+          {
+            "key": "s21",
+            "values": {
+              "set_name": "Bench press, set C of workout w5",
+              "workout": "w5",
+              "exercise": "e2",
+              "set_no": 3,
+              "reps": 7,
+              "weight": 165
+            }
+          },
+          {
+            "key": "s22",
+            "values": {
+              "set_name": "Bench press, set D of workout w5",
+              "workout": "w5",
+              "exercise": "e2",
+              "set_no": 4,
+              "reps": 5,
+              "weight": 170
+            }
+          },
+          {
+            "key": "s23",
+            "values": {
+              "set_name": "Pull-up, set A of workout w7",
+              "workout": "w7",
+              "exercise": "e5",
+              "set_no": 1,
+              "reps": 8,
+              "weight": 0
+            }
+          },
+          {
+            "key": "s24",
+            "values": {
+              "set_name": "Pull-up, set B of workout w7",
+              "workout": "w7",
+              "exercise": "e5",
+              "set_no": 2,
+              "reps": 7,
+              "weight": 0
+            }
+          },
+          {
+            "key": "s25",
+            "values": {
+              "set_name": "Pull-up, set C of workout w7",
+              "workout": "w7",
+              "exercise": "e5",
+              "set_no": 3,
+              "reps": 6,
+              "weight": 0
+            }
+          },
+          {
+            "key": "s26",
+            "values": {
+              "set_name": "Dumbbell row, set A of workout w7",
+              "workout": "w7",
+              "exercise": "e6",
+              "set_no": 1,
+              "reps": 10,
+              "weight": 55
+            }
+          },
+          {
+            "key": "s27",
+            "values": {
+              "set_name": "Dumbbell row, set B of workout w7",
+              "workout": "w7",
+              "exercise": "e6",
+              "set_no": 2,
+              "reps": 9,
+              "weight": 60
+            }
+          }
+        ]
+      },
+      {
+        "token": "measurement",
+        "name": "Body metrics",
+        "labelSingular": "Measurement",
+        "labelPlural": "Body metrics",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "scale",
+        "titleField": "check_name",
+        "describes": "Occasional weigh-ins to see the slow trend, not the daily noise.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "check_name",
+            "label": "Check-in",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "weight",
+            "label": "Weight (lb)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 50
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "body_fat",
+            "label": "Body fat (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 2
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "bm1",
+            "values": {
+              "check_name": "Weigh-in after a rest week",
+              "on": "@today-70d",
+              "weight": 184.6,
+              "body_fat": 19.8,
+              "notes": "Fasted, morning"
+            }
+          },
+          {
+            "key": "bm2",
+            "values": {
+              "check_name": "Weigh-in after training week one",
+              "on": "@today-56d",
+              "weight": 183.2,
+              "body_fat": 19.4,
+              "notes": "After coffee"
+            }
+          },
+          {
+            "key": "bm3",
+            "values": {
+              "check_name": "Weigh-in after the deload",
+              "on": "@today-42d",
+              "weight": 182.9,
+              "body_fat": 19.1,
+              "notes": "Post-run"
+            }
+          },
+          {
+            "key": "bm4",
+            "values": {
+              "check_name": "Weigh-in after a long run",
+              "on": "@today-28d",
+              "weight": 181.5,
+              "body_fat": 18.7,
+              "notes": "Fasted, morning"
+            }
+          },
+          {
+            "key": "bm5",
+            "values": {
+              "check_name": "Weigh-in after the heavy squat day",
+              "on": "@today-14d",
+              "weight": 180.8,
+              "body_fat": 18.4,
+              "notes": "Evening"
+            }
+          },
+          {
+            "key": "bm6",
+            "values": {
+              "check_name": "Weigh-in after pull day",
+              "on": "@today-1d",
+              "weight": 180.1,
+              "body_fat": 18.0,
+              "notes": "Fasted, morning"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A set belongs to one workout.",
+        "fromTable": "set_entry",
+        "fromField": "workout",
+        "toTable": "workout",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sets_of"
+      },
+      {
+        "describes": "A set is of one exercise.",
+        "fromTable": "set_entry",
+        "fromField": "exercise",
+        "toTable": "exercise",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sets_for"
+      },
+      {
+        "describes": "A workout lists its sets.",
+        "fromTable": "workout",
+        "fromField": "sets",
+        "toTable": "set_entry",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "workout_sets"
+      },
+      {
+        "describes": "An exercise lists the sets logged for it.",
+        "fromTable": "exercise",
+        "fromField": "sets_logged",
+        "toTable": "set_entry",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "exercise_sets"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "log_workout",
+        "name": "Log a workout",
+        "describes": "Record a finished session.",
+        "audience": "staff",
+        "table": "workout",
+        "fields": [
+          {
+            "fieldKey": "workout_name",
+            "ask": "What did you do?",
+            "required": true
+          },
+          {
+            "fieldKey": "on",
+            "ask": "Which day?"
+          },
+          {
+            "fieldKey": "duration",
+            "ask": "How many minutes?"
+          },
+          {
+            "fieldKey": "effort",
+            "ask": "How hard was it, 1 to 10?"
+          }
+        ],
+        "submitLabel": "Save workout",
+        "confirmation": "Logged."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_workouts",
+        "name": "All workouts",
+        "table": "workout",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "workout_calendar",
+        "name": "Calendar",
+        "table": "workout",
+        "kind": "calendar",
+        "dateField": "on",
+        "allDay": true
+      },
+      {
+        "token": "workout_type",
+        "name": "By type",
+        "table": "workout",
+        "kind": "kanban",
+        "groupBy": "type"
+      },
+      {
+        "token": "all_exercises",
+        "name": "Exercises",
+        "table": "exercise",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "exercise_muscle",
+        "name": "By muscle group",
+        "table": "exercise",
+        "kind": "kanban",
+        "groupBy": "muscle"
+      },
+      {
+        "token": "all_sets",
+        "name": "Sets",
+        "table": "set_entry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_metrics",
+        "name": "Body metrics",
+        "table": "measurement",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "on",
+            "direction": "desc"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "workout",
+          "describes": "Every workout with duration and effort."
+        },
+        {
+          "name": "related_tables",
+          "table": "set_entry",
+          "describes": "The sets in each workout."
+        }
+      ],
+      "question": {
+        "ask": "How many strength workouts are logged?",
+        "whyItMatters": "Marcus aims for three strength sessions a week.",
+        "expect": {
+          "table": "workout",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "type": "Strength"
+          },
+          "answer": 5,
+          "unit": "workouts"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the workout calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "workout_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "workout_calendar",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open exercises by muscle group.",
+        "action": {
+          "kind": "open",
+          "surface": "exercise_muscle"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "exercise_muscle",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open body metrics.",
+        "action": {
+          "kind": "open",
+          "surface": "all_metrics"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_metrics",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "workout-log",
+      "parent": null,
+      "title": "Workout Log",
+      "icon": {
+        "emoji": "💪"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Log each session, add the sets, and let the totals build up. Personal bests show on every exercise."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recent workouts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "workout",
+                      "view": "all_workouts"
+                    },
+                    "inline": true,
+                    "title": "Workouts",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "on"
+                      },
+                      {
+                        "id": "view-2",
+                        "name": "Latest",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "on",
+                            "direction": "desc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-3",
+                        "name": "By type",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "type"
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Training load"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "workout",
+                      "view": "all_workouts"
+                    },
+                    "inline": true,
+                    "title": "Workouts",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-4",
+                        "name": "Minutes by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "type",
+                          "op": "sum",
+                          "field": "duration"
+                        }
+                      },
+                      {
+                        "id": "view-5",
+                        "name": "Sessions by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "type",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-4"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exercise library"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "exercise",
+              "view": "all_exercises"
+            },
+            "inline": true,
+            "title": "Exercises",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-6",
+                "name": "By muscle group",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "muscle"
+              },
+              {
+                "id": "view-7",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-8",
+                "name": "Personal bests",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "best_weight",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-6"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sets logged"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "set_entry",
+                      "view": "all_sets"
+                    },
+                    "inline": true,
+                    "title": "Sets",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-9",
+                        "name": "All sets",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "view-9"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Body metrics"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "measurement",
+                      "view": "all_metrics"
+                    },
+                    "inline": true,
+                    "title": "Body metrics",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-10",
+                        "name": "Weight over time",
+                        "layout": "chart",
+                        "icon": "ChartLine",
+                        "chart": {
+                          "type": "line",
+                          "groupBy": "on",
+                          "op": "avg",
+                          "field": "weight"
+                        }
+                      },
+                      {
+                        "id": "view-11",
+                        "name": "Table",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "on",
+                            "direction": "desc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-10"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:routines"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:progress-notes"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "routines",
+      "parent": "workout-log",
+      "title": "Routines",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Reusable layouts to copy into a new workout."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Push"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bench press, 4 sets of 6 to 10"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Overhead press, 3 sets of 8"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Triceps and core finisher"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pull"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deadlift, 3 heavy sets"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pull-ups, 3 sets to near failure"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Dumbbell row, 3 sets of 10"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Legs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Back squat, 4 sets"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Walking lunge, 2 sets of 12"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mobility to finish"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weekly target"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Strength"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "3 sessions"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cardio"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 sessions"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mobility"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 session"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "progress-notes",
+      "parent": "workout-log",
+      "title": "Progress notes",
+      "icon": {
+        "emoji": "📈"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Review once a month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which lifts moved up?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Where did effort stay high with no gain?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Is recovery keeping up?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What is the one focus for next month?"
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "exercise",
+              "view": "all_exercises"
+            },
+            "inline": true,
+            "title": "Exercises",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-12",
+                "name": "Heaviest lift by exercise",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "exercise_name",
+                  "op": "sum",
+                  "field": "best_weight"
+                }
+              }
+            ],
+            "activeViewId": "view-12"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "workout",
+              "view": "all_workouts"
+            },
+            "inline": true,
+            "title": "Workouts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Hard sessions",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "effort": [
+                    8,
+                    9
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-13"
+          }
+        }
+      ]
+    }
+  ]
+}
