@@ -1,13 +1,11 @@
 "use client";
 
 /**
- * One hook the prompt fields use: the Block button, the right-click row, the `{{<` trigger, the
+ * One hook the prompt fields use: the Insert menu's block pick, the right-click row, the `{{<` trigger, the
  * picker, the chip panel, and the highlight handed to HighlightedText. Insert writes `{{<name>}}`
  * AND declares the name on the agent; declaring is explicit for hand-typed tokens (never automatic).
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
-import { Boxes } from "lucide-react";
-import { Button } from "@ai-matrx/design-system/controls";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { toast } from "@/lib/toast";
@@ -129,22 +127,6 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
     }
   }, [text, picker]);
 
-  const toolbarButton: ReactNode = (
-    <Button
-      variant="quiet"
-      icon={<Boxes />}
-      aria-label="Insert prompt block"
-      data-testid="prompt-block-insert-button"
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={(e) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        openPicker({ x: r.left, y: r.bottom + 4 });
-      }}
-    >
-      Block
-    </Button>
-  );
-
   const menuSections = useCallback(
     (): ContextMenuExtraSection[] => [
       {
@@ -195,5 +177,5 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
   // Typed `object` so this compiles against @ai-matrx/context-menu releases before onInsertPromptBlock.
   const menuProps: object = useMemo(() => ({ onInsertPromptBlock: insertFromMenu }), [insertFromMenu]);
 
-  return { toolbarButton, nodes, menuSections, menuProps, insertFromMenu, highlight, noteTyping, declared, missing, openPicker };
+  return { nodes, menuSections, menuProps, insertFromMenu, highlight, noteTyping, declared, missing, openPicker };
 }

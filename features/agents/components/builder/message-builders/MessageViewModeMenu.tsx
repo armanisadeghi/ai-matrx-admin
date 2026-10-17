@@ -122,7 +122,7 @@ export function MessageViewModeMenu({
               )}
             >
               <ActiveIcon className="w-3.5 h-3.5" />
-              <ChevronDown className="w-2.5 h-2.5 opacity-60" />
+              <ChevronDown className="w-2.5 h-2.5" />
             </button>
           </DropdownMenuTrigger>
         </TooltipTrigger>

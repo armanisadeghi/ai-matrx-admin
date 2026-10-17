@@ -76,12 +76,11 @@ export function GiveToAgentDialog({
       <DialogContent className="max-w-lg" data-give-to-agent="">
         <DialogHeader>
           <DialogTitle className="truncate">Give {toolName} to an agent</DialogTitle>
-          <DialogDescription>Pick one of your agents.</DialogDescription>
+          <DialogDescription>{agent?.name ? `Giving it to ${agent.name}` : "Pick one of your agents."}</DialogDescription>
         </DialogHeader>
         <AgentListInlinePicker
           consumerId="tools-home-give-to-agent"
           onSelect={pick}
-          activeAgentId={agentId}
           initialTab="mine"
           visibleTabs={["mine"]}
           autoFocusSearch={false}

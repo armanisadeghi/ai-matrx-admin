@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import {
   Popover,
   PopoverContent,
@@ -48,8 +49,10 @@ export function TemplateSelectorImpl({
     <>
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
-          <Button
+          <ControlButton
             variant="quiet"
+            icon={<FileText />}
+            aria-label="Templates"
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -57,9 +60,7 @@ export function TemplateSelectorImpl({
             onClick={(e) => {
               e.stopPropagation();
             }}
-          >
-            <FileText className="w-3.5 h-3.5" />
-          </Button>
+          />
         </PopoverTrigger>
         <PopoverContent /* sizing: fixed — two fixed actions inside a fixed h-[76px] box */ className="w-48 p-2 h-[76px]" align="start">
           <div className="space-y-1">

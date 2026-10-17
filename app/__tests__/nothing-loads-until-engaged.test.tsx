@@ -117,6 +117,24 @@ describe("V20 — engagement tier", () => {
     expect(hasEngaged()).toBe(false);
   });
 
+  test("a focus while the browser reports a live activation still never engages (only a press does)", () => {
+    // Playwright's page.evaluate runs as a user gesture, so under check:smoke the composer's
+    // autofocus landed while navigator.userActivation.isActive was true and counted as engagement:
+    // the Meet engine, the AI warm-up and the scope tree all loaded at +2 s with nobody touching it.
+    const had = Object.getOwnPropertyDescriptor(window.navigator, "userActivation");
+    Object.defineProperty(window.navigator, "userActivation", { configurable: true, value: { isActive: true, hasBeenActive: true } });
+    try {
+      installFirstEngagementListeners();
+      const composer = document.createElement("textarea");
+      document.body.append(composer);
+      composer.focus();
+      expect(hasEngaged()).toBe(false);
+    } finally {
+      if (had) Object.defineProperty(window.navigator, "userActivation", had);
+      else delete (window.navigator as { userActivation?: unknown }).userActivation;
+    }
+  });
+
   test("the warm waits for engagement, and the wrapper sees engagement before the core loads", () => {
     const core = code("app/DeferredSingletonCore.tsx");
     expect(core).toMatch(/const engaged = useHasEngaged\(\)/);

@@ -22,7 +22,10 @@ import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
 import { PersonFoundStage } from "./found/PersonFoundStage";
 import { personAnswers, personCards, personCoreReady } from "./found/personCards";
-import { loginSeed as readLoginSeed, provenWebsite, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
+import { loginSeed as readLoginSeed, provenProfileName, seedEvidence, websiteCandidate, type LoginSeed } from "./welcome/loginSeed";
+import { siteIsTheirs } from "./welcome/siteTheirs";
+import { readTypedName, writeTypedName } from "./welcome/typedNameStore";
+import { WelcomeNameFrame, WelcomeNothingFrame } from "./welcome/WelcomeAsk";
 import { peopleGroups, type PersonGroup } from "./welcome/peopleGroups";
 import { PersonPickCards } from "./welcome/PersonPickCards";
 import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
@@ -255,6 +258,7 @@ export function SmartAddBrand({
   door = null,
   loginSeed = null,
   onWelcomeDone,
+  onWelcomeSkip,
 }: {
   onCreated?: (brand: MarketingBrand) => void;
   /** Create settled the core and the validation stage is up: the page moves the address to the brand's validate route. */
@@ -268,6 +272,8 @@ export function SmartAddBrand({
   loginSeed?: WelcomeLogin | null;
   /** door="welcome": "Looks right" created their person brand and filled their profile. */
   onWelcomeDone?: (done: WelcomeDone) => void;
+  /** door="welcome": the person skipped (no name to search by, or nothing found): the welcome page takes over. */
+  onWelcomeSkip?: () => void;
 }) {
   const dispatch = useAppDispatch();
   const { format } = useCostDisplay();
@@ -1189,7 +1195,14 @@ export function SmartAddBrand({
   // ── create ──────────────────────────────────────────────────────────────
 
   const create = async () => {
-    if (!basics.name) return;
+    if (!basics.name) {
+      // Never a silent stop: the welcome's Looks right would spin forever (reviewer, 2026-10-16).
+      if (door === "welcome") {
+        setCreateError("Add your name, then try again.");
+        setWelcomeConfirming(false);
+      }
+      return;
+    }
     // Sign-up welcome: the brand this session already made is theirs again (a reload, a second press); a second is never made.
     if (door === "welcome" && loginSeed) {
       setCreating(true);
@@ -1197,6 +1210,10 @@ export function SmartAddBrand({
       try {
         const prior = await findSessionBrand(runIds);
         if (prior) {
+          // Rounds run since it was made are named on it too (appended, never replaced), so their late findings land.
+          registerBrandSmartAddRuns(prior.id, runIds).catch((error: unknown) =>
+            toast.error(`Later findings may not reach your brand: ${extractErrorMessage(error)}`),
+          );
           setCreated(prior);
           onCreated?.(prior);
           setCreating(false);
@@ -1742,8 +1759,9 @@ export function SmartAddBrand({
   );
   // ── sign-up welcome (door="welcome"; SIGNUP-WELCOME.md) ─────────────────────
   // The login's proven values are typed answers from the first moment; one stable subject per round, so a reload
-  // resumes the rounds already paid for. A proven anchor (a site, a GitHub account, a certain email finding) goes
-  // straight to the person grid; otherwise the anchor round's people ask "Which one is you?" first.
+  // resumes the rounds already paid for. A proven anchor (a GitHub account, a site shown to be theirs, a certain
+  // account) goes straight to the person grid; otherwise the anchor round's people ask "Which one is you?" first.
+  // A work email's domain or Workspace domain is only searched: it is "Your site" once the run shows it is theirs.
   const welcomeOn = door === "welcome" && Boolean(loginSeed);
   const [welcomeSeed, setWelcomeSeed] = useState<LoginSeed | null>(null);
   const [welcomeKick, setWelcomeKick] = useState(0);
@@ -1752,25 +1770,34 @@ export function SmartAddBrand({
   const [welcomeConfirming, setWelcomeConfirming] = useState(false);
   const [welcomeCreateKick, setWelcomeCreateKick] = useState(0);
   const [welcomeBootError, setWelcomeBootError] = useState<string | null>(null);
+  /** A name settled after sign-in: typed into the name frame (kept for a reload), or read off a proven GitHub account. */
+  const [welcomeLateName, setWelcomeLateName] = useState<string | null>(() =>
+    door === "welcome" && loginSeed && typeof window !== "undefined" ? readTypedName(loginSeed.subject) : null,
+  );
+  const [welcomeNameKick, setWelcomeNameKick] = useState(0);
   const welcomeBooted = useRef(false);
   const welcomeDoneSent = useRef(false);
+  /** The name a find round already searched (the first round, or the late-name round): never searched twice. */
+  const welcomeNameSearched = useRef<string | null>(null);
+  // The name the login alone gives (the provider's, the one typed at sign-up, the email's hint): known from the first
+  // frame, before the domain registry loads.
+  const welcomeLoginName = welcomeOn && loginSeed ? readLoginSeed(loginSeed.user, null).name : null;
   const welcomeFirstSeeds = (seed: LoginSeed): RoundSeeds => ({
-    website: provenWebsite(seed) ?? "",
+    website: websiteCandidate(seed) ?? "",
     socials: seed.githubLogin ? [{ handle_or_url: `https://github.com/${seed.githubLogin}`, platform: "github" }] : [],
   });
   const bootWelcome = useEffectEvent(async () => {
     if (!loginSeed) return;
-    // The domain registry first: whether the email's domain is free mail decides whether it is a website.
+    // The domain registry first: whether the email's domain is free mail decides whether it is a website candidate.
     const rules = await fetchKnownDomainRules().catch(() => liveKnownDomainRules());
     const seed = readLoginSeed(loginSeed.user, rules);
-    const proven = seedEvidence(seed);
-    addCustom([...(seed.name ? [customItem("name", seed.name)] : []), ...proven]);
+    const name = seed.name ?? welcomeLateName;
+    addCustom([...(name ? [customItem("name", name)] : []), ...seedEvidence(seed)]);
     const first = welcomeFirstSeeds(seed);
     for (const k of seedKeys(first, accountSeedKey)) explored.current.add(k);
-    if (first.website) typedKeys.current = { ...typedKeys.current, website: `website:${websiteHost(first.website)}` };
-    if (seed.name) {
-      personTyped.current = { name: seed.name, city: "" };
-      wokenSent.current.add(`name:${seed.name}`);
+    if (name) {
+      personTyped.current = { name, city: "" };
+      wokenSent.current.add(`name:${name}`);
     }
     try {
       const organizationId = await ensureOrgId(null);
@@ -1801,15 +1828,46 @@ export function SmartAddBrand({
     void bootWelcome();
   }, [welcomeOn]);
   // The first round: proven values as confirmed inputs, the person by name (find), the email's free lookups.
+  // Without a name it is the email round alone (its proven GitHub profile may name them).
   const runWelcomeFirst = useEffectEvent(() => {
     const seed = welcomeSeed;
     if (!seed) return;
+    const name = personTyped.current?.name ?? null;
+    if (name) welcomeNameSearched.current = name;
     emailPending.current = seed.emailProven && seed.email ? seed.email : "";
-    void startRound(welcomeFirstSeeds(seed), seed.name ? { name: seed.name } : {}, true, Boolean(seed.name));
+    void startRound(welcomeFirstSeeds(seed), name ? { name } : {}, true, Boolean(name));
   });
   useEffect(() => {
     if (welcomeKick) runWelcomeFirst();
   }, [welcomeKick]);
+  // A name that arrived after the first round (typed into the name frame, or proven by GitHub): its own find round.
+  const welcomeSetName = (name: string, typedByThem: boolean) => {
+    if (!loginSeed) return;
+    if (typedByThem) writeTypedName(loginSeed.subject, name);
+    addCustom(customItem("name", name));
+    personTyped.current = { name, city: personTyped.current?.city ?? "" };
+    wokenSent.current.add(`name:${name}`);
+    setWelcomeLateName(name);
+    setWelcomeNameKick((k) => k + 1);
+  };
+  // Waits for the boot: a name typed while it reads the session rides the first round instead.
+  const runWelcomeName = useEffectEvent(() => {
+    const name = personTyped.current?.name;
+    if (!name || welcomeNameSearched.current === name) return;
+    welcomeNameSearched.current = name;
+    void startRound({ website: "", socials: [] }, { name }, true, true);
+  });
+  useEffect(() => {
+    // Declared after the first round's effect, so on the commit that starts both, the first round claims the name.
+    if (welcomeNameKick && welcomeSeed) runWelcomeName();
+  }, [welcomeNameKick, welcomeSeed]);
+  const welcomeName = welcomeSeed?.name ?? welcomeLoginName ?? welcomeLateName ?? personTyped.current?.name ?? "";
+  // Next in line after the login: the name on a GitHub account the email lookup proved is theirs.
+  const welcomeProvenName = welcomeOn && welcomeSeed && !welcomeName ? provenProfileName(visible) : null;
+  const adoptProvenName = useEffectEvent((name: string) => welcomeSetName(name, false));
+  useEffect(() => {
+    if (welcomeProvenName) adoptProvenName(welcomeProvenName);
+  }, [welcomeProvenName]);
   // A proven anchor and no grounded round yet: one round grounded on it (Part 9), once.
   const welcomeGround =
     welcomeOn && Boolean(welcomeSeed) && memoryReady && !working && rounds.length > 0 && personAnchors.length > 0 && !groundedSent.current && !created;
@@ -1822,7 +1880,7 @@ export function SmartAddBrand({
     for (const p of shown) for (const a of p.accounts) answerAnchor(a, "namesake");
     const as = narrowAs(text);
     if ("city" in as) {
-      personTyped.current = { name: personTyped.current?.name ?? welcomeSeed?.name ?? "", city: as.city };
+      personTyped.current = { name: personTyped.current?.name ?? welcomeName, city: as.city };
       addCustom(customItem("address", as.city));
       wokenSent.current.add(`location:${as.city}`);
     } else personMore.current = { ...personMore.current, company: as.company };
@@ -1840,26 +1898,50 @@ export function SmartAddBrand({
     for (const a of p.accounts) answerAnchor(a, "me");
   };
 
-  const welcomeName = welcomeSeed?.name ?? personTyped.current?.name ?? "";
-  const welcomeCards = personCards({
+  // The login's website candidate is theirs only when the run shows it (the site names them, or their account links
+  // to it); then it is vouched for like a site they typed. Until then it is never "Your site".
+  const welcomeCandidate = welcomeSeed ? websiteCandidate(welcomeSeed) : null;
+  const welcomeSiteTheirs = Boolean(
+    welcomeCandidate && welcomeName && siteIsTheirs({ host: welcomeCandidate, name: welcomeName, items: visible, facts, decisions }),
+  );
+  const welcomeCardsFound = personCards({
     items: visible,
     witnesses,
     facts,
     decisions,
-    typedWebsiteKey: typedKeys.current.website,
+    typedWebsiteKey: welcomeSiteTheirs && welcomeCandidate ? `website:${websiteHost(welcomeCandidate)}` : null,
     name: welcomeName,
     avatarUrl: welcomeSeed?.avatarUrl ?? null,
   });
+  const welcomeCards =
+    welcomeCandidate &&
+    !welcomeSiteTheirs &&
+    welcomeCardsFound.website &&
+    websiteHost(welcomeCardsFound.website.url ?? welcomeCardsFound.website.value) === websiteHost(welcomeCandidate)
+      ? { ...welcomeCardsFound, website: null }
+      : welcomeCardsFound;
   const anchorView = anchorRunId.current ? views[anchorRunId.current] : undefined;
   const anchorDone = Boolean(anchorView && TERMINAL.includes(anchorView.status ?? ""));
   const welcomeCandidates = visible.filter((i) => i.anchor && decisions[i.key] !== "no" && !namesakes.has(i.key));
   const welcomePeople = welcomeName ? peopleGroups(welcomeCandidates, welcomeName) : { people: [], more: 0 };
   const welcomePicked = visible.some((i) => i.anchor && (decisions[i.key] === "yes" || decisions[i.key] === "preferred"));
-  const welcomeSeedAnchor = Boolean(welcomeSeed && (provenWebsite(welcomeSeed) || welcomeSeed.githubLogin));
+  const welcomeSeedAnchor = Boolean(welcomeSeed?.githubLogin) || welcomeSiteTheirs;
   const welcomeAnchored = welcomeSeedAnchor || welcomePicked || Boolean(welcomeCards.website) || welcomeCards.accounts.length > 0;
   // The people are asked only once the anchor round settled AND the session's saved answers are back: a reload must
   // never ask "Which one is you?" (or lead with another account) before the pick already made has been restored.
   const welcomeAsks = memoryReady && !welcomeAnchored && anchorDone && welcomePeople.people.length > 0;
+  // No name from the login, the sign-up form, the email or its proven lookups: one field asks (and Skip leaves).
+  const welcomeNeedsName = welcomeOn && !welcomeName;
+  // Settled, and the only certain facts are what they typed (their name, a city typed under "None of these"):
+  // never a grid of their own words; an honest frame with another search or Skip.
+  const welcomeOnlyTyped =
+    !welcomeCards.website &&
+    welcomeCards.accounts.length === 0 &&
+    !welcomeCards.bio &&
+    !welcomeCards.tools &&
+    (!welcomeCards.location || (welcomeCards.location.facts.length === 0 && welcomeCards.location.item?.source.kind === "typed"));
+  const welcomeNothing =
+    Boolean(welcomeSeed) && memoryReady && !working && rounds.length > 0 && !startFailure && !welcomeAsks && welcomeOnlyTyped;
 
   /** "Looks right": a Yes for every card shown, then the existing Create path (their person brand). */
   const welcomeLooksRight = () => {
@@ -1869,42 +1951,38 @@ export function SmartAddBrand({
     setWelcomeConfirming(true);
     setWelcomeCreateKick((k) => k + 1);
   };
-  // Their plain profile gets what they confirmed. The write starts WITH Create, never after it: Create's many steps
-  // take seconds, and a page that went away inside them (a dev-server full reload did, 2026-10-16) lost the write.
-  // writeWelcomeProfile records the values first, so a page that dies mid-write is finished by the next /welcome load.
+  // What they confirmed, captured at the press; their plain profile gets it only AFTER Create made their brand
+  // (reviewer, 2026-10-16: a failed Create had already written the profile). writeWelcomeProfile records the values
+  // first, so a page that dies mid-write is finished by the next /welcome load.
   const welcomeProfileFound = useRef<WelcomeConfirmed | null>(null);
-  const welcomeProfileWrite = useRef<Promise<Error | null> | null>(null);
   const runWelcomeCreate = useEffectEvent(() => {
-    if (loginSeed) {
-      // This render has the Looks right answers applied (set in the same press), so `basics` holds what they confirmed.
-      const factOf = (fields: string[]) =>
-        facts.find((f) => fields.includes(f.field) && (decisions[f.key] === "yes" || new Set(f.evidence_urls.map(websiteHost)).size >= 2))?.value ?? null;
-      const found: WelcomeConfirmed = {
-        name: basics.name ?? welcomeName,
-        websiteUrl: basics.websiteUrl,
-        accounts: basics.accounts.map((a) => ({ platform: a.platform, handle: a.handle, url: a.url })),
-        company: personMore.current.company || factOf(["employer", "company", "current_company", "organization"]),
-        jobTitle: factOf(["job_title", "occupation", "profession", "role"]),
-      };
-      welcomeProfileFound.current = found;
-      welcomeProfileWrite.current = writeWelcomeProfile(loginSeed.subject, found).then(
-        () => null,
-        (error: unknown) => (error instanceof Error ? error : new Error(extractErrorMessage(error))),
-      );
-    }
-    void create();
+    // This render has the Looks right answers applied (set in the same press), so `basics` holds what they confirmed.
+    const factOf = (fields: string[]) =>
+      facts.find((f) => fields.includes(f.field) && (decisions[f.key] === "yes" || new Set(f.evidence_urls.map(websiteHost)).size >= 2))?.value ?? null;
+    welcomeProfileFound.current = {
+      name: basics.name ?? welcomeName,
+      websiteUrl: basics.websiteUrl,
+      accounts: basics.accounts.map((a) => ({ platform: a.platform, handle: a.handle, url: a.url })),
+      company: personMore.current.company || factOf(["employer", "company", "current_company", "organization"]),
+      jobTitle: factOf(["job_title", "occupation", "profession", "role"]),
+    };
+    // Any failure says so, with Looks right as the retry: never a spinner without an end.
+    create().catch((error: unknown) => {
+      setCreating(false);
+      setCreateError(extractErrorMessage(error));
+    });
   });
   useEffect(() => {
     if (welcomeCreateKick) runWelcomeCreate();
   }, [welcomeCreateKick]);
-  // Created through "Looks right": the welcome page takes over at once; the profile write (started with Create) finishes
-  // behind it and is retried once when it failed. A slow write never holds the page (it left a blank door for 50 s).
+  // Created through "Looks right": the welcome page takes over at once and their profile is filled behind it.
+  // An admin's test login never writes the admin's own profile and never touches onboarding.
   const finishWelcome = useEffectEvent(async (brand: MarketingBrand) => {
     const host = basics.websiteUrl ? websiteHost(basics.websiteUrl) : null;
     onWelcomeDone?.({ brand, paidHost: paidCardsHost(host, liveKnownDomainRules()), test: Boolean(loginSeed?.test) });
     const subject = loginSeed?.subject;
     const found = welcomeProfileFound.current;
-    if (!(await welcomeProfileWrite.current) || !subject || !found) return;
+    if (!subject || !found || loginSeed?.test) return;
     try {
       await writeWelcomeProfile(subject, found);
     } catch (error) {
@@ -1920,20 +1998,27 @@ export function SmartAddBrand({
   if (welcomeOn && !welcomeHanded) {
     if (created && welcomeConfirming) return <>{listeners}</>;
     const confirming = welcomeConfirming && !createError;
+    const skip = () => onWelcomeSkip?.();
     return (
       <div className="flex w-full flex-col gap-4" data-smart-add-stage="welcome">
-        {welcomeAsks ? (
+        {welcomeNeedsName ? (
+          <WelcomeNameFrame onName={(name) => welcomeSetName(name, true)} onSkip={skip} />
+        ) : welcomeAsks ? (
           <PersonPickCards
             people={welcomePeople.people}
             more={welcomePeople.more}
             onPick={welcomePick}
             onNarrow={(text) => welcomeNarrow(text, welcomePeople.people)}
           />
+        ) : welcomeNothing ? (
+          <WelcomeNothingFrame onNarrow={(text) => welcomeNarrow(text, welcomePeople.people)} onSkip={skip} />
         ) : (
           <PersonFoundStage
-            cards={welcomeCards}
+            // A city they typed is never a card of its own while nothing else is found (it is their word, not a finding).
+            cards={welcomeOnlyTyped ? { ...welcomeCards, location: null } : welcomeCards}
             working={!welcomeSeed || working || !memoryReady}
-            ready={Boolean(welcomeSeed) && memoryReady && (personCoreReady(welcomeCards) || !working)}
+            // Looks right is never offered without a name.
+            ready={Boolean(welcomeSeed) && memoryReady && Boolean(welcomeCards.name) && (personCoreReady(welcomeCards) || !working)}
             confirming={confirming || creating}
             error={createError ?? welcomeBootError ?? startFailure}
             onLooksRight={welcomeLooksRight}

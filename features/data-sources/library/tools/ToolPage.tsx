@@ -9,6 +9,7 @@
  */
 
 import { createElement, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Zap } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
@@ -17,12 +18,13 @@ import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-ru
 import { cancelHostToolCall, resumeHostToolCall, runHostToolCall } from "@ai-matrx/chat/agents/identity/tool-calls";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { newToolCallKey, toolPriceText, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
+import { CATALOG_SEARCH_PATH, newToolCallKey, toolPriceText, type CatalogSearchResponse, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
 
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { getJson } from "@/lib/python-client";
 import { extractErrorMessage } from "@/utils/errors";
 
 import { GiveToAgentDialog } from "./GiveToAgentDialog";
@@ -62,13 +64,24 @@ export function ToolPage({
 }) {
   const params = useSearchParams();
   const userId = useAppSelector(selectUserId);
+  // A deep link or a reload has no card: the card's own facts (family, reliability, speed) come by id.
+  const lookup = useQuery({
+    queryKey: ["tools", "hit", toolId],
+    enabled: !known,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async ({ signal }) => {
+      const { data } = await getJson<CatalogSearchResponse>(`${CATALOG_SEARCH_PATH}?ids=${encodeURIComponent(toolId)}`, { signal });
+      return data.tools[0] ?? null;
+    },
+  });
+  const card: CatalogToolHit | null = known ?? lookup.data ?? null;
   const form = useToolRunForm(toolId);
   const facts = form.data?.facts ?? null;
   // The card the person pressed carries reliability and speed; a deep link has only the run-form's facts.
-  const title = known?.display_name ?? facts?.displayName ?? "Tool";
-  const summary = known?.summary ?? facts?.summary ?? "";
-  const noun = known?.display_noun ?? facts?.displayNoun ?? "";
-  const priceHint = known?.price_hint_points ?? facts?.priceHintPoints ?? null;
+  const title = card?.display_name ?? facts?.displayName ?? "Tool";
+  const summary = card?.summary ?? facts?.summary ?? "";
+  const noun = card?.display_noun ?? facts?.displayNoun ?? "";
+  const priceHint = card?.price_hint_points ?? facts?.priceHintPoints ?? null;
 
   const [values, setValues] = useState<Record<string, unknown>>(() => (typeof window === "undefined" || !userId ? {} : readDraft(userId, toolId)));
   const [view, setView] = useState<ToolCallView | null>(null);
@@ -140,10 +153,10 @@ export function ToolPage({
     if (view?.call_id) void cancelHostToolCall(view.call_id).then(setView, () => undefined);
   };
 
-  const family = jobFamilyOf(known?.job_family);
+  const family = jobFamilyOf(card?.job_family);
   const price = toolPriceText({ price_hint_points: priceHint });
-  const reliability = known ? reliabilityFacts(known.reliability) : null;
-  const speed = known ? speedText(known.reliability.p50_ms) : null;
+  const reliability = card ? reliabilityFacts(card.reliability) : null;
+  const speed = card ? speedText(card.reliability.p50_ms) : null;
   const approval = view?.status === "needs_approval" ? (view.approval as ScreenRunApproval | null) : null;
   const running = view != null && (view.status === "queued" || view.status === "running" || view.status === "waiting");
 

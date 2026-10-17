@@ -31,7 +31,6 @@ jest.mock("@/features/prompt-blocks/usePromptBlockEditing", () => ({
     nodes: null,
     highlight: null,
     menuProps: {},
-    toolbarButton: null,
     noteTyping: () => undefined,
     menuSections: () => [],
   }),

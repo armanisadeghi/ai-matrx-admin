@@ -6,7 +6,8 @@
  * Reads: test cases (`agent.exemplar` kind='test_case'), runs
  * (`agent.test_run`), results (`agent.test_result`) and the judge's ledger row
  * (`platform.judge_verdict`). Work (launch, cancel, re-check) is the server's:
- * `POST /agent-tests/runs…` (CONTRACT §4). Nothing here goes through Next.
+ * `POST /agent-tests/runs…` (CONTRACT §4), and a live run follows the server's
+ * run stream. Nothing here goes through Next.
  *
  * jsonb columns are parsed defensively into the view models in `types.ts`;
  * columns the contract adds later (run counters, spent cents) are read when
@@ -21,12 +22,19 @@ import {
   DEFAULT_ARCHIVE_FILTER,
   type ArchiveFilterValue,
 } from "@ai-matrx/design-system";
+import {
+  openStream,
+  type NdjsonEvent,
+  type OperationDescriptor,
+} from "@ai-matrx/api";
+import { serverApi } from "@/lib/api/server-api";
 import { isTestVerdict } from "./verdicts";
 import type {
   CheckOutcome,
   OutcomeView,
   CheckResultView,
   JudgeVerdictView,
+  RunOptions,
   TestCaseView,
   TestResultView,
   TestRunView,
@@ -358,10 +366,125 @@ export async function fetchJudgeVerdict(
   };
 }
 
-/**
- * Launch is the server's (`POST /agent-tests/runs`, CONTRACT §4.1). Until that
- * route is in `@ai-matrx/api`'s generated paths the page shows the launch
- * control disabled and announces the registered promise
- * `agents.test-runs` — never a stand-in run.
- */
-export const LAUNCH_AVAILABLE = false;
+// ── Work on the server (CONTRACT v2 §4) ────────────────────────────────────────
+//
+// Hand-declared until `@ai-matrx/api` publishes the generated operations
+// (aidream `aidream/api/routers/agent_tests.py`); they ride the ONE client
+// (`serverApi`), so auth, base URL, request id and the active organization are
+// the package's.
+
+const RUNS_OP: OperationDescriptor = {
+  m: "POST",
+  p: "/agent-tests/runs",
+  d: "aidream",
+  a: "user",
+  o: "required",
+  n: "agent_tests.launch_run",
+};
+const CANCEL_OP: OperationDescriptor = {
+  ...RUNS_OP,
+  p: "/agent-tests/runs/{run_id}/cancel",
+  n: "agent_tests.cancel_run",
+};
+const RESUME_OP: OperationDescriptor = {
+  ...RUNS_OP,
+  p: "/agent-tests/runs/{run_id}/resume",
+  n: "agent_tests.resume_run",
+};
+const RECHECK_OP: OperationDescriptor = {
+  ...RUNS_OP,
+  p: "/agent-tests/runs/{run_id}/recheck",
+  n: "agent_tests.recheck_run",
+};
+const STREAM_OP: OperationDescriptor = {
+  m: "GET",
+  p: "/agent-tests/runs/{run_id}/stream",
+  d: "aidream",
+  a: "user",
+  o: "required",
+  s: "ndjson",
+  n: "agent_tests.stream_run",
+};
+
+/** Launch, cancel, resume and re-check are live on the server. */
+export const LAUNCH_AVAILABLE = true;
+
+export interface LaunchedRun {
+  runId: string;
+  status: string;
+  resultCount: number;
+}
+
+function readLaunched(data: unknown): LaunchedRun {
+  if (!isJsonObject(data) || typeof data.run_id !== "string") {
+    throw new Error("The server started the run but answered in an unexpected shape.");
+  }
+  return {
+    runId: data.run_id,
+    status: str(data.status) || "queued",
+    resultCount: num(data.result_count) ?? 0,
+  };
+}
+
+/** `POST /agent-tests/runs`: every live case of this agent (or `caseIds`). */
+export async function launchRun(
+  agentId: string,
+  options: RunOptions,
+  caseIds?: readonly string[],
+): Promise<LaunchedRun> {
+  const body: Record<string, unknown> = {
+    agent_ids: [agentId],
+    door_policy: options.doorPolicy,
+    repeats: options.repeats,
+    judge_policy: options.judgePolicy,
+    purpose: "user",
+    idempotency_key: crypto.randomUUID(),
+  };
+  if (caseIds && caseIds.length > 0) body.case_ids = [...caseIds];
+  return readLaunched(await serverApi.call<unknown>(RUNS_OP, { body }));
+}
+
+export async function cancelRun(runId: string): Promise<string> {
+  const data = await serverApi.call<unknown>(CANCEL_OP, { path: { run_id: runId } });
+  return isJsonObject(data) ? str(data.status) : "";
+}
+
+export async function resumeRun(runId: string): Promise<string> {
+  const data = await serverApi.call<unknown>(RESUME_OP, { path: { run_id: runId } });
+  return isJsonObject(data) ? str(data.status) : "";
+}
+
+/** Re-check: a new run over the stored answers against the current checks (no AI call, cost 0). */
+export async function recheckRun(runId: string): Promise<LaunchedRun> {
+  return readLaunched(
+    await serverApi.call<unknown>(RECHECK_OP, { path: { run_id: runId }, body: {} }),
+  );
+}
+
+/** One event of a run's server stream (`agent_test_progress` · `agent_test_result` · `agent_test_run_status`). */
+export interface RunStreamEvent {
+  event: string;
+  status: string | null;
+  resultId: string | null;
+}
+
+/** The run's server stream: it ends when the run finishes, pauses or is cancelled. */
+export async function* followRun(
+  runId: string,
+  signal: AbortSignal,
+): AsyncGenerator<RunStreamEvent> {
+  const stream = await openStream<NdjsonEvent>(
+    serverApi,
+    STREAM_OP,
+    { path: { run_id: runId } },
+    { signal, totalTimeoutMs: null },
+  );
+  for await (const envelope of stream) {
+    const data = isJsonObject(envelope.data) ? envelope.data : {};
+    yield {
+      event: envelope.event,
+      status: str(data.status) || null,
+      resultId: str(data.result_id) || null,
+    };
+  }
+}

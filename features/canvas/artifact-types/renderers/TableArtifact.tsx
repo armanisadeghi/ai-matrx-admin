@@ -15,7 +15,7 @@ import { deriveDatasetNameForChatTable, isPlaceholderTableTitle } from "@/featur
 import { readTableDetails } from "@/features/data-tables/service";
 import { useOpenUserTableWindow } from "@/features/overlays/openers/userTableWindow";
 import { StreamingTableRenderer as StreamingTableRenderer } from "@ai-matrx/rich-content/display/blocks/table/StreamingTableRenderer";
-import LocatedTableViewer from "@/features/data-tables/components/LocatedTableViewer";
+import LocatedTableViewer from "@/features/data-tables/components/LocatedTableViewerDoor";
 import type { ArtifactRendererProps } from "../types";
 // The word a canvas link stores for "this artifact became a table" (canvas_items.external_system).
 // Stored data, kept as written: changing it is a data change on the linked canvas rows.

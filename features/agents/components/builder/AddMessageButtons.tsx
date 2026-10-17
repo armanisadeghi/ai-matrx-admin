@@ -39,6 +39,22 @@ export function AddMessageButtons({ agentId }: AddMessageButtonsProps) {
     [agentId, allMessages, dispatch],
   );
 
+  // An example is the exchange, not half of it: a user turn and its answer, both flagged.
+  const handleAddExample = useCallback(() => {
+    if (!allMessages) return;
+    const turn = (role: PrimingMessageRole): AgentDefinitionMessage => ({
+      role,
+      content: [{ type: "text", text: "" } as TextBlock],
+      flags: { example: true },
+    });
+    dispatch(
+      setAgentMessages({
+        id: agentId,
+        messages: [...allMessages, turn("user"), turn("assistant")],
+      }),
+    );
+  }, [agentId, allMessages, dispatch]);
+
   return (
     <>
       <Button
@@ -60,6 +76,17 @@ export function AddMessageButtons({ agentId }: AddMessageButtonsProps) {
       >
         <Plus className="w-3 h-3 mr-1" />
         Assistant
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 text-xs"
+        onClick={handleAddExample}
+        disabled={!allMessages}
+        title="Add an example exchange: a user turn and the answer it should get"
+      >
+        <Plus className="w-3 h-3 mr-1" />
+        Example
       </Button>
     </>
   );

@@ -465,7 +465,88 @@ function emitDefinitions(): void {
   }
   removeSupersededOverlays();
   emitPackageWindowOverlays();
+  markDefinitionsClientOnly();
+  emitOverlayMetaIndex();
   fs.rmSync(tmp, { recursive: true, force: true });
+}
+
+const definitionFiles = (): string[] =>
+  fs
+    .readdirSync(abs(DEFS))
+    .filter((f) => /\.overlay\.tsx?$/.test(f))
+    .sort()
+    .map((f) => `${DEFS}/${f}`);
+
+/**
+ * A definition module calls defineOverlay() (from the "use client" entry @ai-matrx/summon/react) at
+ * module scope, so it is client code: without the directive a server component that reaches it
+ * (even through a plain helper) evaluates it in the RSC layer and the build's page-data pass fails
+ * ("Attempted to call defineOverlay() from the server"). Every definition carries the directive.
+ */
+function markDefinitionsClientOnly(): void {
+  let n = 0;
+  for (const f of definitionFiles()) {
+    const t = read(f);
+    if (/^\s*(["'])use client\1;?/.test(t)) continue;
+    write(f, `"use client";\n\n${t}`);
+    n++;
+  }
+  if (n) resolve(`"use client" added to ${n} definition modules that lacked it (they call defineOverlay at module scope)`);
+}
+
+/**
+ * The plain-data metadata index (id, label, instance, window id / mobile / deprecated) for code that
+ * must not load the client definitions: server components (the feature admin pages' lookups). Read
+ * from each definition's defineOverlay({...}) literal; a jest guard (emitted beside it) fails when
+ * it drifts from APP_OVERLAYS.
+ */
+function emitOverlayMetaIndex(): void {
+  const registry = read(`${DEFS}/registry.ts`);
+  const fileOf = new Map([...registry.matchAll(/^import \{ (\w+) \} from "\.\/([\w.-]+)";$/gm)].map((m) => [m[1]!, m[2]!]));
+  const order = [...registry.matchAll(/^  (\w+Overlay),$/gm)].map((m) => m[1]!);
+  const rows: string[] = [];
+  for (const name of order) {
+    const base = fileOf.get(name);
+    const f = base && [`${DEFS}/${base}.tsx`, `${DEFS}/${base}.ts`].find(exists);
+    if (!f) throw new Error(`[switch] overlay meta index: no definition file for ${name}`);
+    const sf = parse(f, read(f));
+    let spec: ts.ObjectLiteralExpression | undefined;
+    walk(sf, (n) => {
+      if (spec || !ts.isCallExpression(n) || !ts.isCallExpression(n.expression)) return;
+      const inner = n.expression.expression;
+      if (ts.isIdentifier(inner) && inner.text === "defineOverlay" && n.arguments[0] && ts.isObjectLiteralExpression(n.arguments[0])) spec = n.arguments[0];
+    });
+    if (!spec) throw new Error(`[switch] overlay meta index: ${f} has no defineOverlay()({...}) literal`);
+    const prop = (o: ts.ObjectLiteralExpression, key: string) =>
+      o.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === key)?.initializer;
+    const str = (e: ts.Expression | undefined, what: string): string => {
+      if (!e || !ts.isStringLiteralLike(e)) throw new Error(`[switch] overlay meta index: ${f} ${what} is not a string literal`);
+      return e.text;
+    };
+    const parts = [`id: ${JSON.stringify(str(prop(spec, "id"), "id"))}`, `label: ${JSON.stringify(str(prop(spec, "label"), "label"))}`, `instance: ${JSON.stringify(str(prop(spec, "instance"), "instance"))}`];
+    const win = prop(spec, "window");
+    if (win) {
+      if (!ts.isObjectLiteralExpression(win)) throw new Error(`[switch] overlay meta index: ${f} window is not an object literal`);
+      const w: string[] = [];
+      const windowId = prop(win, "windowId");
+      if (windowId) w.push(`windowId: ${JSON.stringify(str(windowId, "window.windowId"))}`);
+      const mobile = prop(win, "mobile");
+      if (mobile) w.push(`mobile: ${JSON.stringify(str(mobile, "window.mobile"))}`);
+      const deprecated = prop(win, "deprecated");
+      if (deprecated) w.push(`deprecated: ${deprecated.getText(sf)}`);
+      parts.push(`window: { ${w.join(", ")} }`);
+    }
+    rows.push(`  { ${parts.join(", ")} },`);
+  }
+  write(
+    `${DEFS}/overlay-meta-index.ts`,
+    `/**\n * Plain-data metadata for every app overlay (generated from the definitions by the switch codemod).\n * For code that must not load the client definitions — server components such as the feature\n * admin lookups. __tests__/overlayMetaIndexMatchesDefinitions.test.ts fails when it drifts.\n */\nimport type { MobilePresentation } from "@ai-matrx/summon";\n\nexport interface OverlayMetaRow {\n  readonly id: string;\n  readonly label: string;\n  readonly instance: "single" | "multi";\n  readonly window?: {\n    readonly windowId?: string;\n    readonly mobile?: MobilePresentation;\n    readonly deprecated?: { readonly replacement?: string; readonly reason?: string };\n  };\n}\n\nexport const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [\n${rows.join("\n")}\n];\n`,
+  );
+  write(
+    `${DEFS}/__tests__/overlayMetaIndexMatchesDefinitions.test.ts`,
+    `/**\n * The plain metadata index (read by server components) is the definitions' own metadata, row for\n * row: a definition edited without regenerating the index fails here.\n */\nimport { APP_OVERLAYS } from "../registry";\nimport { OVERLAY_META_INDEX } from "../overlay-meta-index";\n\nconst plain = (v: unknown): unknown => JSON.parse(JSON.stringify(v));\n\ndescribe("overlay meta index", () => {\n  it("matches every definition's id, label, instance and window identity", () => {\n    const fromDefinitions = APP_OVERLAYS.map((d) => ({\n      id: d.id,\n      label: d.label,\n      instance: d.instance,\n      ...(d.window ? { window: { windowId: d.window.windowId, mobile: d.window.mobile, deprecated: d.window.deprecated } } : {}),\n    }));\n    expect(plain(OVERLAY_META_INDEX)).toEqual(plain(fromDefinitions));\n  });\n});\n`,
+  );
+  resolve(`${DEFS}/overlay-meta-index.ts: plain metadata for ${rows.length} overlays (server-safe; guarded by __tests__/overlayMetaIndexMatchesDefinitions.test.ts)`);
 }
 
 /**
@@ -1012,14 +1093,16 @@ export function openPanelsInPlace(
   );
   resolve("getStaticEntryByOverlayId / getStaticEntryBySlug (tools grid, sidebar toggle) → the app definition (APP_OVERLAYS): instanceMode → instance, deprecated → window.deprecated, slug → window.windowId ?? id");
   patch("features/admin/utils/lookupOverlay.ts", (t) => {
-    if (t.includes("APP_OVERLAYS")) return t;
+    if (t.includes("OVERLAY_META_INDEX")) return t;
     const head = t.slice(0, t.indexOf("import {"));
     return (
       head +
       `import type { MobilePresentation } from "@ai-matrx/summon";
-import { APP_OVERLAYS } from "${DEFS_SPEC}/registry";
+// The plain metadata index, never the registry: FeatureAdminPage is a server component and the
+// definitions are client modules.
+import { OVERLAY_META_INDEX, type OverlayMetaRow } from "${DEFS_SPEC}/overlay-meta-index";
 
-type AppOverlay = (typeof APP_OVERLAYS)[number];
+type AppOverlay = OverlayMetaRow;
 
 export interface ResolvedWindowPanel {
   overlayId: string;
@@ -1031,7 +1114,7 @@ export interface ResolvedWindowPanel {
   deprecated?: { replacement?: string; reason?: string };
 }
 
-const find = (overlayId: string): AppOverlay | undefined => APP_OVERLAYS.find((d) => d.id === overlayId);
+const find = (overlayId: string): AppOverlay | undefined => OVERLAY_META_INDEX.find((d) => d.id === overlayId);
 const windowSlug = (d: AppOverlay): string => d.window?.windowId ?? d.id;
 
 export function resolveWindowPanel(overlayId: string): ResolvedWindowPanel | null {
@@ -1062,14 +1145,14 @@ export function resolveOverlay(overlayId: string): ResolvedOverlay | null {
 }
 
 export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPanel[] {
-  return APP_OVERLAYS.filter((d) => d.window && windowSlug(d).startsWith(prefix))
+  return OVERLAY_META_INDEX.filter((d) => d.window && windowSlug(d).startsWith(prefix))
     .map((d) => resolveWindowPanel(d.id))
     .filter((r): r is ResolvedWindowPanel => r !== null);
 }
 `
     );
   });
-  resolve("features/admin/utils/lookupOverlay.ts: catalogue + window metadata lookups → APP_OVERLAYS (kind now window|overlay; deprecated uses replacement/reason)");
+  resolve("features/admin/utils/lookupOverlay.ts: catalogue + window metadata lookups → OVERLAY_META_INDEX (server-safe plain data; kind now window|overlay; deprecated uses replacement/reason)");
   // the one in-app lazyOverlay use outside the controller
   patch("features/agent-shortcuts/components/LinkAgentToShortcutModal.tsx", (t) => {
     t = t.replace(/^import \{ lazyOverlay \} from "@\/features\/overlays\/boundary\/lazyOverlay";\n/m, 'import dynamic from "next/dynamic";\n');

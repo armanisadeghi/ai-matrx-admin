@@ -36,9 +36,14 @@ import {
 } from "@/features/agents/components/builder/message-builders/MessageViewModeMenu";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
-import { PromptInsertMenu } from "@ai-matrx/rich-content/editor/format/PromptInsertMenu";
+import { MessageInsertMenu } from "@/features/agents/components/builder/message-builders/insert-menu/MessageInsertMenu";
+import { useInsertMenuLists } from "@/features/agents/components/builder/message-builders/insert-menu/useInsertMenuLists";
+import { HOVER_REVEAL } from "@/features/agents/components/builder/message-builders/insert-menu/hoverReveal";
+import { flashNewElements, showInsertion } from "@/lib/insert-flash/flashInsertion";
 import { PromptFixReview } from "@ai-matrx/rich-content/editor/format/PromptFixReview";
-import type { PromptInsert } from "@ai-matrx/rich-content/editor/core/prompt-inserts";
+import { kindDefinitionInsert, type PromptInsert } from "@ai-matrx/rich-content/editor/core/prompt-inserts";
+import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import {
   PromptWriteBox,
@@ -51,6 +56,7 @@ import {
   BlockList,
   BlockType,
   offeredBlockTypes,
+  offeredBlockTypeRows,
 } from "@/features/agents/components/builder/message-builders/AddBlockButton";
 import {
   agentPromptMenuSections,
@@ -120,6 +126,8 @@ export function SystemMessage({
   const writeRef = useRef<RichEditorController | null>(null);
   const insertCaretRef = useRef<{ start: number; end: number } | null>(null);
   const insertSources = usePromptInsertSources(agentId, "system");
+  const insertLists = useInsertMenuLists();
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   // Full messages array — needed for write-back
   const messages = useAppSelector((state) =>
@@ -276,6 +284,15 @@ export function SystemMessage({
             : null;
     }
   };
+  // Every Insert lands where the person is working and shows itself.
+  const showInserted = (run: () => unknown) =>
+    showInsertion({
+      run,
+      before: developerMessage,
+      textarea: viewMode === "write" ? null : (textareaRefs.current[systemMessageIndex] ?? null),
+      container: contentRef.current,
+      focusEditor: () => writeRef.current?.focus(),
+    });
   const handlePromptInsert = (insert: PromptInsert) => {
     const textarea = textareaRefs.current[systemMessageIndex];
     insertPromptText({
@@ -360,8 +377,6 @@ export function SystemMessage({
   >(undefined);
 
   // Check if variable insertion is enabled
-  const hasVariableSupport =
-    !!variableDefinitions && variableDefinitions.length > 0;
 
   // Derive variable names from variableDefaults
   const variableNames = variableDefinitions
@@ -382,47 +397,6 @@ export function SystemMessage({
       handleTextChange(updated);
     },
     [developerMessage, handleTextChange],
-  );
-
-  const handleBeforeVariableSelectorOpen = useCallback(() => {
-    const textarea = textareaRefs.current[systemMessageIndex];
-    if (textarea) {
-      setCursorPositions((prev) => ({
-        ...prev,
-        [systemMessageIndex]: textarea.selectionStart,
-      }));
-    }
-    if (!isEditing) {
-      setIsEditing(true);
-    }
-  }, [systemMessageIndex, isEditing]);
-
-  const insertVariableIntoSystemMessage = useCallback(
-    (variable: string) => {
-      const textarea = textareaRefs.current[systemMessageIndex];
-      const cursorPos =
-        cursorPositions[systemMessageIndex] ?? developerMessage.length;
-      const insertion = `{{${variable}}}`;
-      const newContent =
-        developerMessage.substring(0, cursorPos) +
-        insertion +
-        developerMessage.substring(cursorPos);
-      handleTextChange(newContent);
-      const newCursorPos = cursorPos + insertion.length;
-      setCursorPositions((prev) => ({
-        ...prev,
-        [systemMessageIndex]: newCursorPos,
-      }));
-      setTimeout(() => {
-        if (textarea) {
-          textarea.focus({ preventScroll: true });
-          textarea.setSelectionRange(newCursorPos, newCursorPos);
-          textarea.style.height = "auto";
-          textarea.style.height = `${textarea.scrollHeight}px`;
-        }
-      }, 0);
-    },
-    [developerMessage, cursorPositions, systemMessageIndex, handleTextChange],
   );
 
   // onTextReplace is a FULL-content replace — the engine contract: Cut/Paste/
@@ -650,8 +624,8 @@ export function SystemMessage({
           textarea,
           fallbackCaret: caret,
         }),
-      onNewVariable: () => goToBuilderSection("variables"),
-      onAddContextItem: () => goToBuilderSection("context"),
+      onNewVariable: () => goToBuilderSection("variables", { press: true }),
+      onAddContextItem: () => goToBuilderSection("context", { press: true }),
       blockSections: blockEditing.menuSections(),
       conditionalSections,
       onOptimize: () => setIsOptimizerOpen(true),
@@ -693,71 +667,90 @@ export function SystemMessage({
     <div className="space-y-3">
       {blockEditing.nodes}
       <div className="group border-border rounded-lg bg-gray-50 dark:bg-gray-800">
-        {/* Header */}
-        <div className="flex items-center justify-between px-2 py-1 sticky top-0 z-10 rounded-t-lg bg-gray-50 dark:bg-gray-800">
+        {/* Header — at rest only "System" and the view menu show; hover or focus reveals the rest. */}
+        <div className="flex items-center justify-between px-2 py-1 sticky top-0 z-10 rounded-t-lg bg-gray-50 dark:bg-gray-800 text-muted-foreground">
           <div className="flex items-center gap-1">
-            <Label className="text-xs text-gray-600 dark:text-gray-400">
+            <Label className="text-xs text-muted-foreground">
               System
             </Label>
             <MessageViewModeMenu viewMode={viewMode} onChange={setViewMode} />
             {systemIndex >= 0 && (
-              <MessageFlagToggles
-                flags={systemFlags.flags}
-                states={systemFlags.states}
-                onToggle={systemFlags.onToggle}
-              />
+              <div className={HOVER_REVEAL}>
+                <MessageFlagToggles
+                  flags={systemFlags.flags}
+                  states={systemFlags.states}
+                  onToggle={systemFlags.onToggle}
+                />
+              </div>
             )}
           </div>
           {showsTextTools(viewMode) && (
-            <PromptFormatButtons
-              mode={viewMode === "write" ? "write" : "textarea"}
-              writeRef={writeRef}
-              getTextarea={() => textareaRefs.current[systemMessageIndex] ?? null}
-            />
+            <div className={cn("min-w-0 flex-1", HOVER_REVEAL)}>
+              <PromptFormatButtons
+                mode={viewMode === "write" ? "write" : "textarea"}
+                writeRef={writeRef}
+                getTextarea={() => textareaRefs.current[systemMessageIndex] ?? null}
+              />
+            </div>
           )}
-          <div className="flex items-center gap-1">
-{showsTextTools(viewMode) && blockEditing.toolbarButton}
-{showsTextTools(viewMode) && (
-          <PromptInsertMenu
-            variables={insertSources.variables}
-            kinds={insertSources.kinds}
-            kindSchema={insertSources.kindSchema}
-            contextItems={insertSources.contextItems}
-            onInsert={handlePromptInsert}
-            onWrapSection={(name, when) =>
-              wrapPromptSection({
-                write: viewMode === "write" ? writeRef.current : null,
-                textarea: textareaRefs.current[systemMessageIndex] ?? null,
-                onChange: handleTextChange,
-              })(name, when)
-            }
-            onOpenChange={handleInsertMenuOpen}
-            onAddVariable={() => goToBuilderSection("variables")}
-            onAddContextItem={() => goToBuilderSection("context")}
-          />
-)}
-          <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+          <div className={cn("flex items-center gap-1", HOVER_REVEAL)}>
+            {showsTextTools(viewMode) && (
+              <MessageInsertMenu
+                variables={insertSources.variables}
+                contextItems={insertSources.contextItems}
+                onInsert={(insert) => showInserted(() => handlePromptInsert(insert))}
+                onWrapSection={(name, when) =>
+                  showInserted(() =>
+                    wrapPromptSection({
+                      write: viewMode === "write" ? writeRef.current : null,
+                      textarea: textareaRefs.current[systemMessageIndex] ?? null,
+                      onChange: handleTextChange,
+                    })(name, when),
+                  )
+                }
+                contentTypes={offeredBlockTypeRows()}
+                onAddContentType={(type) => {
+                  flashNewElements(contentRef.current);
+                  setPendingAddType(type);
+                }}
+                kinds={insertLists.kinds}
+                kindsError={insertLists.kindsError}
+                onPickKind={(kind) => {
+                  const schema = insertLists.kindSchema(kind);
+                  if (schema === null || schema === undefined) {
+                    toast.error("This kind has no schema to insert");
+                    return;
+                  }
+                  showInserted(() => handlePromptInsert(kindDefinitionInsert(schema)));
+                }}
+                blocks={insertLists.blocks}
+                blocksError={insertLists.blocksError}
+                onPickBlock={(name) =>
+                  showInserted(() => blockEditing.insertFromMenu({ name, label: name }))
+                }
+                onAddVariable={() => goToBuilderSection("variables", { press: true })}
+                onAddContextItem={() => goToBuilderSection("context", { press: true })}
+                onOpenChange={(open) => {
+                  if (open) insertLists.load();
+                  handleInsertMenuOpen(open);
+                }}
+              />
+            )}
             <SystemMessageButtons
-              hasVariableSupport={hasVariableSupport}
               hasFullScreenEditor={!!onOpenFullScreenEditor}
-              variableNames={variableNames}
-              onVariableSelected={insertVariableIntoSystemMessage}
-              onBeforeVariableSelectorOpen={handleBeforeVariableSelectorOpen}
               templateCurrentContent={developerMessage}
               onTemplateContentSelected={handleTextChange}
               onSaveTemplate={() => {}}
               onOptimize={() => setIsOptimizerOpen(true)}
               onOpenFullScreenEditor={onOpenFullScreenEditor}
               onClear={() => handleTextChange("")}
-              onAddBlockType={(type) => setPendingAddType(type)}
               onVoiceTranscription={handleVoiceTranscription}
             />
-          </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4" ref={contentRef}>
           <PromptFixReview
             text={developerMessage}
             onApply={handleTextChange}

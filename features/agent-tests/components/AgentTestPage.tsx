@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { FlaskConical, Play } from "lucide-react";
+import { FlaskConical, Play, RotateCcw, Square, StepForward } from "lucide-react";
 import {
   Button,
   EmptyState,
@@ -23,7 +23,6 @@ import {
   ReadFailure,
   type ArchiveFilterValue,
 } from "@ai-matrx/design-system";
-import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import {
@@ -31,12 +30,16 @@ import {
   type AgentVariableDeclaration,
 } from "@/features/agents/samples/service";
 import {
+  cancelRun,
   countResults,
   fetchAgentRuns,
   fetchRun,
   fetchRunResults,
   fetchTestCases,
-  LAUNCH_AVAILABLE,
+  followRun,
+  launchRun,
+  recheckRun,
+  resumeRun,
 } from "../service";
 import { agentTestModes } from "../agentModes";
 import { runStatusMeta } from "../verdicts";
@@ -54,8 +57,9 @@ import { ResultDetail } from "./ResultDetail";
 import { RunProgress } from "./RunProgress";
 import { ResultsTable, RunsTable } from "./AgentTestTables";
 
-/** While a run is live the page re-reads it on this beat (a run's server stream replaces it). */
-const LIVE_REREAD_MS = 3000;
+function errorText(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
 
 type Read<T> =
   | { state: "loading" }
@@ -98,11 +102,26 @@ function RunOptionsCard({
   options,
   onChange,
   caseCount,
+  onRun,
 }: {
   options: RunOptions;
   onChange: (next: RunOptions) => void;
   caseCount: number;
+  onRun: () => Promise<void>;
 }) {
+  const [launching, setLaunching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = async () => {
+    setLaunching(true);
+    setError(null);
+    try {
+      await onRun();
+    } catch (err) {
+      setError(errorText(err, "The run did not start."));
+    } finally {
+      setLaunching(false);
+    }
+  };
   return (
     <Card>
       <CardContent gap="md">
@@ -140,17 +159,13 @@ function RunOptionsCard({
           <Button
             variant="primary"
             icon={<Play />}
-            disabled={!LAUNCH_AVAILABLE || caseCount === 0}
+            disabled={caseCount === 0 || launching}
+            onClick={() => void run()}
           >
             {caseCount > 0 ? `Run ${caseCount} tests` : "Run tests"}
           </Button>
-          {!LAUNCH_AVAILABLE ? (
-            <Button
-              variant="link"
-              onClick={() => void announceComingSoon("agents.test-runs")}
-            >
-              Not available yet
-            </Button>
+          {error ? (
+            <span className="type-caption text-destructive-ink">{error}</span>
           ) : null}
         </div>
       </CardContent>
@@ -194,11 +209,13 @@ function SelectedRun({
   cases,
   declarations,
   seat,
+  onOpenRun,
 }: {
   runId: string;
   cases: TestCaseView[];
   declarations: readonly AgentVariableDeclaration[];
   seat: AgentTestSeat;
+  onOpenRun: (id: string) => void;
 }) {
   const [runRead, rereadRun] = useRead<TestRunView | null>(
     () => fetchRun(runId),
@@ -209,6 +226,8 @@ function SelectedRun({
     `results:${runId}`,
   );
   const [openResultId, setOpenResultId] = useState<string | null>(null);
+  const [acting, setActing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const status =
     runRead.state === "ready" ? (runRead.data?.status ?? null) : null;
@@ -217,11 +236,36 @@ function SelectedRun({
     rereadRun();
     rereadResults();
   });
+  // A live run follows the server's run stream: each stored result and the final
+  // status re-read the rows (RLS). The stream ends when the run finishes or pauses.
   useEffect(() => {
     if (!live) return;
-    const timer = window.setInterval(() => reread(), LIVE_REREAD_MS);
-    return () => window.clearInterval(timer);
-  }, [live]);
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        for await (const event of followRun(runId, controller.signal)) {
+          if (event.event !== "agent_test_progress") reread();
+        }
+      } catch (err) {
+        if (!controller.signal.aborted)
+          setActionError(errorText(err, "Lost the run's live updates."));
+      }
+      if (!controller.signal.aborted) reread();
+    })();
+    return () => controller.abort();
+  }, [live, runId]);
+
+  const act = async (work: () => Promise<void>, fallback: string) => {
+    setActing(true);
+    setActionError(null);
+    try {
+      await work();
+    } catch (err) {
+      setActionError(errorText(err, fallback));
+    } finally {
+      setActing(false);
+    }
+  };
 
   if (runRead.state === "loading" || resultsRead.state === "loading") {
     return (
@@ -240,9 +284,62 @@ function SelectedRun({
   const counts = run.counts ?? countResults(results);
   const openResult = results.find((r) => r.id === openResultId) ?? null;
 
+  const paused = run.status.startsWith("paused_");
   return (
     <div className="flex flex-col gap-3">
       <RunProgress counts={counts} status={run.status} />
+      {seat === "user" ? (
+        <div className="flex items-center gap-2">
+          {live ? (
+            <Button
+              variant="outline"
+              icon={<Square />}
+              disabled={acting}
+              onClick={() =>
+                void act(async () => {
+                  await cancelRun(runId);
+                  reread();
+                }, "The run did not stop.")
+              }
+            >
+              Cancel
+            </Button>
+          ) : null}
+          {paused ? (
+            <Button
+              variant="outline"
+              icon={<StepForward />}
+              disabled={acting}
+              onClick={() =>
+                void act(async () => {
+                  await resumeRun(runId);
+                  reread();
+                }, "The run did not resume.")
+              }
+            >
+              Resume
+            </Button>
+          ) : null}
+          {!live && !paused ? (
+            <Button
+              variant="outline"
+              icon={<RotateCcw />}
+              disabled={acting}
+              onClick={() =>
+                void act(async () => {
+                  const next = await recheckRun(runId);
+                  onOpenRun(next.runId);
+                }, "Re-check did not run.")
+              }
+            >
+              Re-check
+            </Button>
+          ) : null}
+          {actionError ? (
+            <span className="type-caption text-destructive-ink">{actionError}</span>
+          ) : null}
+        </div>
+      ) : null}
       <div className="flex min-h-0 flex-col gap-3 xl:flex-row">
         <div className="min-w-0 flex-1">
           <ResultsTable
@@ -298,7 +395,7 @@ export function AgentTestPage({
   const [archive, setArchive] = useState<ArchiveFilterValue>(
     DEFAULT_ARCHIVE_FILTER,
   );
-  const [runsRead] = useRead(
+  const [runsRead, rereadRuns] = useRead(
     () =>
       fetchAgentRuns(agentId, {
         purpose: seat === "admin" ? "platform" : "user",
@@ -350,6 +447,11 @@ export function AgentTestPage({
               options={options}
               onChange={setOptions}
               caseCount={cases.length}
+              onRun={async () => {
+                const launched = await launchRun(agentId, options);
+                rereadRuns();
+                openRun(launched.runId);
+              }}
             />
           ) : null}
           <div className="flex justify-end">
@@ -381,6 +483,10 @@ export function AgentTestPage({
               cases={cases}
               declarations={declarations}
               seat={seat}
+              onOpenRun={(id) => {
+                rereadRuns();
+                openRun(id);
+              }}
             />
           ) : null}
         </main>

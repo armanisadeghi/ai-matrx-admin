@@ -1840,6 +1840,30 @@
   overflow: clip;
 }
 
+/* Something just inserted (lib/insert-flash/flashInsertion.ts): a strong primary wash that
+   fades out, so a new chip, token or block is found at a glance. */
+@keyframes matrx-insert-flash {
+  0%,
+  35% {
+    background-color: hsl(var(--primary) / 0.28);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.7);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+}
+.matrx-insert-flash {
+  animation: matrx-insert-flash 1.8s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .matrx-insert-flash {
+    animation-duration: 0.01s;
+    animation-delay: 1.2s;
+    animation-fill-mode: backwards;
+  }
+}
+
 /* ────────────────────────────────────────────────────────────────────────
    THE iOS ZOOM FLOOR — global, mechanical, coarse-pointer only.
 

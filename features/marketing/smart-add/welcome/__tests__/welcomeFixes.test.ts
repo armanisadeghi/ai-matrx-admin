@@ -70,7 +70,7 @@ describe("what buyers search", () => {
 
 describe("the profile write survives the page going away", () => {
   const found = { name: "Ada Lovelace", websiteUrl: "https://ada.dev", accounts: [], company: null, jobTitle: null };
-  const KEY = "matrx:client:welcome.profile-pending:signup_welcome:test:abc";
+  const KEY = "matrx:client:welcome.profile-pending:signup_welcome:owner-1";
   const fetchMock = jest.fn();
   beforeEach(() => {
     localStorage.clear();
@@ -86,7 +86,7 @@ describe("the profile write survives the page going away", () => {
       return reply({ success: true, data: null });
     });
     fetchMock.mockResolvedValueOnce(reply({ success: true }));
-    const fields = await writeWelcomeProfile("signup_welcome:test:abc", found);
+    const fields = await writeWelcomeProfile("signup_welcome:owner-1", found);
     expect(fields).toEqual(expect.arrayContaining(["preferred_name", "website_url"]));
     expect(JSON.parse(seenDuringWrite ?? "null")).toMatchObject({ ownerId: "owner-1", found });
     expect(localStorage.getItem(KEY)).toBeNull();
@@ -95,7 +95,7 @@ describe("the profile write survives the page going away", () => {
   it("a write that never finished is written by the next load, for its own account only", async () => {
     // The page went away mid-write: the record is there, the PATCH never landed.
     fetchMock.mockImplementationOnce(() => new Promise(() => undefined));
-    void writeWelcomeProfile("signup_welcome:test:abc", found);
+    void writeWelcomeProfile("signup_welcome:owner-1", found);
     await new Promise((r) => setTimeout(r, 0));
     expect(localStorage.getItem(KEY)).not.toBeNull();
 
@@ -105,7 +105,7 @@ describe("the profile write survives the page going away", () => {
 
     fetchMock.mockResolvedValueOnce(reply({ success: true, data: null }));
     fetchMock.mockResolvedValueOnce(reply({ success: true }));
-    expect(await resumeWelcomeProfiles("owner-1")).toEqual(["signup_welcome:test:abc"]);
+    expect(await resumeWelcomeProfiles("owner-1")).toEqual(["signup_welcome:owner-1"]);
     const patch = JSON.parse(String(fetchMock.mock.calls.at(-1)?.[1]?.body));
     expect(patch).toMatchObject({ preferred_name: "Ada", website_url: "https://ada.dev" });
     expect(localStorage.getItem(KEY)).toBeNull();
@@ -114,12 +114,37 @@ describe("the profile write survives the page going away", () => {
   it("a failed write keeps the record for the next load", async () => {
     fetchMock.mockResolvedValueOnce(reply({ success: true, data: null }));
     fetchMock.mockResolvedValueOnce(reply({ success: false, msg: "nope" }, false));
-    await expect(writeWelcomeProfile("signup_welcome:test:abc", found)).rejects.toThrow("nope");
+    await expect(writeWelcomeProfile("signup_welcome:owner-1", found)).rejects.toThrow("nope");
     expect(localStorage.getItem(KEY)).not.toBeNull();
   });
 });
 
-describe("a login-proven Workspace site vouches; its accounts still need a second host", () => {
+
+describe("an admin's test login never writes the admin's own profile", () => {
+  const found = { name: "Ada Lovelace", websiteUrl: "https://ada.dev", accounts: [], company: null, jobTitle: null };
+  const fetchMock = jest.fn();
+  beforeEach(() => {
+    localStorage.clear();
+    fetchMock.mockReset();
+    global.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  it("writeWelcomeProfile on a test subject calls nothing and records nothing", async () => {
+    expect(await writeWelcomeProfile("signup_welcome:test:abc", found)).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(localStorage.length).toBe(0);
+  });
+
+  it("a test login's leftover record (an older build) is dropped, never written", async () => {
+    const key = "matrx:client:welcome.profile-pending:signup_welcome:test:abc";
+    localStorage.setItem(key, JSON.stringify({ ownerId: "owner-1", found, at: "2026-10-16T00:00:00Z" }));
+    expect(await resumeWelcomeProfiles("owner-1")).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(localStorage.getItem(key)).toBeNull();
+  });
+});
+
+describe("a Workspace site shown to be theirs vouches; its accounts still need a second host", () => {
   const social = (sourceUrl: string, kind: string) =>
     parseEvidenceItem({
       key: "social:twitter:adaexample",

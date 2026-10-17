@@ -93,6 +93,8 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
     if (saved && testLoginUsable(saved)) setTest(saved);
   }, [testable]);
   const [done, setDone] = useState<WelcomeDone | null>(null);
+  // Skip (no name to search by, or nothing found): the welcome page's own content, this visit.
+  const [skipped, setSkipped] = useState(false);
 
   // A "Looks right" whose profile write never finished (the page went away mid-way) is written now, door or not.
   useEffect(() => {
@@ -131,7 +133,7 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
     if (error) toast.error(`Could not save your progress: ${extractErrorMessage(error)}`);
   };
 
-  const doorOpen = Boolean(login) && !done;
+  const doorOpen = Boolean(login) && !done && !skipped;
   return (
     <div className="flex flex-col gap-8">
       {testable ? (
@@ -141,6 +143,7 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
           onUse={(t) => {
             writeTestLogin(t);
             setDone(null);
+            setSkipped(false);
             setTest(t);
           }}
         />
@@ -152,6 +155,7 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
           loginSeed={login}
           onCreated={() => void completeOnboarding()}
           onWelcomeDone={setDone}
+          onWelcomeSkip={() => setSkipped(true)}
         />
       ) : null}
       {done?.paidHost ? <WelcomeSearchCards host={done.paidHost} names={ownNames(done.brand, done.paidHost)} /> : null}

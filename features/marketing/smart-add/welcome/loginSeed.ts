@@ -1,10 +1,16 @@
 /**
- * Sign-up welcome — what the login alone proves (SIGNUP-WELCOME.md step 1; smart-add VISION Part 29). Pure.
+ * Sign-up welcome — what the login alone tells us (SIGNUP-WELCOME.md step 1; smart-add VISION Part 29). Pure.
  *
- * Proven values come ONLY from the sign-in provider's own record (`user.identities[].identity_data`, its
- * `provider`) and from `user.email` once `email_confirmed_at` is set. Never `user_metadata`: the person can edit it.
+ * Identity claims (owning an email, an account, a domain) come ONLY from the sign-in provider's own record
+ * (`user.identities[].identity_data`, its `provider`) and from `user.email` once `email_confirmed_at` is set.
+ * The NAME is different: a name the person typed at sign-up (`user_metadata.full_name` / `name`) is their own word,
+ * which Smart Add counts as certain (Part 15: never ask what the data answers). Order: the provider's name, the name
+ * they typed, then the email's name hint (`jane.doe@` → "Jane Doe"). No name at all → the door asks once.
+ *
  * A free-mail domain (`web.domain_category` `free_mail`, through the one registry in lib/web-domains) is never a
- * website; a role mailbox (info@, support@) names a business, never a person.
+ * website; a role mailbox (info@, support@) names a business, never a person. A work email's domain or a Google
+ * Workspace domain is a website CANDIDATE only (often an employer's): it becomes "Your site" when the run shows the
+ * site is theirs (siteTheirs.ts), never from the login alone.
  *
  * `seedEvidence` turns the proven values into the Smart Add evidence the session already understands: typed items
  * (`source.kind: "typed"`, confidence 1, keys from `customItem`), which `found/foundCards.ts` counts as certain.
@@ -13,6 +19,7 @@
 import type { User } from "@supabase/supabase-js";
 import { liveKnownDomainRules, ruleFor, type KnownDomainRule } from "@/lib/web-domains/registry";
 import { normalizeEmail } from "../emailInput";
+import { isPlaceholderName } from "../placeholderName";
 import { customItem, type Decision, type EvidenceItem } from "../evidence";
 
 /**
@@ -26,8 +33,10 @@ export const ROLE_LOCAL_PARTS: ReadonlySet<string> = new Set([
 ]);
 
 export interface LoginSeed {
-  /** The account's display name as the sign-in provider gave it (Google, GitHub, Apple on first sign-in). */
+  /** The person's name: the sign-in provider's, else the one they typed at sign-up, else the email's name hint. */
   name: string | null;
+  /** Where `name` came from. */
+  nameFrom: "provider" | "typed" | "email" | null;
   /** The provider's profile picture. */
   avatarUrl: string | null;
   email: string | null;
@@ -98,7 +107,9 @@ export function loginSeed(user: User, rules: readonly KnownDomainRule[] | null =
     }
     return null;
   };
-  const name = first((d) => str(d.full_name) ?? str(d.name));
+  const providerName = first((d) => str(d.full_name) ?? str(d.name));
+  const meta = (user.user_metadata ?? {}) as IdentityData;
+  const typedName = str(meta.full_name) ?? str(meta.name);
   const avatarUrl = first((d) => str(d.avatar_url) ?? str(d.picture));
   const google = ids.find((i) => i.provider === "google");
   const claims = (google?.data.custom_claims ?? null) as IdentityData | null;
@@ -109,8 +120,12 @@ export function loginSeed(user: User, rules: readonly KnownDomainRule[] | null =
   const email = normalizeEmail(user.email);
   const emailProven = Boolean(email && user.email_confirmed_at);
   const emailDomain = email ? (email.split("@").pop() ?? null) : null;
+  const roleMailbox = email ? isRoleMailbox(email) : false;
+  const hint = email && !roleMailbox ? emailNameHint(email) : null;
+  const name = providerName ?? typedName ?? hint;
   return {
     name,
+    nameFrom: providerName ? "provider" : typedName ? "typed" : hint ? "email" : null,
     avatarUrl,
     email,
     emailProven,
@@ -119,16 +134,31 @@ export function loginSeed(user: User, rules: readonly KnownDomainRule[] | null =
     githubLogin,
     emailDomain,
     freeMail: emailDomain ? isFreeMailDomain(emailDomain, rules) : null,
-    roleMailbox: email ? isRoleMailbox(email) : false,
+    roleMailbox,
   };
 }
 
 /**
- * The website the login proves: the Google Workspace domain, else a confirmed email's domain when it is known not to
- * be free mail and the address is not a role mailbox. An employer's domain is a website candidate, never "your
- * business" until the person says so.
+ * A name read off the part before the @: two or three plain words (`jane.doe`, `mary_ann.lee`). A part holding a
+ * digit is an id, not a word (`jane.doe.a1b2c3` → "Jane Doe"); a single word is never a full name (`jdoe`), and a
+ * mailbox word never names anyone (`sales.team`).
+ * Stricter twin of aidream `email_clues._name_hint`.
  */
-export function provenWebsite(seed: LoginSeed): string | null {
+export function emailNameHint(email: string): string | null {
+  const local = email.slice(0, email.lastIndexOf("@")).split("+")[0] ?? "";
+  const words = local.split(/[._-]+/).filter((w) => w && !/\d/.test(w));
+  // A mailbox word (sales.team@, info.desk@) is never part of a person's name.
+  if (words.length < 2 || words.length > 3 || words.some((w) => w.length < 2 || !/^\p{L}+$/u.test(w) || ROLE_LOCAL_PARTS.has(w.toLowerCase())))
+    return null;
+  return words.map((w) => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+}
+
+/**
+ * The website the login POINTS AT: the Google Workspace domain, else a confirmed email's domain when it is known not
+ * to be free mail and the address is not a role mailbox. A candidate only: an employer's domain is not the person's
+ * site. The first round searches it; siteTheirs.ts decides whether it is theirs.
+ */
+export function websiteCandidate(seed: LoginSeed): string | null {
   if (seed.workspaceDomain) return seed.workspaceDomain;
   if (seed.emailProven && seed.emailDomain && seed.freeMail === false && !seed.roleMailbox) return seed.emailDomain;
   return null;
@@ -136,12 +166,10 @@ export function provenWebsite(seed: LoginSeed): string | null {
 
 const FROM_LOGIN = { node: "login", kind: "typed", url: null, where: "your sign-in" } as const;
 
-/** The login's proven values as typed evidence: the email, the website, the GitHub account. */
+/** The login's proven values as typed evidence: the email and the GitHub account (never the website candidate). */
 export function seedEvidence(seed: LoginSeed): EvidenceItem[] {
   const items: EvidenceItem[] = [];
   if (seed.emailProven && seed.email) items.push(customItem("email", seed.email));
-  const website = provenWebsite(seed);
-  if (website) items.push(customItem("website", website));
   if (seed.githubLogin) {
     const url = `https://github.com/${seed.githubLogin}`;
     items.push(customItem("social", url, { platform: "github", handle: seed.githubLogin, url, label: seed.githubLogin }));
@@ -152,4 +180,19 @@ export function seedEvidence(seed: LoginSeed): EvidenceItem[] {
 /** Every seeded item answered "yes": the login already proved it. */
 export function seedDecisions(items: readonly EvidenceItem[]): Record<string, Decision> {
   return Object.fromEntries(items.map((i) => [i.key, "yes" as const]));
+}
+
+/**
+ * A name the email step PROVED: the profile name on a GitHub account the email lookup found with proof
+ * (`certainty: "certain"`, aidream email_lookups.github_stance). Two words at least, never the login itself or a
+ * placeholder. Gravatar's display name is not read here: its items carry it only inside a free-form evidence line.
+ */
+export function provenProfileName(items: Iterable<EvidenceItem>): string | null {
+  for (const i of items) {
+    if (i.field !== "social" || i.platform !== "github" || i.source.kind !== "social_profile" || i.certainty !== "certain") continue;
+    const name = (i.label ?? "").trim().replace(/\s+/g, " ");
+    if (name.split(" ").length < 2 || isPlaceholderName(name) || name.toLowerCase() === (i.handle ?? "").toLowerCase()) continue;
+    return name;
+  }
+  return null;
 }

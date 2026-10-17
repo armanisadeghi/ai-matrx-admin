@@ -56,6 +56,7 @@ import {
   BlockList,
   BlockType,
   offeredBlockTypes,
+  offeredBlockTypeRows,
 } from "@/features/agents/components/builder/message-builders/AddBlockButton";
 import {
   agentPromptMenuSections,
@@ -70,9 +71,13 @@ import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
 import { useAgentBuilderSurfaceScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
-import { PromptInsertMenu } from "@ai-matrx/rich-content/editor/format/PromptInsertMenu";
+import { MessageInsertMenu } from "@/features/agents/components/builder/message-builders/insert-menu/MessageInsertMenu";
+import { useInsertMenuLists } from "@/features/agents/components/builder/message-builders/insert-menu/useInsertMenuLists";
+import { HOVER_REVEAL } from "@/features/agents/components/builder/message-builders/insert-menu/hoverReveal";
+import { flashNewElements, showInsertion } from "@/lib/insert-flash/flashInsertion";
+import { toast } from "@/lib/toast";
 import { PromptFixReview } from "@ai-matrx/rich-content/editor/format/PromptFixReview";
-import type { PromptInsert } from "@ai-matrx/rich-content/editor/core/prompt-inserts";
+import { kindDefinitionInsert, type PromptInsert } from "@ai-matrx/rich-content/editor/core/prompt-inserts";
 import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import {
   PromptWriteBox,
@@ -162,6 +167,8 @@ export function MessageItem({
   const writeRef = useRef<RichEditorController | null>(null);
   const insertCaretRef = useRef<{ start: number; end: number } | null>(null);
   const insertSources = usePromptInsertSources(agentId, messageIndex);
+  const insertLists = useInsertMenuLists();
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const contextMenuOpenRef = useRef(false);
   const textareaInitializedRef = useRef(false);
   const scrollLockRef = useRef<{ scrollTop: number; overflow: string } | null>(
@@ -197,8 +204,6 @@ export function MessageItem({
   const openEditHistory = useToolOpener(agentEditHistoryInput);
   const handleViewHistory = () => openEditHistory({ agentId });
 
-  const hasVariableSupport =
-    variableDefinitions != null && variableDefinitions.length > 0;
   const variableNames = variableDefinitions?.map((v) => v.name) ?? [];
 
   // Derive content from blocks. The block editor (AddBlockButton/BlockList)
@@ -504,46 +509,6 @@ export function MessageItem({
     contextMenuOpenRef.current = false;
   }, []);
 
-  const insertVariableAtCursor = useCallback(
-    (variable: string) => {
-      const textarea = textareaRef.current;
-      const cursorPos = cursorPositions[messageIndex] ?? currentText.length;
-      const insertion = `{{${variable}}}`;
-      const newText =
-        currentText.substring(0, cursorPos) +
-        insertion +
-        currentText.substring(cursorPos);
-      handleTextChange(newText);
-      const newCursorPos = cursorPos + insertion.length;
-      setCursorPositions((prev) => ({
-        ...prev,
-        [messageIndex]: newCursorPos,
-      }));
-      setTimeout(() => {
-        if (textarea) {
-          textarea.focus({ preventScroll: true });
-          textarea.setSelectionRange(newCursorPos, newCursorPos);
-          textarea.style.height = "auto";
-          textarea.style.height = `${textarea.scrollHeight}px`;
-        }
-      }, 0);
-    },
-    [currentText, cursorPositions, messageIndex, handleTextChange],
-  );
-
-  const handleBeforeVariableSelectorOpen = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      setCursorPositions((prev) => ({
-        ...prev,
-        [messageIndex]: textarea.selectionStart,
-      }));
-    }
-    if (!isEditing) {
-      setIsEditing(true);
-    }
-  }, [messageIndex, isEditing]);
-
   // Textarea handlers
   const handleTextareaRef = useCallback((el: HTMLTextAreaElement | null) => {
     textareaRef.current = el;
@@ -688,8 +653,8 @@ export function MessageItem({
           textarea,
           fallbackCaret: caret,
         }),
-      onNewVariable: () => goToBuilderSection("variables"),
-      onAddContextItem: () => goToBuilderSection("context"),
+      onNewVariable: () => goToBuilderSection("variables", { press: true }),
+      onAddContextItem: () => goToBuilderSection("context", { press: true }),
       blockSections: blockEditing.menuSections(),
       conditionalSections,
       contentBlockTypes: offeredBlockTypes(
@@ -726,21 +691,31 @@ export function MessageItem({
       ? message.role
       : "user";
 
+  // Every Insert lands where the person is working and shows itself.
+  const showInserted = (run: () => unknown) =>
+    showInsertion({
+      run,
+      before: currentText,
+      textarea: viewMode === "write" ? null : textareaRef.current,
+      container: contentRef.current,
+      focusEditor: () => writeRef.current?.focus(),
+    });
+
   if (!message || !allMessages) {
     return <Skeleton className="h-[120px] w-full rounded-md" />;
   }
 
   return (
-    <div className={cn("group rounded-lg bg-muted ")}>
+    <div className={cn("group rounded-lg bg-muted ")} data-message-index={messageIndex}>
       {blockEditing.nodes}
-      {/* Header */}
-      <div className="flex items-center justify-between sticky top-0 z-10 pt-0 pb-1 pr-2 rounded-t-lg bg-muted">
+      {/* Header — at rest only the role and the view menu show; hover or focus reveals the rest. */}
+      <div className="flex items-center justify-between sticky top-0 z-10 pt-0 pb-1 pr-2 rounded-t-lg bg-muted text-muted-foreground">
         <div className="flex items-center gap-1">
           <Select
             value={displayRole}
             onValueChange={(v) => handleRoleChange(v as PrimingMessageRole)}
           >
-            <SelectTrigger className="h-4 bg-transparent text-foreground !border-none hover:bg-accent w-auto min-w-[120px] text-xs !shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
+            <SelectTrigger className="h-4 bg-transparent text-muted-foreground !border-none hover:bg-accent w-auto min-w-[120px] text-xs !shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -749,65 +724,97 @@ export function MessageItem({
             </SelectContent>
           </Select>
           <MessageViewModeMenu viewMode={viewMode} onChange={setViewMode} />
-          <MessageFlagToggles
-            flags={messageFlags.flags}
-            states={messageFlags.states}
-            onToggle={messageFlags.onToggle}
-          />
+          <div className={HOVER_REVEAL}>
+            <MessageFlagToggles
+              flags={messageFlags.flags}
+              states={messageFlags.states}
+              onToggle={messageFlags.onToggle}
+            />
+          </div>
         </div>
         {showsTextTools(viewMode) && (
-          <PromptFormatButtons
-            mode={viewMode === "write" ? "write" : "textarea"}
-            writeRef={writeRef}
-            getTextarea={() => textareaRef.current}
-          />
+          <div className={cn("min-w-0 flex-1", HOVER_REVEAL)}>
+            <PromptFormatButtons
+              mode={viewMode === "write" ? "write" : "textarea"}
+              writeRef={writeRef}
+              getTextarea={() => textareaRef.current}
+            />
+          </div>
         )}
-        <div className="flex items-center gap-1">
-{showsTextTools(viewMode) && blockEditing.toolbarButton}
-{showsTextTools(viewMode) && (
-        <PromptInsertMenu
-          onAddVariable={() => goToBuilderSection("variables")}
-          onAddContextItem={() => goToBuilderSection("context")}
-          variables={insertSources.variables}
-          kinds={insertSources.kinds}
-          kindSchema={insertSources.kindSchema}
-          contextItems={insertSources.contextItems}
-          onWrapSection={(name, when) =>
-            wrapPromptSection({
-              write: viewMode === "write" ? writeRef.current : null,
-              textarea: textareaRef.current,
-              onChange: handleTextChange,
-            })(name, when)
-          }
-          onInsert={(insert: PromptInsert) => {
-            const textarea = textareaRef.current;
-            insertPromptText({
-              insert,
-              text: currentText,
-              onChange: handleTextChange,
-              writeController: viewMode === "write" ? writeRef.current : null,
-              textarea: textarea && textarea.isConnected ? textarea : null,
-              fallbackCaret: insertCaretRef.current,
-            });
-          }}
-          onOpenChange={(open) => {
-            if (!open) return;
-            insertSources.loadKinds();
-            const textarea = textareaRef.current;
-            insertCaretRef.current =
-              textarea && textarea.isConnected
-                ? { start: textarea.selectionStart, end: textarea.selectionEnd }
-                : null;
-          }}
-        />
-)}
-        <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <div className={cn("flex items-center gap-1", HOVER_REVEAL)}>
+          {showsTextTools(viewMode) && (
+            <MessageInsertMenu
+              variables={insertSources.variables}
+              contextItems={insertSources.contextItems}
+              onInsert={(insert: PromptInsert) =>
+                showInserted(() => {
+                  const textarea = textareaRef.current;
+                  insertPromptText({
+                    insert,
+                    text: currentText,
+                    onChange: handleTextChange,
+                    writeController: viewMode === "write" ? writeRef.current : null,
+                    textarea: textarea && textarea.isConnected ? textarea : null,
+                    fallbackCaret: insertCaretRef.current,
+                  });
+                })
+              }
+              onWrapSection={(name, when) =>
+                showInserted(() =>
+                  wrapPromptSection({
+                    write: viewMode === "write" ? writeRef.current : null,
+                    textarea: textareaRef.current,
+                    onChange: handleTextChange,
+                  })(name, when),
+                )
+              }
+              contentTypes={offeredBlockTypeRows(
+                message.role === "user" && modelProducesSpeech(selectedModel) ? ["speech_script"] : [],
+              )}
+              onAddContentType={(type) => {
+                flashNewElements(contentRef.current);
+                setPendingAddType(type);
+              }}
+              kinds={insertLists.kinds}
+              kindsError={insertLists.kindsError}
+              onPickKind={(kind) => {
+                const schema = insertLists.kindSchema(kind);
+                if (schema === null || schema === undefined) {
+                  toast.error("This kind has no schema to insert");
+                  return;
+                }
+                showInserted(() => {
+                  const textarea = textareaRef.current;
+                  insertPromptText({
+                    insert: kindDefinitionInsert(schema),
+                    text: currentText,
+                    onChange: handleTextChange,
+                    writeController: viewMode === "write" ? writeRef.current : null,
+                    textarea: textarea && textarea.isConnected ? textarea : null,
+                    fallbackCaret: insertCaretRef.current,
+                  });
+                });
+              }}
+              blocks={insertLists.blocks}
+              blocksError={insertLists.blocksError}
+              onPickBlock={(name) =>
+                showInserted(() => blockEditing.insertFromMenu({ name, label: name }))
+              }
+              onAddVariable={() => goToBuilderSection("variables", { press: true })}
+              onAddContextItem={() => goToBuilderSection("context", { press: true })}
+              onOpenChange={(open) => {
+                if (!open) return;
+                insertLists.load();
+                const textarea = textareaRef.current;
+                insertCaretRef.current =
+                  textarea && textarea.isConnected
+                    ? { start: textarea.selectionStart, end: textarea.selectionEnd }
+                    : null;
+              }}
+            />
+          )}
           <MessageItemButtons
-            hasVariableSupport={hasVariableSupport}
             hasFullScreenEditor={!!onOpenFullScreenEditor}
-            variableNames={variableNames}
-            onVariableSelected={insertVariableAtCursor}
-            onBeforeVariableSelectorOpen={handleBeforeVariableSelectorOpen}
             templateRole={message.role}
             templateCurrentContent={currentText}
             onTemplateContentSelected={handleTextChange}
@@ -820,21 +827,14 @@ export function MessageItem({
             }
             onClear={handleClear}
             onDelete={handleDelete}
-            onAddBlockType={(type) => setPendingAddType(type)}
-            extraBlockTypes={
-              message.role === "user" && modelProducesSpeech(selectedModel)
-                ? ["speech_script"]
-                : undefined
-            }
             onVoiceTranscription={handleVoiceTranscription}
             sheetTitle={`${message.role} Message Actions`}
           />
         </div>
-        </div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4" ref={contentRef}>
         <PromptFixReview
           text={currentText}
           onApply={handleTextChange}

@@ -17,6 +17,7 @@ import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 import { supabase } from "@/utils/supabase/client";
 import type { UserFormProfileData } from "@/features/user-profile/types";
 import { welcomeProfilePatch, type WelcomeConfirmed } from "./welcomeProfile";
+import { WELCOME_SUBJECT_PREFIX } from "./welcomeSession";
 
 const ENDPOINT = "/api/user/form-profile";
 
@@ -27,8 +28,11 @@ const pending = defineClientKeyFamily({
   reason: "Confirmed sign-up values not yet written to the profile; the next /welcome load writes them.",
 });
 
+/** An admin's test login (welcomeSession.testSubject): it never writes the signed-in admin's own profile. */
+const isTestSubject = (subject: string) => subject.startsWith(`${WELCOME_SUBJECT_PREFIX}test:`);
+
 export interface PendingWelcomeProfile {
-  /** The signed-in account whose profile this is (a test login writes the admin's own profile). */
+  /** The signed-in account whose profile this is. */
   ownerId: string;
   found: WelcomeConfirmed;
   at: string;
@@ -63,6 +67,7 @@ async function signedInId(): Promise<string | null> {
  * Without a signed-in account nothing can be written and nothing is recorded.
  */
 export async function writeWelcomeProfile(subject: string, found: WelcomeConfirmed): Promise<string[]> {
+  if (isTestSubject(subject)) return [];
   const ownerId = await signedInId();
   if (!ownerId) throw new Error("You are signed out");
   pending.setJSON(subject, { ownerId, found, at: new Date().toISOString() } satisfies PendingWelcomeProfile);
@@ -75,6 +80,11 @@ export async function writeWelcomeProfile(subject: string, found: WelcomeConfirm
 export async function resumeWelcomeProfiles(ownerId: string): Promise<string[]> {
   const done: string[] = [];
   for (const subject of pending.suffixes()) {
+    // A test login's record (left by an older build) is never written: it would fill the admin's own profile.
+    if (isTestSubject(subject)) {
+      pending.remove(subject);
+      continue;
+    }
     const rec = pending.getJSON<PendingWelcomeProfile>(subject);
     if (!rec || rec.ownerId !== ownerId) continue;
     await saveWelcomeProfile(rec.found);

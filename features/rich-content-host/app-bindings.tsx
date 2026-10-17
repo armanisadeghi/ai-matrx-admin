@@ -45,7 +45,8 @@ import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeView
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
-import LocatedTableViewer from "@/features/data-tables/components/LocatedTableViewer";
+// The door, not the viewer: records-ui loads only when a table is shown (LocatedTableViewerDoor.tsx).
+import LocatedTableViewer from "@/features/data-tables/components/LocatedTableViewerDoor";
 import { OpenDestinationDialog } from "@/features/page-extraction/data-review/OpenDestinationDialog";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { getSessionKnob } from "@/lib/scoped-config/sessionKnob";

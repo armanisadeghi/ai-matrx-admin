@@ -1,6 +1,7 @@
 "use client";
 import { type RenderBlock, type BlockDispatchContext, type BlockRenderFn, DEFAULT_UNLABELED_FENCE_LANGUAGE, audioMimeFromUrl, isBlockLoading, type FeSynthesizedBlockType, type DetectorProtocolBlockType, type ProtocolBlockType, type ScalarGenericBlockType, type ShapeBlockType, type OpaqueBlockType, type KnownBlockType, reportUnregisteredBlockType } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch";
 import { BLOCK_DISPATCH as ENGINE_BLOCK_DISPATCH, BLOCK_DISPATCH_CLASSIFICATION as ENGINE_BLOCK_DISPATCH_CLASSIFICATION, registerBlockDispatch } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 /**
  * block-dispatch — the declarative render-block dispatch registry.
  *
@@ -45,7 +46,7 @@ import { BLOCK_DISPATCH as ENGINE_BLOCK_DISPATCH, BLOCK_DISPATCH_CLASSIFICATION 
  */
 
 import type { AnswerEditRemarkMeta } from "@ai-matrx/chat/agents/redux/execution-system/instance-resources/remarks";
-import React, { Fragment } from "react";
+import React, { Fragment, lazy, Suspense, type ComponentProps } from "react";
 import { ReferenceRoleCaption } from "@ai-matrx/chat/agents/image-roles/ReferenceRoleCaption";
 import { DecisionQuestionsTranscriptView } from "@/features/agents/decision-questions/DecisionQuestionsTranscriptView";
 import { RemarksTranscriptView } from "@ai-matrx/chat/agents/components/messages-display/user/RemarksTranscriptView";
@@ -76,7 +77,16 @@ import FileOperationResultBlock from "@/components/mardown-display/blocks/result
 import ValueResultBlock from "@/components/mardown-display/blocks/result-kinds/ValueResultBlock";
 import GoogleWorkspaceResultBlock from "@/components/mardown-display/blocks/google-kinds/GoogleWorkspaceResultBlock";
 import GoogleMarketingResultBlock from "@/components/mardown-display/blocks/google-kinds/GoogleMarketingResultBlock";
-import PlatformRecordBlock from "@/components/mardown-display/blocks/result-kinds/PlatformRecordBlock";
+// A Record card draws through @ai-matrx/records-ui (~2.7 MB): it loads when a Record is shown,
+// never with the host (the first keystroke warms the host). One lazy edge inside the host graph.
+const PlatformRecordBlockImpl = lazy(() => import("@/components/mardown-display/blocks/result-kinds/PlatformRecordBlock"));
+function PlatformRecordBlock(props: ComponentProps<typeof PlatformRecordBlockImpl>) {
+  return (
+    <Suspense fallback={<RegionSkeleton shape="cards" count={1} aria-label="Loading record" />}>
+      <PlatformRecordBlockImpl {...props} />
+    </Suspense>
+  );
+}
 import RelationBlock from "@/components/mardown-display/blocks/result-kinds/RelationBlock";
 import PickListBlock from "@/components/mardown-display/blocks/result-kinds/PickListBlock";
 import {

@@ -346,9 +346,10 @@ export function PromptFormatButtons({
 
 /**
  * The Insert menu's empty Variable / Context rows link here: the builder section scrolls
- * into view and its Add button takes focus (`data-agent-builder-section` on the left panel).
+ * into view and its Add button takes focus — or, with `press`, opens what Add opens
+ * (`data-agent-builder-section` on the left panel).
  */
-export function goToBuilderSection(section: "variables" | "context") {
+export function goToBuilderSection(section: "variables" | "context", { press = false }: { press?: boolean } = {}) {
   if (typeof document === "undefined") return;
   const element = document.querySelector<HTMLElement>(`[data-agent-builder-section="${section}"]`);
   if (!element) {
@@ -359,5 +360,9 @@ export function goToBuilderSection(section: "variables" | "context") {
   const add = [...element.querySelectorAll<HTMLButtonElement>("button")].find((button) =>
     /^add\b/i.test((button.getAttribute("aria-label") ?? button.textContent ?? "").trim()),
   );
-  window.setTimeout(() => (add ?? element).focus({ preventScroll: true }), 250);
+  window.setTimeout(() => {
+    (add ?? element).focus({ preventScroll: true });
+    // `press`: run the section's own Add (the same editor its button opens).
+    if (press) add?.click();
+  }, 250);
 }

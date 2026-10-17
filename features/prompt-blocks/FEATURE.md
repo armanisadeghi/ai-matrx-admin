@@ -13,7 +13,7 @@
 | Data door (direct Supabase, RLS) | `service.ts` |
 | Server resolver call (`GET /prompt-blocks/resolve`) | `resolveBlocks.ts` |
 | Declared names = the agent draft field `promptBlocks` (saved with the agent); `missing` = declared names with no live block | `agentBlocksStore.ts` |
-| Prompt fields hook (Block button, right-click row, `{{<` trigger, picker, chip panel) | `usePromptBlockEditing.tsx` |
+| Prompt fields hook (the Insert menu's Instruction Block pick, right-click row, `{{<` trigger, picker, chip panel) | `usePromptBlockEditing.tsx` |
 | Library `/agents/prompt-blocks`, block page `/agents/prompt-blocks/[id]` | `components/PromptBlock*.tsx`, `VariantsEditor.tsx` |
 | Model view | `features/agents/components/model-view` (draws `prompt_blocks` from the preview) |
 

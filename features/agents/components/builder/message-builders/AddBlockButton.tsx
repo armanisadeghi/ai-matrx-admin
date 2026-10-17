@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   AudioLines,
   ListChecks,
-  Plus,
   Image as ImageIcon,
   Music,
   Video,
@@ -27,12 +26,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { Button } from "@ai-matrx/design-system";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@ai-matrx/design-system";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -190,7 +183,7 @@ const BLOCK_TYPES: BlockTypeConfig[] = [
     icon: <AudioLines className="w-3.5 h-3.5" />,
     // A table like Questions: `SpeechScriptEditor` renders in the list. It is
     // offered only on a user message of a text-to-speech model
-    // (`AddBlockTrigger.extraTypes`).
+    // (`offeredBlockTypes(extraTypes)`).
     fields: [],
   },
   {
@@ -834,20 +827,6 @@ export function BlockRow({
   );
 }
 
-// ---------------------------------------------------------------------------
-// AddBlockTrigger — the "+" dropdown that lives inside the icon button row
-// ---------------------------------------------------------------------------
-
-interface AddBlockTriggerProps {
-  onSelectType: (type: BlockType) => void;
-  /**
-   * Block types offered beyond the always-available ones. `speech_script` is
-   * offered only when the message can be performed as speech (a user message
-   * on a text-to-speech model) — listing it elsewhere would be a dead control.
-   */
-  extraTypes?: BlockType[];
-}
-
 /** Types offered only when a surface opts them in through `extraTypes`. */
 const GATED_BLOCK_TYPES: ReadonlySet<BlockType> = new Set<BlockType>(["speech_script"]);
 
@@ -858,38 +837,22 @@ export function offeredBlockTypes(extraTypes: readonly BlockType[] = []): { type
   ).map(({ type, label }) => ({ type, label }));
 }
 
-export function AddBlockTrigger({ onSelectType, extraTypes = [] }: AddBlockTriggerProps) {
-  const offered = BLOCK_TYPES.filter(
-    (bt) => !GATED_BLOCK_TYPES.has(bt.type) || extraTypes.includes(bt.type),
-  );
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          className="flex items-center justify-center w-6 h-6 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          title="Add content block"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
-        {offered.map((bt) => (
-          <DropdownMenuItem
-            key={bt.type}
-            onClick={() => onSelectType(bt.type)}
-            className="text-xs gap-2"
-          >
-            {bt.icon}
-            {bt.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+const BLOCK_TYPE_ICON: Record<BlockType, React.ComponentType<{ className?: string }>> = {
+  text: TypeIcon,
+  image: ImageIcon,
+  audio: Music,
+  video: Video,
+  youtube_video: Youtube,
+  decision_questions: ListChecks,
+  speech_script: AudioLines,
+  document: FileText,
+};
+
+/** The offered block types with their icon components (the Insert menu's rows). */
+export function offeredBlockTypeRows(
+  extraTypes: readonly BlockType[] = [],
+): { type: BlockType; label: string; icon: React.ComponentType<{ className?: string }> }[] {
+  return offeredBlockTypes(extraTypes).map((bt) => ({ ...bt, icon: BLOCK_TYPE_ICON[bt.type] }));
 }
 
 // ---------------------------------------------------------------------------

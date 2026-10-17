@@ -1,6 +1,7 @@
 "use client";
 
-import { RefObject, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
+import { flashElement } from "@/lib/insert-flash/flashInsertion";
 import { ChevronRight } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -44,6 +45,30 @@ export function Messages({
   const dispatch = useAppDispatch();
   // Example runs start collapsed; the key is the run's first message index.
   const [expandedRuns, setExpandedRuns] = useState<Set<number>>(() => new Set());
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const seenCount = useRef<number | null>(null);
+
+  // A message just added (+ User, + Assistant, + Example): open its example run,
+  // bring it into view, put the caret in it and flash it.
+  const messageCount = messages?.length ?? 0;
+  useEffect(() => {
+    const before = seenCount.current;
+    seenCount.current = messageCount;
+    if (before === null || messageCount <= before || !messages) return;
+    const firstNew = before;
+    const run = exampleRuns(messages).find(([start, end]) => firstNew >= start && firstNew <= end);
+    if (run) setExpandedRuns((prev) => (prev.has(run[0]) ? prev : new Set(prev).add(run[0])));
+    const frame = requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const element = listRef.current?.querySelector<HTMLElement>(`[data-message-index="${firstNew}"]`);
+        if (!element) return;
+        element.scrollIntoView({ block: "center", behavior: "smooth" });
+        element.querySelector<HTMLElement>("textarea, [contenteditable=true]")?.focus({ preventScroll: true });
+        flashElement(element);
+      }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [messageCount, messages]);
 
   if (conversationIndices === undefined) {
     return <Skeleton className="h-24 w-full rounded-md" />;
@@ -134,7 +159,7 @@ export function Messages({
           </p>
         </div>
       ) : (
-        <div className="space-y-2 rounded-lg">{rows}</div>
+        <div ref={listRef} className="space-y-2 rounded-lg">{rows}</div>
       )}
     </div>
   );

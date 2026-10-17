@@ -14,7 +14,7 @@
 import { useState } from "react";
 import { FileText } from "lucide-react";
 import dynamic from "next/dynamic";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
 import type { MessageRole } from "@/features/message-templates/types/message-templates-db";
 
 export interface TemplateSelectorProps {
@@ -34,9 +34,9 @@ function TemplateSelectorTrigger({
 }) {
   return (
     <Button
-      variant="ghost"
-      size="sm"
-      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+      variant="quiet"
+      icon={<FileText />}
+      aria-label="Templates"
       disabled={disabled}
       onMouseDown={(e) => {
         e.preventDefault();
@@ -46,9 +46,7 @@ function TemplateSelectorTrigger({
         e.stopPropagation();
         onActivate?.();
       }}
-    >
-      <FileText className="w-3.5 h-3.5" />
-    </Button>
+    />
   );
 }
 

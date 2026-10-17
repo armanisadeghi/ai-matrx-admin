@@ -1,4 +1,4 @@
-import { Maximize2, Braces, Copy, Check, Eraser, FileText, Webhook } from "lucide-react";
+import { Maximize2, Copy, Check, Eraser, FileText, Webhook } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
@@ -12,24 +12,15 @@ import {
   IconButtonConfig,
 } from "@/components/official/ResponsiveIconButtonGroup";
 import {
-  AddBlockTrigger,
-  BlockType,
-} from "@/features/agents/components/builder/message-builders/AddBlockButton";
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TemplateSelector } from "@/features/message-templates/components/TemplateSelector";
-import { VariableSelector } from "@/features/agents/components/variables-management/VariableSelector";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 
 interface SystemMessageButtonsProps {
-  hasVariableSupport?: boolean;
   hasFullScreenEditor?: boolean;
-  variableNames?: string[];
-  onVariableSelected?: (name: string) => void;
-  onBeforeVariableSelectorOpen?: () => void;
   /** Current system text — browse/save templates. */
   templateCurrentContent?: string;
   onTemplateContentSelected?: (content: string) => void;
@@ -37,23 +28,17 @@ interface SystemMessageButtonsProps {
   onOptimize?: () => void;
   onOpenFullScreenEditor?: () => void;
   onClear?: () => void;
-  onAddBlockType?: (type: BlockType) => void;
   onVoiceTranscription?: (text: string) => void;
 }
 
 export function SystemMessageButtons({
-  hasVariableSupport = false,
   hasFullScreenEditor = false,
-  variableNames = [],
-  onVariableSelected,
-  onBeforeVariableSelectorOpen,
   templateCurrentContent = "",
   onTemplateContentSelected,
   onSaveTemplate,
   onOptimize,
   onOpenFullScreenEditor,
   onClear,
-  onAddBlockType,
   onVoiceTranscription,
 }: SystemMessageButtonsProps) {
   // Copy confirms on the button itself (check for 1.5 s) — never a toast.
@@ -65,47 +50,7 @@ export function SystemMessageButtons({
     setCopied(true);
     copiedTimer.current = setTimeout(() => setCopied(false), 1500);
   };
-  const variableButton: IconButtonConfig = hasVariableSupport
-    ? {
-        id: "variable",
-        icon: Braces,
-        tooltip: "Insert Variable",
-        mobileLabel: "Insert Variable",
-        hidden: false,
-        render: () => (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <VariableSelector
-                  variables={variableNames}
-                  onVariableSelected={(v) => onVariableSelected?.(v)}
-                  onBeforeOpen={onBeforeVariableSelectorOpen}
-                />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="z-[9999]">
-              Insert Variable
-            </TooltipContent>
-          </Tooltip>
-        ),
-      }
-    : {
-        id: "variable",
-        icon: Braces,
-        tooltip: "Insert Variable",
-        mobileLabel: "Insert Variable",
-        hidden: true,
-      };
-
   const buttons: IconButtonConfig[] = [
-    variableButton,
     {
       id: "copy",
       icon: copied ? Check : Copy,
@@ -225,35 +170,13 @@ export function SystemMessageButtons({
                   }}
                 >
                   <MicrophoneIconButton
-                    variant="modal-controls"
-                    size="sm"
+                    variant="control"
                     onTranscriptionComplete={onVoiceTranscription}
                   />
                 </span>
               </TooltipTrigger>
               <TooltipContent side="top" className="z-[9999]">
                 Record voice
-              </TooltipContent>
-            </Tooltip>
-          )
-        : undefined,
-    },
-    {
-      id: "add-block",
-      icon: undefined,
-      tooltip: "Add content block",
-      mobileLabel: "Add Block",
-      hidden: !onAddBlockType,
-      render: onAddBlockType
-        ? () => (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <AddBlockTrigger onSelectType={onAddBlockType} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="z-[9999]">
-                Add content block
               </TooltipContent>
             </Tooltip>
           )
