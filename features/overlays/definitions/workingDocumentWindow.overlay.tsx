@@ -15,8 +15,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "workingDocumentWindow" as const;
@@ -75,7 +75,7 @@ export function WorkingDocumentWindowController(
 
 export type WorkingDocumentWindowDefinitionData = OpenWorkingDocumentWindowOptions;
 
-export const workingDocumentWindowOverlay = defineOverlay<WorkingDocumentWindowDefinitionData>()({
+export const workingDocumentWindowOverlay = /* @__PURE__ */ defineOverlay<WorkingDocumentWindowDefinitionData>()({
   id: "workingDocumentWindow",
   label: "Working Document Window",
   instance: "multi",

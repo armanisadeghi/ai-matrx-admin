@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentChatAssistant" as const;
@@ -73,7 +73,7 @@ export function AgentChatAssistantController(props: OpenAgentChatAssistantOption
 
 export type AgentChatAssistantDefinitionData = OpenAgentChatAssistantOptions;
 
-export const agentChatAssistantOverlay = defineOverlay<AgentChatAssistantDefinitionData>()({
+export const agentChatAssistantOverlay = /* @__PURE__ */ defineOverlay<AgentChatAssistantDefinitionData>()({
   id: "agentChatAssistant",
   label: "Agent Chat Assistant",
   instance: "multi",

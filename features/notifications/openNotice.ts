@@ -18,7 +18,7 @@
  */
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import {
   classifyNoticeLink,
@@ -68,7 +68,7 @@ export function announceNoWindow(link: string, eventKey: string, missingKeys: re
     captureError({
       source: "url-panel-unopened",
       operation: "unknown",
-      relation: missingKeys.length ? `?panels=${missingKeys.join(",")}` : link.split("?")[0],
+      relation: missingKeys.length ? `panels: ${missingKeys.join(", ")}` : link.split("?")[0],
       message,
       userMessage: "This notice opened in a new tab because it has no window yet.",
       code: missingKeys.length ? "notice-no-hydrator" : "notice-no-window",

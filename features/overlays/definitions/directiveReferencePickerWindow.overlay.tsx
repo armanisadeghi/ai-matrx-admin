@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createDirectiveReferencePickerCallbackGroup,
   type DirectiveReferencePickerHandlers,
   type DirectiveReferencePickerWindowData,
 } from "@/features/window-panels/windows/admin/directive-reference-picker/callbacks";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "directiveReferencePickerWindow";
@@ -103,7 +103,7 @@ export function DirectiveReferencePickerWindowController(
 
 export type DirectiveReferencePickerWindowDefinitionData = OpenDirectiveReferencePickerOptions;
 
-export const directiveReferencePickerWindowOverlay = defineOverlay<DirectiveReferencePickerWindowDefinitionData>()({
+export const directiveReferencePickerWindowOverlay = /* @__PURE__ */ defineOverlay<DirectiveReferencePickerWindowDefinitionData>()({
   id: "directiveReferencePickerWindow",
   label: "Directive Reference Picker Window",
   instance: "multi",

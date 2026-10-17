@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "surfaceContextWindow" as const;
@@ -54,7 +54,7 @@ export function SurfaceContextWindowController(
 
 export type SurfaceContextWindowDefinitionData = OpenSurfaceContextWindowOptions;
 
-export const surfaceContextWindowOverlay = defineOverlay<SurfaceContextWindowDefinitionData>()({
+export const surfaceContextWindowOverlay = /* @__PURE__ */ defineOverlay<SurfaceContextWindowDefinitionData>()({
   id: "surfaceContextWindow",
   label: "This page",
   instance: "single",

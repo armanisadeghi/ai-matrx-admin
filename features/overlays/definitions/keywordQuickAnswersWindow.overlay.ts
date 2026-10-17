@@ -1,11 +1,11 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 export type KeywordQuickAnswersWindowDefinitionData = Record<string, unknown>;
 
-export const keywordQuickAnswersWindowOverlay = defineOverlay<KeywordQuickAnswersWindowDefinitionData>()({
+export const keywordQuickAnswersWindowOverlay = /* @__PURE__ */ defineOverlay<KeywordQuickAnswersWindowDefinitionData>()({
   id: "keywordQuickAnswersWindow",
   label: "Quick Answers",
   instance: "single",

@@ -22,7 +22,7 @@ import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useEffect, useRef } from "react";
 import { BellRingTapButton, BellTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
 import { useInboxCounts } from "../useInbox";
 import { useNotificationsToggle } from "../canvas/notificationsKind";

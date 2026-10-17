@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentAdminShortcutWindow" as const;
@@ -68,7 +68,7 @@ export function AgentShortcutQuickCreateWindowController(props: OpenAgentShortcu
 
 export type AgentAdminShortcutWindowDefinitionData = OpenAgentShortcutQuickCreateWindowOptions;
 
-export const agentAdminShortcutWindowOverlay = defineOverlay<AgentAdminShortcutWindowDefinitionData>()({
+export const agentAdminShortcutWindowOverlay = /* @__PURE__ */ defineOverlay<AgentAdminShortcutWindowDefinitionData>()({
   id: "agentAdminShortcutWindow",
   label: "Agent Admin Shortcut Window",
   instance: "single",

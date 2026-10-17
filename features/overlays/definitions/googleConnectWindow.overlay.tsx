@@ -11,12 +11,12 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createGoogleConnectCallbackGroup,
   type GoogleConnectWindowHandlers,
 } from "./callbacks/googleConnectWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "googleConnectWindow" as const;
@@ -85,7 +85,7 @@ export function useOpenGoogleConnectWindow() {
 
 export type GoogleConnectWindowDefinitionData = OpenGoogleConnectOptions;
 
-export const googleConnectWindowOverlay = defineOverlay<GoogleConnectWindowDefinitionData>()({
+export const googleConnectWindowOverlay = /* @__PURE__ */ defineOverlay<GoogleConnectWindowDefinitionData>()({
   id: "googleConnectWindow",
   label: "Connect Google",
   instance: "single",

@@ -12,7 +12,7 @@ import { useCallback } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay, closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@ai-matrx/summon";
+import { openOverlay, closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@ai-matrx/summon/open";
 
 export type PreferenceTab =
   | "display"

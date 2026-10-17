@@ -16,9 +16,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AppDispatch } from "@/lib/redux/store";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "imageViewer" as const;
@@ -123,7 +123,7 @@ export function ImageViewerWindowController(props: OpenImageViewerWindowOptions)
 
 export type ImageViewerDefinitionData = OpenImageViewerWindowOptions;
 
-export const imageViewerOverlay = defineOverlay<ImageViewerDefinitionData>()({
+export const imageViewerOverlay = /* @__PURE__ */ defineOverlay<ImageViewerDefinitionData>()({
   id: "imageViewer",
   label: "Image Viewer",
   instance: "multi",

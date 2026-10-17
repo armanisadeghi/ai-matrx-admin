@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon";
+import { closeOverlay } from "@ai-matrx/summon/open";
 import { WindowPanel, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
 import { PickListWindowBody } from "@/features/data-tables/pick-lists/components/PickListWindowBody";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

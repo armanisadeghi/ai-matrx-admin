@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentPanelOverlay" as const;
@@ -71,7 +71,7 @@ export function AgentPanelOverlayController(props: OpenAgentPanelOverlayOptions)
 
 export type AgentPanelOverlayDefinitionData = OpenAgentPanelOverlayOptions;
 
-export const agentPanelOverlayOverlay = defineOverlay<AgentPanelOverlayDefinitionData>()({
+export const agentPanelOverlayOverlay = /* @__PURE__ */ defineOverlay<AgentPanelOverlayDefinitionData>()({
   id: "agentPanelOverlay",
   label: "Agent Panel Overlay",
   instance: "multi",

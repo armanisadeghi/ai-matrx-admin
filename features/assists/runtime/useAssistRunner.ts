@@ -19,7 +19,7 @@ import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunW
 import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { callApi } from "@/lib/api/call-api";
 import { handToOwnBrowser } from "@/lib/extension-bridge/handToOwnBrowser";
-import { closeOverlay } from "@ai-matrx/summon";
+import { closeOverlay } from "@ai-matrx/summon/open";
 import type { Json } from "@/types/database.types";
 import { decideAssist, snoozeAssist, suppressAssistSource } from "../service";
 import { snoozeUntilIso, type SnoozeWindowKey } from "../constants";

@@ -35,6 +35,10 @@ jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
 jest.mock("@/lib/boot/primaryContent", () => ({ holdPrimaryContent: () => () => {} }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "0a54df90-eab8-4d07-ab29-81a45fb41e04" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => null }));
+jest.mock("@ai-matrx/records-ui/skeleton", () => ({
+  TablePageSkeleton: () => <div data-testid="skeleton" />,
+  RecordsSkeleton: () => <div data-testid="skeleton" />,
+}));
 jest.mock("@ai-matrx/records-ui", () => ({
   TablePageSkeleton: () => <div data-testid="skeleton" />,
   RecordsSkeleton: () => <div data-testid="skeleton" />,
@@ -51,7 +55,7 @@ jest.mock("@ai-matrx/records/react", () => ({
     </div>
   ),
 }));
-jest.mock("@/features/data-tables/records-ui-host/recordsUiHost", () => ({
+jest.mock("@/features/data-tables/records-ui-host/recordsDataSource", () => ({
   useRecordsDataSource: () => ({
     rpc: async (fn: string) => {
       mockCalls.push({ what: fn, at: Date.now() });

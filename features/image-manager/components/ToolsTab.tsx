@@ -37,8 +37,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
-import type { OverlayId } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
+import type { OverlayId } from "@ai-matrx/summon/open";
 import { openImageViewer } from "@/features/overlays/definitions/imageViewer.overlay";
 import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
 import { useScreenshot } from "@/hooks/useScreenshot";

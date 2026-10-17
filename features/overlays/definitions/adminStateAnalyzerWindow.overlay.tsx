@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "adminStateAnalyzerWindow" as const;
@@ -57,7 +57,7 @@ export function StateViewerWindowController(props: OpenStateViewerWindowOptions)
 
 export type AdminStateAnalyzerWindowDefinitionData = OpenStateViewerWindowOptions;
 
-export const adminStateAnalyzerWindowOverlay = defineOverlay<AdminStateAnalyzerWindowDefinitionData>()({
+export const adminStateAnalyzerWindowOverlay = /* @__PURE__ */ defineOverlay<AdminStateAnalyzerWindowDefinitionData>()({
   id: "adminStateAnalyzerWindow",
   label: "Admin State Analyzer Window",
   instance: "single",

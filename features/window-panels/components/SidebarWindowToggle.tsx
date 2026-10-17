@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -21,10 +22,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { toggleWindowsHidden, minimizeAll, restoreAll, restoreWindow, focusWindow, selectWindowsHidden, selectAllWindows, selectAllMinimized, type WindowState, arrangeActiveWindows } from "@ai-matrx/summon";
+import { toggleWindowsHidden, minimizeAll, restoreAll, restoreWindow, focusWindow, selectWindowsHidden, selectAllWindows, selectAllMinimized, arrangeActiveWindows } from "@ai-matrx/summon/open";
+import type { WindowState } from "@ai-matrx/summon";
 import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
-import { LayoutIconButton } from "@ai-matrx/summon/window";
+// The layout buttons render only inside the open popover: the window section loads with them.
+const LayoutIconButton = dynamic(() => import("@ai-matrx/summon/window").then((m) => m.LayoutIconButton), { ssr: false });
 import {
   MenuDivider,
   MenuItem,

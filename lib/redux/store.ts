@@ -43,7 +43,7 @@ import { officeLookCookieMiddleware } from "@/lib/redux/preferences/officeLookCo
 import { tabOrganizationMiddleware } from "@/lib/organizations/tabOrganization";
 import { scopeTreeInvalidationMiddleware } from "@/features/scopes/redux/scopeTreeInvalidationMiddleware";
 import { scopeTreeDemandEnhancer } from "@/features/scopes/redux/scopeTreeDemand";
-import { createSummonMiddleware } from "@ai-matrx/summon";
+import { createSummonGate } from "@ai-matrx/summon/open";
 import { bindOverlayStoreState, createStoreOverlayPorts } from "@/features/overlays/host/ports";
 import { reduxErrorCaptureMiddleware } from "@/lib/diagnostics/reduxErrorCaptureMiddleware";
 import {
@@ -225,6 +225,9 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
   if (typeof window !== "undefined") primeCoreBootSeed(initialState?.coreBootSeed);
   const resolved = resolveStoreBootstrapState(initialState);
   const rootReducer = createSlimRootReducer();
+  // @ai-matrx/summon: no slice or middleware until the core first loads (the gate queues and loads).
+  const summonGate = createSummonGate({ ports: createStoreOverlayPorts() });
+  summonGate.attachReducer((reducers) => rootReducer.inject(reducers));
 
   const initialBootUserId =
     (resolved.userAuth as { id?: string | null } | undefined)?.id ?? null;
@@ -296,8 +299,9 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
         officeLookCookieMiddleware,
         tabOrganizationMiddleware,
         scopeTreeInvalidationMiddleware,
-        // close lifecycle + render watchdog (@ai-matrx/summon)
-        ...createSummonMiddleware(createStoreOverlayPorts()),
+        // @ai-matrx/summon gate: queues overlay/window actions until the core loads, then hosts
+        // its close lifecycle + render watchdog
+        summonGate.middleware,
         reduxErrorCaptureMiddleware,
       ),
     // OUTSIDE applyMiddleware (prepend): the scope tree loads on its first READ, never at idle —

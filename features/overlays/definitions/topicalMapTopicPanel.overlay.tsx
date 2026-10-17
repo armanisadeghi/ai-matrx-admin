@@ -15,12 +15,12 @@
 import { useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon";
-import { focusWindow, restoreWindow } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 // (map, topic) is the identity of a panel — not the moment it was opened. The
 // format is owned there because the URL hydrator has to read it back.
 import { topicPanelInstanceId } from "@/features/marketing/seo/topical-map/panel/topicPanelInstance";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "topicalMapTopicPanel" as const;
@@ -96,7 +96,7 @@ export function TopicalMapTopicPanelController(
 
 export type TopicalMapTopicPanelDefinitionData = OpenTopicPanelOptions;
 
-export const topicalMapTopicPanelOverlay = defineOverlay<TopicalMapTopicPanelDefinitionData>()({
+export const topicalMapTopicPanelOverlay = /* @__PURE__ */ defineOverlay<TopicalMapTopicPanelDefinitionData>()({
   id: "topicalMapTopicPanel",
   label: "Topic",
   instance: "multi",

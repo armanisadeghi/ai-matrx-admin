@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentAdminFindUsagesWindow" as const;
@@ -65,7 +65,7 @@ export function AgentAdminFindUsagesWindowController(props: OpenAgentAdminFindUs
 
 export type AgentAdminFindUsagesWindowDefinitionData = OpenAgentAdminFindUsagesWindowOptions;
 
-export const agentAdminFindUsagesWindowOverlay = defineOverlay<AgentAdminFindUsagesWindowDefinitionData>()({
+export const agentAdminFindUsagesWindowOverlay = /* @__PURE__ */ defineOverlay<AgentAdminFindUsagesWindowDefinitionData>()({
   id: "agentAdminFindUsagesWindow",
   label: "Agent Admin Find Usages Window",
   instance: "single",
