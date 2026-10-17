@@ -252,7 +252,7 @@ async function flush(): Promise<void> {
       // never a guess.
       const sourceFeature = sourceFeatureForRoute(e.route || e.url || null);
       if (isAuthenticated) {
-        await supabase.rpc("log_client_error", {
+        const { error: rpcError } = await supabase.rpc("log_client_error", {
           // DD-115: every client names itself. The RPC used to stamp
           // `source_app='matrx-frontend'` on whoever called it, so extension and
           // desktop failures were triaged as web-app failures. Naming it here is
@@ -274,8 +274,12 @@ async function flush(): Promise<void> {
           p_context: context,
           p_source_feature: sourceFeature,
         });
+        if (rpcError) {
+          // Never silent: the error could not be filed. Not re-captured (that would loop).
+          console.warn(`[error-persistence] log_client_error refused: ${rpcError.message}`);
+        }
       } else {
-        await fetch("/api/diagnostics/client-error", {
+        const response = await fetch("/api/diagnostics/client-error", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -291,9 +295,14 @@ async function flush(): Promise<void> {
             context,
           }),
         });
+        if (!response.ok) {
+          // Never silent: the error could not be filed. Not re-captured (that would loop).
+          console.warn(`[error-persistence] /api/diagnostics/client-error answered ${response.status}: ${await response.text().catch(() => "")}`);
+        }
       }
-    } catch {
-      /* persistence is best-effort — never break the app */
+    } catch (error) {
+      // Persistence never breaks the app — and never fails silently.
+      console.warn("[error-persistence] could not file a captured error", error);
     }
   }
 }

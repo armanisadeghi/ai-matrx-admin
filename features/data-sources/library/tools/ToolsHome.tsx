@@ -8,7 +8,7 @@
  * Search is server-side and paged (`useOwnToolSearch`); nothing here loads the whole catalog.
  */
 
-import { createElement, useEffect, useRef, type ReactNode } from "react";
+import { createElement, useEffect, useRef, useState, type ReactNode } from "react";
 import { SearchX } from "lucide-react";
 import { Button, EmptyState, RegionSkeleton, SearchField } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -65,6 +65,9 @@ export function ToolsHome({
   const firstLoad = (status === "idle" || status === "loading") && tools.length === 0;
   const line = verdictLine(verdict, query);
   const lookup = planLookup(query);
+  // A recognised lookup is the answer to the box; the list of Tools waits one press away (and returns on a new query).
+  const [listOpenFor, setListOpenFor] = useState<string | null>(null);
+  const hideList = lookup !== null && listOpenFor !== query;
   const help = !lookup && (family === "people" || family === "company") ? lookupHelp(query) : null;
 
   return (
@@ -104,8 +107,15 @@ export function ToolsHome({
 
       {lookup ? <LookupSuggestion plan={lookup} onLookup={onLookup} /> : null}
       {help ? <p className="text-sm text-muted-foreground" data-lookup-help="">{help}</p> : null}
+      {hideList ? (
+        <div className="flex justify-center">
+          <Button variant="quiet" onClick={() => setListOpenFor(query)} data-lookup-show-tools="">
+            Search the Tools instead
+          </Button>
+        </div>
+      ) : null}
 
-      <section className="flex flex-col gap-3" aria-label="Tools">
+      <section className={cn("flex flex-col gap-3", hideList && "hidden")} aria-label="Tools">
         <div className="flex items-baseline gap-2">
           <h2 className="text-sm font-semibold text-foreground">{searching ? (verdict === "closest" ? "Closest Tools" : "Tools") : "Popular Tools"}</h2>
           {tools.length > 0 ? <span className="text-xs text-muted-foreground">{formatCount(tools.length)}{nextCursor ? "+" : ""}</span> : null}
@@ -148,7 +158,7 @@ export function ToolsHome({
         ) : null}
       </section>
 
-      {dataSection}
+      {hideList ? null : dataSection}
     </div>
   );
 }
