@@ -1,1144 +1,1675 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0359",
- "version": 1,
- "title": "Invoice Tracker",
- "description": "Track invoices from draft to paid, flag late ones, and see what each client owes.",
- "forWho": "Freelancers and small businesses",
- "icon": {
-  "emoji": "🧾"
- },
- "cover": {
-  "url": "gallery:photo-golden-palms",
-  "offsetY": 50
- },
- "category": "finance",
- "tags": [
-  "invoices",
-  "billing",
-  "clients",
-  "payments"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-invoice-tracker",
+  "packVersion": 1,
   "catalogueId": "SP0359",
-  "useCase": "A solo designer sends invoices and watches which ones are still unpaid.",
-  "industry": "cross_industry",
-  "vertical": "Billing",
-  "job": "billing",
-  "audience": "organization",
-  "teaches": "boards",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Aldous Park Design",
-   "describes": "A solo design studio billing small local businesses.",
-   "address": {
-    "line1": "412 Juniper Grist Road",
-    "city": "Denver",
-    "region": "CO",
-    "postalCode": "80211",
-    "country": "US"
-   },
-   "phone": "(720) 555-0190",
-   "website": "aldouspark-demo.net",
-   "email": "invoices@aldouspark-demo.net",
-   "timezone": "America/Denver"
-  },
-  "cleanupTag": "use-case:spaces-invoice-tracker",
-  "tables": [
-   {
-    "token": "client",
-    "name": "Clients",
-    "labelSingular": "Client",
-    "labelPlural": "Clients",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "building-2",
-    "titleField": "client_name",
-    "describes": "Everyone invoiced, with payment terms and what they owe.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "client_name",
-      "label": "Client",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "company",
-      "label": "Company",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "phone",
-      "label": "Phone",
-      "parityType": "phone",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "client_since",
-      "label": "Client since",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "terms",
-      "label": "Terms",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Due on receipt",
-       "Net 15",
-       "Net 30",
-       "Net 45"
-      ],
-      "choiceColors": {
-       "Due on receipt": "blue",
-       "Net 15": "violet",
-       "Net 30": "teal",
-       "Net 45": "orange"
-      }
-     },
-     {
-      "key": "invoices",
-      "label": "Invoices",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "invoice",
-      "relationMax": 50,
-      "multi": true
-     },
-     {
-      "key": "billed",
-      "label": "Billed total",
-      "parityType": "rollup",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "via": "invoices",
-      "pick": "amount",
-      "agg": "sum"
-     },
-     {
-      "key": "outstanding",
-      "label": "Outstanding",
-      "parityType": "rollup",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "via": "invoices",
-      "pick": "amount",
-      "agg": "sum",
-      "filter": {
-       "status": [
-        "Sent",
-        "Overdue"
-       ]
-      }
-     }
-    ],
-    "rows": [
-     {
-      "key": "c1",
-      "values": {
-       "client_name": "Thornbury Dental",
-       "company": "Thornbury Dental Group",
-       "email": "billing@thornburydental-demo.net",
-       "phone": "(720) 555-0191",
-       "terms": "Net 30",
-       "client_since": "@today-420d"
-      }
-     },
-     {
-      "key": "c2",
-      "values": {
-       "client_name": "Alpenglow Outfitters",
-       "company": "Alpenglow Outfitters LLC",
-       "email": "ap@alpenglow-demo.net",
-       "phone": "(720) 555-0192",
-       "terms": "Net 15",
-       "client_since": "@today-300d"
-      }
-     },
-     {
-      "key": "c3",
-      "values": {
-       "client_name": "Rivera & Chu Architects",
-       "company": "Rivera & Chu",
-       "email": "accounts@riverachu-demo.net",
-       "phone": "(720) 555-0193",
-       "terms": "Net 30",
-       "client_since": "@today-130d"
-      }
-     },
-     {
-      "key": "c4",
-      "values": {
-       "client_name": "Mesa Verde Bakery",
-       "company": "Mesa Verde Bakery",
-       "email": "owner@mesaverdebakery-demo.net",
-       "phone": "(720) 555-0194",
-       "terms": "Due on receipt",
-       "client_since": "@today-260d"
-      }
-     },
-     {
-      "key": "c5",
-      "values": {
-       "client_name": "Highline Physical Therapy",
-       "company": "Highline PT",
-       "email": "office@highlinept-demo.net",
-       "phone": "(720) 555-0195",
-       "terms": "Net 45",
-       "client_since": "@today-160d"
-      }
-     }
-    ]
-   },
-   {
-    "token": "invoice",
-    "name": "Invoices",
-    "labelSingular": "Invoice",
-    "labelPlural": "Invoices",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "file-text",
-    "titleField": "invoice_no",
-    "describes": "Each invoice with its dates, amount, tax, status and payment.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "invoice_no",
-      "label": "Invoice number",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "client",
-      "label": "Client",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "client",
-      "relationMax": 1
-     },
-     {
-      "key": "issued_on",
-      "label": "Issue date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "due_on",
-      "label": "Due date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "amount",
-      "label": "Amount",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 500000
-       }
-      ]
-     },
-     {
-      "key": "tax",
-      "label": "Tax",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "total",
-      "label": "Total",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "{Amount} + {Tax}",
-      "unit": "USD"
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Draft",
-       "Sent",
-       "Paid",
-       "Overdue",
-       "Void"
-      ],
-      "choiceColors": {
-       "Draft": "slate",
-       "Sent": "blue",
-       "Paid": "green",
-       "Overdue": "red",
-       "Void": "gray"
-      }
-     },
-     {
-      "key": "overdue_flag",
-      "label": "Past due",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "IF(AND(IS_BEFORE({Due date}, TODAY()), NOT({Status} = 'Paid'), NOT({Status} = 'Void')), 'Past due', '')"
-     },
-     {
-      "key": "paid_on",
-      "label": "Paid on",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "invoice_file",
-      "label": "Invoice file",
-      "parityType": "attachment",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "inv-2041",
-      "values": {
-       "invoice_no": "INV-2041",
-       "client": "c3",
-       "issued_on": "@today-95d",
-       "due_on": "@today-65d",
-       "amount": 4800,
-       "tax": 384,
-       "status": "Paid",
-       "paid_on": "@today-70d"
-      }
-     },
-     {
-      "key": "inv-2048",
-      "values": {
-       "invoice_no": "INV-2048",
-       "client": "c1",
-       "issued_on": "@today-80d",
-       "due_on": "@today-50d",
-       "amount": 2200,
-       "tax": 176,
-       "status": "Paid",
-       "paid_on": "@today-48d"
-      }
-     },
-     {
-      "key": "inv-2053",
-      "values": {
-       "invoice_no": "INV-2053",
-       "client": "c2",
-       "issued_on": "@today-62d",
-       "due_on": "@today-47d",
-       "amount": 1350,
-       "tax": 108,
-       "status": "Paid",
-       "paid_on": "@today-45d"
-      }
-     },
-     {
-      "key": "inv-2057",
-      "values": {
-       "invoice_no": "INV-2057",
-       "client": "c5",
-       "issued_on": "@today-55d",
-       "due_on": "@today-10d",
-       "amount": 3600,
-       "tax": 288,
-       "status": "Overdue"
-      }
-     },
-     {
-      "key": "inv-2062",
-      "values": {
-       "invoice_no": "INV-2062",
-       "client": "c4",
-       "issued_on": "@today-40d",
-       "due_on": "@today-40d",
-       "amount": 640,
-       "tax": 51.2,
-       "status": "Paid",
-       "paid_on": "@today-39d"
-      }
-     },
-     {
-      "key": "inv-2066",
-      "values": {
-       "invoice_no": "INV-2066",
-       "client": "c3",
-       "issued_on": "@today-33d",
-       "due_on": "@today-3d",
-       "amount": 5200,
-       "tax": 416,
-       "status": "Overdue"
-      }
-     },
-     {
-      "key": "inv-2071",
-      "values": {
-       "invoice_no": "INV-2071",
-       "client": "c1",
-       "issued_on": "@today-21d",
-       "due_on": "@today+9d",
-       "amount": 2750,
-       "tax": 220,
-       "status": "Sent"
-      }
-     },
-     {
-      "key": "inv-2075",
-      "values": {
-       "invoice_no": "INV-2075",
-       "client": "c2",
-       "issued_on": "@today-14d",
-       "due_on": "@today+1d",
-       "amount": 1800,
-       "tax": 144,
-       "status": "Sent"
-      }
-     },
-     {
-      "key": "inv-2078",
-      "values": {
-       "invoice_no": "INV-2078",
-       "client": "c5",
-       "issued_on": "@today-6d",
-       "due_on": "@today+39d",
-       "amount": 4100,
-       "tax": 328,
-       "status": "Sent"
-      }
-     },
-     {
-      "key": "inv-2081",
-      "values": {
-       "invoice_no": "INV-2081",
-       "client": "c4",
-       "issued_on": "@today-2d",
-       "due_on": "@today-2d",
-       "amount": 820,
-       "tax": 65.6,
-       "status": "Sent"
-      }
-     },
-     {
-      "key": "inv-2083",
-      "values": {
-       "invoice_no": "INV-2083",
-       "client": "c3",
-       "issued_on": "@today",
-       "due_on": "@today+30d",
-       "amount": 3300,
-       "tax": 264,
-       "status": "Draft"
-      }
-     },
-     {
-      "key": "inv-2064",
-      "values": {
-       "invoice_no": "INV-2064",
-       "client": "c2",
-       "issued_on": "@today-35d",
-       "due_on": "@today-20d",
-       "amount": 900,
-       "tax": 72,
-       "status": "Void"
-      }
-     }
-    ],
-    "before": [
-     [
-      "issued_on",
-      "due_on"
-     ]
-    ],
-    "statusImplies": [
-     {
-      "field": "status",
-      "when": [
-       "Paid"
-      ],
-      "filled": [
-       "paid_on"
-      ]
-     }
-    ],
-    "childDates": [
-     {
-      "relation": "client",
-      "field": "issued_on",
-      "parentField": "client_since"
-     }
-    ],
-    "datePairs": [
-     {
-      "earlier": "client.client_since",
-      "later": "issued_on"
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each invoice is billed to one client.",
-    "fromTable": "invoice",
-    "fromField": "client",
-    "toTable": "client",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "client_invoices"
-   },
-   {
-    "describes": "A client gathers its invoices.",
-    "fromTable": "client",
-    "fromField": "invoices",
-    "toTable": "invoice",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "billed_to"
-   }
-  ],
-  "sharedBlocks": [],
-  "forms": [
-   {
-    "token": "new_invoice",
-    "name": "Draft an invoice",
-    "describes": "Start an invoice from a request.",
-    "audience": "staff",
-    "table": "invoice",
-    "fields": [
-     {
-      "fieldKey": "invoice_no",
-      "ask": "What is the invoice number?",
-      "required": true
-     },
-     {
-      "fieldKey": "client",
-      "ask": "Who is it for?",
-      "required": true
-     },
-     {
-      "fieldKey": "amount",
-      "ask": "What is the amount before tax?",
-      "required": true
-     },
-     {
-      "fieldKey": "due_on",
-      "ask": "When is it due?"
-     }
-    ],
-    "submitLabel": "Create draft",
-    "confirmation": "Draft created."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_invoices",
-    "name": "All invoices",
-    "table": "invoice",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "due_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "invoice_board",
-    "name": "By status",
-    "table": "invoice",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "due_calendar",
-    "name": "Due dates",
-    "table": "invoice",
-    "kind": "calendar",
-    "dateField": "due_on",
-    "allDay": true
-   },
-   {
-    "token": "all_clients",
-    "name": "Clients",
-    "table": "client",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Invoice assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "invoice",
-     "describes": "Invoices with client, amount, status and due date."
-    },
-    {
-     "name": "related_tables",
-     "table": "client",
-     "describes": "Clients and their terms."
-    }
-   ],
-   "question": {
-    "ask": "How many invoices are overdue?",
-    "whyItMatters": "Overdue invoices need a call first.",
-    "expect": {
-     "table": "invoice",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Overdue"
-     },
-     "answer": 2,
-     "unit": "invoices"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open invoices by status.",
-    "action": {
-     "kind": "open",
-     "surface": "invoice_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "invoice_board",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open due dates.",
-    "action": {
-     "kind": "open",
-     "surface": "due_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "due_calendar",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open clients.",
-    "action": {
-     "kind": "open",
-     "surface": "all_clients"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_clients",
-     "minItems": 5
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library author (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "aldouspark-demo.net",
-    "thornburydental-demo.net",
-    "alpenglow-demo.net",
-    "riverachu-demo.net",
-    "mesaverdebakery-demo.net",
-    "highlinept-demo.net"
-   ],
-   "fictionalStreets": [
-    "Juniper Grist Road"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "invoice-tracker",
-   "parent": null,
-   "title": "Invoice Tracker",
-   "icon": {
+  "version": 2,
+  "title": "Invoice Tracker",
+  "description": "Track invoices from draft to paid, flag late ones, and see what each client owes.",
+  "forWho": "Freelancers and small businesses",
+  "icon": {
     "emoji": "🧾"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Create an invoice, move it from Draft to Sent to Paid, and let the Past due column warn you when a due date slips. Clients show what they have been billed and what is still open."
-      }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Receipt"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "invoice",
-           "view": "all_invoices"
-          },
-          "inline": true,
-          "title": "Invoices",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "Amount by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "sum",
-             "field": "amount",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
+  },
+  "category": "finance",
+  "tags": [
+    "invoices",
+    "billing",
+    "clients",
+    "payments"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-invoice-tracker",
+    "catalogueId": "SP0359",
+    "useCase": "A solo designer sends invoices and watches which ones are still unpaid.",
+    "industry": "cross_industry",
+    "vertical": "Billing",
+    "job": "billing",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Aldous Park Design",
+      "describes": "A solo design studio billing small local businesses.",
+      "address": {
+        "line1": "412 Juniper Grist Road",
+        "city": "Denver",
+        "region": "CO",
+        "postalCode": "80211",
+        "country": "US"
       },
+      "phone": "(720) 555-0190",
+      "website": "aldouspark-demo.net",
+      "email": "invoices@aldouspark-demo.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-invoice-tracker",
+    "tables": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "invoice",
-           "view": "all_invoices"
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "Everyone invoiced, with payment terms and what they owe.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
           },
-          "inline": true,
-          "title": "Invoices",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "Billed by client",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "client",
-             "op": "sum",
-             "field": "amount"
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client_since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "terms",
+            "label": "Terms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Due on receipt",
+              "Net 15",
+              "Net 30",
+              "Net 45"
+            ],
+            "choiceColors": {
+              "Due on receipt": "blue",
+              "Net 15": "violet",
+              "Net 30": "teal",
+              "Net 45": "orange"
             }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Invoices"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "invoice",
-       "view": "invoice_board"
-      },
-      "inline": true,
-      "title": "Invoices",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-b",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "v-t",
-        "name": "All invoices",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
+          },
+          {
+            "key": "billed",
+            "label": "Billed total",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "paid_total",
+            "label": "Paid total",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "outstanding",
+            "label": "Outstanding",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
+            }
+          },
+          {
+            "key": "overdue_amt",
+            "label": "Overdue amount",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Overdue"
+            }
+          },
+          {
+            "key": "invoice_count",
+            "label": "Invoices",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "memo",
+            "agg": "count"
+          },
+          {
+            "key": "paid_pct",
+            "label": "Paid (% of billed)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Billed total} > 0, ROUND({Paid total} / {Billed total} * 100, 0), 0)"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c1",
+            "values": {
+              "client_name": "Thornbury Dental",
+              "company": "Thornbury Dental Group",
+              "email": "billing@thornburydental-demo.net",
+              "phone": "(720) 555-0191",
+              "terms": "Net 30",
+              "client_since": "@today-420d"
+            }
+          },
+          {
+            "key": "c2",
+            "values": {
+              "client_name": "Alpenglow Outfitters",
+              "company": "Alpenglow Outfitters LLC",
+              "email": "ap@alpenglow-demo.net",
+              "phone": "(720) 555-0192",
+              "terms": "Net 15",
+              "client_since": "@today-300d"
+            }
+          },
+          {
+            "key": "c3",
+            "values": {
+              "client_name": "Rivera & Chu Architects",
+              "company": "Rivera & Chu",
+              "email": "accounts@riverachu-demo.net",
+              "phone": "(720) 555-0193",
+              "terms": "Net 30",
+              "client_since": "@today-130d"
+            }
+          },
+          {
+            "key": "c4",
+            "values": {
+              "client_name": "Mesa Verde Bakery",
+              "company": "Mesa Verde Bakery",
+              "email": "owner@mesaverdebakery-demo.net",
+              "phone": "(720) 555-0194",
+              "terms": "Due on receipt",
+              "client_since": "@today-260d"
+            }
+          },
+          {
+            "key": "c5",
+            "values": {
+              "client_name": "Highline Physical Therapy",
+              "company": "Highline PT",
+              "email": "office@highlinept-demo.net",
+              "phone": "(720) 555-0195",
+              "terms": "Net 45",
+              "client_since": "@today-160d"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "terms": "Net 30"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who pays the bills"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Name, role and the address invoices go to."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What we agreed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Rate or fee"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Payment terms and any deposit"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "History"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
-       },
-       {
-        "id": "v-c",
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "memo",
+        "describes": "Each invoice with its dates, amount, tax, status and payment.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "memo",
+            "label": "Work billed",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "invoice_no",
+            "label": "Invoice number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "issued_on",
+            "label": "Issue date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "tax",
+            "label": "Tax",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Total",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Amount} + {Tax}",
+            "unit": "USD"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Paid",
+              "Overdue",
+              "Void"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Paid": "green",
+              "Overdue": "red",
+              "Void": "gray"
+            },
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Paid": "done",
+              "Overdue": "in_progress",
+              "Void": "done"
+            }
+          },
+          {
+            "key": "overdue_flag",
+            "label": "Past due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND(IS_BEFORE({Due date}, TODAY()), NOT({Status} = 'Paid'), NOT({Status} = 'Void')), 'Past due', '')"
+          },
+          {
+            "key": "days_late",
+            "label": "Days late",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Due date} < TODAY(), {Status} != \"Paid\", {Status} != \"Void\"), DATEDIFF({Due date}, TODAY(), \"days\"), 0)"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "invoice_file",
+            "label": "Invoice file",
+            "parityType": "attachment",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created_at",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "updated_at",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "sent_btn",
+            "label": "Mark sent",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_sent"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "inv-2041",
+            "values": {
+              "client": "c3",
+              "issued_on": "@today-95d",
+              "due_on": "@today-65d",
+              "amount": 4800,
+              "tax": 384,
+              "status": "Paid",
+              "paid_on": "@today-70d",
+              "memo": "Branch office floor plans"
+            }
+          },
+          {
+            "key": "inv-2048",
+            "values": {
+              "client": "c1",
+              "issued_on": "@today-80d",
+              "due_on": "@today-50d",
+              "amount": 2200,
+              "tax": 176,
+              "status": "Paid",
+              "paid_on": "@today-48d",
+              "memo": "Reception redesign, phase one"
+            }
+          },
+          {
+            "key": "inv-2053",
+            "values": {
+              "client": "c2",
+              "issued_on": "@today-62d",
+              "due_on": "@today-47d",
+              "amount": 1350,
+              "tax": 108,
+              "status": "Paid",
+              "paid_on": "@today-45d",
+              "memo": "Retail display consultation"
+            }
+          },
+          {
+            "key": "inv-2057",
+            "values": {
+              "client": "c5",
+              "issued_on": "@today-55d",
+              "due_on": "@today-10d",
+              "amount": 3600,
+              "tax": 288,
+              "status": "Overdue",
+              "memo": "Equipment room assessment"
+            }
+          },
+          {
+            "key": "inv-2062",
+            "values": {
+              "client": "c4",
+              "issued_on": "@today-40d",
+              "due_on": "@today-40d",
+              "amount": 640,
+              "tax": 51.2,
+              "status": "Paid",
+              "paid_on": "@today",
+              "memo": "Window decal artwork"
+            }
+          },
+          {
+            "key": "inv-2066",
+            "values": {
+              "client": "c3",
+              "issued_on": "@today-33d",
+              "due_on": "@today-3d",
+              "amount": 5200,
+              "tax": 416,
+              "status": "Overdue",
+              "memo": "Permit drawings, east wing"
+            }
+          },
+          {
+            "key": "inv-2071",
+            "values": {
+              "client": "c1",
+              "issued_on": "@today-21d",
+              "due_on": "@today+9d",
+              "amount": 2750,
+              "tax": 220,
+              "status": "Sent",
+              "memo": "Reception redesign, phase two"
+            }
+          },
+          {
+            "key": "inv-2075",
+            "values": {
+              "client": "c2",
+              "issued_on": "@today-14d",
+              "due_on": "@today+1d",
+              "amount": 1800,
+              "tax": 144,
+              "status": "Sent",
+              "memo": "Spring catalogue layout"
+            }
+          },
+          {
+            "key": "inv-2078",
+            "values": {
+              "client": "c5",
+              "issued_on": "@today-6d",
+              "due_on": "@today+39d",
+              "amount": 4100,
+              "tax": 328,
+              "status": "Sent",
+              "memo": "Treatment room fit-out plan"
+            }
+          },
+          {
+            "key": "inv-2081",
+            "values": {
+              "client": "c4",
+              "issued_on": "@today-2d",
+              "due_on": "@today-2d",
+              "amount": 820,
+              "tax": 65.6,
+              "status": "Sent",
+              "memo": "Seasonal menu boards"
+            }
+          },
+          {
+            "key": "inv-2083",
+            "values": {
+              "client": "c3",
+              "due_on": "@today+30d",
+              "amount": 3300,
+              "tax": 264,
+              "status": "Draft",
+              "memo": "Site survey and concept sketches"
+            }
+          },
+          {
+            "key": "inv-2064",
+            "values": {
+              "client": "c2",
+              "issued_on": "@today-35d",
+              "due_on": "@today-20d",
+              "amount": 900,
+              "tax": 72,
+              "status": "Void",
+              "memo": "Duplicate brief, voided"
+            }
+          }
+        ],
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Sent"
+            ],
+            "filled": [
+              "issued_on"
+            ]
+          }
+        ],
+        "childDates": [
+          {
+            "relation": "client",
+            "field": "issued_on",
+            "parentField": "client_since"
+          }
+        ],
+        "datePairs": [
+          {
+            "earlier": "client.client_since",
+            "later": "issued_on"
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New invoice",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Line items"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Description"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Quantity"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Rate"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Line total"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Payment terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "State the due date, accepted payment methods and any late fee that was agreed in writing."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes to the client"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each invoice is billed to one client.",
+        "fromTable": "invoice",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "new_invoice",
+        "name": "Draft an invoice",
+        "describes": "Start an invoice from a request.",
+        "audience": "staff",
+        "table": "invoice",
+        "fields": [
+          {
+            "fieldKey": "memo",
+            "ask": "What is the work being billed?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "amount",
+            "ask": "What is the amount before tax?",
+            "required": true
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When is it due?"
+          }
+        ],
+        "submitLabel": "Create draft",
+        "confirmation": "Draft created."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_sent",
+        "table": "invoice",
+        "name": "Mark sent",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sent"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_invoices",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "invoice_board",
+        "name": "By status",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "due_calendar",
         "name": "Due dates",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "due_on"
-       },
-       {
-        "id": "v-o",
-        "name": "Overdue",
-        "layout": "list",
-        "icon": "TriangleAlert",
-        "filters": {
-         "status": "Overdue"
-        }
-       }
-      ],
-      "activeViewId": "v-b"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Clients"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "client",
-       "view": "all_clients"
+        "table": "invoice",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
       },
-      "inline": true,
-      "title": "Clients",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-cl",
+      {
+        "token": "all_clients",
         "name": "Clients",
-        "layout": "grid",
-        "icon": "Table"
-       },
-       {
-        "id": "v-cg",
-        "name": "Clients",
-        "layout": "gallery",
-        "icon": "LayoutGrid"
-       }
-      ],
-      "activeViewId": "v-cl"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:collections-playbook"
-         }
-        }
-       ]
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:invoice-checklist"
-         }
+        "token": "inv_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
         }
-       ]
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "collections-playbook",
-   "parent": "invoice-tracker",
-   "title": "Collections playbook",
-   "icon": {
-    "emoji": "📞"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "When an invoice is late"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Day 1 after due: friendly reminder with the invoice attached."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Day 7: call the accounts contact and note the answer."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Day 21: written notice and a revised payment date."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Day 45: pause new work until the balance is settled."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Overdue now"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "invoice",
-       "view": "all_invoices"
       },
-      "inline": true,
-      "title": "Invoices",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-od",
+      {
+        "token": "inv_over",
         "name": "Overdue",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": "Overdue"
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
         }
-       }
+      },
+      {
+        "token": "inv_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "inv_paid",
+        "name": "Paid this month",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "paid_on": {
+            "relative": "this_month"
+          }
+        },
+        "filters": {
+          "status": "Paid"
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Invoice assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "invoice",
+          "describes": "Invoices with client, amount, status and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "Clients and their terms."
+        }
       ],
-      "activeViewId": "v-od"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many invoices are overdue?",
+        "whyItMatters": "Overdue invoices need a call first.",
+        "expect": {
+          "table": "invoice",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Overdue"
+          },
+          "answer": 2,
+          "unit": "invoices"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open invoices by status.",
+        "action": {
+          "kind": "open",
+          "surface": "invoice_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "invoice_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open due dates.",
+        "action": {
+          "kind": "open",
+          "surface": "due_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "due_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "all_clients"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_clients",
+          "minItems": 5
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library author (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "aldouspark-demo.net",
+        "thornburydental-demo.net",
+        "alpenglow-demo.net",
+        "riverachu-demo.net",
+        "mesaverdebakery-demo.net",
+        "highlinept-demo.net"
+      ],
+      "fictionalStreets": [
+        "Juniper Grist Road"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "invoice-checklist",
-   "parent": "invoice-tracker",
-   "title": "Before you send",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Client name and address correct"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "invoice-tracker",
+      "parent": null,
+      "title": "Invoice Tracker",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Create an invoice, move it from Draft to Sent to Paid, and let the Past due column warn you when a due date slips. Clients show what they have been billed and what is still open."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Receipt"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoices"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "Amount by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "v-wk",
+                        "name": "Due this week",
+                        "layout": "list",
+                        "icon": "CalendarDays",
+                        "within": {
+                          "due_on": {
+                            "relative": "this_week"
+                          }
+                        },
+                        "anyOf": {
+                          "status": [
+                            "Sent",
+                            "Overdue"
+                          ]
+                        }
+                      },
+                      {
+                        "id": "v-pd",
+                        "name": "Past due",
+                        "layout": "list",
+                        "icon": "TriangleAlert",
+                        "within": {
+                          "due_on": {
+                            "relative": "before_today"
+                          }
+                        },
+                        "anyOf": {
+                          "status": [
+                            "Sent",
+                            "Overdue"
+                          ]
+                        }
+                      },
+                      {
+                        "id": "v-n7",
+                        "name": "Next 7 days",
+                        "layout": "list",
+                        "icon": "Clock",
+                        "within": {
+                          "due_on": {
+                            "relative": "next_days",
+                            "n": 7
+                          }
+                        },
+                        "anyOf": {
+                          "status": [
+                            "Sent",
+                            "Overdue"
+                          ]
+                        }
+                      },
+                      {
+                        "id": "v-pm",
+                        "name": "Paid this month",
+                        "layout": "list",
+                        "icon": "CircleCheck",
+                        "within": {
+                          "paid_on": {
+                            "relative": "this_month"
+                          }
+                        },
+                        "filters": {
+                          "status": "Paid"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoices"
+                    },
+                    "inline": true,
+                    "title": "Invoices",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "Billed by client",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "client",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-c",
+                "name": "Due dates",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "v-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "v-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_clients"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-cl",
+                "name": "Clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-cg",
+                "name": "Client cards",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "v-cl"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:collections-playbook"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:invoice-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Work described line by line"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "collections-playbook",
+      "parent": "invoice-tracker",
+      "title": "Collections playbook",
+      "icon": {
+        "emoji": "📞"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The goal of a reminder is to get paid and keep the client. Keep the tone the same on day 1 as on day 45 and let the facts change."
+            }
+          ],
+          "props": {
+            "icon": "Mail"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When an invoice is late"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 1 after due: friendly reminder with the invoice attached."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 7: call the accounts contact and note the answer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 21: written notice and a revised payment date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 45: pause new work until the balance is settled."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue now"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoices"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-od",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Overdue"
+                }
+              }
+            ],
+            "activeViewId": "v-od"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to record"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The date and way of every reminder, in the invoice row notes or the client row history"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What the client said and any new payment date they gave"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything agreed in writing about a payment plan"
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Tax applied as agreed"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Due date matches the client terms"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Payment instructions included"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Mark the status as Sent the moment it goes out so reminders start from the right day."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Send"
-     }
+      "key": "invoice-checklist",
+      "parent": "invoice-tracker",
+      "title": "Before you send",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client name and address correct"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Work described line by line"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tax applied as agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Due date matches the client terms"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payment instructions included"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Mark the status as Sent the moment it goes out so reminders start from the right day."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Send"
+          }
+        }
+      ]
     }
-   ]
-  }
- ]
+  ]
 }

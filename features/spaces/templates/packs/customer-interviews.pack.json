@@ -1,1083 +1,1294 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0361",
- "version": 1,
- "title": "Customer Interview Notes",
- "description": "Log customer calls with themes, sentiment and follow-ups, and spot patterns.",
- "forWho": "Product and customer success teams",
- "icon": {
-  "emoji": "🎙️"
- },
- "cover": {
-  "url": "gallery:photo-desert-dunes",
-  "offsetY": 50
- },
- "category": "marketing",
- "tags": [
-  "interviews",
-  "customers",
-  "research",
-  "themes"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-customer-interviews",
+  "packVersion": 1,
   "catalogueId": "SP0361",
-  "useCase": "Rhea Castellanos talks to customers weekly and tags what she hears to find patterns.",
-  "industry": "cross_industry",
-  "vertical": "Customer research",
-  "job": "customer_service",
-  "audience": "organization",
-  "teaches": "boards",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Tallow Bay Software",
-   "describes": "A small company selling scheduling tools to trades businesses.",
-   "address": {
-    "line1": "204 Piper Cove Lane",
-    "city": "San Francisco",
-    "region": "CA",
-    "postalCode": "94107",
-    "country": "US"
-   },
-   "phone": "(415) 555-0140",
-   "website": "tallowbay-demo.net",
-   "email": "hello@tallowbay-demo.net",
-   "timezone": "America/Los_Angeles"
-  },
-  "cleanupTag": "use-case:spaces-customer-interviews",
-  "tables": [
-   {
-    "token": "interview",
-    "name": "Interviews",
-    "labelSingular": "Interview",
-    "labelPlural": "Interviews",
-    "type": "entity",
-    "display": "list",
-    "weight": "light",
-    "ordered": false,
-    "icon": "mic",
-    "titleField": "customer",
-    "describes": "Each customer conversation with its themes, sentiment and takeaway.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "customer",
-      "label": "Customer",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "company",
-      "label": "Company",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "held_on",
-      "label": "Date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "interviewer",
-      "label": "Interviewer",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "segment",
-      "label": "Segment",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Solo operators",
-       "Small teams",
-       "Mid-size firms"
-      ],
-      "choiceColors": {
-       "Solo operators": "blue",
-       "Small teams": "violet",
-       "Mid-size firms": "teal"
-      }
-     },
-     {
-      "key": "stage",
-      "label": "Stage",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Prospect",
-       "Customer",
-       "Churned"
-      ],
-      "choiceColors": {
-       "Prospect": "blue",
-       "Customer": "green",
-       "Churned": "gray"
-      }
-     },
-     {
-      "key": "themes",
-      "label": "Themes",
-      "parityType": "multi_select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Pricing",
-       "Onboarding",
-       "Reporting",
-       "Mobile",
-       "Support"
-      ],
-      "choiceColors": {
-       "Pricing": "blue",
-       "Onboarding": "violet",
-       "Reporting": "teal",
-       "Mobile": "orange",
-       "Support": "pink"
-      },
-      "multi": true
-     },
-     {
-      "key": "sentiment",
-      "label": "Sentiment",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Positive",
-       "Neutral",
-       "Negative"
-      ],
-      "choiceColors": {
-       "Positive": "green",
-       "Neutral": "slate",
-       "Negative": "red"
-      }
-     },
-     {
-      "key": "follow_up",
-      "label": "Follow-up needed",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "recording",
-      "label": "Recording",
-      "parityType": "url",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "takeaway",
-      "label": "Key takeaway",
-      "parityType": "long_text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "i1",
-      "values": {
-       "customer": "Delphine Roux",
-       "company": "Roux Catering",
-       "stage": "Customer",
-       "segment": "Mid-size firms",
-       "sentiment": "Positive",
-       "themes": [
-        "Pricing",
-        "Onboarding"
-       ],
-       "held_on": "@today-4d",
-       "interviewer": "tm-rhea",
-       "follow_up": true,
-       "takeaway": "Loves the scheduling view but wants a simpler first-week setup.",
-       "recording": "https://calls.tallowbay-demo.net/i1"
-      }
-     },
-     {
-      "key": "i2",
-      "values": {
-       "customer": "Ahmad Karimi",
-       "company": "Karimi Plumbing",
-       "stage": "Customer",
-       "segment": "Small teams",
-       "sentiment": "Neutral",
-       "themes": [
-        "Reporting"
-       ],
-       "held_on": "@today-9d",
-       "interviewer": "tm-jules",
-       "follow_up": false,
-       "takeaway": "Exports reports every Friday and re-formats them by hand.",
-       "recording": "https://calls.tallowbay-demo.net/i2"
-      }
-     },
-     {
-      "key": "i3",
-      "values": {
-       "customer": "Brooke Hollander",
-       "company": "Hollander Home Care",
-       "stage": "Prospect",
-       "segment": "Small teams",
-       "sentiment": "Positive",
-       "themes": [
-        "Onboarding",
-        "Mobile"
-       ],
-       "held_on": "@today-12d",
-       "interviewer": "tm-rhea",
-       "follow_up": true,
-       "takeaway": "Needs staff to clock in from a phone without an account.",
-       "recording": "https://calls.tallowbay-demo.net/i3"
-      }
-     },
-     {
-      "key": "i4",
-      "values": {
-       "customer": "Tomasz Wrobel",
-       "company": "Wrobel Electric",
-       "stage": "Churned",
-       "segment": "Solo operators",
-       "sentiment": "Negative",
-       "themes": [
-        "Pricing",
-        "Support"
-       ],
-       "held_on": "@today-20d",
-       "interviewer": "tm-omar",
-       "follow_up": true,
-       "takeaway": "Left because the tier jump was too big for a three-person crew.",
-       "recording": "https://calls.tallowbay-demo.net/i4"
-      }
-     },
-     {
-      "key": "i5",
-      "values": {
-       "customer": "Imogen Pryce",
-       "company": "Pryce Landscape",
-       "stage": "Customer",
-       "segment": "Mid-size firms",
-       "sentiment": "Positive",
-       "themes": [
-        "Reporting",
-        "Mobile"
-       ],
-       "held_on": "@today-26d",
-       "interviewer": "tm-jules",
-       "follow_up": false,
-       "takeaway": "Uses the app daily in trucks; wants offline jobs.",
-       "recording": "https://calls.tallowbay-demo.net/i5"
-      }
-     },
-     {
-      "key": "i6",
-      "values": {
-       "customer": "Santiago Ibarra",
-       "company": "Ibarra Tile & Stone",
-       "stage": "Prospect",
-       "segment": "Small teams",
-       "sentiment": "Neutral",
-       "themes": [
-        "Pricing"
-       ],
-       "held_on": "@today-31d",
-       "interviewer": "tm-rhea",
-       "follow_up": false,
-       "takeaway": "Comparing three tools; price per seat is the deciding factor.",
-       "recording": "https://calls.tallowbay-demo.net/i6"
-      }
-     },
-     {
-      "key": "i7",
-      "values": {
-       "customer": "Wilhelmina Frost",
-       "company": "Frost Dental Studio",
-       "stage": "Customer",
-       "segment": "Mid-size firms",
-       "sentiment": "Negative",
-       "themes": [
-        "Support",
-        "Onboarding"
-       ],
-       "held_on": "@today-38d",
-       "interviewer": "tm-omar",
-       "follow_up": true,
-       "takeaway": "Waited two days for an answer during her first week.",
-       "recording": "https://calls.tallowbay-demo.net/i7"
-      }
-     },
-     {
-      "key": "i8",
-      "values": {
-       "customer": "Kofi Mensah",
-       "company": "Mensah Cleaning",
-       "stage": "Churned",
-       "segment": "Solo operators",
-       "sentiment": "Neutral",
-       "themes": [
-        "Reporting",
-        "Pricing"
-       ],
-       "held_on": "@today-45d",
-       "interviewer": "tm-jules",
-       "follow_up": false,
-       "takeaway": "Switched back to a spreadsheet; the work was seasonal.",
-       "recording": "https://calls.tallowbay-demo.net/i8"
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each interview has one interviewer.",
-    "fromTable": "interview",
-    "fromField": "interviewer",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "interviews_held"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-rhea",
-      "values": {
-       "full_name": "Rhea Castellanos",
-       "role": "Founder",
-       "work_email": "rhea@tallowbay-demo.net",
-       "mobile": "(415) 555-0141",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-jules",
-      "values": {
-       "full_name": "Jules Abernathy",
-       "role": "Product manager",
-       "work_email": "jules@tallowbay-demo.net",
-       "mobile": "(415) 555-0142",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-omar",
-      "values": {
-       "full_name": "Omar Haddad",
-       "role": "Customer success",
-       "work_email": "omar@tallowbay-demo.net",
-       "mobile": "(415) 555-0143",
-       "start_date": "@today-20m"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "log_interview",
-    "name": "Log an interview",
-    "describes": "Capture a customer call right after it ends.",
-    "audience": "staff",
-    "table": "interview",
-    "fields": [
-     {
-      "fieldKey": "customer",
-      "ask": "Who did you speak with?",
-      "required": true
-     },
-     {
-      "fieldKey": "company",
-      "ask": "Which company are they with?"
-     },
-     {
-      "fieldKey": "held_on",
-      "ask": "When was the call?"
-     },
-     {
-      "fieldKey": "themes",
-      "ask": "Which topics came up?"
-     },
-     {
-      "fieldKey": "takeaway",
-      "ask": "What was the most important thing you heard?",
-      "required": true
-     }
-    ],
-    "submitLabel": "Save interview",
-    "confirmation": "Saved to the interview list."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_interviews",
-    "name": "All interviews",
-    "table": "interview",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "held_on",
-      "direction": "desc"
-     }
-    ]
-   },
-   {
-    "token": "stage_board",
-    "name": "By stage",
-    "table": "interview",
-    "kind": "kanban",
-    "groupBy": "stage"
-   },
-   {
-    "token": "theme_board",
-    "name": "By sentiment",
-    "table": "interview",
-    "kind": "kanban",
-    "groupBy": "sentiment"
-   },
-   {
-    "token": "interview_calendar",
-    "name": "Calendar",
-    "table": "interview",
-    "kind": "calendar",
-    "dateField": "held_on",
-    "allDay": true
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Interview assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "interview",
-     "describes": "Every customer interview with theme and sentiment."
-    },
-    {
-     "name": "related_tables",
-     "table": "team_member",
-     "describes": "The interviewers."
-    }
-   ],
-   "question": {
-    "ask": "How many interviews need a follow-up?",
-    "whyItMatters": "Rhea sends follow-ups first.",
-    "expect": {
-     "table": "interview",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "follow_up": true
-     },
-     "answer": 4,
-     "unit": "interviews"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open interviews by stage.",
-    "action": {
-     "kind": "open",
-     "surface": "stage_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "stage_board",
-     "minItems": 8
-    }
-   },
-   {
-    "says": "Open the calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "interview_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "interview_calendar",
-     "minItems": 8
-    }
-   },
-   {
-    "says": "Open the list.",
-    "action": {
-     "kind": "open",
-     "surface": "all_interviews"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_interviews",
-     "minItems": 8
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library author (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "tallowbay-demo.net",
-    "calls.tallowbay-demo.net"
-   ],
-   "fictionalStreets": [
-    "Piper Cove Lane"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "customer-interviews",
-   "parent": null,
-   "title": "Customer Interviews",
-   "icon": {
+  "version": 2,
+  "title": "Customer Interview Notes",
+  "description": "Log customer calls with themes, sentiment and follow-ups, and spot patterns.",
+  "forWho": "Product and customer success teams",
+  "icon": {
     "emoji": "🎙️"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-desert-dunes",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Log every customer conversation within a day. Tag themes so patterns show up across calls instead of staying in one note."
-      }
-     ],
-     "background": "orange",
-     "props": {
-      "icon": "Mic"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "interview",
-           "view": "all_interviews"
-          },
-          "inline": true,
-          "title": "Interviews",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "By theme",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "themes",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
+  },
+  "category": "marketing",
+  "tags": [
+    "interviews",
+    "customers",
+    "research",
+    "themes"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-customer-interviews",
+    "catalogueId": "SP0361",
+    "useCase": "Rhea Castellanos talks to customers weekly and tags what she hears to find patterns.",
+    "industry": "cross_industry",
+    "vertical": "Customer research",
+    "job": "customer_service",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Tallow Bay Software",
+      "describes": "A small company selling scheduling tools to trades businesses.",
+      "address": {
+        "line1": "204 Piper Cove Lane",
+        "city": "San Francisco",
+        "region": "CA",
+        "postalCode": "94107",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "interview",
-           "view": "all_interviews"
-          },
-          "inline": true,
-          "title": "Interviews",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "By sentiment",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "sentiment",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "interview",
-           "view": "all_interviews"
-          },
-          "inline": true,
-          "title": "Interviews",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-chart",
-            "name": "By stage",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "stage",
-             "op": "count"
-            }
-           }
-          ],
-          "activeViewId": "view-chart"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(415) 555-0140",
+      "website": "tallowbay-demo.net",
+      "email": "hello@tallowbay-demo.net",
+      "timezone": "America/Los_Angeles"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-customer-interviews",
+    "tables": [
       {
-       "text": "Interviews"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "interview",
-       "view": "all_interviews"
-      },
-      "inline": true,
-      "title": "Interviews",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "v-t",
-        "name": "Latest first",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "held_on",
-          "direction": "desc"
-         }
+        "token": "interview",
+        "name": "Interviews",
+        "labelSingular": "Interview",
+        "labelPlural": "Interviews",
+        "type": "entity",
+        "display": "list",
+        "weight": "light",
+        "ordered": false,
+        "icon": "mic",
+        "titleField": "customer",
+        "describes": "Each customer conversation with its themes, sentiment and takeaway.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "held_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "age",
+            "label": "Days since call",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Date}, TODAY(), 'days')"
+          },
+          {
+            "key": "interviewer",
+            "label": "Interviewer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "segment",
+            "label": "Segment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Solo operators",
+              "Small teams",
+              "Mid-size firms"
+            ],
+            "choiceColors": {
+              "Solo operators": "blue",
+              "Small teams": "violet",
+              "Mid-size firms": "teal"
+            }
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Customer",
+              "Churned"
+            ],
+            "choiceColors": {
+              "Prospect": "blue",
+              "Customer": "green",
+              "Churned": "gray"
+            }
+          },
+          {
+            "key": "themes",
+            "label": "Themes",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pricing",
+              "Onboarding",
+              "Reporting",
+              "Mobile",
+              "Support"
+            ],
+            "choiceColors": {
+              "Pricing": "blue",
+              "Onboarding": "violet",
+              "Reporting": "teal",
+              "Mobile": "orange",
+              "Support": "pink"
+            },
+            "multi": true
+          },
+          {
+            "key": "sentiment",
+            "label": "Sentiment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Positive",
+              "Neutral",
+              "Negative"
+            ],
+            "choiceColors": {
+              "Positive": "green",
+              "Neutral": "slate",
+              "Negative": "red"
+            }
+          },
+          {
+            "key": "follow_up",
+            "label": "Follow-up needed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "follow_up_by",
+            "label": "Follow up by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "recording",
+            "label": "Recording",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "takeaway",
+            "label": "Key takeaway",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited_at",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "followed_btn",
+            "label": "Follow-up done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "interview_followed"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "i1",
+            "values": {
+              "customer": "Delphine Roux",
+              "company": "Roux Catering",
+              "stage": "Customer",
+              "segment": "Mid-size firms",
+              "sentiment": "Positive",
+              "themes": [
+                "Pricing",
+                "Onboarding"
+              ],
+              "held_on": "@today-1d",
+              "interviewer": "tm-rhea",
+              "follow_up": true,
+              "takeaway": "Loves the scheduling view but wants a simpler first-week setup.",
+              "recording": "https://calls.tallowbay-demo.net/i1",
+              "follow_up_by": "@today+2d"
+            }
+          },
+          {
+            "key": "i2",
+            "values": {
+              "customer": "Ahmad Karimi",
+              "company": "Karimi Plumbing",
+              "stage": "Customer",
+              "segment": "Small teams",
+              "sentiment": "Neutral",
+              "themes": [
+                "Reporting"
+              ],
+              "held_on": "@today-9d",
+              "interviewer": "tm-jules",
+              "follow_up": false,
+              "takeaway": "Exports reports every Friday and re-formats them by hand.",
+              "recording": "https://calls.tallowbay-demo.net/i2"
+            }
+          },
+          {
+            "key": "i3",
+            "values": {
+              "customer": "Brooke Hollander",
+              "company": "Hollander Home Care",
+              "stage": "Prospect",
+              "segment": "Small teams",
+              "sentiment": "Positive",
+              "themes": [
+                "Onboarding",
+                "Mobile"
+              ],
+              "held_on": "@today-12d",
+              "interviewer": "tm-rhea",
+              "follow_up": true,
+              "takeaway": "Needs staff to clock in from a phone without an account.",
+              "recording": "https://calls.tallowbay-demo.net/i3",
+              "follow_up_by": "@today+6d"
+            }
+          },
+          {
+            "key": "i4",
+            "values": {
+              "customer": "Tomasz Wrobel",
+              "company": "Wrobel Electric",
+              "stage": "Churned",
+              "segment": "Solo operators",
+              "sentiment": "Negative",
+              "themes": [
+                "Pricing",
+                "Support"
+              ],
+              "held_on": "@today-20d",
+              "interviewer": "tm-omar",
+              "follow_up": true,
+              "takeaway": "Left because the tier jump was too big for a three-person crew.",
+              "recording": "https://calls.tallowbay-demo.net/i4",
+              "follow_up_by": "@today-3d"
+            }
+          },
+          {
+            "key": "i5",
+            "values": {
+              "customer": "Imogen Pryce",
+              "company": "Pryce Landscape",
+              "stage": "Customer",
+              "segment": "Mid-size firms",
+              "sentiment": "Positive",
+              "themes": [
+                "Reporting",
+                "Mobile"
+              ],
+              "held_on": "@today-26d",
+              "interviewer": "tm-jules",
+              "follow_up": false,
+              "takeaway": "Uses the app daily in trucks; wants offline jobs.",
+              "recording": "https://calls.tallowbay-demo.net/i5"
+            }
+          },
+          {
+            "key": "i6",
+            "values": {
+              "customer": "Santiago Ibarra",
+              "company": "Ibarra Tile & Stone",
+              "stage": "Prospect",
+              "segment": "Small teams",
+              "sentiment": "Neutral",
+              "themes": [
+                "Pricing"
+              ],
+              "held_on": "@today-31d",
+              "interviewer": "tm-rhea",
+              "follow_up": false,
+              "takeaway": "Comparing three tools; price per seat is the deciding factor.",
+              "recording": "https://calls.tallowbay-demo.net/i6"
+            }
+          },
+          {
+            "key": "i7",
+            "values": {
+              "customer": "Wilhelmina Frost",
+              "company": "Frost Dental Studio",
+              "stage": "Customer",
+              "segment": "Mid-size firms",
+              "sentiment": "Negative",
+              "themes": [
+                "Support",
+                "Onboarding"
+              ],
+              "held_on": "@today-38d",
+              "interviewer": "tm-omar",
+              "follow_up": true,
+              "takeaway": "Waited two days for an answer during her first week.",
+              "recording": "https://calls.tallowbay-demo.net/i7",
+              "follow_up_by": "@today-10d"
+            }
+          },
+          {
+            "key": "i8",
+            "values": {
+              "customer": "Kofi Mensah",
+              "company": "Mensah Cleaning",
+              "stage": "Churned",
+              "segment": "Solo operators",
+              "sentiment": "Neutral",
+              "themes": [
+                "Reporting",
+                "Pricing"
+              ],
+              "held_on": "@today-45d",
+              "interviewer": "tm-jules",
+              "follow_up": false,
+              "takeaway": "Switched back to a spreadsheet; the work was seasonal.",
+              "recording": "https://calls.tallowbay-demo.net/i8"
+            }
+          }
+        ],
+        "statusImplies": [],
+        "before": [
+          [
+            "held_on",
+            "follow_up_by"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "Interview notes",
+            "values": {
+              "follow_up": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Background"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Role, team size, tools they use today."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Jobs to be done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What are they trying to get done?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pains"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What is hard, slow or annoying?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quotes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "quote",
+                  "text": [
+                    {
+                      "text": "Paste one memorable quote."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up action"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
-       },
-       {
-        "id": "v-s",
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each interview has one interviewer.",
+        "fromTable": "interview",
+        "fromField": "interviewer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "interviews_held"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-rhea",
+            "values": {
+              "full_name": "Rhea Castellanos",
+              "role": "Founder",
+              "work_email": "rhea@tallowbay-demo.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-jules",
+            "values": {
+              "full_name": "Jules Abernathy",
+              "role": "Product manager",
+              "work_email": "jules@tallowbay-demo.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-omar",
+            "values": {
+              "full_name": "Omar Haddad",
+              "role": "Customer success",
+              "work_email": "omar@tallowbay-demo.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-20m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "log_interview",
+        "name": "Log an interview",
+        "describes": "Capture a customer call right after it ends.",
+        "audience": "staff",
+        "table": "interview",
+        "fields": [
+          {
+            "fieldKey": "customer",
+            "ask": "Who did you speak with?",
+            "required": true
+          },
+          {
+            "fieldKey": "company",
+            "ask": "Which company are they with?"
+          },
+          {
+            "fieldKey": "held_on",
+            "ask": "When was the call?"
+          },
+          {
+            "fieldKey": "themes",
+            "ask": "Which topics came up?"
+          },
+          {
+            "fieldKey": "takeaway",
+            "ask": "What was the most important thing you heard?",
+            "required": true
+          }
+        ],
+        "submitLabel": "Save interview",
+        "confirmation": "Saved to the interview list."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "interview_followed",
+        "table": "interview",
+        "name": "Follow-up done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "follow_up",
+            "set": "value",
+            "value": false
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_interviews",
+        "name": "All interviews",
+        "table": "interview",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "held_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "stage_board",
         "name": "By stage",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "stage"
-       },
-       {
-        "id": "v-g",
-        "name": "By theme",
-        "layout": "gallery",
-        "icon": "LayoutGrid"
-       },
-       {
-        "id": "v-c",
+        "table": "interview",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "theme_board",
+        "name": "By sentiment",
+        "table": "interview",
+        "kind": "kanban",
+        "groupBy": "sentiment"
+      },
+      {
+        "token": "interview_calendar",
         "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "held_on"
-       },
-       {
-        "id": "v-f",
-        "name": "Follow-up needed",
-        "layout": "list",
-        "icon": "Flag",
+        "table": "interview",
+        "kind": "calendar",
+        "dateField": "held_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "int_month",
+        "name": "This month",
+        "table": "interview",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "this_month"
+          }
+        },
+        "sorts": [
+          {
+            "field": "held_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "int_30",
+        "name": "Last 30 days",
+        "table": "interview",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "int_fu_week",
+        "name": "Follow-ups due this week",
+        "table": "interview",
+        "kind": "grid",
+        "within": {
+          "follow_up_by": {
+            "relative": "this_week"
+          }
+        },
         "filters": {
-         "follow_up": true
+          "follow_up": true
         }
-       }
+      },
+      {
+        "token": "int_fu_over",
+        "name": "Overdue follow-ups",
+        "table": "interview",
+        "kind": "grid",
+        "within": {
+          "follow_up_by": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "follow_up": true
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Interview assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "interview",
+          "describes": "Every customer interview with theme and sentiment."
+        },
+        {
+          "name": "related_tables",
+          "table": "team_member",
+          "describes": "The interviewers."
+        }
       ],
-      "activeViewId": "v-t"
-     }
+      "question": {
+        "ask": "How many interviews need a follow-up?",
+        "whyItMatters": "Rhea sends follow-ups first.",
+        "expect": {
+          "table": "interview",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "follow_up": true
+          },
+          "answer": 4,
+          "unit": "interviews"
+        }
+      }
     },
-    {
-     "type": "columnList",
-     "children": [
+    "walk": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:interview-guide-cust"
-         }
+        "says": "Open interviews by stage.",
+        "action": {
+          "kind": "open",
+          "surface": "stage_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "stage_board",
+          "minItems": 8
         }
-       ]
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:interview-notes-template"
-         }
+        "says": "Open the calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "interview_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "interview_calendar",
+          "minItems": 8
         }
-       ]
+      },
+      {
+        "says": "Open the list.",
+        "action": {
+          "kind": "open",
+          "surface": "all_interviews"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_interviews",
+          "minItems": 8
+        }
       }
-     ]
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library author (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "tallowbay-demo.net",
+        "calls.tallowbay-demo.net"
+      ],
+      "fictionalStreets": [
+        "Piper Cove Lane"
+      ]
     },
-    {
-     "type": "toggle",
-     "text": [
-      {
-       "text": "Interview guide"
-      }
-     ],
-     "children": [
-      {
-       "type": "numbered",
-       "text": [
-        {
-         "text": "Thank them and explain how the notes will be used."
-        }
-       ]
-      },
-      {
-       "type": "numbered",
-       "text": [
-        {
-         "text": "Ask about the last time they hit the problem."
-        }
-       ]
-      },
-      {
-       "type": "numbered",
-       "text": [
-        {
-         "text": "Dig into what they did next."
-        }
-       ]
-      },
-      {
-       "type": "numbered",
-       "text": [
-        {
-         "text": "Close with: what should we have asked?"
-        }
-       ]
-      }
-     ]
-    }
-   ]
+    "version": 2
   },
-  {
-   "key": "interview-guide-cust",
-   "parent": "customer-interviews",
-   "title": "How to run the call",
-   "icon": {
-    "emoji": "🧭"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Before"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
+      "key": "customer-interviews",
+      "parent": null,
+      "title": "Customer Interview Notes",
+      "icon": {
+        "emoji": "🎙️"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Log every customer conversation within a day. Tag themes so patterns show up across calls instead of staying in one note."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Mic"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "interview",
+                      "view": "all_interviews"
+                    },
+                    "inline": true,
+                    "title": "Interviews",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "By theme",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "themes",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "v-fo",
+                        "name": "Overdue follow-ups",
+                        "layout": "list",
+                        "icon": "TriangleAlert",
+                        "within": {
+                          "follow_up_by": {
+                            "relative": "before_today"
+                          }
+                        },
+                        "filters": {
+                          "follow_up": true
+                        }
+                      },
+                      {
+                        "id": "v-fw",
+                        "name": "Follow-ups due this week",
+                        "layout": "list",
+                        "icon": "CalendarDays",
+                        "within": {
+                          "follow_up_by": {
+                            "relative": "this_week"
+                          }
+                        },
+                        "filters": {
+                          "follow_up": true
+                        }
+                      },
+                      {
+                        "id": "v-30",
+                        "name": "Last 30 days",
+                        "layout": "list",
+                        "icon": "Clock",
+                        "within": {
+                          "held_on": {
+                            "relative": "past_days",
+                            "n": 30
+                          }
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "interview",
+                      "view": "all_interviews"
+                    },
+                    "inline": true,
+                    "title": "Interviews",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "By sentiment",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "sentiment",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "interview",
+                      "view": "all_interviews"
+                    },
+                    "inline": true,
+                    "title": "Interviews",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-chart",
+                        "name": "By stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-chart"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Interviews"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "interview",
+              "view": "all_interviews"
+            },
+            "inline": true,
+            "title": "Interviews",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-t",
+                "name": "Latest first",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-s",
+                "name": "By stage",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "v-g",
+                "name": "By theme",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "v-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "held_on"
+              },
+              {
+                "id": "v-f",
+                "name": "Follow-up needed",
+                "layout": "list",
+                "icon": "Flag",
+                "filters": {
+                  "follow_up": true
+                }
+              }
+            ],
+            "activeViewId": "v-t"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:interview-guide-cust"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Interview guide"
+            }
+          ],
+          "children": [
+            {
+              "type": "numbered",
+              "text": [
+                {
+                  "text": "Thank them and explain how the notes will be used."
+                }
+              ]
+            },
+            {
+              "type": "numbered",
+              "text": [
+                {
+                  "text": "Ask about the last time they hit the problem."
+                }
+              ]
+            },
+            {
+              "type": "numbered",
+              "text": [
+                {
+                  "text": "Dig into what they did next."
+                }
+              ]
+            },
+            {
+              "type": "numbered",
+              "text": [
+                {
+                  "text": "Close with: what should we have asked?"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Read their last interview notes"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Pick one goal for the call"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "During"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Ask open questions; stay quiet after the answer."
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Ask for stories, not opinions."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "After"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Log the call within a day"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Tag at least one theme"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Send a thank-you note"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "interview-guide-cust",
+      "parent": "customer-interviews",
+      "title": "How to run the call",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "You are not selling and not testing a design. You are collecting stories about what already happened, because stories are the only evidence you can trust."
+            }
+          ],
+          "props": {
+            "icon": "Mic"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read their last interview notes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick one goal for the call"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask open questions; stay quiet after the answer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for stories, not opinions."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Log the call within a day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tag at least one theme"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send a thank-you note"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions that work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell me about the last time this came up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What did you do first? What happened next?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What did you try that did not work?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions that mislead"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Would you use a feature that does X? People say yes to be kind."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How much would you pay? Ask what they pay for the workaround today instead."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  },
-  {
-   "key": "interview-notes-template",
-   "parent": "customer-interviews",
-   "title": "Notes (template)",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Background"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Role, team size, tools they use today."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Jobs to be done"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "What are they trying to get done?"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Pains"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "What is hard, slow or annoying?"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Quotes"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "quote",
-     "text": [
-      {
-       "text": "Paste one memorable quote."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Next steps"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Follow-up action"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  }
- ]
+  ]
 }

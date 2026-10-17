@@ -1,2858 +1,4315 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0303",
- "version": 1,
- "title": "Small Business OS",
- "description": "One home for sales, projects, money, team and goals in a small company.",
- "forWho": "Owners of 1 to 15 person businesses",
- "icon": {
-  "emoji": "🏢"
- },
- "cover": {
-  "url": "gallery:photo-golden-palms",
-  "offsetY": 50
- },
- "category": "operations",
- "tags": [
-  "business",
-  "sales",
-  "finance",
-  "team",
-  "goals"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-small-business-os",
+  "packVersion": 1,
   "catalogueId": "SP0303",
-  "useCase": "Joaquin Medeiros owns a small sign and print shop and uses this to see open deals, this week's jobs, unpaid invoices, expenses and the quarter's goals in one place.",
-  "industry": "cross_industry",
-  "vertical": "Small business operations",
-  "job": "reporting",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Copperline Print & Signs",
-   "describes": "A six-person print and signage shop serving local restaurants, schools and trade shows.",
-   "address": {
-    "line1": "880 Weatherby Road",
-    "city": "Boise",
-    "region": "ID",
-    "postalCode": "83702",
-    "country": "US"
-   },
-   "phone": "(208) 555-0139",
-   "website": "copperlineprint.net",
-   "email": "orders@copperlineprint.net",
-   "timezone": "America/Boise"
-  },
-  "cleanupTag": "use-case:spaces-small-business-os",
-  "tables": [
-   {
-    "token": "contact",
-    "name": "Contacts",
-    "labelSingular": "Contact",
-    "labelPlural": "Contacts",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "contact",
-    "titleField": "contact_name",
-    "describes": "Customers, prospects and suppliers.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "contact_name",
-      "label": "Name",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "company",
-      "label": "Company",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "phone",
-      "label": "Phone",
-      "parityType": "phone",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "type",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Customer",
-       "Prospect",
-       "Vendor",
-       "Partner"
-      ],
-      "choiceColors": {
-       "Customer": "slate",
-       "Prospect": "blue",
-       "Vendor": "amber",
-       "Partner": "violet"
-      },
-      "required": true,
-      "default": "Prospect"
-     },
-     {
-      "key": "deals",
-      "label": "Deals",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "deal",
-      "multi": true
-     },
-     {
-      "key": "projects",
-      "label": "Projects",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "project",
-      "multi": true
-     },
-     {
-      "key": "invoices",
-      "label": "Invoices",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "invoice",
-      "multi": true
-     },
-     {
-      "key": "won_value",
-      "label": "Won value",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "deals",
-      "pick": "value",
-      "agg": "sum",
-      "filter": {
-       "stage": "Won"
-      }
-     },
-     {
-      "key": "billed",
-      "label": "Billed",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "invoices",
-      "pick": "amount",
-      "agg": "sum"
-     }
-    ],
-    "rows": [
-     {
-      "key": "ct1",
-      "values": {
-       "contact_name": "Odalys Ferreira",
-       "company": "Juniper Bistro",
-       "email": "odalys@juniperbistro.net",
-       "phone": "(208) 555-0151",
-       "type": "Customer",
-       "deals": [
-        "d3"
-       ],
-       "projects": [
-        "pj2"
-       ],
-       "invoices": [
-        "iv1"
-       ]
-      }
-     },
-     {
-      "key": "ct2",
-      "values": {
-       "contact_name": "Calvin Thornbury",
-       "company": "East Bench Elementary",
-       "email": "calvin@eastbenchschool.net",
-       "phone": "(208) 555-0152",
-       "type": "Customer",
-       "deals": [
-        "d4"
-       ],
-       "projects": [
-        "pj1"
-       ],
-       "invoices": [
-        "iv2",
-        "iv3"
-       ]
-      }
-     },
-     {
-      "key": "ct3",
-      "values": {
-       "contact_name": "Marisol Ayers",
-       "company": "Summit Expo Group",
-       "email": "marisol@summitexpo.net",
-       "phone": "(208) 555-0153",
-       "type": "Prospect",
-       "deals": [
-        "d1",
-        "d6"
-       ],
-       "projects": [
-        "pj4"
-       ],
-       "invoices": []
-      }
-     },
-     {
-      "key": "ct4",
-      "values": {
-       "contact_name": "Ibrahim Soto",
-       "company": "Harlow Cafe",
-       "email": "ibrahim@harlowcafe.net",
-       "phone": "(208) 555-0154",
-       "type": "Prospect",
-       "deals": [
-        "d2",
-        "d7"
-       ],
-       "projects": [],
-       "invoices": []
-      }
-     },
-     {
-      "key": "ct5",
-      "values": {
-       "contact_name": "Greta Lindholm",
-       "company": "Brightwater Dental",
-       "email": "greta@brightwater.net",
-       "phone": "(208) 555-0155",
-       "type": "Customer",
-       "deals": [
-        "d5"
-       ],
-       "projects": [
-        "pj3"
-       ],
-       "invoices": [
-        "iv4"
-       ]
-      }
-     },
-     {
-      "key": "ct6",
-      "values": {
-       "contact_name": "Wendell Park",
-       "company": "Ink & Stock Supply",
-       "email": "wendell@inkandstock.net",
-       "phone": "(208) 555-0156",
-       "type": "Vendor",
-       "deals": [],
-       "projects": [],
-       "invoices": []
-      }
-     },
-     {
-      "key": "ct7",
-      "values": {
-       "contact_name": "Aisha Boateng",
-       "company": "Vantage Vinyl Wholesale",
-       "email": "aisha@vantagesupply.net",
-       "phone": "(208) 555-0157",
-       "type": "Vendor",
-       "deals": [],
-       "projects": [],
-       "invoices": []
-      }
-     }
-    ]
-   },
-   {
-    "token": "deal",
-    "name": "Deals",
-    "labelSingular": "Deal",
-    "labelPlural": "Deals",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "handshake",
-    "titleField": "deal_name",
-    "describes": "Sales opportunities moving from lead to won.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "deal_name",
-      "label": "Deal",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "stage",
-      "label": "Stage",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Lead",
-       "Qualified",
-       "Proposal",
-       "Won",
-       "Lost"
-      ],
-      "choiceColors": {
-       "Lead": "slate",
-       "Qualified": "blue",
-       "Proposal": "amber",
-       "Won": "green",
-       "Lost": "red"
-      },
-      "required": true,
-      "default": "Lead"
-     },
-     {
-      "key": "value",
-      "label": "Value",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 200000
-       }
-      ]
-     },
-     {
-      "key": "win_chance",
-      "label": "Win chance (%)",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ]
-     },
-     {
-      "key": "weighted",
-      "label": "Weighted value",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "{Value} * {Win chance (%)} / 100"
-     },
-     {
-      "key": "close_on",
-      "label": "Expected close",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "contact",
-      "label": "Contact",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "contact",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "d1",
-      "values": {
-       "contact": "ct3",
-       "deal_name": "Expo booth graphics package",
-       "stage": "Proposal",
-       "value": 14800,
-       "win_chance": 60,
-       "close_on": "@today+12d",
-       "owner": "tm-joaquin"
-      }
-     },
-     {
-      "key": "d2",
-      "values": {
-       "contact": "ct4",
-       "deal_name": "Menu boards and window decals",
-       "stage": "Qualified",
-       "value": 3900,
-       "win_chance": 40,
-       "close_on": "@today+20d",
-       "owner": "tm-priyanka"
-      }
-     },
-     {
-      "key": "d3",
-      "values": {
-       "contact": "ct1",
-       "deal_name": "Patio sign and banners",
-       "stage": "Won",
-       "value": 2650,
-       "win_chance": 100,
-       "close_on": "@today-6d",
-       "owner": "tm-priyanka"
-      }
-     },
-     {
-      "key": "d4",
-      "values": {
-       "contact": "ct2",
-       "deal_name": "Annual school banners",
-       "stage": "Won",
-       "value": 5200,
-       "win_chance": 100,
-       "close_on": "@today-18d",
-       "owner": "tm-joaquin"
-      }
-     },
-     {
-      "key": "d5",
-      "values": {
-       "contact": "ct5",
-       "deal_name": "Waiting room wall graphics",
-       "stage": "Proposal",
-       "value": 4400,
-       "win_chance": 70,
-       "close_on": "@today+7d",
-       "owner": "tm-priyanka"
-      }
-     },
-     {
-      "key": "d6",
-      "values": {
-       "contact": "ct3",
-       "deal_name": "Trade show tote bags",
-       "stage": "Lead",
-       "value": 2100,
-       "win_chance": 20,
-       "close_on": "@today+35d",
-       "owner": "tm-priyanka"
-      }
-     },
-     {
-      "key": "d7",
-      "values": {
-       "contact": "ct4",
-       "deal_name": "Opening day flyers",
-       "stage": "Lost",
-       "value": 900,
-       "win_chance": 0,
-       "close_on": "@today-12d",
-       "owner": "tm-priyanka"
-      }
-     }
-    ],
-    "independentOf": {
-     "owner": "Either record can be created or change status before the other.",
-     "contact": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "project",
-    "name": "Projects",
-    "labelSingular": "Project",
-    "labelPlural": "Projects",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "folder-kanban",
-    "titleField": "project_name",
-    "describes": "Jobs in production.",
-    "subject": "thing",
-    "before": [
-     [
-      "start_on",
-      "due_on"
-     ]
-    ],
-    "fields": [
-     {
-      "key": "project_name",
-      "label": "Project",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Planning",
-       "In progress",
-       "Done"
-      ],
-      "choiceColors": {
-       "Planning": "slate",
-       "In progress": "blue",
-       "Done": "green"
-      },
-      "required": true,
-      "default": "Planning"
-     },
-     {
-      "key": "start_on",
-      "label": "Start",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "budget",
-      "label": "Budget",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 300000
-       }
-      ]
-     },
-     {
-      "key": "contact",
-      "label": "Customer",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "contact",
-      "relationMax": 1
-     },
-     {
-      "key": "tasks",
-      "label": "Tasks",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "task",
-      "multi": true
-     },
-     {
-      "key": "open_tasks",
-      "label": "Open tasks",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "tasks",
-      "pick": "task_name",
-      "agg": "count",
-      "filter": {
-       "status": "To do"
-      }
-     }
-    ],
-    "rows": [
-     {
-      "key": "pj1",
-      "values": {
-       "contact": "ct2",
-       "project_name": "School banner run",
-       "status": "In progress",
-       "start_on": "@today-10d",
-       "due_on": "@today+6d",
-       "budget": 5200,
-       "tasks": [
-        "tk1",
-        "tk2",
-        "tk3",
-        "tk8"
-       ]
-      }
-     },
-     {
-      "key": "pj2",
-      "values": {
-       "contact": "ct1",
-       "project_name": "Juniper patio sign install",
-       "status": "Done",
-       "start_on": "@today-20d",
-       "due_on": "@today-8d",
-       "budget": 2650,
-       "tasks": [
-        "tk4"
-       ]
-      }
-     },
-     {
-      "key": "pj3",
-      "values": {
-       "contact": "ct5",
-       "project_name": "Waiting room wall graphics",
-       "status": "Planning",
-       "start_on": "@today+3d",
-       "due_on": "@today+24d",
-       "budget": 4400,
-       "tasks": [
-        "tk5",
-        "tk6",
-        "tk9"
-       ]
-      }
-     },
-     {
-      "key": "pj4",
-      "values": {
-       "contact": "ct3",
-       "project_name": "Expo booth graphics package",
-       "status": "Planning",
-       "start_on": "@today+14d",
-       "due_on": "@today+40d",
-       "budget": 14800,
-       "tasks": [
-        "tk7",
-        "tk10"
-       ]
-      }
-     }
-    ],
-    "independentOf": {
-     "contact": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "task",
-    "name": "Tasks",
-    "labelSingular": "Task",
-    "labelPlural": "Tasks",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "list-checks",
-    "titleField": "task_name",
-    "describes": "The steps that get each job out the door.",
-    "subject": "thing",
-    "childDates": [],
-    "fields": [
-     {
-      "key": "task_name",
-      "label": "Task",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "To do",
-       "In progress",
-       "Done"
-      ],
-      "choiceColors": {
-       "To do": "slate",
-       "In progress": "blue",
-       "Done": "green"
-      },
-      "required": true,
-      "default": "To do"
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "assignee",
-      "label": "Assigned to",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "project",
-      "label": "Project",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "project",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "tk1",
-      "values": {
-       "project": "pj1",
-       "task_name": "Proof approval from school",
-       "status": "In progress",
-       "assignee": "tm-priyanka",
-       "due_on": "@today+1d"
-      }
-     },
-     {
-      "key": "tk2",
-      "values": {
-       "project": "pj1",
-       "task_name": "Print and trim banners",
-       "status": "To do",
-       "assignee": "tm-ngozi",
-       "due_on": "@today+3d"
-      }
-     },
-     {
-      "key": "tk3",
-      "values": {
-       "project": "pj1",
-       "task_name": "Pack and label for delivery",
-       "status": "To do",
-       "assignee": "tm-ngozi",
-       "due_on": "@today+5d"
-      }
-     },
-     {
-      "key": "tk4",
-      "values": {
-       "project": "pj2",
-       "task_name": "Final walkthrough photos",
-       "status": "Done",
-       "assignee": "tm-bastian",
-       "due_on": "@today-8d"
-      }
-     },
-     {
-      "key": "tk5",
-      "values": {
-       "project": "pj3",
-       "task_name": "Measure wall on site",
-       "status": "To do",
-       "assignee": "tm-bastian",
-       "due_on": "@today+4d"
-      }
-     },
-     {
-      "key": "tk6",
-      "values": {
-       "project": "pj3",
-       "task_name": "Mock-up three options",
-       "status": "To do",
-       "assignee": "tm-bastian",
-       "due_on": "@today+9d"
-      }
-     },
-     {
-      "key": "tk7",
-      "values": {
-       "project": "pj4",
-       "task_name": "Booth size and layout brief",
-       "status": "To do",
-       "assignee": "tm-joaquin",
-       "due_on": "@today+16d"
-      }
-     },
-     {
-      "key": "tk8",
-      "values": {
-       "project": "pj1",
-       "task_name": "Order vinyl rolls",
-       "status": "Done",
-       "assignee": "tm-ngozi",
-       "due_on": "@today-8d"
-      }
-     },
-     {
-      "key": "tk9",
-      "values": {
-       "project": "pj3",
-       "task_name": "Confirm install window",
-       "status": "In progress",
-       "assignee": "tm-priyanka",
-       "due_on": "@today+6d"
-      }
-     },
-     {
-      "key": "tk10",
-      "values": {
-       "project": "pj4",
-       "task_name": "Collect brand files",
-       "status": "To do",
-       "assignee": "tm-priyanka",
-       "due_on": "@today+15d"
-      }
-     }
-    ],
-    "independentOf": {
-     "assignee": "Either record can be created or change status before the other.",
-     "project": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "invoice",
-    "name": "Invoices",
-    "labelSingular": "Invoice",
-    "labelPlural": "Invoices",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "receipt",
-    "titleField": "invoice_no",
-    "describes": "What customers owe and have paid.",
-    "subject": "thing",
-    "before": [
-     [
-      "issued_on",
-      "due_on"
-     ]
-    ],
-    "statusImplies": [
-     {
-      "field": "status",
-      "when": [
-       "Paid"
-      ],
-      "filled": [
-       "paid_on"
-      ]
-     }
-    ],
-    "fields": [
-     {
-      "key": "invoice_no",
-      "label": "Invoice",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Draft",
-       "Sent",
-       "Paid",
-       "Overdue"
-      ],
-      "choiceColors": {
-       "Draft": "slate",
-       "Sent": "green",
-       "Paid": "blue",
-       "Overdue": "red"
-      },
-      "required": true,
-      "default": "Draft"
-     },
-     {
-      "key": "amount",
-      "label": "Amount",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 300000
-       }
-      ]
-     },
-     {
-      "key": "issued_on",
-      "label": "Issued",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "paid_on",
-      "label": "Paid on",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "contact",
-      "label": "Customer",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "contact",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "iv1",
-      "values": {
-       "contact": "ct1",
-       "invoice_no": "INV-2201",
-       "status": "Paid",
-       "amount": 2650,
-       "issued_on": "@today-6d",
-       "due_on": "@today+8d",
-       "paid_on": "@today-1d"
-      }
-     },
-     {
-      "key": "iv2",
-      "values": {
-       "contact": "ct2",
-       "invoice_no": "INV-2198",
-       "status": "Paid",
-       "amount": 2600,
-       "issued_on": "@today-17d",
-       "due_on": "@today-3d",
-       "paid_on": "@today-8d"
-      }
-     },
-     {
-      "key": "iv3",
-      "values": {
-       "contact": "ct2",
-       "invoice_no": "INV-2210",
-       "status": "Sent",
-       "amount": 2600,
-       "issued_on": "@today-4d",
-       "due_on": "@today+10d"
-      }
-     },
-     {
-      "key": "iv4",
-      "values": {
-       "contact": "ct5",
-       "invoice_no": "INV-2211",
-       "status": "Draft",
-       "amount": 1100,
-       "issued_on": "@today-1d",
-       "due_on": "@today+13d"
-      }
-     }
-    ],
-    "independentOf": {
-     "contact": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "expense",
-    "name": "Expenses",
-    "labelSingular": "Expense",
-    "labelPlural": "Expenses",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "wallet",
-    "titleField": "item",
-    "describes": "Money going out, by category and vendor.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "item",
-      "label": "Spent on",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "category",
-      "label": "Category",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Supplies",
-       "Software",
-       "Travel",
-       "Marketing",
-       "Payroll",
-       "Other"
-      ],
-      "choiceColors": {
-       "Supplies": "slate",
-       "Software": "blue",
-       "Travel": "amber",
-       "Marketing": "violet",
-       "Payroll": "teal",
-       "Other": "orange"
-      },
-      "required": true
-     },
-     {
-      "key": "amount",
-      "label": "Amount",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "spent_on",
-      "label": "Date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "vendor",
-      "label": "Vendor",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "contact",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "ex1",
-      "values": {
-       "item": "Vinyl and substrate order",
-       "category": "Supplies",
-       "amount": 1840,
-       "spent_on": "@today-9d",
-       "vendor": "ct6"
-      }
-     },
-     {
-      "key": "ex2",
-      "values": {
-       "item": "Wide-format ink restock",
-       "category": "Supplies",
-       "amount": 960,
-       "spent_on": "@today-15d",
-       "vendor": "ct7"
-      }
-     },
-     {
-      "key": "ex3",
-      "values": {
-       "item": "Design software subscriptions",
-       "category": "Software",
-       "amount": 212,
-       "spent_on": "@today-3d"
-      }
-     },
-     {
-      "key": "ex4",
-      "values": {
-       "item": "Van fuel and tolls",
-       "category": "Travel",
-       "amount": 148,
-       "spent_on": "@today-5d"
-      }
-     },
-     {
-      "key": "ex5",
-      "values": {
-       "item": "Local newspaper ad",
-       "category": "Marketing",
-       "amount": 350,
-       "spent_on": "@today-20d"
-      }
-     },
-     {
-      "key": "ex6",
-      "values": {
-       "item": "Payroll, first half of the month",
-       "category": "Payroll",
-       "amount": 9400,
-       "spent_on": "@today-12d"
-      }
-     },
-     {
-      "key": "ex7",
-      "values": {
-       "item": "Laminating film",
-       "category": "Supplies",
-       "amount": 420,
-       "spent_on": "@today-26d",
-       "vendor": "ct6"
-      }
-     },
-     {
-      "key": "ex8",
-      "values": {
-       "item": "Trade show floor space deposit",
-       "category": "Marketing",
-       "amount": 1200,
-       "spent_on": "@today-30d"
-      }
-     }
-    ],
-    "independentOf": {
-     "vendor": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "goal",
-    "name": "Goals",
-    "labelSingular": "Goal",
-    "labelPlural": "Goals",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "target",
-    "titleField": "goal_name",
-    "describes": "What the business wants to hit this quarter.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "goal_name",
-      "label": "Goal",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "quarter",
-      "label": "Quarter",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "This quarter",
-       "Next quarter"
-      ],
-      "choiceColors": {
-       "This quarter": "slate",
-       "Next quarter": "blue"
-      },
-      "required": true,
-      "default": "This quarter"
-     },
-     {
-      "key": "target",
-      "label": "Target",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 1000000
-       }
-      ]
-     },
-     {
-      "key": "current",
-      "label": "Current",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 1000000
-       }
-      ]
-     },
-     {
-      "key": "progress",
-      "label": "Progress (%)",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "{Current} / {Target} * 100"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "g1",
-      "values": {
-       "goal_name": "Reach $60k monthly revenue",
-       "quarter": "This quarter",
-       "target": 60000,
-       "current": 47500,
-       "owner": "tm-joaquin"
-      }
-     },
-     {
-      "key": "g2",
-      "values": {
-       "goal_name": "Cut average turnaround to four days",
-       "quarter": "This quarter",
-       "target": 4,
-       "current": 5,
-       "owner": "tm-ngozi"
-      }
-     },
-     {
-      "key": "g3",
-      "values": {
-       "goal_name": "Sign three recurring school accounts",
-       "quarter": "This quarter",
-       "target": 3,
-       "current": 1,
-       "owner": "tm-priyanka"
-      }
-     },
-     {
-      "key": "g4",
-      "values": {
-       "goal_name": "Launch online quote form",
-       "quarter": "Next quarter",
-       "target": 1,
-       "current": 0,
-       "owner": "tm-bastian"
-      }
-     }
-    ],
-    "independentOf": {
-     "owner": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "meeting",
-    "name": "Meetings",
-    "labelSingular": "Meeting",
-    "labelPlural": "Meetings",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "calendar-days",
-    "titleField": "title",
-    "describes": "Standing and one-off meetings with their notes.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "title",
-      "label": "Meeting",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "held_on",
-      "label": "When",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "datetime"
-     },
-     {
-      "key": "kind",
-      "label": "Kind",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Weekly",
-       "Supplier",
-       "Customer",
-       "Planning"
-      ],
-      "choiceColors": {
-       "Weekly": "slate",
-       "Supplier": "blue",
-       "Customer": "amber",
-       "Planning": "violet"
-      }
-     },
-     {
-      "key": "notes",
-      "label": "Notes",
-      "parityType": "long_text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "m1",
-      "values": {
-       "title": "Monday planning huddle",
-       "held_on": "@today-1d 09:00",
-       "kind": "Weekly",
-       "notes": "Set the week's jobs and assign proofs."
-      }
-     },
-     {
-      "key": "m2",
-      "values": {
-       "title": "Supplier pricing review",
-       "held_on": "@today+3d 14:00",
-       "kind": "Supplier",
-       "notes": "Compare vinyl pricing from two wholesalers."
-      }
-     },
-     {
-      "key": "m3",
-      "values": {
-       "title": "Expo proposal walkthrough",
-       "held_on": "@today+9d 11:00",
-       "kind": "Customer",
-       "notes": "Present the booth package to the prospect."
-      }
-     },
-     {
-      "key": "m4",
-      "values": {
-       "title": "Quarterly goals check",
-       "held_on": "@today-14d 15:00",
-       "kind": "Planning",
-       "notes": "Reviewed revenue and turnaround goals."
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each deal belongs to one contact.",
-    "fromTable": "deal",
-    "fromField": "contact",
-    "toTable": "contact",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "deal_by_contact"
-   },
-   {
-    "describes": "A contact lists its deals.",
-    "fromTable": "contact",
-    "fromField": "deals",
-    "toTable": "deal",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "contact_from_deals"
-   },
-   {
-    "describes": "Each project belongs to one contact.",
-    "fromTable": "project",
-    "fromField": "contact",
-    "toTable": "contact",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "project_by_contact"
-   },
-   {
-    "describes": "A contact lists its projects.",
-    "fromTable": "contact",
-    "fromField": "projects",
-    "toTable": "project",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "contact_from_projects"
-   },
-   {
-    "describes": "Each task belongs to one project.",
-    "fromTable": "task",
-    "fromField": "project",
-    "toTable": "project",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "task_by_project"
-   },
-   {
-    "describes": "A project lists its tasks.",
-    "fromTable": "project",
-    "fromField": "tasks",
-    "toTable": "task",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "project_from_tasks"
-   },
-   {
-    "describes": "Each invoice belongs to one contact.",
-    "fromTable": "invoice",
-    "fromField": "contact",
-    "toTable": "contact",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "invoice_by_contact"
-   },
-   {
-    "describes": "A contact lists its invoices.",
-    "fromTable": "contact",
-    "fromField": "invoices",
-    "toTable": "invoice",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "contact_from_invoices"
-   },
-   {
-    "describes": "Each expense belongs to one contact.",
-    "fromTable": "expense",
-    "fromField": "vendor",
-    "toTable": "contact",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "expense_by_vendor"
-   },
-   {
-    "describes": "Each deal belongs to one team member.",
-    "fromTable": "deal",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "deal_by_owner"
-   },
-   {
-    "describes": "Each task belongs to one team member.",
-    "fromTable": "task",
-    "fromField": "assignee",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "task_by_assignee"
-   },
-   {
-    "describes": "Each goal belongs to one team member.",
-    "fromTable": "goal",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "goal_by_owner"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-joaquin",
-      "values": {
-       "full_name": "Joaquin Medeiros",
-       "role": "Owner",
-       "work_email": "joaquin@copperlineprint.net",
-       "mobile": "(208) 555-0141",
-       "start_date": "@today-9y"
-      }
-     },
-     {
-      "key": "tm-ngozi",
-      "values": {
-       "full_name": "Ngozi Adeyemi",
-       "role": "Production lead",
-       "work_email": "ngozi@copperlineprint.net",
-       "mobile": "(208) 555-0142",
-       "start_date": "@today-6y"
-      }
-     },
-     {
-      "key": "tm-bastian",
-      "values": {
-       "full_name": "Bastian Kowal",
-       "role": "Designer",
-       "work_email": "bastian@copperlineprint.net",
-       "mobile": "(208) 555-0143",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-priyanka",
-      "values": {
-       "full_name": "Priyanka Das",
-       "role": "Accounts and sales",
-       "work_email": "priyanka@copperlineprint.net",
-       "mobile": "(208) 555-0144",
-       "start_date": "@today-2y"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "deal_intake",
-    "name": "New deal",
-    "describes": "Log a new sales opportunity.",
-    "audience": "staff",
-    "table": "deal",
-    "fields": [
-     {
-      "fieldKey": "deal_name",
-      "ask": "What is the job?",
-      "required": true
-     },
-     {
-      "fieldKey": "contact",
-      "ask": "Who is it for?",
-      "required": true
-     },
-     {
-      "fieldKey": "value",
-      "ask": "Roughly how much is it worth?"
-     },
-     {
-      "fieldKey": "close_on",
-      "ask": "When might it close?"
-     }
-    ],
-    "submitLabel": "Add the deal",
-    "confirmation": "Thanks. It is in the pipeline as a lead."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_meeting",
-    "name": "All meetings",
-    "table": "meeting",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_goal",
-    "name": "All goals",
-    "table": "goal",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_expense",
-    "name": "All expenses",
-    "table": "expense",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_invoice",
-    "name": "All invoices",
-    "table": "invoice",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_task",
-    "name": "All tasks",
-    "table": "task",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_project",
-    "name": "All projects",
-    "table": "project",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_deal",
-    "name": "All deals",
-    "table": "deal",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_contact",
-    "name": "All contacts",
-    "table": "contact",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "deal_board",
-    "name": "Deal pipeline",
-    "table": "deal",
-    "kind": "kanban",
-    "groupBy": "stage"
-   },
-   {
-    "token": "deal_calendar",
-    "name": "Closing calendar",
-    "table": "deal",
-    "kind": "calendar",
-    "dateField": "close_on",
-    "allDay": true
-   },
-   {
-    "token": "project_board",
-    "name": "Project board",
-    "table": "project",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "project_timeline",
-    "name": "Project timeline",
-    "table": "project",
-    "kind": "timeline",
-    "startField": "start_on",
-    "endField": "due_on"
-   },
-   {
-    "token": "task_board",
-    "name": "Task board",
-    "table": "task",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "task_calendar",
-    "name": "Task calendar",
-    "table": "task",
-    "kind": "calendar",
-    "dateField": "due_on",
-    "allDay": true
-   },
-   {
-    "token": "invoice_board",
-    "name": "Invoice board",
-    "table": "invoice",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "expense_cal",
-    "name": "Expense calendar",
-    "table": "expense",
-    "kind": "calendar",
-    "dateField": "spent_on",
-    "allDay": true
-   },
-   {
-    "token": "meeting_cal",
-    "name": "Meeting calendar",
-    "table": "meeting",
-    "kind": "calendar",
-    "dateField": "held_on"
-   },
-   {
-    "token": "contact_board",
-    "name": "Contacts by type",
-    "table": "contact",
-    "kind": "kanban",
-    "groupBy": "type"
-   },
-   {
-    "token": "goal_board",
-    "name": "Goals by quarter",
-    "table": "goal",
-    "kind": "kanban",
-    "groupBy": "quarter"
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Business assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "deal",
-     "describes": "Every deal with its customer, stage and value."
-    },
-    {
-     "name": "related_tables",
-     "table": "contact",
-     "describes": "The customers and prospects behind each deal."
-    }
-   ],
-   "question": {
-    "ask": "How many deals are at proposal stage?",
-    "whyItMatters": "Joaquin reviews every proposal before it goes out.",
-    "expect": {
-     "table": "deal",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "stage": "Proposal"
-     },
-     "answer": 2,
-     "unit": "deals"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open deal pipeline.",
-    "action": {
-     "kind": "open",
-     "surface": "deal_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "deal_board",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open closing calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "deal_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "deal_calendar",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open project board.",
-    "action": {
-     "kind": "open",
-     "surface": "project_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "project_board",
-     "minItems": 3
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "copperlineprint.net",
-    "juniperbistro.net",
-    "eastbenchschool.net",
-    "summitexpo.net",
-    "harlowcafe.net",
-    "brightwater.net",
-    "inkandstock.net",
-    "vantagesupply.net"
-   ],
-   "fictionalStreets": [
-    "Weatherby Road"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "small-business-os",
-   "parent": null,
-   "title": "Small Business OS",
-   "icon": {
+  "version": 2,
+  "title": "Small Business OS",
+  "description": "One home for sales, projects, money, team and goals in a small company.",
+  "forWho": "Owners of 1 to 15 person businesses",
+  "icon": {
     "emoji": "🏢"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Sales, jobs, money, team and goals in one place. Start with the pipeline, then check this week's tasks and unpaid invoices."
-      }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Lightbulb"
-     }
+  },
+  "category": "operations",
+  "tags": [
+    "business",
+    "sales",
+    "finance",
+    "team",
+    "goals"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-small-business-os",
+    "catalogueId": "SP0303",
+    "useCase": "Joaquin Medeiros owns a small sign and print shop and uses this to see open deals, this week's jobs, unpaid invoices, expenses and the quarter's goals in one place.",
+    "industry": "cross_industry",
+    "vertical": "Small business operations",
+    "job": "reporting",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Copperline Print & Signs",
+      "describes": "A six-person print and signage shop serving local restaurants, schools and trade shows.",
+      "address": {
+        "line1": "880 Weatherby Road",
+        "city": "Boise",
+        "region": "ID",
+        "postalCode": "83702",
+        "country": "US"
+      },
+      "phone": "(208) 555-0139",
+      "website": "copperlineprint.net",
+      "email": "orders@copperlineprint.net",
+      "timezone": "America/Boise"
     },
-    {
-     "type": "columnList",
-     "children": [
+    "cleanupTag": "use-case:spaces-small-business-os",
+    "tables": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:dashboard"
-         }
+        "token": "contact",
+        "name": "Contacts",
+        "labelSingular": "Contact",
+        "labelPlural": "Contacts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "contact",
+        "titleField": "contact_name",
+        "describes": "Customers, prospects and suppliers.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "contact_name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Customer",
+              "Prospect",
+              "Vendor",
+              "Partner"
+            ],
+            "choiceColors": {
+              "Customer": "slate",
+              "Prospect": "blue",
+              "Vendor": "amber",
+              "Partner": "violet"
+            },
+            "required": true,
+            "default": "Prospect"
+          },
+          {
+            "key": "won_value",
+            "label": "Won value",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deals",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "stage": "Won"
+            }
+          },
+          {
+            "key": "open_deals",
+            "label": "Open deal value",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deals",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "stage": [
+                "Lead",
+                "Qualified",
+                "Proposal"
+              ]
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "paid_total",
+            "label": "Paid",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "owed",
+            "label": "Balance owed",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Billed} - {Paid}"
+          },
+          {
+            "key": "spent_with",
+            "label": "Spent with them",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "expenses",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ct1",
+            "values": {
+              "contact_name": "Odalys Ferreira",
+              "company": "Juniper Bistro",
+              "email": "odalys@juniperbistro.net",
+              "phone": "(208) 555-0151",
+              "type": "Customer"
+            }
+          },
+          {
+            "key": "ct2",
+            "values": {
+              "contact_name": "Calvin Thornbury",
+              "company": "East Bench Elementary",
+              "email": "calvin@eastbenchschool.net",
+              "phone": "(208) 555-0152",
+              "type": "Customer"
+            }
+          },
+          {
+            "key": "ct3",
+            "values": {
+              "contact_name": "Marisol Ayers",
+              "company": "Summit Expo Group",
+              "email": "marisol@summitexpo.net",
+              "phone": "(208) 555-0153",
+              "type": "Prospect"
+            }
+          },
+          {
+            "key": "ct4",
+            "values": {
+              "contact_name": "Ibrahim Soto",
+              "company": "Harlow Cafe",
+              "email": "ibrahim@harlowcafe.net",
+              "phone": "(208) 555-0154",
+              "type": "Prospect"
+            }
+          },
+          {
+            "key": "ct5",
+            "values": {
+              "contact_name": "Greta Lindholm",
+              "company": "Brightwater Dental",
+              "email": "greta@brightwater.net",
+              "phone": "(208) 555-0155",
+              "type": "Customer"
+            }
+          },
+          {
+            "key": "ct6",
+            "values": {
+              "contact_name": "Wendell Park",
+              "company": "Ink & Stock Supply",
+              "email": "wendell@inkandstock.net",
+              "phone": "(208) 555-0156",
+              "type": "Vendor"
+            }
+          },
+          {
+            "key": "ct7",
+            "values": {
+              "contact_name": "Aisha Boateng",
+              "company": "Vantage Vinyl Wholesale",
+              "email": "aisha@vantagesupply.net",
+              "phone": "(208) 555-0157",
+              "type": "Vendor"
+            }
+          },
+          {
+            "key": "ct8",
+            "values": {
+              "contact_name": "Hollis Grant",
+              "company": "Pixelbay Studio Tools",
+              "email": "hollis@pixelbaytools.net",
+              "phone": "(208) 555-0158",
+              "type": "Vendor"
+            }
+          },
+          {
+            "key": "ct9",
+            "values": {
+              "contact_name": "Veronika Dahl",
+              "company": "Valley Ledger Newspaper",
+              "email": "veronika@valleyledger.net",
+              "phone": "(208) 555-0159",
+              "type": "Vendor"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New contact",
+            "values": {
+              "type": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How we met"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they care about"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "deal",
+        "name": "Deals",
+        "labelSingular": "Deal",
+        "labelPlural": "Deals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "deal_name",
+        "describes": "Sales opportunities moving from lead to won.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "deal_name",
+            "label": "Deal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lead",
+              "Qualified",
+              "Proposal",
+              "Won",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Lead": "slate",
+              "Qualified": "blue",
+              "Proposal": "amber",
+              "Won": "green",
+              "Lost": "red"
+            },
+            "required": true,
+            "default": "Lead",
+            "statusGroups": {
+              "Lead": "todo",
+              "Qualified": "in_progress",
+              "Proposal": "in_progress",
+              "Won": "done",
+              "Lost": "done"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ]
+          },
+          {
+            "key": "win_chance",
+            "label": "Win chance (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "weighted",
+            "label": "Weighted value",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Value} * {Win chance (%)} / 100"
+          },
+          {
+            "key": "close_on",
+            "label": "Expected close",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "contact",
+            "relationMax": 1
+          },
+          {
+            "key": "created_at",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "won_btn",
+            "label": "Mark won",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deal_won"
+            }
+          },
+          {
+            "key": "lost_btn",
+            "label": "Mark lost",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deal_lost"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "d1",
+            "values": {
+              "contact": "ct3",
+              "deal_name": "Expo booth graphics package",
+              "stage": "Proposal",
+              "value": 14800,
+              "win_chance": 60,
+              "close_on": "@today+12d",
+              "owner": "tm-joaquin"
+            }
+          },
+          {
+            "key": "d2",
+            "values": {
+              "contact": "ct4",
+              "deal_name": "Menu boards and window decals",
+              "stage": "Qualified",
+              "value": 3900,
+              "win_chance": 40,
+              "close_on": "@today+20d",
+              "owner": "tm-priyanka"
+            }
+          },
+          {
+            "key": "d3",
+            "values": {
+              "contact": "ct1",
+              "deal_name": "Patio sign and banners",
+              "stage": "Won",
+              "value": 2650,
+              "win_chance": 100,
+              "close_on": "@today-6d",
+              "owner": "tm-priyanka"
+            }
+          },
+          {
+            "key": "d4",
+            "values": {
+              "contact": "ct2",
+              "deal_name": "Annual school banners",
+              "stage": "Won",
+              "value": 5200,
+              "win_chance": 100,
+              "close_on": "@today-18d",
+              "owner": "tm-joaquin"
+            }
+          },
+          {
+            "key": "d5",
+            "values": {
+              "contact": "ct5",
+              "deal_name": "Waiting room wall graphics",
+              "stage": "Proposal",
+              "value": 4400,
+              "win_chance": 70,
+              "close_on": "@today+7d",
+              "owner": "tm-priyanka"
+            }
+          },
+          {
+            "key": "d6",
+            "values": {
+              "contact": "ct3",
+              "deal_name": "Trade show tote bags",
+              "stage": "Lead",
+              "value": 2100,
+              "win_chance": 20,
+              "close_on": "@today-4d",
+              "owner": "tm-priyanka"
+            }
+          },
+          {
+            "key": "d7",
+            "values": {
+              "contact": "ct4",
+              "deal_name": "Opening day flyers",
+              "stage": "Lost",
+              "value": 900,
+              "win_chance": 0,
+              "close_on": "@today-12d",
+              "owner": "tm-priyanka"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other.",
+          "contact": "Either record can be created or change status before the other."
         },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:sop-weekly"
-         }
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New deal",
+            "values": {
+              "stage": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they need"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The problem in the buyer’s own words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decision makers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Who signs, who influences"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quote details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Size, materials, timing"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "project_name",
+        "describes": "Jobs in production.",
+        "subject": "thing",
+        "before": [
+          [
+            "start_on",
+            "due_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Planning",
+            "statusGroups": {
+              "Planning": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300000
+              }
+            ]
+          },
+          {
+            "key": "tasks_total",
+            "label": "Tasks in total",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "tasks_done",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "open_tasks",
+            "label": "Tasks left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Tasks in total} - {Tasks done}"
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Tasks in total} > 0, ROUND({Tasks done} / {Tasks in total} * 100, 0), 0)"
+          },
+          {
+            "key": "days_left",
+            "label": "Days to due date",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "contact",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "contact",
+            "relationMax": 1
+          },
+          {
+            "key": "pj_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pj1",
+            "values": {
+              "contact": "ct2",
+              "project_name": "School banner run",
+              "status": "In progress",
+              "start_on": "@today-10d",
+              "due_on": "@today+6d",
+              "budget": 5200
+            }
+          },
+          {
+            "key": "pj2",
+            "values": {
+              "contact": "ct1",
+              "project_name": "Juniper patio sign install",
+              "status": "Done",
+              "start_on": "@today-20d",
+              "due_on": "@today-8d",
+              "budget": 2650
+            }
+          },
+          {
+            "key": "pj3",
+            "values": {
+              "contact": "ct5",
+              "project_name": "Waiting room wall graphics",
+              "status": "Planning",
+              "start_on": "@today+3d",
+              "due_on": "@today+24d",
+              "budget": 4400
+            }
+          },
+          {
+            "key": "pj4",
+            "values": {
+              "contact": "ct3",
+              "project_name": "Expo booth graphics package",
+              "status": "Planning",
+              "start_on": "@today+14d",
+              "due_on": "@today+40d",
+              "budget": 14800
+            }
+          }
+        ],
+        "independentOf": {
+          "contact": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New job",
+            "values": {
+              "status": "Planning"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What is included and what is not."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Kickoff checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Deposit invoice sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Materials ordered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof approved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "The steps that get each job out the door.",
+        "subject": "thing",
+        "childDates": [],
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "assignee",
+            "label": "Assigned to",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "tk_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
+          },
+          {
+            "key": "created_at",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tk1",
+            "values": {
+              "project": "pj1",
+              "task_name": "Proof approval from school",
+              "status": "In progress",
+              "assignee": "tm-priyanka",
+              "due_on": "@today+1d"
+            }
+          },
+          {
+            "key": "tk2",
+            "values": {
+              "project": "pj1",
+              "task_name": "Print and trim banners",
+              "status": "To do",
+              "assignee": "tm-ngozi",
+              "due_on": "@today-1d"
+            }
+          },
+          {
+            "key": "tk3",
+            "values": {
+              "project": "pj1",
+              "task_name": "Pack and label for delivery",
+              "status": "To do",
+              "assignee": "tm-ngozi",
+              "due_on": "@today+5d"
+            }
+          },
+          {
+            "key": "tk4",
+            "values": {
+              "project": "pj2",
+              "task_name": "Final walkthrough photos",
+              "status": "Done",
+              "assignee": "tm-bastian",
+              "due_on": "@today-8d"
+            }
+          },
+          {
+            "key": "tk5",
+            "values": {
+              "project": "pj3",
+              "task_name": "Measure wall on site",
+              "status": "To do",
+              "assignee": "tm-bastian",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "tk6",
+            "values": {
+              "project": "pj3",
+              "task_name": "Mock-up three options",
+              "status": "To do",
+              "assignee": "tm-bastian",
+              "due_on": "@today+9d"
+            }
+          },
+          {
+            "key": "tk7",
+            "values": {
+              "project": "pj4",
+              "task_name": "Booth size and layout brief",
+              "status": "To do",
+              "assignee": "tm-joaquin",
+              "due_on": "@today+16d"
+            }
+          },
+          {
+            "key": "tk8",
+            "values": {
+              "project": "pj1",
+              "task_name": "Order vinyl rolls",
+              "status": "Done",
+              "assignee": "tm-ngozi",
+              "due_on": "@today-8d"
+            }
+          },
+          {
+            "key": "tk9",
+            "values": {
+              "project": "pj3",
+              "task_name": "Confirm install window",
+              "status": "In progress",
+              "assignee": "tm-priyanka",
+              "due_on": "@today+6d"
+            }
+          },
+          {
+            "key": "tk10",
+            "values": {
+              "project": "pj4",
+              "task_name": "Collect brand files",
+              "status": "To do",
+              "assignee": "tm-priyanka",
+              "due_on": "@today+15d"
+            }
+          }
+        ],
+        "independentOf": {
+          "assignee": "Either record can be created or change status before the other.",
+          "project": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New task",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What done looks like"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "memo",
+        "describes": "What customers owe and have paid.",
+        "subject": "thing",
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Sent"
+            ],
+            "filled": [
+              "issued_on"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "memo",
+            "label": "Work billed",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "invoice_no",
+            "label": "Invoice number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Paid",
+              "Overdue"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "green",
+              "Paid": "blue",
+              "Overdue": "red"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Paid": "done",
+              "Overdue": "in_progress"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_late",
+            "label": "Days late",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Due} < TODAY(), {Status} != \"Paid\"), DATEDIFF({Due}, TODAY(), \"days\"), 0)"
+          },
+          {
+            "key": "contact",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "contact",
+            "relationMax": 1
+          },
+          {
+            "key": "created_at",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "updated_at",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          },
+          {
+            "key": "sent_btn",
+            "label": "Mark sent",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_sent"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "iv1",
+            "values": {
+              "contact": "ct1",
+              "status": "Paid",
+              "amount": 2650,
+              "issued_on": "@today-6d",
+              "due_on": "@today+8d",
+              "paid_on": "@today",
+              "memo": "Patio sign and banners"
+            }
+          },
+          {
+            "key": "iv2",
+            "values": {
+              "contact": "ct2",
+              "status": "Paid",
+              "amount": 2600,
+              "issued_on": "@today-17d",
+              "due_on": "@today-3d",
+              "paid_on": "@today-8d",
+              "memo": "School banner run, deposit"
+            }
+          },
+          {
+            "key": "iv3",
+            "values": {
+              "contact": "ct2",
+              "status": "Sent",
+              "amount": 2600,
+              "issued_on": "@today-4d",
+              "due_on": "@today+10d",
+              "memo": "School banner run, balance"
+            }
+          },
+          {
+            "key": "iv4",
+            "values": {
+              "contact": "ct5",
+              "status": "Draft",
+              "amount": 1100,
+              "due_on": "@today+13d",
+              "memo": "Waiting room wall graphics"
+            }
+          },
+          {
+            "key": "iv5",
+            "values": {
+              "contact": "ct4",
+              "status": "Overdue",
+              "amount": 1950,
+              "issued_on": "@today-40d",
+              "due_on": "@today-10d",
+              "memo": "Menu boards, first half"
+            }
+          },
+          {
+            "key": "iv6",
+            "values": {
+              "contact": "ct3",
+              "status": "Sent",
+              "amount": 3200,
+              "issued_on": "@today-12d",
+              "due_on": "@today-2d",
+              "memo": "Expo graphics, design retainer"
+            }
+          }
+        ],
+        "independentOf": {
+          "contact": "Either record can be created or change status before the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "New invoice",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Line items"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Description"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Quantity"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Rate"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Line total"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Payment terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Due date, accepted payment methods and any late fee agreed in writing."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "expense",
+        "name": "Expenses",
+        "labelSingular": "Expense",
+        "labelPlural": "Expenses",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wallet",
+        "titleField": "item",
+        "describes": "Money going out, by category and vendor.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item",
+            "label": "Spent on",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Supplies",
+              "Software",
+              "Travel",
+              "Marketing",
+              "Payroll",
+              "Other"
+            ],
+            "choiceColors": {
+              "Supplies": "slate",
+              "Software": "blue",
+              "Travel": "amber",
+              "Marketing": "violet",
+              "Payroll": "teal",
+              "Other": "orange"
+            },
+            "required": true
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "spent_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "contact",
+            "relationMax": 1
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ex1",
+            "values": {
+              "item": "Vinyl and substrate order",
+              "category": "Supplies",
+              "amount": 1840,
+              "spent_on": "@today-9d",
+              "vendor": "ct6"
+            }
+          },
+          {
+            "key": "ex2",
+            "values": {
+              "item": "Wide-format ink restock",
+              "category": "Supplies",
+              "amount": 960,
+              "spent_on": "@today-15d",
+              "vendor": "ct7"
+            }
+          },
+          {
+            "key": "ex3",
+            "values": {
+              "item": "Design software subscriptions",
+              "category": "Software",
+              "amount": 212,
+              "spent_on": "@today",
+              "vendor": "ct8"
+            }
+          },
+          {
+            "key": "ex4",
+            "values": {
+              "item": "Van fuel and tolls",
+              "category": "Travel",
+              "amount": 148,
+              "spent_on": "@today-5d"
+            }
+          },
+          {
+            "key": "ex5",
+            "values": {
+              "item": "Local newspaper ad",
+              "category": "Marketing",
+              "amount": 350,
+              "spent_on": "@today-20d",
+              "vendor": "ct9"
+            }
+          },
+          {
+            "key": "ex6",
+            "values": {
+              "item": "Payroll, first half of the month",
+              "category": "Payroll",
+              "amount": 9400,
+              "spent_on": "@today-12d"
+            }
+          },
+          {
+            "key": "ex7",
+            "values": {
+              "item": "Laminating film",
+              "category": "Supplies",
+              "amount": 420,
+              "spent_on": "@today-26d",
+              "vendor": "ct6"
+            }
+          },
+          {
+            "key": "ex8",
+            "values": {
+              "item": "Trade show floor space deposit",
+              "category": "Marketing",
+              "amount": 1200,
+              "spent_on": "@today-30d",
+              "vendor": "ct3"
+            }
+          }
+        ],
+        "independentOf": {
+          "vendor": "Either record can be created or change status before the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "New expense",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Receipt"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where the receipt is kept."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "goal",
+        "name": "Goals",
+        "labelSingular": "Goal",
+        "labelPlural": "Goals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "goal_name",
+        "describes": "What the business wants to hit this quarter.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "goal_name",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "quarter",
+            "label": "Quarter",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "This quarter",
+              "Next quarter"
+            ],
+            "choiceColors": {
+              "This quarter": "slate",
+              "Next quarter": "blue"
+            },
+            "required": true,
+            "default": "This quarter"
+          },
+          {
+            "key": "target",
+            "label": "Target (goal units)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "current",
+            "label": "Current (goal units)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Target (goal units)} > 0, ROUND({Current (goal units)} / {Target (goal units)} * 100, 0), 0)"
+          },
+          {
+            "key": "to_go",
+            "label": "Left to go",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Target (goal units)} > {Current (goal units)}, {Target (goal units)} - {Current (goal units)}, 0)"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          }
+        ],
+        "rows": [
+          {
+            "key": "g1",
+            "values": {
+              "goal_name": "Reach 60,000 in monthly revenue",
+              "quarter": "This quarter",
+              "target": 60000,
+              "current": 47500,
+              "owner": "tm-joaquin"
+            }
+          },
+          {
+            "key": "g2",
+            "values": {
+              "goal_name": "Reach 90 percent on-time delivery",
+              "quarter": "This quarter",
+              "target": 90,
+              "current": 78,
+              "owner": "tm-ngozi"
+            }
+          },
+          {
+            "key": "g3",
+            "values": {
+              "goal_name": "Sign three recurring school accounts",
+              "quarter": "This quarter",
+              "target": 3,
+              "current": 1,
+              "owner": "tm-priyanka"
+            }
+          },
+          {
+            "key": "g4",
+            "values": {
+              "goal_name": "Launch online quote form",
+              "quarter": "Next quarter",
+              "target": 1,
+              "current": 0,
+              "owner": "tm-bastian"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
         }
-       ]
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:how-to"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:month-end"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Sales"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "deal",
-       "view": "deal_board"
-      },
-      "inline": true,
-      "title": "Sales",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Pipeline",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "stage"
-       },
-       {
-        "id": "view-cal",
-        "name": "Closing calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "close_on"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All deals",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "close_on",
-          "direction": "asc"
-         }
+        "token": "meeting",
+        "name": "Meetings",
+        "labelSingular": "Meeting",
+        "labelPlural": "Meetings",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "title",
+        "describes": "Standing and one-off meetings with their notes.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Meeting",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "held_on",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly",
+              "Supplier",
+              "Customer",
+              "Planning"
+            ],
+            "choiceColors": {
+              "Weekly": "slate",
+              "Supplier": "blue",
+              "Customer": "amber",
+              "Planning": "violet"
+            }
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "m1",
+            "values": {
+              "title": "Monday planning huddle",
+              "held_on": "@today-1d 09:00",
+              "kind": "Weekly",
+              "notes": "Set the week's jobs and assign proofs."
+            }
+          },
+          {
+            "key": "m2",
+            "values": {
+              "title": "Supplier pricing review",
+              "held_on": "@today+3d 14:00",
+              "kind": "Supplier",
+              "notes": "Compare vinyl pricing from two wholesalers."
+            }
+          },
+          {
+            "key": "m3",
+            "values": {
+              "title": "Expo proposal walkthrough",
+              "held_on": "@today+9d 11:00",
+              "kind": "Customer",
+              "notes": "Present the booth package to the prospect."
+            }
+          },
+          {
+            "key": "m4",
+            "values": {
+              "title": "Quarterly goals check",
+              "held_on": "@today-14d 15:00",
+              "kind": "Planning",
+              "notes": "Reviewed revenue and turnaround goals."
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Meeting notes",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agenda"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decisions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Actions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Jobs"
       }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "project",
-       "view": "project_board"
-      },
-      "inline": true,
-      "title": "Jobs",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-tl",
-        "name": "Timeline",
-        "layout": "timeline",
-        "icon": "ChartGantt",
-        "dateField": "start_on"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
+    ],
+    "relationships": [
       {
-       "text": "Tasks"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "task_board"
+        "describes": "Each deal belongs to one contact.",
+        "fromTable": "deal",
+        "fromField": "contact",
+        "toTable": "contact",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deals"
       },
-      "inline": true,
-      "title": "Tasks",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-cal",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "due_on"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All tasks",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
+      {
+        "describes": "Each project belongs to one contact.",
+        "fromTable": "project",
+        "fromField": "contact",
+        "toTable": "contact",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "projects"
+      },
+      {
+        "describes": "Each task belongs to one project.",
+        "fromTable": "task",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each invoice belongs to one contact.",
+        "fromTable": "invoice",
+        "fromField": "contact",
+        "toTable": "contact",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each expense belongs to one contact.",
+        "fromTable": "expense",
+        "fromField": "vendor",
+        "toTable": "contact",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "expenses"
+      },
+      {
+        "describes": "Each deal belongs to one team member.",
+        "fromTable": "deal",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deal_by_owner"
+      },
+      {
+        "describes": "Each task belongs to one team member.",
+        "fromTable": "task",
+        "fromField": "assignee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "task_by_assignee"
+      },
+      {
+        "describes": "Each goal belongs to one team member.",
+        "fromTable": "goal",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "goal_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-joaquin",
+            "values": {
+              "full_name": "Joaquin Medeiros",
+              "role": "Owner",
+              "work_email": "joaquin@copperlineprint.net",
+              "mobile": "(208) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-ngozi",
+            "values": {
+              "full_name": "Ngozi Adeyemi",
+              "role": "Production lead",
+              "work_email": "ngozi@copperlineprint.net",
+              "mobile": "(208) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-bastian",
+            "values": {
+              "full_name": "Bastian Kowal",
+              "role": "Designer",
+              "work_email": "bastian@copperlineprint.net",
+              "mobile": "(208) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-priyanka",
+            "values": {
+              "full_name": "Priyanka Das",
+              "role": "Accounts and sales",
+              "work_email": "priyanka@copperlineprint.net",
+              "mobile": "(208) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Invoices"
       }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "invoice",
-       "view": "invoice_board"
-      },
-      "inline": true,
-      "title": "Invoices",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-un",
-        "name": "Unpaid",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "Sent",
-          "Overdue"
-         ]
-        },
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
+    ],
+    "forms": [
+      {
+        "token": "deal_intake",
+        "name": "New deal",
+        "describes": "Log a new sales opportunity.",
+        "audience": "staff",
+        "table": "deal",
+        "fields": [
+          {
+            "fieldKey": "deal_name",
+            "ask": "What is the job?",
+            "required": true
+          },
+          {
+            "fieldKey": "contact",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "value",
+            "ask": "Roughly how much is it worth?"
+          },
+          {
+            "fieldKey": "close_on",
+            "ask": "When might it close?"
+          }
+        ],
+        "submitLabel": "Add the deal",
+        "confirmation": "Thanks. It is in the pipeline as a lead."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Expenses"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "expense",
-       "view": "expense_cal"
       },
-      "inline": true,
-      "title": "Expenses",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-tbl",
-        "name": "All expenses",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "spent_on",
-          "direction": "desc"
-         }
+      {
+        "kind": "row_action",
+        "token": "invoice_sent",
+        "table": "invoice",
+        "name": "Mark sent",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sent"
+          }
         ]
-       },
-       {
-        "id": "view-cal",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "spent_on"
-       }
-      ],
-      "activeViewId": "view-tbl"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Contacts"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "contact",
-       "view": "contact_board"
       },
-      "inline": true,
-      "title": "Contacts",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By type",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "type"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All contacts",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
       {
-       "text": "Goals"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "goal",
-       "view": "goal_board"
+        "kind": "row_action",
+        "token": "deal_won",
+        "table": "deal",
+        "name": "Mark won",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Won"
+          }
+        ]
       },
-      "inline": true,
-      "title": "Goals",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By quarter",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "quarter"
-       },
-       {
-        "id": "view-tbl",
-        "name": "All goals",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
       {
-       "text": "Meetings"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "meeting",
-       "view": "meeting_cal"
+        "kind": "row_action",
+        "token": "deal_lost",
+        "table": "deal",
+        "name": "Mark lost",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Lost"
+          }
+        ]
       },
-      "inline": true,
-      "title": "Meetings",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-cal",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "held_on"
-       },
-       {
-        "id": "view-tbl",
+      {
+        "kind": "row_action",
+        "token": "project_done",
+        "table": "project",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_meeting",
         "name": "All meetings",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "held_on",
-          "direction": "desc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-cal"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Team"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "team_member",
-       "view": "all_team"
+        "table": "meeting",
+        "kind": "grid",
+        "isDefault": true
       },
-      "inline": true,
-      "title": "Team",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-tbl",
+      {
+        "token": "all_goal",
+        "name": "All goals",
+        "table": "goal",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_expense",
+        "name": "All expenses",
+        "table": "expense",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_deal",
+        "name": "All deals",
+        "table": "deal",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_contact",
+        "name": "All contacts",
+        "table": "contact",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "deal_board",
+        "name": "Deal pipeline",
+        "table": "deal",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "deal_calendar",
+        "name": "Closing calendar",
+        "table": "deal",
+        "kind": "calendar",
+        "dateField": "close_on",
+        "allDay": true
+      },
+      {
+        "token": "project_board",
+        "name": "Project board",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_timeline",
+        "name": "Project timeline",
+        "table": "project",
+        "kind": "timeline",
+        "startField": "start_on",
+        "endField": "due_on"
+      },
+      {
+        "token": "task_board",
+        "name": "Task board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Task calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoice board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "expense_cal",
+        "name": "Expense calendar",
+        "table": "expense",
+        "kind": "calendar",
+        "dateField": "spent_on",
+        "allDay": true
+      },
+      {
+        "token": "meeting_cal",
+        "name": "Meeting calendar",
+        "table": "meeting",
+        "kind": "calendar",
+        "dateField": "held_on"
+      },
+      {
+        "token": "contact_board",
+        "name": "Contacts by type",
+        "table": "contact",
+        "kind": "kanban",
+        "groupBy": "type"
+      },
+      {
+        "token": "goal_board",
+        "name": "Goals by quarter",
+        "table": "goal",
+        "kind": "kanban",
+        "groupBy": "quarter"
+      },
+      {
+        "token": "all_team",
         "name": "Team",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-tbl"
-     }
-    }
-   ]
-  },
-  {
-   "key": "dashboard",
-   "parent": "small-business-os",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "deal",
-           "view": "all_deal"
-          },
-          "inline": true,
-          "title": "Deals by stage",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c1",
-            "name": "Deals by stage",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "stage",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-c1"
-         }
-        }
-       ]
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
       },
       {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "deal",
-           "view": "all_deal"
-          },
-          "inline": true,
-          "title": "Value by stage",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c2",
-            "name": "Value by stage",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "stage",
-             "op": "sum",
-             "field": "value"
-            }
-           }
-          ],
-          "activeViewId": "view-c2"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "expense",
-           "view": "all_expense"
-          },
-          "inline": true,
-          "title": "Spend by category",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c3",
-            "name": "Spend by category",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "category",
-             "op": "sum",
-             "field": "amount"
-            }
-           }
-          ],
-          "activeViewId": "view-c3"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "invoice",
-           "view": "all_invoice"
-          },
-          "inline": true,
-          "title": "Invoice value by status",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c4",
-            "name": "Invoice value by status",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "status",
-             "op": "sum",
-             "field": "amount"
-            }
-           }
-          ],
-          "activeViewId": "view-c4"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "task",
-           "view": "all_task"
-          },
-          "inline": true,
-          "title": "Tasks by status",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c5",
-            "name": "Tasks by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-c5"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "project",
-           "view": "all_project"
-          },
-          "inline": true,
-          "title": "Budget by status",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c6",
-            "name": "Budget by status",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "status",
-             "op": "sum",
-             "field": "budget"
-            }
-           }
-          ],
-          "activeViewId": "view-c6"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Unpaid invoices"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "invoice",
-       "view": "all_invoice"
-      },
-      "inline": true,
-      "title": "Unpaid invoices",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-u",
-        "name": "Sent or overdue",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "status": [
-          "Sent",
-          "Overdue"
-         ]
-        }
-       }
-      ],
-      "activeViewId": "view-u"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Tasks not done"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "task",
-       "view": "all_task"
-      },
-      "inline": true,
-      "title": "Tasks not done",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-t",
-        "name": "Open",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "To do",
-          "In progress"
-         ]
+        "token": "deal_week",
+        "name": "Expected close this week",
+        "table": "deal",
+        "kind": "grid",
+        "within": {
+          "close_on": {
+            "relative": "this_week"
+          }
         },
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
-        ]
-       }
+        "anyOf": {
+          "stage": [
+            "Lead",
+            "Qualified",
+            "Proposal"
+          ]
+        }
+      },
+      {
+        "token": "deal_over",
+        "name": "Overdue",
+        "table": "deal",
+        "kind": "grid",
+        "within": {
+          "close_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Lead",
+            "Qualified",
+            "Proposal"
+          ]
+        }
+      },
+      {
+        "token": "deal_next7",
+        "name": "Next 7 days",
+        "table": "deal",
+        "kind": "grid",
+        "within": {
+          "close_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Lead",
+            "Qualified",
+            "Proposal"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "inv_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "inv_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "inv_paid",
+        "name": "Paid this month",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "paid_on": {
+            "relative": "this_month"
+          }
+        },
+        "filters": {
+          "status": "Paid"
+        }
+      },
+      {
+        "token": "exp_month",
+        "name": "This month",
+        "table": "expense",
+        "kind": "grid",
+        "within": {
+          "spent_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "pj_14",
+        "name": "Due in 14 days",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 14
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planning",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "mtg_week",
+        "name": "Meetings this week",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "this_week"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Business assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "deal",
+          "describes": "Every deal with its customer, stage and value."
+        },
+        {
+          "name": "related_tables",
+          "table": "contact",
+          "describes": "The customers and prospects behind each deal."
+        }
       ],
-      "activeViewId": "view-t"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many deals are at proposal stage?",
+        "whyItMatters": "Joaquin reviews every proposal before it goes out.",
+        "expect": {
+          "table": "deal",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "stage": "Proposal"
+          },
+          "answer": 2,
+          "unit": "deals"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open deal pipeline.",
+        "action": {
+          "kind": "open",
+          "surface": "deal_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "deal_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open closing calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "deal_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "deal_calendar",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open project board.",
+        "action": {
+          "kind": "open",
+          "surface": "project_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "copperlineprint.net",
+        "juniperbistro.net",
+        "eastbenchschool.net",
+        "summitexpo.net",
+        "harlowcafe.net",
+        "brightwater.net",
+        "inkandstock.net",
+        "vantagesupply.net"
+      ],
+      "fictionalStreets": [
+        "Weatherby Road"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "sop-weekly",
-   "parent": "small-business-os",
-   "title": "Weekly rhythm",
-   "icon": {
-    "emoji": "🔁"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Every week"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
+      "key": "small-business-os",
+      "parent": null,
+      "title": "Small Business OS",
+      "icon": {
+        "emoji": "🏢"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Sales, jobs, money, team and goals in one place. Start with the pipeline, then check this week's tasks and unpaid invoices."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-weekly"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:month-end"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sales"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deal",
+              "view": "deal_board"
+            },
+            "inline": true,
+            "title": "Sales",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-open",
+                "name": "Open deals",
+                "layout": "grid",
+                "icon": "Table",
+                "anyOf": {
+                  "stage": [
+                    "Lead",
+                    "Qualified",
+                    "Proposal"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "close_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-d7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "close_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Lead",
+                    "Qualified",
+                    "Proposal"
+                  ]
+                }
+              },
+              {
+                "id": "v-dover",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "close_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Lead",
+                    "Qualified",
+                    "Proposal"
+                  ]
+                }
+              },
+              {
+                "id": "view-board",
+                "name": "Pipeline",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "view-cal",
+                "name": "Closing calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "close_on"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All deals",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "close_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-open"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "project_board"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-p14",
+                "name": "Due in 14 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planning",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "v-pall",
+                "name": "All jobs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-tl",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "start_on"
+              }
+            ],
+            "activeViewId": "v-p14"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-twk",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "v-tov",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-t7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "v-twk"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-iov",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "v-iwk",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-un",
+                "name": "Unpaid",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-ipm",
+                "name": "Paid this month",
+                "layout": "list",
+                "icon": "CircleCheck",
+                "within": {
+                  "paid_on": {
+                    "relative": "this_month"
+                  }
+                },
+                "filters": {
+                  "status": "Paid"
+                }
+              }
+            ],
+            "activeViewId": "v-iov"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expenses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "expense",
+              "view": "expense_cal"
+            },
+            "inline": true,
+            "title": "Expenses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-emo",
+                "name": "This month",
+                "layout": "grid",
+                "icon": "Calendar",
+                "within": {
+                  "spent_on": {
+                    "relative": "this_month"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "spent_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-tbl",
+                "name": "All expenses",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "spent_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "spent_on"
+              }
+            ],
+            "activeViewId": "v-emo"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contacts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "contact",
+              "view": "contact_board"
+            },
+            "inline": true,
+            "title": "Contacts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By type",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "type"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All contacts",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Goals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "goal",
+              "view": "goal_board"
+            },
+            "inline": true,
+            "title": "Goals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By quarter",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "quarter"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All goals",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Meetings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "meeting_cal"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-mwk",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "held_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "held_on"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All meetings",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-mwk"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Team"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Team",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-tbl",
+                "name": "Team",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-tbl"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Monday: huddle, set priorities, assign proofs"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "dashboard",
+      "parent": "small-business-os",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deal",
+                      "view": "all_deal"
+                    },
+                    "inline": true,
+                    "title": "Deals by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Deals by stage",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deal",
+                      "view": "all_deal"
+                    },
+                    "inline": true,
+                    "title": "Value by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Value by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "sum",
+                          "field": "value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "expense",
+                      "view": "all_expense"
+                    },
+                    "inline": true,
+                    "title": "Spend by category",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c3",
+                        "name": "Spend by category",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoice value by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c4",
+                        "name": "Invoice value by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c5",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_project"
+                    },
+                    "inline": true,
+                    "title": "Budget by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c6",
+                        "name": "Budget by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "budget"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unpaid invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Unpaid invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u",
+                "name": "Sent or overdue",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-u"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks not done"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks not done",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-t",
+                "name": "Open",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Overdue invoices",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-od",
+                "name": "Past due",
+                "layout": "list",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks due this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Due this week",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-tw",
+                "name": "This week",
+                "layout": "list",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Wednesday: chase proposals older than a week"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "sop-weekly",
+      "parent": "small-business-os",
+      "title": "Weekly rhythm",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Monday: huddle, set priorities, assign proofs"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wednesday: chase proposals older than a week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Friday: send invoices for finished jobs and log expenses"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "If a deal has not moved in two weeks, it is either Lost or needs a call."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Phone"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why a fixed rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A small business runs on a handful of habits done on the same day every week. The checklist above is a starting point; change the days to match your own work, but keep them fixed so that everyone knows when the pipeline gets cleaned and when the invoices go out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to look at"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open deals with a close date in the past: move them or mark them lost."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Overdue invoices: one call or message each, the same week they turn overdue."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tasks due this week: anything not assigned gets an owner on Monday."
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Friday: send invoices for finished jobs and log expenses"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "how-to",
+      "parent": "small-business-os",
+      "title": "How to use this OS",
+      "icon": {
+        "emoji": "📖"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every record links to the next one: a contact has deals, a won deal becomes a job, a job has tasks and an invoice. Fill the links in and the totals work themselves out."
+            }
+          ],
+          "props": {
+            "icon": "Link"
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a contact, then log a deal against them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When a deal is Won, create a project and tasks."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign tasks to teammates and track due dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Invoice when the project is done and mark it Paid when money arrives."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log expenses as they happen so the month-end is easy."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Where the numbers come from"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Contact: Won value, Open deal value, Billed, Paid, Balance owed and Spent with them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Job: tasks done, tasks left and progress."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoice: days late, worked out from the due date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Goal: progress and what is left to go."
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "callout",
-     "text": [
-      {
-       "text": "If a deal has not moved in two weeks, it is either Lost or needs a call."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Phone"
-     }
+      "key": "month-end",
+      "parent": "small-business-os",
+      "title": "Month-end checklist",
+      "icon": {
+        "emoji": "📆"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Twenty minutes at the end of the month saves hours at tax time. Work down the list in order; each step makes the next one easier."
+            }
+          ],
+          "props": {
+            "icon": "CalendarCheck"
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All invoices marked correctly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every receipt entered as an expense"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Goals updated with current numbers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next month's recurring jobs scheduled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Read-through"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open the Expenses table on its This month view, then the Paid this month view on invoices. Compare the two totals in your head: are you moving in the direction you planned? Write one sentence about it in the Goals row for revenue."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  },
-  {
-   "key": "how-to",
-   "parent": "small-business-os",
-   "title": "How to use this OS",
-   "icon": {
-    "emoji": "📖"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Add a contact, then log a deal against them."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "When a deal is Won, create a project and tasks."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Assign tasks to teammates and track due dates."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Invoice when the project is done and mark it Paid when money arrives."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Log expenses as they happen so the month-end is easy."
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "month-end",
-   "parent": "small-business-os",
-   "title": "Month-end checklist",
-   "icon": {
-    "emoji": "📆"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "All invoices marked correctly"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Every receipt entered as an expense"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Goals updated with current numbers"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Next month's recurring jobs scheduled"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  }
- ]
+  ]
 }
