@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 1,
+  "version": 2,
   "title": "Team Offsite Planner",
   "description": "Agenda, logistics, budget, attendees and venues for a team retreat.",
   "forWho": "People teams and team leads planning retreats",
@@ -293,6 +293,124 @@
               "location": "Main room"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Session plan",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What decision, idea or connection should exist after this session?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agenda"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Opening (5 min)"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Main activity"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Wrap-up and next steps"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Materials"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Room set up"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Slides or handouts"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Facilitator notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Timing risks, quiet voices to draw out."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -335,9 +453,17 @@
             "format": "date"
           },
           {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 3, \"Due soon\", \"\")))"
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -351,7 +477,12 @@
               "Done": "green"
             },
             "required": true,
-            "default": "To do"
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "category",
@@ -382,6 +513,24 @@
             "contextPolicy": "include",
             "relationTarget": "budget",
             "relationMax": 1
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lt_done"
+            }
           }
         ],
         "rows": [
@@ -390,7 +539,7 @@
             "values": {
               "task_name": "Confirm the venue deposit",
               "owner": "tm-sunita",
-              "due_on": "@today+3d",
+              "due_on": "@today-3d",
               "status": "In progress",
               "category": "Venue",
               "budget_item": "bd01"
@@ -401,7 +550,7 @@
             "values": {
               "task_name": "Book the vans",
               "owner": "tm-maribel",
-              "due_on": "@today+10d",
+              "due_on": "@today",
               "status": "To do",
               "category": "Travel",
               "budget_item": "bd03"
@@ -577,11 +726,19 @@
           },
           {
             "key": "variance",
-            "label": "Variance",
+            "label": "Actual minus estimate",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "{Actual} - {Estimate}"
+          },
+          {
+            "key": "variance_pct",
+            "label": "Over or under (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Estimate} > 0, ROUND(({Actual} - {Estimate}) / {Estimate} * 100, 0), 0)"
           },
           {
             "key": "paid",
@@ -589,15 +746,6 @@
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
-          },
-          {
-            "key": "task_list",
-            "label": "Tasks",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "ltask",
-            "multi": true
           },
           {
             "key": "task_count",
@@ -608,6 +756,17 @@
             "via": "task_list",
             "pick": "task_name",
             "agg": "count"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "bu_paid"
+            }
           }
         ],
         "rows": [
@@ -618,10 +777,7 @@
               "category": "Venue",
               "estimate": 9000,
               "actual": 9000,
-              "paid": true,
-              "task_list": [
-                "lt01"
-              ]
+              "paid": true
             }
           },
           {
@@ -631,10 +787,7 @@
               "category": "Food",
               "estimate": 4500,
               "actual": 4200,
-              "paid": false,
-              "task_list": [
-                "lt03"
-              ]
+              "paid": false
             }
           },
           {
@@ -644,10 +797,7 @@
               "category": "Travel",
               "estimate": 1800,
               "actual": 0,
-              "paid": false,
-              "task_list": [
-                "lt02"
-              ]
+              "paid": false
             }
           },
           {
@@ -657,10 +807,7 @@
               "category": "Travel",
               "estimate": 1500,
               "actual": 1380,
-              "paid": true,
-              "task_list": [
-                "lt08"
-              ]
+              "paid": true
             }
           },
           {
@@ -670,11 +817,7 @@
               "category": "Activities",
               "estimate": 900,
               "actual": 0,
-              "paid": false,
-              "task_list": [
-                "lt04",
-                "lt07"
-              ]
+              "paid": false
             }
           },
           {
@@ -684,8 +827,7 @@
               "category": "Venue",
               "estimate": 1200,
               "actual": 1200,
-              "paid": true,
-              "task_list": []
+              "paid": true
             }
           },
           {
@@ -695,10 +837,7 @@
               "category": "Comms",
               "estimate": 650,
               "actual": 0,
-              "paid": false,
-              "task_list": [
-                "lt05"
-              ]
+              "paid": false
             }
           },
           {
@@ -708,8 +847,7 @@
               "category": "Food",
               "estimate": 700,
               "actual": 0,
-              "paid": false,
-              "task_list": []
+              "paid": false
             }
           }
         ]
@@ -801,6 +939,24 @@
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "invited",
+            "label": "Invited at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "yes_btn",
+            "label": "RSVP yes",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "at_yes"
+            }
           }
         ],
         "rows": [
@@ -969,7 +1125,7 @@
           },
           {
             "key": "capacity",
-            "label": "Capacity",
+            "label": "Capacity (people)",
             "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1045,16 +1201,6 @@
         "inverseKey": "sessions_run"
       },
       {
-        "describes": "A budget line lists the tasks that spend it.",
-        "fromTable": "budget",
-        "fromField": "task_list",
-        "toTable": "ltask",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "budget_of_task"
-      },
-      {
         "describes": "Each task has one owner.",
         "fromTable": "ltask",
         "fromField": "owner",
@@ -1072,7 +1218,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "tasks"
+        "inverseKey": "task_list"
       },
       {
         "describes": "Each attendee is one team member.",
@@ -1224,7 +1370,53 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "lt_done",
+        "table": "ltask",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "bu_paid",
+        "table": "budget",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "paid",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "at_yes",
+        "table": "attendee",
+        "name": "RSVP yes",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "rsvp",
+            "set": "value",
+            "value": "Yes"
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_sessions",
@@ -1321,6 +1513,86 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "ses_next60",
+        "name": "Sessions in the next 60 days",
+        "table": "session",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "next_days",
+            "n": 60
+          }
+        }
+      },
+      {
+        "token": "lt_today",
+        "name": "Tasks due today",
+        "table": "ltask",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "lt_overdue",
+        "name": "Overdue tasks",
+        "table": "ltask",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "lt_next7",
+        "name": "Tasks, next 7 days",
+        "table": "ltask",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "lt_next30",
+        "name": "Tasks, next 30 days",
+        "table": "ltask",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "bud_unpaid",
+        "name": "Unpaid lines",
+        "table": "budget",
+        "kind": "grid",
+        "filters": {
+          "paid": false
+        }
       }
     ],
     "agent": {
@@ -1412,7 +1684,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1560,6 +1832,18 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u20",
+                "name": "Next 60 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 60
+                  }
+                }
+              },
+              {
                 "id": "v-a",
                 "name": "Calendar",
                 "layout": "calendar",
@@ -1614,6 +1898,23 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u18",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              },
+              {
                 "id": "v-tb",
                 "name": "Board",
                 "layout": "kanban",
@@ -1633,6 +1934,24 @@
                 "layout": "calendar",
                 "icon": "Calendar",
                 "dateField": "due_on"
+              },
+              {
+                "id": "view-u19",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
               }
             ],
             "activeViewId": "v-tb"
@@ -1674,10 +1993,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "category",
                   "op": "sum",
-                  "centerValue": true,
                   "field": "estimate"
                 }
               }
@@ -1780,6 +2098,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "LayoutDashboard"
+          }
+        },
+        {
           "type": "columnList",
           "children": [
             {
@@ -1807,10 +2137,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "category",
                           "op": "sum",
-                          "centerValue": true,
                           "field": "actual"
                         }
                       }
@@ -1845,10 +2174,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1882,10 +2210,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "rsvp",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1978,6 +2305,41 @@
             ],
             "activeViewId": "d5"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The lists below show only the rows that need attention now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+            }
+          ]
         }
       ]
     },
@@ -2077,6 +2439,121 @@
           "props": {
             "icon": "Bus"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Travel day plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Notes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vans leave the office"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Drivers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Share the route and a departure time the night before"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lunch stop"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Everyone"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pick one stop; avoid unfamiliar places for dietary needs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Arrival and room keys"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Organiser"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keys and room list printed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Welcome session"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Facilitator"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kick off within an hour of arrival"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -2091,6 +2568,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Collect dietary needs early. A single missed allergy is the one problem you cannot fix on the day."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "AlertTriangle"
+          }
+        },
         {
           "type": "text",
           "text": [
@@ -2143,6 +2632,69 @@
           "background": "yellow",
           "props": {
             "icon": "Info"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sending dietary needs to the caterer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send the dietary table one week before, with counts per need and any allergies marked clearly. Ask the caterer to confirm in writing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist for the caterer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send counts and allergies in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask for a labelled option at every meal"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm the final numbers two days before"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         }
       ]

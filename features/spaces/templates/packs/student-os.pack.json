@@ -1939,6 +1939,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Use this page when you sit down to study: what is not done, where the minutes went, and how the grade stands in each class."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "LayoutDashboard"
+          }
+        },
+        {
           "type": "columnList",
           "children": [
             {
@@ -1966,10 +1978,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -2040,10 +2051,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "focus",
                           "op": "sum",
-                          "centerValue": true,
                           "field": "minutes"
                         }
                       }
@@ -2152,6 +2162,33 @@
             ],
             "activeViewId": "v-s"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Not done lists everything still open, soonest first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Minutes by class shows whether study time matches the credits."
+            }
+          ]
         }
       ]
     },
@@ -2552,6 +2589,50 @@
               "text": "What will you change next term?"
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing the term"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Export final grades to a safe place"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Archive the finished classes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write down what to keep doing next term"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     },
@@ -2566,6 +2647,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every lecture note opens with a layout: topic, key ideas, questions and a summary written from memory. Unreviewed notes show in the To review list."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "NotebookPen"
+          }
+        },
         {
           "type": "text",
           "text": [
@@ -2630,6 +2723,41 @@
             ],
             "activeViewId": "v-n1"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Review rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Same day: tidy the note and write the summary."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Two days later: test yourself from the questions."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Before the exam: reread only the questions you missed."
+            }
+          ]
         }
       ]
     }

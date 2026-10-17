@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0260",
-  "version": 1,
+  "version": 2,
   "title": "Course & Curriculum Planner",
   "description": "Plan courses, units, lessons and outcomes with pacing timelines.",
   "forWho": "Instructors and course designers",
@@ -115,7 +115,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -131,7 +131,13 @@
               "Done": "gray"
             },
             "required": true,
-            "default": "Planning"
+            "default": "Planning",
+            "statusGroups": {
+              "Planning": "todo",
+              "Ready": "in_progress",
+              "Running": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "starts_on",
@@ -150,13 +156,12 @@
             "format": "date"
           },
           {
-            "key": "unit_list",
-            "label": "Units",
-            "parityType": "relation",
+            "key": "weeks_left",
+            "label": "Weeks left",
+            "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "relationTarget": "unit",
-            "multi": true
+            "formula": "ROUND(DATEDIFF(TODAY(), {Ends}, 'days') / 7, 0)"
           },
           {
             "key": "unit_count",
@@ -169,8 +174,36 @@
             "agg": "count"
           },
           {
+            "key": "lessons_total",
+            "label": "Lessons",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "unit_list",
+            "pick": "lesson_total",
+            "agg": "sum"
+          },
+          {
+            "key": "lessons_done",
+            "label": "Lessons complete",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "unit_list",
+            "pick": "done",
+            "agg": "sum"
+          },
+          {
+            "key": "progress",
+            "label": "Course progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Lessons} > 0, ROUND({Lessons complete} / {Lessons} * 100, 0), 0)"
+          },
+          {
             "key": "minutes",
-            "label": "Teaching minutes",
+            "label": "Planned minutes",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -209,12 +242,7 @@
               "status": "Running",
               "starts_on": "@today-35d",
               "ends_on": "@today+84d",
-              "budget": 1800,
-              "unit_list": [
-                "un1",
-                "un2",
-                "un3"
-              ]
+              "budget": 1800
             }
           },
           {
@@ -227,12 +255,7 @@
               "status": "Running",
               "starts_on": "@today-35d",
               "ends_on": "@today+84d",
-              "budget": 1200,
-              "unit_list": [
-                "un4",
-                "un5",
-                "un6"
-              ]
+              "budget": 1200
             }
           },
           {
@@ -245,8 +268,7 @@
               "status": "Planning",
               "starts_on": "@today+120d",
               "ends_on": "@today+240d",
-              "budget": 2400,
-              "unit_list": []
+              "budget": 2400
             }
           }
         ]
@@ -325,17 +347,8 @@
             "format": "date"
           },
           {
-            "key": "lesson_list",
-            "label": "Lessons",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "lesson",
-            "multi": true
-          },
-          {
             "key": "minutes",
-            "label": "Lesson minutes",
+            "label": "Planned minutes",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -358,13 +371,21 @@
           },
           {
             "key": "lesson_total",
-            "label": "Lesson count",
+            "label": "Lessons",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "lesson_list",
             "pick": "lesson_name",
             "agg": "count"
+          },
+          {
+            "key": "progress",
+            "label": "Unit progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Lessons} > 0, ROUND({Lessons complete} / {Lessons} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -375,13 +396,7 @@
               "course": "co-env",
               "order": 1,
               "starts_on": "@today-35d",
-              "ends_on": "@today-8d",
-              "lesson_list": [
-                "l01",
-                "l02",
-                "l03",
-                "l04"
-              ]
+              "ends_on": "@today-8d"
             }
           },
           {
@@ -391,12 +406,7 @@
               "course": "co-env",
               "order": 2,
               "starts_on": "@today-7d",
-              "ends_on": "@today+20d",
-              "lesson_list": [
-                "l05",
-                "l06",
-                "l07"
-              ]
+              "ends_on": "@today+20d"
             }
           },
           {
@@ -406,11 +416,7 @@
               "course": "co-env",
               "order": 3,
               "starts_on": "@today+21d",
-              "ends_on": "@today+49d",
-              "lesson_list": [
-                "l08",
-                "l09"
-              ]
+              "ends_on": "@today+49d"
             }
           },
           {
@@ -420,12 +426,7 @@
               "course": "co-write",
               "order": 1,
               "starts_on": "@today-35d",
-              "ends_on": "@today-8d",
-              "lesson_list": [
-                "l10",
-                "l11",
-                "l12"
-              ]
+              "ends_on": "@today-8d"
             }
           },
           {
@@ -435,12 +436,7 @@
               "course": "co-write",
               "order": 2,
               "starts_on": "@today-7d",
-              "ends_on": "@today+28d",
-              "lesson_list": [
-                "l13",
-                "l14",
-                "l15"
-              ]
+              "ends_on": "@today+28d"
             }
           },
           {
@@ -450,11 +446,94 @@
               "course": "co-write",
               "order": 3,
               "starts_on": "@today+29d",
-              "ends_on": "@today+56d",
-              "lesson_list": [
-                "l16",
-                "l17",
-                "l18"
+              "ends_on": "@today+56d"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Unit plan",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Big idea"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What should students still understand a year from now?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outcomes covered"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Link the outcomes from the Outcomes table"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Assessment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How will you know they got it? Plan the assessment before the lessons."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pacing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Number of lessons, buffer days, and known disruptions."
+                    }
+                  ]
+                }
               ]
             }
           }
@@ -561,7 +640,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -575,7 +654,38 @@
               "Complete": "green"
             },
             "required": true,
-            "default": "Draft"
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Ready": "in_progress",
+              "Complete": "done"
+            }
+          },
+          {
+            "key": "lesson_flag",
+            "label": "Prep check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Complete\", \"\", IF(DATEDIFF(TODAY(), {Date}, 'days') < 0, \"Overdue\", IF(AND({Status} = \"Draft\", DATEDIFF(TODAY(), {Date}, 'days') <= 7), \"Needs prep\", \"\")))"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ready_btn",
+            "label": "Mark ready",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lesson_ready"
+            }
           }
         ],
         "rows": [
@@ -645,7 +755,7 @@
               "lesson_name": "Reading the climate record",
               "unit": "un2",
               "order": 2,
-              "on": "@today+3d",
+              "on": "@today-3d",
               "minutes": 60,
               "type": "Discussion",
               "status": "Ready"
@@ -657,7 +767,7 @@
               "lesson_name": "Lab: measuring water quality",
               "unit": "un2",
               "order": 3,
-              "on": "@today+10d",
+              "on": "@today",
               "minutes": 120,
               "type": "Lab",
               "status": "Draft"
@@ -795,6 +905,145 @@
               "status": "Draft"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Lesson plan",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Objective"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "By the end, students can..."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Warm-up (5 min)"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "A question or problem that connects to last time."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Main activity"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Introduce the idea"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Guided practice"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Independent work"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check for understanding"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two questions or a short exit ticket."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Materials and prep"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Handouts printed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Slides ready"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -844,6 +1093,13 @@
             "via": "lesson_list",
             "pick": "lesson_name",
             "agg": "count"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -952,16 +1208,6 @@
         "inverseKey": "courses_taught"
       },
       {
-        "describes": "A course lists its units.",
-        "fromTable": "course",
-        "fromField": "unit_list",
-        "toTable": "unit",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "course_of_unit"
-      },
-      {
         "describes": "Each unit belongs to one course.",
         "fromTable": "unit",
         "fromField": "course",
@@ -969,17 +1215,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "units"
-      },
-      {
-        "describes": "A unit lists its lessons.",
-        "fromTable": "unit",
-        "fromField": "lesson_list",
-        "toTable": "lesson",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "unit_of_lesson"
+        "inverseKey": "unit_list"
       },
       {
         "describes": "Each lesson belongs to one unit.",
@@ -989,7 +1225,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "lessons"
+        "inverseKey": "lesson_list"
       },
       {
         "describes": "An outcome lists the lessons that cover it.",
@@ -1070,7 +1306,23 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "lesson_ready",
+        "table": "lesson",
+        "name": "Mark ready",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready"
+          }
+        ],
+        "color": "blue"
+      }
+    ],
     "views": [
       {
         "token": "all_courses",
@@ -1155,6 +1407,58 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "les_week",
+        "name": "This week",
+        "table": "lesson",
+        "kind": "calendar",
+        "dateField": "on",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "les_today",
+        "name": "Today",
+        "table": "lesson",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "les_next7",
+        "name": "Next 7 days",
+        "table": "lesson",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "les_overdue",
+        "name": "Not complete and past",
+        "table": "lesson",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Ready"
+          ]
+        }
       }
     ],
     "agent": {
@@ -1243,7 +1547,7 @@
         "Pennywhistle Close"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1369,108 +1673,87 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Draft lessons"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "lesson",
-                      "view": "all_lessons"
-                    },
-                    "inline": true,
-                    "title": "Lessons",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-d",
-                        "name": "Draft",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": "Draft"
-                        }
-                      }
-                    ],
-                    "activeViewId": "v-d"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Coverage by outcome"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "outcome",
-                      "view": "all_outcomes"
-                    },
-                    "inline": true,
-                    "title": "Outcomes",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-o",
-                        "name": "Outcomes",
-                        "layout": "grid",
-                        "icon": "Table"
-                      },
-                      {
-                        "id": "v-oc",
-                        "name": "Lessons per outcome",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "code",
-                          "op": "sum",
-                          "field": "covered"
-                        }
-                      }
-                    ],
-                    "activeViewId": "v-o"
-                  }
-                }
-              ]
+              "text": "Draft lessons"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lesson",
+              "view": "all_lessons"
+            },
+            "inline": true,
+            "title": "Lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-d",
+                "name": "Draft",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Draft"
+                }
+              }
+            ],
+            "activeViewId": "v-d"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Coverage by outcome"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "outcome",
+              "view": "all_outcomes"
+            },
+            "inline": true,
+            "title": "Outcomes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-o",
+                "name": "Outcomes",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-oc",
+                "name": "Lessons per outcome",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "code",
+                  "op": "sum",
+                  "field": "covered"
+                }
+              }
+            ],
+            "activeViewId": "v-o"
+          }
         },
         {
           "type": "heading",
@@ -1497,6 +1780,17 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u11",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
                 "id": "v-lc",
                 "name": "Calendar",
                 "layout": "calendar",
@@ -1517,6 +1811,35 @@
                 "icon": "Table",
                 "filters": {
                   "type": "Assessment"
+                }
+              },
+              {
+                "id": "view-u12",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
+                "id": "view-u13",
+                "name": "Past and not complete",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Ready"
+                  ]
                 }
               }
             ],
@@ -1588,6 +1911,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Read the Course progress figure alongside the timeline. If progress trails the calendar, trim a lesson rather than rushing every lesson."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "CalendarRange"
+          }
+        },
+        {
           "type": "database",
           "props": {
             "source": {
@@ -1639,10 +1974,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "type",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1713,10 +2047,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1763,6 +2096,41 @@
             ],
             "activeViewId": "y5"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Using the year view"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Timeline shows course and unit spans; look for months with no teaching."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Assessments list shows when marking lands; spread them so two never fall in one week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Compare Course progress to the calendar every month."
+            }
+          ]
         }
       ]
     },
@@ -1835,6 +2203,152 @@
           "background": "yellow",
           "props": {
             "icon": "TriangleAlert"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A worked unit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lesson"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Minutes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hook: what is a cell?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Discussion"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "45"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Microscope skills"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lab"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "60"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Organelles and jobs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lecture"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "45"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Model building"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Project"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "60"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Unit assessment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Assessment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "45"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan the assessment first and the lessons backwards from it."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Target"
           }
         }
       ]

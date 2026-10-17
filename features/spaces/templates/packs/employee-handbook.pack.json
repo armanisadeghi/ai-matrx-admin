@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0259",
-  "version": 1,
+  "version": 2,
   "title": "Employee Handbook",
   "description": "A living handbook: policies with owners, review dates, sign-offs and FAQ.",
   "forWho": "HR and operations teams",
@@ -77,6 +77,13 @@
             "required": true
           },
           {
+            "key": "policy_no",
+            "label": "Policy no.",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "category",
             "label": "Category",
             "parityType": "select",
@@ -113,7 +120,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -127,7 +134,12 @@
               "Under review": "amber"
             },
             "required": true,
-            "default": "Draft"
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Under review": "in_progress",
+              "Published": "done"
+            }
           },
           {
             "key": "reviewed_on",
@@ -152,6 +164,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "DATEDIFF(TODAY(), {Next review}, 'days')"
+          },
+          {
+            "key": "review_flag",
+            "label": "Review status",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Days to review} < 0, \"Overdue\", IF({Days to review} <= 30, \"Due soon\", \"Current\"))"
           },
           {
             "key": "applies",
@@ -181,17 +201,8 @@
             "contextPolicy": "include"
           },
           {
-            "key": "ack_list",
-            "label": "Acknowledgements",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "ack",
-            "multi": true
-          },
-          {
             "key": "ack_count",
-            "label": "Signed off",
+            "label": "Acknowledgements",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -205,6 +216,13 @@
             "parityType": "long_text",
             "sensitivity": "confidential",
             "contextPolicy": "summarize"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -220,14 +238,7 @@
               "applies": [
                 "All"
               ],
-              "pinned": true,
-              "ack_list": [
-                "ak01",
-                "ak02",
-                "ak03",
-                "ak04",
-                "ak05"
-              ]
+              "pinned": true
             }
           },
           {
@@ -242,12 +253,7 @@
               "applies": [
                 "All"
               ],
-              "pinned": true,
-              "ack_list": [
-                "ak06",
-                "ak07",
-                "ak08"
-              ]
+              "pinned": true
             }
           },
           {
@@ -262,12 +268,7 @@
               "applies": [
                 "All"
               ],
-              "pinned": true,
-              "ack_list": [
-                "ak09",
-                "ak10",
-                "ak11"
-              ]
+              "pinned": true
             }
           },
           {
@@ -283,11 +284,7 @@
                 "Kitchen",
                 "Delivery"
               ],
-              "pinned": false,
-              "ack_list": [
-                "ak12",
-                "ak13"
-              ]
+              "pinned": false
             }
           },
           {
@@ -302,8 +299,7 @@
               "applies": [
                 "All"
               ],
-              "pinned": false,
-              "ack_list": []
+              "pinned": false
             }
           },
           {
@@ -318,8 +314,7 @@
               "applies": [
                 "All"
               ],
-              "pinned": false,
-              "ack_list": []
+              "pinned": false
             }
           },
           {
@@ -334,8 +329,7 @@
               "applies": [
                 "All"
               ],
-              "pinned": true,
-              "ack_list": []
+              "pinned": true
             }
           },
           {
@@ -350,11 +344,7 @@
               "applies": [
                 "All"
               ],
-              "pinned": false,
-              "ack_list": [
-                "ak14",
-                "ak15"
-              ]
+              "pinned": false
             }
           },
           {
@@ -369,8 +359,7 @@
               "applies": [
                 "Delivery"
               ],
-              "pinned": false,
-              "ack_list": []
+              "pinned": false
             }
           },
           {
@@ -385,15 +374,153 @@
               "applies": [
                 "All"
               ],
-              "pinned": false,
-              "ack_list": [
-                "ak16",
-                "ak17"
-              ]
+              "pinned": false
             }
           }
         ],
-        "statusAgrees": []
+        "statusAgrees": [],
+        "rowTemplates": [
+          {
+            "name": "New policy",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Why this policy exists, in two sentences."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who it applies to"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "All employees, a team or a location."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The policy"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Rule one, written as an instruction"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Rule two"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who to ask"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Name a person or a channel."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Owner confirms the content"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Legal or HR reads it"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Publish and notify the team"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "ack",
@@ -446,6 +573,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "logged",
+            "label": "Logged at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -708,6 +842,56 @@
               "answer": "Message the IT lead in chat; never share your password."
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New question",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Answer"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Give the short answer first, then the detail."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Related policy"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Link the policy page that backs it up."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -723,16 +907,6 @@
         "inverseKey": "policies_owned"
       },
       {
-        "describes": "A policy lists the sign-offs it has received.",
-        "fromTable": "policy",
-        "fromField": "ack_list",
-        "toTable": "ack",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "policy_of_ack"
-      },
-      {
         "describes": "Each sign-off is for one policy.",
         "fromTable": "ack",
         "fromField": "policy",
@@ -740,7 +914,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "acknowledgements"
+        "inverseKey": "ack_list"
       },
       {
         "describes": "Each sign-off is by one employee.",
@@ -907,6 +1081,53 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "pol_due30",
+        "name": "Review due in 30 days",
+        "table": "policy",
+        "kind": "grid",
+        "within": {
+          "review_due": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "pol_overdue",
+        "name": "Review overdue",
+        "table": "policy",
+        "kind": "grid",
+        "within": {
+          "review_due": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "pol_recent",
+        "name": "Reviewed, last 90 days",
+        "table": "policy",
+        "kind": "grid",
+        "within": {
+          "reviewed_on": {
+            "relative": "past_days",
+            "n": 90
+          }
+        }
+      },
+      {
+        "token": "ack_30",
+        "name": "Acknowledged, last 30 days",
+        "table": "ack",
+        "kind": "grid",
+        "within": {
+          "signed_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
       }
     ],
     "agent": {
@@ -995,7 +1216,7 @@
         "Barleywick Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1202,6 +1423,17 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u9",
+                "name": "Review overdue",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "review_due": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
                 "id": "v-nr",
                 "name": "Under review or draft",
                 "layout": "grid",
@@ -1219,6 +1451,18 @@
                 "layout": "calendar",
                 "icon": "Calendar",
                 "dateField": "review_due"
+              },
+              {
+                "id": "view-u10",
+                "name": "Due in 30 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "review_due": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
               }
             ],
             "activeViewId": "v-nr"
@@ -1340,6 +1584,50 @@
               "text": "If you are not sure, ask. Nobody has ever been blamed for asking about food safety."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to do in your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read the pinned policies"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Acknowledge each one when you have read it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask your manager which FAQ answers surprised you"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     },
@@ -1464,6 +1752,33 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Examples"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Core hours are 10 to 3 in your own time zone; outside them, write for others to read later."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Short notice absences: message your manager before your first meeting."
+            }
+          ]
         }
       ]
     },
@@ -1526,6 +1841,76 @@
           "props": {
             "icon": "Calendar"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to claim"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the policy page for eligibility."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Submit the request in the usual channel."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep the confirmation."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Frequently asked"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When does my allowance reset?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who approves leave?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How do I enrol in benefits after the first month?"
+            }
+          ]
         }
       ]
     },
@@ -1540,6 +1925,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "LayoutDashboard"
+          }
+        },
         {
           "type": "columnList",
           "children": [
@@ -1568,10 +1965,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1690,6 +2086,41 @@
             ],
             "activeViewId": "d4"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The lists below show only the rows that need attention now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+            }
+          ]
         }
       ]
     },
@@ -1704,6 +2135,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Short answers to the questions people ask most. Add a question here before answering it a third time in chat."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "HelpCircle"
+          }
+        },
         {
           "type": "text",
           "text": [
@@ -1741,6 +2184,41 @@
             ],
             "activeViewId": "f1"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing a good answer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Answer in the first sentence."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the detail or the exception second."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link the policy that backs it up."
+            }
+          ]
         }
       ]
     }

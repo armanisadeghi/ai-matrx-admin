@@ -1664,10 +1664,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "done",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               }
             ],

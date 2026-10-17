@@ -551,8 +551,8 @@
               "balance": "b-elise",
               "employee": "tm-elise",
               "type": "Personal",
-              "start_on": "@today+3d",
-              "end_on": "@today+3d",
+              "start_on": "@mon+3d",
+              "end_on": "@mon+3d",
               "days": 1,
               "status": "Approved",
               "approver": "tm-camille",
@@ -1527,6 +1527,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "LayoutDashboard"
+          }
+        },
+        {
           "type": "columnList",
           "children": [
             {
@@ -1554,10 +1566,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "type",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1628,10 +1639,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "team",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1727,6 +1737,41 @@
             ],
             "activeViewId": "view-u6"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The lists below show only the rows that need attention now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+            }
+          ]
         }
       ]
     },
@@ -1918,6 +1963,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "List company closures and public holidays here so requests do not collide with them."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "CalendarDays"
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
@@ -2031,6 +2088,41 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to maintain it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add next year's closures in the autumn."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell staff which holidays are paid and which use allowance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the leave calendar against these dates before approving."
+            }
+          ]
         }
       ]
     }

@@ -1578,10 +1578,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "category",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               },
               {
@@ -1775,10 +1774,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "source",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               }
             ],

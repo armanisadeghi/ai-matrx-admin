@@ -385,7 +385,7 @@
             "values": {
               "milestone_name": "Reach the first quarter of the deposit",
               "goal": "g1",
-              "due_on": "@today+20d",
+              "due_on": "@today-3d",
               "done": false,
               "effort": "Large"
             }
@@ -395,7 +395,7 @@
             "values": {
               "milestone_name": "Meet a mortgage broker",
               "goal": "g1",
-              "due_on": "@today+150d",
+              "due_on": "@today",
               "done": false,
               "effort": "Small"
             }
@@ -1381,6 +1381,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Progress (%) on each goal is finished steps divided by all steps. It tells you how far along a goal is, not how much it matters."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Gauge"
+          }
+        },
+        {
           "type": "columnList",
           "children": [
             {
@@ -1408,10 +1420,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1570,6 +1581,33 @@
             ],
             "activeViewId": "view-u16"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly habit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look at Overdue steps on Mondays and decide: do it, reschedule it, or remove it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use the average check-in score on each goal to spot goals that feel worse over time."
+            }
+          ]
         }
       ]
     },

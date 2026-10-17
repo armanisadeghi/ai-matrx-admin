@@ -962,7 +962,7 @@
               "candidate": "c01",
               "interviewer": "tm-amara",
               "round": "Technical",
-              "on": "@today+2d 14:00"
+              "on": "@today 14:00"
             }
           },
           {
@@ -1785,10 +1785,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "department",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               }
             ],
@@ -1927,6 +1926,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "LayoutDashboard"
+          }
+        },
+        {
           "type": "columnList",
           "children": [
             {
@@ -1954,10 +1965,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "stage",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -2027,10 +2037,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -2120,6 +2129,41 @@
             ],
             "activeViewId": "d-n"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The lists below show only the rows that need attention now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+            }
+          ]
         }
       ]
     },

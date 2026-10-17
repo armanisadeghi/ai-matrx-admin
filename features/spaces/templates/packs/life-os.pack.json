@@ -421,7 +421,7 @@
             "values": {
               "milestone_name": "Finish a 15 km long run",
               "goal": "g-half",
-              "due_on": "@today+35d",
+              "due_on": "@today-3d",
               "done": false,
               "effort": "Medium"
             }
@@ -431,7 +431,7 @@
             "values": {
               "milestone_name": "Register for the autumn race",
               "goal": "g-half",
-              "due_on": "@today+60d",
+              "due_on": "@today",
               "done": false,
               "effort": "Large"
             }
@@ -441,7 +441,7 @@
             "values": {
               "milestone_name": "Lead the checkout redesign end to end",
               "goal": "g-promo",
-              "due_on": "@today+70d",
+              "due_on": "@today+4d",
               "done": false,
               "effort": "Small"
             }
@@ -915,7 +915,7 @@
               "project": "p-race",
               "status": "Doing",
               "priority": "High",
-              "due_on": "@today+1d",
+              "due_on": "@today-3d",
               "smart_list": "Do next",
               "my_day": true,
               "estimate_min": 45
@@ -928,7 +928,7 @@
               "project": "p-race",
               "status": "To do",
               "priority": "Medium",
-              "due_on": "@today+4d",
+              "due_on": "@today",
               "smart_list": "Do next",
               "my_day": false,
               "estimate_min": 30
@@ -2569,10 +2569,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "status",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               }
             ],
@@ -2706,6 +2705,41 @@
             ],
             "activeViewId": "view-20"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The task lists at the top are live: Today and Overdue are your morning check."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Minutes by energy shows when your focused time happens; protect the high-energy hours for deep work."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If Overdue keeps growing, shorten the next-actions list instead of adding more."
+            }
+          ]
         }
       ]
     },
@@ -3118,6 +3152,41 @@
             ],
             "activeViewId": "view-27"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Using areas well"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give each area a written standard, such as \"three workouts a week\", so a review has something to measure against."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set the review cadence to match how fast the area drifts: finances monthly, health weekly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A goal without a milestone in the next 30 days is stalling; add the next one."
+            }
+          ]
         }
       ]
     }

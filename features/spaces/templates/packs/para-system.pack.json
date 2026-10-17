@@ -368,7 +368,7 @@
               "project_name": "Back up and sort ten years of photos",
               "area": "a-home",
               "status": "In progress",
-              "deadline": "@today+30d",
+              "deadline": "@today-3d",
               "effort": "Large",
               "archived": false
             }
@@ -379,7 +379,7 @@
               "project_name": "Train for the neighbourhood 5k",
               "area": "a-health",
               "status": "In progress",
-              "deadline": "@today+45d",
+              "deadline": "@today",
               "effort": "Medium",
               "archived": false
             }
@@ -390,7 +390,7 @@
               "project_name": "Rebuild my portfolio site",
               "area": "a-craft",
               "status": "In progress",
-              "deadline": "@today+60d",
+              "deadline": "@today+4d",
               "effort": "Large",
               "archived": false
             }
@@ -1831,10 +1831,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "effort",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               },
               {
@@ -1866,6 +1865,49 @@
           "text": [
             {
               "text": "Areas marked Due on the Areas table have gone longer than their cadence without a look. Open each, read the standard, and set the last-reviewed date to today."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quick review order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Inbox first: empty it or file it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Projects: each has a next action and a date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Areas: any marked Due get a look this week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Resources: delete or file anything you saved but never opened."
             }
           ]
         }

@@ -1904,10 +1904,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "rsvp",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               }
             ],
@@ -2517,10 +2516,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "paid",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               },
               {

@@ -1825,11 +1825,10 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "type",
                   "op": "sum",
-                  "field": "cost",
-                  "centerValue": true
+                  "field": "cost"
                 }
               }
             ],

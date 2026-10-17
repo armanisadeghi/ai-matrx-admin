@@ -1130,11 +1130,10 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "category",
                   "op": "sum",
-                  "field": "current_value",
-                  "centerValue": true
+                  "field": "current_value"
                 }
               },
               {

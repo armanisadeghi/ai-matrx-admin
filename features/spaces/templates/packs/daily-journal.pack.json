@@ -849,10 +849,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "mood",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               },
               {
@@ -1306,6 +1305,41 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Looking for patterns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Compare mood on days with the same theme: which themes lift you and which drain you?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check energy against weather and sleep notes before blaming the weather."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark entries reviewed as you finish the weekly read so the unreviewed list stays short."
+            }
+          ]
         }
       ]
     }

@@ -1965,6 +1965,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Chase missing access on Fridays. Each tool row has an owner who can grant it and a button to mark the grant."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "KeyRound"
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
@@ -2006,10 +2018,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "category",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               }
             ],
@@ -2027,6 +2038,25 @@
           "props": {
             "icon": "ShieldAlert"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Access request message"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hi, I am starting on [team] and need access to [tool] to do [task]. My manager is [name]. Could you grant it by [day]? Thanks."
+            }
+          ]
         }
       ]
     },
@@ -2160,6 +2190,33 @@
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to use this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fill it in the last week of month one. Be specific; managers act on specifics."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Example of a good note: onboarding docs for the billing tool were out of date, so I rewrote steps 3 to 5."
+            }
+          ]
         }
       ]
     },
@@ -2174,6 +2231,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Book a 20 minute chat with each person in the first month. Ask what they do, what they wish people knew, and who else you should meet."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Users"
+          }
+        },
         {
           "type": "text",
           "text": [
@@ -2314,6 +2383,41 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions for each chat"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What does a good week look like in your job?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is the best way to work with you?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who else should I talk to?"
+            }
+          ]
         }
       ]
     }

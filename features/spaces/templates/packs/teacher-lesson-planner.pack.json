@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0261",
-  "version": 1,
+  "version": 2,
   "title": "Teacher Lesson Planner",
   "description": "Weekly lesson plans linked to standards and resources, with reflections.",
   "forWho": "Teachers planning weekly lessons",
@@ -145,15 +145,6 @@
             ]
           },
           {
-            "key": "plan_list",
-            "label": "Lesson plans",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "plan",
-            "multi": true
-          },
-          {
             "key": "plan_count",
             "label": "Lessons planned",
             "parityType": "rollup",
@@ -175,6 +166,14 @@
             "filter": {
               "status": "Taught"
             }
+          },
+          {
+            "key": "pct_taught",
+            "label": "Taught (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Lessons planned} > 0, ROUND({Lessons taught} / {Lessons planned} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -185,13 +184,7 @@
               "grade": "7",
               "subject": "Science",
               "period": "1",
-              "students": 27,
-              "plan_list": [
-                "lp01",
-                "lp02",
-                "lp03",
-                "lp06"
-              ]
+              "students": 27
             }
           },
           {
@@ -201,13 +194,7 @@
               "grade": "7",
               "subject": "Science",
               "period": "3",
-              "students": 29,
-              "plan_list": [
-                "lp04",
-                "lp05",
-                "lp10",
-                "lp11"
-              ]
+              "students": 29
             }
           },
           {
@@ -217,12 +204,7 @@
               "grade": "8",
               "subject": "Science",
               "period": "5",
-              "students": 26,
-              "plan_list": [
-                "lp07",
-                "lp08",
-                "lp09"
-              ]
+              "students": 26
             }
           }
         ]
@@ -638,7 +620,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -654,11 +636,25 @@
               "Needs revision": "amber"
             },
             "required": true,
-            "default": "Draft"
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Ready": "in_progress",
+              "Needs revision": "in_progress",
+              "Taught": "done"
+            }
+          },
+          {
+            "key": "prep_flag",
+            "label": "Prep check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Taught\", \"\", IF(DATEDIFF(TODAY(), {Date}, 'days') < 0, \"Overdue\", IF(AND({Status} = \"Draft\", DATEDIFF(TODAY(), {Date}, 'days') <= 3), \"Needs prep\", \"\")))"
           },
           {
             "key": "reflection",
-            "label": "Reflection rating",
+            "label": "Reflection (1-5)",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -690,6 +686,31 @@
             "parityType": "long_text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "taught_btn",
+            "label": "Mark taught",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "plan_taught"
+            }
           }
         ],
         "rows": [
@@ -800,7 +821,7 @@
             "values": {
               "plan_name": "Population limits",
               "class": "cl1",
-              "on": "@today+2d",
+              "on": "@today-3d",
               "objective": "Explain carrying capacity",
               "standard_list": [
                 "s3"
@@ -837,7 +858,7 @@
             "values": {
               "plan_name": "Weather and energy",
               "class": "cl3",
-              "on": "@today+1d",
+              "on": "@today",
               "objective": "Link solar energy to weather",
               "standard_list": [
                 "s4"
@@ -902,20 +923,203 @@
               "reflection_notes": "Quiz scores were low"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Lesson plan",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Objective"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "By the end of the lesson students can..."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Standards"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Link the standards above, then tick the evidence you will collect."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Warm-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "A short recall question."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Direct instruction"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Key points and worked example."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Guided practice"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pairs or groups, with questions to circulate."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Independent practice"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What students do alone."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check for understanding"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Exit ticket question."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Differentiation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Support"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Extension"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Homework"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Optional, with an estimate of time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
     "relationships": [
-      {
-        "describes": "A class lists its lesson plans.",
-        "fromTable": "class",
-        "fromField": "plan_list",
-        "toTable": "plan",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "class_of_plan"
-      },
       {
         "describes": "Each lesson belongs to one class.",
         "fromTable": "plan",
@@ -924,7 +1128,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "plans"
+        "inverseKey": "plan_list"
       },
       {
         "describes": "A lesson lists the standards it addresses.",
@@ -999,7 +1203,23 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "plan_taught",
+        "table": "plan",
+        "name": "Mark taught",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Taught"
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_plans",
@@ -1062,6 +1282,65 @@
         "table": "resource",
         "kind": "kanban",
         "groupBy": "type"
+      },
+      {
+        "token": "plan_today",
+        "name": "Today",
+        "table": "plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "plan_week",
+        "name": "This week",
+        "table": "plan",
+        "kind": "calendar",
+        "dateField": "on",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "plan_next7",
+        "name": "Next 7 days",
+        "table": "plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "plan_taught7",
+        "name": "Taught, last 7 days",
+        "table": "plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "past_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Taught"
+        }
+      },
+      {
+        "token": "plan_revise",
+        "name": "Needs revision",
+        "table": "plan",
+        "kind": "grid",
+        "filters": {
+          "status": "Needs revision"
+        }
       }
     ],
     "agent": {
@@ -1150,7 +1429,7 @@
         "Orchard Finch Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1181,112 +1460,91 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.6
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "This week"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "plan",
-                      "view": "plan_calendar"
-                    },
-                    "inline": true,
-                    "title": "Lesson plans",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-w",
-                        "name": "Week",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "on"
-                      },
-                      {
-                        "id": "v-a",
-                        "name": "All lessons",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-w"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.4
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "To prepare"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "plan",
-                      "view": "all_plans"
-                    },
-                    "inline": true,
-                    "title": "Lesson plans",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-p",
-                        "name": "Draft or needs revision",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": [
-                            "Draft",
-                            "Needs revision"
-                          ]
-                        }
-                      }
-                    ],
-                    "activeViewId": "v-p"
-                  }
-                }
-              ]
+              "text": "This week"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "plan_calendar"
+            },
+            "inline": true,
+            "title": "Lesson plans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-w",
+                "name": "Week",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "on"
+              },
+              {
+                "id": "v-a",
+                "name": "All lessons",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-w"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "To prepare"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "all_plans"
+            },
+            "inline": true,
+            "title": "Lesson plans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-p",
+                "name": "Draft or needs revision",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "Draft",
+                    "Needs revision"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "v-p"
+          }
         },
         {
           "type": "heading",
@@ -1354,6 +1612,17 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u14",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
                 "id": "v-b",
                 "name": "By status",
                 "layout": "kanban",
@@ -1367,6 +1636,18 @@
                 "icon": "LayoutGrid",
                 "filters": {
                   "status": "Taught"
+                }
+              },
+              {
+                "id": "view-u15",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
                 }
               }
             ],
@@ -1420,21 +1701,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:lesson-template"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -1448,7 +1715,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.34
+                "width": 0.5
               },
               "children": [
                 {
@@ -1458,198 +1725,6 @@
                   }
                 }
               ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "lesson-template",
-      "parent": "teaching-hub",
-      "title": "Lesson template",
-      "icon": {
-        "emoji": "📝"
-      },
-      "settings": {
-        "fullWidth": true
-      },
-      "blocks": [
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Copy these headings into a lesson page."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Objective"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Warm-up (5 minutes)"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Direct instruction (15 minutes)"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Guided practice (15 minutes)"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Independent practice"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Assessment"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Closure"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Differentiation"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Reflection after class"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
             }
           ]
         }
@@ -1673,6 +1748,18 @@
               "text": "Which standards have been taught, and which are still waiting."
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Standards with zero lessons are gaps in the year's plan. Link a standard to a lesson plan and its Times taught count goes up."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Target"
+          }
         },
         {
           "type": "database",
@@ -1720,6 +1807,41 @@
           "props": {
             "icon": "Target"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Using the figures"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Times taught of 0: plan a lesson for this standard."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Times taught of 1: consider one more practice lesson."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Times taught of 3 or more: check that other standards are not being squeezed."
+            }
+          ]
         }
       ]
     },
@@ -1808,10 +1930,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "status",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               },
               {
@@ -1829,6 +1950,76 @@
             ],
             "activeViewId": "e1"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reflection prompts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Which lesson went better than planned, and why?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Which lesson needs a rewrite before next year?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Which students need a quick check-in on Monday?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Friday routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark this week's lessons taught or move them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Needs revision and fix one plan now."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at next week's lessons and pick one to prepare first."
+            }
+          ]
         }
       ]
     }

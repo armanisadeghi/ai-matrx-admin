@@ -1881,10 +1881,9 @@
                 "layout": "chart",
                 "icon": "ChartPie",
                 "chart": {
-                  "type": "donut",
+                  "type": "bar",
                   "groupBy": "remote",
-                  "op": "count",
-                  "centerValue": true
+                  "op": "count"
                 }
               }
             ],

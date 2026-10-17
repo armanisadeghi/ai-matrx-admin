@@ -1474,6 +1474,41 @@
             ],
             "activeViewId": "view-14"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The charts count open tasks by status, priority and context."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Overdue and Due this week are the two lists to clear first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If one context holds most open tasks, that is where your time is going."
+            }
+          ]
         }
       ]
     },

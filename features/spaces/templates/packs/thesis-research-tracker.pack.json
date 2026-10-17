@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0262",
-  "version": 1,
+  "version": 2,
   "title": "Thesis & Research Tracker",
   "description": "Chapters, sources, tasks and advisor meetings for a thesis from outline to defence.",
   "forWho": "Graduate students and researchers",
@@ -90,7 +90,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -108,7 +108,14 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Not started"
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "Outline": "in_progress",
+              "Drafting": "in_progress",
+              "In review": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "target",
@@ -146,11 +153,19 @@
           },
           {
             "key": "progress",
-            "label": "Progress (%)",
+            "label": "Draft progress (%)",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "{Words now} * 100 / {Word target}"
+          },
+          {
+            "key": "words_left",
+            "label": "Words left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Word target} > {Words now}, {Word target} - {Words now}, 0)"
           },
           {
             "key": "draft_due",
@@ -159,6 +174,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "draft_flag",
+            "label": "Draft status",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF(DATEDIFF(TODAY(), {Draft due}, 'days') < 0, \"Past draft date\", IF(DATEDIFF(TODAY(), {Draft due}, 'days') <= 30, \"Draft due soon\", \"\")))"
           },
           {
             "key": "source_list",
@@ -178,15 +201,6 @@
             "via": "source_list",
             "pick": "title",
             "agg": "count"
-          },
-          {
-            "key": "task_list",
-            "label": "Tasks",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "task",
-            "multi": true
           },
           {
             "key": "open_tasks",
@@ -215,7 +229,6 @@
               "target": 6000,
               "words": 6400,
               "draft_due": "@today-90d",
-              "task_list": [],
               "source_list": [
                 "so01",
                 "so05"
@@ -231,9 +244,6 @@
               "target": 12000,
               "words": 12850,
               "draft_due": "@today-45d",
-              "task_list": [
-                "tk09"
-              ],
               "source_list": [
                 "so01",
                 "so02",
@@ -251,11 +261,6 @@
               "target": 8000,
               "words": 7600,
               "draft_due": "@today-10d",
-              "task_list": [
-                "tk01",
-                "tk02",
-                "tk10"
-              ],
               "source_list": [
                 "so02",
                 "so03",
@@ -274,13 +279,6 @@
               "target": 14000,
               "words": 6200,
               "draft_due": "@today+30d",
-              "task_list": [
-                "tk03",
-                "tk04",
-                "tk05",
-                "tk06",
-                "tk11"
-              ],
               "source_list": [
                 "so04",
                 "so07",
@@ -299,10 +297,6 @@
               "target": 10000,
               "words": 900,
               "draft_due": "@today+75d",
-              "task_list": [
-                "tk07",
-                "tk08"
-              ],
               "source_list": [
                 "so07",
                 "so08",
@@ -320,9 +314,6 @@
               "target": 5000,
               "words": 0,
               "draft_due": "@today+105d",
-              "task_list": [
-                "tk12"
-              ],
               "source_list": [
                 "so09"
               ]
@@ -400,7 +391,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -416,7 +407,13 @@
               "Cited": "green"
             },
             "required": true,
-            "default": "To read"
+            "default": "To read",
+            "statusGroups": {
+              "To read": "todo",
+              "Reading": "in_progress",
+              "Read": "done",
+              "Cited": "done"
+            }
           },
           {
             "key": "rating",
@@ -461,6 +458,24 @@
             "parityType": "long_text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "read_btn",
+            "label": "Mark read",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "so_read"
+            }
           }
         ],
         "rows": [
@@ -745,9 +760,17 @@
             "format": "date"
           },
           {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 3, \"Due soon\", \"\")))"
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -761,7 +784,12 @@
               "Done": "green"
             },
             "required": true,
-            "default": "To do"
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "type",
@@ -783,6 +811,24 @@
               "Experiment": "orange",
               "Revise": "amber"
             }
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "tk_done"
+            }
           }
         ],
         "rows": [
@@ -791,7 +837,7 @@
             "values": {
               "task_name": "Fix sampling table in methods",
               "chapter": "ch3",
-              "due_on": "@today+3d",
+              "due_on": "@today-3d",
               "status": "In progress",
               "type": "Revise"
             }
@@ -801,7 +847,7 @@
             "values": {
               "task_name": "Respond to advisor comments on chapter 3",
               "chapter": "ch3",
-              "due_on": "@today+5d",
+              "due_on": "@today",
               "status": "To do",
               "type": "Revise"
             }
@@ -906,6 +952,91 @@
               "type": "Write"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New task",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What and why"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Which chapter does it serve?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First small step"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done when"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The output you can show your supervisor."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -965,6 +1096,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "logged",
+            "label": "Logged at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -1006,20 +1144,120 @@
               "next_on": "@today+28d"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Supervisor meeting",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Since last time"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What you did, in four lines."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Questions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Specific question one"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Specific question two"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decisions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was agreed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Actions before next meeting"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Action one, with date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Action two, with date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       }
     ],
     "relationships": [
-      {
-        "describes": "A chapter lists its tasks.",
-        "fromTable": "chapter",
-        "fromField": "task_list",
-        "toTable": "task",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "chapter_of_task"
-      },
       {
         "describes": "A chapter lists the sources it draws on.",
         "fromTable": "chapter",
@@ -1048,7 +1286,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "tasks"
+        "inverseKey": "task_list"
       }
     ],
     "sharedBlocks": [],
@@ -1087,7 +1325,38 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "tk_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "so_read",
+        "table": "source",
+        "name": "Mark read",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Read"
+          }
+        ],
+        "color": "blue"
+      }
+    ],
     "views": [
       {
         "token": "all_chapters",
@@ -1177,6 +1446,88 @@
         "table": "meeting",
         "kind": "calendar",
         "dateField": "held_on"
+      },
+      {
+        "token": "tk_today",
+        "name": "Today",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "tk_overdue",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "tk_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "tk_week",
+        "name": "This week",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "mt_recent",
+        "name": "Meetings, last 30 days",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "mt_next14",
+        "name": "Next meetings, 14 days",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "next_on": {
+            "relative": "next_days",
+            "n": 14
+          }
+        }
       }
     ],
     "agent": {
@@ -1265,13 +1616,13 @@
         "Quillfeather Place"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
       "key": "thesis-hq",
       "parent": null,
-      "title": "Thesis HQ",
+      "title": "Thesis & Research Tracker",
       "icon": {
         "emoji": "🎓"
       },
@@ -1296,125 +1647,104 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.6
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Chapters"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "chapter",
-                      "view": "chapter_board"
-                    },
-                    "inline": true,
-                    "title": "Chapters",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-cb",
-                        "name": "Board",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "status"
-                      },
-                      {
-                        "id": "v-ct",
-                        "name": "All chapters",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "order",
-                            "direction": "asc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "v-cc",
-                        "name": "Draft deadlines",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "draft_due"
-                      }
-                    ],
-                    "activeViewId": "v-cb"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.4
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Next tasks"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-n",
-                        "name": "Not done",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": [
-                            "To do",
-                            "In progress"
-                          ]
-                        },
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-n"
-                  }
-                }
-              ]
+              "text": "Chapters"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "chapter",
+              "view": "chapter_board"
+            },
+            "inline": true,
+            "title": "Chapters",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-cb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-ct",
+                "name": "All chapters",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "order",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-cc",
+                "name": "Draft deadlines",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "draft_due"
+              }
+            ],
+            "activeViewId": "v-cb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Next tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-n",
+                "name": "Not done",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-n"
+          }
         },
         {
           "type": "heading",
@@ -1494,6 +1824,23 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u16",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              },
+              {
                 "id": "v-tb",
                 "name": "Board",
                 "layout": "kanban",
@@ -1506,6 +1853,24 @@
                 "layout": "calendar",
                 "icon": "Calendar",
                 "dateField": "due_on"
+              },
+              {
+                "id": "view-u17",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
               }
             ],
             "activeViewId": "v-tb"
@@ -1637,6 +2002,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Words now against the word target gives a rough picture only. Revision removes words as often as it adds them; judge by structure first."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "PenLine"
+          }
+        },
+        {
           "type": "columnList",
           "children": [
             {
@@ -1701,10 +2078,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1738,10 +2114,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1797,6 +2172,41 @@
           "props": {
             "icon": "PenLine"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the progress figures"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Draft progress compares words now with the word target."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Draft status flags chapters past or near their draft date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A chapter in review with open tasks needs those tasks closed before the date."
+            }
+          ]
         }
       ]
     },
@@ -1811,6 +2221,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start this list eight weeks before the date. Each item is small; the list prevents surprises."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "GraduationCap"
+          }
+        },
         {
           "type": "todo",
           "text": [
@@ -1887,6 +2309,41 @@
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Practice plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Week 8: slides outline and a three-minute summary of the contribution."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Week 4: full talk to a friendly audience; record it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Week 1: mock questions from two colleagues, then rest."
+            }
+          ]
         }
       ]
     },
@@ -2031,6 +2488,25 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to use the log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After each session record the date, the words written and what stopped you. Look back monthly for a pattern: time of day, location, or task type that works."
+            }
+          ]
         }
       ]
     }

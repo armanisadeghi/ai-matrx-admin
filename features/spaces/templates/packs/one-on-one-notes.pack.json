@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0257",
-  "version": 1,
+  "version": 2,
   "title": "1:1 Meeting Notes",
   "description": "Recurring one to ones with mood, agenda and action items per person.",
   "forWho": "Managers and their direct reports",
@@ -104,15 +104,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "meeting_list",
-            "label": "Meetings",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "meeting",
-            "multi": true
-          },
-          {
             "key": "last_met",
             "label": "Last 1:1",
             "parityType": "rollup",
@@ -121,6 +112,22 @@
             "via": "meeting_list",
             "pick": "held_on",
             "agg": "max"
+          },
+          {
+            "key": "days_since",
+            "label": "Days since last 1:1",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Last 1:1}, TODAY(), 'days')"
+          },
+          {
+            "key": "cadence_flag",
+            "label": "Cadence check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Days since last 1:1} > IF({Cadence} = \"Weekly\", 9, IF({Cadence} = \"Biweekly\", 16, 35)), \"Overdue\", \"On cadence\")"
           },
           {
             "key": "meeting_total",
@@ -140,13 +147,7 @@
               "report_name": "Dario Fontaine",
               "person": "tm-dario",
               "cadence": "Weekly",
-              "growth": "Move toward staff engineer",
-              "meeting_list": [
-                "m01",
-                "m02",
-                "m03",
-                "m04"
-              ]
+              "growth": "Move toward staff engineer"
             }
           },
           {
@@ -155,11 +156,7 @@
               "report_name": "Halima Yusuf",
               "person": "tm-halima",
               "cadence": "Biweekly",
-              "growth": "Build confidence leading projects",
-              "meeting_list": [
-                "m05",
-                "m06"
-              ]
+              "growth": "Build confidence leading projects"
             }
           },
           {
@@ -168,13 +165,7 @@
               "report_name": "Oliver Brandt",
               "person": "tm-ollie",
               "cadence": "Weekly",
-              "growth": "Ramp up on the codebase",
-              "meeting_list": [
-                "m07",
-                "m08",
-                "m09",
-                "m10"
-              ]
+              "growth": "Ramp up on the codebase"
             }
           }
         ]
@@ -230,7 +221,7 @@
           },
           {
             "key": "mood",
-            "label": "Mood",
+            "label": "Mood (1-5)",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -265,15 +256,6 @@
             "format": "date"
           },
           {
-            "key": "action_list",
-            "label": "Action items",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "action",
-            "multi": true
-          },
-          {
             "key": "open_actions",
             "label": "Open actions",
             "parityType": "rollup",
@@ -292,6 +274,20 @@
             "parityType": "long_text",
             "sensitivity": "confidential",
             "contextPolicy": "summarize"
+          },
+          {
+            "key": "logged",
+            "label": "Logged at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -304,10 +300,7 @@
               "mood": "4",
               "agenda": "Migration scope, on-call load",
               "next_on": "@today-21d",
-              "action_list": [
-                "a01",
-                "a02"
-              ]
+              "private_notes": "Wants more ownership of the release; I should step back in standups."
             }
           },
           {
@@ -319,10 +312,7 @@
               "mood": "5",
               "agenda": "Staff path, mentoring",
               "next_on": "@today-14d",
-              "action_list": [
-                "a03",
-                "a04"
-              ]
+              "private_notes": "Worried about the on-call rotation; talk to the platform lead."
             }
           },
           {
@@ -334,10 +324,7 @@
               "mood": "3",
               "agenda": "Burnout signs, deadline",
               "next_on": "@today-7d",
-              "action_list": [
-                "a05",
-                "a06"
-              ]
+              "private_notes": "Considering a move to design; keep this confidential for now."
             }
           },
           {
@@ -349,9 +336,7 @@
               "mood": "4",
               "agenda": "Handover plan",
               "next_on": "@today+0d",
-              "action_list": [
-                "a07"
-              ]
+              "private_notes": "Energy is up after the project change; ask what drove it."
             }
           },
           {
@@ -363,9 +348,7 @@
               "mood": "4",
               "agenda": "First lead role",
               "next_on": "@today-10d",
-              "action_list": [
-                "a08"
-              ]
+              "private_notes": "Feels the team meeting runs long; try a timer."
             }
           },
           {
@@ -377,10 +360,7 @@
               "mood": "3",
               "agenda": "Feeling stretched, review feedback",
               "next_on": "@today+4d",
-              "action_list": [
-                "a09",
-                "a10"
-              ]
+              "private_notes": "Asked about a raise path; prepare the leveling document."
             }
           },
           {
@@ -392,7 +372,7 @@
               "mood": "4",
               "agenda": "Setup, who to ask",
               "next_on": "@today-19d",
-              "action_list": []
+              "private_notes": "Tired after the launch week; offer a lighter sprint."
             }
           },
           {
@@ -404,9 +384,7 @@
               "mood": "4",
               "agenda": "First pull request",
               "next_on": "@today-12d",
-              "action_list": [
-                "a11"
-              ]
+              "private_notes": "Happy with feedback; wants more of it, earlier."
             }
           },
           {
@@ -418,9 +396,7 @@
               "mood": "5",
               "agenda": "Pairing sessions going well",
               "next_on": "@today-5d",
-              "action_list": [
-                "a12"
-              ]
+              "private_notes": "Struggling to say no to requests; practise a script together."
             }
           },
           {
@@ -432,7 +408,147 @@
               "mood": "4",
               "agenda": "Testing practices",
               "next_on": "@today+2d",
-              "action_list": []
+              "private_notes": "Interested in mentoring the new hire."
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "1:1",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check-in"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Start personal: how are they, outside the task list?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Their topics"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What do they want to cover first?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "My topics"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Feedback to give, context to share"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Growth"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Progress on skills and goals; one stretch to try next."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Actions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Owner: me, due date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Owner: them, due date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up for next time"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Questions to open the next meeting with."
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -495,11 +611,30 @@
             "format": "date"
           },
           {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Done} = TRUE, \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 3, \"Due soon\", \"\")))"
+          },
+          {
             "key": "done",
             "label": "Done",
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "act_done"
+            }
           }
         ],
         "rows": [
@@ -549,7 +684,7 @@
               "action_name": "Block two focus days a week",
               "owner": "Them",
               "meeting": "m03",
-              "due_on": "@today+3d",
+              "due_on": "@today-3d",
               "done": false
             }
           },
@@ -559,7 +694,7 @@
               "action_name": "Ask finance about conference budget",
               "owner": "Me",
               "meeting": "m03",
-              "due_on": "@today+2d",
+              "due_on": "@today",
               "done": false
             }
           },
@@ -580,7 +715,7 @@
               "owner": "Me",
               "meeting": "m05",
               "due_on": "@today-3d",
-              "done": true
+              "done": false
             }
           },
           {
@@ -638,16 +773,6 @@
         "inverseKey": "one_to_ones"
       },
       {
-        "describes": "A report lists their meetings.",
-        "fromTable": "report",
-        "fromField": "meeting_list",
-        "toTable": "meeting",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "report_of_meeting"
-      },
-      {
         "describes": "Each meeting is with one person.",
         "fromTable": "meeting",
         "fromField": "report",
@@ -655,17 +780,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "meetings"
-      },
-      {
-        "describes": "A meeting lists the actions it produced.",
-        "fromTable": "meeting",
-        "fromField": "action_list",
-        "toTable": "action",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "meeting_of_action"
+        "inverseKey": "meeting_list"
       },
       {
         "describes": "Each action came out of one meeting.",
@@ -675,7 +790,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "actions"
+        "inverseKey": "action_list"
       }
     ],
     "sharedBlocks": [
@@ -756,7 +871,23 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "act_done",
+        "table": "action",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "done",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_reports",
@@ -826,6 +957,89 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "mt_week",
+        "name": "This week",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "mt_14",
+        "name": "Last 14 days",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "past_days",
+            "n": 14
+          }
+        }
+      },
+      {
+        "token": "mt_next7",
+        "name": "Next 1:1s, 7 days",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "next_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "act_open",
+        "name": "Open actions",
+        "table": "action",
+        "kind": "grid",
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "act_overdue",
+        "name": "Overdue actions",
+        "table": "action",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "act_next7",
+        "name": "Actions, next 7 days",
+        "table": "action",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "act_mine",
+        "name": "My actions",
+        "table": "action",
+        "kind": "grid",
+        "filters": {
+          "owner": "Me",
+          "done": false
+        }
       }
     ],
     "agent": {
@@ -914,7 +1128,7 @@
         "Marrowby Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -945,122 +1159,130 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Recent 1:1s"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "meeting",
-                      "view": "meeting_calendar"
-                    },
-                    "inline": true,
-                    "title": "Meetings",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-c",
-                        "name": "Calendar",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "held_on"
-                      },
-                      {
-                        "id": "v-l",
-                        "name": "Latest first",
-                        "layout": "list",
-                        "icon": "List",
-                        "sorts": [
-                          {
-                            "field": "held_on",
-                            "direction": "desc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-c"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Open action items"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "action",
-                      "view": "all_actions"
-                    },
-                    "inline": true,
-                    "title": "Action items",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-o",
-                        "name": "Not done",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "done": false
-                        },
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "v-b",
-                        "name": "By owner",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "owner"
-                      }
-                    ],
-                    "activeViewId": "v-o"
-                  }
-                }
-              ]
+              "text": "Recent 1:1s"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "meeting_calendar"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "held_on"
+              },
+              {
+                "id": "v-l",
+                "name": "Latest first",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-c"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open action items"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "action",
+              "view": "all_actions"
+            },
+            "inline": true,
+            "title": "Action items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u3",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "v-o",
+                "name": "Not done",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "done": false
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-b",
+                "name": "By owner",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "owner"
+              },
+              {
+                "id": "view-u4",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              }
+            ],
+            "activeViewId": "v-o"
+          }
         },
         {
           "type": "heading",
@@ -1128,6 +1350,18 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u1",
+                "name": "Last 14 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "held_on": {
+                    "relative": "past_days",
+                    "n": 14
+                  }
+                }
+              },
+              {
                 "id": "v-m",
                 "name": "By person",
                 "layout": "grid",
@@ -1145,6 +1379,18 @@
                 "layout": "kanban",
                 "icon": "SquareKanban",
                 "groupField": "mood"
+              },
+              {
+                "id": "view-u2",
+                "name": "Next 1:1s",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "next_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
               }
             ],
             "activeViewId": "v-m"
@@ -1156,7 +1402,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -1170,21 +1416,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:one-on-one-template"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.34
+                "width": 0.5
               },
               "children": [
                 {
@@ -1264,6 +1496,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Pick one or two questions per conversation. The best question is often the plainest, and silence after it is part of the method."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "MessageCircle"
+          }
+        },
         {
           "type": "text",
           "text": [
@@ -1387,25 +1631,39 @@
               "text": "What feedback have you been holding back?"
             }
           ]
-        }
-      ]
-    },
-    {
-      "key": "one-on-one-template",
-      "parent": "one-on-ones",
-      "title": "1:1 template",
-      "icon": {
-        "emoji": "📋"
-      },
-      "settings": {
-        "fullWidth": true
-      },
-      "blocks": [
+        },
         {
-          "type": "text",
+          "type": "heading",
           "text": [
             {
-              "text": "Copy this outline into a meeting page."
+              "text": "When something is wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is one thing that would make your week easier?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Is there anything you expected to hear from me that you have not?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What did you decide not to tell me last time?"
             }
           ]
         },
@@ -1413,18 +1671,26 @@
           "type": "heading",
           "text": [
             {
-              "text": "Check-in"
+              "text": "When things are going well"
             }
           ],
           "props": {
-            "level": 3
+            "level": 2
           }
         },
         {
-          "type": "text",
+          "type": "bulleted",
           "text": [
             {
-              "text": ""
+              "text": "What are you most proud of since we last spoke?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What would you like to do more of?"
             }
           ]
         },
@@ -1432,110 +1698,36 @@
           "type": "heading",
           "text": [
             {
-              "text": "Their topics"
+              "text": "How to run the conversation"
             }
           ],
           "props": {
-            "level": 3
+            "level": 2
           }
         },
         {
-          "type": "text",
+          "type": "numbered",
           "text": [
             {
-              "text": ""
+              "text": "Let them go first and take notes; do not rush to fix."
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "My topics"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
+              "text": "Say back what you heard before you respond."
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "Feedback both ways"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
+              "text": "End by agreeing two actions, one each."
             }
           ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Career"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": ""
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Action items"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Action one"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Action two"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
         }
       ]
     },
@@ -1550,6 +1742,18 @@
         "fullWidth": true
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Mood is each person's own 1 to 5 rating at the end of the meeting. The trend matters more than any single number."
+            }
+          ],
+          "background": "pink",
+          "props": {
+            "icon": "HeartPulse"
+          }
+        },
         {
           "type": "columnList",
           "children": [
@@ -1578,10 +1782,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "mood",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1615,10 +1818,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "owner",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1652,10 +1854,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "cadence",
-                          "op": "count",
-                          "centerValue": true
+                          "op": "count"
                         }
                       }
                     ],
@@ -1703,6 +1904,41 @@
             ],
             "activeViewId": "m4"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the trends"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A mood of 2 or below twice in a row: talk about workload before anything else."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Many open actions on your side: you are the bottleneck; clear them first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Moods rising after a project change: write down what changed."
+            }
+          ]
         }
       ]
     }

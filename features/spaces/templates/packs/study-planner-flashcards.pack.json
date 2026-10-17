@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0258",
-  "version": 1,
+  "version": 2,
   "title": "Study Planner & Flashcards",
   "description": "Plan study blocks backwards from exam day and drill flashcards in boxes.",
   "forWho": "Students preparing for exams",
@@ -87,17 +87,16 @@
             "formula": "DATEDIFF(TODAY(), {Exam date}, 'days')"
           },
           {
-            "key": "plan_list",
-            "label": "Study plan",
-            "parityType": "relation",
+            "key": "exam_flag",
+            "label": "Exam status",
+            "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "relationTarget": "plan",
-            "multi": true
+            "formula": "IF({Days to exam} < 7, \"This week\", IF({Days to exam} < 21, \"Soon\", \"Later\"))"
           },
           {
             "key": "topics_done",
-            "label": "Topics done",
+            "label": "Sessions done",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -107,6 +106,24 @@
             "filter": {
               "done": true
             }
+          },
+          {
+            "key": "topics_total",
+            "label": "Sessions planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_list",
+            "pick": "topic",
+            "agg": "count"
+          },
+          {
+            "key": "progress",
+            "label": "Study progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Sessions planned} > 0, ROUND({Sessions done} / {Sessions planned} * 100, 0), 0)"
           },
           {
             "key": "minutes_planned",
@@ -119,17 +136,8 @@
             "agg": "sum"
           },
           {
-            "key": "cue_list",
-            "label": "Study cards",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "cue",
-            "multi": true
-          },
-          {
             "key": "cue_count",
-            "label": "Deck size",
+            "label": "Cards",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -150,65 +158,21 @@
             "key": "su-anat",
             "values": {
               "subject_name": "Human Anatomy",
-              "exam_on": "@today+19d",
-              "plan_list": [
-                "p01",
-                "p02",
-                "p03",
-                "p04"
-              ],
-              "cue_list": [
-                "fc01",
-                "fc02",
-                "fc03",
-                "fc04",
-                "fc05",
-                "fc06",
-                "fc07"
-              ]
+              "exam_on": "@today+19d"
             }
           },
           {
             "key": "su-phys",
             "values": {
               "subject_name": "Physics: Mechanics",
-              "exam_on": "@today+26d",
-              "plan_list": [
-                "p05",
-                "p06",
-                "p07",
-                "p08"
-              ],
-              "cue_list": [
-                "fc08",
-                "fc09",
-                "fc10",
-                "fc11",
-                "fc12",
-                "fc13"
-              ]
+              "exam_on": "@today+26d"
             }
           },
           {
             "key": "su-latin",
             "values": {
               "subject_name": "Latin Language",
-              "exam_on": "@today+12d",
-              "plan_list": [
-                "p09",
-                "p10",
-                "p11",
-                "p12"
-              ],
-              "cue_list": [
-                "fc14",
-                "fc15",
-                "fc16",
-                "fc17",
-                "fc18",
-                "fc19",
-                "fc20"
-              ]
+              "exam_on": "@today+12d"
             }
           }
         ]
@@ -301,8 +265,16 @@
             "contextPolicy": "include"
           },
           {
+            "key": "plan_flag",
+            "label": "Plan check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Done} = TRUE, \"\", IF(DATEDIFF(TODAY(), {Date}, 'days') < 0, \"Missed\", \"\"))"
+          },
+          {
             "key": "confidence",
-            "label": "Confidence",
+            "label": "Confidence (1-5)",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -319,6 +291,17 @@
               "3": "amber",
               "4": "teal",
               "5": "green"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "plan_done"
             }
           }
         ],
@@ -352,7 +335,7 @@
             "values": {
               "topic": "Cardiovascular system diagrams",
               "subject": "su-anat",
-              "on": "@today+1d",
+              "on": "@today-3d",
               "minutes": 50,
               "method": "Read",
               "done": false
@@ -459,6 +442,102 @@
               "done": false
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Study session",
+            "values": {
+              "done": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goal of this session"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence: what will you be able to do afterwards?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Warm-up: two minutes recalling yesterday from memory"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Main work: the method named above"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Test yourself without notes"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Afterwards"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was hard? Add a flashcard for it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -487,6 +566,13 @@
             "required": true
           },
           {
+            "key": "card_no",
+            "label": "Card no.",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "back",
             "label": "Back",
             "parityType": "long_text",
@@ -504,7 +590,7 @@
           },
           {
             "key": "box",
-            "label": "Box",
+            "label": "Box (1-5)",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -522,6 +608,22 @@
               "4": "teal",
               "5": "green"
             }
+          },
+          {
+            "key": "interval",
+            "label": "Review every (days)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Box (1-5)} = \"1\", 1, IF({Box (1-5)} = \"2\", 2, IF({Box (1-5)} = \"3\", 4, IF({Box (1-5)} = \"4\", 7, 14))))"
+          },
+          {
+            "key": "review_flag",
+            "label": "Review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Days since review} >= {Review every (days)}, \"Due\", \"Not yet\")"
           },
           {
             "key": "last_reviewed",
@@ -584,6 +686,35 @@
               "Translation": "gray",
               "Units": "blue",
               "Verbs": "green"
+            }
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "got_btn",
+            "label": "Got it",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "cue_got"
+            }
+          },
+          {
+            "key": "missed_btn",
+            "label": "Missed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "cue_missed"
             }
           }
         ],
@@ -873,26 +1004,6 @@
     ],
     "relationships": [
       {
-        "describes": "A subject lists its study sessions.",
-        "fromTable": "subject",
-        "fromField": "plan_list",
-        "toTable": "plan",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "subject_of_plan"
-      },
-      {
-        "describes": "A subject lists its flashcards.",
-        "fromTable": "subject",
-        "fromField": "cue_list",
-        "toTable": "cue",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "subject_of_cue"
-      },
-      {
         "describes": "Each session is for one subject.",
         "fromTable": "plan",
         "fromField": "subject",
@@ -900,7 +1011,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "sessions"
+        "inverseKey": "plan_list"
       },
       {
         "describes": "Each card belongs to one subject.",
@@ -910,7 +1021,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "cues"
+        "inverseKey": "cue_list"
       }
     ],
     "sharedBlocks": [],
@@ -945,7 +1056,58 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "cue_got",
+        "table": "cue",
+        "name": "Got it",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "known",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "cue_missed",
+        "table": "cue",
+        "name": "Missed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "known",
+            "set": "value",
+            "value": false
+          },
+          {
+            "field": "box",
+            "set": "value",
+            "value": "1"
+          }
+        ],
+        "color": "red"
+      },
+      {
+        "kind": "row_action",
+        "token": "plan_done",
+        "table": "plan",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "done",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_subjects",
@@ -1008,6 +1170,89 @@
         "table": "cue",
         "kind": "calendar",
         "dateField": "last_reviewed"
+      },
+      {
+        "token": "plan_today",
+        "name": "Today",
+        "table": "plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "plan_week",
+        "name": "This week",
+        "table": "plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "plan_next7",
+        "name": "Next 7 days",
+        "table": "plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "plan_missed",
+        "name": "Missed",
+        "table": "plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "subj_exams30",
+        "name": "Exams in the next 30 days",
+        "table": "subject",
+        "kind": "grid",
+        "within": {
+          "exam_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "cue_recent",
+        "name": "Reviewed, last 3 days",
+        "table": "cue",
+        "kind": "grid",
+        "within": {
+          "last_reviewed": {
+            "relative": "past_days",
+            "n": 3
+          }
+        }
+      },
+      {
+        "token": "cue_today",
+        "name": "Reviewed today",
+        "table": "cue",
+        "kind": "grid",
+        "within": {
+          "last_reviewed": {
+            "relative": "today"
+          }
+        }
       }
     ],
     "agent": {
@@ -1096,7 +1341,7 @@
         "Foxglove Parade"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1127,109 +1372,88 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Today's study"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "plan",
-                      "view": "all_plan"
-                    },
-                    "inline": true,
-                    "title": "Study sessions",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-t",
-                        "name": "Not done",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "done": false
-                        },
-                        "sorts": [
-                          {
-                            "field": "on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-t"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Exam countdown"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "subject",
-                      "view": "all_subjects"
-                    },
-                    "inline": true,
-                    "title": "Subjects",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-e",
-                        "name": "Exam dates",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "exam_on"
-                      },
-                      {
-                        "id": "v-s",
-                        "name": "Subjects",
-                        "layout": "grid",
-                        "icon": "Table"
-                      }
-                    ],
-                    "activeViewId": "v-e"
-                  }
-                }
-              ]
+              "text": "Today's study"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "all_plan"
+            },
+            "inline": true,
+            "title": "Study sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-t",
+                "name": "Not done",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "done": false
+                },
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exam countdown"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "subject",
+              "view": "all_subjects"
+            },
+            "inline": true,
+            "title": "Subjects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-e",
+                "name": "Exam dates",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "exam_on"
+              },
+              {
+                "id": "v-s",
+                "name": "Subjects",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-e"
+          }
         },
         {
           "type": "heading",
@@ -1256,6 +1480,17 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u5",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
                 "id": "v-pc",
                 "name": "Calendar",
                 "layout": "calendar",
@@ -1280,6 +1515,32 @@
                     "direction": "asc"
                   }
                 ]
+              },
+              {
+                "id": "view-u6",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
+                "id": "view-u7",
+                "name": "Missed",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
               }
             ],
             "activeViewId": "v-pc"
@@ -1309,6 +1570,17 @@
             "linked": true,
             "showTitle": false,
             "views": [
+              {
+                "id": "view-u8",
+                "name": "Reviewed today",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "last_reviewed": {
+                    "relative": "today"
+                  }
+                }
+              },
               {
                 "id": "v-cb",
                 "name": "Boxes",
@@ -1402,6 +1674,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "LayoutDashboard"
+          }
+        },
+        {
           "type": "columnList",
           "children": [
             {
@@ -1429,10 +1713,9 @@
                         "layout": "chart",
                         "icon": "ChartPie",
                         "chart": {
-                          "type": "donut",
+                          "type": "bar",
                           "groupBy": "method",
                           "op": "sum",
-                          "centerValue": true,
                           "field": "minutes"
                         }
                       }
@@ -1597,6 +1880,41 @@
             ],
             "activeViewId": "d-l"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read this page"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The lists below show only the rows that need attention now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+            }
+          ]
         }
       ]
     },
@@ -1755,6 +2073,68 @@
           "props": {
             "icon": "Check"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why boxes work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Cards you know move to a higher box and come back less often; cards you miss drop to box 1 and return tomorrow. The Review column compares days since the last review with the interval for the card's box."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A ten-minute session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the cards where Review says Due."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Say the answer out loud before you flip."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Got it or Missed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Stop after ten minutes; come back tomorrow."
+            }
+          ]
         }
       ]
     },
@@ -1840,6 +2220,69 @@
           "text": [
             {
               "text": "Read the whole paper before writing anything."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Night before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Skim the summary sheets once, then stop"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lay out ID, pens and water"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sleep matters more than another hour of review"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the exam"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write down which topics came up. Add them to the next subject's plan."
             }
           ]
         }
