@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@ai-matrx/design-system";
 import { Badge } from "@ai-matrx/design-system/controls";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 import { reviewCategoryLabel, reviewLabelText } from "../model";
 import { reviewIssueHref, workflowReviewHref } from "../hrefs";
@@ -42,6 +43,7 @@ export function RunReviewChip({
       >
         <Flag className="h-3 w-3" aria-hidden />
         Flags unreadable
+        <ErrorAlchemyMenu error={error} size="xs" />
         <button
           type="button"
           onClick={onRetry}
