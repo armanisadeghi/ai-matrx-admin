@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 2,
+  "version": 3,
   "title": "Scrum Sprint Board",
   "description": "Epics, stories, sprints with points rollups, ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -928,7 +928,106 @@
           "assignee": "Anyone can pick up a story.",
           "epic": "The two sides move on their own schedule and status; neither forces the other.",
           "sprint": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        },
+        "rowTemplates": [
+          {
+            "name": "User story",
+            "values": {
+              "status": "Backlog"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Story"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "As a player, I want something, so that something valuable happens."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Acceptance criteria"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Given a starting state, when the player acts, then this happens"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Edge case handled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Definition of done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reviewed, tested and merged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Playtested on the target device"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "retro",
@@ -1420,7 +1519,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1555,6 +1654,18 @@
                 "name": "All stories",
                 "icon": "Table",
                 "id": "view-3"
+              },
+              {
+                "id": "view-story-created",
+                "name": "Added recently",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "created": {
+                    "relative": "past_days",
+                    "n": 14
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
