@@ -1275,9 +1275,21 @@ button.shell-nav-flyout-item {
     display: block;
   }
 
-  .shell-sidebar-resize:hover,
-  .shell-sidebar-resize[data-dragging] {
-    background: hsl(var(--border));
+  /* Thin and fine (owner, 2026-10-16): the 6px strip is only the grab area; what
+     shows on hover or drag is a 2px line drawn over the sidebar's own border. */
+  .shell-sidebar-resize::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+    background: transparent;
+  }
+
+  .shell-sidebar-resize:hover::after,
+  .shell-sidebar-resize[data-dragging]::after {
+    background: hsl(var(--primary) / 0.6);
   }
 
   html[data-shell-resizing] {
@@ -1694,6 +1706,16 @@ button.shell-nav-flyout-item {
   /* Completely transparent — no bg, no border, no blur */
   background: transparent;
   pointer-events: none;
+}
+
+/* The sidebar has a visible full-height border (2026-10-15), so the header's
+   first content — a crumb like "Marketing", or a back button — never sits on that
+   line: it starts one shell gutter in, matching the gap the right end keeps
+   (owner, 2026-10-16). Phones keep their own rule (hamburger gutter) below. */
+@media (min-width: 1024px) {
+  .shell-header {
+    padding-left: var(--shell-edge-gutter);
+  }
 }
 
 /* THE HEADER BAND — and THE TOP BOUNDARY, owned ONCE here (owner, 2026-10-03).
