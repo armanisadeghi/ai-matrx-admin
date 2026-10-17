@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // GUARD: no data-vendor name on any customer-facing screen.
 // Our vendors (ScrapeCreators, Bright Data, EnsembleData, Apify, DataForSEO, SerpAPI,
-// Brave Search, Twilio, Firecrawl, treg, TikHub, JustOneAPI, Adyntel, Cloro, crawl4ai, LiteScrape; Grok/xAI is a model choice, not a data vendor) are our business, never the customer's.
+// Brave Search, Twilio, Firecrawl, treg, TikHub, JustOneAPI, Adyntel, Cloro, crawl4ai, LiteScrape, Tomba, AnyAPI, Hunter, Prospeo, MillionVerifier, Tavily, Serper and the rest of client_text.py AGGREGATORS; Grok/xAI is a model choice, not a data vendor) are our business, never the customer's.
 // Flags vendor words inside string literals / JSX text in customer code. Admin, dev,
 // tests, generated files, API routes, and legal disclosure pages are allowlisted.
 // Usage: node scripts/check-no-vendor-names-in-ui.mjs [--self-test] [paths...]
@@ -10,16 +10,16 @@ import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 
 // Keep in step with aidream/services/client_text.py AGGREGATORS (the one registry).
-const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s?for\s?seo|serp\s?api|firecrawl|twilio|\btreg(\.to)?\b|tik\s?hub|just\s?one\s?api|\badyntel\b|\bcloro\b|\bcrawl4ai\b|lite\s?scrape/i;
+const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s?for\s?seo|serp\s?api|firecrawl|twilio|\btreg(\.to)?\b|tik\s?hub|just\s?one\s?api|\badyntel\b|\bcloro\b|\bcrawl4ai\b|lite\s?scrape|\btomba\b|\bprospeo\b|\bmillion\s?verifier\b|\bscraping\s?bee\b|\bserper\b|\boxylabs\b|\brapid\s?api\b|\bscraper\s?api\b|\btavily\b|\btrestle(?:iq)?\b|\bhlr\s?lookup\b|\bcompany\s?enrich\b|\bdrop\s?leads\b|\blima\s?data\b|\bse\s?ranking\b|\bolostep\b|\bsearch1api\b|\btiny\s?fish\b|\bkeenable\b|\bzen\s?prospect\b|\bany\s?api\b/i;
 // case-sensitive: the English word "brave" is fine. A search / model provider named as the engine doing OUR search
 // ("Google deep search", "Grok on X", "searched with Google") is a vendor name too (2026-10-14, Smart Add helpers
 // menu). "Google" / "Grok" alone stay allowed: a platform people connect, a chat app they export, a model they pick.
-const VENDOR_CS = /\bBrave\b|\b(Google|Grok|Bing) deep search\b|\bGrok (on X|people search|search)\b|\bsearch(ed|es)? (with|via|using|on) (Google|Grok|Bing)\b/;
+const VENDOR_CS = /\bBrave\b|\bHunter(?:\.io)?\b|(?:e\.g\.|such as|like)\s+['\"]brave['\"]|['\"]brave['\"]\s*\|\s*['\"]|\b(Google|Grok|Bing) deep search\b|\bGrok (on X|people search|search)\b|\bsearch(ed|es)? (with|via|using|on) (Google|Grok|Bing)\b/;
 export const VENDOR = { test: (s) => VENDOR_CI.test(s) || VENDOR_CS.test(s) };
 
 const ROOTS = ["features", "components", "app"];
 const SKIP_PATH =
-  /(^|\/)(administration|admin|\(admin\)|\(dev\)|\(lab\)|dev|__tests__|node_modules|api|generated)(\/|$)|\.(test|spec|dev|generated)\.|\/admin[-_]|[-_]admin[-.\/]|Admin[A-Z]|privacy-policy|app\/\(public\)\/(sms|terms)|\/(sms|esign)\/|features\/(admin|sms)\b|features\/surfaces\/manifests|features\/content-ir\/kinds|features\/marketing\/seo\/dataforseo\//;
+  /(^|\/)(administration|admin|\(admin\)|\(dev\)|\(lab\)|dev|__tests__|node_modules|api|generated)(\/|$)|\.(test|spec|dev|generated)\.|\/admin[-_]|[-_]admin[-.\/]|Admin[A-Z]|privacy-policy|app\/\(public\)\/(sms|terms)|\/(sms|esign)\/|features\/(admin|sms)\b|features\/marketing\/seo\/dataforseo\//;
 // A string only counts as display text when it reads like text: has a space, or a leading capital.
 const DISPLAY = (s) => /\s/.test(s) || /^[A-Z]/.test(s);
 
