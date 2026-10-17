@@ -1,0 +1,1513 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0203",
+  "version": 1,
+  "title": "Goal Tracker",
+  "description": "Turn yearly goals into steps and quarterly check-ins with live progress counts.",
+  "forWho": "Planners and goal setters",
+  "icon": {
+    "emoji": "🎯"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "planning",
+  "tags": [
+    "goals",
+    "planning",
+    "review"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-goal-tracker",
+    "catalogueId": "SP0203",
+    "useCase": "Hana Becker keeps eight goals for the year, checks steps off as they land, and scores each goal every quarter.",
+    "industry": "cross_industry",
+    "vertical": "Goal planning",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-goal-tracker",
+    "tables": [
+      {
+        "token": "goal",
+        "name": "Goals",
+        "labelSingular": "Goal",
+        "labelPlural": "Goals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "goal_name",
+        "describes": "Yearly aims, each with a reason, a deadline and steps that show progress.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "goal_name",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "area",
+            "label": "Life area",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Health",
+              "Career",
+              "Money",
+              "Personal"
+            ],
+            "choiceColors": {
+              "Health": "slate",
+              "Career": "blue",
+              "Money": "green",
+              "Personal": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "In progress",
+              "Achieved",
+              "Dropped"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "In progress": "blue",
+              "Achieved": "green",
+              "Dropped": "amber"
+            },
+            "default": "Not started"
+          },
+          {
+            "key": "target_on",
+            "label": "Target date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "why",
+            "label": "Why it matters",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approach",
+            "label": "Approach",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "milestones",
+            "label": "Milestones",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "milestone",
+            "multi": true
+          },
+          {
+            "key": "reviews",
+            "label": "Check-ins",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "review",
+            "multi": true
+          },
+          {
+            "key": "steps_total",
+            "label": "Step count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "milestones",
+            "pick": "milestone_name",
+            "agg": "count"
+          },
+          {
+            "key": "steps_done",
+            "label": "Steps finished",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "milestones",
+            "pick": "milestone_name",
+            "agg": "count",
+            "filter": {
+              "done": true
+            }
+          },
+          {
+            "key": "avg_score",
+            "label": "Average score",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reviews",
+            "pick": "score",
+            "agg": "avg"
+          }
+        ],
+        "rows": [
+          {
+            "key": "g1",
+            "values": {
+              "goal_name": "Save a deposit for a first home",
+              "area": "Money",
+              "status": "In progress",
+              "target_on": "@today+400d",
+              "why": "Stop renting and own a place near the river",
+              "approach": "Make this the year the savings plan becomes automatic"
+            }
+          },
+          {
+            "key": "g2",
+            "values": {
+              "goal_name": "Complete a professional certificate in data analysis",
+              "area": "Career",
+              "status": "In progress",
+              "target_on": "@today+150d",
+              "why": "Move from reporting into analysis",
+              "approach": "Finish before the busy season"
+            }
+          },
+          {
+            "key": "g3",
+            "values": {
+              "goal_name": "Run three times a week for six months",
+              "area": "Health",
+              "status": "In progress",
+              "target_on": "@today+170d",
+              "why": "Build a base that survives winter",
+              "approach": "Keep it fun with a running club"
+            }
+          },
+          {
+            "key": "g4",
+            "values": {
+              "goal_name": "Read twenty-four books",
+              "area": "Personal",
+              "status": "In progress",
+              "target_on": "@today+300d",
+              "why": "Replace evening scrolling with reading",
+              "approach": "Alternate fiction and nonfiction"
+            }
+          },
+          {
+            "key": "g5",
+            "values": {
+              "goal_name": "Launch a small ceramics side shop",
+              "area": "Career",
+              "status": "Not started",
+              "target_on": "@today+260d",
+              "why": "Turn a hobby into a few sales a month",
+              "approach": "Test with three product lines"
+            }
+          },
+          {
+            "key": "g6",
+            "values": {
+              "goal_name": "Reach a healthy sleep routine",
+              "area": "Health",
+              "status": "Achieved",
+              "target_on": "@today-15d",
+              "why": "Wake without an alarm on weekends",
+              "approach": "Lights out by 10:30"
+            }
+          },
+          {
+            "key": "g7",
+            "values": {
+              "goal_name": "Plan a family trip to Lisbon",
+              "area": "Personal",
+              "status": "Not started",
+              "target_on": "@today+210d",
+              "why": "Give the kids a first trip abroad",
+              "approach": "Pick dates around school breaks"
+            }
+          },
+          {
+            "key": "g8",
+            "values": {
+              "goal_name": "Learn to cook ten dishes from scratch",
+              "area": "Personal",
+              "status": "Dropped",
+              "target_on": "@today-40d",
+              "why": "Eat out less",
+              "approach": "Replaced by the meal planner habit"
+            }
+          }
+        ]
+      },
+      {
+        "token": "milestone",
+        "name": "Milestones",
+        "labelSingular": "Milestone",
+        "labelPlural": "Milestones",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flag",
+        "titleField": "milestone_name",
+        "describes": "The steps that carry a goal from idea to done.",
+        "subject": "thing",
+        "independentOf": {
+          "goal": "Steps can fall due before or after a goal's target date as plans change."
+        },
+        "fields": [
+          {
+            "key": "milestone_name",
+            "label": "Step",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "goal",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "effort",
+            "label": "Effort",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Small",
+              "Medium",
+              "Large"
+            ],
+            "choiceColors": {
+              "Small": "slate",
+              "Medium": "blue",
+              "Large": "green"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "milestone_name": "Open a dedicated savings account",
+              "goal": "g1",
+              "due_on": "@today-120d",
+              "done": true,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "milestone_name": "Automate a monthly transfer",
+              "goal": "g1",
+              "due_on": "@today-90d",
+              "done": true,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "milestone_name": "Reach the first quarter of the deposit",
+              "goal": "g1",
+              "due_on": "@today+60d",
+              "done": false,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "milestone_name": "Meet a mortgage broker",
+              "goal": "g1",
+              "due_on": "@today+150d",
+              "done": false,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "milestone_name": "Finish the statistics module",
+              "goal": "g2",
+              "due_on": "@today-30d",
+              "done": true,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m06",
+            "values": {
+              "milestone_name": "Complete the SQL project",
+              "goal": "g2",
+              "due_on": "@today+40d",
+              "done": false,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m07",
+            "values": {
+              "milestone_name": "Pass the final exam",
+              "goal": "g2",
+              "due_on": "@today+140d",
+              "done": false,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m08",
+            "values": {
+              "milestone_name": "Join the Thursday running club",
+              "goal": "g3",
+              "due_on": "@today-70d",
+              "done": true,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m09",
+            "values": {
+              "milestone_name": "Run a 5 km without walking",
+              "goal": "g3",
+              "due_on": "@today-35d",
+              "done": true,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m10",
+            "values": {
+              "milestone_name": "Run a 10 km race",
+              "goal": "g3",
+              "due_on": "@today+90d",
+              "done": false,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m11",
+            "values": {
+              "milestone_name": "Finish book twelve",
+              "goal": "g4",
+              "due_on": "@today+120d",
+              "done": false,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m12",
+            "values": {
+              "milestone_name": "Start a book notes page",
+              "goal": "g4",
+              "due_on": "@today-50d",
+              "done": true,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m13",
+            "values": {
+              "milestone_name": "Throw ten test mugs",
+              "goal": "g5",
+              "due_on": "@today+50d",
+              "done": false,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m14",
+            "values": {
+              "milestone_name": "Photograph the first product line",
+              "goal": "g5",
+              "due_on": "@today+110d",
+              "done": false,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m15",
+            "values": {
+              "milestone_name": "Fix the bedtime alarm",
+              "goal": "g6",
+              "due_on": "@today-100d",
+              "done": true,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m16",
+            "values": {
+              "milestone_name": "Two weeks without late screens",
+              "goal": "g6",
+              "due_on": "@today-50d",
+              "done": true,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m17",
+            "values": {
+              "milestone_name": "Choose the travel dates",
+              "goal": "g7",
+              "due_on": "@today+70d",
+              "done": false,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m18",
+            "values": {
+              "milestone_name": "Book flights",
+              "goal": "g7",
+              "due_on": "@today+130d",
+              "done": false,
+              "effort": "Large"
+            }
+          }
+        ]
+      },
+      {
+        "token": "review",
+        "name": "Check-ins",
+        "labelSingular": "Check-in",
+        "labelPlural": "Check-ins",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "review_name",
+        "describes": "A short look back at one goal: how it went and what to change.",
+        "subject": "thing",
+        "independentOf": {
+          "goal": "A check-in can happen at any point in a goal's life."
+        },
+        "fields": [
+          {
+            "key": "review_name",
+            "label": "Check-in",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "goal",
+            "relationMax": 1
+          },
+          {
+            "key": "quarter",
+            "label": "Quarter",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Q1",
+              "Q2",
+              "Q3",
+              "Q4"
+            ],
+            "choiceColors": {
+              "Q1": "slate",
+              "Q2": "blue",
+              "Q3": "green",
+              "Q4": "amber"
+            }
+          },
+          {
+            "key": "score",
+            "label": "Score (1-5)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "reflection",
+            "label": "Reflection",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "held_on",
+            "label": "Held on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "r1",
+            "values": {
+              "review_name": "Savings on pace",
+              "goal": "g1",
+              "quarter": "Q1",
+              "score": 4,
+              "reflection": "Transfers ran every month; a car repair dented March",
+              "held_on": "@today-21d"
+            }
+          },
+          {
+            "key": "r2",
+            "values": {
+              "review_name": "Module one wrapped",
+              "goal": "g2",
+              "quarter": "Q1",
+              "score": 5,
+              "reflection": "Study blocks are working, keep Tuesday evenings",
+              "held_on": "@today-42d"
+            }
+          },
+          {
+            "key": "r3",
+            "values": {
+              "review_name": "Consistent but slow",
+              "goal": "g3",
+              "quarter": "Q1",
+              "score": 3,
+              "reflection": "Missed two weeks after a cold",
+              "held_on": "@today-63d"
+            }
+          },
+          {
+            "key": "r4",
+            "values": {
+              "review_name": "Behind on pages",
+              "goal": "g4",
+              "quarter": "Q2",
+              "score": 2,
+              "reflection": "Reading mostly on weekends",
+              "held_on": "@today-84d"
+            }
+          },
+          {
+            "key": "r5",
+            "values": {
+              "review_name": "Back on track",
+              "goal": "g3",
+              "quarter": "Q2",
+              "score": 4,
+              "reflection": "Ran three times a week for a month",
+              "held_on": "@today-105d"
+            }
+          },
+          {
+            "key": "r6",
+            "values": {
+              "review_name": "Bonus went to savings",
+              "goal": "g1",
+              "quarter": "Q2",
+              "score": 5,
+              "reflection": "Pushed the deposit total up by a quarter",
+              "held_on": "@today-126d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A step belongs to a goal.",
+        "fromTable": "milestone",
+        "fromField": "goal",
+        "toTable": "goal",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "steps_of"
+      },
+      {
+        "describes": "A check-in is about one goal.",
+        "fromTable": "review",
+        "fromField": "goal",
+        "toTable": "goal",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "checkins_of"
+      },
+      {
+        "describes": "A goal lists its steps.",
+        "fromTable": "goal",
+        "fromField": "milestones",
+        "toTable": "milestone",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "goal_steps"
+      },
+      {
+        "describes": "A goal lists its check-ins.",
+        "fromTable": "goal",
+        "fromField": "reviews",
+        "toTable": "review",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "goal_checkins"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "new_goal",
+        "name": "Add a goal",
+        "describes": "Write down a goal with its reason.",
+        "audience": "staff",
+        "table": "goal",
+        "fields": [
+          {
+            "fieldKey": "goal_name",
+            "ask": "What is the goal?",
+            "required": true
+          },
+          {
+            "fieldKey": "area",
+            "ask": "Which area of life?"
+          },
+          {
+            "fieldKey": "target_on",
+            "ask": "By when?"
+          },
+          {
+            "fieldKey": "why",
+            "ask": "Why does it matter?"
+          }
+        ],
+        "submitLabel": "Save goal",
+        "confirmation": "Goal saved."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_goals",
+        "name": "All goals",
+        "table": "goal",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "goal_area",
+        "name": "By life area",
+        "table": "goal",
+        "kind": "kanban",
+        "groupBy": "area"
+      },
+      {
+        "token": "goal_board",
+        "name": "By status",
+        "table": "goal",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "goal_timeline",
+        "name": "Timeline",
+        "table": "goal",
+        "kind": "timeline",
+        "startField": "target_on",
+        "endField": "target_on"
+      },
+      {
+        "token": "all_steps",
+        "name": "All steps",
+        "table": "milestone",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "step_calendar",
+        "name": "Calendar",
+        "table": "milestone",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "all_checkins",
+        "name": "All check-ins",
+        "table": "review",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "goal",
+          "describes": "Every goal, its status and life area."
+        },
+        {
+          "name": "related_tables",
+          "table": "milestone",
+          "describes": "The steps behind each goal."
+        }
+      ],
+      "question": {
+        "ask": "How many goals are in progress?",
+        "whyItMatters": "Hana keeps no more than five in progress.",
+        "expect": {
+          "table": "goal",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "In progress"
+          },
+          "answer": 4,
+          "unit": "goals"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open goals by status.",
+        "action": {
+          "kind": "open",
+          "surface": "goal_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "goal_board",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open the step calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "step_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "step_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open goals by life area.",
+        "action": {
+          "kind": "open",
+          "surface": "goal_area"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "goal_area",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "goal-tracker",
+      "parent": null,
+      "title": "Goal Tracker",
+      "icon": {
+        "emoji": "🎯"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Set a few goals, break each into steps, and check in every quarter. Progress bars come from the steps you finish."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Goals by life area"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "goal",
+              "view": "all_goals"
+            },
+            "inline": true,
+            "title": "Goals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "By life area",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "area"
+              },
+              {
+                "id": "view-2",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-3",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-4",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "target_on"
+              },
+              {
+                "id": "view-5",
+                "name": "All goals",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Upcoming steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "milestone",
+                      "view": "all_steps"
+                    },
+                    "inline": true,
+                    "title": "Steps",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-6",
+                        "name": "Not done",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "filters": {
+                          "done": false
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-7",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "due_on"
+                      }
+                    ],
+                    "activeViewId": "view-6"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quarterly check-ins"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "review",
+                      "view": "all_checkins"
+                    },
+                    "inline": true,
+                    "title": "Check-ins",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-8",
+                        "name": "Latest",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "held_on",
+                            "direction": "desc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-9",
+                        "name": "Score by quarter",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "quarter",
+                          "op": "avg",
+                          "field": "score"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-8"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:progress"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:quarterly-review"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "progress",
+      "parent": "goal-tracker",
+      "title": "Progress",
+      "icon": {
+        "emoji": "📈"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "goal",
+                      "view": "all_goals"
+                    },
+                    "inline": true,
+                    "title": "Goals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-10",
+                        "name": "Goals by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-10"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "goal",
+                      "view": "all_goals"
+                    },
+                    "inline": true,
+                    "title": "Goals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-11",
+                        "name": "Steps finished per goal",
+                        "layout": "chart",
+                        "icon": "ChartBar",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "area",
+                          "op": "sum",
+                          "field": "steps_done"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-11"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Still open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "goal",
+              "view": "all_goals"
+            },
+            "inline": true,
+            "title": "Goals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-12",
+                "name": "In progress",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "In progress"
+                },
+                "sorts": [
+                  {
+                    "field": "target_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-12"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps overdue or due soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "all_steps"
+            },
+            "inline": true,
+            "title": "Steps",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Open steps",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "done": false
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-13"
+          }
+        }
+      ]
+    },
+    {
+      "key": "quarterly-review",
+      "parent": "goal-tracker",
+      "title": "Quarterly review",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Block an hour at the end of each quarter. Use these prompts, then add a check-in row for each goal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prompts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which goal moved the most, and what made that possible?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which goal stalled, and is it still worth pursuing?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What did I learn about how I work?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What is the single next step for each goal?"
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Dropping a goal on purpose is a result, not a failure."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Heart"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scoring guide"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Score"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "5"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ahead of plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Slipping but recoverable"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stalled"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Needs a rethink"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

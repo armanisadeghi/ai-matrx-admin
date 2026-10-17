@@ -1,0 +1,1115 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0204",
+  "version": 1,
+  "title": "Daily Journal",
+  "description": "One page a day with mood, energy and gratitude, plus calendar and mood charts.",
+  "forWho": "Journalers and reflective planners",
+  "icon": {
+    "emoji": "📔"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "journal",
+    "reflection",
+    "mood"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-daily-journal",
+    "catalogueId": "SP0204",
+    "useCase": "Leila Nakamura writes a few lines every evening and reviews her mood pattern on Sundays.",
+    "industry": "cross_industry",
+    "vertical": "Journaling",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-daily-journal",
+    "tables": [
+      {
+        "token": "entry",
+        "name": "Journal",
+        "labelSingular": "Day",
+        "labelPlural": "Journal",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "title",
+        "describes": "One page per day: how it felt, what went well and what you are grateful for.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Day",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "mood",
+            "label": "Mood",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Great",
+              "Good",
+              "Okay",
+              "Low",
+              "Bad"
+            ],
+            "choiceColors": {
+              "Great": "green",
+              "Good": "teal",
+              "Okay": "yellow",
+              "Low": "orange",
+              "Bad": "red"
+            }
+          },
+          {
+            "key": "energy",
+            "label": "Energy (1-5)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "weather",
+            "label": "Weather",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sunny",
+              "Clear",
+              "Cloudy",
+              "Rainy",
+              "Windy"
+            ],
+            "choiceColors": {
+              "Sunny": "slate",
+              "Clear": "blue",
+              "Cloudy": "green",
+              "Rainy": "amber",
+              "Windy": "red"
+            }
+          },
+          {
+            "key": "themes",
+            "label": "Themes",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Work",
+              "Home",
+              "Family",
+              "Health",
+              "Mind"
+            ],
+            "choiceColors": {
+              "Work": "slate",
+              "Home": "blue",
+              "Family": "green",
+              "Health": "amber",
+              "Mind": "red"
+            }
+          },
+          {
+            "key": "gratitude",
+            "label": "Grateful for",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "highlight",
+            "label": "Highlight",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reviewed",
+            "label": "Reviewed on Sunday",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "e01",
+            "values": {
+              "title": "Slow start, strong finish",
+              "on": "@today-0d",
+              "mood": "Good",
+              "energy": 4,
+              "weather": "Sunny",
+              "themes": [
+                "Work"
+              ],
+              "gratitude": "A quiet morning in the garden",
+              "highlight": "Shipped the draft before lunch",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e02",
+            "values": {
+              "title": "Rain all day",
+              "on": "@today-1d",
+              "mood": "Okay",
+              "energy": 3,
+              "weather": "Rainy",
+              "themes": [
+                "Home"
+              ],
+              "gratitude": "Hot soup on a cold afternoon",
+              "highlight": "Finally cleared the closet",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e03",
+            "values": {
+              "title": "Call with Mum",
+              "on": "@today-2d",
+              "mood": "Great",
+              "energy": 5,
+              "weather": "Cloudy",
+              "themes": [
+                "Family"
+              ],
+              "gratitude": "Mum's laugh on the phone",
+              "highlight": "Planned the visit in spring",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e04",
+            "values": {
+              "title": "Too many meetings",
+              "on": "@today-3d",
+              "mood": "Low",
+              "energy": 2,
+              "weather": "Sunny",
+              "themes": [
+                "Work"
+              ],
+              "gratitude": "The coffee at the corner cafe",
+              "highlight": "Said no to a fourth meeting",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e05",
+            "values": {
+              "title": "Long run by the river",
+              "on": "@today-4d",
+              "mood": "Great",
+              "energy": 5,
+              "weather": "Sunny",
+              "themes": [
+                "Health"
+              ],
+              "gratitude": "Legs that carried me ten kilometres",
+              "highlight": "Beat my best time by a minute",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e06",
+            "values": {
+              "title": "Could not focus",
+              "on": "@today-5d",
+              "mood": "Bad",
+              "energy": 1,
+              "weather": "Windy",
+              "themes": [
+                "Mind"
+              ],
+              "gratitude": "A friend's kind message",
+              "highlight": "Went to bed early",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e07",
+            "values": {
+              "title": "Lazy Sunday",
+              "on": "@today-6d",
+              "mood": "Good",
+              "energy": 3,
+              "weather": "Cloudy",
+              "themes": [
+                "Home"
+              ],
+              "gratitude": "Pancakes and no schedule",
+              "highlight": "Read two chapters",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e08",
+            "values": {
+              "title": "Presentation day",
+              "on": "@today-7d",
+              "mood": "Okay",
+              "energy": 3,
+              "weather": "Sunny",
+              "themes": [
+                "Work"
+              ],
+              "gratitude": "Colleagues who stayed late to help",
+              "highlight": "Delivered it without notes",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "e09",
+            "values": {
+              "title": "Dinner with old friends",
+              "on": "@today-8d",
+              "mood": "Great",
+              "energy": 4,
+              "weather": "Clear",
+              "themes": [
+                "Family"
+              ],
+              "gratitude": "Stories we still laugh about",
+              "highlight": "Booked the next dinner",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "e10",
+            "values": {
+              "title": "Headache and a slow day",
+              "on": "@today-9d",
+              "mood": "Low",
+              "energy": 2,
+              "weather": "Rainy",
+              "themes": [
+                "Health"
+              ],
+              "gratitude": "A warm bath",
+              "highlight": "Drank more water",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "e11",
+            "values": {
+              "title": "Started the pottery class",
+              "on": "@today-10d",
+              "mood": "Good",
+              "energy": 4,
+              "weather": "Cloudy",
+              "themes": [
+                "Mind"
+              ],
+              "gratitude": "Clay under my fingernails",
+              "highlight": "Made a lopsided but lovely bowl",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "e12",
+            "values": {
+              "title": "Errands and admin",
+              "on": "@today-11d",
+              "mood": "Okay",
+              "energy": 3,
+              "weather": "Sunny",
+              "themes": [
+                "Home"
+              ],
+              "gratitude": "A short queue at the post office",
+              "highlight": "Paid three overdue bills",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "e13",
+            "values": {
+              "title": "Hike with the dog",
+              "on": "@today-12d",
+              "mood": "Great",
+              "energy": 5,
+              "weather": "Clear",
+              "themes": [
+                "Health"
+              ],
+              "gratitude": "Fresh air at the ridge",
+              "highlight": "Reached the viewpoint at sunrise",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "e14",
+            "values": {
+              "title": "Quiet night in",
+              "on": "@today-13d",
+              "mood": "Good",
+              "energy": 4,
+              "weather": "Rainy",
+              "themes": [
+                "Mind"
+              ],
+              "gratitude": "A new playlist",
+              "highlight": "Wrote three pages",
+              "reviewed": true
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "write_day",
+        "name": "Write a day",
+        "describes": "Quick journal entry.",
+        "audience": "staff",
+        "table": "entry",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What would you call this day?",
+            "required": true
+          },
+          {
+            "fieldKey": "on",
+            "ask": "Which date?"
+          },
+          {
+            "fieldKey": "mood",
+            "ask": "How did it feel?"
+          },
+          {
+            "fieldKey": "gratitude",
+            "ask": "What are you grateful for?"
+          },
+          {
+            "fieldKey": "highlight",
+            "ask": "What was the highlight?"
+          }
+        ],
+        "submitLabel": "Save day",
+        "confirmation": "Saved to your journal."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_days",
+        "name": "All days",
+        "table": "entry",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "day_calendar",
+        "name": "Calendar",
+        "table": "entry",
+        "kind": "calendar",
+        "dateField": "on",
+        "allDay": true
+      },
+      {
+        "token": "day_mood",
+        "name": "By mood",
+        "table": "entry",
+        "kind": "kanban",
+        "groupBy": "mood"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "entry",
+          "describes": "Every journal day with mood and energy."
+        },
+        {
+          "name": "related_tables",
+          "table": "entry",
+          "describes": "The same journal days for comparison."
+        }
+      ],
+      "question": {
+        "ask": "How many days were rated Great?",
+        "whyItMatters": "Leila counts her great days each month.",
+        "expect": {
+          "table": "entry",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "mood": "Great"
+          },
+          "answer": 4,
+          "unit": "days"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the journal calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "day_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "day_calendar",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open days by mood.",
+        "action": {
+          "kind": "open",
+          "surface": "day_mood"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "day_mood",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open every day.",
+        "action": {
+          "kind": "open",
+          "surface": "all_days"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_days",
+          "minItems": 12
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "daily-journal",
+      "parent": null,
+      "title": "Daily Journal",
+      "icon": {
+        "emoji": "📔"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write a few lines each evening: how the day felt, what you are grateful for and one highlight. The calendar and mood charts fill in by themselves."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Mood trend"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "entry",
+                      "view": "all_days"
+                    },
+                    "inline": true,
+                    "title": "Journal",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "Mood mix",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "mood",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "view-2",
+                        "name": "Energy by mood",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "mood",
+                          "op": "avg",
+                          "field": "energy"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recent days"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "entry",
+                      "view": "all_days"
+                    },
+                    "inline": true,
+                    "title": "Journal",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-3",
+                        "name": "Latest",
+                        "layout": "list",
+                        "icon": "List",
+                        "sorts": [
+                          {
+                            "field": "on",
+                            "direction": "desc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-4",
+                        "name": "Highlights",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "on",
+                            "direction": "desc"
+                          }
+                        ],
+                        "hiddenFields": [
+                          "gratitude"
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "entry",
+              "view": "all_days"
+            },
+            "inline": true,
+            "title": "Journal",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-5",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "on"
+              },
+              {
+                "id": "view-6",
+                "name": "By mood",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "mood"
+              },
+              {
+                "id": "view-7",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-8",
+                "name": "All days",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-5"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:daily-template"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-reflection"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "daily-template",
+      "parent": "daily-journal",
+      "title": "Daily page prompts",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set one intention"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write the top three priorities"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the schedule"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Evening"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What gave me energy?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What drained me?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who made my day better?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What would I do differently?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Gratitude"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Three small things, written in full sentences."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Short and honest beats long and rare."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "PenLine"
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-reflection",
+      "parent": "daily-journal",
+      "title": "Weekly reflection",
+      "icon": {
+        "emoji": "🪞"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On Sunday, read the week back and note the pattern."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "entry",
+              "view": "all_days"
+            },
+            "inline": true,
+            "title": "Journal",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-9",
+                "name": "Unreviewed",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "reviewed": false
+                },
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-10",
+                "name": "Weather and mood",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "weather",
+                  "op": "avg",
+                  "field": "energy"
+                }
+              }
+            ],
+            "activeViewId": "view-9"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which day felt best, and why?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which theme appeared most?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What do I want more of next week?"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mood"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usual cause"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Small fix"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Low"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Too many meetings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Protect a morning block"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Great"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Time outside"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Schedule a walk"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

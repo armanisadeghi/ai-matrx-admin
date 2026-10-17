@@ -1,0 +1,1630 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0206",
+  "version": 1,
+  "title": "Reading List",
+  "description": "A book shelf with status, ratings, a reading log and genre roll-ups.",
+  "forWho": "Readers who like to track",
+  "icon": {
+    "emoji": "📚"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "books",
+    "reading",
+    "library"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-reading-list",
+    "catalogueId": "SP0206",
+    "useCase": "Odette Marsh keeps a shelf of twelve books and logs reading sessions to hit a yearly page count.",
+    "industry": "cross_industry",
+    "vertical": "Reading",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-reading-list",
+    "tables": [
+      {
+        "token": "genre",
+        "name": "Genres",
+        "labelSingular": "Genre",
+        "labelPlural": "Genres",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "tags",
+        "titleField": "genre_name",
+        "describes": "The kinds of books you read, with how many you own of each.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "genre_name",
+            "label": "Genre",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "taste",
+            "label": "What I look for",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "mood",
+            "label": "Reading mood",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Slow",
+              "Escape",
+              "Learn"
+            ],
+            "choiceColors": {
+              "Slow": "slate",
+              "Escape": "blue",
+              "Learn": "green"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Usually from",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Library",
+              "Bookshop",
+              "Ebook store"
+            ],
+            "choiceColors": {
+              "Library": "slate",
+              "Bookshop": "blue",
+              "Ebook store": "green"
+            }
+          },
+          {
+            "key": "favorite",
+            "label": "Favorite",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "books",
+            "label": "Books",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "book",
+            "multi": true
+          },
+          {
+            "key": "book_count",
+            "label": "Book count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "books",
+            "pick": "title",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "gn-lit",
+            "values": {
+              "genre_name": "Literary fiction",
+              "taste": "Character-driven novels",
+              "mood": "Slow",
+              "source": "Library",
+              "favorite": true
+            }
+          },
+          {
+            "key": "gn-sci",
+            "values": {
+              "genre_name": "Science and nature",
+              "taste": "Explainers on how the world works",
+              "mood": "Learn",
+              "source": "Bookshop",
+              "favorite": true
+            }
+          },
+          {
+            "key": "gn-bio",
+            "values": {
+              "genre_name": "Biography",
+              "taste": "Lives told well",
+              "mood": "Slow",
+              "source": "Library",
+              "favorite": false
+            }
+          },
+          {
+            "key": "gn-fan",
+            "values": {
+              "genre_name": "Fantasy",
+              "taste": "Invented worlds and long series",
+              "mood": "Escape",
+              "source": "Ebook store",
+              "favorite": false
+            }
+          },
+          {
+            "key": "gn-biz",
+            "values": {
+              "genre_name": "Work and craft",
+              "taste": "Books on making and managing",
+              "mood": "Learn",
+              "source": "Library",
+              "favorite": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "book",
+        "name": "Books",
+        "labelSingular": "Book",
+        "labelPlural": "Books",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book",
+        "titleField": "title",
+        "describes": "Every book you want to read, are reading or have finished.",
+        "subject": "thing",
+        "before": [
+          [
+            "started_on",
+            "finished_on"
+          ]
+        ],
+        "independentOf": {
+          "genre": "Any book can be read at any time regardless of its genre."
+        },
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "genre",
+            "label": "Genre",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "genre",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To read",
+              "Reading",
+              "Finished",
+              "Abandoned"
+            ],
+            "choiceColors": {
+              "To read": "slate",
+              "Reading": "blue",
+              "Finished": "green",
+              "Abandoned": "amber"
+            },
+            "default": "To read"
+          },
+          {
+            "key": "rating",
+            "label": "Rating (1-5)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "pages",
+            "label": "Pages",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "key": "pages_read",
+            "label": "Pages read",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Print",
+              "Ebook",
+              "Audio"
+            ],
+            "choiceColors": {
+              "Print": "slate",
+              "Ebook": "blue",
+              "Audio": "green"
+            }
+          },
+          {
+            "key": "started_on",
+            "label": "Started",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "finished_on",
+            "label": "Finished",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "review",
+            "label": "Review",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sessions",
+            "label": "Reading sessions",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "reading_log",
+            "multi": true
+          },
+          {
+            "key": "logged_pages",
+            "label": "Pages logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sessions",
+            "pick": "pages",
+            "agg": "sum"
+          },
+          {
+            "key": "pages_left",
+            "label": "Pages left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Pages} - {Pages read}",
+            "source": "formula",
+            "computeOn": "read"
+          }
+        ],
+        "rows": [
+          {
+            "key": "b01",
+            "values": {
+              "title": "The Salt Orchard",
+              "author": "Imelda Corvo",
+              "genre": "gn-lit",
+              "status": "Finished",
+              "pages": 312,
+              "pages_read": 312,
+              "format": "Print",
+              "rating": 4,
+              "started_on": "@today-60d",
+              "finished_on": "@today-41d",
+              "review": "Worth the time"
+            }
+          },
+          {
+            "key": "b02",
+            "values": {
+              "title": "Small Machines of the Sea",
+              "author": "Kofi Appiah",
+              "genre": "gn-sci",
+              "status": "Finished",
+              "pages": 288,
+              "pages_read": 288,
+              "format": "Ebook",
+              "rating": 5,
+              "started_on": "@today-40d",
+              "finished_on": "@today-28d",
+              "review": "Worth the time"
+            }
+          },
+          {
+            "key": "b03",
+            "values": {
+              "title": "The Last Cartographer",
+              "author": "Wren Halloran",
+              "genre": "gn-fan",
+              "status": "Finished",
+              "pages": 540,
+              "pages_read": 540,
+              "format": "Audio",
+              "rating": 3,
+              "started_on": "@today-110d",
+              "finished_on": "@today-70d",
+              "review": "Worth the time"
+            }
+          },
+          {
+            "key": "b04",
+            "values": {
+              "title": "A Quiet Ledger",
+              "author": "Priyanka Desai",
+              "genre": "gn-biz",
+              "status": "Reading",
+              "pages": 260,
+              "pages_read": 148,
+              "format": "Print",
+              "started_on": "@today-12d",
+              "review": "Enjoying it so far"
+            }
+          },
+          {
+            "key": "b05",
+            "values": {
+              "title": "Letters from the Estuary",
+              "author": "Anders Roe",
+              "genre": "gn-bio",
+              "status": "Reading",
+              "pages": 420,
+              "pages_read": 95,
+              "format": "Ebook",
+              "started_on": "@today-6d",
+              "review": "Enjoying it so far"
+            }
+          },
+          {
+            "key": "b06",
+            "values": {
+              "title": "What the Tide Remembers",
+              "author": "Louisa Fenn",
+              "genre": "gn-lit",
+              "status": "To read",
+              "pages": 350,
+              "pages_read": 0,
+              "format": "Print"
+            }
+          },
+          {
+            "key": "b07",
+            "values": {
+              "title": "Field Notes on Moss",
+              "author": "Mateo Salgado",
+              "genre": "gn-sci",
+              "status": "To read",
+              "pages": 198,
+              "pages_read": 0,
+              "format": "Print"
+            }
+          },
+          {
+            "key": "b08",
+            "values": {
+              "title": "The Ash Throne",
+              "author": "Daria Vukovic",
+              "genre": "gn-fan",
+              "status": "To read",
+              "pages": 610,
+              "pages_read": 0,
+              "format": "Audio"
+            }
+          },
+          {
+            "key": "b09",
+            "values": {
+              "title": "Shipping Small",
+              "author": "Gareth Boyle",
+              "genre": "gn-biz",
+              "status": "Abandoned",
+              "pages": 240,
+              "pages_read": 70,
+              "format": "Ebook",
+              "rating": 2,
+              "started_on": "@today-90d",
+              "review": "Lost interest at the halfway point"
+            }
+          },
+          {
+            "key": "b10",
+            "values": {
+              "title": "The Glassblower's Daughter",
+              "author": "Ines Moreau",
+              "genre": "gn-lit",
+              "status": "Finished",
+              "pages": 376,
+              "pages_read": 376,
+              "format": "Print",
+              "rating": 5,
+              "started_on": "@today-150d",
+              "finished_on": "@today-120d",
+              "review": "Worth the time"
+            }
+          },
+          {
+            "key": "b11",
+            "values": {
+              "title": "Rivers of Light",
+              "author": "Samuel Adeyemi",
+              "genre": "gn-bio",
+              "status": "Finished",
+              "pages": 330,
+              "pages_read": 330,
+              "format": "Print",
+              "rating": 4,
+              "started_on": "@today-85d",
+              "finished_on": "@today-62d",
+              "review": "Worth the time"
+            }
+          },
+          {
+            "key": "b12",
+            "values": {
+              "title": "Deep Time Walkers",
+              "author": "Hollis Park",
+              "genre": "gn-sci",
+              "status": "To read",
+              "pages": 284,
+              "pages_read": 0,
+              "format": "Ebook"
+            }
+          }
+        ]
+      },
+      {
+        "token": "reading_log",
+        "name": "Reading log",
+        "labelSingular": "Reading session",
+        "labelPlural": "Reading log",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clock",
+        "titleField": "session_name",
+        "describes": "Short notes of when and how much you read.",
+        "subject": "thing",
+        "independentOf": {
+          "book": "A session is logged on the day it happens."
+        },
+        "fields": [
+          {
+            "key": "session_name",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "book",
+            "label": "Book",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "book",
+            "relationMax": 1
+          },
+          {
+            "key": "read_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "pages",
+            "label": "Pages read",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "key": "rl01",
+            "values": {
+              "session_name": "The Salt Orchard before bed",
+              "book": "b01",
+              "read_on": "@today-55d",
+              "pages": 40,
+              "minutes": 80
+            }
+          },
+          {
+            "key": "rl02",
+            "values": {
+              "session_name": "The Salt Orchard on the commute",
+              "book": "b01",
+              "read_on": "@today-50d",
+              "pages": 60,
+              "minutes": 121
+            }
+          },
+          {
+            "key": "rl03",
+            "values": {
+              "session_name": "Small Machines of the Sea before bed",
+              "book": "b02",
+              "read_on": "@today-38d",
+              "pages": 70,
+              "minutes": 142
+            }
+          },
+          {
+            "key": "rl04",
+            "values": {
+              "session_name": "Small Machines of the Sea on the commute",
+              "book": "b02",
+              "read_on": "@today-34d",
+              "pages": 90,
+              "minutes": 183
+            }
+          },
+          {
+            "key": "rl05",
+            "values": {
+              "session_name": "A Quiet Ledger before bed",
+              "book": "b04",
+              "read_on": "@today-10d",
+              "pages": 30,
+              "minutes": 64
+            }
+          },
+          {
+            "key": "rl06",
+            "values": {
+              "session_name": "A Quiet Ledger on the commute",
+              "book": "b04",
+              "read_on": "@today-7d",
+              "pages": 48,
+              "minutes": 101
+            }
+          },
+          {
+            "key": "rl07",
+            "values": {
+              "session_name": "A Quiet Ledger before bed",
+              "book": "b04",
+              "read_on": "@today-2d",
+              "pages": 50,
+              "minutes": 106
+            }
+          },
+          {
+            "key": "rl08",
+            "values": {
+              "session_name": "Letters from the Estuary on the commute",
+              "book": "b05",
+              "read_on": "@today-5d",
+              "pages": 45,
+              "minutes": 97
+            }
+          },
+          {
+            "key": "rl09",
+            "values": {
+              "session_name": "Letters from the Estuary before bed",
+              "book": "b05",
+              "read_on": "@today-1d",
+              "pages": 50,
+              "minutes": 108
+            }
+          },
+          {
+            "key": "rl10",
+            "values": {
+              "session_name": "The Glassblower's Daughter on the commute",
+              "book": "b10",
+              "read_on": "@today-140d",
+              "pages": 80,
+              "minutes": 169
+            }
+          },
+          {
+            "key": "rl11",
+            "values": {
+              "session_name": "Rivers of Light before bed",
+              "book": "b11",
+              "read_on": "@today-80d",
+              "pages": 75,
+              "minutes": 160
+            }
+          },
+          {
+            "key": "rl12",
+            "values": {
+              "session_name": "Shipping Small on the commute",
+              "book": "b09",
+              "read_on": "@today-85d",
+              "pages": 70,
+              "minutes": 151
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A book has one genre.",
+        "fromTable": "book",
+        "fromField": "genre",
+        "toTable": "genre",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "books_in"
+      },
+      {
+        "describes": "A session belongs to one book.",
+        "fromTable": "reading_log",
+        "fromField": "book",
+        "toTable": "book",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sessions_of"
+      },
+      {
+        "describes": "A genre lists its books.",
+        "fromTable": "genre",
+        "fromField": "books",
+        "toTable": "book",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "genre_books"
+      },
+      {
+        "describes": "A book lists its sessions.",
+        "fromTable": "book",
+        "fromField": "sessions",
+        "toTable": "reading_log",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "book_sessions"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_book",
+        "name": "Add a book",
+        "describes": "Put a book on the shelf.",
+        "audience": "staff",
+        "table": "book",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What is the title?",
+            "required": true
+          },
+          {
+            "fieldKey": "author",
+            "ask": "Who wrote it?"
+          },
+          {
+            "fieldKey": "genre",
+            "ask": "Which genre?"
+          },
+          {
+            "fieldKey": "format",
+            "ask": "Print, ebook or audio?"
+          }
+        ],
+        "submitLabel": "Add book",
+        "confirmation": "On the shelf."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_books",
+        "name": "All books",
+        "table": "book",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "book_board",
+        "name": "By status",
+        "table": "book",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "book_format",
+        "name": "By format",
+        "table": "book",
+        "kind": "kanban",
+        "groupBy": "format"
+      },
+      {
+        "token": "book_finished",
+        "name": "Finished timeline",
+        "table": "book",
+        "kind": "timeline",
+        "startField": "started_on",
+        "endField": "finished_on"
+      },
+      {
+        "token": "all_sessions",
+        "name": "Reading log",
+        "table": "reading_log",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "read_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "session_calendar",
+        "name": "Calendar",
+        "table": "reading_log",
+        "kind": "calendar",
+        "dateField": "read_on",
+        "allDay": true
+      },
+      {
+        "token": "all_genres",
+        "name": "Genres",
+        "table": "genre",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "book",
+          "describes": "Every book with its status and rating."
+        },
+        {
+          "name": "related_tables",
+          "table": "genre",
+          "describes": "The genre of each book."
+        }
+      ],
+      "question": {
+        "ask": "How many books are finished?",
+        "whyItMatters": "Odette counts finished books toward her reading goal.",
+        "expect": {
+          "table": "book",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Finished"
+          },
+          "answer": 5,
+          "unit": "books"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open books by status.",
+        "action": {
+          "kind": "open",
+          "surface": "book_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "book_board",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open the reading calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "session_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "session_calendar",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open books by format.",
+        "action": {
+          "kind": "open",
+          "surface": "book_format"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "book_format",
+          "minItems": 8
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "reading-list",
+      "parent": null,
+      "title": "Reading List",
+      "icon": {
+        "emoji": "📚"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Keep a shelf of books to read, track the one in your hands, and log sessions to see pages add up."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The shelf"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "book",
+              "view": "all_books"
+            },
+            "inline": true,
+            "title": "Books",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-2",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-3",
+                "name": "By format",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "format"
+              },
+              {
+                "id": "view-4",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "started_on"
+              },
+              {
+                "id": "view-5",
+                "name": "All books",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reading now"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "book",
+                      "view": "all_books"
+                    },
+                    "inline": true,
+                    "title": "Books",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-6",
+                        "name": "Reading",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": "Reading"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-6"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Finished"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "book",
+                      "view": "all_books"
+                    },
+                    "inline": true,
+                    "title": "Books",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-7",
+                        "name": "Finished",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "filters": {
+                          "status": "Finished"
+                        },
+                        "sorts": [
+                          {
+                            "field": "finished_on",
+                            "direction": "desc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-7"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "reading_log",
+              "view": "all_sessions"
+            },
+            "inline": true,
+            "title": "Reading log",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "Pages by book",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "book",
+                  "op": "sum",
+                  "field": "pages"
+                }
+              },
+              {
+                "id": "view-9",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "read_on"
+              },
+              {
+                "id": "view-10",
+                "name": "Latest",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "read_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-8"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:year-in-books"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:book-notes"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "year-in-books",
+      "parent": "reading-list",
+      "title": "Year in books",
+      "icon": {
+        "emoji": "📈"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "book",
+                      "view": "all_books"
+                    },
+                    "inline": true,
+                    "title": "Books",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-11",
+                        "name": "Books by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-11"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "book",
+                      "view": "all_books"
+                    },
+                    "inline": true,
+                    "title": "Books",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-12",
+                        "name": "Pages by format",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "format",
+                          "op": "sum",
+                          "field": "pages"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-12"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Highest rated"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "book",
+              "view": "all_books"
+            },
+            "inline": true,
+            "title": "Books",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Rated",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Finished"
+                },
+                "sorts": [
+                  {
+                    "field": "rating",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-13"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Genres"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "genre",
+              "view": "all_genres"
+            },
+            "inline": true,
+            "title": "Genres",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-14",
+                "name": "Genres",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "view-14"
+          }
+        }
+      ]
+    },
+    {
+      "key": "book-notes",
+      "parent": "reading-list",
+      "title": "Book notes template",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Copy this layout into a note for any book you want to remember."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Summary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two or three sentences in your own words."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quotes worth keeping"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Paste a line that stayed with you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Takeaways"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What changed my mind"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What I will try"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who should read this"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rating guide"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stars"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "5"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Will reread"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Would recommend"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fine, not essential"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Struggled"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Regret finishing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
