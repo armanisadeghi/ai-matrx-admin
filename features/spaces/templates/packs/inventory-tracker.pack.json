@@ -1,0 +1,2018 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0307",
+ "version": 1,
+ "title": "Inventory Tracker",
+ "description": "Track stock, suppliers, purchase orders and sales so you reorder before you run out.",
+ "forWho": "Small retailers, online shops and makers",
+ "icon": {
+  "emoji": "📦"
+ },
+ "cover": {
+  "url": "gallery:photo-desert-dunes",
+  "offsetY": 50
+ },
+ "category": "operations",
+ "tags": [
+  "inventory",
+  "stock",
+  "suppliers",
+  "orders"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-inventory-tracker",
+  "catalogueId": "SP0307",
+  "useCase": "Esme Calloway makes and sells candles and uses this to see what is low on stock, which purchase orders are still on the way and what sold this week.",
+  "industry": "retail_ecommerce",
+  "vertical": "Stock control",
+  "job": "inventory",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Marigold & Rye Candle Co.",
+   "describes": "A small maker selling hand-poured candles and gift sets online and at craft fairs.",
+   "address": {
+    "line1": "412 Brindle Lane",
+    "city": "Albuquerque",
+    "region": "NM",
+    "postalCode": "87102",
+    "country": "US"
+   },
+   "phone": "(505) 555-0148",
+   "website": "marigoldandrye.net",
+   "email": "orders@marigoldandrye.net",
+   "timezone": "America/Denver"
+  },
+  "cleanupTag": "use-case:spaces-inventory-tracker",
+  "tables": [
+   {
+    "token": "supplier",
+    "name": "Suppliers",
+    "labelSingular": "Supplier",
+    "labelPlural": "Suppliers",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "truck",
+    "titleField": "supplier_name",
+    "describes": "Who you buy from and how reliable they are.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "supplier_name",
+      "label": "Supplier",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "contact",
+      "label": "Contact",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "phone",
+      "label": "Phone",
+      "parityType": "phone",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "lead_days",
+      "label": "Lead time (days)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 120
+       }
+      ]
+     },
+     {
+      "key": "rating",
+      "label": "Rating",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Excellent",
+       "Good",
+       "Fair"
+      ],
+      "choiceColors": {
+       "Excellent": "slate",
+       "Good": "blue",
+       "Fair": "amber"
+      },
+      "default": "Good"
+     },
+     {
+      "key": "terms",
+      "label": "Payment terms",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "products",
+      "label": "Products",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "product",
+      "multi": true
+     },
+     {
+      "key": "product_count",
+      "label": "Product count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "products",
+      "pick": "product_name",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "su1",
+      "values": {
+       "supplier_name": "Beeswax Brothers",
+       "contact": "Garrett Linde",
+       "email": "garrett@beeswaxbrothers.net",
+       "phone": "(505) 555-0161",
+       "lead_days": 9,
+       "rating": "Excellent",
+       "terms": "Net 30",
+       "products": [
+        "pr1",
+        "pr2",
+        "pr3",
+        "pr6",
+        "pr9"
+       ]
+      }
+     },
+     {
+      "key": "su2",
+      "values": {
+       "supplier_name": "Glassworks North",
+       "contact": "Imelda Rossi",
+       "email": "imelda@glassworksnorth.net",
+       "phone": "(505) 555-0162",
+       "lead_days": 21,
+       "rating": "Good",
+       "terms": "50% upfront",
+       "products": [
+        "pr4",
+        "pr5",
+        "pr8"
+       ]
+      }
+     },
+     {
+      "key": "su3",
+      "values": {
+       "supplier_name": "Wick & Wonder Supply",
+       "contact": "Tobias Eke",
+       "email": "tobias@wickandwonder.net",
+       "phone": "(505) 555-0163",
+       "lead_days": 6,
+       "rating": "Excellent",
+       "terms": "Net 15",
+       "products": [
+        "pr7",
+        "pr10"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "token": "product",
+    "name": "Products",
+    "labelSingular": "Product",
+    "labelPlural": "Products",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "package",
+    "titleField": "product_name",
+    "describes": "Everything you sell or use to make what you sell.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "product_name",
+      "label": "Product",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "category",
+      "label": "Category",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Candles",
+       "Tins",
+       "Gift sets",
+       "Supplies"
+      ],
+      "choiceColors": {
+       "Candles": "slate",
+       "Tins": "blue",
+       "Gift sets": "amber",
+       "Supplies": "violet"
+      },
+      "required": true
+     },
+     {
+      "key": "unit_cost",
+      "label": "Unit cost",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000
+       }
+      ]
+     },
+     {
+      "key": "price",
+      "label": "Price",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000
+       }
+      ]
+     },
+     {
+      "key": "margin",
+      "label": "Margin per unit",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Price} - {Unit cost}"
+     },
+     {
+      "key": "opening",
+      "label": "Opening stock",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "reorder_at",
+      "label": "Reorder point",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "stock_status",
+      "label": "Stock status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "OK",
+       "Reorder soon",
+       "Out"
+      ],
+      "choiceColors": {
+       "OK": "slate",
+       "Reorder soon": "blue",
+       "Out": "amber"
+      },
+      "default": "OK"
+     },
+     {
+      "key": "supplier",
+      "label": "Supplier",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "supplier",
+      "relationMax": 1
+     },
+     {
+      "key": "purchase_orders",
+      "label": "Purchase orders",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "purchase_order",
+      "multi": true
+     },
+     {
+      "key": "sales",
+      "label": "Sales",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "sales_order",
+      "multi": true
+     },
+     {
+      "key": "received",
+      "label": "Received",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "purchase_orders",
+      "pick": "qty",
+      "agg": "sum",
+      "filter": {
+       "status": "Received"
+      }
+     },
+     {
+      "key": "sold",
+      "label": "Sold",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "sales",
+      "pick": "qty",
+      "agg": "sum"
+     },
+     {
+      "key": "on_order",
+      "label": "On order",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "purchase_orders",
+      "pick": "qty",
+      "agg": "count",
+      "filter": {
+       "status": "Ordered"
+      }
+     }
+    ],
+    "rows": [
+     {
+      "key": "pr1",
+      "values": {
+       "product_name": "Amber Fig 8oz candle",
+       "category": "Candles",
+       "supplier": "su1",
+       "unit_cost": 6.4,
+       "price": 28,
+       "stock_status": "OK",
+       "opening": 120,
+       "reorder_at": 40,
+       "purchase_orders": [
+        "po1"
+       ],
+       "sales": [
+        "so1",
+        "so7"
+       ]
+      }
+     },
+     {
+      "key": "pr2",
+      "values": {
+       "product_name": "Cedar & Smoke 8oz candle",
+       "category": "Candles",
+       "supplier": "su1",
+       "unit_cost": 6.9,
+       "price": 28,
+       "stock_status": "OK",
+       "opening": 96,
+       "reorder_at": 40,
+       "purchase_orders": [
+        "po2"
+       ],
+       "sales": [
+        "so2"
+       ]
+      }
+     },
+     {
+      "key": "pr3",
+      "values": {
+       "product_name": "Sea Salt Orchid 8oz candle",
+       "category": "Candles",
+       "supplier": "su1",
+       "unit_cost": 6.1,
+       "price": 28,
+       "stock_status": "Reorder soon",
+       "opening": 30,
+       "reorder_at": 40,
+       "purchase_orders": [
+        "po3"
+       ],
+       "sales": [
+        "so6"
+       ]
+      }
+     },
+     {
+      "key": "pr4",
+      "values": {
+       "product_name": "Wild Sage travel tin",
+       "category": "Tins",
+       "supplier": "su2",
+       "unit_cost": 3.2,
+       "price": 16,
+       "stock_status": "OK",
+       "opening": 150,
+       "reorder_at": 60,
+       "purchase_orders": [],
+       "sales": [
+        "so3",
+        "so8"
+       ]
+      }
+     },
+     {
+      "key": "pr5",
+      "values": {
+       "product_name": "Lavender Honey travel tin",
+       "category": "Tins",
+       "supplier": "su2",
+       "unit_cost": 3.4,
+       "price": 16,
+       "stock_status": "Out",
+       "opening": 0,
+       "reorder_at": 60,
+       "purchase_orders": [
+        "po4"
+       ],
+       "sales": [
+        "so4"
+       ]
+      }
+     },
+     {
+      "key": "pr6",
+      "values": {
+       "product_name": "Holiday trio gift set",
+       "category": "Gift sets",
+       "supplier": "su1",
+       "unit_cost": 14.5,
+       "price": 64,
+       "stock_status": "Reorder soon",
+       "opening": 22,
+       "reorder_at": 25,
+       "purchase_orders": [
+        "po7"
+       ],
+       "sales": [
+        "so5"
+       ]
+      }
+     },
+     {
+      "key": "pr7",
+      "values": {
+       "product_name": "Cotton wick pack, 50 count",
+       "category": "Supplies",
+       "supplier": "su3",
+       "unit_cost": 8.0,
+       "price": 0,
+       "stock_status": "OK",
+       "opening": 40,
+       "reorder_at": 10,
+       "purchase_orders": [],
+       "sales": []
+      }
+     },
+     {
+      "key": "pr8",
+      "values": {
+       "product_name": "Amber glass jar, 8oz",
+       "category": "Supplies",
+       "supplier": "su2",
+       "unit_cost": 1.3,
+       "price": 0,
+       "stock_status": "OK",
+       "opening": 300,
+       "reorder_at": 120,
+       "purchase_orders": [
+        "po6"
+       ],
+       "sales": []
+      }
+     },
+     {
+      "key": "pr9",
+      "values": {
+       "product_name": "Soy wax flakes, 10 lb bag",
+       "category": "Supplies",
+       "supplier": "su1",
+       "unit_cost": 42.0,
+       "price": 0,
+       "stock_status": "Reorder soon",
+       "opening": 5,
+       "reorder_at": 6,
+       "purchase_orders": [
+        "po5"
+       ],
+       "sales": []
+      }
+     },
+     {
+      "key": "pr10",
+      "values": {
+       "product_name": "Fragrance oil sampler",
+       "category": "Supplies",
+       "supplier": "su3",
+       "unit_cost": 19.0,
+       "price": 0,
+       "stock_status": "OK",
+       "opening": 12,
+       "reorder_at": 5,
+       "purchase_orders": [],
+       "sales": []
+      }
+     }
+    ],
+    "independentOf": {
+     "supplier": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "purchase_order",
+    "name": "Purchase orders",
+    "labelSingular": "Purchase order",
+    "labelPlural": "Purchase orders",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "clipboard-list",
+    "titleField": "po_number",
+    "describes": "Stock on order from suppliers.",
+    "subject": "thing",
+    "before": [
+     [
+      "ordered_on",
+      "expected_on"
+     ]
+    ],
+    "statusImplies": [
+     {
+      "field": "status",
+      "when": [
+       "Ordered",
+       "Shipped",
+       "Received"
+      ],
+      "filled": [
+       "ordered_on",
+       "expected_on"
+      ]
+     },
+     {
+      "field": "status",
+      "when": [
+       "Received"
+      ],
+      "filled": [
+       "received_on"
+      ]
+     }
+    ],
+    "fields": [
+     {
+      "key": "po_number",
+      "label": "PO number",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Draft",
+       "Ordered",
+       "Shipped",
+       "Received"
+      ],
+      "choiceColors": {
+       "Draft": "slate",
+       "Ordered": "blue",
+       "Shipped": "green",
+       "Received": "amber"
+      },
+      "required": true,
+      "default": "Draft"
+     },
+     {
+      "key": "qty",
+      "label": "Quantity",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 1
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "cost_each",
+      "label": "Cost each",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000
+       }
+      ]
+     },
+     {
+      "key": "total",
+      "label": "Total",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Quantity} * {Cost each}"
+     },
+     {
+      "key": "ordered_on",
+      "label": "Ordered",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "expected_on",
+      "label": "Expected",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "received_on",
+      "label": "Received",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "product",
+      "label": "Product",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "product",
+      "relationMax": 1
+     },
+     {
+      "key": "supplier",
+      "label": "Supplier",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "supplier",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "po1",
+      "values": {
+       "product": "pr1",
+       "supplier": "su1",
+       "po_number": "PO-3100",
+       "status": "Received",
+       "qty": 60,
+       "cost_each": 7.9,
+       "ordered_on": "@today-24d",
+       "expected_on": "@today-15d",
+       "received_on": "@today-15d"
+      }
+     },
+     {
+      "key": "po2",
+      "values": {
+       "product": "pr2",
+       "supplier": "su1",
+       "po_number": "PO-3101",
+       "status": "Received",
+       "qty": 60,
+       "cost_each": 8.49,
+       "ordered_on": "@today-24d",
+       "expected_on": "@today-15d",
+       "received_on": "@today-14d"
+      }
+     },
+     {
+      "key": "po3",
+      "values": {
+       "product": "pr3",
+       "supplier": "su1",
+       "po_number": "PO-3102",
+       "status": "Ordered",
+       "qty": 80,
+       "cost_each": 7.55,
+       "ordered_on": "@today-5d",
+       "expected_on": "@today+4d"
+      }
+     },
+     {
+      "key": "po4",
+      "values": {
+       "product": "pr5",
+       "supplier": "su2",
+       "po_number": "PO-3103",
+       "status": "Shipped",
+       "qty": 200,
+       "cost_each": 4.36,
+       "ordered_on": "@today-12d",
+       "expected_on": "@today+3d"
+      }
+     },
+     {
+      "key": "po5",
+      "values": {
+       "product": "pr9",
+       "supplier": "su1",
+       "po_number": "PO-3104",
+       "status": "Ordered",
+       "qty": 12,
+       "cost_each": 49.91,
+       "ordered_on": "@today-2d",
+       "expected_on": "@today+7d"
+      }
+     },
+     {
+      "key": "po6",
+      "values": {
+       "product": "pr8",
+       "supplier": "su2",
+       "po_number": "PO-3105",
+       "status": "Received",
+       "qty": 500,
+       "cost_each": 1.88,
+       "ordered_on": "@today-40d",
+       "expected_on": "@today-19d",
+       "received_on": "@today-19d"
+      }
+     },
+     {
+      "key": "po7",
+      "values": {
+       "product": "pr6",
+       "supplier": "su1",
+       "po_number": "PO-3106",
+       "status": "Ordered",
+       "qty": 30,
+       "cost_each": 17.46,
+       "ordered_on": "@today-1d",
+       "expected_on": "@today+11d"
+      }
+     }
+    ],
+    "independentOf": {
+     "product": "Either record can be created or change status before the other.",
+     "supplier": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "sales_order",
+    "name": "Sales orders",
+    "labelSingular": "Sales order",
+    "labelPlural": "Sales orders",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "shopping-cart",
+    "titleField": "order_no",
+    "describes": "Orders from customers.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "order_no",
+      "label": "Order",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "customer",
+      "label": "Customer",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "New",
+       "Packed",
+       "Shipped",
+       "Delivered"
+      ],
+      "choiceColors": {
+       "New": "slate",
+       "Packed": "blue",
+       "Shipped": "green",
+       "Delivered": "amber"
+      },
+      "required": true,
+      "default": "New"
+     },
+     {
+      "key": "qty",
+      "label": "Quantity",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 1
+       },
+       {
+        "kind": "max",
+        "value": 10000
+       }
+      ]
+     },
+     {
+      "key": "unit_price",
+      "label": "Unit price",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000
+       }
+      ]
+     },
+     {
+      "key": "revenue",
+      "label": "Revenue",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Quantity} * {Unit price}"
+     },
+     {
+      "key": "ordered_on",
+      "label": "Ordered",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "product",
+      "label": "Product",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "product",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "so1",
+      "values": {
+       "product": "pr1",
+       "order_no": "SO-5200",
+       "customer": "Hollis Maddox",
+       "status": "Delivered",
+       "qty": 8,
+       "unit_price": 28,
+       "ordered_on": "@today-12d"
+      }
+     },
+     {
+      "key": "so2",
+      "values": {
+       "product": "pr2",
+       "order_no": "SO-5201",
+       "customer": "Priscilla Banda",
+       "status": "Delivered",
+       "qty": 6,
+       "unit_price": 28,
+       "ordered_on": "@today-10d"
+      }
+     },
+     {
+      "key": "so3",
+      "values": {
+       "product": "pr4",
+       "order_no": "SO-5202",
+       "customer": "Craft fair booth",
+       "status": "Delivered",
+       "qty": 24,
+       "unit_price": 16,
+       "ordered_on": "@today-9d"
+      }
+     },
+     {
+      "key": "so4",
+      "values": {
+       "product": "pr5",
+       "order_no": "SO-5203",
+       "customer": "Lena Okafor-Wright",
+       "status": "Delivered",
+       "qty": 14,
+       "unit_price": 16,
+       "ordered_on": "@today-8d"
+      }
+     },
+     {
+      "key": "so5",
+      "values": {
+       "product": "pr6",
+       "order_no": "SO-5204",
+       "customer": "Corporate gifts, Adler Insurance",
+       "status": "Shipped",
+       "qty": 10,
+       "unit_price": 64,
+       "ordered_on": "@today-3d"
+      }
+     },
+     {
+      "key": "so6",
+      "values": {
+       "product": "pr3",
+       "order_no": "SO-5205",
+       "customer": "Dmitri Volkov",
+       "status": "Packed",
+       "qty": 5,
+       "unit_price": 28,
+       "ordered_on": "@today-1d"
+      }
+     },
+     {
+      "key": "so7",
+      "values": {
+       "product": "pr1",
+       "order_no": "SO-5206",
+       "customer": "Rosalind Tran",
+       "status": "New",
+       "qty": 4,
+       "unit_price": 28,
+       "ordered_on": "@today"
+      }
+     },
+     {
+      "key": "so8",
+      "values": {
+       "product": "pr4",
+       "order_no": "SO-5207",
+       "customer": "Online order batch",
+       "status": "New",
+       "qty": 9,
+       "unit_price": 16,
+       "ordered_on": "@today"
+      }
+     }
+    ],
+    "independentOf": {
+     "product": "Either record can be created or change status before the other."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each product belongs to one supplier.",
+    "fromTable": "product",
+    "fromField": "supplier",
+    "toTable": "supplier",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "product_by_supplier"
+   },
+   {
+    "describes": "A supplier lists its products.",
+    "fromTable": "supplier",
+    "fromField": "products",
+    "toTable": "product",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "supplier_from_products"
+   },
+   {
+    "describes": "Each purchase order belongs to one product.",
+    "fromTable": "purchase_order",
+    "fromField": "product",
+    "toTable": "product",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "purchase_order_by_product"
+   },
+   {
+    "describes": "A product lists its purchase orders.",
+    "fromTable": "product",
+    "fromField": "purchase_orders",
+    "toTable": "purchase_order",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "product_from_purchase_orders"
+   },
+   {
+    "describes": "Each purchase order belongs to one supplier.",
+    "fromTable": "purchase_order",
+    "fromField": "supplier",
+    "toTable": "supplier",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "purchase_order_by_supplier"
+   },
+   {
+    "describes": "Each sales order belongs to one product.",
+    "fromTable": "sales_order",
+    "fromField": "product",
+    "toTable": "product",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "sales_order_by_product"
+   },
+   {
+    "describes": "A product lists its sales orders.",
+    "fromTable": "product",
+    "fromField": "sales",
+    "toTable": "sales_order",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "product_from_sales"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "sale_form",
+    "name": "Record a sale",
+    "describes": "Log a customer order so stock counts stay honest.",
+    "audience": "staff",
+    "table": "sales_order",
+    "fields": [
+     {
+      "fieldKey": "order_no",
+      "ask": "Order number",
+      "required": true
+     },
+     {
+      "fieldKey": "product",
+      "ask": "Which product?",
+      "required": true
+     },
+     {
+      "fieldKey": "qty",
+      "ask": "How many?",
+      "required": true
+     },
+     {
+      "fieldKey": "customer",
+      "ask": "Who is it for?"
+     }
+    ],
+    "submitLabel": "Record the sale",
+    "confirmation": "Thanks. The order is in New."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_sales_order",
+    "name": "All sales orders",
+    "table": "sales_order",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_purchase_order",
+    "name": "All purchase orders",
+    "table": "purchase_order",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_product",
+    "name": "All products",
+    "table": "product",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_supplier",
+    "name": "All suppliers",
+    "table": "supplier",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "product_board",
+    "name": "Products by stock",
+    "table": "product",
+    "kind": "kanban",
+    "groupBy": "stock_status"
+   },
+   {
+    "token": "category_board",
+    "name": "Products by category",
+    "table": "product",
+    "kind": "kanban",
+    "groupBy": "category"
+   },
+   {
+    "token": "po_board",
+    "name": "Purchase order board",
+    "table": "purchase_order",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "po_calendar",
+    "name": "Expected deliveries",
+    "table": "purchase_order",
+    "kind": "calendar",
+    "dateField": "expected_on",
+    "allDay": true
+   },
+   {
+    "token": "so_board",
+    "name": "Order board",
+    "table": "sales_order",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "so_calendar",
+    "name": "Orders calendar",
+    "table": "sales_order",
+    "kind": "calendar",
+    "dateField": "ordered_on",
+    "allDay": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Inventory assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "product",
+     "describes": "Every product with its supplier, price and stock status."
+    },
+    {
+     "name": "related_tables",
+     "table": "supplier",
+     "describes": "The suppliers each product comes from."
+    }
+   ],
+   "question": {
+    "ask": "How many products are out of stock?",
+    "whyItMatters": "Esme reorders everything marked Out first.",
+    "expect": {
+     "table": "product",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "stock_status": "Out"
+     },
+     "answer": 1,
+     "unit": "products"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open products by stock.",
+    "action": {
+     "kind": "open",
+     "surface": "product_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "product_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open products by category.",
+    "action": {
+     "kind": "open",
+     "surface": "category_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "category_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open purchase order board.",
+    "action": {
+     "kind": "open",
+     "surface": "po_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "po_board",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "marigoldandrye.net",
+    "beeswaxbrothers.net",
+    "glassworksnorth.net",
+    "wickandwonder.net"
+   ],
+   "fictionalStreets": [
+    "Brindle Lane"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "inventory-tracker",
+   "parent": null,
+   "title": "Inventory Tracker",
+   "icon": {
+    "emoji": "📦"
+   },
+   "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Products show received and sold quantities from their orders. Move a product to Reorder soon when it reaches its reorder point, then raise a purchase order."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:receiving"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:reorder-rules"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:stock-take"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Low stock"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "product",
+       "view": "product_board"
+      },
+      "inline": true,
+      "title": "Low stock",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By stock status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "stock_status"
+       },
+       {
+        "id": "view-low",
+        "name": "Needs reorder",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "stock_status": [
+          "Reorder soon",
+          "Out"
+         ]
+        }
+       },
+       {
+        "id": "view-cat",
+        "name": "By category",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "category"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Purchase orders"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "purchase_order",
+       "view": "po_board"
+      },
+      "inline": true,
+      "title": "Purchase orders",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Expected deliveries",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "expected_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All orders",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "expected_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Sales orders"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "sales_order",
+       "view": "so_board"
+      },
+      "inline": true,
+      "title": "Sales orders",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "To ship",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "ordered_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All sales",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "ordered_on",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Suppliers"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "supplier",
+       "view": "all_supplier"
+      },
+      "inline": true,
+      "title": "Suppliers",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-tbl",
+        "name": "All suppliers",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "view-best",
+        "name": "Excellent rating",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "rating": "Excellent"
+        }
+       }
+      ],
+      "activeViewId": "view-tbl"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "inventory-tracker",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "product",
+           "view": "all_product"
+          },
+          "inline": true,
+          "title": "Products by stock status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "Products by stock status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "stock_status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "sales_order",
+           "view": "all_sales_order"
+          },
+          "inline": true,
+          "title": "Revenue by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Revenue by status",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "status",
+             "op": "sum",
+             "field": "revenue"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "purchase_order",
+           "view": "all_purchase_order"
+          },
+          "inline": true,
+          "title": "Spend by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Spend by status",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "status",
+             "op": "sum",
+             "field": "total"
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Orders on the way"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "purchase_order",
+       "view": "all_purchase_order"
+      },
+      "inline": true,
+      "title": "Orders on the way",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-way",
+        "name": "Ordered or shipped",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "status": [
+          "Ordered",
+          "Shipped"
+         ]
+        }
+       }
+      ],
+      "activeViewId": "view-way"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Orders to ship"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "sales_order",
+       "view": "all_sales_order"
+      },
+      "inline": true,
+      "title": "Orders to ship",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-ship",
+        "name": "New or packed",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "status": [
+          "New",
+          "Packed"
+         ]
+        }
+       }
+      ],
+      "activeViewId": "view-ship"
+     }
+    }
+   ]
+  },
+  {
+   "key": "receiving",
+   "parent": "inventory-tracker",
+   "title": "Receiving checklist",
+   "icon": {
+    "emoji": "📥"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Match the delivery to the purchase order"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Count and inspect every box"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Mark the order Received and set the date"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Update the product stock status"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Note any shortage with the supplier"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "reorder-rules",
+   "parent": "inventory-tracker",
+   "title": "Reorder rules",
+   "icon": {
+    "emoji": "🔁"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Reorder when stock reaches the reorder point."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Order enough to cover the supplier lead time plus two weeks."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Never let a best seller show Out for more than a day."
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Quantities received and sold come from orders, so mark orders Received and Delivered promptly."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Info"
+     }
+    }
+   ]
+  },
+  {
+   "key": "stock-take",
+   "parent": "inventory-tracker",
+   "title": "Monthly stock take",
+   "icon": {
+    "emoji": "🧮"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Count what is on the shelf and compare it with the numbers in each product."
+      }
+     ]
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Count finished candles and tins"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Count raw supplies"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Fix any differences with a note"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Reset stock status for every product"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  }
+ ]
+}
