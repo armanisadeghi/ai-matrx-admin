@@ -1471,6 +1471,14 @@
 .spaces-db-new-more { display: inline-flex; align-items: center; padding: 0 6px; border-left: 1px solid var(--spaces-on-accent-rule); }
 .spaces-db-new-main:hover, .spaces-db-new-more:hover { background: var(--spaces-accent-hover); }
 .spaces-db-body { min-width: 0; overflow-x: auto; }
+/* The inline database sits inside the rich-text editor, whose stylesheet carries ProseMirror's own
+   UNLAYERED table rules (`.ProseMirror table { width:100%; table-layout:fixed; overflow:hidden }`,
+   `.ProseMirror td, th { position:relative }`). Unlayered beats every layered utility, so the data
+   table lost its own widths and its pinned Actions column stopped being sticky: a table wider than
+   its block pushed Actions off the right edge (406px past it at 708px). The table takes its own
+   layered layout back here. Proof: design-system demo/actions-fit-proof.html?pm=1&hostfix=1. */
+.spaces-db-frame .spaces-db-body table { width: revert-layer; table-layout: revert-layer; overflow: revert-layer; border-collapse: revert-layer; }
+.spaces-db-frame .spaces-db-body th, .spaces-db-frame .spaces-db-body td { position: revert-layer; vertical-align: revert-layer; box-sizing: revert-layer; }
 /* A database in a narrow column (Notion): the frame never grows past its column — the toolbar wraps
    onto its own lines and keeps every control inside the frame (it spilled out to the right of a 128px
    column), the frame's padding shrinks, and the table scrolls sideways inside the body. The block's
