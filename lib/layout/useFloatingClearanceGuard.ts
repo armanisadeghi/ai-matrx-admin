@@ -83,7 +83,7 @@ export function useFloatingClearanceGuard(enabled: boolean = process.env.NODE_EN
       // A scroller at its end is full by definition; a non-scrolling surface whose content is
       // shorter than its frame (rows still loading, a short list) has free space, not padding.
       const scrolls = scroller.scrollHeight > scroller.clientHeight + END_SLACK_PX;
-      if (!end.last || !(scrolls || end.contentFills) || !isDoublePadded(end.endSpacePx, window.innerWidth)) {
+      if (!end.last || !(scrolls || end.contentFills) || !isDoublePadded(end.endSpacePx, window.innerWidth, window.innerHeight - end.viewBottom)) {
         // A surface flagged while it was settling is cleared once it reads right.
         if (rhythmFlagged.has(scroller)) {
           rhythmFlagged.delete(scroller);

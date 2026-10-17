@@ -199,6 +199,8 @@ export function measurePageEnd(
 }
 
 /** True when a page ends with more empty space than the scale allows — the double-padding class. */
-export function isDoublePadded(endSpacePx: number, viewportWidth: number): boolean {
-  return endSpacePx > pageRhythmFor(viewportWidth).end + PAGE_RHYTHM_TOLERANCE_PX;
+export function isDoublePadded(endSpacePx: number, viewportWidth: number, footGapPx = 0): boolean {
+  // The shell's runway is measured from the viewport's floor. A scroller that itself ends `footGapPx` above
+  // the floor (a side rail inside the page's frame) is that much further from the floating chrome already.
+  return endSpacePx > pageRhythmFor(viewportWidth).end + PAGE_RHYTHM_TOLERANCE_PX + Math.max(0, footGapPx);
 }

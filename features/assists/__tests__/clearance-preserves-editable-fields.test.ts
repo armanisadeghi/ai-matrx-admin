@@ -47,3 +47,30 @@ describe("Assists clearance preserves editable fields", () => {
     },
   );
 });
+
+describe("Assists clearance leaves a runway owner alone", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("adds no inset to a [data-matrx-page-scroll] scroller inside .shell-main (the shell's runway is its page end)", () => {
+    const shell = document.createElement("div");
+    shell.className = "shell-main";
+    const rail = document.createElement("aside");
+    rail.setAttribute("data-matrx-page-scroll", "");
+    rail.style.overflowY = "auto";
+    shell.appendChild(rail);
+    const dock = document.createElement("button");
+    dock.setAttribute("data-assists-dock", "");
+    document.body.append(shell, dock);
+    Object.defineProperty(rail, "scrollHeight", { value: 1000 });
+    Object.defineProperty(rail, "clientHeight", { value: 200 });
+    rail.getBoundingClientRect = () => bounds(100, 740);
+    dock.getBoundingClientRect = () => bounds(700, 732);
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    Object.defineProperty(document, "elementsFromPoint", { configurable: true, value: () => [dock, rail] });
+    applyAssistClearance();
+    expect(rail.hasAttribute("data-assist-clearance")).toBe(false);
+    expect(rail.style.paddingBottom).toBe("");
+  });
+});
