@@ -22,6 +22,11 @@ import { ToolResultTableBar } from "@/features/tool-result-tables/ToolResultTabl
 
 type Pane = "answer" | "raw";
 
+/** The words a source gave for finding nothing ("That account doesn't exist."), or null when it gave none. */
+function emptyReason(view: ToolCallView): string | null {
+  return view.error?.message ?? null;
+}
+
 export function ToolResult({
   view,
   clientError,
@@ -120,9 +125,16 @@ export function ToolResult({
   }
 
   if (view.status === "empty") {
+    // Set when the source named a reason ("That account doesn't exist.").
+    const why = emptyReason(view);
     return (
       <div data-tool-result="empty">
         <EmptyState icon={<PackageOpen className="h-5 w-5" />} title="Nothing found" line="You weren't charged." />
+        {why ? (
+          <p className="mt-1 text-center text-sm text-foreground" data-tool-empty-why="">
+            {why}
+          </p>
+        ) : null}
         <div className="mt-3 flex justify-center">
           <Button variant="outline" onClick={onRunAgain}>
             Change and try again
