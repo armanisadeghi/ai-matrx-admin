@@ -75,6 +75,7 @@ import {
 import {
   useOpenCloudBrowserCanvas,
   cloudBrowserCanvasSourceId,
+  useCloudBrowserSurfaceKind,
 } from "@/features/cloud-browser/hooks/useOpenCloudBrowserCanvas";
 import { useOpenCloudComputerCanvas } from "@/features/cloud-computer/useOpenCloudComputerCanvas";
 import { flattenResourcePickerItems } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
@@ -224,6 +225,7 @@ registerChatUi({
   useOpenCloudBrowserCanvas,
   cloudBrowserCanvasSourceId,
   useOpenCloudComputerCanvas,
+  useCloudBrowserSurfaceKind,
   MessageFilesStrip,
   RulebookNudge,
   NegativeVerdictFollowUp,

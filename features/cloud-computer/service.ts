@@ -59,11 +59,20 @@ export function parseCloudComputer(raw: unknown): CloudComputer {
  * truth: `null` means "not read yet".
  */
 let lastKnown: CloudComputer | null = null;
+const lastKnownListeners = new Set<() => void>();
 export function lastKnownCloudComputer(): CloudComputer | null {
   return lastKnown;
 }
+/** Told whenever a new machine read lands (for `useSyncExternalStore`). */
+export function subscribeLastKnownCloudComputer(listener: () => void): () => void {
+  lastKnownListeners.add(listener);
+  return () => {
+    lastKnownListeners.delete(listener);
+  };
+}
 function remember(machine: CloudComputer): CloudComputer {
   lastKnown = machine;
+  for (const listener of lastKnownListeners) listener();
   return machine;
 }
 

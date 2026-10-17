@@ -986,7 +986,11 @@ export async function mintStreamTicket(
   const { data } = await postJson<unknown>(
     `/browser-manager/runs/${runId}/stream-ticket`,
     { mode, takeover },
-    { organizationId },
+    // A view refusal (409, a server without the watch stream yet) is the
+    // viewer's expected fallback, never an Error Inspector incident.
+    mode === "view"
+      ? { organizationId, expectedErrorStatuses: [409] }
+      : { organizationId },
   );
   const value = record(data);
   const control = value.control === null ? null : record(value.control);
@@ -1127,9 +1131,21 @@ export function isStreamGone(error: unknown): boolean {
     error.status === 404 ||
     error.status === 410 ||
     error.code === "superseded" ||
+    error.code === "stream_superseded" ||
+    error.code === "stream_ended" ||
     error.code === "taken_over" ||
     error.code === "superseded_by_takeover"
   );
+}
+
+/**
+ * A view-stream mint refused because this server only streams to the person in
+ * control (409 `not_controller`, before the watch stream shipped). The viewer
+ * falls back to stills and tries the live view again on its next open.
+ */
+export function isViewStreamUnavailable(error: unknown): boolean {
+  if (!(error instanceof BackendApiError)) return false;
+  return error.status === 409 || error.code === "not_controller";
 }
 export async function claimStreamTicket(
   ticket: StreamTicketEnvelope,

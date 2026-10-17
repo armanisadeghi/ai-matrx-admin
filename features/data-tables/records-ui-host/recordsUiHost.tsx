@@ -62,6 +62,7 @@ import { RECORDS_TEXT, recordsTextBox } from "@/features/unified-data/recordsCle
 import { openPersonPeek, type PersonTarget } from "./personPeekStore";
 import { RECORDS_REFERENCES } from "@/features/unified-data/recordsReferences";
 import { RECORDS_AGENT_PORTS } from "@/features/data-tables/records-ui-host/recordsAgentPorts";
+import { RECORDS_MAP_PORTS } from "@/features/data-tables/records-ui-host/recordsMapPorts";
 import {
   type GridContextChannel,
 } from "@/features/unified-data/grid-agent-context/RecordStoreTableSurface";
@@ -247,6 +248,7 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // The older Sheet's AI pieces (Sheet retirement): "Help with this…" in the formula box runs
     // data.formula_writing, and the settings panel is the matrx-user/table-settings surface.
     ...RECORDS_AGENT_PORTS,
+    ...RECORDS_MAP_PORTS,
     // Long text is edited in the platform's one text box with its "…" menu (records-ui `textBox`).
     textBox: recordsTextBox,
     // "Subscribe in your calendar…" on a view with a date field (records-ui ≥0.113.36 `calendarFeed`).

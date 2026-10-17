@@ -28,6 +28,7 @@ import "@ai-matrx/messaging/styles.css";
 // video elements, no stage, no control bar.
 import "@ai-matrx/meet/styles.css";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import SpeedInsightsAfterMount from "@/components/vitals/SpeedInsightsAfterMount";
 import NoticeSurfaceGuard from "@/lib/notice-open/NoticeSurfaceGuard";
 import NoticeRouterGuard from "@/lib/notice-open/NoticeRouterGuard";
 import { cn } from "@/lib/utils";
@@ -174,6 +175,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                     Children (dock, panels) are position:fixed themselves.
                     A stacking context on this wrapper would block their backdrop-filter in Chromium. */}
           <div id="glass-layer" />
+          {/* Vercel Speed Insights: real-user Core Web Vitals per route (Arman approved 2026-10-17). Browser-only, after mount: never in the server graph or first paint. */}
+          <SpeedInsightsAfterMount />
         </ViewportHintProvider>
       </body>
     </html>

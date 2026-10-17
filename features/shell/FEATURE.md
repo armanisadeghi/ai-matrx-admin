@@ -62,8 +62,9 @@ rail's icon column (x = 12px) — collapsed = icon, expanded = icon + name.
 
 - **`ShellOrgSwitcher` is THE organization control of the chrome.** It draws
   the active organization's logo or 2–3 letter abbreviation
-  (`organizations/components/OrganizationMark`), asks "Choose organization"
-  with a primary ring while boot answered with none, and lights a dot + a
+  (`organizations/components/OrganizationMark`), never asks for one (the
+  load ladder always picks one; a person in no organization sees a quiet
+  "Create an organization" that opens /organizations), and lights a dot + a
   one-click "Switch to …" when the page's object lives in another of the
   person's organizations (`pageObjectOrganization.ts`). It reads/writes through
   `useActiveOrganizationPicker` → `chooseActiveOrganization` (cookie + sync

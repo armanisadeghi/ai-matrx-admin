@@ -16,7 +16,7 @@
  * live run/screenshot/handoff state is never serialized to `canvas_items`.
  */
 
-import { useCallback } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { useArtifactCanvasActions } from "@/features/canvas/host/useArtifactCanvas";
 import {
@@ -26,6 +26,7 @@ import {
 import {
   getCloudComputer,
   lastKnownCloudComputer,
+  subscribeLastKnownCloudComputer,
 } from "@/features/cloud-computer/service";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectRun } from "../redux/selectors";
@@ -75,6 +76,30 @@ export function cloudBrowserCanvasSourceId(conversationId: string): string {
   return lastKnownCloudComputer()?.exists
     ? cloudComputerCanvasSourceId(conversationId)
     : fleetBrowserSourceId(conversationId);
+}
+
+/**
+ * What the composer's browser pill is called (`@ai-matrx/chat` slot
+ * `useCloudBrowserSurfaceKind`): "computer" when the person's browser IS their
+ * Cloud Computer — the slice's run is on the machine, or the person has one and
+ * the pill opens the Computer tab — else "browser".
+ */
+export function cloudBrowserSurfaceKind(input: {
+  sliceRun: Pick<CloudBrowserRun, "executionTarget"> | null;
+  machineExists: boolean | null;
+}): "computer" | "browser" {
+  if (input.sliceRun) return input.sliceRun.executionTarget === "sandbox" ? "computer" : "browser";
+  return input.machineExists === true ? "computer" : "browser";
+}
+
+export function useCloudBrowserSurfaceKind(): "computer" | "browser" {
+  const sliceRun = useAppSelector(selectRun);
+  const machineExists = useSyncExternalStore(
+    subscribeLastKnownCloudComputer,
+    () => lastKnownCloudComputer()?.exists ?? null,
+    () => null,
+  );
+  return cloudBrowserSurfaceKind({ sliceRun, machineExists });
 }
 
 /** The one payload both verbs use, so offering then opening shows ONE pane. */

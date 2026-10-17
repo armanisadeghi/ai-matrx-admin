@@ -4,8 +4,9 @@
  * ComputerView — the "Computer" tab of the chat side panel: the person's one
  * cloud machine, shared by all their agents. Stopped -> Wake; waking -> an
  * honest wait; ready -> the live screen (thumbnail, click to enlarge) with the
- * Watching / Take control pill. The screen is the existing Cloud Browser stream
- * and take-control flow — nothing here re-implements them.
+ * Watching / Take control pill. Watching and driving are ONE open stream: Take
+ * control turns input on in the same frame. The stream and take-control flow
+ * are the existing Cloud Browser ones — nothing here re-implements them.
  *
  * This is the person's CLOUD machine, not their own computer (Local servers).
  */
@@ -28,12 +29,14 @@ import { useCloudBrowserProfileContextSync } from "@/features/cloud-browser/hook
 import {
   browserActionBlockedReason,
   isStreamGone,
+  isViewStreamUnavailable,
   mintStreamTicket,
   renewStreamTicket,
 } from "@/features/cloud-browser/service";
 import type { StreamTicketEnvelope } from "@/features/cloud-browser/types";
 import { useCloudComputer } from "./useCloudComputer";
 import { ScaledFrame } from "./ScaledFrame";
+import { liveStream, type HeldStream } from "./liveStream";
 
 const WAITING = "animate-ssr-shimmer-opacity";
 
@@ -134,7 +137,11 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   const label = agentName ? `${agentName}'s screen` : "Agent's screen";
 
   const [large, setLarge] = useState(false);
-  const [held, setTicket] = useState<{ ticket: StreamTicketEnvelope; revision: number } | null>(null);
+  const [held, setHeld] = useState<HeldStream | null>(null);
+  // Whether the server streams a live picture to a person who is only
+  // watching. "no" = an older server (409 `not_controller`): watching falls
+  // back to stills until the next open of this tab.
+  const [viewSupport, setViewSupport] = useState<"unknown" | "yes" | "no">("unknown");
   const [opening, setOpening] = useState(false);
   const [openError, setOpenError] = useState<string | null>(null);
   // The claim this view held is gone (superseded by another viewer or tab, or
@@ -153,33 +160,40 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     !!run &&
     !["provisioning", "stopping", "stopped", "failed", "failed_persistence"].includes(run.state);
   const runFailed = run?.state === "failed" || run?.state === "failed_persistence";
+  const revision = controller?.controlRevision ?? 0;
 
-  // Watching = the bounded screenshot session (the server mints a live stream
-  // only to the person who holds control). Control = the Selkies stream.
-  // No stills while ANY person holds the wheel (the server refuses them,
-  // `controlled_by_other`), and none while a refusal is backing off.
+  // THE ONE CONNECTION: watching and driving are the same open stream; taking
+  // control only turns input on (no new ticket, no reconnect).
+  const stream = liveStream({
+    held,
+    runId: run?.id ?? null,
+    lost,
+    viewSupport,
+    inControl,
+    revision,
+  });
+
+  // Stills only when this server cannot stream to a watcher, and none while
+  // ANY person holds the wheel (the server refuses them, `controlled_by_other`)
+  // or while a refusal is backing off.
   const shots = useScreenshotSession(run?.id ?? null, false);
   const frame = shots.frames[0] ?? null;
-  const wantsStills = runReady && controller?.kind !== "human";
+  const wantsStills =
+    runReady && viewSupport === "no" && !stream && controller?.kind !== "human";
   useEffect(() => {
     if (wantsStills && !shots.active && !shots.paused) shots.start();
     else if (!wantsStills && shots.active) shots.stop();
   }, [wantsStills, shots.active, shots.paused]);
 
-  const revision = controller?.controlRevision ?? 0;
-  // A stream belongs to one control revision: once control ends or moves it is
-  // simply not the live one (no reset-in-effect needed).
-  const ticket =
-    inControl && !lost && held?.revision === revision ? held.ticket : null;
   // Another viewer took the seat: drop the stream at once (its claim is about
   // to be superseded server-side anyway).
-  const seatTaken = !!ticket && seat.elsewhere;
+  const seatTaken = !!stream && seat.elsewhere;
   useEffect(() => {
     if (seatTaken) setLost(true);
   }, [seatTaken]);
 
   const open = useCallback(
-    async (takeover: boolean) => {
+    async (mode: "view" | "control", takeover: boolean) => {
       if (!run) return;
       // This is the visible view of the run, so it takes the seat.
       seat.hold(true);
@@ -187,12 +201,15 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
       setOpenError(null);
       setLost(false);
       try {
-        setTicket({
-          ticket: await mintStreamTicket(run.id, "control", takeover),
-          revision,
-        });
+        const ticket = await mintStreamTicket(run.id, mode, takeover);
+        setHeld({ ticket, kind: mode, revision, runId: run.id });
+        if (mode === "view") setViewSupport("yes");
       } catch (e) {
-        setTicket(null);
+        if (mode === "view" && isViewStreamUnavailable(e)) {
+          setViewSupport("no");
+          return;
+        }
+        setHeld(null);
         setOpenError(
           e instanceof BackendApiError
             ? e.userMessage
@@ -207,30 +224,44 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     [run, revision, seat],
   );
 
-  // Open the control stream once per control revision, so a refusal never loops.
+  // Open ONE stream as soon as the run is live: a watch stream, or a control
+  // stream when this person already drives (a reload mid-control). Once per
+  // key, so a refusal never loops.
   const attempted = useRef<string | null>(null);
+  const wantMode: "view" | "control" | null = !runReady || stream || lost || opening
+    ? null
+    : inControl
+      ? "control"
+      : viewSupport === "no"
+        ? null
+        : "view";
   useEffect(() => {
-    if (!inControl || !runReady || !run || opening || ticket || lost) return;
-    const key = `${run.id}:${controller?.controlRevision ?? 0}`;
+    if (!wantMode || !run) return;
+    const key = `${run.id}:${wantMode === "control" ? `control:${revision}` : "view"}`;
     if (attempted.current === key) return;
     attempted.current = key;
-    void open(false);
-  }, [inControl, runReady, run, opening, ticket, lost, controller?.controlRevision, open]);
+    void open(wantMode, false);
+  }, [wantMode, run, revision, open]);
 
-  // Renew the claim; the first refusal ends the loop (a superseded ticket
-  // answers 404 on every tick) and the view offers to take control again.
+  // Renew the control lease while this person drives. The first refusal ends
+  // the loop (a superseded claim answers on every tick); a gone stream offers
+  // to open again, a watch stream simply keeps watching.
   useEffect(() => {
-    if (!ticket?.control) return;
+    if (!stream || !inControl) return;
+    const every = (stream.ticket.control?.renewIntervalSeconds ?? 20) * 1000;
     const timer = window.setInterval(() => {
-      void renewStreamTicket(ticket).catch((e: unknown) => {
+      void renewStreamTicket(stream.ticket).catch((e: unknown) => {
         window.clearInterval(timer);
-        if (isStreamGone(e)) setLost(true);
-        else setOpenError("The screen connection expired.");
-        setTicket(null);
+        if (isStreamGone(e)) {
+          setLost(true);
+        } else if (stream.kind === "control") {
+          setOpenError("The screen connection expired.");
+          setHeld(null);
+        }
       });
-    }, ticket.control.renewIntervalSeconds * 1000);
+    }, every);
     return () => window.clearInterval(timer);
-  }, [ticket]);
+  }, [stream, inControl]);
 
   const claim = useCallback(
     async (opts?: { immediate?: boolean }) => {
@@ -263,7 +294,9 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     setBusy(true);
     try {
       await cb.returnControl();
-      setTicket(null);
+      // A server with the watch stream keeps this same connection as the
+      // live picture; an older one ends it with control.
+      if (viewSupport !== "yes") setHeld(null);
       setLost(false);
     } catch (e) {
       toastErrorAlreadyCaptured(
@@ -272,7 +305,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     } finally {
       setBusy(false);
     }
-  }, [cb]);
+  }, [cb, viewSupport]);
 
   if (runFailed || (cb.error && !run)) {
     const message = cb.error?.message ?? run?.errorDetailSafe ?? "The screen could not open.";
@@ -291,8 +324,9 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     );
   }
 
-  const viewport = ticket?.viewport ?? { width: 1280, height: 720 };
+  const viewport = stream?.ticket.viewport ?? { width: 1280, height: 720 };
   const claiming = busy || takeover.phase === "claiming";
+  const reopenMode = inControl ? "control" : "view";
 
   return (
     <div className="flex h-full flex-col gap-2 p-2">
@@ -304,13 +338,16 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
           )}
           style={large ? undefined : { aspectRatio: "16 / 9" }}
         >
-          {inControl && ticket ? (
+          {stream ? (
+            // Keyed by the connection, never by watching/driving: taking
+            // control must not remount (reconnect) the live picture.
             <ScaledFrame
-              src={ticket.endpoint}
+              key={stream.ticket.streamSessionId}
+              src={stream.ticket.endpoint}
               width={viewport.width}
               height={viewport.height}
               title={label}
-              interactive={large}
+              interactive={inControl && large}
             />
           ) : !inControl && frame ? (
             <img
@@ -323,11 +360,15 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               role={openError ? "alert" : "status"}
               className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center text-muted-foreground"
             >
-              {inControl && lost ? (
+              {lost ? (
                 <>
                   <p className="text-xs">Opened somewhere else</p>
-                  <Button variant="outline" icon={<Hand />} onClick={() => void open(true)}>
-                    Take control again
+                  <Button
+                    variant="outline"
+                    icon={inControl ? <Hand /> : undefined}
+                    onClick={() => void open(reopenMode, true)}
+                  >
+                    {inControl ? "Take control again" : "Show it here"}
                   </Button>
                 </>
               ) : openError ? (
@@ -335,11 +376,11 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
                   <p className="text-xs">
                     {openError} <ErrorAlchemyMenu error={openError} />
                   </p>
-                  <Button variant="outline" onClick={() => void open(true)}>
+                  <Button variant="outline" onClick={() => void open(reopenMode, true)}>
                     Show it here
                   </Button>
                 </>
-              ) : someoneElseInControl ? (
+              ) : someoneElseInControl && viewSupport === "no" ? (
                 <p className="text-xs">
                   {controller?.displayName
                     ? `${controller.displayName} is in control`
@@ -352,7 +393,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               )}
             </div>
           )}
-          {!large && (frame || ticket) ? (
+          {!large && (frame || stream) ? (
             <button
               type="button"
               aria-label={`Enlarge ${label}`}
@@ -378,7 +419,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
           <Button
             variant="quiet"
             icon={<Maximize2 />}
-            disabled={!frame && !ticket}
+            disabled={!frame && !stream}
             onClick={() => setLarge(true)}
           >
             {label}

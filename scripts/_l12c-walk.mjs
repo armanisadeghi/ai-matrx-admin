@@ -15,7 +15,13 @@ const net = [];
 page.on("response", (r) => { if (/\/tools\/calls/.test(r.url())) net.push(`${r.request().method()} ${r.status()} ${r.url().split("/tools/")[1]}`); });
 await page.goto(open, { waitUntil: "commit", timeout: 180000 }).catch(() => {});
 await page.waitForTimeout(4000);
-await page.goto(`${origin}${base}`, { waitUntil: "domcontentloaded", timeout: 180000 });
+for (let i = 0; i < 80; i++) {
+  await page.goto(`${origin}${base}`, { waitUntil: "domcontentloaded", timeout: 180000 }).catch(() => {});
+  const capped = await page.getByText("walk cap", { exact: false }).count().catch(() => 0);
+  if (!capped && (await page.getByRole("tab", { name: "Account & posts", exact: true }).count().catch(() => 0))) break;
+  if (!capped) { await page.waitForTimeout(8000); if (await page.getByRole("tab", { name: "Account & posts", exact: true }).count().catch(() => 0)) break; }
+  await page.waitForTimeout(20000);
+}
 await page.getByRole("tab", { name: "Account & posts", exact: true }).waitFor({ timeout: 170000 });
 await page.waitForTimeout(3000);
 const mode = flag("mode");
