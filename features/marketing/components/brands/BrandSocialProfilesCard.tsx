@@ -371,6 +371,28 @@ export function BrandSocialProfilesCard({
   const rowActions = (r: ProfileRow): MatrxTableIconAction[] => {
     const a = r.account;
     const actions: MatrxTableIconAction[] = [];
+    // Never read (no profile, or tracked with nothing in it): the person's own browser can still get it.
+    const canCapture = Boolean(
+      a && GUIDED_CAPTURE_PLATFORMS.has(a.platform) && (!a.profileId || (a.trackedAccountId && a.postsTracked === 0)),
+    );
+    const captureAction: MatrxTableIconAction = {
+      id: "capture",
+      icon: Globe,
+      label: "Capture with my browser",
+      tooltip: canCapture ? "Capture with my browser" : "Nothing to capture",
+      disabled: !canCapture || busyRow !== null,
+      onClick: () => {
+        if (!a || !canCapture) return;
+        openCapture({
+          platform: a.platform,
+          handleOrUrl: a.profileUrl || a.externalUrl || a.handle,
+          ...(a.profileId ? { profileId: a.profileId } : {}),
+          ...(a.trackedAccountId ? { trackedAccountId: a.trackedAccountId } : {}),
+          ...(a.propertyId ? { propertyId: a.propertyId } : {}),
+          brandId,
+        });
+      },
+    };
     if (canEdit) {
       const canTrack = Boolean(a && r.tracking === "Not tracked");
       actions.push({
@@ -382,28 +404,6 @@ export function BrandSocialProfilesCard({
         disabled: !canTrack || busyRow !== null,
         onClick: () => {
           if (a && canTrack) void trackOwn(a);
-        },
-      });
-      // Never read (no profile, or tracked with nothing in it): the person's own browser can still get it.
-      const canCapture = Boolean(
-        a && GUIDED_CAPTURE_PLATFORMS.has(a.platform) && (!a.profileId || (a.trackedAccountId && a.postsTracked === 0)),
-      );
-      actions.push({
-        id: "capture",
-        icon: Globe,
-        label: "Capture with my browser",
-        tooltip: canCapture ? "Capture with my browser" : "Nothing to capture",
-        disabled: !canCapture || busyRow !== null,
-        onClick: () => {
-          if (!a || !canCapture) return;
-          openCapture({
-            platform: a.platform,
-            handleOrUrl: a.profileUrl || a.externalUrl || a.handle,
-            ...(a.profileId ? { profileId: a.profileId } : {}),
-            ...(a.trackedAccountId ? { trackedAccountId: a.trackedAccountId } : {}),
-            ...(a.propertyId ? { propertyId: a.propertyId } : {}),
-            brandId,
-          });
         },
       });
     }
@@ -429,6 +429,7 @@ export function BrandSocialProfilesCard({
             if (property) onEdit(property);
           },
         },
+        captureAction,
         {
           id: "delete",
           icon: Trash2,
@@ -492,6 +493,7 @@ export function BrandSocialProfilesCard({
         }}
         toolbar={{ searchPlaceholder: "Search profiles…", singleRow: true }}
         rowActions={rowActions}
+        rowActionsInline={3}
         emptyState={{
           title: "No social profiles yet",
           action: canEdit ? (
