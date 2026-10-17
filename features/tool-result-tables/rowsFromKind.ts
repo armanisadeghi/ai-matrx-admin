@@ -32,6 +32,7 @@ type Schema = {
 };
 
 const SYNTHETIC_KEY = "Key";
+const ROW_KEY_FIELD = "row_key";
 const CONVENTIONAL_KEYS = ["url", "link", "profile_url", "post_url", "id", "email", "domain", "keyword", "name"];
 
 function resolve(node: Schema | undefined, root: Schema | undefined): Schema | undefined {
@@ -111,7 +112,10 @@ export function describeRows(output: unknown, schema?: unknown): ResultRows | nu
   }
   if (columns.length === 0) return null;
 
-  const marked = columns.filter((c) => (resolve(props[c.field], root) as Schema | undefined)?.["x-row-key"] === true);
+  // The key is declared on the kind: a field named `row_key` (what an existing kind can add without breaking
+  // its contract) or any field marked `x-row-key`.
+  const declaredKey = columns.filter((c) => c.field === ROW_KEY_FIELD);
+  const marked = declaredKey.length > 0 ? declaredKey : columns.filter((c) => (resolve(props[c.field], root) as Schema | undefined)?.["x-row-key"] === true);
   const conventional = CONVENTIONAL_KEYS.map((k) => columns.find((c) => c.field === k)).find(Boolean);
   const keyColumns = marked.length > 0 ? marked : conventional ? [conventional] : columns;
 

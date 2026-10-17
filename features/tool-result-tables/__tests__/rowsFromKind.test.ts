@@ -45,6 +45,12 @@ describe("a Tool answer read as table rows", () => {
     expect(d.rows.map((r) => r.Key)).toEqual(["x | 1", "x | 2"]);
   });
 
+  it("uses a field named row_key as the key", () => {
+    const d = describeRows({ items: [{ url: "u1", row_key: "tiktok:1", n: 1 }, { url: "u1", row_key: "tiktok:2", n: 2 }] })!;
+    expect(d.keyHeader).toBe("Row key");
+    expect(d.rows).toHaveLength(2);
+  });
+
   it("reads a single-record answer as one row and skips the kind marker", () => {
     const d = describeRows({ __kind: "domain_authority", domain: "a.com", domain_authority: 57, nested: { a: 1 } })!;
     expect(d.rowsKey).toBeNull();
