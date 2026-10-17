@@ -37,6 +37,12 @@ export interface StudioMode {
   href?: string;
   /** Set = not built yet; the card announces this tracked promise instead of starting. */
   comingSoonId?: string;
+  /**
+   * Set = this way in sits in the row's one "Import" menu (with its line under it) instead of
+   * taking its own chip: the row stays one line at full width and the developer-leaning ways in
+   * stay one press away without competing with the four first-timer ones.
+   */
+  inImportMenu?: boolean;
 }
 
 export const STUDIO_MODES: readonly StudioMode[] = [
@@ -78,6 +84,7 @@ export const STUDIO_MODES: readonly StudioMode[] = [
     line: "Upload your Claude export; pick the chat to copy",
     icon: ArrowDownToLine,
     href: "/agents/new/studio/from-claude",
+    inImportMenu: true,
   },
   {
     id: "with-claude-code",
@@ -86,6 +93,7 @@ export const STUDIO_MODES: readonly StudioMode[] = [
     line: "Copy a prompt; Claude Code sends us the job",
     icon: TerminalSquare,
     href: "/agents/new/studio/with-claude-code",
+    inImportMenu: true,
   },
 ];
 

@@ -26,6 +26,7 @@ import { ChevronDown, ChevronRight, Hammer, Loader2, Plus } from "lucide-react";
 import { AgentListDropdown, useAgentListCore } from "@ai-matrx/agents/catalog/react";
 import { Button, RegionSkeleton, Tile } from "@ai-matrx/design-system/controls";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ExamplesField, filledExamples } from "@/features/agents/factory/components/ExamplesField";
 import { startAgentBuild } from "@/features/agents/factory/service";
@@ -70,6 +71,8 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
   const [navigating, startNavigation] = useTransition();
   const boxRef = useRef<HTMLTextAreaElement>(null);
   const openMode = STUDIO_MODES.find((m) => m.id === open)!;
+  const importModes = STUDIO_MODES.filter((m) => m.inImportMenu);
+  const importing = navigating && importModes.some((m) => m.id === leaving);
 
   const { agents, isLoading } = useAgentListCore({ consumerId: "agent-studio-start", visibleTabs: ["mine", "shared"] });
   const recent = recentAgents(agents);
@@ -157,12 +160,12 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
   return (
     <StudioStage headline={openMode.headline ?? openMode.title} headlineKey={`h-${open}`} onBack={onBack} aside={planLink}>
       <div
-        className="mt-6 grid grid-cols-2 gap-2 @xl:flex @xl:flex-wrap @xl:justify-center"
+        className="mt-6 grid grid-cols-2 gap-2 @xl:flex @xl:justify-center"
         role="group"
         aria-label="Ways to start"
         data-testid="studio-modes"
       >
-        {STUDIO_MODES.map((mode) => {
+        {STUDIO_MODES.filter((m) => !m.inImportMenu).map((mode) => {
           const inPlace = opensInPlace(mode);
           const pending = !inPlace && leaving === mode.id && navigating;
           return (
@@ -178,14 +181,33 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
               title={mode.comingSoonId ? `${mode.title} — Coming soon` : mode.line}
               data-testid={`studio-mode-${mode.id}`}
               onClick={() => pick(mode)}
-              onPointerEnter={() => {
-                if (mode.href) router.prefetch(mode.href);
-              }}
             >
               {mode.label}
             </Button>
           );
         })}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              iconEnd={importing ? <Loader2 className="animate-spin" /> : <ChevronDown />}
+              aria-busy={importing || undefined}
+              className="col-span-2 @xl:col-span-1"
+              data-testid="studio-mode-import"
+              onPointerEnter={() => importModes.forEach((m) => m.href && router.prefetch(m.href))}
+            >
+              Import
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-72">
+            {importModes.map((mode) => (
+              <DropdownMenuItem key={mode.id} onSelect={() => pick(mode)} data-testid={`studio-mode-${mode.id}`} className="flex-col items-start gap-0.5">
+                <span className="text-foreground">{mode.label}</span>
+                <span className="type-meta text-muted-foreground">{mode.line}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* The open way in. Closed panels stay mounted (hidden) so what was typed in them survives. */}
