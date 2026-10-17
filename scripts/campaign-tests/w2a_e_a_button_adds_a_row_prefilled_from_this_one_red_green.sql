@@ -19,7 +19,9 @@ begin
   v_cust := custom.table_declare(v_org, spec || jsonb_build_object('name','Customers','slug','customers','label_singular','Customer','label_plural','Customers','parent_id',v_home::text,
     'fields', jsonb_build_array(jsonb_build_object('name','title'), jsonb_build_object('name','phone'), jsonb_build_object('name','new_job','type','button'), jsonb_build_object('name','copy_me','type','button'))));
   v_jobs := custom.table_declare(v_org, spec || jsonb_build_object('name','Jobs','slug','jobs','label_singular','Job','label_plural','Jobs','parent_id',v_home::text,
-    'fields', jsonb_build_array(jsonb_build_object('name','title'), jsonb_build_object('name','phone'), jsonb_build_object('name','from_row'), jsonb_build_object('name','customer','type','relation','relation_target',v_cust::text,'relation_max',1), jsonb_build_object('name','customers','type','relation','relation_target',v_cust::text))));
+    'fields', jsonb_build_array(jsonb_build_object('name','title'), jsonb_build_object('name','phone'), jsonb_build_object('name','from_row'), jsonb_build_object('name','customer','type','relation','relation_target',v_cust::text,'relation_max',1))));
+  -- a link that holds several customers, declared on its own (table_declare keeps every inline link to one)
+  perform custom.field_declare(v_org, v_jobs, jsonb_build_object('key','customers','label','Customers','type','relation','relation_target',v_cust::text,'relation_max',10,'on_target_delete','set_null'));
   execute 'reset role';
   select id into v_btn from custom.record where organization_id = v_org and table_id = custom.field_kernel_id() and deleted_at is null and data ->> 'entity_definition_id' = v_cust::text and data ->> 'key' = 'new_job';
   select id into v_same from custom.record where organization_id = v_org and table_id = custom.field_kernel_id() and deleted_at is null and data ->> 'entity_definition_id' = v_cust::text and data ->> 'key' = 'copy_me';

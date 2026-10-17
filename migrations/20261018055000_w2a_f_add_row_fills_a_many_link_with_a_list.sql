@@ -1,6 +1,6 @@
 -- lane: W2-A
 -- lock: custom
--- based-on: custom.button_press(uuid, uuid, uuid) 7780510b5f182e78cc7c727398e84c4cfeaf7e193b316bafe4058904ea22d25d[0
+-- based-on: custom.button_press(uuid, uuid, uuid) 7780510b5f182e78cc7c727398e84c4cfeaf7e193b316bafe4058904ea22d25d
 --
 -- W2-A 2b. An add_row button's "@row" prefill into a link column that holds several records (relation_max > 1) was
 -- written as the bare id; record_write keeps such a column as a list. It now goes as a one-item list.
