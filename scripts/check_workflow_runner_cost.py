@@ -364,15 +364,15 @@ def leg_price(manifest: dict, os_name: str, leg: dict) -> float:
     return float(prices[os_name])
 
 
-def leg_billed(manifest: dict, leg: dict) -> float:
-    """Billed $/week of one leg: free on a standard runner in a public repo, else the full gross."""
-    if manifest.get("visibility") == "public" and not leg.get("larger"):
+def leg_billed(manifest: dict, os_name: str, leg: dict) -> float:
+    """Billed $/week of one leg: public GitHub standard runners are free; RunsOn bills AWS."""
+    if manifest.get("visibility") == "public" and os_name != "runs-on" and not leg.get("larger"):
         return 0.0
     return float(leg.get("usd_per_week", 0) or 0)
 
 
 def manifest_billed(manifest: dict) -> float:
-    return round(sum(leg_billed(manifest, leg) for w in manifest.get("workflows", {}).values() for leg in w.get("legs", {}).values()), 2)
+    return round(sum(leg_billed(manifest, os_name, leg) for w in manifest.get("workflows", {}).values() for os_name, leg in w.get("legs", {}).items()), 2)
 
 
 def _gh_name(root: Path) -> str:
@@ -1003,26 +1003,34 @@ def money_self_test() -> int:
 
         VISIBILITY_PROBE = _private
         try:
-            def ro_run(wf_text: str, legs: dict, header: dict | None, price: float) -> tuple[list[str], float]:
+            def ro_run(wf_text: str, legs: dict, header: dict | None, price: float,
+                       visibility: str = "private") -> tuple[list[str], float]:
+                global VISIBILITY_PROBE
                 (root / ".github/workflows/capture.yml").write_text(wf_text)
-                manifest = _manifest({"capture.yml": _entry(["push"], [], legs)}, 50)
+                manifest = _manifest({"capture.yml": _entry(["push"], [], legs)}, 50, visibility)
                 manifest["prices_usd_per_minute"] = {"runs-on": price}
                 if header is not None:
                     manifest["runs_on"] = header
                 (root / MANIFEST).write_text(json.dumps(manifest))
+                VISIBILITY_PROBE = lambda _r: visibility
                 return check_root(root), manifest_billed(manifest)
 
             leg = {"jobs": ["shot"], "runs_per_week": 20, "minutes_per_run": 10, "usd_per_week": 0.5}
+            picker = _leg(["pick-runner"], 20, 1, "linux")
             header = {"price_basis": "fixture", "fallback_usd_per_week": 1.2}
-            problems, billed = ro_run(PICK_WF, {"runs-on": leg}, header, 0.0025)
-            if problems or billed != 0.5:
-                print(f"SELF-TEST FAIL: a pick-runner job on a priced RunsOn leg must pass and bill its AWS $: {problems} billed={billed}")
+            problems, billed = ro_run(PICK_WF, {"runs-on": leg, "linux": picker}, header, 0.0025)
+            if problems or billed != 0.62:
+                print(f"SELF-TEST FAIL: a pick-runner job needs its Linux cost leg and the shot must bill its AWS $: {problems} billed={billed}")
                 return 1
-            problems, _ = ro_run(PICK_WF, {"runs-on": {**leg, "usd_per_week": 0.0}}, header, 0.0)
+            problems, billed = ro_run(PICK_WF, {"runs-on": leg, "linux": picker}, header, 0.0025, "public")
+            if problems or billed != 0.5:
+                print(f"SELF-TEST FAIL: public GitHub-hosted Linux must be free but RunsOn must still bill AWS $0.50: {problems} billed={billed}")
+                return 1
+            problems, _ = ro_run(PICK_WF, {"runs-on": {**leg, "usd_per_week": 0.0}, "linux": picker}, header, 0.0)
             if not any("prices_usd_per_minute.runs-on > 0" in p for p in problems):
                 print(f"SELF-TEST FAIL: a RunsOn leg priced at $0 slipped through: {problems}")
                 return 1
-            problems, _ = ro_run(PICK_WF, {"runs-on": leg}, None, 0.0025)
+            problems, _ = ro_run(PICK_WF, {"runs-on": leg, "linux": picker}, None, 0.0025)
             if not any("runs_on.price_basis" in p for p in problems) or not any("fallback_usd_per_week" in p for p in problems):
                 print(f"SELF-TEST FAIL: RunsOn legs without the price basis and the rollback price passed: {problems}")
                 return 1
@@ -1032,7 +1040,7 @@ def money_self_test() -> int:
                 return 1
         finally:
             VISIBILITY_PROBE = saved
-    print("money self-test ok: pick-runner jobs bill their measured AWS price on a RunsOn leg, need the price basis and the rollback price; direct LINUX_RUNNER readers fail")
+    print("money self-test ok: pick-runner jobs need their own Linux leg; RunsOn bills AWS in private and public repos, needs the price basis and rollback price; direct LINUX_RUNNER readers fail")
     print("money self-test ok: public standard runner bills $0; public larger runner and private repos bill in full; visibility mismatch and a missing header fail")
     return 0
 

@@ -58,7 +58,7 @@ All items are **hardcoded** in `UserMenuPanel.tsx` (no `navigation-links` import
 
 - Direct Messages → **`/messages`**
 - Notifications — button (currently only closes menu; no `NotificationDropdown` integration)
-- Announcements → `openAnnouncements()` (`summon overlay state`)
+- Announcements → `useOpenAnnouncementsViewer()` (the `announcements` overlay definition)
 - Submit Feedback → local state opens `FeedbackDialog` (`features/ssr-trials/components/FeedbackDialog.tsx`, dynamically imported `ssr: false`)
 
 **Admin-only** (`selectIsAdmin`)
@@ -189,7 +189,7 @@ That is a **long, data-driven list** (20+ primary destinations), including Dashb
 Creator tools (`CreatorMenu`, layout submenu) | No | Yes (broker-gated) | No |
 | Admin nested categories (`AdminMenu`) | No (single flat admin row) | Yes (broker-gated) | No |
 | Profile/settings URL | `/ssr/settings` | `/settings/profile` (+ `/settings/preferences`) | `/settings/profile`, `/settings/preferences` |
-| Announcements | Yes (`openAnnouncements`) | Via `DynamicAnnouncementProvider` / not in this menu slice — **not duplicated in NavigationMenu** | No in this component |
+| Announcements | Yes (`useOpenAnnouncementsViewer`) | Via `DynamicAnnouncementProvider` / not in this menu slice — **not duplicated in NavigationMenu** | No in this component |
 | User preferences overlay | Yes (`openUserPreferences`) | Preferences link to route | Same as desktop |
 | Theme | Manual DOM + cookie | `useTheme()` | `useTheme()` |
 | Sign out | Client `signOut` + `/login` | `/sign-out` link | `/sign-out` link |

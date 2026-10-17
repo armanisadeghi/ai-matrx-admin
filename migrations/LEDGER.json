@@ -9578,18 +9578,6 @@
       "checksum": "200d848c8f9f0bcc24358c8fdc18ed9a8c29dfb1ba8cba2e17d64eb513de24ec",
       "applied_at": "2026-10-17 10:15:10.568955+00"
     },
-    "migrations/campaign/template_gaps_b_double_equals_is_equals.sql": {
-      "source": "matrx-frontend",
-      "filename": "template_gaps_b_double_equals_is_equals.sql",
-      "checksum": "0d1756265fad2287d464a465f41aab4520b0ca2485979df48a9a0b76cbfad4cc",
-      "applied_at": "2026-10-17 10:31:33.089076+00"
-    },
-    "migrations/campaign/template_gaps_c_a_flat_filter_window_may_be_relative.sql": {
-      "source": "matrx-frontend",
-      "filename": "template_gaps_c_a_flat_filter_window_may_be_relative.sql",
-      "checksum": "87b209f885c734545f9fcef95181acd436d9cfc6eb7d1053c53c55caaaba1524",
-      "applied_at": "2026-10-17 10:34:11.640143+00"
-    },
     "migrations/campaign/templates7_a_anyone_can_browse_the_platform_templates.sql": {
       "source": "matrx-frontend",
       "filename": "templates7_a_anyone_can_browse_the_platform_templates.sql",
@@ -11347,6 +11335,18 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/template_gaps_b_double_equals_is_equals.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_gaps_b_double_equals_is_equals.sql",
+      "checksum": "0d1756265fad2287d464a465f41aab4520b0ca2485979df48a9a0b76cbfad4cc",
+      "applied_at": "2026-10-17 10:31:33.089076+00"
+    },
+    "migrations/campaign/template_gaps_c_a_flat_filter_window_may_be_relative.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_gaps_c_a_flat_filter_window_may_be_relative.sql",
+      "checksum": "87b209f885c734545f9fcef95181acd436d9cfc6eb7d1053c53c55caaaba1524",
+      "applied_at": "2026-10-17 10:34:11.640143+00"
     }
   }
 }
