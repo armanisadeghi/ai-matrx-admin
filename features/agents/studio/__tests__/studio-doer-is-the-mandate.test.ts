@@ -20,7 +20,8 @@ describe("the Studio doer", () => {
   });
 
   it("launches through the mandate, never by a doer agent id", () => {
-    expect(strip(page)).toMatch(/agent_studio\.do_the_job_together/);
+    expect(strip(page)).toMatch(/STUDIO_ASSISTANT_MANDATE/);
+    expect(readFileSync(join(__dirname, "..", "workspace-api.ts"), "utf8")).toMatch(/"agent_studio\.do_the_job_together"/);
     expect(strip(page)).not.toMatch(/launchAgent\(doerId/);
     expect(strip(page)).not.toMatch(/assistantId/);
     expect(strip(run)).toMatch(/launchMandate\(/);
