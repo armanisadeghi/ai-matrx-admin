@@ -18,7 +18,8 @@ import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
-import { Label } from "@/components/ui/label";
+import { ProInput } from "@/components/official/ProInput";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { CaptureThumb } from "@/features/marketing/components/shared/CaptureThumb";
@@ -232,12 +233,9 @@ export function GenerateMediaView({
   };
 
   return (
-    <div className="space-y-4">
-      <section className="space-y-2">
-        <h3 className="px-1 text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
-          1 · Pick the type
-        </h3>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="space-y-3">
+      <SectionCard title="Pick the type">
+        <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4">
           {MEDIA_ORDER_PRESETS.map((item) => {
             const dims = resolveOrderDimensions(item, standards);
             const active = item.id === presetId;
@@ -246,31 +244,32 @@ export function GenerateMediaView({
                 key={item.id}
                 type="button"
                 onClick={() => patch({ type: item.id })}
+                aria-pressed={active}
                 className={cn(
-                  "rounded-lg border p-2 text-left transition-colors",
+                  "rounded-lg border p-3 text-left transition-colors",
                   active
                     ? "border-primary bg-primary/5"
                     : "border-border bg-card hover:border-primary/40",
                 )}
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[11px] font-medium text-foreground">
+                  <span className="type-title text-foreground">
                     {item.label}
                   </span>
                   {dims.source === "standard" ? (
                     <Badge
                       variant="outline"
-                      className="h-4 px-1 text-[8px] text-emerald-600 dark:text-emerald-400"
+                      className="text-emerald-600 dark:text-emerald-400"
                       title={`Dimensions from your “${dims.slotName}” standard`}
                     >
                       std
                     </Badge>
                   ) : null}
                 </div>
-                <p className="mt-0.5 text-[9px] leading-snug text-muted-foreground">
+                <p className="mt-0.5 line-clamp-2 type-secondary text-muted-foreground">
                   {item.description}
                 </p>
-                <p className="mt-1 text-[9px] tabular-nums text-muted-foreground/70">
+                <p className="mt-1 type-meta tabular-nums text-muted-foreground">
                   {dims.width}×{dims.height}
                   {dims.format ? ` · ${dims.format}` : ""}
                 </p>
@@ -278,103 +277,106 @@ export function GenerateMediaView({
             );
           })}
         </div>
-      </section>
+      </SectionCard>
 
-      <section className="space-y-2">
-        <h3 className="px-1 text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
-          2 · Describe the subject
-        </h3>
-        <ProTextarea
-          value={subject}
-          onChange={(event) => patch({ brief: event.target.value })}
-          minHeight={64}
-          maxHeight={160}
-          placeholder={`What should this ${preset.label.toLowerCase()} show? Subject, mood, key elements…`}
-        />
-        <div className="grid gap-2 sm:grid-cols-3">
-          <div className="space-y-1">
-            <Label className="text-xs">Style (optional override)</Label>
-            <Input
-              value={styleOverride}
-              onChange={(event) => patch({ style: event.target.value })}
-              placeholder={preset.style}
-            />
+      <SectionCard
+        title="Describe the subject"
+        about="Dimensions come from the matching media standard on the brand's websites, or the preset default when none matches. Standards are declared per website, in that site's Media, Standards view; override only when this order is special."
+      >
+        <div className="space-y-3 p-3">
+          <ProTextarea
+            value={subject}
+            onChange={(event) => patch({ brief: event.target.value })}
+            minHeight={64}
+            maxHeight={160}
+            placeholder={`What should this ${preset.label.toLowerCase()} show?`}
+            aria-label="Subject"
+          />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="block space-y-1">
+              <span className="type-label">Style (optional override)</span>
+              <ProInput
+                value={styleOverride}
+                onChange={(event) => patch({ style: event.target.value })}
+                placeholder={preset.style}
+                aria-label="Style"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="type-label">Width</span>
+              {/* ui-exception: a pixel count is a raw number, not writing */}
+              <Input
+                value={widthOverride}
+                onChange={(event) =>
+                  patch({ width: event.target.value.replace(/\D/g, "") })
+                }
+                placeholder={String(resolved.width)}
+                inputMode="numeric"
+                aria-label="Width"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="type-label">Height</span>
+              {/* ui-exception: a pixel count is a raw number, not writing */}
+              <Input
+                value={heightOverride}
+                onChange={(event) =>
+                  patch({ height: event.target.value.replace(/\D/g, "") })
+                }
+                placeholder={String(resolved.height)}
+                inputMode="numeric"
+                aria-label="Height"
+              />
+            </label>
           </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Width</Label>
-            <Input
-              value={widthOverride}
-              onChange={(event) =>
-                patch({ width: event.target.value.replace(/\D/g, "") })
-              }
-              placeholder={String(resolved.width)}
-              inputMode="numeric"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Height</Label>
-            <Input
-              value={heightOverride}
-              onChange={(event) =>
-                patch({ height: event.target.value.replace(/\D/g, "") })
-              }
-              placeholder={String(resolved.height)}
-              inputMode="numeric"
-            />
-          </div>
-        </div>
-        {resolved.source === "standard" ? (
-          <p className="px-1 text-[10px] text-muted-foreground/70">
-            Dimensions come from the “{resolved.slotName}” media standard
-            {standardsDoor ? (
+          <p className="type-secondary text-muted-foreground">
+            {resolved.source === "standard" ? (
               <>
-                {" "}
-                on{" "}
-                <Link
-                  href={standardsDoor.href}
-                  className="underline underline-offset-2 hover:text-primary"
-                >
-                  {standardsDoor.siteName}
-                </Link>
+                Size from the “{resolved.slotName}” standard
+                {standardsDoor ? (
+                  <>
+                    {" "}on{" "}
+                    <Link
+                      href={standardsDoor.href}
+                      className="text-foreground underline underline-offset-2 hover:text-primary"
+                    >
+                      {standardsDoor.siteName}
+                    </Link>
+                  </>
+                ) : null}
               </>
-            ) : null}{" "}
-            — override only if this order is special.
-          </p>
-        ) : (
-          <p className="px-1 text-[10px] text-muted-foreground/70">
-            No matching media standard — using the preset default. Standards
-            are declared per website, in that site&apos;s Media → Standards
-            view, and every order here inherits them.
-          </p>
-        )}
-      </section>
-
-      <section className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="primary"
-            disabled={generating || createAsset.isPending}
-            onClick={() => void placeOrder()}
-          >
-            {generating ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
             ) : (
-              <AGENT_ICON className="mr-1.5 h-4 w-4" />
+              "No matching media standard · preset default size"
             )}
-            {generating ? "Generating…" : "Order this image"}
-          </Button>
-          <span className="text-[10px] text-muted-foreground">
-            Prompt generator → Matrx Image Ultra · lands in the brand library
-          </span>
+          </p>
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <Button
+              variant="primary"
+              disabled={generating || createAsset.isPending}
+              onClick={() => void placeOrder()}
+            >
+              {generating ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <AGENT_ICON className="mr-1.5 h-4 w-4" />
+              )}
+              {generating ? "Generating…" : "Order this image"}
+            </Button>
+            <span className="type-meta text-muted-foreground">
+              Lands in the brand library
+            </span>
+          </div>
         </div>
-      </section>
+      </SectionCard>
 
       {generatedAssets.length > 0 ? (
-        <section className="space-y-2 border-t border-border/60 pt-3">
-          <h3 className="px-1 text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
-            Recently generated
-          </h3>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <SectionCard
+          title="Recently generated"
+          headerExtra={
+            <span className="type-meta tabular-nums text-muted-foreground">{generatedAssets.length}</span>
+          }
+        >
+          <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {generatedAssets.map((asset) => (
               <CaptureThumb
                 key={asset.id}
@@ -383,7 +385,7 @@ export function GenerateMediaView({
                 aspectClassName="aspect-[4/3]"
                 footer={
                   <p
-                    className="truncate px-1.5 py-1 text-[10px] text-muted-foreground"
+                    className="truncate px-1.5 py-1 type-meta text-muted-foreground"
                     title={asset.title ?? undefined}
                   >
                     {asset.title ?? "Generated image"}
@@ -392,7 +394,7 @@ export function GenerateMediaView({
               />
             ))}
           </div>
-        </section>
+        </SectionCard>
       ) : null}
     </div>
   );

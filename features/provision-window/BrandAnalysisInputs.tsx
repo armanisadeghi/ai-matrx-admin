@@ -6,7 +6,7 @@ import { ProvisionCaptures } from "./ProvisionCaptures";
 export function BrandAnalysisInputs({ brandId, brandName }: { brandId: string; brandName: string }) {
   return (
     // Fixed height: the row fills in after load without moving the page below it.
-    <div className="flex h-9 shrink-0 items-center whitespace-nowrap type-meta" data-testid="brand-analysis-inputs">
+    <div className="flex h-9 min-w-0 shrink-[10] items-center overflow-x-auto whitespace-nowrap type-meta" data-testid="brand-analysis-inputs">
       <ProvisionCaptures
         label="Brand analysis inputs"
         pointKey="brand_intake.smart_add_create"

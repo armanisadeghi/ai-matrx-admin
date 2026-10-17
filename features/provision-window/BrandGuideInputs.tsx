@@ -86,7 +86,8 @@ export function BrandGuideInputs({
   );
   if (!canSee) return null;
   return (
-    <div className="flex shrink-0 flex-row flex-nowrap items-center gap-x-4" data-testid="brand-guide-inputs">
+    // Takes only the room the title leaves (basis 0) and scrolls inside it, so the title never squeezes or wraps.
+    <div className="flex min-w-0 flex-1 basis-0 flex-row flex-nowrap items-center gap-x-4 overflow-x-auto" data-testid="brand-guide-inputs">
       {points.map((p) => (
         <PointRow key={p} point={p} brandId={brandId} brandName={brandName} organizationId={organizationId} />
       ))}
