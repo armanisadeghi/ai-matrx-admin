@@ -107,7 +107,9 @@ function CaptionSample({ presetId }: { presetId: string }) {
   const p = CAPTION_PRESETS[presetId];
   if (!p) return null;
   const words = ["this", "changes", "everything"];
-  const stroke = p.strokeWidthPx > 0 ? `${Math.max(1, p.strokeWidthPx / 6)}px ${p.strokeColor}` : undefined;
+  // Stroke is in px at a 1080-wide canvas for text fontSizePct% of that width; scale it to the 13px sample.
+  const sampleScale = 13 / Math.max(1, (p.fontSizePct / 100) * 1080);
+  const stroke = p.strokeWidthPx > 0 ? `${Math.max(0.5, p.strokeWidthPx * sampleScale).toFixed(2)}px ${p.strokeColor}` : undefined;
   return (
     <span
       className="flex flex-wrap items-center justify-center gap-x-1 px-1 text-center leading-tight"
@@ -131,6 +133,7 @@ function CaptionSample({ presetId }: { presetId: string }) {
             style={{
               color: active ? (boxed ? (p.boxTextColor ?? p.color) : p.activeColor) : p.color,
               WebkitTextStroke: boxed ? undefined : stroke,
+              paintOrder: "stroke fill",
               background: boxed ? p.activeColor : undefined,
               borderRadius: boxed ? 4 : undefined,
               padding: boxed ? "0 3px" : undefined,

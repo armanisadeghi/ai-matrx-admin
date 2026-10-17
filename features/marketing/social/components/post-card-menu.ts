@@ -49,6 +49,12 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
   const { post, brand, accountHref, canEdit, copyText, onSave, extraActions, queryClient } = input;
   const items: ContextMenuExtraItem[] = [
     { kind: "link", id: "open-original", label: "Open original", icon: ExternalLink, href: post.url, target: "_blank" },
+    ...(brand && canEdit && isClonable(post)
+      ? [
+          { kind: "link" as const, id: "clone", label: "Clone", icon: Clapperboard, href: cloneHref(brand.seg, post.postId) },
+          { kind: "link" as const, id: "clone-3", label: "Clone with 3 variants", icon: Layers, href: cloneHref(brand.seg, post.postId, true) },
+        ]
+      : []),
     {
       kind: "item",
       id: "copy-link",
@@ -70,10 +76,7 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
         (err: unknown) => toast.error(err instanceof Error ? err.message : "That didn't work"),
       );
     if (accountHref) items.push({ kind: "link", id: "open-account", label: "Open account", icon: UserRound, href: accountHref });
-    if (canEdit && isClonable(post)) {
-      items.push({ kind: "link", id: "clone", label: "Clone", icon: Clapperboard, href: cloneHref(brand.seg, post.postId) });
-      items.push({ kind: "link", id: "clone-3", label: "Clone with 3 variants", icon: Layers, href: cloneHref(brand.seg, post.postId, true) });
-    }
+
     // A post only this organization's browser captured offers Save (it reads the post from its link
     // first, points named); transcript and breakdown live in its post window.
     if (canEdit && isCapturedPostId(post.postId)) {

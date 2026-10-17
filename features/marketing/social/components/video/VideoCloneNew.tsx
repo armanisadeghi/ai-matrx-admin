@@ -161,7 +161,11 @@ function ReferencePanel({ postId }: { postId: string }) {
       );
       setSteps((prev) => closeSteps(prev));
       setLastCost({ usd: result.cost.usd, points: result.cost.points });
-      await queryClient.invalidateQueries({ queryKey: [...videoKeys.post(postId), "structure"] });
+      // Analysis lands the post's video and its words too: re-read all three.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: videoKeys.post(postId) }),
+        queryClient.invalidateQueries({ queryKey: ["marketing", "social", "video", "post-media", postId] }),
+      ]);
     } catch (err) {
       setSteps((prev) => [...closeSteps(prev, "failed"), { id: "err", label: err instanceof Error ? err.message : "Analysis failed", state: "failed" }]);
     } finally {
