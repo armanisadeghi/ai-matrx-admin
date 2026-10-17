@@ -49,7 +49,7 @@ import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
 import { verdictPeekRecord } from "./verdict-peek";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin, selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";

@@ -22,7 +22,7 @@ import { Building2, LifeBuoy, RotateCcw, ShieldAlert, Trash2 } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { OrganizationPickerPopover } from "@/features/organizations/components/OrganizationPickerPopover";
-import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
+import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { RecordUnavailableError } from "@/lib/records/recordUnavailable";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

@@ -19,7 +19,7 @@ import {
   encodePanelArgValue,
   decodePanelArgValue,
 } from "@ai-matrx/detail";
-import { parseParams, serializeParams } from "../../url-sync/UrlPanelManager";
+import { parsePanels, serializePanels } from "@/features/overlays/definitions/__tests__/linkKit";
 import { DETAIL_URL_BUDGET_BYTES } from "@ai-matrx/detail";
 
 const refs = (n: number) =>
@@ -61,12 +61,10 @@ describe("the window's deep link", () => {
 
   it("survives the ?panels= round trip intact, uuids and all", () => {
     const args = { as: "window", ...detailListToUrlArgs({ items: refs(12), index: 5 }, 200) };
-    const param = serializeParams({
-      "detail:file.x": { typeKey: "detail", instanceId: "file.abc", args },
-    });
-    const [token] = parseParams(param);
-    expect(token.args?.as).toBe("window");
-    const back = detailListFromUrlArgs(token.args ?? {});
+    const param = serializePanels([{ typeKey: "detail", instanceId: "file.abc", args }]);
+    const [token] = parsePanels(param);
+    expect(token!.args?.as).toBe("window");
+    const back = detailListFromUrlArgs(token!.args ?? {});
     expect(back?.items).toHaveLength(12);
     expect(back?.items[5].id).toBe(refs(12)[5].id);
     expect(back?.index).toBe(5);

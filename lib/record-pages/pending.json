@@ -1300,7 +1300,6 @@
   "window:features/sharing/components/ShareModal.tsx",
   "window:features/unified-data/windows/WorkInboxWindow.tsx",
   "window:features/window-panels/windows/AudioControlWindow.tsx",
-  "window:features/window-panels/windows/AudioDevicesWindow.tsx",
   "window:features/window-panels/windows/CanvasViewerWindow.tsx",
   "window:features/window-panels/windows/DiffViewerWindow.tsx",
   "window:features/window-panels/windows/EmailDialogWindow.tsx",

@@ -5,7 +5,7 @@
  * through `openOverlay` data, and the window emits typed events.
  */
 
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 import type { Rulebook, RulebookRule } from "@/features/masterwork/types";
 
 export type AddRuleWindowEventType = "added" | "window-close";

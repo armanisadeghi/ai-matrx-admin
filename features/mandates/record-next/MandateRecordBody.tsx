@@ -39,7 +39,7 @@ import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import styles from "@/features/mandates/workspace/MandateWorkspace.module.css";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { displayResolutionOrgId, usePageOrgFilter } from "@/features/mandates/display-org";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin, selectUserId } from "@/lib/redux/slices/userSlice";
@@ -224,8 +224,8 @@ function OneMandateRecordBody({
   }, [onTabChange]);
   const { data, loading, failure, refresh } =
     useMandateWorkspaceData(mandateKeyOrId, { systemOnly });
-  const { organizations } = useUserOrganizations();
   const pageOrgFilter = usePageOrgFilter();
+  const { organizations } = useOrganizationsWith([pageOrgFilter, data?.mandate.organization_id]);
   const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const viewerId = useAppSelector(selectUserId);
   const nameOfOrg = useMemo(() => {

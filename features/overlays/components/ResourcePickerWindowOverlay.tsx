@@ -12,7 +12,7 @@ import { ResourcePickerWindow } from "@/features/window-panels/windows/ResourceP
 import {
   disposeResourcePickerWindowCallbackGroup,
   getResourcePickerWindowCallbackGroup,
-} from "@/features/overlays/callbacks/resourcePickerWindow";
+} from "@/features/overlays/definitions/callbacks/resourcePickerWindow";
 import type { ResourcePickerViewId } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 import { toast } from "@/lib/toast";
 

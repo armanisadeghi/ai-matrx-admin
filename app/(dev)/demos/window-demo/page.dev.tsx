@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 // The real Notes window is opened through the sanctioned openers layer, never
 // imported here: a direct import of the component would pull it (and its whole
 // window-panels chunk graph) into this route's bundle, which is exactly what
@@ -10,11 +10,11 @@ import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import {
   useOpenNotesWindow,
   type NotesWindowHandle,
-} from "@/features/overlays/openers/notesWindow";
+} from "@/features/overlays/definitions/notesWindow.overlay";
 import { Plus, Trash2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { selectIsOverlayOpen } from "@ai-matrx/summon";
 import { DEMO_WINDOWS } from "./demo-windows";
 
 const NOTES_INSTANCE_ID = "window-demo-notes";

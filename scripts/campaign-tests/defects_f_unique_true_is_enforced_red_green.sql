@@ -5,6 +5,7 @@
 -- declareTable (which sends rules: [{kind: unique}]) is.
 --
 -- RED before 20261017014000_defects_f_unique_true_is_the_unique_rule.sql: U1 fails (the duplicate is saved).
+-- U3 RED before 20261017017000_defects_i_field_update_unique_true_is_the_unique_rule.sql (field_update stored only the flag).
 -- Everything is synthesized in a throwaway organization and rolled back.
 
 \set ON_ERROR_STOP on
@@ -24,7 +25,7 @@ set local statement_timeout = '120s';
 
 do $t$
 declare
-  v_org uuid; v_jobs uuid; v_msg text; v_rules jsonb;
+  v_org uuid; v_jobs uuid; v_msg text; v_rules jsonb; v_po uuid;
 begin
   select dj.v into v_org from dj where k = 'org';
   select dj.v into v_jobs from dj where k = 'jobs';
@@ -44,7 +45,23 @@ begin
   select f.data -> 'rules' into v_rules from custom.record f where f.organization_id = v_org and f.table_id = custom.field_kernel_id()
      and f.data ->> 'entity_definition_id' = v_jobs::text and f.data ->> 'key' = 'inv2';
   if jsonb_array_length(v_rules) <> 1 then raise exception 'U2: unique said twice gave rules %', v_rules; end if;
-  raise notice 'GREEN U1-U2: unique: true refuses a duplicate by name; said twice it is one rule.';
+  -- U3 (review A1) field_update {unique: true} on an existing column refuses the next duplicate
+  perform set_config('role', 'authenticated', true);
+  perform custom.field_declare(v_org, v_jobs, '{"key": "po", "label": "PO #", "type": "text"}'::jsonb);
+  perform set_config('role', 'postgres', true);
+  select f.id into v_po from custom.record f where f.organization_id = v_org and f.table_id = custom.field_kernel_id()
+     and f.data ->> 'entity_definition_id' = v_jobs::text and f.data ->> 'key' = 'po';
+  perform set_config('role', 'authenticated', true);
+  perform custom.field_update(v_org, v_po, '{"unique": true}'::jsonb);
+  perform custom.record_write(v_org, v_jobs, '{"wo": "WO-3", "po": "PO-1"}'::jsonb);
+  begin
+    perform custom.record_write(v_org, v_jobs, '{"wo": "WO-4", "po": "PO-1"}'::jsonb);
+    v_msg := null;
+  exception when unique_violation then v_msg := sqlerrm;
+  end;
+  if v_msg is null then raise exception 'U3 RED: field_update unique: true took a second PO-1'; end if;
+  raise notice 'U3 PASS - %', v_msg;
+  raise notice 'GREEN U1-U3: unique: true refuses a duplicate by name (field_declare and field_update); said twice it is one rule.';
 end
 $t$;
 

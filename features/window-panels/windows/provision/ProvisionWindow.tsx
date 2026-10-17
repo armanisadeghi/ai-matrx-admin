@@ -1,6 +1,6 @@
 "use client";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ProvisionWindowBody } from "@/features/provision-window/ProvisionWindowBody";
 
 interface ProvisionWindowProps {

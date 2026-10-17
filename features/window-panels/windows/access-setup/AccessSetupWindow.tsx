@@ -7,7 +7,7 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AccessSetupPanel } from "@/features/access-setup/components/AccessSetupPanel";
 import { CycleAccessSetupPanel } from "@/features/access-setup/components/CycleAccessSetupPanel";
 

@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ModeImagePicker } from "@/features/image-studio/components/ModeImagePicker";
 import { AnnotateModeShell } from "@/features/image-studio/modes/annotate/AnnotateModeShell";
 import type {
@@ -16,7 +16,7 @@ import type {
   SaveResult,
 } from "@/features/image-studio/modes/shared/types";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
-import { emitImageAnnotationEvent } from "@/features/overlays/callbacks/imageAnnotationWindow";
+import { emitImageAnnotationEvent } from "@/features/overlays/definitions/callbacks/imageAnnotationWindow";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface ImageAnnotationWindowProps {

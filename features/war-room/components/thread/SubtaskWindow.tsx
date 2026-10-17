@@ -7,7 +7,7 @@
  */
 
 import { useEffect } from "react";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 
 export function SubtaskWindow({
   subtaskId,

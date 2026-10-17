@@ -41,7 +41,7 @@ import { templateAgentArchiver, templateAgentCopier, templateWorkflowCreator } f
 import { addInstalledAgent, agentsLeftBy, hostStepsPending, type Claim } from "./installAgent";
 import { InstalledTemplate, type InstalledShow, type TemplateTryIt } from "@/features/templates/components/InstalledTemplate";
 import { TEMPLATES_CHANGED_EVENT } from "@/features/templates/events";
-import { useOpenSaveTemplateDialog } from "@/features/overlays/openers/saveTemplateDialog";
+import { useOpenSaveTemplateDialog } from "@/features/overlays/definitions/saveTemplateDialog.overlay";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
 import { templateKnob } from "@/features/templates/knobs";

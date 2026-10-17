@@ -157,8 +157,8 @@ jest.mock("@/features/approvals/usePendingApprovalCount", () => ({ usePendingApp
 jest.mock("@/features/workflow-runtime/discovery/useWaitingRuns", () => ({ useWaitingRuns: () => ({ rows: [{}], loading: false, error: null, refresh: () => undefined }) }));
 jest.mock("@/features/assists/service", () => ({ queryAssists: () => Promise.resolve({ rows: [], total: 3, unreadable: 0 }) }));
 jest.mock("@/features/tasks/services/taskUserStateService", () => ({ listMyTaskUserStates: () => Promise.resolve([]) }));
-jest.mock("@/features/overlays/openers/messagesWindow", () => ({ useOpenMessagesWindow: () => () => undefined }));
-jest.mock("@/features/overlays/openers/approvalsWindow", () => ({ useOpenApprovalsWindow: () => () => undefined }));
+jest.mock("@/features/overlays/definitions/messagesWindow.overlay", () => ({ useOpenMessagesWindow: () => () => undefined }));
+jest.mock("@/features/overlays/definitions/approvalsWindow.overlay", () => ({ useOpenApprovalsWindow: () => () => undefined }));
 jest.mock("../components/NotificationBody", () => ({ NotificationBody: ({ body }: { body: string }) => <span>{body}</span> }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/components/navigation/AppLink", () => ({
@@ -170,7 +170,7 @@ jest.mock("@/components/navigation/AppLink", () => ({
 jest.mock("@/lib/toast", () => ({ toast: Object.assign(() => undefined, { error: () => undefined, success: () => undefined }) }));
 jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({ captureError: () => "captured" }));
 jest.mock("@/features/settings/notification-preferences", () => ({ setNotificationPreference: () => Promise.resolve() }));
-jest.mock("@/features/window-panels/url-sync/initUrlHydration", () => ({ initUrlHydration: () => undefined }));
+jest.mock("@ai-matrx/summon/url", () => ({ initUrlHydration: () => undefined }));
 
 import { BellPanel as Bell } from "../components/BellPanel";
 

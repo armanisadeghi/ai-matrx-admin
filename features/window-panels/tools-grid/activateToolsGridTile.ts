@@ -1,6 +1,6 @@
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import type { OverlayId } from "@/features/overlays/catalogue";
-import { getStaticEntryByOverlayId } from "@/features/window-panels/registry/windowRegistryMetadata";
+import { openOverlay } from "@ai-matrx/summon";
+import type { OverlayId } from "@ai-matrx/summon";
+import { appOverlayDefinition } from "@/features/overlays/definitions/register";
 import {
   TOOLS_GRID_TILES,
   type TileContext,
@@ -30,7 +30,7 @@ export function activateToolsGridTile(
 
   if (!tile.overlayId) return false;
 
-  const entry = getStaticEntryByOverlayId(tile.overlayId);
+  const entry = appOverlayDefinition(tile.overlayId);
   if (!entry) {
     // eslint-disable-next-line no-console
     console.warn(
@@ -41,10 +41,10 @@ export function activateToolsGridTile(
 
   const strategy =
     tile.instanceStrategy ??
-    (entry.instanceMode === "multi" ? "fresh-per-click" : "singleton-default");
+    (entry.instance === "multi" ? "fresh-per-click" : "singleton-default");
 
   const instanceId =
-    strategy === "fresh-per-click" ? `${entry.slug}-${Date.now()}` : undefined;
+    strategy === "fresh-per-click" ? `${(entry.window?.windowId ?? entry.id)}-${Date.now()}` : undefined;
 
   // seedData may be async (e.g. a Mandate resolution) — dispatch once it
   // settles. Activation still reports success synchronously: the tile matched
@@ -61,7 +61,7 @@ export function activateToolsGridTile(
       if (declined) return;
       ctx.dispatch(
         openOverlay({
-          overlayId: entry.overlayId as OverlayId,
+          overlayId: entry.id as OverlayId,
           ...(instanceId ? { instanceId } : {}),
           ...(data ? { data } : {}),
         }),

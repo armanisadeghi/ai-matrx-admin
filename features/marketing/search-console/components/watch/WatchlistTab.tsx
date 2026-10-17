@@ -21,7 +21,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import {

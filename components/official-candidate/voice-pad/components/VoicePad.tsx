@@ -3,7 +3,7 @@
 import React, { lazy, Suspense, useState, useRef, useCallback } from "react";
 import { Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay } from "@ai-matrx/summon";
 import {
   selectVoicePadEntries,
   selectVoicePadDraftText,
@@ -12,7 +12,7 @@ import {
   clearAllEntries,
   setDraftText,
 } from "@/lib/redux/slices/voicePadSlice";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

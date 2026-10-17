@@ -16,7 +16,7 @@ import {
   Select,
   type SelectOption,
 } from "@ai-matrx/design-system/controls";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";

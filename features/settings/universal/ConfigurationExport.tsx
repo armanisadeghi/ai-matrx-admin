@@ -29,7 +29,7 @@ import {
 import { toast } from "@/lib/toast";
 import { showManualCopy } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackHost";
 import { extractErrorMessage } from "@/utils/errors";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { formatKnobValue } from "@/lib/scoped-config/ladder";
 import {
   diffConfigurations,
@@ -64,8 +64,7 @@ export function ConfigurationExport(props: {
     rows: ConfigurationDifference[];
     note: string | null;
   } | null>(null);
-  const { organizations } = useUserOrganizations();
-  const others = organizations.filter((org) => org.id !== organizationId);
+  const [otherName, setOtherName] = useState<string>("");
 
   const copy = async () => {
     setBusy(true);
@@ -88,8 +87,8 @@ export function ConfigurationExport(props: {
     try {
       const now = await fetchOrganizationConfiguration(organizationId);
       if (mode === "organization") {
-        const other = others.find((org) => org.id === otherOrg);
-        if (!other) return;
+        if (!otherOrg) return;
+        const other = { id: otherOrg, name: otherName };
         const theirs = await fetchOrganizationConfiguration(other.id);
         setResult({
           leftName: organizationName,
@@ -156,18 +155,17 @@ export function ConfigurationExport(props: {
                 onChange={(event) => setAsOf(event.target.value)}
               />
             ) : (
-              <Select value={otherOrg} onValueChange={setOtherOrg}>
-                <SelectTrigger className="w-56" aria-label="Organization to compare against">
-                  <SelectValue placeholder={others.length ? "Pick an organization" : "You belong to no other organization"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {others.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <OrganizationChooser
+                className="w-56"
+                value={otherOrg || null}
+                valueName={otherName || null}
+                excludeId={organizationId}
+                placeholder="Pick an organization"
+                onChange={(org) => {
+                  setOtherOrg(org.id);
+                  setOtherName(org.name);
+                }}
+              />
             )}
             <Button variant="primary" disabled={busy || !canCompare} onClick={() => void compare()}>
               {busy ? "Comparing…" : "Compare"}

@@ -111,7 +111,7 @@ jest.mock(
     adoptForeignStream: jest.fn((options) => options),
   }),
 );
-jest.mock("@/features/overlays/openers/liveRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/liveRunWindow.overlay", () => ({
   openLiveRunWindowAction: jest.fn((value) => value),
 }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn() } }));

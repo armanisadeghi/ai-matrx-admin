@@ -25,7 +25,7 @@ import type { EntityListController } from "@/lib/entity-list/config";
 import {
   useOpenLiveRunWindow,
   type LiveRunWindowHandle,
-} from "@/features/overlays/openers/liveRunWindow";
+} from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { useAssessmentGeneration } from "../data/useAssessmentGeneration";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAuthReady, selectUserId } from "@/lib/redux/selectors/userSelectors";

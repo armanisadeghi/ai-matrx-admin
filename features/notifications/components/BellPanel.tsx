@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@ai-matrx/design-system";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { groupNotices, type NoticeGroup } from "../grouping";
 import { noticeTitle, timeBucketOf, type TimeBucket } from "../presentation";

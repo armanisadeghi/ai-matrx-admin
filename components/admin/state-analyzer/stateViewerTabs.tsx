@@ -423,12 +423,12 @@ export function getStateViewerTabs(
       ),
     },
     {
-      id: "overlayData",
-      label: "Overlay Data",
+      id: "overlayState",
+      label: "Overlay State",
       content: (
         <GenericSliceViewer
-          sliceKey="overlayData"
-          state={completeState.overlayData}
+          sliceKey="overlayState"
+          state={completeState.overlayState}
         />
       ),
     },

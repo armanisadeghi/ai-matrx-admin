@@ -19,7 +19,7 @@
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { Film, Loader2 } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import {
   readGeneratedVideoList,
   type GeneratedVideoData,

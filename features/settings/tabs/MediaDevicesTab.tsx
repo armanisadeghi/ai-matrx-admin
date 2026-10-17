@@ -22,7 +22,7 @@ import { SettingsSection } from "@/components/official/settings/layout/SettingsS
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useAudioDevices } from "@/features/audio/useAudioDevices";
-import { useOpenAudioDevices } from "@/features/overlays/openers/audioDevices";
+import { useOpenAudioDevices } from "@/features/overlays/definitions/audioDevices";
 import { useSetting } from "../hooks/useSetting";
 import { PreferencesLoadGate } from "@/components/read-state/PreferencesLoadGate";
 

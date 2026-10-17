@@ -50,7 +50,7 @@ import {
 } from "@/features/surfaces/manifests/admin-cx-dashboard.manifest";
 import { useAdminCost } from "@/components/cost/useAdminCost";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { useOpenAgentFromChatWindow } from "@/features/overlays/openers/agentFromChatWindow";
+import { useOpenAgentFromChatWindow } from "@/features/overlays/definitions/agentFromChatWindow.overlay";
 
 type Detail = {
   conversation: CxConversation;

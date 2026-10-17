@@ -1,7 +1,7 @@
 "use client";
 
 import { ScraperFloatingWorkspace } from "@/features/scraper/parts/ScraperFloatingWorkspace";
-import type { ScraperWindowMode } from "@/features/overlays/openers/scraperWindow";
+import type { ScraperWindowMode } from "@/features/overlays/definitions/scraperWindow.overlay";
 
 interface ScraperWindowProps {
   isOpen: boolean;

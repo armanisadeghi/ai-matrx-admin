@@ -71,11 +71,11 @@ import {
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { recordPeekOpenInput } from "./canvas/recordPeek";
-import { useCloseDetailWindow, useOpenDetailWindow } from "@/features/overlays/openers/detailWindow";
+import { useCloseDetailWindow, useOpenDetailWindow } from "@/features/overlays/definitions/detailWindow.overlay";
 import { encodeListQuery } from "@ai-matrx/detail";
 import { resolvedListContextMax } from "./listContextCap";
 import { stashPageSeed } from "./pageSeedHandoff";

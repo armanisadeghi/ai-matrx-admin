@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { useMcpCatalog } from "@ai-matrx/chat/agents/hooks/useMcpTools";
 import {
   connectServer,

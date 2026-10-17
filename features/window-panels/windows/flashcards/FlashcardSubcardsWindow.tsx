@@ -5,8 +5,8 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { useOverlaySurfaceRenderAck } from "@/features/window-panels/diagnostics/useOverlaySurfaceRenderAck";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
 import FlashcardMobileView from "@/components/mardown-display/blocks/flashcards/FlashcardMobileView";
 import { FlashcardsSubcardsSet } from "@/components/mardown-display/blocks/flashcards/FlashcardsSubcardsSet";
 import { LayoutToggle } from "@/components/mardown-display/blocks/flashcards/flashcards-set-parts";
@@ -26,7 +26,7 @@ import {
   resolveFlashcardGridIndex,
   type FlashcardMenuRow,
 } from "@/features/flashcards/components/flashcard-menu";
-import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
+import { useOpenFlashcardItemWindow } from "@/features/overlays/definitions/flashcardItemWindow.overlay";
 
 export interface FlashcardSubcardsWindowProps {
   isOpen: boolean;

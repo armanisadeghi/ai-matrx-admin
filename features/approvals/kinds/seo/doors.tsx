@@ -6,7 +6,7 @@
  * bound to the site the queue is standing in.
  */
 
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import type { ApprovalScope } from "@/features/approvals/types";
 import { siteOf } from "./siteScope";
 

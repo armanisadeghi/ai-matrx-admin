@@ -6,7 +6,7 @@ import {
   resolveGoogleWorkspaceConnection,
   type GoogleConnectionRef,
 } from "@/features/google-workspace/connection";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 
 export type GoogleWorkspaceConnectionState =
   | { status: "loading" }

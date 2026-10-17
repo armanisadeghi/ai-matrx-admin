@@ -24,7 +24,7 @@ import { useUserOrganizations } from "@/features/organizations/hooks";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
-import { useOpenWorkflowRunWindow } from "@/features/overlays/openers/workflowRunWindow";
+import { useOpenWorkflowRunWindow } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 
 export const WORKFLOW_RUNS_SOURCE: DrillSource = { kind: "entity", token: "workflow_runs" };
 

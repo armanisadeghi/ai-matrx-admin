@@ -41,7 +41,7 @@ import { mandateStatusOfRow } from "@/features/mandates/status/mandate-status";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, Loader2, Search, ShieldCheck, UserRound } from "lucide-react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { mandateRoute } from "@/features/mandates/browse/types";
@@ -60,7 +60,7 @@ import { onMandateCacheInvalidated } from "@ai-matrx/chat/mandates/service";
 import { splitMandateKey } from "@ai-matrx/agents/mandates";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { cn } from "@/lib/utils";
-import type { MandateWindowView } from "@/features/overlays/openers/mandateWindow";
+import type { MandateWindowView } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";

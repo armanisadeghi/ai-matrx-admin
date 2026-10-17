@@ -3,7 +3,7 @@
 import { TriangleAlertTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/slices/userSlice";
-import { useOpenFlashcardStudyWindow } from "@/features/overlays/openers/flashcardStudyWindow";
+import { useOpenFlashcardStudyWindow } from "@/features/overlays/definitions/flashcardStudyWindow.overlay";
 import { SHOW_DEV_CONTROLS } from "@/lib/dev/devControls";
 
 interface FlashcardStudyWindowDevTriggerProps {

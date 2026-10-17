@@ -32,7 +32,7 @@ import {
   Loader2,
   X,
 } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { reviewWalkUrlArgs, reviewWalkUrlId } from "@/features/review-walk/address";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { Button } from "@/components/ui/button";

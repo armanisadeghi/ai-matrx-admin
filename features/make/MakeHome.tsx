@@ -45,7 +45,7 @@ import { Skeleton } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import * as doors from "@/features/unified-data/hub/doors";
 import { buildDataHomeRows, dataHomeKindWord, type DataHomeRow } from "@/features/unified-data/home/dataHomeRows";
@@ -159,12 +159,13 @@ export default function MakeHome() {
   const userId = useAppSelector(selectUserId);
   // org-filter: write-target the active organization is only where a NEW table, portal or example is saved; every read on this page walks all organizations
   const active = useOrganizationRequired();
-  const { organizations } = useUserOrganizations();
+  const recentRead = useRecentRead(userId ?? null);
+  // The organizations of the rows on screen, by id (never her whole list): which of them are test ones.
+  const { organizations } = useOrganizationsWith(recentRead.phase === "read" ? recentRead.data.map((r) => r.organizationId) : []);
   const testOrganizationIds = useMemo(
     () => new Set(organizations.filter((o) => isTestOrganization(o)).map((o) => o.id)),
     [organizations],
   );
-  const recentRead = useRecentRead(userId ?? null);
   const recent: Read<DataHomeRow[]> =
     recentRead.phase === "read"
       ? { phase: "read", data: recentlyChanged(withoutTestOrganizations(recentRead.data, testOrganizationIds)) }

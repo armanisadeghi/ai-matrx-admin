@@ -27,7 +27,7 @@ jest.mock("@/features/pricing/components/SubscriptionControls", () => ({
   SubscriptionControls: () => <button type="button">Manage billing</button>,
 }));
 
-jest.mock("@/features/overlays/openers/feedbackDialog", () => ({
+jest.mock("@/features/overlays/definitions/feedbackDialog.overlay", () => ({
   useOpenFeedbackWindow: () => mockOpenFeedback,
 }));
 

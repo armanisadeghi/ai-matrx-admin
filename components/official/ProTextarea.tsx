@@ -164,7 +164,7 @@ import {
   fitFieldControls,
 } from "@/components/official/proFieldControlFit";
 import { motion } from "motion/react";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { useMicField } from "@/features/audio/hooks/useMicField";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -181,7 +181,7 @@ import {
   PopoverContent,
 } from "@ai-matrx/design-system";
 import { MicButton } from "@/components/audio/MicButton";
-import { useOpenAudioDevices } from "@/features/overlays/openers/audioDevices";
+import { useOpenAudioDevices } from "@/features/overlays/definitions/audioDevices";
 import { supabase } from "@/utils/supabase/client";
 import type { SessionContextItem } from "@/features/transcript-studio/types";
 import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";

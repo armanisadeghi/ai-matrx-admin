@@ -11,7 +11,7 @@
 // root so it can feed BOTH the footer slot and the body.
 
 import React, { useState, useEffect } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SharedCanvasView } from "@/features/canvas/shared/SharedCanvasView";
 import { Search } from "lucide-react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

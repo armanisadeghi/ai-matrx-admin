@@ -16,7 +16,7 @@ import { PanelRightOpen } from "lucide-react";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 
 import { Button } from "@ai-matrx/design-system/controls";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { postTabOpenInput } from "@/features/marketing/social/canvas/postKind";
 import { PostDetailBody, type DetailTab } from "@/features/marketing/social/components/PostDetail";

@@ -2,9 +2,9 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { cn } from "@/lib/utils";
-import type { OverlayId } from "@/features/overlays/catalogue";
+import type { OverlayId } from "@ai-matrx/summon";
 import { getMenuIcon, type MenuIconKey } from "./menuIconRegistry";
 import { MENU_ITEM_CLASS } from "./menuItemClass";
 import { MenuItemCloseLabel } from "./menuCheckboxId";

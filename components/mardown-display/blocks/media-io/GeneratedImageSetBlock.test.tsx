@@ -17,10 +17,10 @@ jest.mock("@ai-matrx/media/react", () => ({
     <div data-testid="inline-media" data-alt={String(props.alt)} />
   ),
 }));
-jest.mock("@/features/overlays/openers/filePreviewWindow", () => ({
+jest.mock("@/features/overlays/definitions/filePreviewWindow.overlay", () => ({
   useOpenFilePreviewWindow: () => jest.fn(),
 }));
-jest.mock("@/features/overlays/openers/imageViewer", () => ({
+jest.mock("@/features/overlays/definitions/imageViewer.overlay", () => ({
   useOpenImageViewerWindow: () => jest.fn(),
 }));
 jest.mock("@/components/cost/useCostDisplay", () => ({

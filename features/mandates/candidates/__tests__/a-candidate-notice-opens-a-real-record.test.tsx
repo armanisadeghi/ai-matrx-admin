@@ -98,11 +98,11 @@ jest.mock("@/features/mandates/admin/bench-output-preview", () => ({
   OutputPreview: ({ output }: { output: string }) => <div data-testid="md">{output}</div>,
 }));
 const openDiff = jest.fn();
-jest.mock("@/features/overlays/openers/diffViewerWindow", () => ({
+jest.mock("@/features/overlays/definitions/diffViewerWindow.overlay", () => ({
   useOpenDiffViewerWindow: () => openDiff,
 }));
 const openWalk = jest.fn();
-jest.mock("@/features/overlays/openers/reviewWalkWindow", () => ({
+jest.mock("@/features/overlays/definitions/reviewWalkWindow.overlay", () => ({
   useOpenReviewWalkWindow: () => openWalk,
 }));
 jest.mock("../openers", () => ({

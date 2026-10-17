@@ -22,7 +22,7 @@
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { AudioLines, Loader2 } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import type { GeneratedAudioData } from "@/features/content-ir/kinds/generated-audio";
 import {
   formatCost,

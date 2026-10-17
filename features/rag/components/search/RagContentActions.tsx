@@ -6,7 +6,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { Button } from "@ai-matrx/design-system";
 import { CopyForAiIcon } from "@/components/agent-copy/CopyForAiIcon";
-import { useOpenRagAiCopyWindow } from "@/features/overlays/openers/ragAiCopyWindow";
+import { useOpenRagAiCopyWindow } from "@/features/overlays/definitions/ragAiCopyWindow.overlay";
 import type {
   RagAiCopyBundle,
   RagAiSectionKey,

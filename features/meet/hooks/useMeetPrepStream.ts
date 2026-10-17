@@ -18,7 +18,7 @@ import { callApi } from "@/lib/api/call-api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
 import { selectAnswerText } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
+import { useFloatingLiveRun } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { streamErrorText } from "@ai-matrx/api";
 import { readUnassignedMandate } from "@/features/mandates/unassigned/read-unassigned";
 

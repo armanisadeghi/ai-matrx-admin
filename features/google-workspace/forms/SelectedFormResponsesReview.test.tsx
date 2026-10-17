@@ -11,7 +11,7 @@ const mockOpen = jest.fn();
 const mockClose = jest.fn();
 jest.mock("./formPicker", () => ({ pickGoogleFormForConnection: (...args: unknown[]) => mockPick(...args) }));
 jest.mock("./service", () => ({ previewSelectedFormResponses: (...args: unknown[]) => mockPreview(...args) }));
-jest.mock("@/features/overlays/openers/saveToTable", () => ({ useOpenSaveToTable: () => mockOpen }));
+jest.mock("@/features/overlays/definitions/saveToTable.overlay", () => ({ useOpenSaveToTable: () => mockOpen }));
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: async (organizationId: string) => organizationId }));
 
 const first = {

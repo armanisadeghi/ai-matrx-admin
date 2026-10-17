@@ -56,7 +56,7 @@ import type { RangeCompareValue } from "@/features/marketing/search-console/comp
 import { WatchButton } from "@/features/marketing/search-console/components/watch/WatchButton";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,

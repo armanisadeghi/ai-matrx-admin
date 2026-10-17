@@ -4,7 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
-import overlayReducer from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlayReducer } from "@ai-matrx/summon";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import KeywordWindow from "./KeywordWindow";
 
@@ -27,7 +27,7 @@ function Harness({ children }: { children: React.ReactNode }) {
   );
 }
 
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({
     children,
     sidebar,

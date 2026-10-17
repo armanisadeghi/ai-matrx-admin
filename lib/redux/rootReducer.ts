@@ -13,6 +13,7 @@
 // migration that produced this split.
 
 import { blockStatesReducer } from "@/features/block-state/redux/blockStatesSlice";
+import { summonReducers } from "@ai-matrx/summon";
 import { combineReducers, type Reducer } from "@reduxjs/toolkit";
 import { applyIdentityReset } from "@/lib/sync/engine/identityReset";
 import { createModuleSlice } from "./slices/moduleSliceCreator";
@@ -33,15 +34,12 @@ import creatorDebugReducer from "./preferences/creatorDebugSlice";
 import themeReducer from "@/styles/themes/themeSlice";
 
 
-import overlaySlice from "./slices/overlaySlice";
 import storeReadsReducer from "./slices/storeReadsSlice";
-import overlayDataReducer from "./slices/overlayDataSlice";
 import voicePadReducer from "./slices/voicePadSlice";
 // The chat package owns its slices and mounts them under the same keys (P2).
 import { chatReducers } from "@ai-matrx/chat/store/slices";
 import { agentDefinitionWithBuilderReducer } from "@/features/agents/redux/agent-builder.slice";
 import { withAppChatHost } from "./chat-host-from-app";
-import windowManagerReducer from "./slices/windowManagerSlice";
 import { canvasReducer as canvasHostReducer } from "@ai-matrx/canvas";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
@@ -82,7 +80,6 @@ import { cloudFilesReducer } from "@/features/files/redux/slice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./preferences/adminPreferencesSlice";
 import apiConfigReducer from "./slices/apiConfigSlice";
-import urlSyncReducer from "./slices/urlSyncSlice";
 
 import { agentAssignmentsReducer } from "@/features/agents/redux/agent-assignments/agent-assignments.slice";
 import agentComparisonReducer from "@/features/agent-comparison/redux/battleSlice";
@@ -160,11 +157,9 @@ export const slimReducerMap = {
 
   adminDebug: adminDebugReducer,
   creatorDebug: creatorDebugReducer,
-  overlays: overlaySlice,
-  overlayData: overlayDataReducer,
+  // overlays, windowManager, urlSync, overlayState (@ai-matrx/summon)
+  ...summonReducers,
   voicePad: voicePadReducer,
-  windowManager: windowManagerReducer,
-  urlSync: urlSyncReducer,
 
   // Canvas and Artifacts system ----------
   // THE canvas (@ai-matrx/canvas): column, panes, tabs, items, width.

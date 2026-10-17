@@ -22,7 +22,7 @@ jest.mock("@/features/tasks/services/taskService", () => ({
   updateTaskResult: jest.fn(),
 }));
 jest.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams() }));
-jest.mock("@/features/overlays/openers/taskEditorWindow", () => ({ useOpenTaskEditorWindow: () => () => undefined }));
+jest.mock("@/features/overlays/definitions/taskEditorWindow.overlay", () => ({ useOpenTaskEditorWindow: () => () => undefined }));
 jest.mock("@/features/tasks/components/TaskCopyForAiButton", () => ({ TaskCopyForAiButton: () => null }));
 jest.mock("@/features/tasks/components/TaskDueDatePicker", () => ({ TaskDueDatePicker: () => null }));
 jest.mock("@/features/organizations/hooks", () => ({ useUserOrganizations: () => ({ organizations: [] }) }));

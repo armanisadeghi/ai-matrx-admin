@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { InitialCropAspectBar, InitialCropViewport } from "./InitialCropPanel";
 import { StudioDropZone } from "./StudioDropZone";
 import {

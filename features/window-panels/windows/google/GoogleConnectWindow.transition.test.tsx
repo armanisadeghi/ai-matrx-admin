@@ -8,7 +8,7 @@ import { GoogleConnectWindow } from "@/features/window-panels/windows/google/Goo
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({
     children,
     actionsRight,

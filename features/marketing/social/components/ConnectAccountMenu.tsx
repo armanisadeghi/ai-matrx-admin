@@ -21,7 +21,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { socialAuthorizeUrl } from "@/features/social-connections/customer-service";
 import { startTikTokAuthorization } from "@/features/tiktok-connections/service";
 

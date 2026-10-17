@@ -20,7 +20,7 @@ import React, { useCallback, useState } from "react";
 import { Activity, MessageSquare, Copy, Check, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { StreamDebugPanel } from "@ai-matrx/chat/agents/components/debug/StreamDebugPanel";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectInstanceStatus } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";

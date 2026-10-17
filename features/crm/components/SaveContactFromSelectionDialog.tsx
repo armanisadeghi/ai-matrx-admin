@@ -36,7 +36,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { useLiveAgentRun } from "@ai-matrx/chat/agents/hooks/useLiveAgentRun";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { CRM_SAVE_CONTACT_AGENT_MANDATE } from "../constants";
 import { confirmSavedContact } from "../confirmSavedContact";

@@ -80,13 +80,13 @@ import {
 import { useOpenCloudComputerCanvas } from "@/features/cloud-computer/useOpenCloudComputerCanvas";
 import { flattenResourcePickerItems } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 import { useAttachResourcePicker } from "@/features/connectors/useAttachResourcePicker";
-import { usePopoutContainer } from "@/features/window-panels/popout/usePopoutContainer";
-import { useUrlSync } from "@/features/window-panels/url-sync/useUrlSync";
-import { useOverlaySurfaceRenderAck } from "@/features/window-panels/diagnostics/useOverlaySurfaceRenderAck";
+import { usePopoutContainer } from "@ai-matrx/summon/window";
+import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/url";
+import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
 import {
   disposeFullScreenEditorCallbackGroup,
   emitFullScreenEditorSave,
-} from "@/features/overlays/callbacks/fullScreenEditor";
+} from "@/features/overlays/definitions/callbacks/fullScreenEditor";
 import { kindValueToMarkdown } from "@/features/canvas/export/exportArtifactMarkdown";
 
 /**
@@ -137,7 +137,7 @@ const ShareModal = dynamic(
 );
 const WindowPanel = dynamic(
   () =>
-    import("@/features/window-panels/WindowPanel").then((m) => m.WindowPanel),
+    import("@ai-matrx/summon/window").then((m) => m.WindowPanel),
   { ssr: false },
 );
 const FullScreenOverlay = dynamic(

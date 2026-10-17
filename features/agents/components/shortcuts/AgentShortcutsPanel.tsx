@@ -40,7 +40,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { LinkAgentToShortcutModal } from "@/features/agent-shortcuts/components/LinkAgentToShortcutModal";
 import type { AgentScope } from "@/features/agent-shortcuts/constants";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectShortcutsByAgentId } from "@ai-matrx/chat/agents/redux/agent-shortcuts/selectors";
 import { selectAllCategoriesMap } from "@ai-matrx/chat/agents/redux/agent-shortcut-categories/selectors";
@@ -105,7 +105,7 @@ export function AgentShortcutsPanel({
   );
 
   // Names for org-scoped shortcuts, so "Shared" rows can name AND open the org.
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith(shortcuts.map((s) => s.organizationId));
 
   // Every category the slice knows about — the panel builds ALL row
   // projections here (one shared shape for the row, the list copy, and the

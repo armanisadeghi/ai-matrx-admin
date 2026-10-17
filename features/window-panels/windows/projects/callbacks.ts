@@ -18,7 +18,7 @@
  * freshly created project.
  */
 
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 import type { Project } from "@/features/projects/types";
 
 // ─── Event surface ───────────────────────────────────────────────────────────

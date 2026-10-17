@@ -13,7 +13,7 @@ import { toast } from "@/lib/toast";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ResourcePeekHost } from "@/features/organizations/peek/ResourcePeekHost";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { useRouter } from "next/navigation";
 import { useTableDoors } from "@/features/rich-content-host/useTableDoors";
 import { withIrEnvelope } from "@ai-matrx/rich-content/kinds/registry/region-envelope-memo";

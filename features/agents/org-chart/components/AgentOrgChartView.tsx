@@ -100,7 +100,7 @@ import { OrgBoxPicker } from "./OrgBoxPicker";
 import { DefineSeatJobDialog } from "./DefineSeatJobDialog";
 import { MakeOrchestraDialog, type MakeOrchestraRequest } from "./MakeOrchestraDialog";
 import { selectSeatJobs } from "@/features/agents/redux/orchestras/selectors";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAgentsById } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";

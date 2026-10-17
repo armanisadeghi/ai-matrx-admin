@@ -19,7 +19,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useOpenDetail } from "@ai-matrx/detail/react";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { extractErrorMessage } from "@/utils/errors";
 import { presentOrganizationRefusal } from "@ai-matrx/chat/host/org";
 // 🚨 REUSE, NEVER FORK: ONE generic server pair serves every synced record

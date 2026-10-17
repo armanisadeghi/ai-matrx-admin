@@ -25,7 +25,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { PreviewPane } from "@/features/files/components/surfaces/PreviewPane";
 import { FileRightClickMenu } from "@/features/files/components/core/FileContextMenu/FileRightClickMenu";
 import { getFileFromState } from "@/features/files/redux/selectors";

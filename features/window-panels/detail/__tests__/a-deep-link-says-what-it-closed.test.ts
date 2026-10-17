@@ -14,10 +14,9 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 import { recordToast } from "@/lib/toast";
-import overlays, { selectOverlay } from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlays, selectOverlay } from "@ai-matrx/summon";
 import { canvasReducer } from "@ai-matrx/canvas";
-import { getHydrator } from "@/features/window-panels/url-sync/UrlPanelRegistry";
-import { initUrlHydration } from "@/features/window-panels/url-sync/initUrlHydration";
+import { linkHydrator } from "@/features/overlays/definitions/__tests__/linkKit";
 
 jest.mock("@/lib/toast", () => ({
   recordToast: { info: jest.fn() },
@@ -31,13 +30,12 @@ const C = "cccccccc-0000-0000-0000-000000000000";
 
 function seat() {
   const store = configureStore({ reducer: { overlays, canvasHost: canvasReducer } });
-  initUrlHydration();
-  const hydrate = getHydrator("detail");
+  const hydrate = linkHydrator("detail");
   if (!hydrate) throw new Error("the `detail` hydrator is not registered");
   return {
     store,
     open: (id: string, args: Record<string, string> = {}) =>
-      hydrate(store.dispatch as never, id, args),
+      hydrate(store.dispatch, id, args),
     windowState: () => selectOverlay(store.getState(), "detailWindow"),
     dockedTabs: () => Object.values(store.getState().canvasHost.items),
   };
@@ -46,13 +44,13 @@ function seat() {
 beforeEach(() => info.mockClear());
 
 describe("a `?panels=` deep link naming two records", () => {
-  it("announces the record the singleton closed, by name", () => {
+  it("announces the record the singleton closed, by name", async () => {
     const s = seat();
 
-    s.open(`file.${B}`);
+    await s.open(`file.${B}`);
     expect(info).not.toHaveBeenCalled();
 
-    s.open(`file.${C}`);
+    await s.open(`file.${C}`);
 
     expect(info).toHaveBeenCalledTimes(1);
     const [ref, message] = info.mock.calls[0];
@@ -63,19 +61,19 @@ describe("a `?panels=` deep link naming two records", () => {
     expect((s.windowState().data as { id: string }).id).toBe(C);
   });
 
-  it("says nothing when the same record is hydrated twice", () => {
+  it("says nothing when the same record is hydrated twice", async () => {
     const s = seat();
-    s.open(`file.${B}`);
-    s.open(`file.${B}`);
+    await s.open(`file.${B}`);
+    await s.open(`file.${B}`);
     expect(info).not.toHaveBeenCalled();
   });
 
   // Docked is a canvas tab per record: the second record replaces nothing, so
   // there is nothing to announce — both stay open, side by side.
-  it("opens one docked tab per record and closes none", () => {
+  it("opens one docked tab per record and closes none", async () => {
     const s = seat();
-    s.open(`file.${B}`, { as: "docked" });
-    s.open(`file.${C}`, { as: "docked" });
+    await s.open(`file.${B}`, { as: "docked" });
+    await s.open(`file.${C}`, { as: "docked" });
     expect(info).not.toHaveBeenCalled();
     expect(s.dockedTabs().map((item) => item.key)).toEqual([`file.${B}`, `file.${C}`]);
   });

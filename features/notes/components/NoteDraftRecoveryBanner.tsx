@@ -35,7 +35,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import {
   useOpenDiffViewerWindow,
   type DiffViewerWindowHandle,
-} from "@/features/overlays/openers/diffViewerWindow";
+} from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { fetchVersions } from "@/features/text-diff/service/versionService";
 import { selectNoteContent, selectNoteFetchStatus } from "../redux/selectors";
 import { discardNoteDraft, getNoteDraft } from "../utils/notesDrafts";

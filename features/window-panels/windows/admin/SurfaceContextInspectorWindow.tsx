@@ -29,7 +29,7 @@ import { validateLoadedValues } from "@ai-matrx/alchemy/declare";
 import { Badge } from "@/components/ui/badge";
 import { CopyForAiButton } from "@/components/agent-copy/CopyForAiButton";
 import { CopyForAiIcon } from "@/components/agent-copy/CopyForAiIcon";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import {
   getManifest,
   getRawManifest,

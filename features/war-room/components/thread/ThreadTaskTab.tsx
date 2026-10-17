@@ -32,7 +32,7 @@ import {
 } from "@/features/war-room/redux/selectors";
 import { createThreadTask } from "@/features/war-room/redux/thunks";
 import { updateTaskFieldThunk } from "@/features/tasks/redux/thunks";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import { cn } from "@/lib/utils";
 import { useTaskDrillStack } from "@/features/war-room/hooks/useTaskDrillStack";
 import { ThreadEmbeddedTaskView } from "./ThreadEmbeddedTaskView";

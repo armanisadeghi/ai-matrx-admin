@@ -21,14 +21,14 @@ import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "./useCanWatchAi";
 import { isAutomatedRun, selectLivePageAiRuns } from "./page-ai-runs";
-import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
-import { AUTO_OPEN_NO_ROOM_EVENT, autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
-import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/features/overlays/openers/workflowRunWindow";
+import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/definitions/aiWatchWindow.overlay";
+import { AUTO_OPEN_NO_ROOM_EVENT, autoOpenHasRoom, markAutoOpened } from "@ai-matrx/summon/window";
+import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 import { runIsOver } from "@/features/workflow-runtime/types";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { openToolInCanvas } from "@/features/canvas/host/toolCanvas";
 import { AI_WATCH_CANVAS_ID, AI_WATCH_CANVAS_KEY, WORKFLOW_RUN_CANVAS_ID } from "./canvas/runViewKinds";
-import { selectOpenInstances } from "@/lib/redux/slices/overlaySlice";
+import { selectOpenInstances } from "@ai-matrx/summon";
 import type { RootState } from "@/lib/redux/store";
 
 /** Root runs on this page that are running right now, as one stable key. */

@@ -24,7 +24,7 @@
  */
 
 import { getStore } from "@/lib/redux/store-singleton";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 
 const FILE_PREVIEW_OVERLAY_ID = "filePreviewWindow";
 

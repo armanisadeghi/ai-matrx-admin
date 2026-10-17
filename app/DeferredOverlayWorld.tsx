@@ -10,7 +10,7 @@
 //
 // Same rules as DeferredSingletonCore: static imports only, no render conditions here.
 
-import OverlayController from "@/features/overlays/OverlayController";
+import { OverlayWorldHost } from "@/features/overlays/host/OverlayWorldHost";
 import { PersonPeekHost } from "@/features/data-tables/records-ui-host/PersonPeekHost";
 
 // LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
@@ -19,7 +19,7 @@ if (typeof window !== "undefined") performance.mark("load:heavy:Overlay world");
 export default function DeferredOverlayWorld() {
   return (
     <>
-      <OverlayController />
+      <OverlayWorldHost />
       {/* A person a table names opens in place (records-ui `openPerson`). */}
       <PersonPeekHost />
     </>

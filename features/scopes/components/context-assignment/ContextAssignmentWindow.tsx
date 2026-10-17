@@ -13,7 +13,7 @@
 // to do with the overlay-system skill once the component set is approved.
 
 import React from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import {
   ContextAssignmentField,

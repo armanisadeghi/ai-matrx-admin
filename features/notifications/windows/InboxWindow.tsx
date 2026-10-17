@@ -10,7 +10,7 @@
  */
 
 import { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { InboxWorkspace, isInboxTab } from "../components/InboxWorkspace";
 
 export function InboxWindow({

@@ -24,7 +24,7 @@ jest.mock("@/features/files/storage-sources/service", () => ({
   importStorageSourceFiles: (...args: unknown[]) => mockImport(...args),
   safeStorageBasename: (name: string) => name || null,
 }));
-jest.mock("@/features/overlays/callbacks/storageSourcePicker", () => ({
+jest.mock("@/features/overlays/definitions/callbacks/storageSourcePicker", () => ({
   deliverStorageSourceImports: (...args: unknown[]) => mockDeliver(...args),
   disposeStorageSourcePickerCallbackGroup: (...args: unknown[]) => mockDispose(...args),
 }));
@@ -47,7 +47,7 @@ jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({
   ensureEffectiveKnob: async () => 50,
 }));
 jest.mock("@/lib/scoped-config/effectiveKnobs.client", () => ({ useEffectiveKnob: () => 50 }));
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
     <div>{children}<button onClick={onClose}>Window close</button></div>
   ),

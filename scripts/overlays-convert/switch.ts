@@ -1579,6 +1579,17 @@ function deleteReplaced(): void {
 // ── E. guards ────────────────────────────────────────────────────────────────────────────────
 
 function repointGuards(): void {
+  // source-text tests that READ a deleted file: point them at the file that now holds the code
+  patch("providers/__tests__/chat-package/agents/components/inputs/smart-input/__tests__/textarea-auto-resize.test.ts", (t) =>
+    t.replace('join(process.cwd(), "features/window-panels/WindowPanel.tsx")', 'join(process.cwd(), "node_modules/@ai-matrx/summon/dist/window.js")'),
+  );
+  patch("features/canvas/__tests__/edit-history-opens-in-the-canvas.test.tsx", (t) =>
+    t.replace(
+      'expect(readFileSync(join(repo, "features/overlays/catalogue.ts"), "utf8")).not.toMatch(/\\bundoHistory:/);',
+      `expect(readFileSync(join(repo, "${DEFS}/registry.ts"), "utf8")).not.toMatch(/\\bundoHistory\\b/);`,
+    ),
+  );
+  resolve("source-text tests reading deleted files: textarea-auto-resize reads WindowPanel from the published summon dist/window.js; edit-history-opens-in-the-canvas checks definitions/registry.ts instead of catalogue.ts");
   patch("eslint.config.mjs", (t) =>
     t
       .replace(/"features\/overlays\/OverlayController\.tsx"/g, `"${DEFS}/*.render.tsx"`)

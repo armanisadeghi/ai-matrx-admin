@@ -96,7 +96,7 @@ import {
   clearContentAction,
   hostCopyAction,
 } from "@ai-matrx/rich-content/rich-document/actions/hostActions";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import {
   useFloatingRunWindow,
   type FloatingRunTrackState,

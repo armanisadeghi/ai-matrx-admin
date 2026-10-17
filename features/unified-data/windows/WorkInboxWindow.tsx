@@ -16,7 +16,7 @@
 
 import Link from "next/link";
 import { ActionInbox, RecordsMount } from "@ai-matrx/records-ui";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { openPath } from "@/lib/deep-link/openPath";

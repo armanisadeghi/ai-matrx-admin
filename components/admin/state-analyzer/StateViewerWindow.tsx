@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import type { RootState } from "@/lib/redux/store";
 import { useAppStore } from "@/lib/redux/hooks";
 import {

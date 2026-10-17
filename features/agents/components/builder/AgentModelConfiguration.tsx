@@ -32,7 +32,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { cn } from "@/lib/utils";
-import { useOpenAgentAdvancedSettingsWindow } from "@/features/overlays/openers/agentAdvancedSettingsWindow";
+import { useOpenAgentAdvancedSettingsWindow } from "@/features/overlays/definitions/agentAdvancedSettingsWindow.overlay";
 
 interface AgentModelConfigurationProps {
   agentId: string;

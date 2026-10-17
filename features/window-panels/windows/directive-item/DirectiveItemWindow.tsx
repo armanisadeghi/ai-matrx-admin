@@ -35,7 +35,7 @@
 
 import { useState } from "react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 import DbKindComponent from "@/features/content-ir/react/db-component/DbKindComponent";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";

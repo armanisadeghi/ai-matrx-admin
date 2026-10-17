@@ -67,7 +67,7 @@ import { ShortId } from "@ai-matrx/chat/tool-call-visualization/result-fields/Sh
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
-import { useOpenStructuredValueWindow } from "@/features/overlays/openers/structuredValueWindow";
+import { useOpenStructuredValueWindow } from "@/features/overlays/definitions/structuredValueWindow.overlay";
 import {
   formatTemporal,
   looksLikeEmail,

@@ -8,7 +8,7 @@
 
 import { Eye } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
-import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
+import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 
 export function WatchAiRunButton({

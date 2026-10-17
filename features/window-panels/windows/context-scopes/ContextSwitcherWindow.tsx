@@ -1,6 +1,6 @@
 "use client";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ActiveMillerColumns } from "@/features/scopes/components/active-context/miller-columns/ActiveMillerColumns";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useAppSelector } from "@/lib/redux/hooks";

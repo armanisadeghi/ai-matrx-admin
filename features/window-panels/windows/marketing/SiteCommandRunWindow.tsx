@@ -19,7 +19,7 @@
 import React, { useSyncExternalStore } from "react";
 import { ExternalLink } from "lucide-react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { SiteCommandFeed } from "@/features/marketing/components/crawls/SiteCommandFeed";

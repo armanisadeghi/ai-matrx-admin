@@ -25,8 +25,8 @@ import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { ImageIcon, Loader2 } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { Carousel } from "@ai-matrx/design-system/carousel";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
-import { useOpenImageViewerWindow } from "@/features/overlays/openers/imageViewer";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
+import { useOpenImageViewerWindow } from "@/features/overlays/definitions/imageViewer.overlay";
 import {
   readGeneratedImageList,
   type GeneratedImageData,

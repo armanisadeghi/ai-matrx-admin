@@ -31,7 +31,7 @@ import {
 import { duplicateAgent } from "@/features/agents/redux/builder-write.thunks";
 import type { AgentLineageRef } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { useOpenAgentConvertSystemWindow } from "@/features/overlays/openers/agentConvertSystemWindow";
+import { useOpenAgentConvertSystemWindow } from "@/features/overlays/definitions/agentConvertSystemWindow.overlay";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { agentHref } from "./mandate-health";

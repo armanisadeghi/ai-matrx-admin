@@ -5,7 +5,7 @@ import { tabToFileIdentity } from "../utils/fileIdentity";
 import { useEffect, type MutableRefObject } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setContextEntry } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import type { StandaloneCodeEditor } from "../editor/MonacoEditor";
 import type { EditorFile } from "../types";
 import { editorSelectionKey, tabPayload } from "./editorContextEntries";

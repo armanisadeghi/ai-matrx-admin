@@ -62,12 +62,12 @@ import {
   tryGetEntityInfo,
 } from "@/features/scopes/registry/entityRegistry";
 import { getShareableResource, type ResourceType } from "@/utils/permissions/registry";
-import { useOpenContextAssignment } from "@/features/overlays/openers/contextAssignment";
-import { useOpenShareModal } from "@/features/overlays/openers/shareModal";
+import { useOpenContextAssignment } from "@/features/overlays/definitions/contextAssignment.overlay";
+import { useOpenShareModal } from "@/features/overlays/definitions/shareModal.overlay";
 import {
   disposeKnowledgeCommandBarCallbackGroup,
   getKnowledgeCommandBarCallbackGroup,
-} from "@/features/overlays/callbacks/knowledgeCommandBar";
+} from "@/features/overlays/definitions/callbacks/knowledgeCommandBar";
 import { buildSearchHref } from "@/features/search/search-url";
 import { DEFAULT_HUB_STATE, hubHref } from "@/features/knowledge/hub/hubState";
 import {

@@ -32,15 +32,13 @@
 import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  closeOverlay,
-  type FullScreenEditorMode,
-} from "@/lib/redux/slices/overlaySlice";
-import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";
+import { closeOverlay } from "@ai-matrx/summon";
+import { type FullScreenEditorMode } from "@/features/overlays/definitions/fullScreenEditor.overlay";
+import { instanceKey, setOverlayStateValue } from "@ai-matrx/summon";
 import {
   disposeFullScreenEditorCallbackGroup,
   emitFullScreenEditorSave,
-} from "@/features/overlays/callbacks/fullScreenEditor";
+} from "@/features/overlays/definitions/callbacks/fullScreenEditor";
 import type { EditorPrimaryAction } from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 
 const FullScreenMarkdownEditor = dynamic(
@@ -114,11 +112,7 @@ export function FullScreenMarkdownEditorBridge({
   const handleChange = useCallback(
     (newContent: string) => {
       dispatch(
-        updateOverlayData({
-          overlayId: "fullScreenEditor",
-          instanceId,
-          updates: { content: newContent },
-        }),
+        setOverlayStateValue({ key: instanceKey("fullScreenEditor", instanceId), name: "content", value: newContent }),
       );
     },
     [dispatch, instanceId],
@@ -127,11 +121,7 @@ export function FullScreenMarkdownEditorBridge({
   const handleSave = useCallback(
     async (newContent: string) => {
       dispatch(
-        updateOverlayData({
-          overlayId: "fullScreenEditor",
-          instanceId,
-          updates: { content: newContent },
-        }),
+        setOverlayStateValue({ key: instanceKey("fullScreenEditor", instanceId), name: "content", value: newContent }),
       );
 
       // 1. Callback group wins. The caller asked to be told about the save
@@ -169,11 +159,7 @@ export function FullScreenMarkdownEditorBridge({
   const handlePrimaryAction = useCallback(
     async (actionId: string, newContent: string) => {
       dispatch(
-        updateOverlayData({
-          overlayId: "fullScreenEditor",
-          instanceId,
-          updates: { content: newContent },
-        }),
+        setOverlayStateValue({ key: instanceKey("fullScreenEditor", instanceId), name: "content", value: newContent }),
       );
       // Actions ALWAYS travel through the callback group. If none was
       // registered the caller wired the editor wrong — surface it loudly

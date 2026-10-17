@@ -12,7 +12,7 @@
  */
 
 import { useCallback } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { DocumentsWorkspace } from "@ai-matrx/chat/agents/components/working-document/documents-workspace/DocumentsWorkspace";
 
 interface WorkingDocumentWindowProps {

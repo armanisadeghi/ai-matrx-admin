@@ -66,8 +66,8 @@ import {
 import { marketingPageManifest } from "@/features/surfaces/manifests/marketing-page.manifest";
 import { surfaceValueLabels } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { type SerpDevice } from "@/features/marketing/seo/serp/SerpResult";
-import { useOpenSerpAnalyzerWindow } from "@/features/overlays/openers/serpAnalyzerWindow";
-import { useOpenSocialCardWindow } from "@/features/overlays/openers/socialCardAnalyzerWindow";
+import { useOpenSerpAnalyzerWindow } from "@/features/overlays/definitions/serpAnalyzerWindow.overlay";
+import { useOpenSocialCardWindow } from "@/features/overlays/definitions/socialCardAnalyzerWindow.overlay";
 import { type SocialPlatform } from "@/features/marketing/seo/social/SocialCard";
 import {
   parseSnapshotExtracted,

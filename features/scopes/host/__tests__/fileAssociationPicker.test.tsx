@@ -56,7 +56,7 @@ jest.mock(
     },
   }),
 );
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: () => null,
 }));
 

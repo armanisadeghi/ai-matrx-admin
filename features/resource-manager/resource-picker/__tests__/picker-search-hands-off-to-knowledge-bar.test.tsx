@@ -31,12 +31,12 @@ jest.mock("@/lib/toast", () => ({
 }));
 
 const openBar = jest.fn();
-jest.mock("@/features/overlays/openers/knowledgeCommandBar", () => ({
+jest.mock("@/features/overlays/definitions/knowledgeCommandBar.overlay", () => ({
   useOpenKnowledgeCommandBar: () => openBar,
 }));
 
 const openPickerWindow = jest.fn();
-jest.mock("@/features/overlays/openers/resourcePickerWindow", () => ({
+jest.mock("@/features/overlays/definitions/resourcePickerWindow.overlay", () => ({
   useOpenResourcePickerWindow: () => openPickerWindow,
 }));
 
@@ -46,7 +46,7 @@ jest.mock("@/features/notes/service/notesService", () => ({
 }));
 
 import { ResourcePickerMenu } from "../ResourcePickerMenu";
-import type { OpenKnowledgeCommandBarOptions } from "@/features/overlays/openers/knowledgeCommandBar";
+import type { OpenKnowledgeCommandBarOptions } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
 import { withAppStore } from "@/tests/helpers/WithStoreReads";
 
 let container: HTMLDivElement;

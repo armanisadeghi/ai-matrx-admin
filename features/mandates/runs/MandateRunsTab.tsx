@@ -15,7 +15,7 @@ import { List } from "lucide-react";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { toast } from "@/lib/toast";
 import { RunsTable } from "@/features/mandates/run-history/RunsTable";
 import type { MandateRun, RunHistoryView } from "@/features/mandates/run-history/service";

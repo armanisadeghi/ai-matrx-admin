@@ -16,7 +16,7 @@
 
 import { Info } from "lucide-react";
 import Link from "next/link";
-import { useOpenGscWhyScoreWindow } from "@/features/overlays/openers/gscWhyScoreWindow";
+import { useOpenGscWhyScoreWindow } from "@/features/overlays/definitions/gscWhyScoreWindow.overlay";
 import {
   HoverCard,
   HoverCardContent,

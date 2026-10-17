@@ -66,7 +66,7 @@ jest.mock("@/features/google-workspace/service", () => ({
  * anchors out of the record: the connector window and the Google Picker, both
  * opened in place. This suite is about the other two, so both openers are stubbed.
  */
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => jest.fn(),
 }));
 jest.mock("@/lib/googlePicker", () => ({ pickGoogleWorkspaceFile: jest.fn() }));

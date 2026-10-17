@@ -8,7 +8,7 @@
  * The overlay id (`agentCreateAppWindow`) and registry slug (`agent-create-app-window`) are unchanged.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AppletBuilder } from "@/features/applets-host/builder/AppletBuilder";
 
 const WINDOW_ID = "agent-create-app-window";

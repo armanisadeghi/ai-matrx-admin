@@ -5,7 +5,7 @@
  * `openOverlay` data, and the window emits typed events into it.
  */
 
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 
 export type AgentPickerEventType = "picked" | "window-close";
 

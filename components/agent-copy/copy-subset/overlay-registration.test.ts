@@ -9,8 +9,13 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
-import { OVERLAY_CATALOGUE } from "@/features/overlays/catalogue";
+/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
+const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
+  APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
+);
+
 
 const ROOT = process.cwd();
 
@@ -23,24 +28,17 @@ describe("copySubsetWindow overlay registration", () => {
     expect(entry.isWindow).toBe(true);
   });
 
-  it("has a lazy import and a gated multi-instance block in the controller", () => {
-    const controller = readFileSync(
-      join(ROOT, "features/overlays/OverlayController.tsx"),
-      "utf8",
-    );
-    expect(controller).toContain(
-      'import("@/components/agent-copy/copy-subset/CopySubsetWindow")',
-    );
-    expect(controller).toContain('selectOpenInstances(s, "copySubsetWindow")');
-    expect(controller).toContain("instancesById.copySubsetWindow.map(");
-    expect(controller).toContain('overlayId: "copySubsetWindow"');
+  it("has a definition whose render module renders the window per instance", () => {
+    const definition = readFileSync(join(ROOT, "features/overlays/definitions/copySubsetWindow.overlay.tsx"), "utf8");
+    expect(definition).toContain('render: () => import("./copySubsetWindow.render")');
+    expect(definition).toContain('instance: "multi"');
+    const render = readFileSync(join(ROOT, "features/overlays/definitions/copySubsetWindow.render.tsx"), "utf8");
+    expect(render).toContain('from "@/components/agent-copy/copy-subset/CopySubsetWindow"');
+    expect(render).toContain("instanceId");
   });
 
-  it("has a typed opener exporting the hook and the controller component", () => {
-    const opener = readFileSync(
-      join(ROOT, "features/overlays/openers/copySubsetWindow.tsx"),
-      "utf8",
-    );
+  it("keeps the typed opener (hook + controller component) in the definition file", () => {
+    const opener = readFileSync(join(ROOT, "features/overlays/definitions/copySubsetWindow.overlay.tsx"), "utf8");
     expect(opener).toContain("export function useOpenCopySubsetWindow");
     expect(opener).toContain("export function CopySubsetWindowController");
     expect(opener).toContain('const OVERLAY_ID = "copySubsetWindow" as const');

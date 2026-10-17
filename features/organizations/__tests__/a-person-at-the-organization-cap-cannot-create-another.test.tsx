@@ -46,7 +46,7 @@ jest.mock("@/features/agent-context/hooks/useHierarchy", () => ({
   useCreateTask: () => ({ mutateAsync: jest.fn() }),
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppDispatch: () => jest.fn() }));
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({ children, footerRight }: { children: React.ReactNode; footerRight: React.ReactNode }) => (
     <div>
       {children}

@@ -56,7 +56,7 @@ configureRichContent({
     fenceRegion: (l, t) => require("@/features/content-ir/surfaces/xml-finalize").envelopeForCompletedFenceRegion(l, t),
     xmlRegion: (tag, t) => require("@/features/content-ir/surfaces/xml-finalize").envelopeForCompletedXmlRegion(tag, t),
   },
-  useOpenSaveToTable: () => require("@/features/overlays/openers/saveToTable").useOpenSaveToTable(),
+  useOpenSaveToTable: () => require("@/features/overlays/definitions/saveToTable.overlay").useOpenSaveToTable(),
   kindRegistry: late(() => require("@/features/content-ir/registry/kind-registry").kindRegistry),
   // The package kind registry's database tiers read through these (the host passes the same two to registerKindHost).
   kindDataClient: async () => require("@/utils/supabase/client").supabase,

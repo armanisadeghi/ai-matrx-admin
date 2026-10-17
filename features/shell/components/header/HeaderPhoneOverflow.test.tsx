@@ -60,7 +60,7 @@ jest.mock("@/features/ai-test-mode/AiTestModeDock", () => ({
 jest.mock("@/features/knowledge/command-bar/OpenCommandBarButtons", () => ({
   useOpenBarOrGate: () => openBar,
 }));
-jest.mock("@/features/overlays/openers/authGate", () => ({
+jest.mock("@/features/overlays/definitions/authGate.overlay", () => ({
   useOpenAuthGateDialog: () => openAuthGate,
 }));
 jest.mock("@ai-matrx/chat/surfaces/components/chrome/SurfaceAgentsHeaderButton", () => ({

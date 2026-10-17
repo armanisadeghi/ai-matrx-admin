@@ -37,7 +37,7 @@ import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
 import { TASK_PRIORITY_META } from "@/features/tasks/components/TaskPriorityPicker";
 import { TaskEditorCopyButtons } from "./TaskEditorCopyButtons";
 import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import { useTaskEditorControllerCtx } from "./TaskEditorControllerContext";
 
 // Uniform compact header-control heights (match NoteViewControls / ReferenceCopyButton):

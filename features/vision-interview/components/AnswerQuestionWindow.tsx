@@ -26,7 +26,7 @@ import { useEffect, useRef } from "react";
 import { Clock3, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { RecordingOriginProvider } from "@/features/audio/RecordingOriginProvider";
 import { useDurableDraft } from "@ai-matrx/kit/drafts";
 import { useAppDispatch } from "@/lib/redux/hooks";

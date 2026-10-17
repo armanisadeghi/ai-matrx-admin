@@ -12,7 +12,7 @@ import { createRoot, type Root } from "react-dom/client";
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const panelProps: Array<Record<string, unknown>> = [];
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: (props: Record<string, unknown> & { children: React.ReactNode }) => {
     panelProps.push(props);
     return <div>{props.children}</div>;

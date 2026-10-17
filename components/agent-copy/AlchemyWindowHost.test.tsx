@@ -14,10 +14,10 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { openPreparation, type PreparationSession, type SealedArtifact } from "@ai-matrx/alchemy/operate";
 import type { WindowHandle } from "@ai-matrx/alchemy/ports";
-import overlayReducer from "@/lib/redux/slices/overlaySlice";
-import windowManagerReducer from "@/lib/redux/slices/windowManagerSlice";
+import { overlaysReducer as overlayReducer } from "@ai-matrx/summon";
+import { windowManagerReducer } from "@ai-matrx/summon";
 import adminDebugReducer from "@/lib/redux/preferences/adminDebugSlice";
-import urlSyncReducer from "@/lib/redux/slices/urlSyncSlice";
+import { linksReducer as urlSyncReducer } from "@ai-matrx/summon";
 import { AlchemyWindowHost, alchemyPanelId, createAlchemyWindowController } from "./AlchemyWindowHost";
 
 const routeNotes = "Route 14 — Tuesday pickups\nHarbor Dental: cardboard, dock behind the blue door";

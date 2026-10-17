@@ -39,7 +39,7 @@ import { buildPdfExtractorScope } from "@/features/pdf-extractor/lib/pdf-extract
 import { SurfaceBoundAgentsList } from "@/features/surfaces/components/bind/SurfaceBoundAgentsList";
 import { useSurfaceBoundAgents } from "@ai-matrx/chat/surfaces/hooks/useSurfaceBoundAgents";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
-import { useOpenSurfaceAgentBindWindow } from "@/features/overlays/openers/surfaceAgentBindWindow";
+import { useOpenSurfaceAgentBindWindow } from "@/features/overlays/definitions/surfaceAgentBindWindow.overlay";
 
 import { PDF_EXTRACTOR_SURFACE_NAME as PDF_EXTRACTOR_SURFACE } from "@/features/surfaces/manifests/pdf-extractor.manifest";
 

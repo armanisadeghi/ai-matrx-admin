@@ -18,7 +18,7 @@ jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-str
 jest.mock("@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors", () => ({
   selectAnswerText: jest.fn(),
 }));
-jest.mock("@/features/overlays/openers/liveRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/liveRunWindow.overlay", () => ({
   useFloatingLiveRun: jest.fn(),
 }));
 

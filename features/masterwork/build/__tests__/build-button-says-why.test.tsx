@@ -68,7 +68,7 @@ jest.mock("../useBuildRun", () => ({
 }));
 
 // The window chrome is proven elsewhere; this test is about the footer's words.
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({
     children,
     footer,

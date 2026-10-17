@@ -25,7 +25,7 @@
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { sameSlug } from "@ai-matrx/records/scopes";
 import { scopeDoors } from "@/features/scopes/service/scopeDoors";
-import { organizationsIAmIn } from "@/features/organizations/organizationsIAmIn";
+import { recentOrganizationIds } from "@/features/organizations/organizationsIAmIn";
 import { personSentence } from "@/lib/errors/writeFailure";
 import { peekHref } from "@/features/organizations/peek/peekHref";
 import { keepSource } from "@/features/sources/api/sourcesApi";
@@ -119,9 +119,12 @@ export async function createKitScope(orgId: string, name: string): Promise<KitSc
   return { id: made.data.id, name: clean, organizationId: orgId };
 }
 
-/** EVERY kit scope the person is in, across all their organizations (aids or not). */
+/** Every kit scope in the person's most recently used organizations (aids or not). */
 export async function listKitScopes(): Promise<KitScopeRow[]> {
-  const orgs = await organizationsIAmIn();
+  // Her organizations are a PAGE (bounded organizations, 2026-10-17): the kits of her most recently
+  // used live organizations. The scope doors need organization ids; there is no ids-free door.
+  const recent = await recentOrganizationIds();
+  const orgs = recent?.ids;
   if (!orgs || orgs.size === 0) return [];
   // ONE read for every organization she is in (2026-10-08: one request per
   // organization was ~157 requests a load). Only when that read is refused does

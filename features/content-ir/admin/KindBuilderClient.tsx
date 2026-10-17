@@ -23,7 +23,7 @@ import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { Hammer, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   ADMIN_KIND_REGISTRY_SURFACE_NAME,

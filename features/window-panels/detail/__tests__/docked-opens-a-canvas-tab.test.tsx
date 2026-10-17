@@ -21,7 +21,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { createCanvasStore, selectCanvasActiveItem, type CanvasStoreBinding } from "@ai-matrx/canvas";
 import { CanvasProvider, useCanvas } from "@ai-matrx/canvas/react";
 import { useDetailHost, type DetailHostPorts } from "@ai-matrx/detail/react";
-import overlays from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlays } from "@ai-matrx/summon";
 import { DetailHost } from "@/features/window-panels/detail/DetailHost";
 import { RECORD_PEEK_KIND } from "@/features/window-panels/detail/canvas/recordPeek";
 

@@ -6,8 +6,8 @@ import { createRoot } from "react-dom/client";
 
 const openBar = jest.fn();
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => false }));
-jest.mock("@/lib/redux/slices/overlaySlice", () => ({ selectIsOverlayOpen: () => false }));
-jest.mock("@/features/overlays/openers/knowledgeCommandBar", () => ({ useOpenKnowledgeCommandBar: () => openBar }));
+jest.mock("@ai-matrx/summon", () => ({ selectIsOverlayOpen: () => false }));
+jest.mock("@/features/overlays/definitions/knowledgeCommandBar.overlay", () => ({ useOpenKnowledgeCommandBar: () => openBar }));
 
 function render(el: React.ReactElement) {
   const host = document.createElement("div");

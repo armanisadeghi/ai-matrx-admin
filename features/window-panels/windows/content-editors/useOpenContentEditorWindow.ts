@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay, closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay, closeOverlay } from "@ai-matrx/summon";
 import {
   createContentEditorCallbackGroup,
   type ContentEditorWindowHandlers,

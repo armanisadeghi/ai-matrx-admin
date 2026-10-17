@@ -33,12 +33,9 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
-import { updateWindowRect } from "@/lib/redux/slices/windowManagerSlice";
-import {
-  WindowPanel,
-  type WindowPanelProps,
-} from "@/features/window-panels/WindowPanel";
+import { closeOverlay } from "@ai-matrx/summon";
+import { updateWindowRect } from "@ai-matrx/summon";
+import { WindowPanel, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
 import { submitFeedback, getUserFeedback } from "@/actions/feedback.actions";
 import { MediaAttachmentThumbnail } from "@/features/files/components/inline/MediaAttachmentThumbnail";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
@@ -84,9 +81,9 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
-import { useOpenImageAnnotationWindow } from "@/features/overlays/openers/imageAnnotationWindow";
+import { useOpenImageAnnotationWindow } from "@/features/overlays/definitions/imageAnnotationWindow.overlay";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
-import type { FeedbackSubject } from "@/features/overlays/openers/feedbackDialog";
+import type { FeedbackSubject } from "@/features/overlays/definitions/feedbackDialog.overlay";
 import { describeSubject, subjectMetadata } from "./feedback-subject";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
@@ -265,7 +262,7 @@ Note: \`route\` is where the user clicked Submit, not necessarily where the bug 
 // live here (the root), not inside `FeedbackWindowBody`.
 
 export interface FeedbackWindowProps extends Omit<
-  WindowPanelProps,
+  WindowPanelBaseProps,
   | "children"
   | "title"
   | "actionsLeft"

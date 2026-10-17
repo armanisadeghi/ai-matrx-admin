@@ -19,7 +19,7 @@
 
 import { MessageTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useUnreadConversationBadge } from "@ai-matrx/messaging/react/host";
-import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
+import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
 import { useMessagesToggle } from "@/features/messaging/canvas/messagesKind";
 
 /** What a guest is told when they reach for Messages — one copy for every door. */

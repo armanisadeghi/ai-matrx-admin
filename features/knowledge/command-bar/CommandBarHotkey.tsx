@@ -20,9 +20,9 @@
 
 import { useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { selectIsOverlayOpen } from "@ai-matrx/summon";
 import { isSearchKeyClaimed } from "@/features/shell/hooks/searchKeyClaim";
-import { useOpenKnowledgeCommandBar } from "@/features/overlays/openers/knowledgeCommandBar";
+import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
 import { editorOwnsKeyEvent } from "@ai-matrx/rich-content/editor/format/editor-keys";
 
 export function isCommandBarHotkey(e: KeyboardEvent): boolean {

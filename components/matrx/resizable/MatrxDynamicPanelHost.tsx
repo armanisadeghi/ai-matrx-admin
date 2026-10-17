@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { mayTakeFocusOnOpen } from "@/components/matrx/resizable/focusOnOpen";
-import type { FloatingFrameSize } from "@/components/matrx/resizable/MatrxFloatingFrame";
+import type { FloatingFrameSize } from "@ai-matrx/summon/lite";
 
 /**
  * The FLOATING presentation — the lightweight window (drag, resize, Escape,
@@ -14,9 +14,7 @@ import type { FloatingFrameSize } from "@/components/matrx/resizable/MatrxFloati
  */
 const MatrxFloatingFrame = dynamic(
   () =>
-    import("@/components/matrx/resizable/MatrxFloatingFrame").then(
-      (m) => m.MatrxFloatingFrame,
-    ),
+    import("@ai-matrx/summon/lite").then((m) => m.LiteWindow),
   { ssr: false },
 );
 

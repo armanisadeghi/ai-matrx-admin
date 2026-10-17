@@ -14,10 +14,10 @@ import {
   closeGoogleWorkspaceConnect,
   GoogleWorkspaceConnectBody,
 } from "@/features/google-workspace/GoogleWorkspaceConnectBody";
-import { disposeGoogleConnectCallbackGroup } from "@/features/overlays/callbacks/googleConnectWindow";
+import { disposeGoogleConnectCallbackGroup } from "@/features/overlays/definitions/callbacks/googleConnectWindow";
 import type { GoogleWorkspaceConnectBodyProps } from "@/features/google-workspace/GoogleWorkspaceConnectBody";
 import { GoogleWorkspaceOverviewBody } from "@/features/google-workspace/GoogleWorkspaceOverviewBody";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const WINDOW_ID = "google-connect-window";

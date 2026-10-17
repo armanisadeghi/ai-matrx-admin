@@ -14,7 +14,7 @@
 import { FlaskConical } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
-import { useOpenAgentTestCasesWindow } from "@/features/overlays/openers/agentTestCasesWindow";
+import { useOpenAgentTestCasesWindow } from "@/features/overlays/definitions/agentTestCasesWindow.overlay";
 
 export interface AgentSamplesLauncherProps {
   agentId: string;

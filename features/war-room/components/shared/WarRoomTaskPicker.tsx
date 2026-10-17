@@ -22,7 +22,7 @@ import {
 } from "@ai-matrx/design-system";
 import { useTasks } from "@/features/tasks/hooks/useTaskManager";
 import { getTaskById } from "@/features/tasks/services/taskService";
-import { useOpenTaskQuickCreateWindow } from "@/features/overlays/openers/taskQuickCreateWindow";
+import { useOpenTaskQuickCreateWindow } from "@/features/overlays/definitions/taskQuickCreateWindow.overlay";
 import { cn } from "@/lib/utils";
 import { ReadFailure } from "@ai-matrx/design-system";
 

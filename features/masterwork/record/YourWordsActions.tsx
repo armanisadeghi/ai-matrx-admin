@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ExternalLink, Quote } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
-import { useOpenMasterworkYourWordsWindow } from "@/features/overlays/openers/masterworkYourWordsWindow";
+import { useOpenMasterworkYourWordsWindow } from "@/features/overlays/definitions/masterworkYourWordsWindow.overlay";
 import { cn } from "@/lib/utils";
 
 export interface YourWordsActionsProps {

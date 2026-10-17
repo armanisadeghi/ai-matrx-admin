@@ -5,13 +5,13 @@ import { toast } from "@/lib/toast";
 import { applySampleToComposer } from "@/features/agents/samples/apply-sample";
 import type { AgentSampleRow } from "@/features/agents/samples/service";
 import { AgentSamplesManager } from "@/features/agents/components/samples/AgentSamplesManager";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAgentMenuSection, agentEntityRef } from "@ai-matrx/chat/agents/menu/agent-actions";
 import {
   fetchFullAgent,
 } from "@/features/agents/redux/fetch-full-agent.thunk";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import type { RootState } from "@/lib/redux/store";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 

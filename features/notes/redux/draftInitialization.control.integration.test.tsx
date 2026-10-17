@@ -55,7 +55,7 @@ jest.mock("../components/NoteSidebarRow", () => ({
   ),
 }));
 jest.mock("../components/NoteSidebarBulkBar", () => ({ NoteSidebarBulkBar: () => null }));
-jest.mock("@/features/window-panels/WindowPanel", () => ({ WindowPanel: ({ children }: { children: React.ReactNode }) => children }));
+jest.mock("@ai-matrx/summon/window", () => ({ WindowPanel: ({ children }: { children: React.ReactNode }) => children }));
 jest.mock("../components/NoteViewControls", () => ({ NoteViewControls: () => null }));
 jest.mock("../components/NoteStatsFooter", () => ({ NoteStatsFooter: () => null }));
 jest.mock("../components/NotesWindowView", () => ({ NotesWindowView: () => null }));
@@ -108,7 +108,7 @@ import agentShortcutCategoryReducer from "@ai-matrx/chat/agents/redux/agent-shor
 import { sklReducer } from "@/features/agent-connections/redux/skl/slice";
 import { diffCompareReducer } from "@ai-matrx/chat/agents/redux/diff-compare/diff-compare.slice";
 import adminDebugReducer from "@/lib/redux/preferences/adminDebugSlice";
-import overlaysReducer from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer } from "@ai-matrx/summon";
 
 enableMapSet();
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

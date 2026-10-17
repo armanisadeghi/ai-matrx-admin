@@ -2,13 +2,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  toggleOverlay,
-  openOverlay,
-  closeOverlay,
-  selectIsOverlayOpen,
-  DEFAULT_INSTANCE_ID,
-} from "@/lib/redux/slices/overlaySlice";
+import { toggleOverlay, openOverlay, closeOverlay, selectIsOverlayOpen, DEFAULT_INSTANCE_ID } from "@ai-matrx/summon";
 import type { VoicePadOverlayVariant } from "@/lib/redux/slices/voicePadSlice";
 
 function makeHook(overlayId: VoicePadOverlayVariant) {

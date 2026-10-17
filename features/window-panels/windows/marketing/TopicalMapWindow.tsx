@@ -33,12 +33,12 @@ import {
 } from "lucide-react";
 
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import {
   TOPICAL_MAP_PICKER_INSTANCE_ID,
   type TopicalMapWindowScreen,
-} from "@/features/overlays/openers/topicalMapWindow";
+} from "@/features/overlays/definitions/topicalMapWindow.overlay";
 import {
   TopicalMapEmpty,
   TopicalMapFailed,
@@ -51,7 +51,7 @@ import {
 } from "@/features/marketing/seo/topical-map/mandateKeys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay, selectOpenInstances } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay, selectOpenInstances } from "@ai-matrx/summon";
 import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";

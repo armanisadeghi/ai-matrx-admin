@@ -60,7 +60,7 @@ import {
   listGoogleCapabilities,
   listGoogleConnectionInventory,
 } from "@/features/marketing/google/service";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 
 import {
   channelBindingDraft,

@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Filter, Plus, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import type { ConversationListItem } from "@ai-matrx/chat/agents/redux/conversation-list/conversation-list.types";
 import { ConversationHistorySidebar } from "@ai-matrx/chat/agents/components/conversation-history/ConversationHistorySidebar";
 import { describeFilter } from "@ai-matrx/chat/agents/redux/agent-filter/selectors";

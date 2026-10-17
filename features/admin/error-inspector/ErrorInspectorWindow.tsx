@@ -20,7 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { isUuidValue } from "@/components/official/entity-ref/doors";

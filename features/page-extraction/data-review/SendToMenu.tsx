@@ -31,7 +31,7 @@ import { SendTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 
 import type { ExportColumn, ExportRow } from "./export";
 import { datasetGrid, pushToWorkbook } from "./export-targets";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import {
   OpenDestinationDialog,
   type WindowOverlayDescriptor,

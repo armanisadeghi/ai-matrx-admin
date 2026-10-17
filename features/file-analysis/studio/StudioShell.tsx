@@ -14,7 +14,7 @@
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { rememberFileOrganization } from "@/features/files/api/fileOrganization";
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -47,7 +47,7 @@ interface StudioShellProps {
 export function StudioShell({ fileId, organizationId }: StudioShellProps) {
   rememberFileOrganization(fileId, organizationId);
   // The shell header believes the file (VERIFIER-21 #7), as on /files/f/<id>.
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([organizationId]);
   useDeclarePageObjectOrganization(
     organizationId
       ? { organizationId, name: organizations.find((o) => o.id === organizationId)?.name ?? null, shownByPage: false }

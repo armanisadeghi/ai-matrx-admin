@@ -18,7 +18,7 @@
 
 import { Maximize2 } from "lucide-react";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
-import { useOpenStructuredValueWindow } from "@/features/overlays/openers/structuredValueWindow";
+import { useOpenStructuredValueWindow } from "@/features/overlays/definitions/structuredValueWindow.overlay";
 
 export function OutputPreview({
   output,

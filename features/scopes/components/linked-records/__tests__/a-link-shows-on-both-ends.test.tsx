@@ -36,7 +36,7 @@ jest.mock("@/components/official/entity-ref/EntityRef", () => ({
     </span>
   ),
 }));
-jest.mock("@/features/overlays/openers/linkRecordSheet", () => ({ useOpenLinkRecordSheet: () => jest.fn() }));
+jest.mock("@/features/overlays/definitions/linkRecordSheet.overlay", () => ({ useOpenLinkRecordSheet: () => jest.fn() }));
 jest.mock("@/components/ui/use-toast", () => ({ toast: jest.fn() }));
 
 import { LinkedRecordsSection, isLinkEdge } from "../LinkedRecordsSection";

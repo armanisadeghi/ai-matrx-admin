@@ -35,7 +35,7 @@ import type {
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { buildKeywordResearchScope } from "@/features/marketing/lib/scopes/keyword-research-scope";
 import { extractErrorMessage } from "@/utils/errors";

@@ -16,7 +16,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useCrawlSnapshots } from "@/features/marketing/data/inspection-hooks";
 import type { InspectionSnapshotRow } from "@/features/marketing/data/inspection-types";
 import { useCrawl } from "@/features/marketing/data/hooks";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import { useMarketingTableState } from "@/features/marketing/data/query-state";
 import {
   humanLines,

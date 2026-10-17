@@ -5,16 +5,13 @@
 
 import React, { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
-import {
-  WindowPanel,
-  type WindowPanelProps,
-} from "@/features/window-panels/WindowPanel";
+import { closeOverlay } from "@ai-matrx/summon";
+import { WindowPanel, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
 import { ListFilter } from "lucide-react";
 import { ListManagerFloatingWorkspace } from "@/features/data-tables/pick-lists/components/ListManagerFloatingWorkspace";
 
 export interface ListManagerWindowProps extends Omit<
-  WindowPanelProps,
+  WindowPanelBaseProps,
   "children" | "title" | "actionsLeft" | "actionsRight"
 > {
   title?: string;

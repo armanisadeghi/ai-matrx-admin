@@ -32,7 +32,7 @@ jest.mock("@ai-matrx/media/react", () => ({
   },
 }));
 
-jest.mock("@/features/overlays/openers/filePreviewWindow", () => ({
+jest.mock("@/features/overlays/definitions/filePreviewWindow.overlay", () => ({
   useOpenFilePreviewWindow: () => mockOpenFilePreview,
 }));
 

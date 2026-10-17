@@ -34,7 +34,7 @@ import {
   type SpendCategoryRow,
 } from "@/features/marketing/data/spend-categories";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
 
@@ -74,7 +74,7 @@ export function SeoSpendPanel() {
   // person's organizations; one organization shows its own ceilings against its own spend, and
   // the header says which.
   const [orgFilter, setOrgFilter] = useOrgFilterParam();
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([orgFilter]);
   const spend = useSeoSpendSummary(orgFilter);
   const orgName = orgFilter
     ? (organizations.find((org) => org.id === orgFilter)?.name ?? "")

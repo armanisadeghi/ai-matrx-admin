@@ -59,9 +59,9 @@ import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { supabase } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { scopesService } from "@/features/scopes/service/scopesService";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { getOrganizationBySlugOrId } from "@/features/organizations/service";
-import { useOpenCreateProjectWindow } from "@/features/overlays/openers/createProjectWindow";
+import { useOpenCreateProjectWindow } from "@/features/overlays/definitions/createProjectWindow.overlay";
 import {
   useListViewPrefs,
   type LegacyListViewImport,
@@ -193,7 +193,6 @@ export function ProjectsHub({
   orgParam?: string | null;
   scopeParam?: string | null;
 }) {
-  const { organizations } = useUserOrganizations();
   const router = useRouter();
   const openCreateProject = useOpenCreateProjectWindow();
   const { prefs, setView } = useListViewPrefs(
@@ -211,6 +210,10 @@ export function ProjectsHub({
   const view: "cards" | "table" = prefs.view === "table" ? "table" : "cards";
   const [query, setQuery] = React.useState("");
 
+  // Projects (RLS-filtered, nav-tree-independent).
+  const [projects, setProjects] = React.useState<ProjectWithRole[]>([]);
+  // The organizations of the projects on screen, by id (never her whole list).
+  const { organizations } = useOrganizationsWith([orgParam, ...projects.map((p) => p.organizationId)]);
   const orgMap: OrgMap = new Map();
   for (const organization of organizations) {
     orgMap.set(organization.id, {
@@ -218,9 +221,6 @@ export function ProjectsHub({
       slug: organization.slug,
     });
   }
-
-  // Projects (RLS-filtered, nav-tree-independent).
-  const [projects, setProjects] = React.useState<ProjectWithRole[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [projectsReadFailed, setProjectsReadFailed] = React.useState(false);
   const [reloadTick, setReloadTick] = React.useState(0);

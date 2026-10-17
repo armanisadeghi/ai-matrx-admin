@@ -238,7 +238,7 @@ registerChatUi({
   ServerNotes: ServerNotes,
 });
 
-import { MatrxFloatingFrame as Host_MatrxFloatingFrame } from "@/components/matrx/resizable/MatrxFloatingFrame";
+import { LiteWindow as Host_MatrxFloatingFrame } from "@ai-matrx/summon/lite";
 registerChatUi({
   MatrxFloatingFrame: Host_MatrxFloatingFrame,
 });

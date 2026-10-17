@@ -147,12 +147,12 @@ jest.mock("@/components/official/entity-ref/EntityRef", () => ({
     <span data-entity-ref={token}>{name}</span>
   ),
 }));
-jest.mock("@/features/overlays/openers/topicalMapTopicPanel", () => ({
+jest.mock("@/features/overlays/definitions/topicalMapTopicPanel.overlay", () => ({
   __esModule: true,
   useOpenTopicPanel: () => jest.fn(),
 }));
 const openMandate = jest.fn();
-jest.mock("@/features/overlays/openers/mandateWindow", () => ({
+jest.mock("@/features/overlays/definitions/mandateWindow.overlay", () => ({
   __esModule: true,
   useOpenMandateWindow: () => openMandate,
 }));

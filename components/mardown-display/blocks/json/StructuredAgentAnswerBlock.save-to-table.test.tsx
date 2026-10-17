@@ -10,7 +10,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 
 const opened: Array<Record<string, unknown>> = [];
-jest.mock("@/features/overlays/openers/saveToTable", () => ({
+jest.mock("@/features/overlays/definitions/saveToTable.overlay", () => ({
   useOpenSaveToTable: () => (options: Record<string, unknown>) => {
     opened.push(options);
     return { instanceId: "t", close: () => undefined };

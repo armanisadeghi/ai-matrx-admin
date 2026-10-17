@@ -18,7 +18,7 @@
  */
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import {
   classifyNoticeLink,

@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { trackPage } from "@/features/marketing/search-console/data-launch";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type {
   CellEditsMap,
@@ -80,7 +80,7 @@ import {
   panelDrillFor,
   rowScopeDrillFor,
 } from "@/features/marketing/search-console/lib/drills";
-import { useOpenGscWhyScoreWindow } from "@/features/overlays/openers/gscWhyScoreWindow";
+import { useOpenGscWhyScoreWindow } from "@/features/overlays/definitions/gscWhyScoreWindow.overlay";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import {
   keywordEntityRef,

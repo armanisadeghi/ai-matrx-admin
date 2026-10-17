@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { extractErrorMessage } from "@/utils/errors";
-import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
+import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";

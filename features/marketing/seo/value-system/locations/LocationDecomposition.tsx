@@ -42,7 +42,7 @@ import type {
 } from "@ai-matrx/design-system/data-table/types";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { formatCount } from "@/features/marketing/search-console/types";
-import { useOpenGscWhyScoreWindow } from "@/features/overlays/openers/gscWhyScoreWindow";
+import { useOpenGscWhyScoreWindow } from "@/features/overlays/definitions/gscWhyScoreWindow.overlay";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {

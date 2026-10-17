@@ -5,7 +5,7 @@ import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { alchemyOrganizationId } from "./alchemy-organization";
 import { saveDocumentThroughDoor, saveNotesThroughDoor, saveWorkbookThroughDoor } from "./alchemy-door";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { setPendingSource } from "@/features/tasks/redux/taskUiSlice";
 import { clearFocus } from "@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import { bumpFreshSession } from "@ai-matrx/chat/agents/redux/chat/chat-route.slice";

@@ -6,7 +6,7 @@
  */
 
 import type { ReactNode } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { alchemyPanelId, type OpenWindow } from "./AlchemyWindowHost";
 
 export default function AlchemyWindowFrames({ windows }: { windows: readonly OpenWindow[] }) {
@@ -24,7 +24,6 @@ export default function AlchemyWindowFrames({ windows }: { windows: readonly Ope
             height={size ? size.height : "92dvh"}
             minWidth={520}
             minHeight={360}
-            retainBodyOnMinimize
             bodyClassName="bg-background"
           >
             {w.render(w.handle) as ReactNode}

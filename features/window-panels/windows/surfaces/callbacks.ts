@@ -8,7 +8,7 @@
  *   4. Caller `dispose()`s when done
  */
 
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 import type { ValueMappingMap } from "@ai-matrx/chat/surfaces/types";
 
 export type SurfaceAgentBindEventType = "bound" | "window-close";

@@ -3,11 +3,11 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import {
   useOpenAgentRunWindow,
   type OpenAgentRunWindowOptions,
-} from "@/features/overlays/openers/agentRunWindow";
+} from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
 import { useQuickToolToggle } from "@/features/canvas/host/quickToolLaunchers";
 import { resolveMandateAsking } from "@ai-matrx/chat/mandates/resolve-asking";

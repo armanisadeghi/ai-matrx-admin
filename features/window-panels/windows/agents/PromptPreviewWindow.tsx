@@ -12,7 +12,7 @@
  * Read-only: the content calls no model and persists nothing.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { PromptPreviewContent } from "@ai-matrx/chat/agents/prompt-preview/PromptPreviewContent";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectInstanceAgentId } from "@ai-matrx/chat/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";

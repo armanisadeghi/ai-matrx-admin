@@ -15,7 +15,7 @@ import { removeRequest } from "@ai-matrx/chat/agents/redux/execution-system/acti
 import {
   useOpenLiveRunWindow,
   type LiveRunWindowHandle,
-} from "@/features/overlays/openers/liveRunWindow";
+} from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { callApi } from "@/lib/api/call-api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import {

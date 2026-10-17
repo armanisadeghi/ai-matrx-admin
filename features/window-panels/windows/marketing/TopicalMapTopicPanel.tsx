@@ -21,7 +21,7 @@
  * read is announced with the function's own sentence — never a guessed frame.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useEffect, useRef } from "react";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";

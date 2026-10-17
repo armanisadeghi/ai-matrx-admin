@@ -78,7 +78,7 @@ import {
 } from "@ai-matrx/chat/host/org";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
 import { trashConfirmSentence } from "@/features/trash/archiveCopy";
 import { keepSource, sourceRefusalSentence } from "@/features/sources/api/sourcesApi";
@@ -505,7 +505,7 @@ export function KnowledgeHubPage({
   // The number beside each organization in the filter: the list's own count for that organization,
   // asked for every organization at once and never narrowed by the filter currently applied.
   const orgFilterId = orgFilterOf(state.query) ?? null;
-  const { organizations: myOrgs } = useUserOrganizations();
+  const { organizations: myOrgs } = useOrganizationsWith([orgFilterId]);
   const orgFilterName = myOrgs.find((o) => o.id === orgFilterId)?.name || "that organization";
   // The per-organization numbers cost a read per organization, so they wait for the menu's first open.
   const [orgMenuOpened, setOrgMenuOpened] = useState(false);

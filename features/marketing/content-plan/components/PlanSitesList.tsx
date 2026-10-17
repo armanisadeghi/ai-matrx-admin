@@ -73,7 +73,7 @@ import { useCategories } from "@/features/scopes/hooks/useCategories";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useDeleteSite } from "@/features/marketing/data/hooks";
 import type { MarketingSite } from "@/features/marketing/types";
-import { useOpenSiteQuickViewWindow } from "@/features/overlays/openers/siteQuickViewWindow";
+import { useOpenSiteQuickViewWindow } from "@/features/overlays/definitions/siteQuickViewWindow.overlay";
 import { createContentPlanListScope } from "@/features/surfaces/manifests/content-plan-list.manifest";
 import {
   SurfaceRuntimeProvider,

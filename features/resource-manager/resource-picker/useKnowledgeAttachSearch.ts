@@ -10,8 +10,8 @@
 
 import type { LucideIcon } from "lucide-react";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
-import { useOpenKnowledgeCommandBar } from "@/features/overlays/openers/knowledgeCommandBar";
-import { useOpenResourcePickerWindow } from "@/features/overlays/openers/resourcePickerWindow";
+import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
+import { useOpenResourcePickerWindow } from "@/features/overlays/definitions/resourcePickerWindow.overlay";
 import { useKnowledgeAttachTarget } from "@/features/knowledge/command-bar/useKnowledgeAttachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
 import {

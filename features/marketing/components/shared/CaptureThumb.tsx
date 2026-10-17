@@ -12,7 +12,7 @@
 import type { ReactNode } from "react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { fileIdToMediaRef } from "@/features/files/redux/converters";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 
 export function CaptureThumb({
   fileId,

@@ -14,7 +14,7 @@ import { createRoot, type Root } from "react-dom/client";
 
 const pickerProps: Array<Record<string, unknown>> = [];
 const uploadProps: Array<Record<string, unknown>> = [];
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 jest.mock("../FilesResourcePicker", () => ({

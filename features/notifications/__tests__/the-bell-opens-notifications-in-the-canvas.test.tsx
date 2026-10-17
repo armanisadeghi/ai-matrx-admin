@@ -28,7 +28,7 @@ jest.mock("@/features/notifications/useInbox", () => ({
 jest.mock("@ai-matrx/messaging/react/host", () => ({
   useUnreadConversationBadge: () => 1,
 }));
-jest.mock("@/features/overlays/openers/authGate", () => ({
+jest.mock("@/features/overlays/definitions/authGate.overlay", () => ({
   useOpenAuthGateDialog: () => jest.fn(),
 }));
 jest.mock("@/lib/redux/hooks", () => ({

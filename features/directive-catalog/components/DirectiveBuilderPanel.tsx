@@ -87,7 +87,7 @@ import {
   buildSchemaExample,
   isJsonSchema,
 } from "@/features/directive-catalog/schemaExamples";
-import { useOpenDirectiveReferencePickerWindow } from "@/features/overlays/openers/directiveReferencePickerWindow";
+import { useOpenDirectiveReferencePickerWindow } from "@/features/overlays/definitions/directiveReferencePickerWindow.overlay";
 import { openFilePicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { fetchEntityTitles } from "@/features/scopes/service/entityTitles";
 import {

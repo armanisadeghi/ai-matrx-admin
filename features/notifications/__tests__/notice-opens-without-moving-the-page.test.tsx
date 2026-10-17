@@ -26,10 +26,17 @@ jest.mock("@/lib/redux/hooks", () => ({
 const captureError = jest.fn(() => "captured");
 jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({ captureError: (...a: unknown[]) => captureError(...(a as [])) }));
 const testHydrator = jest.fn();
-jest.mock("@/features/window-panels/url-sync/initUrlHydration", () => ({
-  initUrlHydration: () => {
-    const { registerPanelHydrator } = require("@/features/window-panels/url-sync/UrlPanelRegistry");
-    registerPanelHydrator("test_window", testHydrator);
+jest.mock("@/features/overlays/definitions/register", () => ({
+  ensureAppOverlaysRegistered: () => {
+    const { registerOverlayMeta } = require("@ai-matrx/summon");
+    registerOverlayMeta([
+      {
+        id: "testWindow",
+        label: "Test window",
+        instance: "single",
+        link: { key: "test_window", hydrate: (ctx: { dispatch: unknown; id: string; args: unknown }) => testHydrator(ctx.dispatch, ctx.id, ctx.args) },
+      },
+    ]);
   },
 }));
 

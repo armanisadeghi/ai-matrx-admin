@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
-import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
+import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
 import { useConversionTracker } from "@/features/auth/hooks/useConversionTracker";
 
 interface UseAuthGuardedActionOptions {

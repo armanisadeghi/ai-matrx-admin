@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { Check, Mic, SlidersHorizontal } from "lucide-react";
 import { useAudioDevices } from "@/features/audio/useAudioDevices";
-import { useOpenAudioDevices } from "@/features/overlays/openers/audioDevices";
+import { useOpenAudioDevices } from "@/features/overlays/definitions/audioDevices";
 import { cn } from "@/lib/utils";
 
 export const MIC_SYSTEM_DEFAULT = "__system_default__";

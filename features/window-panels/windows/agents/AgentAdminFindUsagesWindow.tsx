@@ -12,7 +12,7 @@
 
 import { useCallback, useState } from "react";
 import { ShieldOff, ShieldCheck } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
@@ -23,7 +23,7 @@ import type { RootState } from "@/lib/redux/store";
 import { AgentUsagesEngine } from "@/features/agents/components/usages/AgentUsagesEngine";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAgentMenuSection, agentEntityRef } from "@ai-matrx/chat/agents/menu/agent-actions";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 
 interface AgentAdminFindUsagesWindowProps {

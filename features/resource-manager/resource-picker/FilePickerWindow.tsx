@@ -23,7 +23,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FolderOpen } from "lucide-react";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import {
   FilesResourcePicker,
   type FileSelection,

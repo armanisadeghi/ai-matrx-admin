@@ -34,7 +34,7 @@ jest.mock("@ai-matrx/kit/media-query", () => ({
   ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false,
 }));
 
-jest.mock("@/features/window-panels/popout/usePopoutContainer", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   usePopoutContainer: () => undefined,
 }));
 

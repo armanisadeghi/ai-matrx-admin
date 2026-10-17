@@ -61,7 +61,7 @@ import { StaleDataNotice } from "@ai-matrx/design-system";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ContextItemAddForm } from "./ContextItemAddForm";
 import { EditContextItemSheet } from "./EditContextItemSheet";
-import { useOpenContextItemsWindow } from "@/features/overlays/openers/contextItemsWindow";
+import { useOpenContextItemsWindow } from "@/features/overlays/definitions/contextItemsWindow.overlay";
 import { ReorderDialog } from "@/features/scopes/components/management/ReorderDialog";
 import { ScopeNotFound } from "./ScopeNotFound";
 import { ScopeGlyph } from "@/features/scopes/components/ScopeGlyph";

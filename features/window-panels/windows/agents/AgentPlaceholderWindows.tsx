@@ -2,8 +2,8 @@
 
 import { PartyPopper, Layers, Database } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import type { OverlayId } from "@/features/overlays/catalogue";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import type { OverlayId } from "@ai-matrx/summon";
 import { AgentComingSoonContent } from "@ai-matrx/chat/agents/components/coming-soon/AgentComingSoonContent";
 
 // ── Shared wrapper ──────────────────────────────────────────────────────────

@@ -23,12 +23,12 @@ import { useCallback } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
-import { useOpenNotesWindow } from "@/features/overlays/openers/notesWindow";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
-import { useOpenPickListManagerWindow } from "@/features/overlays/openers/pickListManagerWindow";
-import { useOpenSiteQuickViewWindow } from "@/features/overlays/openers/siteQuickViewWindow";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
+import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
+import { useOpenPickListManagerWindow } from "@/features/overlays/definitions/pickListManagerWindow.overlay";
+import { useOpenSiteQuickViewWindow } from "@/features/overlays/definitions/siteQuickViewWindow.overlay";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import { useOpenDetail } from "@ai-matrx/detail/react";
 
 import { getItemConfig } from "./registry";

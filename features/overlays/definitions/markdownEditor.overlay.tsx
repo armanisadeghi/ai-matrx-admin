@@ -1,0 +1,91 @@
+"use client";
+
+/**
+ * Opener for the `markdownEditor` overlay.
+ *
+ * - `useOpenFullscreenMarkdownEditor()` — imperative hook. Call to open with typed options;
+ *   returns a handle with a `close()` method.
+ * - `<FullscreenMarkdownEditorController />` — declarative wrapper. Mount to open,
+ *   unmount to close. Equivalent ergonomics to rendering a normal component.
+ *
+ * Hand-maintained opener — see features/overlays/FEATURE.md.
+ */
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "markdownEditor" as const;
+
+export interface OpenFullscreenMarkdownEditorOptions {
+  triggerClassName?: string;
+  triggerLabel?: string;
+  initialMarkdown?: string;
+  showSampleSelector?: boolean;
+  showConfigSelector?: boolean;
+}
+
+export interface FullscreenMarkdownEditorHandle {
+  close: () => void;
+}
+
+export function useOpenFullscreenMarkdownEditor() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenFullscreenMarkdownEditorOptions = {}): FullscreenMarkdownEditorHandle => {
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          data: {
+            triggerClassName: opts.triggerClassName,
+            triggerLabel: opts.triggerLabel,
+            initialMarkdown: opts.initialMarkdown,
+            showSampleSelector: opts.showSampleSelector,
+            showConfigSelector: opts.showConfigSelector,
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+/**
+ * Declarative form. Renders nothing visible; opens the overlay on mount,
+ * closes it on unmount. Use this when a caller wants to express overlay
+ * state declaratively (the way they'd render a normal component).
+ */
+export function FullscreenMarkdownEditorController(props: OpenFullscreenMarkdownEditorOptions): null {
+  const open = useOpenFullscreenMarkdownEditor();
+  useEffect(() => {
+    const handle = open(props);
+    return () => handle.close();
+  }, [open, props.triggerClassName, props.triggerLabel, props.initialMarkdown, props.showSampleSelector, props.showConfigSelector]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type MarkdownEditorDefinitionData = OpenFullscreenMarkdownEditorOptions;
+
+export const markdownEditorOverlay = defineOverlay<MarkdownEditorDefinitionData>()({
+  id: "markdownEditor",
+  label: "Markdown Editor",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  render: () => import("./markdownEditor.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    markdownEditor: OverlayWire<MarkdownEditorDefinitionData>;
+  }
+}

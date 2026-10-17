@@ -30,7 +30,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { useMandateSystemSeat } from "@/features/mandates/admin/useMandateSystemSeat";
 import { displayResolutionOrgId, usePageOrgFilter } from "@/features/mandates/display-org";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { fetchAgentVersionSnapshot, resolveAgentVersionId } from "@/features/agents/redux/builder-versions.thunks";
 import { fetchAgentExecutionFull } from "@/features/agents/redux/builder-tier.thunks";
 import {
@@ -201,11 +201,11 @@ function OverridesBody({
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const pageOrgFilter = usePageOrgFilter();
+  const { organizations } = useOrganizationsWith([organizationId, pageOrgFilter, data.mandate.organization_id]);
   // Admin feature "mandate.system-seat": the system answer of a SYSTEM mandate.
   const holdsSystemSeat = useMandateSystemSeat(data.mandate);
   const isSuperAdmin = useAppSelector(selectIsSuperAdmin) || holdsSystemSeat;
   const builtinAgents = useBuiltinAgents();
-  const { organizations } = useUserOrganizations();
 
   const ownHolder =
     rung === DEFAULT_HOLDER_RUNG

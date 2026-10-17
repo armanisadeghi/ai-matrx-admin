@@ -25,7 +25,7 @@
  */
 
 import { useCallback } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { MatcherReviewBody } from "@/features/marketing/seo/value-system/dimensions/MatcherReviewBody";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 

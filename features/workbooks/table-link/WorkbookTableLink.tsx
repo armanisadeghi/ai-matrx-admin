@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/lib/toast";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { getTableMetadata } from "@/features/data-tables/service";
 import { isServiceFailure } from "@ai-matrx/records/core";
 import { univerSnapshotToRows } from "@ai-matrx/office/sheets";

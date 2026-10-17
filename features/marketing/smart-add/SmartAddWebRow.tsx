@@ -17,7 +17,7 @@ import { Globe } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { usePublishSearchReviewSession } from "@/features/search-review/sessionStore";
-import { useOpenSearchReviewWindow } from "@/features/overlays/openers/searchReviewWindow";
+import { useOpenSearchReviewWindow } from "@/features/overlays/definitions/searchReviewWindow.overlay";
 import type { ReviewAnswer, ReviewChoice, ReviewResult, ReviewSuggestion } from "@/features/search-review/types";
 import type { EvidenceItem } from "./evidence";
 import { useState } from "react";

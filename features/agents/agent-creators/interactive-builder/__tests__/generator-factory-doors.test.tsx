@@ -56,7 +56,7 @@ jest.mock("../../services/agentBuilderService", () => ({
   useAgentBuilder: () => ({ createAgent: jest.fn() }),
 }));
 jest.mock("@/features/ai-models/preferredAuthoringModel", () => ({ resolvePreferredAuthoringModel: async () => null }));
-jest.mock("@/features/overlays/openers/mandateWindow", () => ({ useOpenMandateWindow: () => jest.fn() }));
+jest.mock("@/features/overlays/definitions/mandateWindow.overlay", () => ({ useOpenMandateWindow: () => jest.fn() }));
 jest.mock("@/hooks/useDebugContext", () => ({
   useDebugContext: () => ({ publish: jest.fn(), publishKey: jest.fn(), isActive: false }),
 }));

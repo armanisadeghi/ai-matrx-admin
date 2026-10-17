@@ -12,7 +12,7 @@ import { ImportTranscriptModal } from "@/features/transcripts/components/ImportT
 import { parseTranscript } from "./transcript-parser";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { transcriptTableRows } from "@/features/transcripts/format";
 
 interface TranscriptBlockProps {

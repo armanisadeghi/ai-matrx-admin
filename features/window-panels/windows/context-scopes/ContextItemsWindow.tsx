@@ -36,7 +36,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   deleteContextItem,

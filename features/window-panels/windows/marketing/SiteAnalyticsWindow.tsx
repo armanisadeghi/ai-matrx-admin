@@ -12,7 +12,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SiteAnalyticsPanel } from "@/features/marketing/analytics/components/SiteAnalyticsPanel";
 import { getSite } from "@/features/marketing/data/service";
 import { marketingKeys } from "@/features/marketing/data/hooks";

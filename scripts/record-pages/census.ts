@@ -276,12 +276,18 @@ export function buildCensus(opts: CensusOptions): Census {
     units.push({ key, kind: "route", file: r.source, declaration: declare(key, r.source) });
   }
   // ── windows ──
-  const controller = "features/overlays/OverlayController.tsx";
-  const controllerText = read(controller) ?? "";
+  // Each overlay's render module statically imports the component it renders (the lazy chunk).
+  const defsDir = "features/overlays/definitions";
   const windowFiles = new Set<string>();
-  for (const m of controllerText.matchAll(/lazyOverlay\(\s*\(\)\s*=>\s*import\(\s*["']([^"']+)["']/g)) {
-    const r = resolveImport(controller, m[1]);
-    if (r) windowFiles.add(r);
+  const renderFiles = existsSync(join(root, defsDir)) ? readdirSync(join(root, defsDir)).filter((f) => f.endsWith(".render.tsx")) : [];
+  for (const f of renderFiles) {
+    const renderRel = `${defsDir}/${f}`;
+    const text = read(renderRel) ?? "";
+    for (const m of text.matchAll(/^import (?!type )(?:[A-Z]\w*|\{[^}]*\b[A-Z]\w*[^}]*\}) from ["']([^"']+)["'];$/gm)) {
+      if (m[1].startsWith("@ai-matrx/summon")) continue;
+      const r = resolveImport(renderRel, m[1]);
+      if (r) windowFiles.add(r);
+    }
   }
   for (const f of [...windowFiles].sort()) {
     const key = `window:${f}`;

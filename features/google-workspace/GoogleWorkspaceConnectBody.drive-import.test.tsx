@@ -83,7 +83,7 @@ jest.mock("@/features/files/storage-sources/service", () => ({
   safeStorageBasename: (name: string) =>
     name && !/[\\/]/.test(name) ? name : null,
 }));
-jest.mock("@/features/overlays/callbacks/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/callbacks/googleConnectWindow", () => ({
   emitGoogleConnectEvent: (...args: unknown[]) => mockEmit(...args),
   disposeGoogleConnectCallbackGroup: (...args: unknown[]) =>
     mockDispose(...args),

@@ -7,7 +7,7 @@
  * reopening keeps the search (a running LinkedIn job keeps polling).
  */
 import { useEffect } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { HelperPanel } from "@/features/marketing/smart-add/helpers/HelperPanel";
 import { resumeLinkedinJob } from "@/features/marketing/smart-add/helpers/store";
 import { HELPER_LABELS, type HelperMethod } from "@/features/marketing/smart-add/helpers/types";

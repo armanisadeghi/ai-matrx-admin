@@ -26,7 +26,7 @@ import {
   formatSearchVolume,
   KeywordCompetitionBadge,
 } from "@/features/marketing/seo/keyword-research/components/KeywordMetrics";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { useUpdatePageIntent } from "@/features/marketing/data/hooks";
 import {
   addPageSupportingKeyword,

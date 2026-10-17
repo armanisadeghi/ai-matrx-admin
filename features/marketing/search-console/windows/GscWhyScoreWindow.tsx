@@ -16,7 +16,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { TableLoadingComponent } from "@/components/matrx/LoadingComponents";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";

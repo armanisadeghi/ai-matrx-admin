@@ -9,12 +9,12 @@ import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks"
 import { GOOGLE_SCOPE } from "@/lib/googleScopes";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFoldersMap } from "@/features/files/redux/selectors";
 import { attachChildToFolder, upsertFiles } from "@/features/files/redux/slice";
 import type { CanonicalStorageImport } from "@/features/files/storage-sources/types";
-import { useOpenStorageSourcePicker } from "@/features/overlays/openers/storageSourcePicker";
+import { useOpenStorageSourcePicker } from "@/features/overlays/definitions/storageSourcePicker.overlay";
 import { matchStorageAccept, enforceStorageSelectionMode } from "@/features/files/storage-sources/accept";
 import { validateStorageDestinationFolderPath } from "@/features/files/storage-sources/service";
 

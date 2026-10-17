@@ -10,7 +10,7 @@
  * renderer that drifts (window-panels law).
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { DiscoveryWorkspace } from "@/features/marketing/seo/value-system/discovery/DiscoveryWorkspace";
 
 export interface SiteDiscoveryWindowProps {

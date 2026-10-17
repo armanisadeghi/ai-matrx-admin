@@ -22,11 +22,7 @@
 
 import { Bug } from "lucide-react";
 import { useCapturedErrorStats } from "@/lib/diagnostics/useCapturedErrors";
-import {
-  TrayStatusChip,
-  type TrayStatusSegment,
-  type TrayStatusTone,
-} from "@/features/window-panels/WindowTray/TrayStatusChip";
+import { TrayStatusChip, type TrayStatusSegment, type TrayStatusTone } from "@ai-matrx/summon/window";
 
 export default function ErrorInspectorTrayChip() {
   const { red, orange, yellow, unseenRed, unseenOrange } =

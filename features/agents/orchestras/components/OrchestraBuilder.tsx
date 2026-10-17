@@ -46,7 +46,7 @@ import {
   enableConductorSync,
   syncConductorPrompt,
 } from "../conductor/thunks";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { selectDisplayConversation } from "@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import { OrchestraRunStatusContext } from "../run/OrchestraRunStatusContext";
 import { useOrchestraMemberRunStatus } from "../run/useOrchestraMemberRunStatus";

@@ -4,7 +4,7 @@ import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import React from "react";
 import { Copy, Table2 } from "lucide-react";
 import { shapeOfValue } from "@ai-matrx/records-ui/table-shape";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { KIND_KEY } from "@ai-matrx/content-ir";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";

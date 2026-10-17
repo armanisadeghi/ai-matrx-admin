@@ -35,7 +35,7 @@ import {
   SnapshotMediaGallery,
 } from "@/features/marketing/components/media/SnapshotMediaGallery";
 import { AssetImageEditorDialog } from "@/features/marketing/components/media/AssetImageEditorDialog";
-import { useOpenMarketingMediaAssetWindow } from "@/features/overlays/openers/marketingMediaAssetWindow";
+import { useOpenMarketingMediaAssetWindow } from "@/features/overlays/definitions/marketingMediaAssetWindow.overlay";
 import type { BrandAsset } from "@/features/marketing/types";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import type { SizeTier } from "@/lib/media/categorization";

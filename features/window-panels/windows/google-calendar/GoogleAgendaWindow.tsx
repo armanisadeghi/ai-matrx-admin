@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AgendaPanel } from "@/features/google-workspace/calendar/AgendaPanel";
 import { CalendarView } from "@/features/google-workspace/calendar/CalendarView";
 import { SelectedCalendarReview } from "@/features/google-workspace/calendar/SelectedCalendarReview";

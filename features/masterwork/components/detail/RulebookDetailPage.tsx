@@ -184,13 +184,13 @@ import {
 } from "../../agent-context/rulebookSurfaceScope";
 import { requireRuleDraftInput } from "../../agent-context/ruleDraftInput";
 // The Final Checkup window (features/masterwork/checkup/) — its one entry point.
-import { useOpenMasterworkCheckupWindow } from "@/features/overlays/openers/masterworkCheckupWindow";
+import { useOpenMasterworkCheckupWindow } from "@/features/overlays/definitions/masterworkCheckupWindow.overlay";
 // "Add rule" is a WindowPanel (With AI default + Manually) — never a blocking
 // modal. The RuleEditorDialog keeps only EDIT plus agent-staged drafts.
-import { useOpenAddRuleWindow } from "@/features/overlays/openers/masterworkAddRuleWindow";
-import { useOpenBuildWindow } from "@/features/overlays/openers/masterworkBuildWindow";
+import { useOpenAddRuleWindow } from "@/features/overlays/definitions/masterworkAddRuleWindow.overlay";
+import { useOpenBuildWindow } from "@/features/overlays/definitions/masterworkBuildWindow.overlay";
 import { BuildInFlightNotice } from "../../build/BuildInFlightNotice";
-import { useOpenMasterworkYourWordsWindow } from "@/features/overlays/openers/masterworkYourWordsWindow";
+import { useOpenMasterworkYourWordsWindow } from "@/features/overlays/definitions/masterworkYourWordsWindow.overlay";
 import { RulePassageLink } from "../../kept-sources/RulePassageLink";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

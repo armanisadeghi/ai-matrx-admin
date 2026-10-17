@@ -16,7 +16,7 @@
 import { useCallback, useState } from "react";
 import { Copy } from "lucide-react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import CaptureInspectorPanel from "@/features/admin/capture-inspector/CaptureInspectorPanel";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/slices/userSlice";

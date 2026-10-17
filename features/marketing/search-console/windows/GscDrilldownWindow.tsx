@@ -10,9 +10,9 @@
  */
 
 import { useMemo, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { KpiBand } from "@/features/marketing/search-console/components/KpiBand";
 import { PerformanceChart } from "@/features/marketing/search-console/components/PerformanceChart";
 import { GscDimensionTable } from "@/features/marketing/search-console/components/GscDimensionTable";

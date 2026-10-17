@@ -31,7 +31,7 @@ import { createClient } from "@/utils/supabase/client";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { APPLETS_SURFACE_NAME, createAppletsScope } from "@/features/surfaces/manifests/applets.manifest";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
-import { useOpenLiveRunWindow, type LiveRunWindowHandle } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow, type LiveRunWindowHandle } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { tableHref } from "@/features/records-tool-display/readRecordsAnswer";

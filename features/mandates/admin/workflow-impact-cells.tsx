@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Peek, PeekHoverCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { GRADE_META } from "./impact";
 import {
   BREAK_WAY_LABEL,

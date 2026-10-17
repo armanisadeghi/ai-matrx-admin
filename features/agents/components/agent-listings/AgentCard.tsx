@@ -42,7 +42,7 @@ import {
 import { CreateOrchestraDialog } from "@/features/agents/orchestras/components/CreateOrchestraDialog";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast-service";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import {

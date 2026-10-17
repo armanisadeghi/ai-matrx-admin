@@ -24,7 +24,7 @@
  * and open it by setting the target.
  */
 
-import { usePopoutContainer } from "@/features/window-panels/popout/usePopoutContainer";
+import { usePopoutContainer } from "@ai-matrx/summon/window";
 import {
   ConfirmDialog as PackageConfirmDialog,
   type ConfirmDialogProps,

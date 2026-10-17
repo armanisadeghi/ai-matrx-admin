@@ -30,7 +30,7 @@ import { AgentGenerator } from "@/features/agents/agent-creators/interactive-bui
 import type { AgentOwner } from "@/features/agents/agent-creators/services/agentBuilderService";
 import type { MandateWorkspaceData } from "@/features/mandates/workspace/useMandateWorkspaceData";
 import type { OfferedValue } from "@/features/mandates/provision-shapes";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { buildHolderDraftBrief } from "./holder-draft-brief";
 import type { HolderDraft } from "./ScopeHolderBar";
 import {

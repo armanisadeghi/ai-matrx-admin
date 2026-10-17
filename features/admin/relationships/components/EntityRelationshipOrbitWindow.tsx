@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Maximize2 } from "lucide-react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { Button } from "@/components/ui/button";
 import { EntityRelationshipOrbit } from "./EntityRelationshipOrbit";

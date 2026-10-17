@@ -29,8 +29,8 @@ jest.mock("@/features/marketing/google/hooks", () => ({
   useGoogleCapabilities: () => ({ data: [{ key: "calendar_write", eligible: true }] }),
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "admin-reviewer" }));
-jest.mock("@/features/overlays/openers/connectorConsentDialog", () => ({ useOpenConnectorConsentDialog: () => mockOpenConsent }));
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({ useOpenGoogleConnectWindow: () => jest.fn() }));
+jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({ useOpenConnectorConsentDialog: () => mockOpenConsent }));
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({ useOpenGoogleConnectWindow: () => jest.fn() }));
 jest.mock("@/features/marketing/google/presentation", () => ({ googleConnectionLabel: () => "admin@admin.com" }));
 jest.mock("@/features/google-workspace/GoogleAccountSelect", () => ({
   GoogleAccountSelect: ({ onConnectionChange }: { onConnectionChange: (value: string) => void }) =>

@@ -15,7 +15,7 @@
  * initial payload. The callback group is the live channel back to the caller.
  */
 
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 
 // ─── Event surface ───────────────────────────────────────────────────────────
 

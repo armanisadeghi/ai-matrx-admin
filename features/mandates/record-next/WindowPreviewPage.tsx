@@ -10,7 +10,7 @@
 import { useEffect, useRef } from "react";
 import { AppWindow } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useOpenMandateWindowNext } from "@/features/overlays/openers/mandateWindowNext";
+import { useOpenMandateWindowNext } from "@/features/overlays/definitions/mandateWindowNext.overlay";
 
 export function WindowPreviewPage() {
   const openWindow = useOpenMandateWindowNext();

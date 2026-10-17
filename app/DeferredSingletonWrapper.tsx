@@ -24,7 +24,6 @@
 // if the guard first evaluates inside the lazy core chunk, it lands in the
 // same synchronous turn as the registry/OverlaySurface modules and
 // false-positives on legitimate lazy loads.
-import "@/features/window-panels/utils/lazy-bundle-guard";
 // Side-effect import: registers every Matrx `svg:` public asset into
 // @ai-matrx/icons' injectable registry at client-bundle eval — before any
 // component resolves an `svg:` icon value. The package ships EMPTY; without

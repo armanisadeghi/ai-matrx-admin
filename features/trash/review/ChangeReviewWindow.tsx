@@ -21,10 +21,10 @@ import {
   type ChangePreviewWire,
   type ChangeTarget,
 } from "@ai-matrx/data/db";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 
@@ -47,7 +47,6 @@ function itemDoor(item: ChangeItemRef) {
 export function ChangeReviewWindow({ target, currentOrganizationId, title, onClose, onDone }: ChangeReviewWindowProps) {
   const [organizationId, setOrganizationId] = useState<string | null>(target.organizationId ?? null);
   const [busy, setBusy] = useState(false);
-  const { organizations } = useUserOrganizations();
   const needsTarget = target.verb === "move" && !organizationId;
   const fullTarget: ChangeTarget = { ...target, ...(organizationId ? { organizationId } : {}) };
   const ids = (target.ids ?? []).join(",");
@@ -122,10 +121,6 @@ export function ChangeReviewWindow({ target, currentOrganizationId, title, onClo
     }
   };
 
-  const choices = [
-    { value: "", label: "Choose an organization", disabled: true },
-    ...organizations.filter((o) => o.id !== currentOrganizationId).map((o) => ({ value: o.id, label: o.name })),
-  ];
 
   return (
     <WindowPanel
@@ -141,11 +136,11 @@ export function ChangeReviewWindow({ target, currentOrganizationId, title, onClo
       {target.verb === "move" ? (
         <div className="mb-3 flex items-center gap-2">
           <span className="shrink-0 text-sm text-muted-foreground">Move to</span>
-          <Select
-            value={organizationId ?? ""}
-            onValueChange={(v) => setOrganizationId(v || null)}
-            options={choices}
-            aria-label="Move to organization"
+          <OrganizationChooser
+            value={organizationId}
+            excludeId={currentOrganizationId}
+            placeholder="Choose an organization"
+            onChange={(org) => setOrganizationId(org.id)}
           />
         </div>
       ) : null}

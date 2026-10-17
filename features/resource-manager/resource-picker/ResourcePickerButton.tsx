@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@ai-matrx/design-system";
 import { ResourcePickerMenu } from "./ResourcePickerMenu";
-import type { WindowPosition } from "@/features/window-panels/hooks/useWindowPanel";
+import type { WindowPosition } from "@ai-matrx/summon/window";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 
 // Lazy-loaded: the window component (with its WindowPanel chrome + every

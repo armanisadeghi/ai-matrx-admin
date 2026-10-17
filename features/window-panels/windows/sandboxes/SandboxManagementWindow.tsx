@@ -10,7 +10,7 @@ import {
   RefreshCw,
   RotateCcw,
 } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

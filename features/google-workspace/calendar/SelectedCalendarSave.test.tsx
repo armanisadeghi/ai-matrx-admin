@@ -16,7 +16,7 @@ jest.mock("./selectedCalendarService", () => ({
   readSelectedCalendarEvents: (...args: unknown[]) => mockRead(...args),
   reconcileSelectedCalendar: (...args: unknown[]) => mockSave(...args),
 }));
-jest.mock("@/features/overlays/openers/connectorConsentDialog", () => ({ useOpenConnectorConsentDialog: () => jest.fn() }));
+jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({ useOpenConnectorConsentDialog: () => jest.fn() }));
 jest.mock("@/features/organizations/useOrganizationRequired", () => ({
   useOrganizationRequired: () => ({ organizationId: "org-1", organizationState: "ready" }),
 }));
@@ -28,7 +28,7 @@ jest.mock("@/features/marketing/google/hooks", () => ({
   }),
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "admin-user" }));
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => jest.fn(),
 }));
 jest.mock("@/features/google-workspace/GoogleAccountSelect", () => ({

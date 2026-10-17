@@ -59,7 +59,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 import { cn } from "@/lib/utils";
 import styles from "./MandateWorkspace.module.css";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { displayResolutionOrgId, usePageOrgFilter } from "@/features/mandates/display-org";
 import { MandateNotesPanel } from "../components/MandateNotesPanel";
 import { MandateLineageLine } from "../components/MandateLineageLine";
@@ -422,10 +422,10 @@ function OneMandateWorkspace({
   }, []);
   const { data, loading, failure, refresh } =
     useMandateWorkspaceData(mandateKeyOrId);
-  const { organizations } = useUserOrganizations();
   // The org rung is read in the page's organization filter, else the mandate's
   // own home org — never the ACTIVE org (active-org law; ./display-org.ts).
   const pageOrgFilter = usePageOrgFilter();
+  const { organizations } = useOrganizationsWith([pageOrgFilter, data?.mandate.organization_id]);
   const nameOfOrg = useMemo(() => {
     const byId = new Map(organizations.map((o) => [o.id, o.name]));
     return (id: string) => byId.get(id) ?? null;

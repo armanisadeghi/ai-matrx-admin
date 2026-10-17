@@ -30,7 +30,7 @@ import { Input } from "@ai-matrx/design-system";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Upload } from "lucide-react";
-import { useOpenImageUploaderWindow } from "@/features/overlays/openers/imageUploaderWindow";
+import { useOpenImageUploaderWindow } from "@/features/overlays/definitions/imageUploaderWindow.overlay";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { MediaVariableInput } from "@ai-matrx/chat/agents/components/inputs/input-components/MediaVariableInput";

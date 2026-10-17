@@ -20,7 +20,7 @@ import {
   STATUS_LABELS,
   statusPillClasses,
 } from "@/lib/sandbox/status";
-import { useOpenSandboxManagementWindow } from "@/features/overlays/openers/sandboxManagementWindow";
+import { useOpenSandboxManagementWindow } from "@/features/overlays/definitions/sandboxManagementWindow.overlay";
 import { SandboxVersionHealthCard } from "../sandboxes/SandboxVersionHealthCard";
 import { ExplorerPanel } from "./ExplorerPanel";
 import { cn } from "@/lib/utils";

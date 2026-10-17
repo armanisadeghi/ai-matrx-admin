@@ -22,11 +22,11 @@ import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScop
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import HeaderStructured from "@/features/shell/components/header/variants/variants/HeaderStructured";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { ALL_ORGANIZATIONS, ORG_FILTER_PARAM, dataHomeOrganizationHref } from "@/features/unified-data/hub/dataHomeScope";
 import type { OrganizationState } from "@/features/organizations/useOrganizationRequired";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { getOrganizationMembers } from "@/features/organizations/service";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
@@ -47,11 +47,11 @@ export function DataHomeShellPage({ making }: { making: DataHomeMaking }) {
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUserId);
   const searchParams = useSearchParams();
-  const { organizations: myOrganizations, loading: myOrganizationsLoading } = useUserOrganizations();
-  // THE ORGANIZATION FILTER is the shell's (`?org_filter=`). The mount is bound to it when it names
+    // THE ORGANIZATION FILTER is the shell's (`?org_filter=`). The mount is bound to it when it names
   // one of the person's organizations (so the store switch, realtime and members follow), exactly as
   // the old page; under All organizations the mount carries none and the doors answer for the person.
   const addressPick = searchParams.get(ORG_FILTER_PARAM);
+  const { organizations: myOrganizations, loading: myOrganizationsLoading } = useOrganizationsWith([addressPick]);
   const namedOrganization = addressPick ? myOrganizations.find((org) => org.id === addressPick) : undefined;
   const organizationId: string | null = namedOrganization ? namedOrganization.id : null;
   const acrossAll = !addressPick || (!myOrganizationsLoading && !namedOrganization);

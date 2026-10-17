@@ -29,7 +29,6 @@ import { RichContentHostProvider } from "@/providers/RichContentHostProvider";
 import StoreProvider from "@/providers/StoreProvider";
 import { CanvasHostProvider } from "@/features/canvas/host/CanvasHostProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { RefProvider } from "@/lib/refs";
 import { AlchemyHost } from "@/components/agent-copy/AlchemyHost";
 import { AlchemySessionPortal } from "@/components/agent-copy/AlchemySessionPortal";
 import { ToastProvider } from "@/providers/toast-context";
@@ -48,7 +47,7 @@ import { ChatSurfaceRegistrations } from "@/providers/ChatSurfaceRegistrations";
 import { MatrxDataTableHost } from "@/components/official/MatrxDataTableHost";
 import { AgentPeekHost } from "@/providers/AgentPeekHost";
 import DeferredSingletonWrapper from "@/app/DeferredSingletonWrapper";
-import { WindowPersistenceManager } from "@/features/window-panels/WindowPersistenceManager";
+import { AppSummonProvider } from "@/features/overlays/host/AppSummonProvider";
 import { MediaHostProvider } from "@/features/files/media-client/MediaHostProvider";
 import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ClipboardFallbackHost } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackHost";
@@ -69,10 +68,9 @@ export function AppletProviders({ children }: { children: React.ReactNode }) {
                   <DetailHost>
                     <AgentCatalogHost>
                       <MatrxDataTableHost>
-                        <WindowPersistenceManager>
+                        <AppSummonProvider>
                           <ToastProvider>
                             <AlchemyHost>
-                              <RefProvider>
                                 <TooltipProvider delayDuration={200}>
                                   <ModuleHeaderProvider>
                                     <SelectedImagesProvider>
@@ -94,10 +92,9 @@ export function AppletProviders({ children }: { children: React.ReactNode }) {
                                     </SelectedImagesProvider>
                                   </ModuleHeaderProvider>
                                 </TooltipProvider>
-                              </RefProvider>
                             </AlchemyHost>
                           </ToastProvider>
-                        </WindowPersistenceManager>
+                        </AppSummonProvider>
                       </MatrxDataTableHost>
                     </AgentCatalogHost>
                   </DetailHost>

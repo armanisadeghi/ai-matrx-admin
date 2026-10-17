@@ -26,11 +26,11 @@ import {
   pageEntityRef,
   buildPageMenuSection,
 } from "@/features/marketing/search-console/components/insights/insight-row-menu";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
+import { useFloatingLiveRun } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { QueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { marketingRoutes } from "@/features/marketing/lib/routes";

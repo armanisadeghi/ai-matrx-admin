@@ -43,7 +43,7 @@ import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDo
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { useLiveAgentRun } from "@ai-matrx/chat/agents/hooks/useLiveAgentRun";
-import { LiveRunWindowController } from "@/features/overlays/openers/liveRunWindow";
+import { LiveRunWindowController } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import {
   coercePresentationDeck,
   coerceSeoPackage,

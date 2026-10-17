@@ -22,7 +22,7 @@ import { createRoot, type Root } from "react-dom/client";
 const panelProps: Array<Record<string, unknown>> = [];
 const windowProps: Array<Record<string, unknown>> = [];
 
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: (props: Record<string, unknown>) => {
     windowProps.push(props);
     return (

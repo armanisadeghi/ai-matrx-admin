@@ -30,7 +30,7 @@ import { Brain, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useLiveRunHandle } from "@ai-matrx/chat/agents/hooks/useLiveRunHandle";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import MemoryHintBlock from "@/components/mardown-display/blocks/memory-aid/MemoryHintBlock";
 import { memoryHint, memoryHintFromDetail } from "../lanes/memoryHint";

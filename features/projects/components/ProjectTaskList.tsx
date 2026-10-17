@@ -54,7 +54,7 @@ import {
   type TaskPriority,
 } from "@/features/tasks/components/TaskPriorityPicker";
 import { TaskDueDatePicker } from "@/features/tasks/components/TaskDueDatePicker";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import { TaskCopyForAiButton } from "@/features/tasks/components/TaskCopyForAiButton";
 import { isDateOnlyOverdue } from "@ai-matrx/kit/dates";
 import { useRefocusInputAfterAsync } from "@/features/tasks/hooks/useRefocusInputAfterAsync";

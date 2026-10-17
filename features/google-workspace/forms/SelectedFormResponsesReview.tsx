@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { formatAbsoluteDate } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
-import { useOpenSaveToTable, type SaveToTableHandle } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable, type SaveToTableHandle } from "@/features/overlays/definitions/saveToTable.overlay";
 import { tableHref } from "@/features/records-tool-display/readRecordsAnswer";
 import { extractErrorMessage } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

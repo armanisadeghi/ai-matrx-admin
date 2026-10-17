@@ -118,7 +118,7 @@ import { useMarketingTableState } from "@/features/marketing/data/query-state";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { formatCount } from "@/features/marketing/search-console/types";
 import { GSC_COMPACT_COLUMN_LABELS } from "@/features/marketing/search-console/lib/columns";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import {
   getSiteMeaningHealth,
   getValueReview,
@@ -177,7 +177,7 @@ import { ApprovalQueue } from "@/features/approvals/ApprovalQueue";
 import { BandScoreboard } from "./BandScoreboard";
 import { ValueKpiBand } from "./ValueKpiBand";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { ReasonChainDetail } from "./ReasonChain";
 import { MeaningPanel } from "./MeaningPanel";
 import { Group, Panel } from "react-resizable-panels";

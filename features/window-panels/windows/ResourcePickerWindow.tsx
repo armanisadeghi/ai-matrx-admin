@@ -1,10 +1,10 @@
 "use client";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
-import type { WindowPosition } from "@/features/window-panels/hooks/useWindowPanel";
+import type { WindowPosition } from "@ai-matrx/summon/window";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { ResourcePickerViewId } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 

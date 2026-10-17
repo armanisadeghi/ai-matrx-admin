@@ -24,7 +24,7 @@ import {
 } from "@ai-matrx/detail/react";
 import { DETAIL_URL_AS_ARG, DETAIL_URL_TYPE_KEY } from "@ai-matrx/detail";
 import { KindHeaderPortal, useKindPaneHeaderWidth } from "@/features/canvas/host/kindHeaderSlot";
-import { useUrlSync } from "@/features/window-panels/url-sync/useUrlSync";
+import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/url";
 import { DETAIL_TYPE_BINDING } from "../detailTypeBinding";
 import { readRecordPeekData, recordPeekOpenInput } from "./recordPeek";
 

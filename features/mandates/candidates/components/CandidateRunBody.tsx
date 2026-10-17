@@ -19,8 +19,8 @@ import { supabase } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
 import { BackendApiError } from "@ai-matrx/api";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
-import { useOpenReviewWalkWindow } from "@/features/overlays/openers/reviewWalkWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
+import { useOpenReviewWalkWindow } from "@/features/overlays/definitions/reviewWalkWindow.overlay";
 
 import {
   recordCandidateAgreement,

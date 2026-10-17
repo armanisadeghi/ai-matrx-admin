@@ -36,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@ai-matrx/design-system/controls";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useOpenTopicalMapWindow } from "@/features/overlays/openers/topicalMapWindow";
+import { useOpenTopicalMapWindow } from "@/features/overlays/definitions/topicalMapWindow.overlay";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 

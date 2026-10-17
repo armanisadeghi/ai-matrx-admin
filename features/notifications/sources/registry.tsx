@@ -31,7 +31,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import type { AppDispatch } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

@@ -92,5 +92,5 @@ it("the builder's message editors open the canvas tab — the overlay is gone", 
     expect(source).toContain("useToolOpener(agentEditHistoryInput)");
     expect(source).not.toContain('"undoHistory"');
   }
-  expect(readFileSync(join(repo, "features/overlays/catalogue.ts"), "utf8")).not.toMatch(/\bundoHistory:/);
+  expect(readFileSync(join(repo, "features/overlays/definitions/registry.ts"), "utf8")).not.toMatch(/\bundoHistory\b/);
 });

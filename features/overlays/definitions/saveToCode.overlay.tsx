@@ -1,0 +1,95 @@
+"use client";
+
+/**
+ * Opener for the `saveToCode` overlay.
+ *
+ * - `useOpenQuickSaveCodeDialog()` — imperative hook. Call to open with typed options;
+ *   returns a handle with a `close()` method.
+ * - `<QuickSaveCodeDialogController />` — declarative wrapper. Mount to open,
+ *   unmount to close. Equivalent ergonomics to rendering a normal component.
+ *
+ * Hand-maintained opener — see features/overlays/FEATURE.md.
+ */
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "saveToCode" as const;
+
+export interface OpenQuickSaveCodeDialogOptions {
+  /** Optional stable instance id. Omit to spawn a fresh instance. */
+  instanceId?: string;
+  initialContent: string;
+  initialLanguage?: string;
+  suggestedName?: string;
+  defaultFolderId?: string | null;
+}
+
+export interface QuickSaveCodeDialogHandle {
+  instanceId: string;
+  close: () => void;
+}
+
+export function useOpenQuickSaveCodeDialog() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenQuickSaveCodeDialogOptions): QuickSaveCodeDialogHandle => {
+      const instanceId = opts.instanceId ?? `saveToCode-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          instanceId,
+          data: {
+            initialContent: opts.initialContent,
+            initialLanguage: opts.initialLanguage,
+            suggestedName: opts.suggestedName,
+            defaultFolderId: opts.defaultFolderId,
+          },
+        }),
+      );
+      return {
+        instanceId,
+        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+/**
+ * Declarative form. Renders nothing visible; opens the overlay on mount,
+ * closes it on unmount. Use this when a caller wants to express overlay
+ * state declaratively (the way they'd render a normal component).
+ */
+export function QuickSaveCodeDialogController(props: OpenQuickSaveCodeDialogOptions): null {
+  const open = useOpenQuickSaveCodeDialog();
+  useEffect(() => {
+    const handle = open(props);
+    return () => handle.close();
+  }, [open, props.initialContent, props.initialLanguage, props.suggestedName, props.defaultFolderId]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type SaveToCodeDefinitionData = OpenQuickSaveCodeDialogOptions;
+
+export const saveToCodeOverlay = defineOverlay<SaveToCodeDefinitionData>()({
+  id: "saveToCode",
+  label: "Save To Code",
+  instance: "multi",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  render: () => import("./saveToCode.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    saveToCode: OverlayWire<SaveToCodeDefinitionData>;
+  }
+}

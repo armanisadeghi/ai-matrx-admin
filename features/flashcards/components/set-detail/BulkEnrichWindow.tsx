@@ -36,7 +36,7 @@ import { useEffect, useRef } from "react";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { EnrichingCardTile } from "./EnrichingCardTile";
 import {
   bulkEnrichCounts,

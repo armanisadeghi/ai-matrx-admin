@@ -1,20 +1,11 @@
 /**
- * FX-D2 — walk windows opened from Mandate Candidate pairs:
- *  (a) two "Live" walks from DIFFERENT pairs get different titles (same role,
- *      same live agent — only the pair tells them apart);
- *  (b) a reload keeps the title. The `?panels=review_walk:` hydrator runs
- *      before the local window workspace is read and an open walk is never
- *      overwritten by that later read, so the labels must ride the address.
- * A bare link (no labels) still opens, titled by the agent-name / unit-kind
- * fallback.
+ * FX-D2 — review-walk titles tell pairs apart and survive a reload through the `?panels=` link.
+ * Ported onto the package link door + the definition's link.hydrate.
  */
 import { configureStore } from "@reduxjs/toolkit";
 
-import overlayReducer, { selectOpenInstances } from "@/lib/redux/slices/overlaySlice";
-import { initUrlHydration } from "@/features/window-panels/url-sync/initUrlHydration";
-import { getHydrator } from "@/features/window-panels/url-sync/UrlPanelRegistry";
-import { parseParams, serializeParams } from "@/features/window-panels/url-sync/UrlPanelManager";
-import type { AppDispatch } from "@/lib/redux/store";
+import { overlaysReducer, selectOpenInstances } from "@ai-matrx/summon";
+import { linkHydrator, parsePanels, registerAppLinks, serializePanels } from "@/features/overlays/definitions/__tests__/linkKit";
 import * as address from "@/features/review-walk/address";
 import { walkTitle } from "@/features/review-walk/walkTitle";
 import { pairWalkLabel } from "@/features/mandates/candidates/words";
@@ -25,33 +16,27 @@ const AGENT = "Page Summary Analyst";
 
 function makeStore() {
   return configureStore({
-    reducer: { overlays: overlayReducer },
+    reducer: { overlays: overlaysReducer },
     middleware: (gdm) => gdm({ serializableCheck: false, immutableCheck: false }),
   });
 }
 
-/** What a reload does: read `?panels=` back the way the browser hands it over. */
-function reload(panelsValue: string) {
+async function reload(panelsValue: string) {
   const qs = new URLSearchParams();
   qs.set("panels", panelsValue);
   const readBack = new URLSearchParams(qs.toString()).get("panels")!;
   const store = makeStore();
-  for (const panel of parseParams(readBack)) {
-    getHydrator(panel.typeKey)!(store.dispatch as AppDispatch, panel.instanceId, panel.args ?? {});
+  for (const panel of parsePanels(readBack)) {
+    await linkHydrator(panel.typeKey)!(store.dispatch, panel.instanceId, panel.args ?? {});
   }
   return selectOpenInstances(store.getState(), "reviewWalkWindow").map((inst) => {
     const d = inst.data as Record<string, string | null>;
-    return walkTitle({
-      unitKind: d.unitKind as string,
-      agentName: d.agentName,
-      roleLabel: d.roleLabel,
-      detailLabel: d.detailLabel,
-    });
+    return walkTitle({ unitKind: d.unitKind as string, agentName: d.agentName, roleLabel: d.roleLabel, detailLabel: d.detailLabel });
   });
 }
 
 describe("FX-D2 — walk titles tell pairs apart and survive a reload", () => {
-  beforeAll(() => initUrlHydration());
+  beforeAll(() => registerAppLinks());
 
   it("two Live walks from different pairs get different titles, inside the budget", () => {
     const one = walkTitle({ unitKind: "agent_request", agentName: AGENT, roleLabel: "Live", detailLabel: "Pair 1" });
@@ -65,18 +50,16 @@ describe("FX-D2 — walk titles tell pairs apart and survive a reload", () => {
     const a = pairWalkLabel({ number: 1, created_at: "2026-10-03T22:22:29Z" });
     const b = pairWalkLabel({ number: 1, created_at: "2026-10-03T22:23:49Z" });
     expect(a).not.toBe(b);
-    const titles = [a, b].map((detailLabel) =>
-      walkTitle({ unitKind: "agent_request", agentName: AGENT, roleLabel: "Candidate", detailLabel }),
-    );
+    const titles = [a, b].map((detailLabel) => walkTitle({ unitKind: "agent_request", agentName: AGENT, roleLabel: "Candidate", detailLabel }));
     expect(titles[0]).not.toBe(titles[1]);
     for (const t of titles) expect(t.length).toBeLessThanOrEqual(40);
     expect(titles[0]).toMatch(/^Candidate · Pair 1 · \d\d:\d\d · P/);
   });
 
-  it("a reloaded address restores both titles", () => {
+  it("a reloaded address restores both titles", async () => {
     const token = (unitId: string, pair: string) =>
       `review_walk:agent_request.${unitId}:r-Live_d-${encodeURIComponent(pair)}_n-${encodeURIComponent(AGENT)}`;
-    const titles = reload(`${token(UNIT_A, "Pair 1")},${token(UNIT_B, "Pair 2")}`);
+    const titles = await reload(`${token(UNIT_A, "Pair 1")},${token(UNIT_B, "Pair 2")}`);
     expect(titles).toEqual([
       walkTitle({ unitKind: "agent_request", agentName: AGENT, roleLabel: "Live", detailLabel: "Pair 1" }),
       walkTitle({ unitKind: "agent_request", agentName: AGENT, roleLabel: "Live", detailLabel: "Pair 2" }),
@@ -85,22 +68,18 @@ describe("FX-D2 — walk titles tell pairs apart and survive a reload", () => {
     expect(titles[0]).not.toMatch(/Diagnose/);
   });
 
-  it("the window writes labels the address can carry, even with separators in them", () => {
+  it("the window writes labels the address can carry, even with separators in them", async () => {
     const tricky = "Ops_bot-v2: a,b · ünï";
     const args = address.reviewWalkUrlArgs({ agentName: tricky, roleLabel: "Live", detailLabel: "Pair 7" });
-    const value = serializeParams({
-      k: {
-        typeKey: "review_walk",
-        instanceId: address.reviewWalkUrlId({ unitKind: "assistant_message", unitId: UNIT_A }),
-        args,
-      },
-    } as never);
-    expect(reload(value)).toEqual([
+    const value = serializePanels([
+      { typeKey: "review_walk", instanceId: address.reviewWalkUrlId({ unitKind: "assistant_message", unitId: UNIT_A }), args },
+    ]);
+    expect(await reload(value)).toEqual([
       walkTitle({ unitKind: "assistant_message", agentName: tricky, roleLabel: "Live", detailLabel: "Pair 7" }),
     ]);
   });
 
-  it("a bare link still opens, titled by the fallback", () => {
-    expect(reload(`review_walk:agent_request.${UNIT_A}`)).toEqual(["Diagnose — agent request"]);
+  it("a bare link still opens, titled by the fallback", async () => {
+    expect(await reload(`review_walk:agent_request.${UNIT_A}`)).toEqual(["Diagnose — agent request"]);
   });
 });

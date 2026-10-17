@@ -13,7 +13,7 @@ import { canvasItemsService } from "@/features/canvas/services/canvasItemsServic
 import { parseMarkdownTable } from "@ai-matrx/rich-content/display/blocks/table/parseMarkdownTable";
 import { deriveDatasetNameForChatTable, isPlaceholderTableTitle } from "@/features/data-tables/derive-dataset-name";
 import { readTableDetails } from "@/features/data-tables/service";
-import { useOpenUserTableWindow } from "@/features/overlays/openers/userTableWindow";
+import { useOpenUserTableWindow } from "@/features/overlays/definitions/userTableWindow.overlay";
 import { StreamingTableRenderer as StreamingTableRenderer } from "@ai-matrx/rich-content/display/blocks/table/StreamingTableRenderer";
 import LocatedTableViewer from "@/features/data-tables/components/LocatedTableViewerDoor";
 import type { ArtifactRendererProps } from "../types";

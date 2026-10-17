@@ -36,7 +36,7 @@ import type { Action, ClickTarget } from "@ai-matrx/alchemy/actions";
 import { registerAlchemyIcon } from "@ai-matrx/rich-content/utils/alchemy-icon-keys";
 import { selectionToolbarHostOf, shownInSelectionMode } from "@ai-matrx/rich-content/selection-toolbar/selection-actions";
 import { annotationHostOf } from "@/features/rich-document/annotations/annotation-actions";
-import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
+import { useOpenFlashcardItemWindow } from "@/features/overlays/definitions/flashcardItemWindow.overlay";
 import { useOpenNoteInWindow } from "@/features/notes/actions/useOpenNoteInWindow";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";

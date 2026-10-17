@@ -23,7 +23,7 @@ import {
   pageEntityRef,
   buildPageMenuSection,
 } from "@/features/marketing/search-console/components/insights/insight-row-menu";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { TextInputDialog } from "@ai-matrx/design-system";
@@ -37,7 +37,7 @@ import { FetchPageButton } from "@/features/marketing/components/pages/FetchPage
 import { AnalyzeAllPagesControl } from "@/features/marketing/components/pages/AnalyzeAllPagesControl";
 import { fetchPageNow } from "@/features/marketing/crawler/direct-client";
 import { startSiteCommandRun } from "@/features/marketing/crawler/command-run-store";
-import { useOpenSiteCommandRunWindow } from "@/features/overlays/openers/siteCommandRunWindow";
+import { useOpenSiteCommandRunWindow } from "@/features/overlays/definitions/siteCommandRunWindow.overlay";
 import { useMarketingTableState } from "@/features/marketing/data/query-state";
 import { DismissedPagesTable } from "@/features/marketing/components/pages/DismissedPagesTable";
 import { PreviouslyDismissedBadge } from "@/features/marketing/components/shared/PreviouslyDismissedBadge";

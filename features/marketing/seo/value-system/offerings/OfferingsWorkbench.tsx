@@ -40,7 +40,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { cn } from "@/styles/themes/utils";
 import { TableLoadingComponent } from "@/components/matrx/LoadingComponents";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { formatCount } from "@/features/marketing/search-console/types";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";

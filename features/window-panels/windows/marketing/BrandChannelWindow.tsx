@@ -12,7 +12,7 @@
  * refresh, no binding, no scoring.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { BrandChannelPanel } from "@/features/marketing/youtube/components/BrandChannelPanel";
 
 export interface BrandChannelWindowProps {

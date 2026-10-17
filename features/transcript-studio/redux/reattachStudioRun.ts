@@ -44,7 +44,7 @@
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { selectLatestAnswerDocumentText } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
-import { openLiveRunWindowAction } from "@/features/overlays/openers/liveRunWindow";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { selectAnswerDocumentText } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectLatestRequestId } from "@ai-matrx/chat/agents/redux/execution-system/selectors/aggregate.selectors";
 import { reconnectServerOperation } from "@ai-matrx/chat/agents/runtime-reconnect/reconnect-server-operation.thunk";

@@ -18,7 +18,7 @@
 import { Eye, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatTokens } from "@ai-matrx/kit/tokens";
-import { useOpenResearchContextPreview } from "@/features/overlays/openers/researchContextPreviewWindow";
+import { useOpenResearchContextPreview } from "@/features/overlays/definitions/researchContextPreviewWindow.overlay";
 import type { ContextBundle } from "../../resources/types";
 
 interface VariablePreviewProps {

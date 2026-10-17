@@ -35,7 +35,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "../../WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import {
   applyImageViewerTransformAction,
   getImageViewerTransformStyle,

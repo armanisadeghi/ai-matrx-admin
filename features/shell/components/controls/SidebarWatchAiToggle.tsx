@@ -20,7 +20,7 @@ import { selectLivePageAiRuns } from "@/features/ai-watch/page-ai-runs";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
-import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
+import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 
 export default function SidebarWatchAiToggle() {
   const canWatch = useCanWatchAi();

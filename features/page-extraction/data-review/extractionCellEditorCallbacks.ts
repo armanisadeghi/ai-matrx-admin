@@ -3,7 +3,7 @@
  * and notifies the opener so the dataset grid can patch local state.
  */
 
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 
 interface ExtractionCellEditorTargetBase {
   rowId: string;
