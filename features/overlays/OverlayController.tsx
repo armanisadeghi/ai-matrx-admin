@@ -332,6 +332,13 @@ const AgentRunWindow = lazyOverlay(
   () => import("@ai-matrx/chat/window-panels/windows/agents/AgentRunWindow"),
   { ssr: false },
 );
+const AgentAdvancedSettingsWindow = lazyOverlay(
+  () =>
+    import(
+      "@/features/window-panels/windows/agents/AgentAdvancedSettingsWindow"
+    ),
+  { ssr: false },
+);
 const AgentSettingsWindow = lazyOverlay(
   () => import("@/features/window-panels/windows/agents/AgentSettingsWindow"),
   { ssr: false },
@@ -1383,6 +1390,9 @@ export default function OverlayController() {
     readAloudVoiceSettings: useAppSelector((s) =>
       selectIsOverlayOpen(s, "readAloudVoiceSettings"),
     ),
+    agentAdvancedSettingsWindow: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "agentAdvancedSettingsWindow"),
+    ),
     agentSettingsWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "agentSettingsWindow"),
     ),
@@ -1841,6 +1851,9 @@ export default function OverlayController() {
     ) as Record<string, unknown> | null,
     listenSummaryWindow: useAppSelector((s) =>
       selectOverlayData(s, "listenSummaryWindow"),
+    ) as Record<string, unknown> | null,
+    agentAdvancedSettingsWindow: useAppSelector((s) =>
+      selectOverlayData(s, "agentAdvancedSettingsWindow"),
     ) as Record<string, unknown> | null,
     agentSettingsWindow: useAppSelector((s) =>
       selectOverlayData(s, "agentSettingsWindow"),
@@ -3552,6 +3565,24 @@ export default function OverlayController() {
               typeof data?.initialStyle === "string" ? data.initialStyle : null
             }
             initialAutoPlay={data?.initialAutoPlay === true}
+          />
+        );
+      })()}
+
+      {/* agentAdvancedSettingsWindow */}
+      {(() => {
+        const isOpen = isOpenById.agentAdvancedSettingsWindow;
+        const data = dataById.agentAdvancedSettingsWindow as
+          Record<string, unknown> | null | undefined;
+        if (!isOpen) return null;
+        return (
+          <AgentAdvancedSettingsWindow
+            agentId={typeof data?.agentId === "string" ? data.agentId : ""}
+            onClose={() =>
+              dispatch(
+                closeOverlay({ overlayId: "agentAdvancedSettingsWindow" }),
+              )
+            }
           />
         );
       })()}
