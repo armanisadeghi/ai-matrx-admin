@@ -1,0 +1,336 @@
+-- lock: custom
+-- lane: DEFECTS
+-- chair-step: replaces one live function body (custom._automation_step), adds one internal table (custom.automation_delivery) and one internal function (custom.automation_delivery_tick), and schedules one pg_cron job (custom-automation-delivery-tick, every minute).
+-- based-on: custom._automation_step(uuid, uuid, uuid, jsonb, jsonb, jsonb, uuid, jsonb, integer, jsonb) 09102c7f746ccaf7d3d6887b0f64f4c96f9b95163dd51b57010b79d12c116c3d
+--
+-- DEFECTS 3 - Slack and webhook automation steps said "Sent" the moment pg_net queued the request, even for an
+-- address that never answers. pg_net posts only after the transaction commits, so the step now says it is QUEUED
+-- and carries the request id; a one-minute tick reads net._http_response and rewrites that step of the run as
+-- Sent (with the status code) or Failed (with the code or pg_net's error), and a failed delivery fails the run.
+-- No answer within 10 minutes is a failure that says so.
+
+create table if not exists custom.automation_delivery (
+  request_id      bigint primary key,
+  organization_id uuid not null,
+  automation_id   text,
+  step_n          integer,
+  kind            text not null,
+  url_host        text,
+  created_at      timestamptz not null default now()
+);
+alter table custom.automation_delivery enable row level security;
+revoke all on custom.automation_delivery from public, anon, authenticated;
+insert into platform.entity_types (token, schema_name, table_name, label, audit_class, audit_class_reason, table_ref)
+values ('automation_delivery', 'custom', 'automation_delivery', 'Automation Delivery', 'machinery',
+        'machinery: queued Slack / webhook automation deliveries read only by custom.automation_delivery_tick; no grant to anon or authenticated, RLS on, schema custom declared CLOSED',
+        'custom.automation_delivery'::regclass);
+comment on table custom.automation_delivery is 'DEFECTS 3: Slack / webhook automation steps waiting for pg_net''s answer; custom.automation_delivery_tick settles them.';
+
+CREATE OR REPLACE FUNCTION custom._automation_step(p_organization_id uuid, p_table_id uuid, p_record_id uuid, p_automation jsonb, p_byid jsonb, p_fields jsonb, p_change_id uuid, p_trigger jsonb, p_n integer, p_act jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'pg_catalog'
+AS $function$
+-- AT-AUTO2 (2026-10-15): set, add_row, edit_rows, notify, webhook, email and slack, lifted VERBATIM out of
+-- custom._automation_run so the interpreter (custom._automation_advance) runs each exactly as a flat run did.
+-- Answers the step's entry; a step that cannot run RAISES and the caller writes it as failed.
+declare
+  v_act     jsonb := p_act;
+  v_n       integer := p_n;
+  v_a       jsonb := p_automation;
+  v_spec    jsonb := p_automation -> 'spec';
+  v_stepsay text;
+  v_me      uuid := custom.query_principal();
+  v_patch   jsonb;
+  k         text;
+  v         jsonb;
+  v_field   jsonb;
+  v_tfields jsonb;
+  v_rid     uuid;
+  v_cand    uuid;
+  v_cnt     integer;
+  v_scan    integer;
+  v_to      uuid;
+  v_text    text;
+  v_res     jsonb;
+  v_subj    text;
+  v_dl      text;
+  v_addr    text;
+  v_fv      text;
+  v_why     text;
+  v_req     bigint;
+  v_out     jsonb;
+begin
+        if v_act ->> 'do' = 'set' then
+          v_patch := '{}'::jsonb;
+          for k, v in select key, value from jsonb_each(v_act -> 'values') loop
+            v_field := p_fields -> k;
+            if v_field is null then
+              raise exception 'A property this step sets is gone, so it cannot run until it is edited.' using errcode = '23503';
+            end if;
+            v_patch := v_patch || jsonb_build_object(v_field ->> 'key',
+                         custom._action_coerce(v_field, custom._automation_value(v, p_byid, v_me), p_organization_id));
+          end loop;
+          perform custom.record_update(p_organization_id, p_record_id, v_patch);
+          v_stepsay := 'Set ' || (select string_agg(f.value ->> 'label', ', ') from jsonb_each(p_fields) f
+                                   where (v_act -> 'values') ? f.key) || ' on this row.';
+
+        elsif v_act ->> 'do' = 'add_row' then
+          v_tfields := custom._automation_fields(p_organization_id, (v_act ->> 'table_id')::uuid);
+          v_patch := '{}'::jsonb;
+          for k, v in select key, value from jsonb_each(v_act -> 'values') loop
+            v_field := v_tfields -> k;
+            if v_field is null then
+              raise exception 'A property this step sets is gone, so it cannot run until it is edited.' using errcode = '23503';
+            end if;
+            v_patch := v_patch || jsonb_build_object(v_field ->> 'key',
+                         custom._action_coerce(v_field, custom._automation_value(v, p_byid, v_me), p_organization_id));
+          end loop;
+          v_rid := custom.record_write(p_organization_id, (v_act ->> 'table_id')::uuid, v_patch);
+          v_stepsay := 'Added a row to the other table.';
+          return jsonb_build_object('n', v_n, 'do', 'add_row', 'status', 'done', 'says', v_stepsay, 'record_id', v_rid,
+                   'output', jsonb_build_object('record_id', v_rid));
+
+        elsif v_act ->> 'do' = 'edit_rows' then
+          v_tfields := custom._automation_fields(p_organization_id, (v_act ->> 'table_id')::uuid);
+          v_cnt := 0;
+          v_scan := 0;
+          for v_cand in select x.id from custom.record x
+                         where x.organization_id = p_organization_id and x.table_id = (v_act ->> 'table_id')::uuid
+                           and x.data_class = 'record' and x.deleted_at is null
+                         order by x.created_at limit 2000 loop
+            v_scan := v_scan + 1;
+            exit when v_cnt >= coalesce((v_act ->> 'limit')::integer, 100);
+            v_res := custom.record_values(p_organization_id, v_cand);
+            if custom._fx_truthy(custom.rule_eval(p_organization_id,
+                 custom._automation_bind(v_act -> 'where', p_byid), v_res,
+                 coalesce(custom.rule_context(p_organization_id, v_cand), '{}'::jsonb)
+                   || jsonb_build_object('fx_self_id', v_cand, 'fx_table_id', (v_act ->> 'table_id')::uuid))) then
+              v_patch := '{}'::jsonb;
+              for k, v in select key, value from jsonb_each(v_act -> 'values') loop
+                v_field := v_tfields -> k;
+                if v_field is null then
+                  raise exception 'A property this step sets is gone, so it cannot run until it is edited.' using errcode = '23503';
+                end if;
+                v_patch := v_patch || jsonb_build_object(v_field ->> 'key',
+                             custom._action_coerce(v_field, custom._automation_value(v, p_byid, v_me), p_organization_id));
+              end loop;
+              perform custom.record_update(p_organization_id, v_cand, v_patch);
+              v_cnt := v_cnt + 1;
+            end if;
+          end loop;
+          v_stepsay := format('Edited %s row%s in the other table.', v_cnt, case when v_cnt = 1 then '' else 's' end);
+          return jsonb_build_object('n', v_n, 'do', 'edit_rows', 'status', 'done', 'says', v_stepsay, 'edited', v_cnt,
+                   'output', jsonb_build_object('edited', v_cnt));
+
+        elsif v_act ->> 'do' = 'notify' then
+          v_to := case
+            when v_act -> 'to' ? 'person' then (v_act -> 'to' ->> 'person')::uuid
+            when v_act -> 'to' ? 'field' then case when (p_byid ->> (v_act -> 'to' ->> 'field'))
+                   ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                   then (p_byid ->> (v_act -> 'to' ->> 'field'))::uuid end
+            else nullif(v_a ->> 'created_by', '')::uuid end;
+          if v_to is null then
+            raise exception 'There is no person to tell: the property is empty on this row.' using errcode = '22023';
+          end if;
+          if not iam.is_org_member(v_to, p_organization_id) then
+            raise exception 'That person is not a member of this organization.' using errcode = '22023';
+          end if;
+          v_text := v_act ->> 'text';
+          for k, v in select key, value from jsonb_each(p_byid) loop
+            v_text := replace(v_text, '{{' || k || '}}',
+                        case when jsonb_typeof(v) = 'string' then v #>> '{}' when v is null or jsonb_typeof(v) = 'null' then '' else v::text end);
+          end loop;
+          -- HR-360-2 (2026-10-08): the action may carry its own SUBJECT and a LINK (both templated with the same
+          -- {{property}} words as the text, plus {{record_id}} and {{organization_id}}), so the notice opens the
+          -- thing it is about and its in-app and email subject says what happened. A link written with its origin is
+          -- stored as the path (the notice router resolves a path against the reader's own host); only a path that
+          -- starts with a slash is kept.
+          v_subj := coalesce(nullif(btrim(v_act ->> 'subject'), ''), v_spec ->> 'name');
+          v_dl   := nullif(btrim(v_act ->> 'link'), '');
+          for k, v in select key, value from jsonb_each(p_byid) loop
+            v_subj := replace(v_subj, '{{' || k || '}}',
+                        case when jsonb_typeof(v) = 'string' then v #>> '{}' when v is null or jsonb_typeof(v) = 'null' then '' else v::text end);
+            v_dl := replace(v_dl, '{{' || k || '}}',
+                        case when jsonb_typeof(v) = 'string' then v #>> '{}' when v is null or jsonb_typeof(v) = 'null' then '' else v::text end);
+          end loop;
+          v_dl := replace(replace(v_dl, '{{record_id}}', p_record_id::text), '{{organization_id}}', p_organization_id::text);
+          v_dl := regexp_replace(v_dl, '^https?://[^/]+', '');
+          if v_dl is not null and left(v_dl, 1) <> '/' then v_dl := null; end if;
+          -- NOTION-SMALL-2: a notice about a row opens that row when the step names no link of its own (a date-arrives
+          -- reminder had a subject and a body but nothing to press).
+          v_dl := coalesce(v_dl, '/data/' || p_table_id::text || '/r/' || p_record_id::text);
+          -- round 3: the person's email address through the platform's own recipient resolver, so the notice's email
+          -- channel has somewhere to go (it was skipped as no_contact_point when only the person was named).
+          select r.address into v_addr from communication.resolve_channel_address('email', p_organization_id, 'user', v_to, null, null, null) r limit 1;
+          v_res := communication.notify_from_sql(p_organization_id, 'records.changed', v_to, v_addr, null,
+                     jsonb_build_object('notice', jsonb_build_object('body', v_text, 'subject', v_subj)),
+                     v_dl, 'custom.record', p_record_id,
+                     'automation:' || (v_a ->> 'id') || ':' || coalesce(p_change_id::text, gen_random_uuid()::text) || ':' || v_n::text);
+          v_stepsay := coalesce(v_res ->> 'say', 'Told them.');
+
+        elsif v_act ->> 'do' = 'webhook' then
+          if not coalesce(files.is_safe_webhook_url(v_act ->> 'url'), false) then
+            raise exception 'That webhook address is not a public https address any more, so nothing was sent.' using errcode = '22023';
+          end if;
+          v_req := net.http_post(url := v_act ->> 'url',
+                    body := jsonb_build_object('event', 'automation.fired', 'automation_id', v_a ->> 'id',
+                              'automation', v_spec ->> 'name', 'table_id', p_table_id, 'record_id', p_record_id,
+                              'operation', p_trigger ->> 'operation', 'changed_field_ids', p_trigger -> 'changed_field_ids', 'trigger', p_trigger ->> 'on'),
+                    headers := '{"Content-Type": "application/json"}'::jsonb);
+          -- DEFECTS 3: pg_net posts after this transaction commits, so nothing is SENT yet. The step says queued
+          -- and carries the request id; custom.automation_delivery_tick writes Sent / Failed with the answer.
+          insert into custom.automation_delivery (request_id, organization_id, automation_id, step_n, kind, url_host)
+          values (v_req, p_organization_id, v_a ->> 'id', v_n, 'webhook', substring(v_act ->> 'url' from '^https?://([^/?#]+)'));
+          v_stepsay := 'Queued the webhook; waiting for the address to answer.';
+          v_out := jsonb_build_object('delivery', 'queued', 'request_id', v_req);
+
+        elsif v_act ->> 'do' = 'email' then
+          -- AUTOMATIONS-AIRTABLE: one email through the platform's notification sender (communication.notify_from_sql,
+          -- event custom.automation.email, drained by the server's email channel). Nothing queued = the step fails
+          -- and says why.
+          v_to := null;
+          v_addr := null;
+          if v_act -> 'to' ? 'address' then
+            v_addr := v_act -> 'to' ->> 'address';
+          elsif v_act -> 'to' ? 'person' then
+            v_to := (v_act -> 'to' ->> 'person')::uuid;
+          elsif v_act -> 'to' ? 'author' then
+            v_to := nullif(v_a ->> 'created_by', '')::uuid;
+          else
+            v_fv := btrim(custom._automation_text_of(p_byid -> (v_act -> 'to' ->> 'field')));
+            if v_fv = '' then
+              raise exception 'There is nobody to email: the % property is empty on this row.',
+                    coalesce(p_fields -> (v_act -> 'to' ->> 'field') ->> 'label', 'email') using errcode = '22023';
+            elsif v_fv ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+              v_to := v_fv::uuid;
+            elsif v_fv ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
+              v_addr := lower(v_fv);
+            else
+              raise exception '"%" in the % property is not an email address, so nothing was sent.', left(v_fv, 80),
+                    coalesce(p_fields -> (v_act -> 'to' ->> 'field') ->> 'label', 'email') using errcode = '22023';
+            end if;
+          end if;
+          if v_to is not null then
+            if not iam.is_org_member(v_to, p_organization_id) then
+              raise exception 'That person is not a member of this organization, so nothing was sent.' using errcode = '22023';
+            end if;
+            -- round 3: the platform's recipient resolver, never a guess from auth directly.
+            select r.address into v_addr from communication.resolve_channel_address('email', p_organization_id, 'user', v_to, null, null, null) r limit 1;
+            if coalesce(v_addr, '') = '' then
+              raise exception 'That person has no email address on their account, so nothing was sent.' using errcode = '22023';
+            end if;
+          end if;
+          v_subj := custom._automation_fill(v_act ->> 'subject', p_byid, p_fields);
+          v_text := custom._automation_fill(v_act ->> 'body', p_byid, p_fields);
+          v_dl := case when p_record_id is not null then '/data/' || p_table_id::text || '/r/' || p_record_id::text
+                       else '/data/' || p_table_id::text end;
+          v_res := communication.notify_from_sql(p_organization_id, 'custom.automation.email', v_to, v_addr, null,
+                     jsonb_build_object('notice', jsonb_build_object('body', v_text, 'subject', v_subj),
+                                        'automation', jsonb_build_object('name', v_spec ->> 'name')),
+                     v_dl, 'custom.record', p_record_id,
+                     'automation:' || (v_a ->> 'id') || ':' || coalesce(p_change_id::text, gen_random_uuid()::text) || ':' || v_n::text);
+          if not coalesce(v_res -> 'queued' ? 'email', false) then
+            v_why := coalesce(v_res -> 'skipped' -> 0 ->> 'why', 'unknown');
+            raise exception 'The email to % was not sent: %', v_addr,
+                  case v_why
+                    when 'event_not_declared' then 'this server does not send automation emails yet'
+                    when 'event_disabled' then 'an administrator switched automation emails off'
+                    when 'opted_out' then 'they turned these emails off'
+                    when 'already_queued' then 'the same email was already sent for this change'
+                    when 'address_not_for_channel' then 'that is not an email address'
+                    else coalesce(v_res ->> 'say', v_why) end
+                  using errcode = '22023';
+          end if;
+          v_stepsay := format('Emailed %s: %s', v_addr, left(v_subj, 120));
+
+        elsif v_act ->> 'do' = 'slack' then
+          -- AUTOMATIONS-AIRTABLE: a Slack incoming webhook in Slack's own format. pg_net posts after this
+          -- transaction commits; the step says it is queued until Slack answers (DEFECTS 3).
+          if v_act ->> 'url' !~ '^https://hooks\.slack\.com/' or not coalesce(files.is_safe_webhook_url(v_act ->> 'url'), false) then
+            raise exception 'That Slack address is not a Slack incoming webhook any more, so nothing was sent.' using errcode = '22023';
+          end if;
+          v_text := custom._automation_fill(v_act ->> 'text', p_byid, p_fields);
+          v_req := net.http_post(url := v_act ->> 'url',
+                    body := jsonb_build_object('text', v_text),
+                    headers := '{"Content-Type": "application/json"}'::jsonb);
+          insert into custom.automation_delivery (request_id, organization_id, automation_id, step_n, kind, url_host)
+          values (v_req, p_organization_id, v_a ->> 'id', v_n, 'slack', 'hooks.slack.com');
+          v_stepsay := 'Queued for Slack; waiting for Slack to answer: ' || left(v_text, 120);
+          v_out := jsonb_build_object('delivery', 'queued', 'request_id', v_req);
+
+        else
+          raise exception 'This step is not one the store knows how to run (%).', coalesce(v_act ->> 'do', 'nothing') using errcode = '22023';
+        end if;
+        return jsonb_build_object('n', v_n, 'do', v_act ->> 'do', 'status', 'done', 'says', v_stepsay) || coalesce(v_out, '{}'::jsonb);
+end
+$function$;
+
+
+CREATE FUNCTION custom.automation_delivery_tick()
+ RETURNS integer
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog'
+AS $function$
+-- Runs as its caller: pg_cron's postgres job (no client may call it). DEFECTS 3: settle every queued Slack / webhook step whose answer has arrived (or that waited 10 minutes for one).
+declare
+  q       record;
+  v_run   uuid;
+  d       jsonb;
+  v_steps jsonb;
+  v_i     integer;
+  v_ok    boolean;
+  v_say   text;
+  v_what  text;
+  v_n     integer := 0;
+begin
+  for q in
+    select dq.*, r.id as resp_id, r.status_code, r.timed_out, r.error_msg
+      from custom.automation_delivery dq
+      left join net._http_response r on r.id = dq.request_id
+     where r.id is not null or dq.created_at < now() - interval '10 minutes'
+     order by dq.request_id
+     limit 500
+  loop
+    v_what := case q.kind when 'slack' then 'Slack' else coalesce(q.url_host, 'the address') end;
+    v_ok := q.resp_id is not null and coalesce(q.timed_out, false) = false and q.error_msg is null
+            and q.status_code between 200 and 299;
+    v_say := case
+      when v_ok then format('%s answered %s.', case q.kind when 'slack' then 'Sent to Slack; Slack' else 'Sent the webhook; ' || v_what end, q.status_code)
+      when q.resp_id is null then format('Not delivered: %s never answered (waited 10 minutes).', v_what)
+      when q.timed_out then format('Not delivered: %s did not answer in time.', v_what)
+      when q.error_msg is not null then format('Not delivered to %s: %s', v_what, left(q.error_msg, 200))
+      else format('Not delivered: %s answered %s.', v_what, q.status_code) end;
+
+    select x.id, x.data into v_run, d
+      from custom.record x
+     where x.organization_id = q.organization_id and x.data_class = 'automation_run' and x.deleted_at is null
+       and x.created_at >= q.created_at - interval '1 day'
+       and x.data -> 'steps' @> jsonb_build_array(jsonb_build_object('request_id', q.request_id))
+     order by x.created_at desc
+     limit 1
+     for update;
+    if v_run is not null then
+      v_steps := d -> 'steps';
+      select (o.n - 1)::integer into v_i from jsonb_array_elements(v_steps) with ordinality o(e, n)
+       where (o.e ->> 'request_id')::bigint = q.request_id limit 1;
+      v_steps := jsonb_set(v_steps, array[v_i::text],
+                   (v_steps -> v_i) || jsonb_build_object('status', case when v_ok then 'done' else 'failed' end,
+                     'delivery', case when v_ok then 'sent' else 'failed' end,
+                     'status_code', to_jsonb(q.status_code), 'says', v_say));
+      d := d || jsonb_build_object('steps', v_steps);
+      if not v_ok and coalesce(d ->> 'status', '') <> 'failed' then
+        d := d || jsonb_build_object('status', 'failed', 'says', format('Step %s: %s', q.step_n, v_say));
+      end if;
+      update custom.record set data = d where id = v_run;
+    end if;
+    delete from custom.automation_delivery where request_id = q.request_id;
+    v_n := v_n + 1;
+  end loop;
+  return v_n;
+end
+$function$;
+revoke all on function custom.automation_delivery_tick() from public, anon, authenticated;
+
+select cron.schedule('custom-automation-delivery-tick', '* * * * *', 'select custom.automation_delivery_tick();');
