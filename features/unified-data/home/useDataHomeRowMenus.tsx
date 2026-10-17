@@ -24,7 +24,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ArchiveRestore, ExternalLink, Link2, Star, StarOff } from "lucide-react";
+import { Archive, ArchiveRestore, ExternalLink, Link2, Star, StarOff } from "lucide-react";
 import type { PermissionLevel } from "@ai-matrx/records";
 import { RecordsProvider, useRecordsClient } from "@ai-matrx/records/react";
 import { createRecordsClient } from "@ai-matrx/records/core";
@@ -42,6 +42,7 @@ import { toItemMenuConfig } from "@/features/unified-data/actions/tableActionAda
 import { useStarToggle } from "@/features/unified-data/actions/useTableFavorite";
 import type { DataHomeRow } from "./dataHomeRows";
 import { archiveTableFromHome } from "./archiveTableFromHome";
+import { archiveFormFromHome, restoreFormFromHome } from "./archiveFormFromHome";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** How many table ids one `custom.my_levels` call asks about. */
@@ -398,7 +399,40 @@ export function useDataHomeRowMenus({
     };
   };
 
-  /** A row that is not a table: its open entries and its star. */
+  /** A form archives through the store's one form door, in the form's own organization; Undo brings it back. */
+  const archiveForm = async (row: DataHomeRow) => {
+    const inOrganization = row.organizationId
+      ? createRecordsClient({ ...client.config, organizationId: row.organizationId })
+      : client;
+    try {
+      const done = await archiveFormFromHome({
+        client: inOrganization,
+        formId: row.itemId,
+        onOptimisticHide: () => onHide(row.id),
+        onRollback: () => onUnhide(row.id),
+      });
+      if (done.outcome === "refused") {
+        toast.error(done.sentence);
+        return;
+      }
+      toast.success(done.sentence, {
+        action: {
+          label: "Undo",
+          onClick: () =>
+            void restoreFormFromHome({ client: inOrganization, formId: row.itemId }).then((back) => {
+              if (back.outcome === "refused") toast.error(back.sentence);
+              else onUnhide(row.id);
+              onChanged();
+            }),
+        },
+      });
+    } catch (thrown) {
+      onUnhide(row.id);
+      toast.error(thrown instanceof Error && thrown.message ? thrown.message : "Couldn’t archive the form. Try again.");
+    }
+  };
+
+  /** A row that is not a table: its open entries and its star (a form also archives). */
   const forItem = (row: DataHomeRow): ItemMenuConfig => {
     const isStarred = starred.has(row.id);
     return {
@@ -424,6 +458,9 @@ export function useDataHomeRowMenus({
             },
           ],
         },
+        ...(row.kind === "form"
+          ? [{ id: "archive", items: [{ id: "archive", label: "Archive", icon: Archive, onSelect: () => archiveForm(row) }] }]
+          : []),
       ],
     };
   };
