@@ -39,7 +39,7 @@ import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hook
 import { appendPatch, conflictVersion, estimateProject } from "../../video/server";
 import type { VariantAnswer, VideoProjectAnswer } from "../../video/types";
 import { useSocials } from "../SocialsContext";
-import { CaptionLookPicker, CompositionPreview, CostLine, OutputDownload, RunLog, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
+import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, OutputDownload, RunLog, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
 import { mediaLabel } from "./VideoCloneNew";
 import { useQuery } from "@tanstack/react-query";
 
@@ -339,7 +339,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
             </div>
           ) : null}
           <RunLog steps={steps} />
-          {failure ? <ErrorAlchemyMenu error={failure} operation="video render" /> : null}
+          {failure ? <FailureLine error={failure} operation="video render" /> : null}
           {headOut?.fileId ? <OutputDownload fileId={headOut.fileId} label="The video" /> : null}
         </div>
         <Outputs answer={answer} />

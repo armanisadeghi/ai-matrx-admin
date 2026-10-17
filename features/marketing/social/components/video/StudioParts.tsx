@@ -17,6 +17,7 @@ import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { downloadUrl } from "@ai-matrx/kit/download";
 
 import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
 import { dollars, points } from "../../video/clone";
@@ -285,6 +286,17 @@ export function OutputDownload({ fileId, label }: { fileId: string; label: strin
       >
         Download
       </Button>
+    </div>
+  );
+}
+
+/** A failed run: its words on one line, with the Alchemy menu beside them. */
+export function FailureLine({ error, operation }: { error: unknown; operation: string }) {
+  const text = error instanceof Error ? error.message : typeof error === "string" ? error : "That didn't work";
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span className="type-meta min-w-0 flex-1 text-destructive">{text.slice(0, 220)}</span>
+      <ErrorAlchemyMenu error={error} operation={operation} />
     </div>
   );
 }

@@ -47,7 +47,7 @@ import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hook
 import { createVideoProject, fetchPostWords } from "../../video/server";
 import { contentHashOf, useBrandOfferings, useFileUrls, useReferenceVideo } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
-import { CaptionLookPicker, CostLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
+import { CaptionLookPicker, CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
 
 const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
   { value: "9:16", label: "9:16" },
@@ -633,7 +633,7 @@ function BriefPanel({
           <span className="type-meta ml-auto text-muted-foreground">Planning is free</span>
         </div>
         <RunLog steps={steps} />
-        {failure ? <ErrorAlchemyMenu error={failure} operation="video clone" /> : null}
+        {failure ? <FailureLine error={failure} operation="video clone" /> : null}
         {plan && est ? (
           <div className="flex flex-col gap-2 rounded-lg border border-border p-2">
             <div className="flex flex-wrap items-center gap-2">
