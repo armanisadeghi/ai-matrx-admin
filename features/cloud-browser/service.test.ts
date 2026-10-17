@@ -122,3 +122,18 @@ describe("browserActionBlockedReason", () => {
     });
   });
 });
+
+describe("isViewStreamUnavailable", () => {
+  // Live 2026-10-17: a server without the watch stream answers a view mint 422
+  // ("mode was not one of the choices"); the Computer tab must fall back, not error.
+  it("is the fallback for a 409 or a 422 view refusal, never for other failures", () => {
+    const { isViewStreamUnavailable: unavailable } = jest.requireActual<typeof import("./service")>("./service");
+    const { BackendApiError: Err } = jest.requireActual<typeof import("@ai-matrx/api")>("@ai-matrx/api");
+    const err = (status: number, code = "validation_error") =>
+      new Err({ code: code as never, detail: "", userMessage: "", status });
+    expect(unavailable(err(422))).toBe(true);
+    expect(unavailable(err(409, "not_controller"))).toBe(true);
+    expect(unavailable(err(500, "internal_error"))).toBe(false);
+    expect(unavailable(new Error("x"))).toBe(false);
+  });
+});
