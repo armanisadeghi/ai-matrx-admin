@@ -4,6 +4,8 @@
 
 import { useQueries, useQuery } from "@tanstack/react-query";
 
+import { useMediaClient } from "@ai-matrx/media/core";
+
 import { getFile } from "@/features/files/api/files";
 import { fetchOfferingItems } from "@/features/marketing/offerings/data";
 
@@ -11,26 +13,31 @@ import { useSocials } from "../components/SocialsContext";
 import { listPostVideoMedia } from "./server";
 
 export interface FileFacts {
+  /** A URL any element or the frame program can load: the durable src, or a blob URL for private bytes. */
   url: string | null;
   checksum: string | null;
   mime: string | null;
   name: string | null;
 }
 
-/** A playable URL (+ the content hash) for each file id. Signed URLs are refetched every 10 minutes. */
+/**
+ * A loadable URL (+ the content hash) for each file id, through the ONE media door (`MediaClient.resolve`, and
+ * `getBlob` when the bytes need bearer auth an element cannot attach). The raw `/download` link is never bound.
+ */
 export function useFileUrls(fileIds: readonly string[]): { facts: Record<string, FileFacts>; pending: boolean } {
+  const client = useMediaClient();
   const unique = [...new Set(fileIds.filter(Boolean))];
   const results = useQueries({
     queries: unique.map((id) => ({
-      queryKey: ["files", "record-url", id],
+      queryKey: ["files", "loadable-url", id],
       queryFn: async (): Promise<FileFacts> => {
         const { data } = await getFile(id);
-        return {
-          url: data.url ?? data.cdn_url ?? data.download_url ?? data.public_url ?? null,
-          checksum: data.checksum ?? null,
-          mime: data.mime_type ?? null,
-          name: data.file_name ?? null,
-        };
+        const ref = { file_id: id, mime_type: data.mime_type ?? null };
+        const resolved = client.resolve(ref);
+        let url: string | null = null;
+        if (resolved && resolved.transport !== "blob") url = String(resolved.src);
+        else url = (await client.getBlob(ref)).url;
+        return { url, checksum: data.checksum ?? null, mime: data.mime_type ?? null, name: data.file_name ?? null };
       },
       staleTime: 10 * 60_000,
     })),
