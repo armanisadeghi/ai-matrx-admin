@@ -1,2155 +1,2531 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0163",
- "version": 1,
- "title": "Marketing OS",
- "description": "One home for campaigns, content, SEO, assets and leads with a weekly view.",
- "forWho": "Marketing teams that want everything in one place",
- "icon": {
-  "emoji": "🧭"
- },
- "cover": {
-  "url": "gallery:photo-golden-palms",
-  "offsetY": 50
- },
- "category": "marketing",
- "tags": [
-  "marketing",
-  "dashboard",
-  "campaigns",
-  "content"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0163",
+  "packVersion": 1,
   "catalogueId": "SP0163",
-  "useCase": "Marguerite Salazar leads a small marketing team and uses this as the home page for every campaign, post, keyword and lead.",
-  "industry": "cross_industry",
-  "vertical": "Marketing operations",
-  "job": "reporting",
-  "audience": "organization",
-  "teaches": "dashboards",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Sagebrush & Co.",
-   "describes": "A guided outdoor adventures company with a lean marketing team.",
-   "address": {
-    "line1": "14 Piñon Wash Lane",
-    "city": "Santa Fe",
-    "region": "NM",
-    "postalCode": "87501",
-    "country": "US"
-   },
-   "phone": "(505) 555-0110",
-   "website": "sagebrushandco.net",
-   "email": "hello@sagebrushandco.net",
-   "timezone": "America/Denver"
-  },
-  "cleanupTag": "use-case:spaces-sp0163",
-  "tables": [
-   {
-    "before": [
-     [
-      "starts_on",
-      "ends_on"
-     ]
-    ],
-    "independentOf": {
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "campaign",
-    "name": "Campaigns",
-    "labelSingular": "Campaign",
-    "labelPlural": "Campaigns",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "megaphone",
-    "titleField": "campaign_name",
-    "describes": "Campaigns that group content and assets.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "campaign_name",
-      "label": "Campaign",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Planning",
-       "Active",
-       "Wrapped up"
-      ],
-      "choiceColors": {
-       "Planning": "blue",
-       "Active": "green",
-       "Wrapped up": "amber"
-      },
-      "required": true,
-      "default": "Planning"
-     },
-     {
-      "key": "starts_on",
-      "label": "Start",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "ends_on",
-      "label": "End",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "goal",
-      "label": "Goal",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "budget",
-      "label": "Budget",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 300000
-       }
-      ]
-     },
-     {
-      "key": "pieces",
-      "label": "Content",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "content",
-      "multi": true
-     },
-     {
-      "key": "piece_total",
-      "label": "Pieces planned",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "pieces",
-      "pick": "title",
-      "agg": "count"
-     },
-     {
-      "key": "spend",
-      "label": "Spend so far",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "pieces",
-      "pick": "cost",
-      "agg": "sum"
-     }
-    ],
-    "rows": [
-     {
-      "key": "cp01",
-      "values": {
-       "campaign_name": "Trail season kickoff",
-       "status": "Active",
-       "starts_on": "@today-15d",
-       "ends_on": "@today+30d",
-       "owner": "tm-01",
-       "goal": "Fill 200 guided hike spots",
-       "budget": 14000,
-       "pieces": [
-        "cn01",
-        "cn02",
-        "cn03",
-        "cn04",
-        "cn05"
-       ]
-      }
-     },
-     {
-      "key": "cp02",
-      "values": {
-       "campaign_name": "Gift guide",
-       "status": "Planning",
-       "starts_on": "@today+20d",
-       "ends_on": "@today+70d",
-       "owner": "tm-02",
-       "goal": "Double gift card sales",
-       "budget": 9000,
-       "pieces": [
-        "cn06",
-        "cn07"
-       ]
-      }
-     },
-     {
-      "key": "cp03",
-      "values": {
-       "campaign_name": "Loyalty program relaunch",
-       "status": "Active",
-       "starts_on": "@today-40d",
-       "ends_on": "@today+15d",
-       "owner": "tm-01",
-       "goal": "Reach 1,500 members",
-       "budget": 11000,
-       "pieces": [
-        "cn08",
-        "cn09",
-        "cn10",
-        "cn11"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "before": [
-     [
-      "due_on",
-      "publish_on"
-     ]
-    ],
-    "independentOf": {
-     "campaign": "Campaign and this record each keep their own dates and status.",
-     "author": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "content",
-    "name": "Content",
-    "labelSingular": "Piece",
-    "labelPlural": "Content",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "file-text",
-    "titleField": "title",
-    "describes": "Every piece of content across channels.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "title",
-      "label": "Title",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "campaign",
-      "label": "Campaign",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "campaign",
-      "relationMax": 1
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Idea",
-       "Drafting",
-       "Editing",
-       "Scheduled",
-       "Published"
-      ],
-      "choiceColors": {
-       "Idea": "blue",
-       "Drafting": "green",
-       "Editing": "amber",
-       "Scheduled": "violet",
-       "Published": "teal"
-      },
-      "required": true,
-      "default": "Idea"
-     },
-     {
-      "key": "channel",
-      "label": "Channel",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Blog",
-       "Email",
-       "Instagram",
-       "TikTok",
-       "YouTube",
-       "Newsletter"
-      ],
-      "choiceColors": {
-       "Blog": "blue",
-       "Email": "green",
-       "Instagram": "amber",
-       "TikTok": "violet",
-       "YouTube": "teal",
-       "Newsletter": "orange"
-      }
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "publish_on",
-      "label": "Publish date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "author",
-      "label": "Author",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "cost",
-      "label": "Cost",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     }
-    ],
-    "rows": [
-     {
-      "key": "cn01",
-      "values": {
-       "title": "Ten day hikes within an hour of town",
-       "campaign": "cp01",
-       "status": "Published",
-       "channel": "Blog",
-       "due_on": "@today-20d",
-       "publish_on": "@today-16d",
-       "author": "tm-02",
-       "cost": 600
-      }
-     },
-     {
-      "key": "cn02",
-      "values": {
-       "title": "Trail season announcement email",
-       "campaign": "cp01",
-       "status": "Published",
-       "channel": "Email",
-       "due_on": "@today-14d",
-       "publish_on": "@today-12d",
-       "author": "tm-02",
-       "cost": 150
-      }
-     },
-     {
-      "key": "cn03",
-      "values": {
-       "title": "Packing list carousel",
-       "campaign": "cp01",
-       "status": "Scheduled",
-       "channel": "Instagram",
-       "due_on": "@today+1d",
-       "publish_on": "@today+3d",
-       "author": "tm-03",
-       "cost": 200
-      }
-     },
-     {
-      "key": "cn04",
-      "values": {
-       "title": "Guide spotlight: Reyes",
-       "campaign": "cp01",
-       "status": "Drafting",
-       "channel": "YouTube",
-       "due_on": "@today+6d",
-       "publish_on": "@today+12d",
-       "author": "tm-03",
-       "cost": 1800
-      }
-     },
-     {
-      "key": "cn05",
-      "values": {
-       "title": "Trail etiquette short",
-       "campaign": "cp01",
-       "status": "Editing",
-       "channel": "TikTok",
-       "due_on": "@today+2d",
-       "publish_on": "@today+5d",
-       "author": "tm-03",
-       "cost": 300
-      }
-     },
-     {
-      "key": "cn06",
-      "values": {
-       "title": "Gift guide landing page",
-       "campaign": "cp02",
-       "status": "Idea",
-       "channel": "Blog",
-       "author": "tm-02",
-       "cost": 900
-      }
-     },
-     {
-      "key": "cn07",
-      "values": {
-       "title": "Gift guide teaser",
-       "campaign": "cp02",
-       "status": "Idea",
-       "channel": "Instagram",
-       "author": "tm-03",
-       "cost": 250
-      }
-     },
-     {
-      "key": "cn08",
-      "values": {
-       "title": "Loyalty relaunch announcement",
-       "campaign": "cp03",
-       "status": "Published",
-       "channel": "Newsletter",
-       "due_on": "@today-30d",
-       "publish_on": "@today-26d",
-       "author": "tm-01",
-       "cost": 200
-      }
-     },
-     {
-      "key": "cn09",
-      "values": {
-       "title": "Member perks explainer",
-       "campaign": "cp03",
-       "status": "Published",
-       "channel": "Blog",
-       "due_on": "@today-22d",
-       "publish_on": "@today-18d",
-       "author": "tm-02",
-       "cost": 500
-      }
-     },
-     {
-      "key": "cn10",
-      "values": {
-       "title": "Member spotlight series",
-       "campaign": "cp03",
-       "status": "Scheduled",
-       "channel": "Email",
-       "due_on": "@today+3d",
-       "publish_on": "@today+7d",
-       "author": "tm-02",
-       "cost": 400
-      }
-     },
-     {
-      "key": "cn11",
-      "values": {
-       "title": "Points reminder email",
-       "campaign": "cp03",
-       "status": "Drafting",
-       "channel": "Email",
-       "due_on": "@today+8d",
-       "publish_on": "@today+14d",
-       "author": "tm-02",
-       "cost": 150
-      }
-     },
-     {
-      "key": "cn12",
-      "values": {
-       "title": "Weekend deals roundup",
-       "status": "Scheduled",
-       "channel": "Newsletter",
-       "due_on": "@today+2d",
-       "publish_on": "@today+4d",
-       "author": "tm-02",
-       "cost": 100
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "page": "Content and this record each keep their own dates and status."
-    },
-    "token": "keyword",
-    "name": "Keywords",
-    "labelSingular": "Keyword",
-    "labelPlural": "Keywords",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "search",
-    "titleField": "keyword",
-    "describes": "Phrases worth ranking for and the content that targets them.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "keyword",
-      "label": "Keyword",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "volume",
-      "label": "Monthly searches",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 1000000
-       }
-      ]
-     },
-     {
-      "key": "difficulty",
-      "label": "Difficulty",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ]
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Target",
-       "Writing",
-       "Published",
-       "Tracking"
-      ],
-      "choiceColors": {
-       "Target": "blue",
-       "Writing": "green",
-       "Published": "amber",
-       "Tracking": "violet"
-      },
-      "required": true,
-      "default": "Target"
-     },
-     {
-      "key": "rank",
-      "label": "Current rank",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 1
-       },
-       {
-        "kind": "max",
-        "value": 200
-       }
-      ]
-     },
-     {
-      "key": "page",
-      "label": "Content",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "content",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "kw01",
-      "values": {
-       "keyword": "day hikes near santa fe",
-       "volume": 3600,
-       "difficulty": 30,
-       "status": "Published",
-       "rank": 4,
-       "page": "cn01"
-      }
-     },
-     {
-      "key": "kw02",
-      "values": {
-       "keyword": "guided hiking tour new mexico",
-       "volume": 1900,
-       "difficulty": 38,
-       "status": "Target"
-      }
-     },
-     {
-      "key": "kw03",
-      "values": {
-       "keyword": "trail packing list",
-       "volume": 5200,
-       "difficulty": 24,
-       "status": "Published",
-       "rank": 8,
-       "page": "cn03"
-      }
-     },
-     {
-      "key": "kw04",
-      "values": {
-       "keyword": "loyalty program for outdoor shops",
-       "volume": 900,
-       "difficulty": 15,
-       "status": "Tracking",
-       "rank": 2,
-       "page": "cn09"
-      }
-     },
-     {
-      "key": "kw05",
-      "values": {
-       "keyword": "gift ideas for hikers",
-       "volume": 6400,
-       "difficulty": 50,
-       "status": "Target",
-       "page": "cn06"
-      }
-     },
-     {
-      "key": "kw06",
-      "values": {
-       "keyword": "trail etiquette rules",
-       "volume": 2700,
-       "difficulty": 19,
-       "status": "Writing",
-       "page": "cn05"
-      }
-     },
-     {
-      "key": "kw07",
-      "values": {
-       "keyword": "best time to hike high desert",
-       "volume": 1500,
-       "difficulty": 22,
-       "status": "Target"
-      }
-     },
-     {
-      "key": "kw08",
-      "values": {
-       "keyword": "hiking guide jobs",
-       "volume": 800,
-       "difficulty": 12,
-       "status": "Tracking",
-       "rank": 6
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "page": "Used in and this record each keep their own dates and status."
-    },
-    "token": "asset",
-    "name": "Assets",
-    "labelSingular": "Asset",
-    "labelPlural": "Assets",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "image",
-    "titleField": "asset_name",
-    "describes": "Brand assets and the content that uses them.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "asset_name",
-      "label": "Asset",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "kind",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Logo",
-       "Photo",
-       "Template",
-       "Video",
-       "Document"
-      ],
-      "choiceColors": {
-       "Logo": "blue",
-       "Photo": "green",
-       "Template": "amber",
-       "Video": "violet",
-       "Document": "teal"
-      }
-     },
-     {
-      "key": "page",
-      "label": "Used in",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "content",
-      "relationMax": 1
-     },
-     {
-      "key": "approved",
-      "label": "Approved",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "updated_on",
-      "label": "Updated",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     }
-    ],
-    "rows": [
-     {
-      "key": "as01",
-      "values": {
-       "asset_name": "Sagebrush logo, full color",
-       "kind": "Logo",
-       "approved": true,
-       "updated_on": "@today-100d"
-      }
-     },
-     {
-      "key": "as02",
-      "values": {
-       "asset_name": "Guide portraits",
-       "kind": "Photo",
-       "page": "cn04",
-       "approved": true,
-       "updated_on": "@today-60d"
-      }
-     },
-     {
-      "key": "as03",
-      "values": {
-       "asset_name": "Trailhead hero photo",
-       "kind": "Photo",
-       "page": "cn01",
-       "approved": true,
-       "updated_on": "@today-30d"
-      }
-     },
-     {
-      "key": "as04",
-      "values": {
-       "asset_name": "Packing list graphic",
-       "kind": "Template",
-       "page": "cn03",
-       "approved": true,
-       "updated_on": "@today-14d"
-      }
-     },
-     {
-      "key": "as05",
-      "values": {
-       "asset_name": "Loyalty card artwork",
-       "kind": "Template",
-       "page": "cn09",
-       "approved": true,
-       "updated_on": "@today-45d"
-      }
-     },
-     {
-      "key": "as06",
-      "values": {
-       "asset_name": "Gift guide cover",
-       "kind": "Photo",
-       "page": "cn06",
-       "approved": false,
-       "updated_on": "@today-2d"
-      }
-     },
-     {
-      "key": "as07",
-      "values": {
-       "asset_name": "Brand guidelines",
-       "kind": "Document",
-       "approved": true,
-       "updated_on": "@today-80d"
-      }
-     },
-     {
-      "key": "as08",
-      "values": {
-       "asset_name": "Trail etiquette clip",
-       "kind": "Video",
-       "page": "cn05",
-       "approved": false,
-       "updated_on": "@today-1d"
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "campaign": "Campaign and this record each keep their own dates and status."
-    },
-    "token": "lead",
-    "name": "Leads",
-    "labelSingular": "Lead",
-    "labelPlural": "Leads",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "user-plus",
-    "titleField": "lead_name",
-    "describes": "People who came in from campaigns.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "lead_name",
-      "label": "Name",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "lead_email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "summarize"
-     },
-     {
-      "key": "source",
-      "label": "Source",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Website",
-       "Newsletter",
-       "Instagram",
-       "Event",
-       "Referral"
-      ],
-      "choiceColors": {
-       "Website": "blue",
-       "Newsletter": "green",
-       "Instagram": "amber",
-       "Event": "violet",
-       "Referral": "teal"
-      }
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "New",
-       "Contacted",
-       "Booked",
-       "Not now"
-      ],
-      "choiceColors": {
-       "New": "blue",
-       "Contacted": "green",
-       "Booked": "amber",
-       "Not now": "violet"
-      },
-      "required": true,
-      "default": "New"
-     },
-     {
-      "key": "campaign",
-      "label": "Campaign",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "campaign",
-      "relationMax": 1
-     },
-     {
-      "key": "next_followup",
-      "label": "Next follow-up",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     }
-    ],
-    "rows": [
-     {
-      "key": "ld01",
-      "values": {
-       "lead_name": "Willa Strathmore",
-       "lead_email": "willa@strathmorehome.net",
-       "source": "Website",
-       "status": "New",
-       "campaign": "cp01",
-       "next_followup": "@today"
-      }
-     },
-     {
-      "key": "ld02",
-      "values": {
-       "lead_name": "Declan Obuya",
-       "lead_email": "declan@obuyaconsulting.net",
-       "source": "Newsletter",
-       "status": "Contacted",
-       "campaign": "cp01",
-       "next_followup": "@today+2d"
-      }
-     },
-     {
-      "key": "ld03",
-      "values": {
-       "lead_name": "Annika Rosenthal",
-       "lead_email": "annika@rosenthalfamily.net",
-       "source": "Instagram",
-       "status": "Booked",
-       "campaign": "cp01"
-      }
-     },
-     {
-      "key": "ld04",
-      "values": {
-       "lead_name": "Hector Villareal",
-       "lead_email": "hector@villarealgroup.net",
-       "source": "Event",
-       "status": "Contacted",
-       "campaign": "cp03",
-       "next_followup": "@today+1d"
-      }
-     },
-     {
-      "key": "ld05",
-      "values": {
-       "lead_name": "Philomena Okoro",
-       "lead_email": "philomena@okoroarts.net",
-       "source": "Referral",
-       "status": "New",
-       "campaign": "cp03",
-       "next_followup": "@today+3d"
-      }
-     },
-     {
-      "key": "ld06",
-      "values": {
-       "lead_name": "Bastian Linde",
-       "lead_email": "bastian@lindeoutdoor.net",
-       "source": "Website",
-       "status": "Not now",
-       "campaign": "cp01"
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "campaign",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "campaigns_owned"
-   },
-   {
-    "describes": "Content lists its content records.",
-    "fromTable": "campaign",
-    "fromField": "pieces",
-    "toTable": "content",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "campaign_listed_pieces"
-   },
-   {
-    "describes": "Campaign links to one campaign.",
-    "fromTable": "content",
-    "fromField": "campaign",
-    "toTable": "campaign",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "content_of"
-   },
-   {
-    "describes": "Author links to one team member.",
-    "fromTable": "content",
-    "fromField": "author",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "content_authored"
-   },
-   {
-    "describes": "Content links to one content.",
-    "fromTable": "keyword",
-    "fromField": "page",
-    "toTable": "content",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "keywords_for"
-   },
-   {
-    "describes": "Used in links to one content.",
-    "fromTable": "asset",
-    "fromField": "page",
-    "toTable": "content",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "assets_used"
-   },
-   {
-    "describes": "Campaign links to one campaign.",
-    "fromTable": "lead",
-    "fromField": "campaign",
-    "toTable": "campaign",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "leads_from"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Marguerite Salazar",
-       "role": "Head of marketing",
-       "work_email": "marguerite@sagebrushandco.net",
-       "mobile": "(505) 555-0111",
-       "start_date": "@today-5y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Ephraim Tolliver",
-       "role": "Content manager",
-       "work_email": "ephraim@sagebrushandco.net",
-       "mobile": "(505) 555-0112",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Nadia Brzezinski",
-       "role": "Social and community",
-       "work_email": "nadia@sagebrushandco.net",
-       "mobile": "(505) 555-0113",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Idris Fontaine",
-       "role": "Designer",
-       "work_email": "idris@sagebrushandco.net",
-       "mobile": "(505) 555-0114",
-       "start_date": "@today-20m"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "content_idea",
-    "name": "Suggest content",
-    "describes": "How anyone adds a content idea.",
-    "audience": "staff",
-    "table": "content",
-    "fields": [
-     {
-      "fieldKey": "title",
-      "ask": "What is the idea?",
-      "required": true
-     },
-     {
-      "fieldKey": "channel",
-      "ask": "Where should it run?"
-     },
-     {
-      "fieldKey": "campaign",
-      "ask": "Which campaign?"
-     }
-    ],
-    "submitLabel": "Add the idea",
-    "confirmation": "Thanks. It is on the board as an Idea."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "campaign_board",
-    "name": "Board",
-    "table": "campaign",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "all_campaigns",
-    "name": "All campaigns",
-    "table": "campaign",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "starts_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "content_calendar",
-    "name": "Calendar",
-    "table": "content",
-    "kind": "calendar",
-    "isDefault": true,
-    "dateField": "publish_on",
-    "allDay": true
-   },
-   {
-    "token": "content_board",
-    "name": "Board",
-    "table": "content",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "all_content",
-    "name": "All content",
-    "table": "content",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "publish_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_keywords",
-    "name": "All keywords",
-    "table": "keyword",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "keyword",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "asset_gallery",
-    "name": "Gallery",
-    "table": "asset",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "asset_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "lead_board",
-    "name": "Board",
-    "table": "lead",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "all_leads",
-    "name": "All leads",
-    "table": "lead",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "next_followup",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Marketing assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "content",
-     "describes": "Every piece of content across channels."
-    },
-    {
-     "name": "related_tables",
-     "table": "campaign",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many pieces of content are scheduled?",
-    "whyItMatters": "Marguerite checks scheduled content every Monday.",
-    "expect": {
-     "table": "content",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Scheduled"
-     },
-     "answer": 3,
-     "unit": "pieces"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the content calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "content_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "content_calendar",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the campaign board.",
-    "action": {
-     "kind": "open",
-     "surface": "campaign_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "campaign_board",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open the lead board.",
-    "action": {
-     "kind": "open",
-     "surface": "lead_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "lead_board",
-     "minItems": 6
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "sagebrushandco.net",
-    "strathmorehome.net",
-    "obuyaconsulting.net",
-    "rosenthalfamily.net",
-    "villarealgroup.net",
-    "okoroarts.net",
-    "lindeoutdoor.net"
-   ],
-   "fictionalStreets": [
-    "Piñon Wash Lane"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "marketing-os",
-   "parent": null,
-   "title": "Marketing OS",
-   "icon": {
+  "version": 2,
+  "title": "Marketing OS",
+  "description": "One home for campaigns, content, SEO, assets and leads with a weekly view.",
+  "forWho": "Marketing teams that want everything in one place",
+  "icon": {
     "emoji": "🧭"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Good morning"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "This week: publish the trail season posts, finish the loyalty relaunch emails and review the gift guide plan."
-      }
-     ],
-     "background": "orange",
-     "props": {
-      "icon": "Sun"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:social"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:seo"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:newsletter"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:assets"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.4
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "This week"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "content",
-           "view": "content_calendar"
-          },
-          "inline": true,
-          "title": "Content",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-publishing-soon",
-            "name": "Publishing soon",
-            "layout": "list",
-            "icon": "List",
-            "filters": {
-             "status": [
-              "Drafting",
-              "Editing",
-              "Scheduled"
-             ]
-            },
-            "sorts": [
-             {
-              "field": "publish_on",
-              "direction": "asc"
-             }
-            ]
-           }
-          ],
-          "activeViewId": "view-publishing-soon"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.6
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Active campaigns"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "campaign",
-           "view": "campaign_board"
-          },
-          "inline": true,
-          "title": "Campaigns",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-board",
-            "name": "Board",
-            "layout": "kanban",
-            "icon": "SquareKanban",
-            "groupField": "status"
-           }
-          ],
-          "activeViewId": "view-board"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "divider"
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Content calendar"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "content",
-       "view": "content_calendar"
-      },
-      "inline": true,
-      "title": "Content",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-calendar",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "publish_on"
-       },
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-all-content",
-        "name": "All content",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "publish_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-calendar"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Results"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "content",
-           "view": "all_content"
-          },
-          "inline": true,
-          "title": "Content",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-content-by-channel",
-            "name": "Content by channel",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "channel",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-content-by-channel"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "campaign",
-           "view": "all_campaigns"
-          },
-          "inline": true,
-          "title": "Campaigns",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-budget-by-status",
-            "name": "Budget by status",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "status",
-             "op": "sum",
-             "field": "budget"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-budget-by-status"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "lead",
-           "view": "all_leads"
-          },
-          "inline": true,
-          "title": "Leads",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-leads-by-source",
-            "name": "Leads by source",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "source",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-leads-by-source"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Leads"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "lead",
-       "view": "lead_board"
-      },
-      "inline": true,
-      "title": "Leads",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-follow-up",
-        "name": "Follow up",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "next_followup",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
-   }
   },
-  {
-   "key": "social",
-   "parent": "marketing-os",
-   "title": "Social",
-   "icon": {
-    "emoji": "📱"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Everything headed for social channels."
-      }
-     ],
-     "background": "pink",
-     "props": {
-      "icon": "Share2"
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "content",
-       "view": "all_content"
+  "category": "marketing",
+  "tags": [
+    "marketing",
+    "dashboard",
+    "campaigns",
+    "content"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0163",
+    "catalogueId": "SP0163",
+    "useCase": "Marguerite Salazar leads a small marketing team and uses this as the home page for every campaign, post, keyword and lead.",
+    "industry": "cross_industry",
+    "vertical": "Marketing operations",
+    "job": "reporting",
+    "audience": "organization",
+    "teaches": "dashboards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Sagebrush & Co.",
+      "describes": "A guided outdoor adventures company with a lean marketing team.",
+      "address": {
+        "line1": "14 Piñon Wash Lane",
+        "city": "Santa Fe",
+        "region": "NM",
+        "postalCode": "87501",
+        "country": "US"
       },
-      "inline": true,
-      "title": "Content",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-instagram",
-        "name": "Instagram",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "channel": "Instagram"
-        }
-       },
-       {
-        "id": "view-tiktok",
-        "name": "TikTok",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "channel": "TikTok"
-        }
-       },
-       {
-        "id": "view-youtube",
-        "name": "YouTube",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "channel": "YouTube"
-        }
-       },
-       {
-        "id": "view-calendar",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "filters": {
-         "channel": [
-          "Instagram",
-          "TikTok",
-          "YouTube"
-         ]
+      "phone": "(505) 555-0110",
+      "website": "sagebrushandco.net",
+      "email": "hello@sagebrushandco.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-sp0163",
+    "tables": [
+      {
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "independentOf": {
+          "owner": "Anyone on the team can own this, whenever they joined."
         },
-        "dateField": "publish_on"
-       }
-      ],
-      "activeViewId": "view-instagram"
-     }
-    }
-   ]
-  },
-  {
-   "key": "seo",
-   "parent": "marketing-os",
-   "title": "SEO",
-   "icon": {
-    "emoji": "🔎"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Phrases to rank for and the pages that target them."
-      }
-     ],
-     "background": "green",
-     "props": {
-      "icon": "Search"
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "keyword",
-       "view": "all_keywords"
-      },
-      "inline": true,
-      "title": "Keywords",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-by-volume",
-        "name": "By volume",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "volume",
-          "direction": "desc"
-         }
+        "token": "campaign",
+        "name": "Campaigns",
+        "labelSingular": "Campaign",
+        "labelPlural": "Campaigns",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "megaphone",
+        "titleField": "campaign_name",
+        "describes": "Campaigns that group content and assets.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "campaign_name",
+            "label": "Campaign",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "Active",
+              "Wrapped up"
+            ],
+            "choiceColors": {
+              "Planning": "blue",
+              "Active": "green",
+              "Wrapped up": "amber"
+            },
+            "required": true,
+            "default": "Planning",
+            "statusGroups": {
+              "Planning": "todo",
+              "Active": "in_progress",
+              "Wrapped up": "done"
+            }
+          },
+          {
+            "key": "starts_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "End",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300000
+              }
+            ]
+          },
+          {
+            "key": "piece_total",
+            "label": "Pieces planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pieces",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "spend",
+            "label": "Spend so far",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pieces",
+            "pick": "cost",
+            "agg": "sum"
+          },
+          {
+            "key": "remaining",
+            "label": "Budget remaining",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Budget} - {Spend so far}"
+          },
+          {
+            "key": "spend_month",
+            "label": "Spend this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pieces",
+            "pick": "cost",
+            "agg": "sum",
+            "filter": {
+              "publish_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "lead_count",
+            "label": "Leads",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "leads",
+            "pick": "lead_name",
+            "agg": "count"
+          },
+          {
+            "key": "audience",
+            "label": "Audience",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cp01",
+            "values": {
+              "campaign_name": "Trail season kickoff",
+              "status": "Active",
+              "starts_on": "@today-15d",
+              "ends_on": "@today+30d",
+              "owner": "tm-01",
+              "goal": "Fill 200 guided hike spots",
+              "budget": 14000,
+              "audience": "Local families planning a spring visit"
+            }
+          },
+          {
+            "key": "cp02",
+            "values": {
+              "campaign_name": "Gift guide",
+              "status": "Planning",
+              "starts_on": "@today+20d",
+              "ends_on": "@today+70d",
+              "owner": "tm-02",
+              "goal": "Double gift card sales",
+              "budget": 9000,
+              "audience": "Returning customers and subscribers"
+            }
+          },
+          {
+            "key": "cp03",
+            "values": {
+              "campaign_name": "Loyalty program relaunch",
+              "status": "Active",
+              "starts_on": "@today-40d",
+              "ends_on": "@today+15d",
+              "owner": "tm-01",
+              "goal": "Reach 1,500 members",
+              "budget": 11000,
+              "audience": "New customers found through search"
+            }
+          }
         ]
-       },
-       {
-        "id": "view-board",
+      },
+      {
+        "before": [
+          [
+            "due_on",
+            "publish_on"
+          ]
+        ],
+        "independentOf": {
+          "campaign": "Campaign and this record each keep their own dates and status.",
+          "author": "Anyone on the team can own this, whenever they joined."
+        },
+        "token": "content",
+        "name": "Content",
+        "labelSingular": "Piece",
+        "labelPlural": "Content",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "title",
+        "describes": "Every piece of content across channels.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Idea",
+              "Drafting",
+              "Editing",
+              "Scheduled",
+              "Published"
+            ],
+            "choiceColors": {
+              "Idea": "blue",
+              "Drafting": "green",
+              "Editing": "amber",
+              "Scheduled": "violet",
+              "Published": "teal"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Drafting": "todo",
+              "Editing": "in_progress",
+              "Scheduled": "in_progress",
+              "Published": "done"
+            }
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Blog",
+              "Email",
+              "Instagram",
+              "TikTok",
+              "YouTube",
+              "Newsletter"
+            ],
+            "choiceColors": {
+              "Blog": "blue",
+              "Email": "green",
+              "Instagram": "amber",
+              "TikTok": "violet",
+              "YouTube": "teal",
+              "Newsletter": "orange"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "publish_on",
+            "label": "Publish date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "cost",
+            "label": "Cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pub_btn",
+            "label": "Mark published",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "content_pub"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "cn01",
+            "values": {
+              "title": "Ten day hikes within an hour of town",
+              "campaign": "cp01",
+              "status": "Published",
+              "channel": "Blog",
+              "due_on": "@today-20d",
+              "publish_on": "@today-16d",
+              "author": "tm-02",
+              "cost": 600
+            }
+          },
+          {
+            "key": "cn02",
+            "values": {
+              "title": "Trail season announcement email",
+              "campaign": "cp01",
+              "status": "Published",
+              "channel": "Email",
+              "due_on": "@today-14d",
+              "publish_on": "@today-12d",
+              "author": "tm-02",
+              "cost": 150
+            }
+          },
+          {
+            "key": "cn03",
+            "values": {
+              "title": "Packing list carousel",
+              "campaign": "cp01",
+              "status": "Scheduled",
+              "channel": "Instagram",
+              "due_on": "@today-7d",
+              "publish_on": "@today",
+              "author": "tm-03",
+              "cost": 200
+            }
+          },
+          {
+            "key": "cn04",
+            "values": {
+              "title": "Guide spotlight: Reyes",
+              "campaign": "cp01",
+              "status": "Drafting",
+              "channel": "YouTube",
+              "due_on": "@today-11d",
+              "publish_on": "@today-4d",
+              "author": "tm-03",
+              "cost": 1800
+            }
+          },
+          {
+            "key": "cn05",
+            "values": {
+              "title": "Trail etiquette short",
+              "campaign": "cp01",
+              "status": "Editing",
+              "channel": "TikTok",
+              "due_on": "@today-16d",
+              "publish_on": "@today-9d",
+              "author": "tm-03",
+              "cost": 300
+            }
+          },
+          {
+            "key": "cn06",
+            "values": {
+              "title": "Gift guide landing page",
+              "campaign": "cp02",
+              "status": "Idea",
+              "channel": "Blog",
+              "author": "tm-02",
+              "cost": 900,
+              "publish_on": "@today+3d"
+            }
+          },
+          {
+            "key": "cn07",
+            "values": {
+              "title": "Gift guide teaser",
+              "campaign": "cp02",
+              "status": "Idea",
+              "channel": "Instagram",
+              "author": "tm-03",
+              "cost": 250,
+              "publish_on": "@today+2d"
+            }
+          },
+          {
+            "key": "cn08",
+            "values": {
+              "title": "Loyalty relaunch announcement",
+              "campaign": "cp03",
+              "status": "Published",
+              "channel": "Newsletter",
+              "due_on": "@today-30d",
+              "publish_on": "@today-26d",
+              "author": "tm-01",
+              "cost": 200
+            }
+          },
+          {
+            "key": "cn09",
+            "values": {
+              "title": "Member perks explainer",
+              "campaign": "cp03",
+              "status": "Published",
+              "channel": "Blog",
+              "due_on": "@today-22d",
+              "publish_on": "@today-18d",
+              "author": "tm-02",
+              "cost": 500
+            }
+          },
+          {
+            "key": "cn10",
+            "values": {
+              "title": "Member spotlight series",
+              "campaign": "cp03",
+              "status": "Scheduled",
+              "channel": "Email",
+              "due_on": "@today-2d",
+              "publish_on": "@today+5d",
+              "author": "tm-02",
+              "cost": 400
+            }
+          },
+          {
+            "key": "cn11",
+            "values": {
+              "title": "Points reminder email",
+              "campaign": "cp03",
+              "status": "Drafting",
+              "channel": "Email",
+              "due_on": "@today+8d",
+              "publish_on": "@today+14d",
+              "author": "tm-02",
+              "cost": 150
+            }
+          },
+          {
+            "key": "cn12",
+            "values": {
+              "title": "Weekend deals roundup",
+              "status": "Scheduled",
+              "channel": "Newsletter",
+              "due_on": "@today+2d",
+              "publish_on": "@today+4d",
+              "author": "tm-02",
+              "cost": 100
+            }
+          }
+        ],
+        "statusImplies": []
+      },
+      {
+        "independentOf": {
+          "page": "Content and this record each keep their own dates and status."
+        },
+        "token": "keyword",
+        "name": "Keywords",
+        "labelSingular": "Keyword",
+        "labelPlural": "Keywords",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "search",
+        "titleField": "keyword",
+        "describes": "Phrases worth ranking for and the content that targets them.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "keyword",
+            "label": "Keyword",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "volume",
+            "label": "Monthly searches",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "difficulty",
+            "label": "Difficulty (0-100)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Target",
+              "Writing",
+              "Published",
+              "Tracking"
+            ],
+            "choiceColors": {
+              "Target": "blue",
+              "Writing": "green",
+              "Published": "amber",
+              "Tracking": "violet"
+            },
+            "required": true,
+            "default": "Target",
+            "statusGroups": {
+              "Target": "todo",
+              "Writing": "in_progress",
+              "Published": "done",
+              "Tracking": "in_progress"
+            }
+          },
+          {
+            "key": "rank",
+            "label": "Current rank",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "page",
+            "label": "Content",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "content",
+            "relationMax": 1
+          }
+        ],
+        "rows": [
+          {
+            "key": "kw01",
+            "values": {
+              "keyword": "day hikes near santa fe",
+              "volume": 3600,
+              "difficulty": 30,
+              "status": "Published",
+              "rank": 4,
+              "page": "cn01"
+            }
+          },
+          {
+            "key": "kw02",
+            "values": {
+              "keyword": "guided hiking tour new mexico",
+              "volume": 1900,
+              "difficulty": 38,
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw03",
+            "values": {
+              "keyword": "trail packing list",
+              "volume": 5200,
+              "difficulty": 24,
+              "status": "Published",
+              "rank": 8,
+              "page": "cn03"
+            }
+          },
+          {
+            "key": "kw04",
+            "values": {
+              "keyword": "loyalty program for outdoor shops",
+              "volume": 900,
+              "difficulty": 15,
+              "status": "Tracking",
+              "rank": 2,
+              "page": "cn09"
+            }
+          },
+          {
+            "key": "kw05",
+            "values": {
+              "keyword": "gift ideas for hikers",
+              "volume": 6400,
+              "difficulty": 50,
+              "status": "Target",
+              "page": "cn06"
+            }
+          },
+          {
+            "key": "kw06",
+            "values": {
+              "keyword": "trail etiquette rules",
+              "volume": 2700,
+              "difficulty": 19,
+              "status": "Writing",
+              "page": "cn05"
+            }
+          },
+          {
+            "key": "kw07",
+            "values": {
+              "keyword": "best time to hike high desert",
+              "volume": 1500,
+              "difficulty": 22,
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw08",
+            "values": {
+              "keyword": "hiking guide jobs",
+              "volume": 800,
+              "difficulty": 12,
+              "status": "Tracking",
+              "rank": 6
+            }
+          }
+        ]
+      },
+      {
+        "independentOf": {
+          "page": "Used in and this record each keep their own dates and status."
+        },
+        "token": "asset",
+        "name": "Assets",
+        "labelSingular": "Asset",
+        "labelPlural": "Assets",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "image",
+        "titleField": "asset_name",
+        "describes": "Brand assets and the content that uses them.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "asset_name",
+            "label": "Asset",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Logo",
+              "Photo",
+              "Template",
+              "Video",
+              "Document"
+            ],
+            "choiceColors": {
+              "Logo": "blue",
+              "Photo": "green",
+              "Template": "amber",
+              "Video": "violet",
+              "Document": "teal"
+            }
+          },
+          {
+            "key": "page",
+            "label": "Used in",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "content",
+            "relationMax": 1
+          },
+          {
+            "key": "approved",
+            "label": "Approved",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "updated_on",
+            "label": "Updated",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "as01",
+            "values": {
+              "asset_name": "Sagebrush logo, full color",
+              "kind": "Logo",
+              "approved": true,
+              "updated_on": "@today-100d"
+            }
+          },
+          {
+            "key": "as02",
+            "values": {
+              "asset_name": "Guide portraits",
+              "kind": "Photo",
+              "page": "cn04",
+              "approved": true,
+              "updated_on": "@today-60d"
+            }
+          },
+          {
+            "key": "as03",
+            "values": {
+              "asset_name": "Trailhead hero photo",
+              "kind": "Photo",
+              "page": "cn01",
+              "approved": true,
+              "updated_on": "@today-30d"
+            }
+          },
+          {
+            "key": "as04",
+            "values": {
+              "asset_name": "Packing list graphic",
+              "kind": "Template",
+              "page": "cn03",
+              "approved": true,
+              "updated_on": "@today-14d"
+            }
+          },
+          {
+            "key": "as05",
+            "values": {
+              "asset_name": "Loyalty card artwork",
+              "kind": "Template",
+              "page": "cn09",
+              "approved": true,
+              "updated_on": "@today-45d"
+            }
+          },
+          {
+            "key": "as06",
+            "values": {
+              "asset_name": "Gift guide cover",
+              "kind": "Photo",
+              "page": "cn06",
+              "approved": false,
+              "updated_on": "@today-2d"
+            }
+          },
+          {
+            "key": "as07",
+            "values": {
+              "asset_name": "Brand guidelines",
+              "kind": "Document",
+              "approved": true,
+              "updated_on": "@today-80d"
+            }
+          },
+          {
+            "key": "as08",
+            "values": {
+              "asset_name": "Trail etiquette clip",
+              "kind": "Video",
+              "page": "cn05",
+              "approved": false,
+              "updated_on": "@today-1d"
+            }
+          }
+        ]
+      },
+      {
+        "independentOf": {
+          "campaign": "Campaign and this record each keep their own dates and status."
+        },
+        "token": "lead",
+        "name": "Leads",
+        "labelSingular": "Lead",
+        "labelPlural": "Leads",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-plus",
+        "titleField": "lead_name",
+        "describes": "People who came in from campaigns.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "lead_name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "lead_email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Website",
+              "Newsletter",
+              "Instagram",
+              "Event",
+              "Referral"
+            ],
+            "choiceColors": {
+              "Website": "blue",
+              "Newsletter": "green",
+              "Instagram": "amber",
+              "Event": "violet",
+              "Referral": "teal"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Contacted",
+              "Booked",
+              "Not now"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Contacted": "green",
+              "Booked": "amber",
+              "Not now": "violet"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Contacted": "in_progress",
+              "Booked": "in_progress",
+              "Not now": "done"
+            }
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "next_followup",
+            "label": "Next follow-up",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{lead_email}}"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ld01",
+            "values": {
+              "lead_name": "Willa Strathmore",
+              "lead_email": "willa@strathmorehome.net",
+              "source": "Website",
+              "status": "New",
+              "campaign": "cp01",
+              "next_followup": "@today"
+            }
+          },
+          {
+            "key": "ld02",
+            "values": {
+              "lead_name": "Declan Obuya",
+              "lead_email": "declan@obuyaconsulting.net",
+              "source": "Newsletter",
+              "status": "Contacted",
+              "campaign": "cp01",
+              "next_followup": "@today-4d"
+            }
+          },
+          {
+            "key": "ld03",
+            "values": {
+              "lead_name": "Annika Rosenthal",
+              "lead_email": "annika@rosenthalfamily.net",
+              "source": "Instagram",
+              "status": "Booked",
+              "campaign": "cp01",
+              "next_followup": "@today-9d"
+            }
+          },
+          {
+            "key": "ld04",
+            "values": {
+              "lead_name": "Hector Villareal",
+              "lead_email": "hector@villarealgroup.net",
+              "source": "Event",
+              "status": "Contacted",
+              "campaign": "cp03",
+              "next_followup": "@today+2d"
+            }
+          },
+          {
+            "key": "ld05",
+            "values": {
+              "lead_name": "Philomena Okoro",
+              "lead_email": "philomena@okoroarts.net",
+              "source": "Referral",
+              "status": "New",
+              "campaign": "cp03",
+              "next_followup": "@today+3d"
+            }
+          },
+          {
+            "key": "ld06",
+            "values": {
+              "lead_name": "Bastian Linde",
+              "lead_email": "bastian@lindeoutdoor.net",
+              "source": "Website",
+              "status": "Not now",
+              "campaign": "cp01"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "campaign",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "campaigns_owned"
+      },
+      {
+        "describes": "Campaign links to one campaign.",
+        "fromTable": "content",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "pieces"
+      },
+      {
+        "describes": "Author links to one team member.",
+        "fromTable": "content",
+        "fromField": "author",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "content_authored"
+      },
+      {
+        "describes": "Content links to one content.",
+        "fromTable": "keyword",
+        "fromField": "page",
+        "toTable": "content",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "keywords_for"
+      },
+      {
+        "describes": "Used in links to one content.",
+        "fromTable": "asset",
+        "fromField": "page",
+        "toTable": "content",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "assets_used"
+      },
+      {
+        "describes": "Campaign links to one campaign.",
+        "fromTable": "lead",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "leads"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Marguerite Salazar",
+              "role": "Head of marketing",
+              "work_email": "marguerite@sagebrushandco.net",
+              "mobile": "(505) 555-0111",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Ephraim Tolliver",
+              "role": "Content manager",
+              "work_email": "ephraim@sagebrushandco.net",
+              "mobile": "(505) 555-0112",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Nadia Brzezinski",
+              "role": "Social and community",
+              "work_email": "nadia@sagebrushandco.net",
+              "mobile": "(505) 555-0113",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Idris Fontaine",
+              "role": "Designer",
+              "work_email": "idris@sagebrushandco.net",
+              "mobile": "(505) 555-0114",
+              "start_date": "@today-20m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "content_idea",
+        "name": "Suggest content",
+        "describes": "How anyone adds a content idea.",
+        "audience": "staff",
+        "table": "content",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What is the idea?",
+            "required": true
+          },
+          {
+            "fieldKey": "channel",
+            "ask": "Where should it run?"
+          },
+          {
+            "fieldKey": "campaign",
+            "ask": "Which campaign?"
+          }
+        ],
+        "submitLabel": "Add the idea",
+        "confirmation": "Thanks. It is on the board as an Idea."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "content_pub",
+        "table": "content",
+        "name": "Mark published",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Published"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "campaign_board",
         "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       }
-      ],
-      "activeViewId": "view-by-volume"
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Check ranks on the first Monday of each month."
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "newsletter",
-   "parent": "marketing-os",
-   "title": "Newsletter",
-   "icon": {
-    "emoji": "📰"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Email and newsletter issues, with the same status flow as the rest of marketing."
-      }
-     ],
-     "background": "orange",
-     "props": {
-      "icon": "Mail"
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "content",
-       "view": "all_content"
+        "table": "campaign",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
       },
-      "inline": true,
-      "title": "Content",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-email",
-        "name": "Email",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "channel": [
-          "Email",
-          "Newsletter"
-         ]
-        },
+      {
+        "token": "all_campaigns",
+        "name": "All campaigns",
+        "table": "campaign",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "publish_on",
-          "direction": "asc"
-         }
+          {
+            "field": "starts_on",
+            "direction": "asc"
+          }
         ]
-       },
-       {
-        "id": "view-send-calendar",
-        "name": "Send calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "filters": {
-         "channel": [
-          "Email",
-          "Newsletter"
-         ]
-        },
-        "dateField": "publish_on"
-       }
-      ],
-      "activeViewId": "view-email"
-     }
-    }
-   ]
-  },
-  {
-   "key": "assets",
-   "parent": "marketing-os",
-   "title": "Assets",
-   "icon": {
-    "emoji": "🎨"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Approved logos, photos and templates."
-      }
-     ],
-     "background": "purple",
-     "props": {
-      "icon": "Palette"
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "asset",
-       "view": "asset_gallery"
       },
-      "inline": true,
-      "title": "Assets",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-gallery",
+      {
+        "token": "content_calendar",
+        "name": "Calendar",
+        "table": "content",
+        "kind": "calendar",
+        "isDefault": true,
+        "dateField": "publish_on",
+        "allDay": true
+      },
+      {
+        "token": "content_board",
+        "name": "Board",
+        "table": "content",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_content",
+        "name": "All content",
+        "table": "content",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "publish_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "all_keywords",
+        "name": "All keywords",
+        "table": "keyword",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "keyword",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "asset_gallery",
         "name": "Gallery",
-        "layout": "gallery",
-        "icon": "LayoutGrid"
-       },
-       {
-        "id": "view-all-assets",
-        "name": "All assets",
-        "layout": "grid",
-        "icon": "Table",
+        "table": "asset",
+        "kind": "grid",
+        "isDefault": true,
         "sorts": [
-         {
-          "field": "asset_name",
-          "direction": "asc"
-         }
+          {
+            "field": "asset_name",
+            "direction": "asc"
+          }
         ]
-       },
-       {
-        "id": "view-needs-approval",
-        "name": "Needs approval",
-        "layout": "list",
-        "icon": "CircleAlert",
-        "filters": {
-         "approved": false
+      },
+      {
+        "token": "lead_board",
+        "name": "Board",
+        "table": "lead",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
+      },
+      {
+        "token": "all_leads",
+        "name": "All leads",
+        "table": "lead",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "next_followup",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "content_week",
+        "name": "Publish date this week",
+        "table": "content",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Drafting",
+            "Editing",
+            "Scheduled"
+          ]
         }
-       }
+      },
+      {
+        "token": "content_over",
+        "name": "Overdue",
+        "table": "content",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Drafting",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "content_next7",
+        "name": "Next 7 days",
+        "table": "content",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Drafting",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "lead_week",
+        "name": "Next follow-up this week",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "next_followup": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Booked"
+          ]
+        }
+      },
+      {
+        "token": "lead_over",
+        "name": "Overdue",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "next_followup": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Booked"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Marketing assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "content",
+          "describes": "Every piece of content across channels."
+        },
+        {
+          "name": "related_tables",
+          "table": "campaign",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-gallery"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many pieces of content are scheduled?",
+        "whyItMatters": "Marguerite checks scheduled content every Monday.",
+        "expect": {
+          "table": "content",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Scheduled"
+          },
+          "answer": 3,
+          "unit": "pieces"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the content calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "content_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "content_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the campaign board.",
+        "action": {
+          "kind": "open",
+          "surface": "campaign_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "campaign_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open the lead board.",
+        "action": {
+          "kind": "open",
+          "surface": "lead_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lead_board",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "sagebrushandco.net",
+        "strathmorehome.net",
+        "obuyaconsulting.net",
+        "rosenthalfamily.net",
+        "villarealgroup.net",
+        "okoroarts.net",
+        "lindeoutdoor.net"
+      ],
+      "fictionalStreets": [
+        "Piñon Wash Lane"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "weekly-marketing-review",
-   "parent": "marketing-os",
-   "title": "Weekly marketing review",
-   "icon": {
-    "emoji": "🗓️"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Content due this week is on track"
+      "key": "marketing-os",
+      "parent": null,
+      "title": "Marketing OS",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Good morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This week: publish the trail season posts, finish the loyalty relaunch emails and review the gift guide plan."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Sun"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:social"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:seo"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:newsletter"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:assets"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This week"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "content",
+              "view": "content_calendar"
+            },
+            "inline": true,
+            "title": "Content",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-publishing-soon",
+                "name": "Publishing soon",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "Drafting",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "publish_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-content-week",
+                "name": "Publish date this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "publish_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Drafting",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-content-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "publish_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Drafting",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-content-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "publish_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Drafting",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-publishing-soon"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Active campaigns"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "campaign",
+              "view": "campaign_board"
+            },
+            "inline": true,
+            "title": "Campaigns",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Content calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "content",
+              "view": "content_calendar"
+            },
+            "inline": true,
+            "title": "Content",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-calendar",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "publish_on"
+              },
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-all-content",
+                "name": "All content",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "publish_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Results"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "content",
+              "view": "all_content"
+            },
+            "inline": true,
+            "title": "Content",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-content-by-channel",
+                "name": "Content by channel",
+                "layout": "chart",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "channel",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "icon": "ChartPie"
+              }
+            ],
+            "activeViewId": "view-content-by-channel"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "campaign",
+              "view": "all_campaigns"
+            },
+            "inline": true,
+            "title": "Campaigns",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-budget-by-status",
+                "name": "Budget by status",
+                "layout": "chart",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "status",
+                  "op": "sum",
+                  "field": "budget"
+                },
+                "icon": "ChartColumn"
+              }
+            ],
+            "activeViewId": "view-budget-by-status"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "all_leads"
+            },
+            "inline": true,
+            "title": "Leads",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-leads-by-source",
+                "name": "Leads by source",
+                "layout": "chart",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "source",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "icon": "ChartPie"
+              },
+              {
+                "id": "view-lead-week",
+                "name": "Next follow-up this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "next_followup": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Booked"
+                  ]
+                }
+              },
+              {
+                "id": "view-lead-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "next_followup": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Booked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-leads-by-source"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "lead_board"
+            },
+            "inline": true,
+            "title": "Leads",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-follow-up",
+                "name": "Follow up",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "next_followup",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
       }
-     ],
-     "props": {
-      "checked": false
-     }
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Each active campaign has a status note"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "social",
+      "parent": "marketing-os",
+      "title": "Social",
+      "icon": {
+        "emoji": "📱"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything headed for social channels."
+            }
+          ],
+          "background": "pink",
+          "props": {
+            "icon": "Share2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Social rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Three posts a week on the channel that earns the most; one on each of the others."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reuse one idea in each format: a short video, a carousel and a story."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reply to every comment within a day. It is the cheapest growth there is."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "content",
+              "view": "all_content"
+            },
+            "inline": true,
+            "title": "Content",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-instagram",
+                "name": "Instagram",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "channel": "Instagram"
+                }
+              },
+              {
+                "id": "view-tiktok",
+                "name": "TikTok",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "channel": "TikTok"
+                }
+              },
+              {
+                "id": "view-youtube",
+                "name": "YouTube",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "channel": "YouTube"
+                }
+              },
+              {
+                "id": "view-calendar",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "filters": {
+                  "channel": [
+                    "Instagram",
+                    "TikTok",
+                    "YouTube"
+                  ]
+                },
+                "dateField": "publish_on"
+              }
+            ],
+            "activeViewId": "view-instagram"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Leads from the past week have a follow-up"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "seo",
+      "parent": "marketing-os",
+      "title": "SEO",
+      "icon": {
+        "emoji": "🔎"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Phrases to rank for and the pages that target them."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Search"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "keyword",
+              "view": "all_keywords"
+            },
+            "inline": true,
+            "title": "Keywords",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-by-volume",
+                "name": "By volume",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "volume",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              }
+            ],
+            "activeViewId": "view-by-volume"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the SEO list works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a phrase people search for, with its monthly searches and difficulty."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write one page that targets it and link the page to the phrase."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the rank once a month and note the change."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start with phrases that have real searches and low difficulty; they pay back fastest."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Search"
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check ranks on the first Monday of each month."
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "One keyword moves from Target to Writing"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "newsletter",
+      "parent": "marketing-os",
+      "title": "Newsletter",
+      "icon": {
+        "emoji": "📰"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Email and newsletter issues, with the same status flow as the rest of marketing."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Mail"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Newsletter rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send on the same day and time every week; readers build the habit before you do."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One idea per issue. A single clear call to action beats five links."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check opens and clicks the day after, and write down one thing to change."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "content",
+              "view": "all_content"
+            },
+            "inline": true,
+            "title": "Content",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-email",
+                "name": "Email",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "channel": [
+                    "Email",
+                    "Newsletter"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "publish_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-send-calendar",
+                "name": "Send calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "filters": {
+                  "channel": [
+                    "Email",
+                    "Newsletter"
+                  ]
+                },
+                "dateField": "publish_on"
+              }
+            ],
+            "activeViewId": "view-email"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Unapproved assets are cleared"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "assets",
+      "parent": "marketing-os",
+      "title": "Assets",
+      "icon": {
+        "emoji": "🎨"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Approved logos, photos and templates."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Palette"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Using the asset library"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Only approved assets go into published work."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Name files by what they show, not by date, so search finds them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tick Approved when the brand owner signs off, and update the date when you replace a file."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "asset",
+              "view": "asset_gallery"
+            },
+            "inline": true,
+            "title": "Assets",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-gallery",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-all-assets",
+                "name": "All assets",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "asset_name",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-needs-approval",
+                "name": "Needs approval",
+                "layout": "list",
+                "icon": "CircleAlert",
+                "filters": {
+                  "approved": false
+                }
+              }
+            ],
+            "activeViewId": "view-gallery"
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-marketing-review",
+      "parent": "marketing-os",
+      "title": "Weekly marketing review",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Content due this week is on track"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Each active campaign has a status note"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Leads from the past week have a follow-up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "One keyword moves from Target to Writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Unapproved assets are cleared"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

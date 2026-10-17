@@ -1,1824 +1,2033 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0157",
- "version": 1,
- "title": "SEO Hub",
- "description": "Research keywords, brief and publish posts, and track rank and results.",
- "forWho": "SEO and content teams",
- "icon": {
-  "emoji": "🔎"
- },
- "cover": {
-  "url": "gallery:photo-pine-forest",
-  "offsetY": 50
- },
- "category": "marketing",
- "tags": [
-  "seo",
-  "keywords",
-  "content",
-  "rank"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0157",
+  "packVersion": 1,
   "catalogueId": "SP0157",
-  "useCase": "Theodora Nwosu leads search for an outdoor retailer and uses this to choose phrases, track articles and watch rankings.",
-  "industry": "cross_industry",
-  "vertical": "Search marketing",
-  "job": "content",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Alpine Lantern Outfitters",
-   "describes": "An outdoor gear retailer with a busy how-to guide library.",
-   "address": {
-    "line1": "640 Switchback Road",
-    "city": "Salt Lake City",
-    "region": "UT",
-    "postalCode": "84101",
-    "country": "US"
-   },
-   "phone": "(801) 555-0180",
-   "website": "alpinelanternoutfitters.net",
-   "email": "hello@alpinelanternoutfitters.net",
-   "timezone": "America/Denver"
-  },
-  "cleanupTag": "use-case:spaces-sp0157",
-  "tables": [
-   {
-    "token": "keyword",
-    "name": "Keywords",
-    "labelSingular": "Keyword",
-    "labelPlural": "Keywords",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "search",
-    "titleField": "keyword",
-    "describes": "Search phrases worth targeting, how hard they are and where the site ranks.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "keyword",
-      "label": "Keyword",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "topic",
-      "label": "Topic",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "volume",
-      "label": "Monthly searches",
-      "parityType": "number",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 5000000
-       }
-      ]
-     },
-     {
-      "key": "difficulty",
-      "label": "Difficulty",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ]
-     },
-     {
-      "key": "intent",
-      "label": "Intent",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Informational",
-       "Commercial",
-       "Transactional",
-       "Navigational"
-      ],
-      "choiceColors": {
-       "Informational": "blue",
-       "Commercial": "green",
-       "Transactional": "amber",
-       "Navigational": "violet"
-      }
-     },
-     {
-      "key": "priority",
-      "label": "Priority score",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "IF({Difficulty} < 40, {Monthly searches} / 100, 0)"
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Target",
-       "Writing",
-       "Published",
-       "Tracking"
-      ],
-      "choiceColors": {
-       "Target": "blue",
-       "Writing": "green",
-       "Published": "amber",
-       "Tracking": "violet"
-      },
-      "required": true,
-      "default": "Target"
-     },
-     {
-      "key": "rank",
-      "label": "Current rank",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 1
-       },
-       {
-        "kind": "max",
-        "value": 200
-       }
-      ]
-     },
-     {
-      "key": "rank_change",
-      "label": "Rank change",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": -200
-       },
-       {
-        "kind": "max",
-        "value": 200
-       }
-      ]
-     },
-     {
-      "key": "checked_on",
-      "label": "Last checked",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "target_url",
-      "label": "Target page",
-      "parityType": "url",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "posts",
-      "label": "Posts",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "post",
-      "multi": true
-     },
-     {
-      "key": "post_count",
-      "label": "Posts written",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "posts",
-      "pick": "title",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "kw01",
-      "values": {
-       "keyword": "best ultralight tent",
-       "topic": "Tents",
-       "volume": 9900,
-       "difficulty": 62,
-       "intent": "Commercial",
-       "status": "Published",
-       "rank": 7,
-       "rank_change": 3,
-       "checked_on": "@today-2d",
-       "target_url": "https://alpinelanternoutfitters.net/guides/ultralight-tent",
-       "posts": [
-        "ps01"
-       ]
-      }
-     },
-     {
-      "key": "kw02",
-      "values": {
-       "keyword": "how to waterproof boots",
-       "topic": "Footwear",
-       "volume": 6600,
-       "difficulty": 28,
-       "intent": "Informational",
-       "status": "Published",
-       "rank": 3,
-       "rank_change": 1,
-       "checked_on": "@today-2d",
-       "target_url": "https://alpinelanternoutfitters.net/guides/waterproof-boots",
-       "posts": [
-        "ps02"
-       ]
-      }
-     },
-     {
-      "key": "kw03",
-      "values": {
-       "keyword": "trail running vest sizing",
-       "topic": "Packs",
-       "volume": 2900,
-       "difficulty": 22,
-       "intent": "Informational",
-       "status": "Writing",
-       "posts": [
-        "ps06"
-       ]
-      }
-     },
-     {
-      "key": "kw04",
-      "values": {
-       "keyword": "winter sleeping bag rating",
-       "topic": "Sleep",
-       "volume": 5400,
-       "difficulty": 41,
-       "intent": "Informational",
-       "status": "Tracking",
-       "rank": 11,
-       "rank_change": -2,
-       "checked_on": "@today-3d",
-       "target_url": "https://alpinelanternoutfitters.net/guides/sleeping-bag-ratings",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw05",
-      "values": {
-       "keyword": "camp stove comparison",
-       "topic": "Cooking",
-       "volume": 4400,
-       "difficulty": 55,
-       "intent": "Commercial",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw06",
-      "values": {
-       "keyword": "how to pack a 40 liter backpack",
-       "topic": "Packs",
-       "volume": 3600,
-       "difficulty": 19,
-       "intent": "Informational",
-       "status": "Published",
-       "rank": 5,
-       "rank_change": 2,
-       "checked_on": "@today-2d",
-       "target_url": "https://alpinelanternoutfitters.net/guides/pack-40-liter",
-       "posts": [
-        "ps03"
-       ]
-      }
-     },
-     {
-      "key": "kw07",
-      "values": {
-       "keyword": "merino base layer vs synthetic",
-       "topic": "Clothing",
-       "volume": 3100,
-       "difficulty": 33,
-       "intent": "Informational",
-       "status": "Writing",
-       "posts": [
-        "ps07"
-       ]
-      }
-     },
-     {
-      "key": "kw08",
-      "values": {
-       "keyword": "gore tex jacket care",
-       "topic": "Clothing",
-       "volume": 1900,
-       "difficulty": 18,
-       "intent": "Informational",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw09",
-      "values": {
-       "keyword": "buy trekking poles",
-       "topic": "Gear",
-       "volume": 2400,
-       "difficulty": 47,
-       "intent": "Transactional",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw10",
-      "values": {
-       "keyword": "alpine lantern headlamp",
-       "topic": "Lighting",
-       "volume": 1200,
-       "difficulty": 12,
-       "intent": "Navigational",
-       "status": "Tracking",
-       "rank": 1,
-       "rank_change": 0,
-       "checked_on": "@today-3d",
-       "target_url": "https://alpinelanternoutfitters.net/headlamps",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw11",
-      "values": {
-       "keyword": "best hiking socks",
-       "topic": "Footwear",
-       "volume": 8100,
-       "difficulty": 58,
-       "intent": "Commercial",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw12",
-      "values": {
-       "keyword": "how to read a topographic map",
-       "topic": "Navigation",
-       "volume": 7200,
-       "difficulty": 24,
-       "intent": "Informational",
-       "status": "Published",
-       "rank": 9,
-       "rank_change": 4,
-       "checked_on": "@today-2d",
-       "target_url": "https://alpinelanternoutfitters.net/guides/topographic-maps",
-       "posts": [
-        "ps04"
-       ]
-      }
-     },
-     {
-      "key": "kw13",
-      "values": {
-       "keyword": "bear canister rules",
-       "topic": "Safety",
-       "volume": 2800,
-       "difficulty": 16,
-       "intent": "Informational",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw14",
-      "values": {
-       "keyword": "campsite checklist printable",
-       "topic": "Planning",
-       "volume": 5900,
-       "difficulty": 29,
-       "intent": "Informational",
-       "status": "Writing",
-       "posts": [
-        "ps08"
-       ]
-      }
-     },
-     {
-      "key": "kw15",
-      "values": {
-       "keyword": "tent footprint do you need one",
-       "topic": "Tents",
-       "volume": 1700,
-       "difficulty": 21,
-       "intent": "Informational",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw16",
-      "values": {
-       "keyword": "water filter backpacking",
-       "topic": "Water",
-       "volume": 6200,
-       "difficulty": 52,
-       "intent": "Commercial",
-       "status": "Tracking",
-       "rank": 14,
-       "rank_change": -3,
-       "checked_on": "@today-3d",
-       "target_url": "https://alpinelanternoutfitters.net/guides/water-filters",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw17",
-      "values": {
-       "keyword": "how to dry wet gear",
-       "topic": "Care",
-       "volume": 1400,
-       "difficulty": 14,
-       "intent": "Informational",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw18",
-      "values": {
-       "keyword": "stove fuel canister sizes",
-       "topic": "Cooking",
-       "volume": 2200,
-       "difficulty": 26,
-       "intent": "Informational",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw19",
-      "values": {
-       "keyword": "rain pants worth it",
-       "topic": "Clothing",
-       "volume": 1300,
-       "difficulty": 31,
-       "intent": "Commercial",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw20",
-      "values": {
-       "keyword": "first aid kit hiking contents",
-       "topic": "Safety",
-       "volume": 4800,
-       "difficulty": 36,
-       "intent": "Informational",
-       "status": "Writing",
-       "posts": [
-        "ps10"
-       ]
-      }
-     },
-     {
-      "key": "kw21",
-      "values": {
-       "keyword": "compass vs gps",
-       "topic": "Navigation",
-       "volume": 3300,
-       "difficulty": 27,
-       "intent": "Informational",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw22",
-      "values": {
-       "keyword": "sleeping pad r value",
-       "topic": "Sleep",
-       "volume": 4100,
-       "difficulty": 35,
-       "intent": "Informational",
-       "status": "Target",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw23",
-      "values": {
-       "keyword": "hiking boot break in",
-       "topic": "Footwear",
-       "volume": 2600,
-       "difficulty": 23,
-       "intent": "Informational",
-       "status": "Published",
-       "rank": 6,
-       "rank_change": 1,
-       "checked_on": "@today-2d",
-       "target_url": "https://alpinelanternoutfitters.net/guides/break-in-boots",
-       "posts": [
-        "ps05"
-       ]
-      }
-     },
-     {
-      "key": "kw24",
-      "values": {
-       "keyword": "outfitter near me",
-       "topic": "Brand",
-       "volume": 800,
-       "difficulty": 9,
-       "intent": "Navigational",
-       "status": "Tracking",
-       "rank": 2,
-       "rank_change": 0,
-       "checked_on": "@today-3d",
-       "target_url": "https://alpinelanternoutfitters.net/visit",
-       "posts": []
-      }
-     },
-     {
-      "key": "kw25",
-      "values": {
-       "keyword": "beginner backpacking gear list",
-       "topic": "Planning",
-       "volume": 7700,
-       "difficulty": 44,
-       "intent": "Informational",
-       "status": "Writing",
-       "posts": [
-        "ps09"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "before": [
-     [
-      "write_by",
-      "publish_on"
-     ]
-    ],
-    "independentOf": {
-     "keyword": "Keyword and this record each keep their own dates and status.",
-     "writer": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "post",
-    "name": "Posts",
-    "labelSingular": "Post",
-    "labelPlural": "Posts",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "file-text",
-    "titleField": "title",
-    "describes": "Articles written for each keyword, with their results.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "title",
-      "label": "Title",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "keyword",
-      "label": "Keyword",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "keyword",
-      "relationMax": 1
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Brief",
-       "Writing",
-       "Editing",
-       "Scheduled",
-       "Published"
-      ],
-      "choiceColors": {
-       "Brief": "blue",
-       "Writing": "green",
-       "Editing": "amber",
-       "Scheduled": "violet",
-       "Published": "teal"
-      },
-      "required": true,
-      "default": "Brief"
-     },
-     {
-      "key": "length_words",
-      "label": "Length in words",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 20000
-       }
-      ]
-     },
-     {
-      "key": "write_by",
-      "label": "Write by",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "publish_on",
-      "label": "Publish date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "writer",
-      "label": "Writer",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "views",
-      "label": "Views",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 10000000
-       }
-      ]
-     },
-     {
-      "key": "comments",
-      "label": "Comments",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "shares",
-      "label": "Shares",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "engagement",
-      "label": "Total engagement",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "{Views} + {Comments} + {Shares}"
-     }
-    ],
-    "rows": [
-     {
-      "key": "ps01",
-      "values": {
-       "title": "The no-nonsense guide to ultralight tents",
-       "keyword": "kw01",
-       "status": "Published",
-       "length_words": 2400,
-       "write_by": "@today-80d",
-       "publish_on": "@today-72d",
-       "writer": "tm-03",
-       "views": 14200,
-       "comments": 36,
-       "shares": 410
-      }
-     },
-     {
-      "key": "ps02",
-      "values": {
-       "title": "Waterproofing boots at home",
-       "keyword": "kw02",
-       "status": "Published",
-       "length_words": 1800,
-       "write_by": "@today-60d",
-       "publish_on": "@today-54d",
-       "writer": "tm-03",
-       "views": 9800,
-       "comments": 22,
-       "shares": 260
-      }
-     },
-     {
-      "key": "ps03",
-      "values": {
-       "title": "Packing a 40 liter pack in ten minutes",
-       "keyword": "kw06",
-       "status": "Published",
-       "length_words": 1500,
-       "write_by": "@today-45d",
-       "publish_on": "@today-40d",
-       "writer": "tm-02",
-       "views": 7400,
-       "comments": 18,
-       "shares": 190
-      }
-     },
-     {
-      "key": "ps04",
-      "values": {
-       "title": "Topographic maps made simple",
-       "keyword": "kw12",
-       "status": "Published",
-       "length_words": 2100,
-       "write_by": "@today-30d",
-       "publish_on": "@today-25d",
-       "writer": "tm-03",
-       "views": 6100,
-       "comments": 14,
-       "shares": 150
-      }
-     },
-     {
-      "key": "ps05",
-      "values": {
-       "title": "Breaking in hiking boots without blisters",
-       "keyword": "kw23",
-       "status": "Published",
-       "length_words": 1600,
-       "write_by": "@today-18d",
-       "publish_on": "@today-12d",
-       "writer": "tm-02",
-       "views": 3300,
-       "comments": 9,
-       "shares": 82
-      }
-     },
-     {
-      "key": "ps06",
-      "values": {
-       "title": "Trail running vest sizing guide",
-       "keyword": "kw03",
-       "status": "Writing",
-       "length_words": 1700,
-       "write_by": "@today+2d",
-       "publish_on": "@today+8d",
-       "writer": "tm-03"
-      }
-     },
-     {
-      "key": "ps07",
-      "values": {
-       "title": "Merino or synthetic: which base layer wins",
-       "keyword": "kw07",
-       "status": "Writing",
-       "length_words": 2000,
-       "write_by": "@today+5d",
-       "publish_on": "@today+11d",
-       "writer": "tm-02"
-      }
-     },
-     {
-      "key": "ps08",
-      "values": {
-       "title": "A printable campsite checklist",
-       "keyword": "kw14",
-       "status": "Editing",
-       "length_words": 1200,
-       "write_by": "@today-1d",
-       "publish_on": "@today+4d",
-       "writer": "tm-03"
-      }
-     },
-     {
-      "key": "ps09",
-      "values": {
-       "title": "Building your first backpacking gear list",
-       "keyword": "kw25",
-       "status": "Brief",
-       "length_words": 2800,
-       "write_by": "@today+12d",
-       "publish_on": "@today+20d",
-       "writer": "tm-02"
-      }
-     },
-     {
-      "key": "ps10",
-      "values": {
-       "title": "What belongs in a hiking first aid kit",
-       "keyword": "kw20",
-       "status": "Scheduled",
-       "length_words": 1900,
-       "write_by": "@today-5d",
-       "publish_on": "@today+3d",
-       "writer": "tm-03"
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Posts lists its post records.",
-    "fromTable": "keyword",
-    "fromField": "posts",
-    "toTable": "post",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "keyword_listed_posts"
-   },
-   {
-    "describes": "Keyword links to one keyword.",
-    "fromTable": "post",
-    "fromField": "keyword",
-    "toTable": "keyword",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "keyword_posts"
-   },
-   {
-    "describes": "Writer links to one team member.",
-    "fromTable": "post",
-    "fromField": "writer",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "posts_written"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Theodora Nwosu",
-       "role": "SEO lead",
-       "work_email": "theodora@alpinelanternoutfitters.net",
-       "mobile": "(801) 555-0181",
-       "start_date": "@today-4y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Lars Kristiansen",
-       "role": "Content strategist",
-       "work_email": "lars@alpinelanternoutfitters.net",
-       "mobile": "(801) 555-0182",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Mireille Chandra",
-       "role": "Writer",
-       "work_email": "mireille@alpinelanternoutfitters.net",
-       "mobile": "(801) 555-0183",
-       "start_date": "@today-14m"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Bram Evers",
-       "role": "Developer",
-       "work_email": "bram@alpinelanternoutfitters.net",
-       "mobile": "(801) 555-0184",
-       "start_date": "@today-2y"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "keyword_idea",
-    "name": "Suggest a keyword",
-    "describes": "How anyone suggests a phrase to target.",
-    "audience": "staff",
-    "table": "keyword",
-    "fields": [
-     {
-      "fieldKey": "keyword",
-      "ask": "What phrase?",
-      "required": true
-     },
-     {
-      "fieldKey": "topic",
-      "ask": "What topic?"
-     },
-     {
-      "fieldKey": "intent",
-      "ask": "What is the searcher after?"
-     }
-    ],
-    "submitLabel": "Add the phrase",
-    "confirmation": "Thanks. It is on the board as Target."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_keywords",
-    "name": "All keywords",
-    "table": "keyword",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "keyword",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "keyword_board",
-    "name": "Board",
-    "table": "keyword",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "post_board",
-    "name": "Board",
-    "table": "post",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "post_calendar",
-    "name": "Calendar",
-    "table": "post",
-    "kind": "calendar",
-    "dateField": "publish_on",
-    "allDay": true
-   },
-   {
-    "token": "all_posts",
-    "name": "All posts",
-    "table": "post",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "publish_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "SEO assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "keyword",
-     "describes": "Search phrases worth targeting, how hard they are and where the site ranks."
-    },
-    {
-     "name": "related_tables",
-     "table": "post",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many keywords are being tracked?",
-    "whyItMatters": "Theodora reviews the tracked list before each monthly rank check.",
-    "expect": {
-     "table": "keyword",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Tracking"
-     },
-     "answer": 4,
-     "unit": "keywords"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the keyword table.",
-    "action": {
-     "kind": "open",
-     "surface": "all_keywords"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_keywords",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the post board.",
-    "action": {
-     "kind": "open",
-     "surface": "post_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "post_board",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the keyword board.",
-    "action": {
-     "kind": "open",
-     "surface": "keyword_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "keyword_board",
-     "minItems": 10
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "alpinelanternoutfitters.net"
-   ],
-   "fictionalStreets": [
-    "Switchback Road"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "seo-hub",
-   "parent": null,
-   "title": "SEO Hub",
-   "icon": {
+  "version": 2,
+  "title": "SEO Hub",
+  "description": "Research keywords, brief and publish posts, and track rank and results.",
+  "forWho": "SEO and content teams",
+  "icon": {
     "emoji": "🔎"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Four steps: research the phrase, write the page, share it, then watch the rank. Everything below is linked, so rank and results sit next to the content."
-      }
-     ],
-     "background": "green",
-     "props": {
-      "icon": "Search"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:seo-dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:keyword-research-method"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:page-brief"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:monthly-rank-check"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "1. Research"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "keyword",
-       "view": "all_keywords"
-      },
-      "inline": true,
-      "title": "Keywords",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-by-priority",
-        "name": "By priority",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "priority",
-          "direction": "desc"
-         }
-        ]
-       },
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-rank-watch",
-        "name": "Rank watch",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "status": [
-          "Published",
-          "Tracking"
-         ]
-        },
-        "sorts": [
-         {
-          "field": "rank",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-by-priority"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "2. Create"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "post",
-       "view": "post_board"
-      },
-      "inline": true,
-      "title": "Posts",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-calendar",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "publish_on"
-       },
-       {
-        "id": "view-all-posts",
-        "name": "All posts",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "publish_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "3. Share"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "When a post is published, post it once on each channel and send it to the email list."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "4. Track"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "post",
-       "view": "all_posts"
-      },
-      "inline": true,
-      "title": "Posts",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-views-by-post",
-        "name": "Views by post",
-        "layout": "chart",
-        "chart": {
-         "type": "hbar",
-         "groupBy": "status",
-         "op": "sum",
-         "field": "views"
-        },
-        "icon": "ChartColumn"
-       },
-       {
-        "id": "view-results",
-        "name": "Results",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": "Published"
-        },
-        "sorts": [
-         {
-          "field": "views",
-          "direction": "desc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-views-by-post"
-     }
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-pine-forest",
     "offsetY": 50
-   }
   },
-  {
-   "key": "seo-dashboard",
-   "parent": "seo-hub",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "keyword",
-           "view": "all_keywords"
-          },
-          "inline": true,
-          "title": "Keywords",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-keywords-by-status",
-            "name": "Keywords by status",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-keywords-by-status"
-         }
-        }
-       ]
+  "category": "marketing",
+  "tags": [
+    "seo",
+    "keywords",
+    "content",
+    "rank"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0157",
+    "catalogueId": "SP0157",
+    "useCase": "Theodora Nwosu leads search for an outdoor retailer and uses this to choose phrases, track articles and watch rankings.",
+    "industry": "cross_industry",
+    "vertical": "Search marketing",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Alpine Lantern Outfitters",
+      "describes": "An outdoor gear retailer with a busy how-to guide library.",
+      "address": {
+        "line1": "640 Switchback Road",
+        "city": "Salt Lake City",
+        "region": "UT",
+        "postalCode": "84101",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "keyword",
-           "view": "all_keywords"
-          },
-          "inline": true,
-          "title": "Keywords",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-searches-by-intent",
-            "name": "Searches by intent",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "intent",
-             "op": "sum",
-             "field": "volume"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-searches-by-intent"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "post",
-           "view": "all_posts"
-          },
-          "inline": true,
-          "title": "Posts",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-posts-by-status",
-            "name": "Posts by status",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-posts-by-status"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(801) 555-0180",
+      "website": "alpinelanternoutfitters.net",
+      "email": "hello@alpinelanternoutfitters.net",
+      "timezone": "America/Denver"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-sp0157",
+    "tables": [
       {
-       "text": "Top opportunities"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "keyword",
-       "view": "all_keywords"
+        "token": "keyword",
+        "name": "Keywords",
+        "labelSingular": "Keyword",
+        "labelPlural": "Keywords",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "search",
+        "titleField": "keyword",
+        "describes": "Search phrases worth targeting, how hard they are and where the site ranks.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "keyword",
+            "label": "Keyword",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "volume",
+            "label": "Monthly searches",
+            "parityType": "number",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "difficulty",
+            "label": "Difficulty (0-100)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "intent",
+            "label": "Intent",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Informational",
+              "Commercial",
+              "Transactional",
+              "Navigational"
+            ],
+            "choiceColors": {
+              "Informational": "blue",
+              "Commercial": "green",
+              "Transactional": "amber",
+              "Navigational": "violet"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Opportunity score",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Difficulty (0-100)} < 40, ROUND({Monthly searches} / 100, 0), 0)"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Target",
+              "Writing",
+              "Published",
+              "Tracking"
+            ],
+            "choiceColors": {
+              "Target": "blue",
+              "Writing": "green",
+              "Published": "amber",
+              "Tracking": "violet"
+            },
+            "required": true,
+            "default": "Target",
+            "statusGroups": {
+              "Target": "todo",
+              "Writing": "in_progress",
+              "Published": "done",
+              "Tracking": "in_progress"
+            }
+          },
+          {
+            "key": "rank",
+            "label": "Current rank",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "rank_change",
+            "label": "Rank change",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": -200
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "checked_on",
+            "label": "Last checked",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "target_url",
+            "label": "Target page",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "post_count",
+            "label": "Posts targeting it",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "posts",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "track_btn",
+            "label": "Start tracking",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "keyword_track"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "kw01",
+            "values": {
+              "keyword": "best ultralight tent",
+              "topic": "Tents",
+              "volume": 9900,
+              "difficulty": 62,
+              "intent": "Commercial",
+              "status": "Published",
+              "rank": 7,
+              "rank_change": 3,
+              "checked_on": "@today",
+              "target_url": "https://alpinelanternoutfitters.net/guides/ultralight-tent"
+            }
+          },
+          {
+            "key": "kw02",
+            "values": {
+              "keyword": "how to waterproof boots",
+              "topic": "Footwear",
+              "volume": 6600,
+              "difficulty": 28,
+              "intent": "Informational",
+              "status": "Published",
+              "rank": 3,
+              "rank_change": 1,
+              "checked_on": "@today-2d",
+              "target_url": "https://alpinelanternoutfitters.net/guides/waterproof-boots"
+            }
+          },
+          {
+            "key": "kw03",
+            "values": {
+              "keyword": "trail running vest sizing",
+              "topic": "Packs",
+              "volume": 2900,
+              "difficulty": 22,
+              "intent": "Informational",
+              "status": "Writing"
+            }
+          },
+          {
+            "key": "kw04",
+            "values": {
+              "keyword": "winter sleeping bag rating",
+              "topic": "Sleep",
+              "volume": 5400,
+              "difficulty": 41,
+              "intent": "Informational",
+              "status": "Tracking",
+              "rank": 11,
+              "rank_change": -2,
+              "checked_on": "@today-3d",
+              "target_url": "https://alpinelanternoutfitters.net/guides/sleeping-bag-ratings"
+            }
+          },
+          {
+            "key": "kw05",
+            "values": {
+              "keyword": "camp stove comparison",
+              "topic": "Cooking",
+              "volume": 4400,
+              "difficulty": 55,
+              "intent": "Commercial",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw06",
+            "values": {
+              "keyword": "how to pack a 40 liter backpack",
+              "topic": "Packs",
+              "volume": 3600,
+              "difficulty": 19,
+              "intent": "Informational",
+              "status": "Published",
+              "rank": 5,
+              "rank_change": 2,
+              "checked_on": "@today-2d",
+              "target_url": "https://alpinelanternoutfitters.net/guides/pack-40-liter"
+            }
+          },
+          {
+            "key": "kw07",
+            "values": {
+              "keyword": "merino base layer vs synthetic",
+              "topic": "Clothing",
+              "volume": 3100,
+              "difficulty": 33,
+              "intent": "Informational",
+              "status": "Writing"
+            }
+          },
+          {
+            "key": "kw08",
+            "values": {
+              "keyword": "gore tex jacket care",
+              "topic": "Clothing",
+              "volume": 1900,
+              "difficulty": 18,
+              "intent": "Informational",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw09",
+            "values": {
+              "keyword": "buy trekking poles",
+              "topic": "Gear",
+              "volume": 2400,
+              "difficulty": 47,
+              "intent": "Transactional",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw10",
+            "values": {
+              "keyword": "alpine lantern headlamp",
+              "topic": "Lighting",
+              "volume": 1200,
+              "difficulty": 12,
+              "intent": "Navigational",
+              "status": "Tracking",
+              "rank": 1,
+              "rank_change": 0,
+              "checked_on": "@today-3d",
+              "target_url": "https://alpinelanternoutfitters.net/headlamps"
+            }
+          },
+          {
+            "key": "kw11",
+            "values": {
+              "keyword": "best hiking socks",
+              "topic": "Footwear",
+              "volume": 8100,
+              "difficulty": 58,
+              "intent": "Commercial",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw12",
+            "values": {
+              "keyword": "how to read a topographic map",
+              "topic": "Navigation",
+              "volume": 7200,
+              "difficulty": 24,
+              "intent": "Informational",
+              "status": "Published",
+              "rank": 9,
+              "rank_change": 4,
+              "checked_on": "@today-2d",
+              "target_url": "https://alpinelanternoutfitters.net/guides/topographic-maps"
+            }
+          },
+          {
+            "key": "kw13",
+            "values": {
+              "keyword": "bear canister rules",
+              "topic": "Safety",
+              "volume": 2800,
+              "difficulty": 16,
+              "intent": "Informational",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw14",
+            "values": {
+              "keyword": "campsite checklist printable",
+              "topic": "Planning",
+              "volume": 5900,
+              "difficulty": 29,
+              "intent": "Informational",
+              "status": "Writing"
+            }
+          },
+          {
+            "key": "kw15",
+            "values": {
+              "keyword": "tent footprint do you need one",
+              "topic": "Tents",
+              "volume": 1700,
+              "difficulty": 21,
+              "intent": "Informational",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw16",
+            "values": {
+              "keyword": "water filter backpacking",
+              "topic": "Water",
+              "volume": 6200,
+              "difficulty": 52,
+              "intent": "Commercial",
+              "status": "Tracking",
+              "rank": 14,
+              "rank_change": -3,
+              "checked_on": "@today-3d",
+              "target_url": "https://alpinelanternoutfitters.net/guides/water-filters"
+            }
+          },
+          {
+            "key": "kw17",
+            "values": {
+              "keyword": "how to dry wet gear",
+              "topic": "Care",
+              "volume": 1400,
+              "difficulty": 14,
+              "intent": "Informational",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw18",
+            "values": {
+              "keyword": "stove fuel canister sizes",
+              "topic": "Cooking",
+              "volume": 2200,
+              "difficulty": 26,
+              "intent": "Informational",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw19",
+            "values": {
+              "keyword": "rain pants worth it",
+              "topic": "Clothing",
+              "volume": 1300,
+              "difficulty": 31,
+              "intent": "Commercial",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw20",
+            "values": {
+              "keyword": "first aid kit hiking contents",
+              "topic": "Safety",
+              "volume": 4800,
+              "difficulty": 36,
+              "intent": "Informational",
+              "status": "Writing"
+            }
+          },
+          {
+            "key": "kw21",
+            "values": {
+              "keyword": "compass vs gps",
+              "topic": "Navigation",
+              "volume": 3300,
+              "difficulty": 27,
+              "intent": "Informational",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw22",
+            "values": {
+              "keyword": "sleeping pad r value",
+              "topic": "Sleep",
+              "volume": 4100,
+              "difficulty": 35,
+              "intent": "Informational",
+              "status": "Target"
+            }
+          },
+          {
+            "key": "kw23",
+            "values": {
+              "keyword": "hiking boot break in",
+              "topic": "Footwear",
+              "volume": 2600,
+              "difficulty": 23,
+              "intent": "Informational",
+              "status": "Published",
+              "rank": 6,
+              "rank_change": 1,
+              "checked_on": "@today-2d",
+              "target_url": "https://alpinelanternoutfitters.net/guides/break-in-boots"
+            }
+          },
+          {
+            "key": "kw24",
+            "values": {
+              "keyword": "outfitter near me",
+              "topic": "Brand",
+              "volume": 800,
+              "difficulty": 9,
+              "intent": "Navigational",
+              "status": "Tracking",
+              "rank": 2,
+              "rank_change": 0,
+              "checked_on": "@today-3d",
+              "target_url": "https://alpinelanternoutfitters.net/visit"
+            }
+          },
+          {
+            "key": "kw25",
+            "values": {
+              "keyword": "beginner backpacking gear list",
+              "topic": "Planning",
+              "volume": 7700,
+              "difficulty": 44,
+              "intent": "Informational",
+              "status": "Writing"
+            }
+          }
+        ],
+        "statusImplies": []
       },
-      "inline": true,
-      "title": "Keywords",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-easy-and-popular",
-        "name": "Easy and popular",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": "Target"
+      {
+        "before": [
+          [
+            "write_by",
+            "publish_on"
+          ]
+        ],
+        "independentOf": {
+          "keyword": "Keyword and this record each keep their own dates and status.",
+          "writer": "Anyone on the team can own this, whenever they joined."
         },
-        "sorts": [
-         {
-          "field": "priority",
-          "direction": "desc"
-         }
+        "token": "post",
+        "name": "Posts",
+        "labelSingular": "Post",
+        "labelPlural": "Posts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "title",
+        "describes": "Articles written for each keyword, with their results.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "keyword",
+            "label": "Keyword",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "keyword",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Brief",
+              "Writing",
+              "Editing",
+              "Scheduled",
+              "Published"
+            ],
+            "choiceColors": {
+              "Brief": "blue",
+              "Writing": "green",
+              "Editing": "amber",
+              "Scheduled": "violet",
+              "Published": "teal"
+            },
+            "required": true,
+            "default": "Brief",
+            "statusGroups": {
+              "Brief": "todo",
+              "Writing": "in_progress",
+              "Editing": "in_progress",
+              "Scheduled": "in_progress",
+              "Published": "done"
+            }
+          },
+          {
+            "key": "length_words",
+            "label": "Length in words",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "write_by",
+            "label": "Write by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "publish_on",
+            "label": "Publish date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "writer",
+            "label": "Writer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "views",
+            "label": "Views",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "comments",
+            "label": "Comments",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "shares",
+            "label": "Shares",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "engagement",
+            "label": "Total engagement",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Views} + {Comments} + {Shares}"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pub_btn",
+            "label": "Mark published",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "post_pub"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ps01",
+            "values": {
+              "title": "The no-nonsense guide to ultralight tents",
+              "keyword": "kw01",
+              "status": "Published",
+              "length_words": 2400,
+              "write_by": "@today-80d",
+              "publish_on": "@today-72d",
+              "writer": "tm-03",
+              "views": 14200,
+              "comments": 36,
+              "shares": 410
+            }
+          },
+          {
+            "key": "ps02",
+            "values": {
+              "title": "Waterproofing boots at home",
+              "keyword": "kw02",
+              "status": "Published",
+              "length_words": 1800,
+              "write_by": "@today-60d",
+              "publish_on": "@today-54d",
+              "writer": "tm-03",
+              "views": 9800,
+              "comments": 22,
+              "shares": 260
+            }
+          },
+          {
+            "key": "ps03",
+            "values": {
+              "title": "Packing a 40 liter pack in ten minutes",
+              "keyword": "kw06",
+              "status": "Published",
+              "length_words": 1500,
+              "write_by": "@today-45d",
+              "publish_on": "@today-40d",
+              "writer": "tm-02",
+              "views": 7400,
+              "comments": 18,
+              "shares": 190
+            }
+          },
+          {
+            "key": "ps04",
+            "values": {
+              "title": "Topographic maps made simple",
+              "keyword": "kw12",
+              "status": "Published",
+              "length_words": 2100,
+              "write_by": "@today-30d",
+              "publish_on": "@today-25d",
+              "writer": "tm-03",
+              "views": 6100,
+              "comments": 14,
+              "shares": 150
+            }
+          },
+          {
+            "key": "ps05",
+            "values": {
+              "title": "Breaking in hiking boots without blisters",
+              "keyword": "kw23",
+              "status": "Published",
+              "length_words": 1600,
+              "write_by": "@today-18d",
+              "publish_on": "@today-12d",
+              "writer": "tm-02",
+              "views": 3300,
+              "comments": 9,
+              "shares": 82
+            }
+          },
+          {
+            "key": "ps06",
+            "values": {
+              "title": "Trail running vest sizing guide",
+              "keyword": "kw03",
+              "status": "Writing",
+              "length_words": 1700,
+              "write_by": "@today",
+              "publish_on": "@today+8d",
+              "writer": "tm-03"
+            }
+          },
+          {
+            "key": "ps07",
+            "values": {
+              "title": "Merino or synthetic: which base layer wins",
+              "keyword": "kw07",
+              "status": "Writing",
+              "length_words": 2000,
+              "write_by": "@today-4d",
+              "publish_on": "@today+11d",
+              "writer": "tm-02"
+            }
+          },
+          {
+            "key": "ps08",
+            "values": {
+              "title": "A printable campsite checklist",
+              "keyword": "kw14",
+              "status": "Editing",
+              "length_words": 1200,
+              "write_by": "@today-9d",
+              "publish_on": "@today+4d",
+              "writer": "tm-03"
+            }
+          },
+          {
+            "key": "ps09",
+            "values": {
+              "title": "Building your first backpacking gear list",
+              "keyword": "kw25",
+              "status": "Brief",
+              "length_words": 2800,
+              "write_by": "@today+3d",
+              "publish_on": "@today+20d",
+              "writer": "tm-02"
+            }
+          },
+          {
+            "key": "ps10",
+            "values": {
+              "title": "What belongs in a hiking first aid kit",
+              "keyword": "kw20",
+              "status": "Scheduled",
+              "length_words": 1900,
+              "write_by": "@today-5d",
+              "publish_on": "@today+3d",
+              "writer": "tm-03"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Page brief",
+            "values": {
+              "status": "Brief"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Main phrase"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write it exactly as people type it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Questions to answer"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Question one"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Question two"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Introduction"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Main sections"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Summary and next step"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Internal links"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Link one"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Link two"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "statusImplies": []
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Keyword links to one keyword.",
+        "fromTable": "post",
+        "fromField": "keyword",
+        "toTable": "keyword",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "posts"
+      },
+      {
+        "describes": "Writer links to one team member.",
+        "fromTable": "post",
+        "fromField": "writer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "posts_written"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Theodora Nwosu",
+              "role": "SEO lead",
+              "work_email": "theodora@alpinelanternoutfitters.net",
+              "mobile": "(801) 555-0181",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Lars Kristiansen",
+              "role": "Content strategist",
+              "work_email": "lars@alpinelanternoutfitters.net",
+              "mobile": "(801) 555-0182",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Mireille Chandra",
+              "role": "Writer",
+              "work_email": "mireille@alpinelanternoutfitters.net",
+              "mobile": "(801) 555-0183",
+              "start_date": "@today-14m"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Bram Evers",
+              "role": "Developer",
+              "work_email": "bram@alpinelanternoutfitters.net",
+              "mobile": "(801) 555-0184",
+              "start_date": "@today-2y"
+            }
+          }
         ]
-       }
+      }
+    ],
+    "forms": [
+      {
+        "token": "keyword_idea",
+        "name": "Suggest a keyword",
+        "describes": "How anyone suggests a phrase to target.",
+        "audience": "staff",
+        "table": "keyword",
+        "fields": [
+          {
+            "fieldKey": "keyword",
+            "ask": "What phrase?",
+            "required": true
+          },
+          {
+            "fieldKey": "topic",
+            "ask": "What topic?"
+          },
+          {
+            "fieldKey": "intent",
+            "ask": "What is the searcher after?"
+          }
+        ],
+        "submitLabel": "Add the phrase",
+        "confirmation": "Thanks. It is on the board as Target."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "post_pub",
+        "table": "post",
+        "name": "Mark published",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Published"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "keyword_track",
+        "table": "keyword",
+        "name": "Start tracking",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Tracking"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_keywords",
+        "name": "All keywords",
+        "table": "keyword",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "keyword",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "keyword_board",
+        "name": "Board",
+        "table": "keyword",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "post_board",
+        "name": "Board",
+        "table": "post",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
+      },
+      {
+        "token": "post_calendar",
+        "name": "Calendar",
+        "table": "post",
+        "kind": "calendar",
+        "dateField": "publish_on",
+        "allDay": true
+      },
+      {
+        "token": "all_posts",
+        "name": "All posts",
+        "table": "post",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "publish_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "post_week",
+        "name": "Write by this week",
+        "table": "post",
+        "kind": "grid",
+        "within": {
+          "write_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Brief",
+            "Writing",
+            "Editing"
+          ]
+        }
+      },
+      {
+        "token": "post_over",
+        "name": "Overdue",
+        "table": "post",
+        "kind": "grid",
+        "within": {
+          "write_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Brief",
+            "Writing",
+            "Editing"
+          ]
+        }
+      },
+      {
+        "token": "post_next7",
+        "name": "Next 7 days",
+        "table": "post",
+        "kind": "grid",
+        "within": {
+          "write_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Brief",
+            "Writing",
+            "Editing"
+          ]
+        }
+      },
+      {
+        "token": "post_pub_month",
+        "name": "Publishing this month",
+        "table": "post",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "keyword_checked_month",
+        "name": "Rank checked this month",
+        "table": "keyword",
+        "kind": "grid",
+        "within": {
+          "checked_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "keyword_checked_30",
+        "name": "Checked in 30 days",
+        "table": "keyword",
+        "kind": "grid",
+        "within": {
+          "checked_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "SEO assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "keyword",
+          "describes": "Search phrases worth targeting, how hard they are and where the site ranks."
+        },
+        {
+          "name": "related_tables",
+          "table": "post",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-easy-and-popular"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many keywords are being tracked?",
+        "whyItMatters": "Theodora reviews the tracked list before each monthly rank check.",
+        "expect": {
+          "table": "keyword",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Tracking"
+          },
+          "answer": 4,
+          "unit": "keywords"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the keyword table.",
+        "action": {
+          "kind": "open",
+          "surface": "all_keywords"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_keywords",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the post board.",
+        "action": {
+          "kind": "open",
+          "surface": "post_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "post_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the keyword board.",
+        "action": {
+          "kind": "open",
+          "surface": "keyword_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "keyword_board",
+          "minItems": 10
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "alpinelanternoutfitters.net"
+      ],
+      "fictionalStreets": [
+        "Switchback Road"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "keyword-research-method",
-   "parent": "seo-hub",
-   "title": "Keyword research method",
-   "icon": {
-    "emoji": "📘"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Collect phrases customers use, from support questions and search suggestions."
+      "key": "seo-hub",
+      "parent": null,
+      "title": "SEO Hub",
+      "icon": {
+        "emoji": "🔎"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Four steps: research the phrase, write the page, share it, then watch the rank. Everything below is linked, so rank and results sit next to the content."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Search"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:seo-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:keyword-research-method"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:monthly-rank-check"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "1. Research"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "keyword",
+              "view": "all_keywords"
+            },
+            "inline": true,
+            "title": "Keywords",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-by-priority",
+                "name": "By priority",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "priority",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-rank-watch",
+                "name": "Rank watch",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "Published",
+                    "Tracking"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "rank",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-keyword-checked-month",
+                "name": "Rank checked this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "checked_on": {
+                    "relative": "this_month"
+                  }
+                }
+              },
+              {
+                "id": "view-keyword-checked-30",
+                "name": "Checked in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "checked_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-by-priority"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "2. Create"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any post to find a page brief (keyword, intent, outline, links, call to action) already inside it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "post",
+              "view": "post_board"
+            },
+            "inline": true,
+            "title": "Posts",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-calendar",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "publish_on"
+              },
+              {
+                "id": "view-all-posts",
+                "name": "All posts",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "publish_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-post-week",
+                "name": "Write by this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "write_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Brief",
+                    "Writing",
+                    "Editing"
+                  ]
+                }
+              },
+              {
+                "id": "view-post-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "write_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Brief",
+                    "Writing",
+                    "Editing"
+                  ]
+                }
+              },
+              {
+                "id": "view-post-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "write_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Brief",
+                    "Writing",
+                    "Editing"
+                  ]
+                }
+              },
+              {
+                "id": "view-post-pub-month",
+                "name": "Publishing this month",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "publish_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "3. Share"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a post is published, post it once on each channel and send it to the email list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "4. Track"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "post",
+              "view": "all_posts"
+            },
+            "inline": true,
+            "title": "Posts",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-views-by-post",
+                "name": "Views by post",
+                "layout": "chart",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "status",
+                  "op": "sum",
+                  "field": "views"
+                },
+                "icon": "ChartColumn"
+              },
+              {
+                "id": "view-results",
+                "name": "Results",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Published"
+                },
+                "sorts": [
+                  {
+                    "field": "views",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-views-by-post"
+          }
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
       }
-     ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Record monthly searches and difficulty."
-      }
-     ]
+      "key": "seo-dashboard",
+      "parent": "seo-hub",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "keyword",
+                      "view": "all_keywords"
+                    },
+                    "inline": true,
+                    "title": "Keywords",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-keywords-by-status",
+                        "name": "Keywords by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-keywords-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "keyword",
+                      "view": "all_keywords"
+                    },
+                    "inline": true,
+                    "title": "Keywords",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-searches-by-intent",
+                        "name": "Searches by intent",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "intent",
+                          "op": "sum",
+                          "field": "volume"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-searches-by-intent"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "post",
+                      "view": "all_posts"
+                    },
+                    "inline": true,
+                    "title": "Posts",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-posts-by-status",
+                        "name": "Posts by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-posts-by-status"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Opportunity score rewards phrases people search often that are not too hard to win. Start with the highest scores that have no post yet."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Target"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Top opportunities"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "keyword",
+              "view": "all_keywords"
+            },
+            "inline": true,
+            "title": "Keywords",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-easy-and-popular",
+                "name": "Easy and popular",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Target"
+                },
+                "sorts": [
+                  {
+                    "field": "priority",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-easy-and-popular"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Choose the intent: a page can answer only one well."
-      }
-     ]
+      "key": "keyword-research-method",
+      "parent": "seo-hub",
+      "title": "Keyword research method",
+      "icon": {
+        "emoji": "📘"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Collect phrases customers use, from support questions and search suggestions."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record monthly searches and difficulty."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose the intent: a page can answer only one well."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Target the phrases with the best searches against difficulty first."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The priority score is searches divided by one hundred for any phrase under forty difficulty. Higher is better."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Info"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Target the phrases with the best searches against difficulty first."
-      }
-     ]
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "The priority score is searches divided by one hundred for any phrase under forty difficulty. Higher is better."
-      }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Info"
-     }
+      "key": "monthly-rank-check",
+      "parent": "seo-hub",
+      "title": "Monthly rank check",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update current rank on each tracked phrase"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note rank changes of five or more"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick two posts to refresh"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Retire phrases we no longer want"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
     }
-   ]
-  },
-  {
-   "key": "page-brief",
-   "parent": "seo-hub",
-   "title": "Page brief",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Main phrase"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Write it exactly as people type it."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Questions to answer"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Question one"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Question two"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Outline"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Introduction"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Main sections"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Summary and next step"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Internal links"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Link one"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Link two"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "monthly-rank-check",
-   "parent": "seo-hub",
-   "title": "Monthly rank check",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Update current rank on each tracked phrase"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Note rank changes of five or more"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Pick two posts to refresh"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Retire phrases we no longer want"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

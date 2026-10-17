@@ -1,1392 +1,1683 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0162",
- "version": 1,
- "title": "Brand Assets Hub",
- "description": "A gallery of logos, photos and templates with brand rules and approvals.",
- "forWho": "Brand managers, agencies and in-house design teams",
- "icon": {
-  "emoji": "🎨"
- },
- "cover": {
-  "url": "gallery:photo-lavender-dusk",
-  "offsetY": 50
- },
- "category": "marketing",
- "tags": [
-  "brand",
-  "assets",
-  "design",
-  "guidelines"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0162",
+  "packVersion": 1,
   "catalogueId": "SP0162",
-  "useCase": "Solveig Hartmann is the brand manager and uses this so everyone finds approved logos and templates without asking.",
-  "industry": "cross_industry",
-  "vertical": "Brand management",
-  "job": "content",
-  "audience": "organization",
-  "teaches": "gallery",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Oak Whistle Design",
-   "describes": "A design studio that keeps three brands' assets in one place.",
-   "address": {
-    "line1": "205 Cedar Tinsel Street",
-    "city": "Portland",
-    "region": "OR",
-    "postalCode": "97209",
-    "country": "US"
-   },
-   "phone": "(971) 555-0160",
-   "website": "oakwhistledesign.net",
-   "email": "hello@oakwhistledesign.net",
-   "timezone": "America/Los_Angeles"
-  },
-  "cleanupTag": "use-case:spaces-sp0162",
-  "tables": [
-   {
-    "token": "brand",
-    "name": "Brands",
-    "labelSingular": "Brand",
-    "labelPlural": "Brands",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "palette",
-    "titleField": "brand_name",
-    "describes": "Each brand with its essentials.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "brand_name",
-      "label": "Brand",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "tagline",
-      "label": "Tagline",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "primary_color",
-      "label": "Primary color",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "type_family",
-      "label": "Typeface",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "assets",
-      "label": "Assets",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "asset",
-      "multi": true
-     },
-     {
-      "key": "asset_total",
-      "label": "Assets stored",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "assets",
-      "pick": "asset_name",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "bd01",
-      "values": {
-       "brand_name": "Oak Whistle",
-       "tagline": "Design that holds up",
-       "primary_color": "Deep green, #1F4D3A",
-       "type_family": "Serif display with a clean sans",
-       "assets": [
-        "as01",
-        "as02",
-        "as03",
-        "as04",
-        "as05",
-        "as06",
-        "as12"
-       ]
-      }
-     },
-     {
-      "key": "bd02",
-      "values": {
-       "brand_name": "Whistle Kids",
-       "tagline": "Learn by making",
-       "primary_color": "Sunny yellow, #F2B705",
-       "type_family": "Rounded sans",
-       "assets": [
-        "as07",
-        "as08"
-       ]
-      }
-     },
-     {
-      "key": "bd03",
-      "values": {
-       "brand_name": "Oak Whistle Events",
-       "tagline": "Rooms worth remembering",
-       "primary_color": "Burnt orange, #C4501B",
-       "type_family": "Condensed sans",
-       "assets": [
-        "as09",
-        "as10",
-        "as11"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "brand": "Brand and this record each keep their own dates and status.",
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "asset",
-    "name": "Assets",
-    "labelSingular": "Asset",
-    "labelPlural": "Assets",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "image",
-    "titleField": "asset_name",
-    "describes": "Logos, photos, templates and documents with their approval status.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "asset_name",
-      "label": "Asset",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "brand",
-      "label": "Brand",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "brand",
-      "relationMax": 1
-     },
-     {
-      "key": "kind",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Logo",
-       "Photo",
-       "Icon",
-       "Template",
-       "Video",
-       "Document"
-      ],
-      "choiceColors": {
-       "Logo": "blue",
-       "Photo": "green",
-       "Icon": "amber",
-       "Template": "violet",
-       "Video": "teal",
-       "Document": "orange"
-      }
-     },
-     {
-      "key": "formats",
-      "label": "Formats",
-      "parityType": "multi_select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "PNG",
-       "SVG",
-       "PDF",
-       "Figma",
-       "MP4"
-      ],
-      "choiceColors": {
-       "PNG": "blue",
-       "SVG": "green",
-       "PDF": "amber",
-       "Figma": "violet",
-       "MP4": "teal"
-      }
-     },
-     {
-      "key": "version",
-      "label": "Version",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "approved",
-      "label": "Approved",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "updated_on",
-      "label": "Updated",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "tags",
-      "label": "Tags",
-      "parityType": "multi_select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Primary",
-       "Dark background",
-       "Print",
-       "Social",
-       "Presentation",
-       "Seasonal"
-      ],
-      "choiceColors": {
-       "Primary": "blue",
-       "Dark background": "green",
-       "Print": "amber",
-       "Social": "violet",
-       "Presentation": "teal",
-       "Seasonal": "orange"
-      }
-     },
-     {
-      "key": "usage_notes",
-      "label": "Usage notes",
-      "parityType": "long_text",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "as01",
-      "values": {
-       "asset_name": "Primary logo, full color",
-       "brand": "bd01",
-       "kind": "Logo",
-       "formats": [
-        "PNG",
-        "SVG",
-        "PDF"
-       ],
-       "version": "4.2",
-       "approved": true,
-       "owner": "tm-02",
-       "updated_on": "@today-90d",
-       "tags": [
-        "Primary"
-       ],
-       "usage_notes": "Keep clear space equal to the height of the O."
-      }
-     },
-     {
-      "key": "as02",
-      "values": {
-       "asset_name": "Primary logo, reversed",
-       "brand": "bd01",
-       "kind": "Logo",
-       "formats": [
-        "PNG",
-        "SVG"
-       ],
-       "version": "4.2",
-       "approved": true,
-       "owner": "tm-02",
-       "updated_on": "@today-90d",
-       "tags": [
-        "Primary",
-        "Dark background"
-       ],
-       "usage_notes": "Use on dark green or photography with low detail."
-      }
-     },
-     {
-      "key": "as03",
-      "values": {
-       "asset_name": "Icon set, line style",
-       "brand": "bd01",
-       "kind": "Icon",
-       "formats": [
-        "SVG",
-        "Figma"
-       ],
-       "version": "2.0",
-       "approved": true,
-       "owner": "tm-03",
-       "updated_on": "@today-45d",
-       "tags": [
-        "Social"
-       ],
-       "usage_notes": "Twenty-four icons on a 24 pixel grid."
-      }
-     },
-     {
-      "key": "as04",
-      "values": {
-       "asset_name": "Studio team portraits",
-       "brand": "bd01",
-       "kind": "Photo",
-       "formats": [
-        "PNG"
-       ],
-       "version": "1.1",
-       "approved": true,
-       "owner": "tm-02",
-       "updated_on": "@today-120d",
-       "tags": [
-        "Print"
-       ],
-       "usage_notes": "Natural light, warm tones."
-      }
-     },
-     {
-      "key": "as05",
-      "values": {
-       "asset_name": "Proposal deck template",
-       "brand": "bd01",
-       "kind": "Template",
-       "formats": [
-        "Figma",
-        "PDF"
-       ],
-       "version": "3.0",
-       "approved": true,
-       "owner": "tm-01",
-       "updated_on": "@today-20d",
-       "tags": [
-        "Presentation"
-       ],
-       "usage_notes": "Update the cover for each client."
-      }
-     },
-     {
-      "key": "as06",
-      "values": {
-       "asset_name": "Brand guidelines",
-       "brand": "bd01",
-       "kind": "Document",
-       "formats": [
-        "PDF"
-       ],
-       "version": "5.0",
-       "approved": true,
-       "owner": "tm-01",
-       "updated_on": "@today-30d",
-       "tags": [
-        "Print"
-       ],
-       "usage_notes": "The reference for voice, color and type."
-      }
-     },
-     {
-      "key": "as07",
-      "values": {
-       "asset_name": "Kids logo, playful",
-       "brand": "bd02",
-       "kind": "Logo",
-       "formats": [
-        "PNG",
-        "SVG"
-       ],
-       "version": "1.4",
-       "approved": true,
-       "owner": "tm-03",
-       "updated_on": "@today-60d",
-       "tags": [
-        "Primary"
-       ],
-       "usage_notes": "Never place on dark blue."
-      }
-     },
-     {
-      "key": "as08",
-      "values": {
-       "asset_name": "Kids workshop photos",
-       "brand": "bd02",
-       "kind": "Photo",
-       "formats": [
-        "PNG"
-       ],
-       "version": "1.0",
-       "approved": false,
-       "owner": "tm-03",
-       "updated_on": "@today-10d",
-       "tags": [
-        "Social"
-       ],
-       "usage_notes": "Waiting on parent consent forms."
-      }
-     },
-     {
-      "key": "as09",
-      "values": {
-       "asset_name": "Event logo, burnt orange",
-       "brand": "bd03",
-       "kind": "Logo",
-       "formats": [
-        "PNG",
-        "SVG",
-        "PDF"
-       ],
-       "version": "2.1",
-       "approved": true,
-       "owner": "tm-02",
-       "updated_on": "@today-75d",
-       "tags": [
-        "Primary",
-        "Seasonal"
-       ],
-       "usage_notes": "Use the stacked version in small spaces."
-      }
-     },
-     {
-      "key": "as10",
-      "values": {
-       "asset_name": "Event highlights reel",
-       "brand": "bd03",
-       "kind": "Video",
-       "formats": [
-        "MP4"
-       ],
-       "version": "1.0",
-       "approved": false,
-       "owner": "tm-04",
-       "updated_on": "@today-6d",
-       "tags": [
-        "Social"
-       ],
-       "usage_notes": "Draft cut for review."
-      }
-     },
-     {
-      "key": "as11",
-      "values": {
-       "asset_name": "Name badge template",
-       "brand": "bd03",
-       "kind": "Template",
-       "formats": [
-        "Figma",
-        "PDF"
-       ],
-       "version": "1.3",
-       "approved": true,
-       "owner": "tm-03",
-       "updated_on": "@today-200d",
-       "tags": [
-        "Print",
-        "Seasonal"
-       ],
-       "usage_notes": "Fits a standard badge holder."
-      }
-     },
-     {
-      "key": "as12",
-      "values": {
-       "asset_name": "Social frame set",
-       "brand": "bd01",
-       "kind": "Template",
-       "formats": [
-        "Figma",
-        "PNG"
-       ],
-       "version": "2.2",
-       "approved": false,
-       "owner": "tm-03",
-       "updated_on": "@today-3d",
-       "tags": [
-        "Social"
-       ],
-       "usage_notes": "New frames for the autumn series."
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Assets lists its asset records.",
-    "fromTable": "brand",
-    "fromField": "assets",
-    "toTable": "asset",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "brand_listed_assets"
-   },
-   {
-    "describes": "Brand links to one brand.",
-    "fromTable": "asset",
-    "fromField": "brand",
-    "toTable": "brand",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "brand_assets"
-   },
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "asset",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "assets_owned"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Solveig Hartmann",
-       "role": "Brand manager",
-       "work_email": "solveig@oakwhistledesign.net",
-       "mobile": "(971) 555-0161",
-       "start_date": "@today-5y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Dario Quintero",
-       "role": "Art director",
-       "work_email": "dario@oakwhistledesign.net",
-       "mobile": "(971) 555-0162",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Amira Haddad",
-       "role": "Designer",
-       "work_email": "amira@oakwhistledesign.net",
-       "mobile": "(971) 555-0163",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Pieter van Doorn",
-       "role": "Video editor",
-       "work_email": "pieter@oakwhistledesign.net",
-       "mobile": "(971) 555-0164",
-       "start_date": "@today-11m"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "asset_request",
-    "name": "Request an asset",
-    "describes": "How anyone asks for a new brand asset.",
-    "audience": "staff",
-    "table": "asset",
-    "fields": [
-     {
-      "fieldKey": "asset_name",
-      "ask": "What do you need?",
-      "required": true
-     },
-     {
-      "fieldKey": "kind",
-      "ask": "What kind of asset?"
-     },
-     {
-      "fieldKey": "brand",
-      "ask": "Which brand?"
-     },
-     {
-      "fieldKey": "usage_notes",
-      "ask": "What is it for?"
-     }
-    ],
-    "submitLabel": "Send the request",
-    "confirmation": "Thanks. The request is in the assets list, unapproved."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_brands",
-    "name": "All brands",
-    "table": "brand",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "brand_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "asset_gallery",
-    "name": "Gallery",
-    "table": "asset",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "asset_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "approval_board",
-    "name": "Approval",
-    "table": "asset",
-    "kind": "kanban",
-    "groupBy": "kind"
-   },
-   {
-    "token": "asset_calendar",
-    "name": "Updated",
-    "table": "asset",
-    "kind": "calendar",
-    "dateField": "updated_on",
-    "allDay": true
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Brand assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "asset",
-     "describes": "Logos, photos, templates and documents with their approval status."
-    },
-    {
-     "name": "related_tables",
-     "table": "brand",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many assets are not approved yet?",
-    "whyItMatters": "Solveig clears the approval queue every Friday.",
-    "expect": {
-     "table": "asset",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "approved": false
-     },
-     "answer": 3,
-     "unit": "assets"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the asset gallery.",
-    "action": {
-     "kind": "open",
-     "surface": "asset_gallery"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "asset_gallery",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the approval board.",
-    "action": {
-     "kind": "open",
-     "surface": "approval_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "approval_board",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open all brands.",
-    "action": {
-     "kind": "open",
-     "surface": "all_brands"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_brands",
-     "minItems": 3
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "oakwhistledesign.net"
-   ],
-   "fictionalStreets": [
-    "Cedar Tinsel Street"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "brand-assets-hub",
-   "parent": null,
-   "title": "Brand Assets Hub",
-   "icon": {
+  "version": 2,
+  "title": "Brand Assets Hub",
+  "description": "A gallery of logos, photos and templates with brand rules and approvals.",
+  "forWho": "Brand managers, agencies and in-house design teams",
+  "icon": {
     "emoji": "🎨"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "One home for logos, photos, templates and the rules for using them. Mark an asset Approved before anyone uses it."
-      }
-     ],
-     "background": "pink",
-     "props": {
-      "icon": "Palette"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Colors"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "callout",
-         "text": [
-          {
-           "text": "Deep green, the primary color"
-          }
-         ],
-         "background": "green",
-         "props": {
-          "icon": "Palette"
-         }
-        },
-        {
-         "type": "callout",
-         "text": [
-          {
-           "text": "Sunny yellow, for the kids brand"
-          }
-         ],
-         "background": "yellow",
-         "props": {
-          "icon": "Palette"
-         }
-        },
-        {
-         "type": "callout",
-         "text": [
-          {
-           "text": "Burnt orange, for events"
-          }
-         ],
-         "background": "orange",
-         "props": {
-          "icon": "Palette"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Type"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Display headings use a serif"
-          }
-         ],
-         "props": {
-          "level": 2
-         }
-        },
-        {
-         "type": "text",
-         "text": [
-          {
-           "text": "Body text uses a clean sans at a comfortable size."
-          }
-         ]
-        },
-        {
-         "type": "text",
-         "text": [
-          {
-           "text": "Never stretch or outline the logo type."
-          }
-         ]
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:brand-guidelines"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:logo-usage"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:color-and-type"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:asset-request-process"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "divider"
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Assets"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "asset",
-       "view": "asset_gallery"
-      },
-      "inline": true,
-      "title": "Assets",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-by-type",
-        "name": "By type",
-        "layout": "gallery",
-        "icon": "LayoutGrid"
-       },
-       {
-        "id": "view-all-assets",
-        "name": "All assets",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "asset_name",
-          "direction": "asc"
-         }
-        ]
-       },
-       {
-        "id": "view-needs-approval",
-        "name": "Needs approval",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "kind"
-       },
-       {
-        "id": "view-unapproved",
-        "name": "Unapproved",
-        "layout": "list",
-        "icon": "CircleAlert",
-        "filters": {
-         "approved": false
-        }
-       }
-      ],
-      "activeViewId": "view-by-type"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Brands"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "brand",
-       "view": "all_brands"
-      },
-      "inline": true,
-      "title": "Brands",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-brands",
-        "name": "All brands",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-all-brands"
-     }
-    },
-    {
-     "type": "toggle",
-     "text": [
-      {
-       "text": "Request an asset"
-      }
-     ],
-     "children": [
-      {
-       "type": "text",
-       "text": [
-        {
-         "text": "Add a row to the assets table with the type and your name, and set Approved to unchecked. The brand manager picks it up within two working days."
-        }
-       ]
-      }
-     ]
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-lavender-dusk",
     "offsetY": 50
-   }
   },
-  {
-   "key": "brand-guidelines",
-   "parent": "brand-assets-hub",
-   "title": "Brand guidelines",
-   "icon": {
-    "emoji": "📘"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Voice"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Plain, warm and direct"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Short sentences, active verbs"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Say what we do before we say how well"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Do"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Use real project photos"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Keep generous white space"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Do not"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Add shadows or outlines to the logo"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Use colors outside the palette"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "logo-usage",
-   "parent": "brand-assets-hub",
-   "title": "Logo usage",
-   "icon": {
-    "emoji": "🔖"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "Situation"
-          }
-         ],
-         [
-          {
-           "text": "Use"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Light background"
-          }
-         ],
-         [
-          {
-           "text": "Full color logo"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Dark background or photo"
-          }
-         ],
-         [
-          {
-           "text": "Reversed logo"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Small spaces"
-          }
-         ],
-         [
-          {
-           "text": "Stacked or icon version"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Print"
-          }
-         ],
-         [
-          {
-           "text": "Vector PDF"
-          }
-         ]
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Keep clear space around the logo equal to the height of the letter O."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Maximize"
-     }
-    }
-   ]
-  },
-  {
-   "key": "color-and-type",
-   "parent": "brand-assets-hub",
-   "title": "Color and type",
-   "icon": {
-    "emoji": "🌈"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "brand",
-       "view": "all_brands"
+  "category": "marketing",
+  "tags": [
+    "brand",
+    "assets",
+    "design",
+    "guidelines"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0162",
+    "catalogueId": "SP0162",
+    "useCase": "Solveig Hartmann is the brand manager and uses this so everyone finds approved logos and templates without asking.",
+    "industry": "cross_industry",
+    "vertical": "Brand management",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "gallery",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Oak Whistle Design",
+      "describes": "A design studio that keeps three brands' assets in one place.",
+      "address": {
+        "line1": "205 Cedar Tinsel Street",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97209",
+        "country": "US"
       },
-      "inline": true,
-      "title": "Brands",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-colors-and-type",
-        "name": "Colors and type",
-        "layout": "grid",
-        "icon": "Table"
-       }
+      "phone": "(971) 555-0160",
+      "website": "oakwhistledesign.net",
+      "email": "hello@oakwhistledesign.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-sp0162",
+    "tables": [
+      {
+        "token": "brand",
+        "name": "Brands",
+        "labelSingular": "Brand",
+        "labelPlural": "Brands",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "palette",
+        "titleField": "brand_name",
+        "describes": "Each brand with its essentials.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "brand_name",
+            "label": "Brand",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "tagline",
+            "label": "Tagline",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "primary_color",
+            "label": "Primary color",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "type_family",
+            "label": "Typeface",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "asset_total",
+            "label": "Assets",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "assets",
+            "pick": "asset_name",
+            "agg": "count"
+          },
+          {
+            "key": "approved_assets",
+            "label": "Approved assets",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "assets",
+            "pick": "asset_name",
+            "agg": "count",
+            "filter": {
+              "approved": true
+            }
+          },
+          {
+            "key": "approved_pct",
+            "label": "Approved (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Assets} > 0, ROUND({Approved assets} / {Assets} * 100, 0), 0)"
+          }
+        ],
+        "rows": [
+          {
+            "key": "bd01",
+            "values": {
+              "brand_name": "Oak Whistle",
+              "tagline": "Design that holds up",
+              "primary_color": "Deep green, #1F4D3A",
+              "type_family": "Serif display with a clean sans"
+            }
+          },
+          {
+            "key": "bd02",
+            "values": {
+              "brand_name": "Whistle Kids",
+              "tagline": "Learn by making",
+              "primary_color": "Sunny yellow, #F2B705",
+              "type_family": "Rounded sans"
+            }
+          },
+          {
+            "key": "bd03",
+            "values": {
+              "brand_name": "Oak Whistle Events",
+              "tagline": "Rooms worth remembering",
+              "primary_color": "Burnt orange, #C4501B",
+              "type_family": "Condensed sans"
+            }
+          }
+        ]
+      },
+      {
+        "independentOf": {
+          "brand": "Brand and this record each keep their own dates and status.",
+          "owner": "Anyone on the team can own this, whenever they joined."
+        },
+        "token": "asset",
+        "name": "Assets",
+        "labelSingular": "Asset",
+        "labelPlural": "Assets",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "image",
+        "titleField": "asset_name",
+        "describes": "Logos, photos, templates and documents with their approval status.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "asset_name",
+            "label": "Asset",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "brand",
+            "label": "Brand",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "brand",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Logo",
+              "Photo",
+              "Icon",
+              "Template",
+              "Video",
+              "Document"
+            ],
+            "choiceColors": {
+              "Logo": "blue",
+              "Photo": "green",
+              "Icon": "amber",
+              "Template": "violet",
+              "Video": "teal",
+              "Document": "orange"
+            }
+          },
+          {
+            "key": "formats",
+            "label": "Formats",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "PNG",
+              "SVG",
+              "PDF",
+              "Figma",
+              "MP4"
+            ],
+            "choiceColors": {
+              "PNG": "blue",
+              "SVG": "green",
+              "PDF": "amber",
+              "Figma": "violet",
+              "MP4": "teal"
+            }
+          },
+          {
+            "key": "version",
+            "label": "Version",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approved",
+            "label": "Approved",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "updated_on",
+            "label": "Updated",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "tags",
+            "label": "Tags",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Primary",
+              "Dark background",
+              "Print",
+              "Social",
+              "Presentation",
+              "Seasonal"
+            ],
+            "choiceColors": {
+              "Primary": "blue",
+              "Dark background": "green",
+              "Print": "amber",
+              "Social": "violet",
+              "Presentation": "teal",
+              "Seasonal": "orange"
+            }
+          },
+          {
+            "key": "usage_notes",
+            "label": "Usage notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_by",
+            "label": "Added by",
+            "parityType": "created_by",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approve_btn",
+            "label": "Approve",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "approve_asset"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "as01",
+            "values": {
+              "asset_name": "Primary logo, full color",
+              "brand": "bd01",
+              "kind": "Logo",
+              "formats": [
+                "PNG",
+                "SVG",
+                "PDF"
+              ],
+              "version": "4.2",
+              "approved": true,
+              "owner": "tm-02",
+              "updated_on": "@today",
+              "tags": [
+                "Primary"
+              ],
+              "usage_notes": "Keep clear space equal to the height of the O."
+            }
+          },
+          {
+            "key": "as02",
+            "values": {
+              "asset_name": "Primary logo, reversed",
+              "brand": "bd01",
+              "kind": "Logo",
+              "formats": [
+                "PNG",
+                "SVG"
+              ],
+              "version": "4.2",
+              "approved": true,
+              "owner": "tm-02",
+              "updated_on": "@today-90d",
+              "tags": [
+                "Primary",
+                "Dark background"
+              ],
+              "usage_notes": "Use on dark green or photography with low detail."
+            }
+          },
+          {
+            "key": "as03",
+            "values": {
+              "asset_name": "Icon set, line style",
+              "brand": "bd01",
+              "kind": "Icon",
+              "formats": [
+                "SVG",
+                "Figma"
+              ],
+              "version": "2.0",
+              "approved": true,
+              "owner": "tm-03",
+              "updated_on": "@today-45d",
+              "tags": [
+                "Social"
+              ],
+              "usage_notes": "Twenty-four icons on a 24 pixel grid."
+            }
+          },
+          {
+            "key": "as04",
+            "values": {
+              "asset_name": "Studio team portraits",
+              "brand": "bd01",
+              "kind": "Photo",
+              "formats": [
+                "PNG"
+              ],
+              "version": "1.1",
+              "approved": true,
+              "owner": "tm-02",
+              "updated_on": "@today-120d",
+              "tags": [
+                "Print"
+              ],
+              "usage_notes": "Natural light, warm tones."
+            }
+          },
+          {
+            "key": "as05",
+            "values": {
+              "asset_name": "Proposal deck template",
+              "brand": "bd01",
+              "kind": "Template",
+              "formats": [
+                "Figma",
+                "PDF"
+              ],
+              "version": "3.0",
+              "approved": true,
+              "owner": "tm-01",
+              "updated_on": "@today-20d",
+              "tags": [
+                "Presentation"
+              ],
+              "usage_notes": "Update the cover for each client."
+            }
+          },
+          {
+            "key": "as06",
+            "values": {
+              "asset_name": "Brand guidelines",
+              "brand": "bd01",
+              "kind": "Document",
+              "formats": [
+                "PDF"
+              ],
+              "version": "5.0",
+              "approved": true,
+              "owner": "tm-01",
+              "updated_on": "@today-30d",
+              "tags": [
+                "Print"
+              ],
+              "usage_notes": "The reference for voice, color and type."
+            }
+          },
+          {
+            "key": "as07",
+            "values": {
+              "asset_name": "Kids logo, playful",
+              "brand": "bd02",
+              "kind": "Logo",
+              "formats": [
+                "PNG",
+                "SVG"
+              ],
+              "version": "1.4",
+              "approved": true,
+              "owner": "tm-03",
+              "updated_on": "@today-60d",
+              "tags": [
+                "Primary"
+              ],
+              "usage_notes": "Never place on dark blue."
+            }
+          },
+          {
+            "key": "as08",
+            "values": {
+              "asset_name": "Kids workshop photos",
+              "brand": "bd02",
+              "kind": "Photo",
+              "formats": [
+                "PNG"
+              ],
+              "version": "1.0",
+              "approved": false,
+              "owner": "tm-03",
+              "updated_on": "@today-10d",
+              "tags": [
+                "Social"
+              ],
+              "usage_notes": "Waiting on parent consent forms."
+            }
+          },
+          {
+            "key": "as09",
+            "values": {
+              "asset_name": "Event logo, burnt orange",
+              "brand": "bd03",
+              "kind": "Logo",
+              "formats": [
+                "PNG",
+                "SVG",
+                "PDF"
+              ],
+              "version": "2.1",
+              "approved": true,
+              "owner": "tm-02",
+              "updated_on": "@today-75d",
+              "tags": [
+                "Primary",
+                "Seasonal"
+              ],
+              "usage_notes": "Use the stacked version in small spaces."
+            }
+          },
+          {
+            "key": "as10",
+            "values": {
+              "asset_name": "Event highlights reel",
+              "brand": "bd03",
+              "kind": "Video",
+              "formats": [
+                "MP4"
+              ],
+              "version": "1.0",
+              "approved": false,
+              "owner": "tm-04",
+              "updated_on": "@today-6d",
+              "tags": [
+                "Social"
+              ],
+              "usage_notes": "Draft cut for review."
+            }
+          },
+          {
+            "key": "as11",
+            "values": {
+              "asset_name": "Name badge template",
+              "brand": "bd03",
+              "kind": "Template",
+              "formats": [
+                "Figma",
+                "PDF"
+              ],
+              "version": "1.3",
+              "approved": true,
+              "owner": "tm-03",
+              "updated_on": "@today-200d",
+              "tags": [
+                "Print",
+                "Seasonal"
+              ],
+              "usage_notes": "Fits a standard badge holder."
+            }
+          },
+          {
+            "key": "as12",
+            "values": {
+              "asset_name": "Social frame set",
+              "brand": "bd01",
+              "kind": "Template",
+              "formats": [
+                "Figma",
+                "PNG"
+              ],
+              "version": "2.2",
+              "approved": false,
+              "owner": "tm-03",
+              "updated_on": "@today-3d",
+              "tags": [
+                "Social"
+              ],
+              "usage_notes": "New frames for the autumn series."
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Asset",
+            "values": {
+              "approved": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What it is"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Describe the file in a sentence and where the master lives."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where to use it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Approved uses"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where not to use it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Backgrounds, sizes or contexts that break the rules"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approval"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Checked against the brand guidelines"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Approved by the brand owner"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "statusImplies": []
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Brand links to one brand.",
+        "fromTable": "asset",
+        "fromField": "brand",
+        "toTable": "brand",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "assets"
+      },
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "asset",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "assets_owned"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Solveig Hartmann",
+              "role": "Brand manager",
+              "work_email": "solveig@oakwhistledesign.net",
+              "mobile": "(971) 555-0161",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Dario Quintero",
+              "role": "Art director",
+              "work_email": "dario@oakwhistledesign.net",
+              "mobile": "(971) 555-0162",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Amira Haddad",
+              "role": "Designer",
+              "work_email": "amira@oakwhistledesign.net",
+              "mobile": "(971) 555-0163",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Pieter van Doorn",
+              "role": "Video editor",
+              "work_email": "pieter@oakwhistledesign.net",
+              "mobile": "(971) 555-0164",
+              "start_date": "@today-11m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "asset_request",
+        "name": "Request an asset",
+        "describes": "How anyone asks for a new brand asset.",
+        "audience": "staff",
+        "table": "asset",
+        "fields": [
+          {
+            "fieldKey": "asset_name",
+            "ask": "What do you need?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of asset?"
+          },
+          {
+            "fieldKey": "brand",
+            "ask": "Which brand?"
+          },
+          {
+            "fieldKey": "usage_notes",
+            "ask": "What is it for?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is in the assets list, unapproved."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "approve_asset",
+        "table": "asset",
+        "name": "Approve",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "approved",
+            "set": "value",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_brands",
+        "name": "All brands",
+        "table": "brand",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "brand_name",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "asset_gallery",
+        "name": "Gallery",
+        "table": "asset",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "asset_name",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "approval_board",
+        "name": "Approval",
+        "table": "asset",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "asset_calendar",
+        "name": "Updated",
+        "table": "asset",
+        "kind": "calendar",
+        "dateField": "updated_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "asset_updated_month",
+        "name": "Updated this month",
+        "table": "asset",
+        "kind": "grid",
+        "within": {
+          "updated_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "asset_updated_30",
+        "name": "Updated in 30 days",
+        "table": "asset",
+        "kind": "grid",
+        "within": {
+          "updated_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "asset_mine",
+        "name": "Added by me",
+        "table": "asset",
+        "kind": "grid",
+        "me": [
+          "added_by"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Brand assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "asset",
+          "describes": "Logos, photos, templates and documents with their approval status."
+        },
+        {
+          "name": "related_tables",
+          "table": "brand",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-colors-and-type"
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Use the primary color for large areas and the accent colors for small highlights only."
+      "question": {
+        "ask": "How many assets are not approved yet?",
+        "whyItMatters": "Solveig clears the approval queue every Friday.",
+        "expect": {
+          "table": "asset",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "approved": false
+          },
+          "answer": 3,
+          "unit": "assets"
+        }
       }
-     ]
-    }
-   ]
+    },
+    "walk": [
+      {
+        "says": "Open the asset gallery.",
+        "action": {
+          "kind": "open",
+          "surface": "asset_gallery"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "asset_gallery",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the approval board.",
+        "action": {
+          "kind": "open",
+          "surface": "approval_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "approval_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open all brands.",
+        "action": {
+          "kind": "open",
+          "surface": "all_brands"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_brands",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "oakwhistledesign.net"
+      ],
+      "fictionalStreets": [
+        "Cedar Tinsel Street"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "asset-request-process",
-   "parent": "brand-assets-hub",
-   "title": "Asset request process",
-   "icon": {
-    "emoji": "📨"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Add a new row in the assets table with the type."
+      "key": "brand-assets-hub",
+      "parent": null,
+      "title": "Brand Assets Hub",
+      "icon": {
+        "emoji": "🎨"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One home for logos, photos, templates and the rules for using them. Mark an asset Approved before anyone uses it."
+            }
+          ],
+          "background": "pink",
+          "props": {
+            "icon": "Palette"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Colors"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Deep green, the primary color"
+                    }
+                  ],
+                  "background": "green",
+                  "props": {
+                    "icon": "Palette"
+                  }
+                },
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Sunny yellow, for the kids brand"
+                    }
+                  ],
+                  "background": "yellow",
+                  "props": {
+                    "icon": "Palette"
+                  }
+                },
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Burnt orange, for events"
+                    }
+                  ],
+                  "background": "orange",
+                  "props": {
+                    "icon": "Palette"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Type"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Display headings use a serif"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Body text uses a clean sans at a comfortable size."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Never stretch or outline the logo type."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:brand-guidelines"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:logo-usage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:color-and-type"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:asset-request-process"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "asset",
+              "view": "asset_gallery"
+            },
+            "inline": true,
+            "title": "Assets",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-by-type",
+                "name": "By type",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-all-assets",
+                "name": "All assets",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "asset_name",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-needs-approval",
+                "name": "Needs approval",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "view-unapproved",
+                "name": "Unapproved",
+                "layout": "list",
+                "icon": "CircleAlert",
+                "filters": {
+                  "approved": false
+                }
+              },
+              {
+                "id": "view-asset-updated-month",
+                "name": "Updated this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "updated_on": {
+                    "relative": "this_month"
+                  }
+                }
+              },
+              {
+                "id": "view-asset-updated-30",
+                "name": "Updated in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "updated_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              },
+              {
+                "id": "view-asset-mine",
+                "name": "Added by me",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "added_by"
+                ]
+              }
+            ],
+            "activeViewId": "view-by-type"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Brands"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "brand",
+              "view": "all_brands"
+            },
+            "inline": true,
+            "title": "Brands",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-brands",
+                "name": "All brands",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-all-brands"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Request an asset"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Add a row to the assets table with the type and your name, and set Approved to unchecked. The brand manager picks it up within two working days."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
       }
-     ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Write what the asset is for in the usage notes."
-      }
-     ]
+      "key": "brand-guidelines",
+      "parent": "brand-assets-hub",
+      "title": "Brand guidelines",
+      "icon": {
+        "emoji": "📘"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Voice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Plain, warm and direct"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Short sentences, active verbs"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say what we do before we say how well"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Do"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use real project photos"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep generous white space"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Do not"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add shadows or outlines to the logo"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use colors outside the palette"
+            }
+          ]
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "The owner makes it and sets the version."
-      }
-     ]
+      "key": "logo-usage",
+      "parent": "brand-assets-hub",
+      "title": "Logo usage",
+      "icon": {
+        "emoji": "🔖"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Using the logo well"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use the full-colour logo on light backgrounds and the white logo on dark photos or brand colours."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never stretch, rotate, recolour or add effects. If it does not fit, use the compact mark."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep the minimum size: wide logo 120 pixels or 30 millimetres across; compact mark 24 pixels."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Co-brand with equal height and a clear gap between the two logos."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "If someone asks for a version that does not exist, add a request to the Asset request process instead of editing the file."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "BadgeCheck"
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Light background"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Full color logo"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dark background or photo"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reversed logo"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Small spaces"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stacked or icon version"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Print"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Vector PDF"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Keep clear space around the logo equal to the height of the letter O."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Maximize"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "The brand manager reviews and checks Approved."
-      }
-     ]
+      "key": "color-and-type",
+      "parent": "brand-assets-hub",
+      "title": "Color and type",
+      "icon": {
+        "emoji": "🌈"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Putting colour and type to work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Use the primary colour for large areas such as headers and buttons. Accents are for small highlights."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check contrast: body text needs at least a 4.5 to 1 ratio against its background."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set headings in the brand heading font and everything else in the body font. Never mix in a third family."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When you add a new colour to a design, add it here first."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "brand",
+              "view": "all_brands"
+            },
+            "inline": true,
+            "title": "Brands",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-colors-and-type",
+                "name": "Colors and type",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-colors-and-type"
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the primary color for large areas and the accent colors for small highlights only."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "asset-request-process",
+      "parent": "brand-assets-hub",
+      "title": "Asset request process",
+      "icon": {
+        "emoji": "📨"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a new row in the assets table with the type."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write what the asset is for in the usage notes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The owner makes it and sets the version."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The brand manager reviews and checks Approved."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

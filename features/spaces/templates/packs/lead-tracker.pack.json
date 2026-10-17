@@ -1,1479 +1,1723 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0158",
- "version": 1,
- "title": "Lead Tracker",
- "description": "Capture leads, follow up on time and turn the best into deals.",
- "forWho": "Small sales teams and agencies",
- "icon": {
-  "emoji": "🎯"
- },
- "cover": {
-  "url": "gallery:photo-ocean-horizon",
-  "offsetY": 50
- },
- "category": "sales",
- "tags": [
-  "leads",
-  "sales",
-  "followup",
-  "intake"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0158",
+  "packVersion": 1,
   "catalogueId": "SP0158",
-  "useCase": "Rashida Cole leads sales at a commercial services company and uses this to follow up with every lead on time.",
-  "industry": "cross_industry",
-  "vertical": "Lead management",
-  "job": "intake",
-  "audience": "organization",
-  "teaches": "forms",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Juniper Row Services",
-   "describes": "A commercial cleaning and grounds company that wins business through leads.",
-   "address": {
-    "line1": "275 Peachtree Hollow",
-    "city": "Atlanta",
-    "region": "GA",
-    "postalCode": "30303",
-    "country": "US"
-   },
-   "phone": "(404) 555-0110",
-   "website": "juniperrowservices.net",
-   "email": "hello@juniperrowservices.net",
-   "timezone": "America/New_York"
-  },
-  "cleanupTag": "use-case:spaces-sp0158",
-  "tables": [
-   {
-    "independentOf": {
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "deal",
-    "name": "Deals",
-    "labelSingular": "Deal",
-    "labelPlural": "Deals",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "handshake",
-    "titleField": "deal_name",
-    "describes": "Deals created when a lead is converted.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "deal_name",
-      "label": "Deal",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "value",
-      "label": "Value",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 500000
-       }
-      ]
-     },
-     {
-      "key": "stage",
-      "label": "Stage",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Discovery",
-       "Proposal",
-       "Negotiation",
-       "Won"
-      ],
-      "choiceColors": {
-       "Discovery": "blue",
-       "Proposal": "green",
-       "Negotiation": "amber",
-       "Won": "violet"
-      },
-      "required": true,
-      "default": "Discovery"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "expected_close",
-      "label": "Expected close",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "from_leads",
-      "label": "Leads converted",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "lead",
-      "multi": true
-     }
-    ],
-    "rows": [
-     {
-      "key": "dl01",
-      "values": {
-       "deal_name": "Pinecrest property cleanup contract",
-       "value": 24000,
-       "stage": "Proposal",
-       "owner": "tm-03",
-       "expected_close": "@today+20d",
-       "from_leads": [
-        "ld01"
-       ]
-      }
-     },
-     {
-      "key": "dl02",
-      "values": {
-       "deal_name": "Marlow & Sons office services",
-       "value": 9800,
-       "stage": "Won",
-       "owner": "tm-03",
-       "expected_close": "@today-12d",
-       "from_leads": [
-        "ld02"
-       ]
-      }
-     },
-     {
-      "key": "dl03",
-      "values": {
-       "deal_name": "Eastgate dental janitorial",
-       "value": 15500,
-       "stage": "Negotiation",
-       "owner": "tm-03",
-       "expected_close": "@today+9d",
-       "from_leads": [
-        "ld03"
-       ]
-      }
-     },
-     {
-      "key": "dl04",
-      "values": {
-       "deal_name": "Harbor Row apartments grounds",
-       "value": 38000,
-       "stage": "Discovery",
-       "owner": "tm-03",
-       "expected_close": "@today+45d",
-       "from_leads": [
-        "ld04"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "before": [
-     [
-      "last_contacted",
-      "next_followup"
-     ]
-    ],
-    "independentOf": {
-     "deal": "Converted deal and this record each keep their own dates and status.",
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "lead",
-    "name": "Leads",
-    "labelSingular": "Lead",
-    "labelPlural": "Leads",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "user-plus",
-    "titleField": "lead_name",
-    "describes": "Every inbound and outbound lead before it becomes a deal.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "lead_name",
-      "label": "Name",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "company",
-      "label": "Company",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "lead_email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "summarize"
-     },
-     {
-      "key": "lead_phone",
-      "label": "Phone",
-      "parityType": "phone",
-      "sensitivity": "confidential",
-      "contextPolicy": "exclude"
-     },
-     {
-      "key": "source",
-      "label": "Source",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Website form",
-       "Referral",
-       "Cold outreach",
-       "Trade show",
-       "Partner"
-      ],
-      "choiceColors": {
-       "Website form": "blue",
-       "Referral": "green",
-       "Cold outreach": "amber",
-       "Trade show": "violet",
-       "Partner": "teal"
-      }
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "New",
-       "Contacted",
-       "Qualified",
-       "Unqualified",
-       "Converted"
-      ],
-      "choiceColors": {
-       "New": "blue",
-       "Contacted": "green",
-       "Qualified": "amber",
-       "Unqualified": "violet",
-       "Converted": "teal"
-      },
-      "required": true,
-      "default": "New"
-     },
-     {
-      "key": "score",
-      "label": "Score",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ]
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "last_contacted",
-      "label": "Last contacted",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "next_followup",
-      "label": "Next follow-up",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "followup_due",
-      "label": "Follow-up due",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "IF({Next follow-up} != \"\", IF(DATEDIFF(TODAY(), {Next follow-up}, 'days') <= 0, \"Due\", \"Later\"), \"None set\")"
-     },
-     {
-      "key": "deal",
-      "label": "Converted deal",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "deal",
-      "relationMax": 1
-     },
-     {
-      "key": "notes",
-      "label": "Notes",
-      "parityType": "long_text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "ld01",
-      "values": {
-       "lead_name": "Ingrid Solheim",
-       "company": "Pinecrest Property Group",
-       "lead_email": "ingrid@pinecrestpropertygroup.net",
-       "lead_phone": "(404) 555-0131",
-       "source": "Website form",
-       "status": "Converted",
-       "score": 88,
-       "owner": "tm-03",
-       "last_contacted": "@today-6d",
-       "notes": "Wants a quote for four buildings.",
-       "deal": "dl01"
-      }
-     },
-     {
-      "key": "ld02",
-      "values": {
-       "lead_name": "Marcus Delacroix-Boyd",
-       "company": "Marlow & Sons",
-       "lead_email": "marcus@marlowandsons.net",
-       "lead_phone": "(678) 555-0132",
-       "source": "Referral",
-       "status": "Converted",
-       "score": 92,
-       "owner": "tm-03",
-       "last_contacted": "@today-14d",
-       "notes": "Signed after a site visit.",
-       "deal": "dl02"
-      }
-     },
-     {
-      "key": "ld03",
-      "values": {
-       "lead_name": "Aiyana Redcloud",
-       "company": "Eastgate Dental",
-       "lead_email": "aiyana@eastgatedental.net",
-       "lead_phone": "(404) 555-0133",
-       "source": "Trade show",
-       "status": "Converted",
-       "score": 81,
-       "owner": "tm-03",
-       "last_contacted": "@today-3d",
-       "notes": "Nightly cleaning, sixty rooms.",
-       "deal": "dl03"
-      }
-     },
-     {
-      "key": "ld04",
-      "values": {
-       "lead_name": "Bartholomew Nguyen",
-       "company": "Harbor Row Apartments",
-       "lead_email": "bartholomew@harborrowapts.net",
-       "lead_phone": "(770) 555-0134",
-       "source": "Partner",
-       "status": "Converted",
-       "score": 77,
-       "owner": "tm-03",
-       "last_contacted": "@today-9d",
-       "notes": "Grounds and trash service.",
-       "deal": "dl04"
-      }
-     },
-     {
-      "key": "ld05",
-      "values": {
-       "lead_name": "Clementine Aberdeen",
-       "company": "Aberdeen Realty",
-       "lead_email": "clementine@aberdeenrealty.net",
-       "lead_phone": "(404) 555-0135",
-       "source": "Website form",
-       "status": "New",
-       "owner": "tm-02",
-       "next_followup": "@today",
-       "notes": "Came in overnight."
-      }
-     },
-     {
-      "key": "ld06",
-      "values": {
-       "lead_name": "Jasper Okonkwo",
-       "company": "Okonkwo Logistics",
-       "lead_email": "jasper@okonkwologistics.net",
-       "lead_phone": "(678) 555-0136",
-       "source": "Cold outreach",
-       "status": "Contacted",
-       "score": 44,
-       "owner": "tm-02",
-       "last_contacted": "@today-3d",
-       "next_followup": "@today+2d",
-       "notes": "Left a voicemail."
-      }
-     },
-     {
-      "key": "ld07",
-      "values": {
-       "lead_name": "Lucia Fernandez-Hale",
-       "company": "Hale Fitness Studio",
-       "lead_email": "lucia@halefitness.net",
-       "lead_phone": "(404) 555-0137",
-       "source": "Referral",
-       "status": "Qualified",
-       "score": 71,
-       "owner": "tm-03",
-       "last_contacted": "@today-2d",
-       "next_followup": "@today+1d",
-       "notes": "Needs weekly service."
-      }
-     },
-     {
-      "key": "ld08",
-      "values": {
-       "lead_name": "Tobias Wren",
-       "company": "Wren Architects",
-       "lead_email": "tobias@wrenarchitects.net",
-       "lead_phone": "(770) 555-0138",
-       "source": "Website form",
-       "status": "Contacted",
-       "score": 52,
-       "owner": "tm-04",
-       "last_contacted": "@today-5d",
-       "next_followup": "@today-1d",
-       "notes": "Asked for references."
-      }
-     },
-     {
-      "key": "ld09",
-      "values": {
-       "lead_name": "Zuri Mensah",
-       "company": "Mensah Pharmacy",
-       "lead_email": "zuri@mensahpharmacy.net",
-       "lead_phone": "(404) 555-0139",
-       "source": "Trade show",
-       "status": "Qualified",
-       "score": 66,
-       "owner": "tm-03",
-       "last_contacted": "@today-1d",
-       "next_followup": "@today+4d",
-       "notes": "Compare with current vendor."
-      }
-     },
-     {
-      "key": "ld10",
-      "values": {
-       "lead_name": "Rolf Hammarström",
-       "company": "Hammar Auto Repair",
-       "lead_email": "rolf@hammarauto.net",
-       "lead_phone": "(678) 555-0140",
-       "source": "Cold outreach",
-       "status": "Unqualified",
-       "score": 12,
-       "owner": "tm-04",
-       "last_contacted": "@today-20d",
-       "notes": "Too small for a contract."
-      }
-     },
-     {
-      "key": "ld11",
-      "values": {
-       "lead_name": "Odalys Pryce",
-       "company": "Pryce Learning Center",
-       "lead_email": "odalys@prycelearning.net",
-       "lead_phone": "(404) 555-0141",
-       "source": "Partner",
-       "status": "New",
-       "owner": "tm-02",
-       "next_followup": "@today+1d",
-       "notes": "Partner sent the contact."
-      }
-     },
-     {
-      "key": "ld12",
-      "values": {
-       "lead_name": "Emeka Strand",
-       "company": "Strand Dental Lab",
-       "lead_email": "emeka@stranddentallab.net",
-       "lead_phone": "(770) 555-0142",
-       "source": "Website form",
-       "status": "Contacted",
-       "score": 58,
-       "owner": "tm-04",
-       "last_contacted": "@today-4d",
-       "next_followup": "@today",
-       "notes": "Wants an on-site assessment."
-      }
-     },
-     {
-      "key": "ld13",
-      "values": {
-       "lead_name": "Philippa Voss",
-       "company": "Voss Boutique Hotel",
-       "lead_email": "philippa@vossboutiquehotel.net",
-       "lead_phone": "(404) 555-0143",
-       "source": "Referral",
-       "status": "Qualified",
-       "score": 83,
-       "owner": "tm-03",
-       "last_contacted": "@today-1d",
-       "next_followup": "@today+3d",
-       "notes": "Likes the green cleaning plan."
-      }
-     },
-     {
-      "key": "ld14",
-      "values": {
-       "lead_name": "Ansel Whitcombe",
-       "company": "Whitcombe Printing",
-       "lead_email": "ansel@whitcombeprinting.net",
-       "lead_phone": "(678) 555-0144",
-       "source": "Cold outreach",
-       "status": "New",
-       "owner": "tm-02",
-       "next_followup": "@today+2d",
-       "notes": "Added from a list."
-      }
-     },
-     {
-      "key": "ld15",
-      "values": {
-       "lead_name": "Noemi Castellano",
-       "company": "Castellano Bakery",
-       "lead_email": "noemi@castellanobakery.net",
-       "lead_phone": "(404) 555-0145",
-       "source": "Website form",
-       "status": "Contacted",
-       "score": 47,
-       "owner": "tm-04",
-       "last_contacted": "@today-7d",
-       "next_followup": "@today-3d",
-       "notes": "Waiting on a callback."
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "deal",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "deals_owned"
-   },
-   {
-    "describes": "Leads converted lists its lead records.",
-    "fromTable": "deal",
-    "fromField": "from_leads",
-    "toTable": "lead",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "deal_listed_from_leads"
-   },
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "lead",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "leads_owned"
-   },
-   {
-    "describes": "Converted deal links to one deal.",
-    "fromTable": "lead",
-    "fromField": "deal",
-    "toTable": "deal",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "converted_from"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Rashida Cole",
-       "role": "Sales lead",
-       "work_email": "rashida@juniperrowservices.net",
-       "mobile": "(404) 555-0111",
-       "start_date": "@today-5y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Anton Berglund",
-       "role": "Sales development rep",
-       "work_email": "anton@juniperrowservices.net",
-       "mobile": "(404) 555-0112",
-       "start_date": "@today-16m"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Valentina Ruiz-Okoro",
-       "role": "Account executive",
-       "work_email": "valentina@juniperrowservices.net",
-       "mobile": "(404) 555-0113",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Desmond Achebe",
-       "role": "Sales development rep",
-       "work_email": "desmond@juniperrowservices.net",
-       "mobile": "(404) 555-0114",
-       "start_date": "@today-8m"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "lead_intake",
-    "name": "Add a lead",
-    "describes": "How a lead is added, from the website or by a seller.",
-    "audience": "staff",
-    "table": "lead",
-    "fields": [
-     {
-      "fieldKey": "lead_name",
-      "ask": "Who is the lead?",
-      "required": true
-     },
-     {
-      "fieldKey": "company",
-      "ask": "Which company?"
-     },
-     {
-      "fieldKey": "lead_email",
-      "ask": "Email address?"
-     },
-     {
-      "fieldKey": "source",
-      "ask": "How did they find us?"
-     },
-     {
-      "fieldKey": "notes",
-      "ask": "Anything we should know?"
-     }
-    ],
-    "submitLabel": "Add the lead",
-    "confirmation": "Thanks. The lead is on the board as New."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_deals",
-    "name": "All deals",
-    "table": "deal",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "expected_close",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "lead_board",
-    "name": "Board",
-    "table": "lead",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "all_leads",
-    "name": "All leads",
-    "table": "lead",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "next_followup",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "lead_calendar",
-    "name": "Follow-up calendar",
-    "table": "lead",
-    "kind": "calendar",
-    "dateField": "next_followup",
-    "allDay": true
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Lead assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "lead",
-     "describes": "Every inbound and outbound lead before it becomes a deal."
-    },
-    {
-     "name": "related_tables",
-     "table": "deal",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many leads are new?",
-    "whyItMatters": "Rashida assigns every new lead first thing in the morning.",
-    "expect": {
-     "table": "lead",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "New"
-     },
-     "answer": 3,
-     "unit": "leads"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the lead board.",
-    "action": {
-     "kind": "open",
-     "surface": "lead_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "lead_board",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open all leads.",
-    "action": {
-     "kind": "open",
-     "surface": "all_leads"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_leads",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the follow-up calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "lead_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "lead_calendar",
-     "minItems": 10
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "juniperrowservices.net"
-   ],
-   "fictionalStreets": [
-    "Peachtree Hollow"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "lead-tracker",
-   "parent": null,
-   "title": "Lead Tracker",
-   "icon": {
+  "version": 2,
+  "title": "Lead Tracker",
+  "description": "Capture leads, follow up on time and turn the best into deals.",
+  "forWho": "Small sales teams and agencies",
+  "icon": {
     "emoji": "🎯"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Catch every lead, follow up on time and convert the good ones into deals. Share the intake form so new leads land here by themselves."
-      }
-     ],
-     "background": "red",
-     "props": {
-      "icon": "Target"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:lead-dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:qualification-questions"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:follow-up-playbook"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:handoff-checklist"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Pipeline"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "lead",
-       "view": "lead_board"
-      },
-      "inline": true,
-      "title": "Leads",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-by-source",
-        "name": "By source",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "source",
-          "direction": "asc"
-         }
-        ]
-       },
-       {
-        "id": "view-follow-up-calendar",
-        "name": "Follow-up calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "next_followup"
-       },
-       {
-        "id": "view-lead-intake",
-        "name": "Lead intake",
-        "layout": "form",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Follow up now"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "lead",
-       "view": "all_leads"
-      },
-      "inline": true,
-      "title": "Leads",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-follow-up-today",
-        "name": "Follow up today",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "New",
-          "Contacted",
-          "Qualified"
-         ]
-        },
-        "sorts": [
-         {
-          "field": "next_followup",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-follow-up-today"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Converted deals"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "deal",
-       "view": "all_deals"
-      },
-      "inline": true,
-      "title": "Deals",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-deals",
-        "name": "All deals",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-all-deals"
-     }
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-ocean-horizon",
     "offsetY": 50
-   }
   },
-  {
-   "key": "lead-dashboard",
-   "parent": "lead-tracker",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "lead",
-           "view": "all_leads"
-          },
-          "inline": true,
-          "title": "Leads",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-leads-by-status",
-            "name": "Leads by status",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-leads-by-status"
-         }
-        }
-       ]
+  "category": "sales",
+  "tags": [
+    "leads",
+    "sales",
+    "followup",
+    "intake"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0158",
+    "catalogueId": "SP0158",
+    "useCase": "Rashida Cole leads sales at a commercial services company and uses this to follow up with every lead on time.",
+    "industry": "cross_industry",
+    "vertical": "Lead management",
+    "job": "intake",
+    "audience": "organization",
+    "teaches": "forms",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Juniper Row Services",
+      "describes": "A commercial cleaning and grounds company that wins business through leads.",
+      "address": {
+        "line1": "275 Peachtree Hollow",
+        "city": "Atlanta",
+        "region": "GA",
+        "postalCode": "30303",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "lead",
-           "view": "all_leads"
-          },
-          "inline": true,
-          "title": "Leads",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-leads-by-source",
-            "name": "Leads by source",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "source",
-             "op": "count"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-leads-by-source"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "lead",
-           "view": "all_leads"
-          },
-          "inline": true,
-          "title": "Leads",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-score-by-owner",
-            "name": "Score by owner",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "owner",
-             "op": "avg",
-             "field": "score"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-score-by-owner"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(404) 555-0110",
+      "website": "juniperrowservices.net",
+      "email": "hello@juniperrowservices.net",
+      "timezone": "America/New_York"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-sp0158",
+    "tables": [
       {
-       "text": "Hottest leads"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "lead",
-       "view": "all_leads"
-      },
-      "inline": true,
-      "title": "Leads",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-top-scores",
-        "name": "Top scores",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "Contacted",
-          "Qualified"
-         ]
+        "independentOf": {
+          "owner": "Anyone on the team can own this, whenever they joined."
         },
+        "token": "deal",
+        "name": "Deals",
+        "labelSingular": "Deal",
+        "labelPlural": "Deals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "deal_name",
+        "describes": "Deals created when a lead is converted.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "deal_name",
+            "label": "Deal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Discovery",
+              "Proposal",
+              "Negotiation",
+              "Won"
+            ],
+            "choiceColors": {
+              "Discovery": "blue",
+              "Proposal": "green",
+              "Negotiation": "amber",
+              "Won": "violet"
+            },
+            "required": true,
+            "default": "Discovery",
+            "statusGroups": {
+              "Discovery": "in_progress",
+              "Proposal": "in_progress",
+              "Negotiation": "in_progress",
+              "Won": "done"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "expected_close",
+            "label": "Expected close",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dl01",
+            "values": {
+              "deal_name": "Pinecrest property cleanup contract",
+              "value": 24000,
+              "stage": "Proposal",
+              "owner": "tm-03",
+              "expected_close": "@today+20d"
+            }
+          },
+          {
+            "key": "dl02",
+            "values": {
+              "deal_name": "Marlow & Sons office services",
+              "value": 9800,
+              "stage": "Won",
+              "owner": "tm-03",
+              "expected_close": "@today-12d"
+            }
+          },
+          {
+            "key": "dl03",
+            "values": {
+              "deal_name": "Eastgate dental janitorial",
+              "value": 15500,
+              "stage": "Negotiation",
+              "owner": "tm-03",
+              "expected_close": "@today+9d"
+            }
+          },
+          {
+            "key": "dl04",
+            "values": {
+              "deal_name": "Harbor Row apartments grounds",
+              "value": 38000,
+              "stage": "Discovery",
+              "owner": "tm-03",
+              "expected_close": "@today+45d"
+            }
+          }
+        ]
+      },
+      {
+        "before": [
+          [
+            "last_contacted",
+            "next_followup"
+          ]
+        ],
+        "independentOf": {
+          "deal": "Converted deal and this record each keep their own dates and status.",
+          "owner": "Anyone on the team can own this, whenever they joined."
+        },
+        "token": "lead",
+        "name": "Leads",
+        "labelSingular": "Lead",
+        "labelPlural": "Leads",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-plus",
+        "titleField": "lead_name",
+        "describes": "Every inbound and outbound lead before it becomes a deal.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "lead_name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "company",
+            "label": "Company",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead_email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "lead_phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "exclude"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Website form",
+              "Referral",
+              "Cold outreach",
+              "Trade show",
+              "Partner"
+            ],
+            "choiceColors": {
+              "Website form": "blue",
+              "Referral": "green",
+              "Cold outreach": "amber",
+              "Trade show": "violet",
+              "Partner": "teal"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Contacted",
+              "Qualified",
+              "Unqualified",
+              "Converted"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Contacted": "green",
+              "Qualified": "amber",
+              "Unqualified": "violet",
+              "Converted": "teal"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Contacted": "in_progress",
+              "Qualified": "in_progress",
+              "Unqualified": "done",
+              "Converted": "done"
+            }
+          },
+          {
+            "key": "score",
+            "label": "Lead score (0-100)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "last_contacted",
+            "label": "Last contacted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_followup",
+            "label": "Next follow-up",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "followup_due",
+            "label": "Follow-up due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Next follow-up} != \"\", IF(DATEDIFF(TODAY(), {Next follow-up}, 'days') <= 0, \"Due\", \"Later\"), \"None set\")"
+          },
+          {
+            "key": "deal",
+            "label": "Converted deal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "deal",
+            "relationMax": 1
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{lead_email}}"
+            }
+          },
+          {
+            "key": "qualify_btn",
+            "label": "Mark qualified",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_qualify"
+            }
+          },
+          {
+            "key": "contacted_btn",
+            "label": "Mark contacted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_contacted"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ld01",
+            "values": {
+              "lead_name": "Ingrid Solheim",
+              "company": "Pinecrest Property Group",
+              "lead_email": "ingrid@pinecrestpropertygroup.net",
+              "lead_phone": "(404) 555-0131",
+              "source": "Website form",
+              "status": "Converted",
+              "score": 88,
+              "owner": "tm-03",
+              "last_contacted": "@today-6d",
+              "notes": "Wants a quote for four buildings.",
+              "deal": "dl01"
+            }
+          },
+          {
+            "key": "ld02",
+            "values": {
+              "lead_name": "Marcus Delacroix-Boyd",
+              "company": "Marlow & Sons",
+              "lead_email": "marcus@marlowandsons.net",
+              "lead_phone": "(678) 555-0132",
+              "source": "Referral",
+              "status": "Converted",
+              "score": 92,
+              "owner": "tm-03",
+              "last_contacted": "@today-14d",
+              "notes": "Signed after a site visit.",
+              "deal": "dl02"
+            }
+          },
+          {
+            "key": "ld03",
+            "values": {
+              "lead_name": "Aiyana Redcloud",
+              "company": "Eastgate Dental",
+              "lead_email": "aiyana@eastgatedental.net",
+              "lead_phone": "(404) 555-0133",
+              "source": "Trade show",
+              "status": "Converted",
+              "score": 81,
+              "owner": "tm-03",
+              "last_contacted": "@today-3d",
+              "notes": "Nightly cleaning, sixty rooms.",
+              "deal": "dl03"
+            }
+          },
+          {
+            "key": "ld04",
+            "values": {
+              "lead_name": "Bartholomew Nguyen",
+              "company": "Harbor Row Apartments",
+              "lead_email": "bartholomew@harborrowapts.net",
+              "lead_phone": "(770) 555-0134",
+              "source": "Partner",
+              "status": "Converted",
+              "score": 77,
+              "owner": "tm-03",
+              "last_contacted": "@today-9d",
+              "notes": "Grounds and trash service.",
+              "deal": "dl04"
+            }
+          },
+          {
+            "key": "ld05",
+            "values": {
+              "lead_name": "Clementine Aberdeen",
+              "company": "Aberdeen Realty",
+              "lead_email": "clementine@aberdeenrealty.net",
+              "lead_phone": "(404) 555-0135",
+              "source": "Website form",
+              "status": "New",
+              "owner": "tm-02",
+              "next_followup": "@today",
+              "notes": "Came in overnight."
+            }
+          },
+          {
+            "key": "ld06",
+            "values": {
+              "lead_name": "Jasper Okonkwo",
+              "company": "Okonkwo Logistics",
+              "lead_email": "jasper@okonkwologistics.net",
+              "lead_phone": "(678) 555-0136",
+              "source": "Cold outreach",
+              "status": "Contacted",
+              "score": 44,
+              "owner": "tm-02",
+              "last_contacted": "@today-11d",
+              "next_followup": "@today-4d",
+              "notes": "Left a voicemail."
+            }
+          },
+          {
+            "key": "ld07",
+            "values": {
+              "lead_name": "Lucia Fernandez-Hale",
+              "company": "Hale Fitness Studio",
+              "lead_email": "lucia@halefitness.net",
+              "lead_phone": "(404) 555-0137",
+              "source": "Referral",
+              "status": "Qualified",
+              "score": 71,
+              "owner": "tm-03",
+              "last_contacted": "@today-16d",
+              "next_followup": "@today-9d",
+              "notes": "Needs weekly service."
+            }
+          },
+          {
+            "key": "ld08",
+            "values": {
+              "lead_name": "Tobias Wren",
+              "company": "Wren Architects",
+              "lead_email": "tobias@wrenarchitects.net",
+              "lead_phone": "(770) 555-0138",
+              "source": "Website form",
+              "status": "Contacted",
+              "score": 52,
+              "owner": "tm-04",
+              "last_contacted": "@today-4d",
+              "next_followup": "@today+3d",
+              "notes": "Asked for references."
+            }
+          },
+          {
+            "key": "ld09",
+            "values": {
+              "lead_name": "Zuri Mensah",
+              "company": "Mensah Pharmacy",
+              "lead_email": "zuri@mensahpharmacy.net",
+              "lead_phone": "(404) 555-0139",
+              "source": "Trade show",
+              "status": "Qualified",
+              "score": 66,
+              "owner": "tm-03",
+              "last_contacted": "@today-5d",
+              "next_followup": "@today+2d",
+              "notes": "Compare with current vendor."
+            }
+          },
+          {
+            "key": "ld10",
+            "values": {
+              "lead_name": "Rolf Hammarström",
+              "company": "Hammar Auto Repair",
+              "lead_email": "rolf@hammarauto.net",
+              "lead_phone": "(678) 555-0140",
+              "source": "Cold outreach",
+              "status": "Unqualified",
+              "score": 12,
+              "owner": "tm-04",
+              "last_contacted": "@today-20d",
+              "notes": "Too small for a contract."
+            }
+          },
+          {
+            "key": "ld11",
+            "values": {
+              "lead_name": "Odalys Pryce",
+              "company": "Pryce Learning Center",
+              "lead_email": "odalys@prycelearning.net",
+              "lead_phone": "(404) 555-0141",
+              "source": "Partner",
+              "status": "New",
+              "owner": "tm-02",
+              "next_followup": "@today+5d",
+              "notes": "Partner sent the contact."
+            }
+          },
+          {
+            "key": "ld12",
+            "values": {
+              "lead_name": "Emeka Strand",
+              "company": "Strand Dental Lab",
+              "lead_email": "emeka@stranddentallab.net",
+              "lead_phone": "(770) 555-0142",
+              "source": "Website form",
+              "status": "Contacted",
+              "score": 58,
+              "owner": "tm-04",
+              "last_contacted": "@today-4d",
+              "next_followup": "@today",
+              "notes": "Wants an on-site assessment."
+            }
+          },
+          {
+            "key": "ld13",
+            "values": {
+              "lead_name": "Philippa Voss",
+              "company": "Voss Boutique Hotel",
+              "lead_email": "philippa@vossboutiquehotel.net",
+              "lead_phone": "(404) 555-0143",
+              "source": "Referral",
+              "status": "Qualified",
+              "score": 83,
+              "owner": "tm-03",
+              "last_contacted": "@today-1d",
+              "next_followup": "@today+3d",
+              "notes": "Likes the green cleaning plan."
+            }
+          },
+          {
+            "key": "ld14",
+            "values": {
+              "lead_name": "Ansel Whitcombe",
+              "company": "Whitcombe Printing",
+              "lead_email": "ansel@whitcombeprinting.net",
+              "lead_phone": "(678) 555-0144",
+              "source": "Cold outreach",
+              "status": "New",
+              "owner": "tm-02",
+              "next_followup": "@today+2d",
+              "notes": "Added from a list."
+            }
+          },
+          {
+            "key": "ld15",
+            "values": {
+              "lead_name": "Noemi Castellano",
+              "company": "Castellano Bakery",
+              "lead_email": "noemi@castellanobakery.net",
+              "lead_phone": "(404) 555-0145",
+              "source": "Website form",
+              "status": "Contacted",
+              "score": 47,
+              "owner": "tm-04",
+              "last_contacted": "@today-7d",
+              "next_followup": "@today-3d",
+              "notes": "Waiting on a callback."
+            }
+          }
+        ],
+        "statusImplies": []
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "deal",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deals_owned"
+      },
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "lead",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "leads_owned"
+      },
+      {
+        "describes": "Converted deal links to one deal.",
+        "fromTable": "lead",
+        "fromField": "deal",
+        "toTable": "deal",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "from_leads"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Rashida Cole",
+              "role": "Sales lead",
+              "work_email": "rashida@juniperrowservices.net",
+              "mobile": "(404) 555-0111",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Anton Berglund",
+              "role": "Sales development rep",
+              "work_email": "anton@juniperrowservices.net",
+              "mobile": "(404) 555-0112",
+              "start_date": "@today-16m"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Valentina Ruiz-Okoro",
+              "role": "Account executive",
+              "work_email": "valentina@juniperrowservices.net",
+              "mobile": "(404) 555-0113",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Desmond Achebe",
+              "role": "Sales development rep",
+              "work_email": "desmond@juniperrowservices.net",
+              "mobile": "(404) 555-0114",
+              "start_date": "@today-8m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "lead_intake",
+        "name": "Add a lead",
+        "describes": "How a lead is added, from the website or by a seller.",
+        "audience": "staff",
+        "table": "lead",
+        "fields": [
+          {
+            "fieldKey": "lead_name",
+            "ask": "Who is the lead?",
+            "required": true
+          },
+          {
+            "fieldKey": "company",
+            "ask": "Which company?"
+          },
+          {
+            "fieldKey": "lead_email",
+            "ask": "Email address?"
+          },
+          {
+            "fieldKey": "source",
+            "ask": "How did they find us?"
+          },
+          {
+            "fieldKey": "notes",
+            "ask": "Anything we should know?"
+          }
+        ],
+        "submitLabel": "Add the lead",
+        "confirmation": "Thanks. The lead is on the board as New."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "lead_qualify",
+        "table": "lead",
+        "name": "Mark qualified",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Qualified"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lead_contacted",
+        "table": "lead",
+        "name": "Mark contacted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Contacted"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_deals",
+        "name": "All deals",
+        "table": "deal",
+        "kind": "grid",
+        "isDefault": true,
         "sorts": [
-         {
-          "field": "score",
-          "direction": "desc"
-         }
+          {
+            "field": "expected_close",
+            "direction": "asc"
+          }
         ]
-       }
+      },
+      {
+        "token": "lead_board",
+        "name": "Board",
+        "table": "lead",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
+      },
+      {
+        "token": "all_leads",
+        "name": "All leads",
+        "table": "lead",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "next_followup",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "lead_calendar",
+        "name": "Follow-up calendar",
+        "table": "lead",
+        "kind": "calendar",
+        "dateField": "next_followup",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "lead_week",
+        "name": "Next follow-up this week",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "next_followup": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Qualified"
+          ]
+        }
+      },
+      {
+        "token": "lead_over",
+        "name": "Overdue",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "next_followup": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Qualified"
+          ]
+        }
+      },
+      {
+        "token": "lead_next7",
+        "name": "Next 7 days",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "next_followup": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Qualified"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Lead assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "lead",
+          "describes": "Every inbound and outbound lead before it becomes a deal."
+        },
+        {
+          "name": "related_tables",
+          "table": "deal",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-top-scores"
-     }
-    }
-   ]
-  },
-  {
-   "key": "qualification-questions",
-   "parent": "lead-tracker",
-   "title": "Qualification questions",
-   "icon": {
-    "emoji": "❓"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "What problem are you trying to solve?"
+      "question": {
+        "ask": "How many leads are new?",
+        "whyItMatters": "Rashida assigns every new lead first thing in the morning.",
+        "expect": {
+          "table": "lead",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "New"
+          },
+          "answer": 3,
+          "unit": "leads"
+        }
       }
-     ]
     },
-    {
-     "type": "numbered",
-     "text": [
+    "walk": [
       {
-       "text": "Who else is involved in the decision?"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
+        "says": "Open the lead board.",
+        "action": {
+          "kind": "open",
+          "surface": "lead_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lead_board",
+          "minItems": 10
+        }
+      },
       {
-       "text": "What is your budget range?"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
+        "says": "Open all leads.",
+        "action": {
+          "kind": "open",
+          "surface": "all_leads"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_leads",
+          "minItems": 10
+        }
+      },
       {
-       "text": "When do you need this in place?"
+        "says": "Open the follow-up calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "lead_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lead_calendar",
+          "minItems": 10
+        }
       }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "What are you using today?"
-      }
-     ]
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Score 20 points for each answer that is clear and specific."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Calculator"
-     }
-    }
-   ]
-  },
-  {
-   "key": "follow-up-playbook",
-   "parent": "lead-tracker",
-   "title": "Follow-up playbook",
-   "icon": {
-    "emoji": "📞"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "Day"
-          }
-         ],
-         [
-          {
-           "text": "Action"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Same day"
-          }
-         ],
-         [
-          {
-           "text": "Reply and set the next follow-up"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Day 2"
-          }
-         ],
-         [
-          {
-           "text": "Call"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Day 5"
-          }
-         ],
-         [
-          {
-           "text": "Short email with a case study"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Day 10"
-          }
-         ],
-         [
-          {
-           "text": "Last note and close out"
-          }
-         ]
-        ]
-       }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "juniperrowservices.net"
+      ],
+      "fictionalStreets": [
+        "Peachtree Hollow"
       ]
-     }
-    }
-   ]
+    },
+    "version": 2
   },
-  {
-   "key": "handoff-checklist",
-   "parent": "lead-tracker",
-   "title": "Hand-off checklist",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Lead is Qualified with a score"
+      "key": "lead-tracker",
+      "parent": null,
+      "title": "Lead Tracker",
+      "icon": {
+        "emoji": "🎯"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Catch every lead, follow up on time and convert the good ones into deals. Share the intake form so new leads land here by themselves."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "Target"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:lead-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:qualification-questions"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:follow-up-playbook"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:handoff-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pipeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "lead_board"
+            },
+            "inline": true,
+            "title": "Leads",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-by-source",
+                "name": "By source",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "source",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-follow-up-calendar",
+                "name": "Follow-up calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_followup"
+              },
+              {
+                "id": "view-lead-intake",
+                "name": "Lead intake",
+                "layout": "form",
+                "icon": "Table"
+              },
+              {
+                "id": "view-lead-week",
+                "name": "Next follow-up this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "next_followup": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Qualified"
+                  ]
+                }
+              },
+              {
+                "id": "view-lead-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "next_followup": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Qualified"
+                  ]
+                }
+              },
+              {
+                "id": "view-lead-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "next_followup": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Qualified"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow up now"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "all_leads"
+            },
+            "inline": true,
+            "title": "Leads",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-follow-up-today",
+                "name": "Follow up today",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Qualified"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "next_followup",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-follow-up-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Converted deals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deal",
+              "view": "all_deals"
+            },
+            "inline": true,
+            "title": "Deals",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-deals",
+                "name": "All deals",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-all-deals"
+          }
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
       }
-     ],
-     "props": {
-      "checked": false
-     }
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Deal created with a value and expected close"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "lead-dashboard",
+      "parent": "lead-tracker",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_leads"
+                    },
+                    "inline": true,
+                    "title": "Leads",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-leads-by-status",
+                        "name": "Leads by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-leads-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_leads"
+                    },
+                    "inline": true,
+                    "title": "Leads",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-leads-by-source",
+                        "name": "Leads by source",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-leads-by-source"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_leads"
+                    },
+                    "inline": true,
+                    "title": "Leads",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-score-by-owner",
+                        "name": "Score by owner",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "owner",
+                          "op": "avg",
+                          "field": "score"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-score-by-owner"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Scores run from 0 to 100. Treat anything above 70 as a call today; below 30 as nurture by email only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Gauge"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hottest leads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "all_leads"
+            },
+            "inline": true,
+            "title": "Leads",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-top-scores",
+                "name": "Top scores",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Contacted",
+                    "Qualified"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "score",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-top-scores"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Notes copied to the deal"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "qualification-questions",
+      "parent": "lead-tracker",
+      "title": "Qualification questions",
+      "icon": {
+        "emoji": "❓"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What problem are you trying to solve?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Who else is involved in the decision?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What is your budget range?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When do you need this in place?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What are you using today?"
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Score 20 points for each answer that is clear and specific."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Calculator"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Account executive introduced by email"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "follow-up-playbook",
+      "parent": "lead-tracker",
+      "title": "Follow-up playbook",
+      "icon": {
+        "emoji": "📞"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Same day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reply and set the next follow-up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day 2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day 5"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Short email with a case study"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day 10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Last note and close out"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The cadence"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most deals are lost to silence, not to a no. Follow up on a rhythm so nothing depends on memory."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 0: reply within an hour in working hours. Say what happens next."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 2: a short, useful email. Answer the question they did not ask yet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 6: call. Leave a voicemail that names one reason to call back."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 14: a polite last note. Offer to close the file, and mean it."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Set Next follow-up every time you touch a lead. The Overdue list is your morning to-do list."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "CalendarCheck"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Lead status set to Converted"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "handoff-checklist",
+      "parent": "lead-tracker",
+      "title": "Hand-off checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lead is Qualified with a score"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deal created with a value and expected close"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notes copied to the deal"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Account executive introduced by email"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lead status set to Converted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

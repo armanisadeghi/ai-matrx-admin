@@ -1,1559 +1,1796 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0156",
- "version": 1,
- "title": "Newsletter Planner",
- "description": "An idea bank, send calendar and sponsor board for a newsletter or publication.",
- "forWho": "Newsletter editors and small publishers",
- "icon": {
-  "emoji": "📰"
- },
- "cover": {
-  "url": "gallery:photo-desert-dunes",
-  "offsetY": 50
- },
- "category": "marketing",
- "tags": [
-  "newsletter",
-  "editorial",
-  "sponsors",
-  "email"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0156",
+  "packVersion": 1,
   "catalogueId": "SP0156",
-  "useCase": "Philippa Aldous edits a weekly newsletter and uses this to track issues from idea to send and keep sponsors lined up.",
-  "industry": "cross_industry",
-  "vertical": "Publishing",
-  "job": "content",
-  "audience": "organization",
-  "teaches": "kanban",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Tideline Press",
-   "describes": "An independent publisher of a weekly newsletter about reading and writing.",
-   "address": {
-    "line1": "12 Salt Marsh Court",
-    "city": "Boston",
-    "region": "MA",
-    "postalCode": "02110",
-    "country": "US"
-   },
-   "phone": "(617) 555-0170",
-   "website": "tidelinepress.net",
-   "email": "hello@tidelinepress.net",
-   "timezone": "America/New_York"
-  },
-  "cleanupTag": "use-case:spaces-sp0156",
-  "tables": [
-   {
-    "token": "sponsor",
-    "name": "Sponsors",
-    "labelSingular": "Sponsor",
-    "labelPlural": "Sponsors",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "badge-dollar-sign",
-    "titleField": "sponsor_name",
-    "describes": "Advertisers who sponsor issues, their slot and rate.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "sponsor_name",
-      "label": "Sponsor",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Prospect",
-       "Booked",
-       "Delivered",
-       "Paid"
-      ],
-      "choiceColors": {
-       "Prospect": "blue",
-       "Booked": "green",
-       "Delivered": "amber",
-       "Paid": "violet"
-      },
-      "required": true,
-      "default": "Prospect"
-     },
-     {
-      "key": "slot",
-      "label": "Slot",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Top",
-       "Middle",
-       "Footer"
-      ],
-      "choiceColors": {
-       "Top": "blue",
-       "Middle": "green",
-       "Footer": "amber"
-      }
-     },
-     {
-      "key": "rate",
-      "label": "Rate",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 20000
-       }
-      ]
-     },
-     {
-      "key": "sponsor_email",
-      "label": "Contact",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "summarize"
-     },
-     {
-      "key": "issues",
-      "label": "Issues",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "issue",
-      "multi": true
-     },
-     {
-      "key": "issue_count",
-      "label": "Issues sponsored",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "issues",
-      "pick": "subject",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "sp01",
-      "values": {
-       "sponsor_name": "Quillmark Notebooks",
-       "status": "Paid",
-       "slot": "Top",
-       "rate": 1800,
-       "sponsor_email": "partners@quillmarknotebooks.net",
-       "issues": [
-        "is01",
-        "is04"
-       ]
-      }
-     },
-     {
-      "key": "sp02",
-      "values": {
-       "sponsor_name": "Harbor Light Coffee",
-       "status": "Delivered",
-       "slot": "Middle",
-       "rate": 950,
-       "sponsor_email": "ads@harborlightcoffee.net",
-       "issues": [
-        "is03",
-        "is06"
-       ]
-      }
-     },
-     {
-      "key": "sp03",
-      "values": {
-       "sponsor_name": "Northbeam Analytics",
-       "status": "Booked",
-       "slot": "Top",
-       "rate": 2200,
-       "sponsor_email": "media@northbeamanalytics.net",
-       "issues": [
-        "is07",
-        "is08"
-       ]
-      }
-     },
-     {
-      "key": "sp04",
-      "values": {
-       "sponsor_name": "Fernwood Books",
-       "status": "Prospect",
-       "slot": "Footer",
-       "rate": 600,
-       "sponsor_email": "hello@fernwoodbooks.net",
-       "issues": [
-        "is10"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "before": [
-     [
-      "draft_due",
-      "send_on"
-     ]
-    ],
-    "independentOf": {
-     "sponsor": "Sponsor and this record each keep their own dates and status.",
-     "writer": "Anyone on the team can own this, whenever they joined."
-    },
-    "statusAgrees": [],
-    "token": "issue",
-    "name": "Issues",
-    "labelSingular": "Issue",
-    "labelPlural": "Issues",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "mail",
-    "titleField": "subject",
-    "describes": "Every issue from idea to send, with its sponsor and results.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "subject",
-      "label": "Working title",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Idea",
-       "Draft",
-       "Ready",
-       "Scheduled",
-       "Published"
-      ],
-      "choiceColors": {
-       "Idea": "blue",
-       "Draft": "green",
-       "Ready": "amber",
-       "Scheduled": "violet",
-       "Published": "teal"
-      },
-      "required": true,
-      "default": "Idea"
-     },
-     {
-      "key": "draft_due",
-      "label": "Draft due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "send_on",
-      "label": "Send date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "writer",
-      "label": "Writer",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "section",
-      "label": "Section",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Feature",
-       "Roundup",
-       "Interview",
-       "Opinion",
-       "Guide"
-      ],
-      "choiceColors": {
-       "Feature": "blue",
-       "Roundup": "green",
-       "Interview": "amber",
-       "Opinion": "violet",
-       "Guide": "teal"
-      }
-     },
-     {
-      "key": "subject_line",
-      "label": "Subject line",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "preview",
-      "label": "Preview text",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "sponsor",
-      "label": "Sponsor",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "sponsor",
-      "relationMax": 1
-     },
-     {
-      "key": "open_rate",
-      "label": "Open rate percent",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ]
-     },
-     {
-      "key": "click_rate",
-      "label": "Click rate percent",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ]
-     }
-    ],
-    "rows": [
-     {
-      "key": "is01",
-      "values": {
-       "subject": "The quiet return of letter writing",
-       "status": "Published",
-       "draft_due": "@today-50d",
-       "send_on": "@today-45d",
-       "writer": "tm-02",
-       "section": "Feature",
-       "subject_line": "Why people are writing letters again",
-       "preview": "Five readers on what changed",
-       "sponsor": "sp01",
-       "open_rate": 47,
-       "click_rate": 6
-      }
-     },
-     {
-      "key": "is02",
-      "values": {
-       "subject": "Ten newsletters worth your mornings",
-       "status": "Published",
-       "draft_due": "@today-43d",
-       "send_on": "@today-38d",
-       "writer": "tm-03",
-       "section": "Roundup",
-       "subject_line": "Ten reads for your commute",
-       "preview": "Our staff picks",
-       "open_rate": 52,
-       "click_rate": 8
-      }
-     },
-     {
-      "key": "is03",
-      "values": {
-       "subject": "Interview: a bookbinder in Providence",
-       "status": "Published",
-       "draft_due": "@today-36d",
-       "send_on": "@today-31d",
-       "writer": "tm-02",
-       "section": "Interview",
-       "subject_line": "She binds by hand and sells out",
-       "preview": "A conversation about slow work",
-       "sponsor": "sp02",
-       "open_rate": 44,
-       "click_rate": 5
-      }
-     },
-     {
-      "key": "is04",
-      "values": {
-       "subject": "What to read before the holidays",
-       "status": "Published",
-       "draft_due": "@today-29d",
-       "send_on": "@today-24d",
-       "writer": "tm-03",
-       "section": "Guide",
-       "subject_line": "Your reading list is here",
-       "preview": "Twelve titles, no spoilers",
-       "sponsor": "sp01",
-       "open_rate": 49,
-       "click_rate": 9
-      }
-     },
-     {
-      "key": "is05",
-      "values": {
-       "subject": "Why long emails are back",
-       "status": "Published",
-       "draft_due": "@today-22d",
-       "send_on": "@today-17d",
-       "writer": "tm-02",
-       "section": "Opinion",
-       "subject_line": "Short is not always better",
-       "preview": "A case for length",
-       "open_rate": 41,
-       "click_rate": 4
-      }
-     },
-     {
-      "key": "is06",
-      "values": {
-       "subject": "Small presses to watch",
-       "status": "Published",
-       "draft_due": "@today-15d",
-       "send_on": "@today-10d",
-       "writer": "tm-03",
-       "section": "Roundup",
-       "subject_line": "Six presses you should know",
-       "preview": "Where the interesting books come from",
-       "sponsor": "sp02",
-       "open_rate": 50,
-       "click_rate": 7
-      }
-     },
-     {
-      "key": "is07",
-      "values": {
-       "subject": "The case for the paper calendar",
-       "status": "Scheduled",
-       "draft_due": "@today-4d",
-       "send_on": "@today+2d",
-       "writer": "tm-02",
-       "section": "Opinion",
-       "subject_line": "A calendar you can hold",
-       "preview": "Why some of us went back",
-       "sponsor": "sp03"
-      }
-     },
-     {
-      "key": "is08",
-      "values": {
-       "subject": "Reader mailbag: your favorite pens",
-       "status": "Ready",
-       "draft_due": "@today-2d",
-       "send_on": "@today+6d",
-       "writer": "tm-03",
-       "section": "Roundup",
-       "subject_line": "Pens, ranked by you",
-       "preview": "Fifty readers weigh in",
-       "sponsor": "sp03"
-      }
-     },
-     {
-      "key": "is09",
-      "values": {
-       "subject": "A guide to indie bookshop subscriptions",
-       "status": "Draft",
-       "draft_due": "@today+3d",
-       "send_on": "@today+13d",
-       "writer": "tm-02",
-       "section": "Guide",
-       "subject_line": "Books that choose you",
-       "preview": "Compared across five shops"
-      }
-     },
-     {
-      "key": "is10",
-      "values": {
-       "subject": "Interview: an archivist on lost letters",
-       "status": "Draft",
-       "draft_due": "@today+6d",
-       "send_on": "@today+20d",
-       "writer": "tm-03",
-       "section": "Interview",
-       "subject_line": "What a century of mail tells us",
-       "preview": "Behind the stacks",
-       "sponsor": "sp04"
-      }
-     },
-     {
-      "key": "is11",
-      "values": {
-       "subject": "Winter reading challenge",
-       "status": "Idea",
-       "writer": "tm-02",
-       "section": "Feature",
-       "subject_line": "Thirty days, thirty pages",
-       "preview": "A shared challenge"
-      }
-     },
-     {
-      "key": "is12",
-      "values": {
-       "subject": "Subscriber survey results",
-       "status": "Idea",
-       "writer": "tm-01",
-       "section": "Feature",
-       "subject_line": "What you told us",
-       "preview": "The numbers behind the issue"
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Issues lists its issue records.",
-    "fromTable": "sponsor",
-    "fromField": "issues",
-    "toTable": "issue",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "sponsor_listed_issues"
-   },
-   {
-    "describes": "Writer links to one team member.",
-    "fromTable": "issue",
-    "fromField": "writer",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "issues_written"
-   },
-   {
-    "describes": "Sponsor links to one sponsor.",
-    "fromTable": "issue",
-    "fromField": "sponsor",
-    "toTable": "sponsor",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "sponsored_issues"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Philippa Aldous",
-       "role": "Editor in chief",
-       "work_email": "philippa@tidelinepress.net",
-       "mobile": "(617) 555-0171",
-       "start_date": "@today-5y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Mateusz Kowal",
-       "role": "Staff writer",
-       "work_email": "mateusz@tidelinepress.net",
-       "mobile": "(617) 555-0172",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Zainab Ogunleye",
-       "role": "Staff writer",
-       "work_email": "zainab@tidelinepress.net",
-       "mobile": "(617) 555-0173",
-       "start_date": "@today-18m"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Elliot Varga",
-       "role": "Sponsorship manager",
-       "work_email": "elliot@tidelinepress.net",
-       "mobile": "(617) 555-0174",
-       "start_date": "@today-2y"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "issue_idea",
-    "name": "Pitch an issue",
-    "describes": "How anyone pitches a newsletter idea.",
-    "audience": "staff",
-    "table": "issue",
-    "fields": [
-     {
-      "fieldKey": "subject",
-      "ask": "What is the idea?",
-      "required": true
-     },
-     {
-      "fieldKey": "section",
-      "ask": "Which section?"
-     },
-     {
-      "fieldKey": "preview",
-      "ask": "One line summary?"
-     }
-    ],
-    "submitLabel": "Send the pitch",
-    "confirmation": "Thanks. It is in the idea bank."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "sponsor_board",
-    "name": "Board",
-    "table": "sponsor",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "all_sponsors",
-    "name": "All sponsors",
-    "table": "sponsor",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "sponsor_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "issue_board",
-    "name": "Board",
-    "table": "issue",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "issue_calendar",
-    "name": "Calendar",
-    "table": "issue",
-    "kind": "calendar",
-    "dateField": "send_on",
-    "allDay": true
-   },
-   {
-    "token": "all_issues",
-    "name": "All issues",
-    "table": "issue",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "send_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Newsletter assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "issue",
-     "describes": "Every issue from idea to send, with its sponsor and results."
-    },
-    {
-     "name": "related_tables",
-     "table": "sponsor",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many issues are published?",
-    "whyItMatters": "Philippa quotes the published count in the sponsor pitch.",
-    "expect": {
-     "table": "issue",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Published"
-     },
-     "answer": 6,
-     "unit": "issues"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the issue board.",
-    "action": {
-     "kind": "open",
-     "surface": "issue_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "issue_board",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the send calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "issue_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "issue_calendar",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the sponsor board.",
-    "action": {
-     "kind": "open",
-     "surface": "sponsor_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "sponsor_board",
-     "minItems": 4
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "tidelinepress.net",
-    "quillmarknotebooks.net",
-    "harborlightcoffee.net",
-    "northbeamanalytics.net",
-    "fernwoodbooks.net"
-   ],
-   "fictionalStreets": [
-    "Salt Marsh Court"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "newsletter-planner",
-   "parent": null,
-   "title": "Newsletter Planner",
-   "icon": {
+  "version": 2,
+  "title": "Newsletter Planner",
+  "description": "An idea bank, send calendar and sponsor board for a newsletter or publication.",
+  "forWho": "Newsletter editors and small publishers",
+  "icon": {
     "emoji": "📰"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Run a newsletter from idea to send. Ideas wait in the bank, drafts move across the board, and sponsors are booked against issues."
-      }
-     ],
-     "background": "orange",
-     "props": {
-      "icon": "Mail"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:performance-review"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:issue-template"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:send-day-checklist"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:sponsor-rate-card"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.4
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Idea bank"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "issue",
-           "view": "issue_board"
-          },
-          "inline": true,
-          "title": "Issues",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-ideas",
-            "name": "Ideas",
-            "layout": "list",
-            "icon": "List",
-            "filters": {
-             "status": "Idea"
-            }
-           }
-          ],
-          "activeViewId": "view-ideas"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.6
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "In progress"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "issue",
-           "view": "issue_board"
-          },
-          "inline": true,
-          "title": "Issues",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-in-progress",
-            "name": "In progress",
-            "layout": "grid",
-            "icon": "Table",
-            "filters": {
-             "status": [
-              "Draft",
-              "Ready",
-              "Scheduled"
-             ]
-            },
-            "sorts": [
-             {
-              "field": "send_on",
-              "direction": "asc"
-             }
-            ]
-           }
-          ],
-          "activeViewId": "view-in-progress"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Calendar"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "issue",
-       "view": "issue_board"
-      },
-      "inline": true,
-      "title": "Issues",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-calendar",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "send_on"
-       },
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-performance",
-        "name": "Performance",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": "Published"
-        },
-        "sorts": [
-         {
-          "field": "send_on",
-          "direction": "desc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-calendar"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Sponsors"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "sponsor",
-       "view": "sponsor_board"
-      },
-      "inline": true,
-      "title": "Sponsors",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-rates",
-        "name": "Rates",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "rate",
-          "direction": "desc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-desert-dunes",
     "offsetY": 50
-   }
   },
-  {
-   "key": "performance-review",
-   "parent": "newsletter-planner",
-   "title": "Performance review",
-   "icon": {
-    "emoji": "📈"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "issue",
-           "view": "all_issues"
-          },
-          "inline": true,
-          "title": "Issues",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-issues-by-status",
-            "name": "Issues by status",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-issues-by-status"
-         }
-        }
-       ]
+  "category": "marketing",
+  "tags": [
+    "newsletter",
+    "editorial",
+    "sponsors",
+    "email"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0156",
+    "catalogueId": "SP0156",
+    "useCase": "Philippa Aldous edits a weekly newsletter and uses this to track issues from idea to send and keep sponsors lined up.",
+    "industry": "cross_industry",
+    "vertical": "Publishing",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "kanban",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Tideline Press",
+      "describes": "An independent publisher of a weekly newsletter about reading and writing.",
+      "address": {
+        "line1": "12 Salt Marsh Court",
+        "city": "Boston",
+        "region": "MA",
+        "postalCode": "02110",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "issue",
-           "view": "all_issues"
-          },
-          "inline": true,
-          "title": "Issues",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-open-rate-by-section",
-            "name": "Open rate by section",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "section",
-             "op": "avg",
-             "field": "open_rate"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-open-rate-by-section"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "sponsor",
-           "view": "all_sponsors"
-          },
-          "inline": true,
-          "title": "Sponsors",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-rate-by-slot",
-            "name": "Rate by slot",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "slot",
-             "op": "sum",
-             "field": "rate"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-rate-by-slot"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(617) 555-0170",
+      "website": "tidelinepress.net",
+      "email": "hello@tidelinepress.net",
+      "timezone": "America/New_York"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-sp0156",
+    "tables": [
       {
-       "text": "Best performers"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "issue",
-       "view": "all_issues"
+        "token": "sponsor",
+        "name": "Sponsors",
+        "labelSingular": "Sponsor",
+        "labelPlural": "Sponsors",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-dollar-sign",
+        "titleField": "sponsor_name",
+        "describes": "Advertisers who sponsor issues, their slot and rate.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "sponsor_name",
+            "label": "Sponsor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Booked",
+              "Delivered",
+              "Paid"
+            ],
+            "choiceColors": {
+              "Prospect": "blue",
+              "Booked": "green",
+              "Delivered": "amber",
+              "Paid": "violet"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Booked": "in_progress",
+              "Delivered": "done",
+              "Paid": "done"
+            }
+          },
+          {
+            "key": "slot",
+            "label": "Slot",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Top",
+              "Middle",
+              "Footer"
+            ],
+            "choiceColors": {
+              "Top": "blue",
+              "Middle": "green",
+              "Footer": "amber"
+            }
+          },
+          {
+            "key": "rate",
+            "label": "Rate",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "sponsor_email",
+            "label": "Contact",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "issue_count",
+            "label": "Issues sponsored",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "issues",
+            "pick": "subject",
+            "agg": "count"
+          },
+          {
+            "key": "pitch",
+            "label": "What they sell",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sp01",
+            "values": {
+              "sponsor_name": "Quillmark Notebooks",
+              "status": "Paid",
+              "slot": "Top",
+              "rate": 1800,
+              "sponsor_email": "partners@quillmarknotebooks.net",
+              "pitch": "Accounting software for creators"
+            }
+          },
+          {
+            "key": "sp02",
+            "values": {
+              "sponsor_name": "Harbor Light Coffee",
+              "status": "Delivered",
+              "slot": "Middle",
+              "rate": 950,
+              "sponsor_email": "ads@harborlightcoffee.net",
+              "pitch": "Standing desks and chairs"
+            }
+          },
+          {
+            "key": "sp03",
+            "values": {
+              "sponsor_name": "Northbeam Analytics",
+              "status": "Booked",
+              "slot": "Top",
+              "rate": 2200,
+              "sponsor_email": "media@northbeamanalytics.net",
+              "pitch": "A podcast hosting service"
+            }
+          },
+          {
+            "key": "sp04",
+            "values": {
+              "sponsor_name": "Fernwood Books",
+              "status": "Prospect",
+              "slot": "Footer",
+              "rate": 600,
+              "sponsor_email": "hello@fernwoodbooks.net",
+              "pitch": "Online course platform"
+            }
+          }
+        ]
       },
-      "inline": true,
-      "title": "Issues",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-published",
-        "name": "Published",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": "Published"
+      {
+        "before": [
+          [
+            "draft_due",
+            "send_on"
+          ]
+        ],
+        "independentOf": {
+          "sponsor": "Sponsor and this record each keep their own dates and status.",
+          "writer": "Anyone on the team can own this, whenever they joined."
         },
+        "statusAgrees": [],
+        "token": "issue",
+        "name": "Issues",
+        "labelSingular": "Issue",
+        "labelPlural": "Issues",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "mail",
+        "titleField": "subject",
+        "describes": "Every issue from idea to send, with its sponsor and results.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "subject",
+            "label": "Working title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Idea",
+              "Draft",
+              "Ready",
+              "Scheduled",
+              "Published"
+            ],
+            "choiceColors": {
+              "Idea": "blue",
+              "Draft": "green",
+              "Ready": "amber",
+              "Scheduled": "violet",
+              "Published": "teal"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Draft": "todo",
+              "Ready": "todo",
+              "Scheduled": "in_progress",
+              "Published": "done"
+            }
+          },
+          {
+            "key": "draft_due",
+            "label": "Draft due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "send_on",
+            "label": "Send date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "writer",
+            "label": "Writer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "section",
+            "label": "Section",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Feature",
+              "Roundup",
+              "Interview",
+              "Opinion",
+              "Guide"
+            ],
+            "choiceColors": {
+              "Feature": "blue",
+              "Roundup": "green",
+              "Interview": "amber",
+              "Opinion": "violet",
+              "Guide": "teal"
+            }
+          },
+          {
+            "key": "subject_line",
+            "label": "Subject line",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "preview",
+            "label": "Preview text",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sponsor",
+            "label": "Sponsor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sponsor",
+            "relationMax": 1
+          },
+          {
+            "key": "open_rate",
+            "label": "Open rate (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "click_rate",
+            "label": "Click rate (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sent_btn",
+            "label": "Mark published",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "issue_sent"
+            }
+          },
+          {
+            "key": "ready_btn",
+            "label": "Mark ready",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "issue_ready"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "is01",
+            "values": {
+              "subject": "The quiet return of letter writing",
+              "status": "Published",
+              "draft_due": "@today-50d",
+              "send_on": "@today-45d",
+              "writer": "tm-02",
+              "section": "Feature",
+              "subject_line": "Why people are writing letters again",
+              "preview": "Five readers on what changed",
+              "sponsor": "sp01",
+              "open_rate": 47,
+              "click_rate": 6
+            }
+          },
+          {
+            "key": "is02",
+            "values": {
+              "subject": "Ten newsletters worth your mornings",
+              "status": "Published",
+              "draft_due": "@today-43d",
+              "send_on": "@today-38d",
+              "writer": "tm-03",
+              "section": "Roundup",
+              "subject_line": "Ten reads for your commute",
+              "preview": "Our staff picks",
+              "open_rate": 52,
+              "click_rate": 8
+            }
+          },
+          {
+            "key": "is03",
+            "values": {
+              "subject": "Interview: a bookbinder in Providence",
+              "status": "Published",
+              "draft_due": "@today-36d",
+              "send_on": "@today-31d",
+              "writer": "tm-02",
+              "section": "Interview",
+              "subject_line": "She binds by hand and sells out",
+              "preview": "A conversation about slow work",
+              "sponsor": "sp02",
+              "open_rate": 44,
+              "click_rate": 5
+            }
+          },
+          {
+            "key": "is04",
+            "values": {
+              "subject": "What to read before the holidays",
+              "status": "Published",
+              "draft_due": "@today-29d",
+              "send_on": "@today-24d",
+              "writer": "tm-03",
+              "section": "Guide",
+              "subject_line": "Your reading list is here",
+              "preview": "Twelve titles, no spoilers",
+              "sponsor": "sp01",
+              "open_rate": 49,
+              "click_rate": 9
+            }
+          },
+          {
+            "key": "is05",
+            "values": {
+              "subject": "Why long emails are back",
+              "status": "Published",
+              "draft_due": "@today-22d",
+              "send_on": "@today-17d",
+              "writer": "tm-02",
+              "section": "Opinion",
+              "subject_line": "Short is not always better",
+              "preview": "A case for length",
+              "open_rate": 41,
+              "click_rate": 4
+            }
+          },
+          {
+            "key": "is06",
+            "values": {
+              "subject": "Small presses to watch",
+              "status": "Published",
+              "draft_due": "@today-15d",
+              "send_on": "@today-10d",
+              "writer": "tm-03",
+              "section": "Roundup",
+              "subject_line": "Six presses you should know",
+              "preview": "Where the interesting books come from",
+              "sponsor": "sp02",
+              "open_rate": 50,
+              "click_rate": 7
+            }
+          },
+          {
+            "key": "is07",
+            "values": {
+              "subject": "The case for the paper calendar",
+              "status": "Scheduled",
+              "draft_due": "@today-7d",
+              "send_on": "@today",
+              "writer": "tm-02",
+              "section": "Opinion",
+              "subject_line": "A calendar you can hold",
+              "preview": "Why some of us went back",
+              "sponsor": "sp03"
+            }
+          },
+          {
+            "key": "is08",
+            "values": {
+              "subject": "Reader mailbag: your favorite pens",
+              "status": "Ready",
+              "draft_due": "@today-11d",
+              "send_on": "@today-4d",
+              "writer": "tm-03",
+              "section": "Roundup",
+              "subject_line": "Pens, ranked by you",
+              "preview": "Fifty readers weigh in",
+              "sponsor": "sp03"
+            }
+          },
+          {
+            "key": "is09",
+            "values": {
+              "subject": "A guide to indie bookshop subscriptions",
+              "status": "Draft",
+              "draft_due": "@today-16d",
+              "send_on": "@today-9d",
+              "writer": "tm-02",
+              "section": "Guide",
+              "subject_line": "Books that choose you",
+              "preview": "Compared across five shops"
+            }
+          },
+          {
+            "key": "is10",
+            "values": {
+              "subject": "Interview: an archivist on lost letters",
+              "status": "Draft",
+              "draft_due": "@today-4d",
+              "send_on": "@today+3d",
+              "writer": "tm-03",
+              "section": "Interview",
+              "subject_line": "What a century of mail tells us",
+              "preview": "Behind the stacks",
+              "sponsor": "sp04"
+            }
+          },
+          {
+            "key": "is11",
+            "values": {
+              "subject": "Winter reading challenge",
+              "status": "Idea",
+              "writer": "tm-02",
+              "section": "Feature",
+              "subject_line": "Thirty days, thirty pages",
+              "preview": "A shared challenge",
+              "send_on": "@today+2d"
+            }
+          },
+          {
+            "key": "is12",
+            "values": {
+              "subject": "Subscriber survey results",
+              "status": "Idea",
+              "writer": "tm-01",
+              "section": "Feature",
+              "subject_line": "What you told us",
+              "preview": "The numbers behind the issue",
+              "send_on": "@today+5d"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Newsletter issue",
+            "values": {
+              "status": "Idea"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Subject line options"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Option one"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Option two"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Opening note"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Main story"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Three links"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Sponsor block"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Sign-off"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Links to include"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Paste addresses here."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "statusImplies": []
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Writer links to one team member.",
+        "fromTable": "issue",
+        "fromField": "writer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "issues_written"
+      },
+      {
+        "describes": "Sponsor links to one sponsor.",
+        "fromTable": "issue",
+        "fromField": "sponsor",
+        "toTable": "sponsor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "issues"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Philippa Aldous",
+              "role": "Editor in chief",
+              "work_email": "philippa@tidelinepress.net",
+              "mobile": "(617) 555-0171",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Mateusz Kowal",
+              "role": "Staff writer",
+              "work_email": "mateusz@tidelinepress.net",
+              "mobile": "(617) 555-0172",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Zainab Ogunleye",
+              "role": "Staff writer",
+              "work_email": "zainab@tidelinepress.net",
+              "mobile": "(617) 555-0173",
+              "start_date": "@today-18m"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Elliot Varga",
+              "role": "Sponsorship manager",
+              "work_email": "elliot@tidelinepress.net",
+              "mobile": "(617) 555-0174",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "issue_idea",
+        "name": "Pitch an issue",
+        "describes": "How anyone pitches a newsletter idea.",
+        "audience": "staff",
+        "table": "issue",
+        "fields": [
+          {
+            "fieldKey": "subject",
+            "ask": "What is the idea?",
+            "required": true
+          },
+          {
+            "fieldKey": "section",
+            "ask": "Which section?"
+          },
+          {
+            "fieldKey": "preview",
+            "ask": "One line summary?"
+          }
+        ],
+        "submitLabel": "Send the pitch",
+        "confirmation": "Thanks. It is in the idea bank."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "issue_sent",
+        "table": "issue",
+        "name": "Mark published",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Published"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "issue_ready",
+        "table": "issue",
+        "name": "Mark ready",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "sponsor_board",
+        "name": "Board",
+        "table": "sponsor",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
+      },
+      {
+        "token": "all_sponsors",
+        "name": "All sponsors",
+        "table": "sponsor",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "open_rate",
-          "direction": "desc"
-         }
+          {
+            "field": "sponsor_name",
+            "direction": "asc"
+          }
         ]
-       }
+      },
+      {
+        "token": "issue_board",
+        "name": "Board",
+        "table": "issue",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
+      },
+      {
+        "token": "issue_calendar",
+        "name": "Calendar",
+        "table": "issue",
+        "kind": "calendar",
+        "dateField": "send_on",
+        "allDay": true
+      },
+      {
+        "token": "all_issues",
+        "name": "All issues",
+        "table": "issue",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "send_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "issue_week",
+        "name": "Send date this week",
+        "table": "issue",
+        "kind": "grid",
+        "within": {
+          "send_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Draft",
+            "Ready",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "issue_over",
+        "name": "Overdue",
+        "table": "issue",
+        "kind": "grid",
+        "within": {
+          "send_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Draft",
+            "Ready",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "issue_next7",
+        "name": "Next 7 days",
+        "table": "issue",
+        "kind": "grid",
+        "within": {
+          "send_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Draft",
+            "Ready",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "issue_draft_week",
+        "name": "Drafts due this week",
+        "table": "issue",
+        "kind": "grid",
+        "within": {
+          "draft_due": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Draft"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Newsletter assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "issue",
+          "describes": "Every issue from idea to send, with its sponsor and results."
+        },
+        {
+          "name": "related_tables",
+          "table": "sponsor",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-published"
-     }
-    }
-   ]
-  },
-  {
-   "key": "issue-template",
-   "parent": "newsletter-planner",
-   "title": "Issue template",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Subject line options"
+      "question": {
+        "ask": "How many issues are published?",
+        "whyItMatters": "Philippa quotes the published count in the sponsor pitch.",
+        "expect": {
+          "table": "issue",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Published"
+          },
+          "answer": 6,
+          "unit": "issues"
+        }
       }
-     ],
-     "props": {
-      "level": 2
-     }
     },
-    {
-     "type": "numbered",
-     "text": [
+    "walk": [
       {
-       "text": "Option one"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
+        "says": "Open the issue board.",
+        "action": {
+          "kind": "open",
+          "surface": "issue_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "issue_board",
+          "minItems": 10
+        }
+      },
       {
-       "text": "Option two"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
+        "says": "Open the send calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "issue_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "issue_calendar",
+          "minItems": 10
+        }
+      },
       {
-       "text": "Outline"
+        "says": "Open the sponsor board.",
+        "action": {
+          "kind": "open",
+          "surface": "sponsor_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sponsor_board",
+          "minItems": 4
+        }
       }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Opening note"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Main story"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Three links"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Sponsor block"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Sign-off"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Links to include"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Paste addresses here."
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "send-day-checklist",
-   "parent": "newsletter-planner",
-   "title": "Send-day checklist",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Subject line and preview text final"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "All links open"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Sponsor block matches the booking"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Test email read on a phone"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Send time confirmed"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Results recorded two days later"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  },
-  {
-   "key": "sponsor-rate-card",
-   "parent": "newsletter-planner",
-   "title": "Sponsor rate card",
-   "icon": {
-    "emoji": "💳"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "Slot"
-          }
-         ],
-         [
-          {
-           "text": "What it is"
-          }
-         ],
-         [
-          {
-           "text": "Rate"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Top"
-          }
-         ],
-         [
-          {
-           "text": "First block after the opening note"
-          }
-         ],
-         [
-          {
-           "text": "2,200"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Middle"
-          }
-         ],
-         [
-          {
-           "text": "Between the main story and links"
-          }
-         ],
-         [
-          {
-           "text": "950"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Footer"
-          }
-         ],
-         [
-          {
-           "text": "Last block before the sign-off"
-          }
-         ],
-         [
-          {
-           "text": "600"
-          }
-         ]
-        ]
-       }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "tidelinepress.net",
+        "quillmarknotebooks.net",
+        "harborlightcoffee.net",
+        "northbeamanalytics.net",
+        "fernwoodbooks.net"
+      ],
+      "fictionalStreets": [
+        "Salt Marsh Court"
       ]
-     }
+    },
+    "version": 2
+  },
+  "pages": [
+    {
+      "key": "newsletter-planner",
+      "parent": null,
+      "title": "Newsletter Planner",
+      "icon": {
+        "emoji": "📰"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run a newsletter from idea to send. Ideas wait in the bank, drafts move across the board, and sponsors are booked against issues."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Mail"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:performance-review"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:send-day-checklist"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sponsor-rate-card"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Idea bank"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "issue",
+              "view": "issue_board"
+            },
+            "inline": true,
+            "title": "Issues",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-ideas",
+                "name": "Ideas",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Idea"
+                }
+              },
+              {
+                "id": "view-issue-week",
+                "name": "Send date this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "send_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Draft",
+                    "Ready",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-issue-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "send_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Draft",
+                    "Ready",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-issue-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "send_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Draft",
+                    "Ready",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-issue-draft-week",
+                "name": "Drafts due this week",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "draft_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Draft"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-ideas"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In progress"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "issue",
+              "view": "issue_board"
+            },
+            "inline": true,
+            "title": "Issues",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-in-progress",
+                "name": "In progress",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Draft",
+                    "Ready",
+                    "Scheduled"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "send_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-in-progress"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "issue",
+              "view": "issue_board"
+            },
+            "inline": true,
+            "title": "Issues",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-calendar",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "send_on"
+              },
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-performance",
+                "name": "Performance",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Published"
+                },
+                "sorts": [
+                  {
+                    "field": "send_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sponsor",
+              "view": "sponsor_board"
+            },
+            "inline": true,
+            "title": "Sponsors",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-rates",
+                "name": "Rates",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "rate",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      }
     },
     {
-     "type": "text",
-     "text": [
-      {
-       "text": "Discounts apply for four or more issues booked together."
-      }
-     ]
+      "key": "performance-review",
+      "parent": "newsletter-planner",
+      "title": "Issue performance",
+      "icon": {
+        "emoji": "📈"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open and click rates are typed in a day or two after each send. Use these charts to see which sections your readers actually open, then do more of them."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "issue",
+                      "view": "all_issues"
+                    },
+                    "inline": true,
+                    "title": "Issues",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-issues-by-status",
+                        "name": "Issues by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-issues-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "issue",
+                      "view": "all_issues"
+                    },
+                    "inline": true,
+                    "title": "Issues",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-open-rate-by-section",
+                        "name": "Open rate by section",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "section",
+                          "op": "avg",
+                          "field": "open_rate"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-open-rate-by-section"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "sponsor",
+                      "view": "all_sponsors"
+                    },
+                    "inline": true,
+                    "title": "Sponsors",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-rate-by-slot",
+                        "name": "Rate by slot",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "slot",
+                          "op": "sum",
+                          "field": "rate"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-rate-by-slot"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Best performers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "issue",
+              "view": "all_issues"
+            },
+            "inline": true,
+            "title": "Issues",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-published",
+                "name": "Published",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Published"
+                },
+                "sorts": [
+                  {
+                    "field": "open_rate",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-published"
+          }
+        }
+      ]
+    },
+    {
+      "key": "send-day-checklist",
+      "parent": "newsletter-planner",
+      "title": "Send-day checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Subject line and preview text final"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All links open"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sponsor block matches the booking"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Test email read on a phone"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send time confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Results recorded two days later"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sponsor-rate-card",
+      "parent": "newsletter-planner",
+      "title": "Sponsor rate card",
+      "icon": {
+        "emoji": "💳"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Slot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Top"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First block after the opening note"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2,200"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Middle"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Between the main story and links"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "950"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Footer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Last block before the sign-off"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "600"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Discounts apply for four or more issues booked together."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to quote a sponsor"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the slot. Top is read by almost everyone; footer is cheaper and still gets clicks."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer a bundle of four issues. It saves you chasing, and the discount feels real."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the assets deadline with the quote: copy, logo and link are due five days before send."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Raise your rates when a slot sells out two issues in a row."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "TrendingUp"
+          }
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

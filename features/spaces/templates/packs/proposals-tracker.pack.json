@@ -1,1545 +1,1779 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0160",
- "version": 1,
- "title": "Proposals Tracker",
- "description": "Track proposals from draft to decision, with line items and expiry dates.",
- "forWho": "Agencies and freelancers",
- "icon": {
-  "emoji": "📄"
- },
- "cover": {
-  "url": "gallery:photo-golden-palms",
-  "offsetY": 50
- },
- "category": "sales",
- "tags": [
-  "proposals",
-  "sales",
-  "pricing",
-  "agency"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0160",
+  "packVersion": 1,
   "catalogueId": "SP0160",
-  "useCase": "Beatrix Montgomery runs an agency and uses this to see which proposals are out, which expire soon and which she wins.",
-  "industry": "cross_industry",
-  "vertical": "Sales proposals",
-  "job": "crm_pipeline",
-  "audience": "organization",
-  "teaches": "kanban",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Ashgrove Creative",
-   "describes": "A creative agency that sends several proposals a week.",
-   "address": {
-    "line1": "9 Hollis Mill Road",
-    "city": "Raleigh",
-    "region": "NC",
-    "postalCode": "27601",
-    "country": "US"
-   },
-   "phone": "(919) 555-0140",
-   "website": "ashgrovecreative.net",
-   "email": "hello@ashgrovecreative.net",
-   "timezone": "America/New_York"
-  },
-  "cleanupTag": "use-case:spaces-sp0160",
-  "tables": [
-   {
-    "before": [
-     [
-      "sent_on",
-      "valid_until"
-     ]
-    ],
-    "independentOf": {
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "statusImplies": [
-     {
-      "field": "status",
-      "when": [
-       "Sent",
-       "Viewed",
-       "Negotiating",
-       "Accepted",
-       "Declined",
-       "Expired"
-      ],
-      "filled": [
-       "sent_on",
-       "valid_until"
-      ]
-     }
-    ],
-    "token": "proposal",
-    "name": "Proposals",
-    "labelSingular": "Proposal",
-    "labelPlural": "Proposals",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "file-signature",
-    "titleField": "proposal_name",
-    "describes": "Every proposal from draft to decision with its value and expiry.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "proposal_name",
-      "label": "Proposal",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "client_name",
-      "label": "Client",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Drafting",
-       "Sent",
-       "Viewed",
-       "Negotiating",
-       "Accepted",
-       "Declined",
-       "Expired"
-      ],
-      "choiceColors": {
-       "Drafting": "blue",
-       "Sent": "amber",
-       "Viewed": "violet",
-       "Negotiating": "teal",
-       "Accepted": "green",
-       "Declined": "red",
-       "Expired": "slate"
-      },
-      "required": true,
-      "default": "Drafting"
-     },
-     {
-      "key": "value",
-      "label": "Value",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 500000
-       }
-      ]
-     },
-     {
-      "key": "sent_on",
-      "label": "Sent",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "valid_until",
-      "label": "Valid until",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "days_left",
-      "label": "Days left",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "DATEDIFF(TODAY(), {Valid until}, 'days')"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "document",
-      "label": "Document",
-      "parityType": "url",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "reason",
-      "label": "Decision reason",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Price",
-       "Timing",
-       "Scope",
-       "Went with another vendor",
-       "Won on fit"
-      ],
-      "choiceColors": {
-       "Price": "blue",
-       "Timing": "green",
-       "Scope": "amber",
-       "Went with another vendor": "violet",
-       "Won on fit": "teal"
-      }
-     },
-     {
-      "key": "lines",
-      "label": "Line items",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "item",
-      "multi": true
-     },
-     {
-      "key": "itemized",
-      "label": "Itemized total",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "lines",
-      "pick": "line_total",
-      "agg": "sum"
-     }
-    ],
-    "rows": [
-     {
-      "key": "pp01",
-      "values": {
-       "proposal_name": "Brand refresh for Linden Hardware",
-       "client_name": "Linden Hardware",
-       "status": "Accepted",
-       "value": 28500,
-       "sent_on": "@today-40d",
-       "valid_until": "@today-10d",
-       "owner": "tm-02",
-       "document": "https://ashgrovecreative.net/p/linden-brand",
-       "reason": "Won on fit",
-       "lines": []
-      }
-     },
-     {
-      "key": "pp02",
-      "values": {
-       "proposal_name": "Website redesign for Fogarty Dental",
-       "client_name": "Fogarty Dental",
-       "status": "Negotiating",
-       "value": 36000,
-       "sent_on": "@today-12d",
-       "valid_until": "@today+18d",
-       "owner": "tm-02",
-       "document": "https://ashgrovecreative.net/p/fogarty-site",
-       "lines": [
-        "it01",
-        "it02",
-        "it03"
-       ]
-      }
-     },
-     {
-      "key": "pp03",
-      "values": {
-       "proposal_name": "Launch video for Tamarind Foods",
-       "client_name": "Tamarind Foods",
-       "status": "Sent",
-       "value": 19500,
-       "sent_on": "@today-4d",
-       "valid_until": "@today+26d",
-       "owner": "tm-04",
-       "document": "https://ashgrovecreative.net/p/tamarind-video",
-       "lines": [
-        "it04",
-        "it05",
-        "it06"
-       ]
-      }
-     },
-     {
-      "key": "pp04",
-      "values": {
-       "proposal_name": "Annual social retainer for Oakhurst Realty",
-       "client_name": "Oakhurst Realty",
-       "status": "Viewed",
-       "value": 24000,
-       "sent_on": "@today-6d",
-       "valid_until": "@today+24d",
-       "owner": "tm-01",
-       "document": "https://ashgrovecreative.net/p/oakhurst-social",
-       "lines": [
-        "it07",
-        "it08"
-       ]
-      }
-     },
-     {
-      "key": "pp05",
-      "values": {
-       "proposal_name": "Packaging concepts for Bluebird Tea",
-       "client_name": "Bluebird Tea",
-       "status": "Declined",
-       "value": 14000,
-       "sent_on": "@today-55d",
-       "valid_until": "@today-25d",
-       "owner": "tm-03",
-       "document": "https://ashgrovecreative.net/p/bluebird-packaging",
-       "reason": "Price",
-       "lines": []
-      }
-     },
-     {
-      "key": "pp06",
-      "values": {
-       "proposal_name": "Email program for Marigold Pharmacy",
-       "client_name": "Marigold Pharmacy",
-       "status": "Drafting",
-       "value": 12500,
-       "owner": "tm-01",
-       "lines": []
-      }
-     },
-     {
-      "key": "pp07",
-      "values": {
-       "proposal_name": "Trade show booth for Cobalt Valve",
-       "client_name": "Cobalt Valve",
-       "status": "Sent",
-       "value": 41000,
-       "sent_on": "@today-9d",
-       "valid_until": "@today+5d",
-       "owner": "tm-02",
-       "document": "https://ashgrovecreative.net/p/cobalt-booth",
-       "lines": [
-        "it09",
-        "it10",
-        "it11"
-       ]
-      }
-     },
-     {
-      "key": "pp08",
-      "values": {
-       "proposal_name": "Photography library for Redwood Lodge",
-       "client_name": "Redwood Lodge",
-       "status": "Expired",
-       "value": 16800,
-       "sent_on": "@today-70d",
-       "valid_until": "@today-40d",
-       "owner": "tm-04",
-       "document": "https://ashgrovecreative.net/p/redwood-photo",
-       "reason": "Timing",
-       "lines": []
-      }
-     },
-     {
-      "key": "pp09",
-      "values": {
-       "proposal_name": "Audit and roadmap for Starling Bank Group",
-       "client_name": "Starling Bank Group",
-       "status": "Accepted",
-       "value": 9800,
-       "sent_on": "@today-30d",
-       "valid_until": "@today",
-       "owner": "tm-03",
-       "document": "https://ashgrovecreative.net/p/starling-audit",
-       "reason": "Scope",
-       "lines": []
-      }
-     },
-     {
-      "key": "pp10",
-      "values": {
-       "proposal_name": "Podcast launch for Ferris & Ward",
-       "client_name": "Ferris & Ward",
-       "status": "Sent",
-       "value": 11200,
-       "sent_on": "@today-2d",
-       "valid_until": "@today+8d",
-       "owner": "tm-04",
-       "document": "https://ashgrovecreative.net/p/ferris-podcast",
-       "lines": [
-        "it12",
-        "it13",
-        "it14"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "proposal": "Proposal and this record each keep their own dates and status."
-    },
-    "withinParent": [
-     {
-      "relation": "proposal",
-      "field": "unit_price",
-      "op": "<=",
-      "parentField": "value"
-     }
-    ],
-    "token": "item",
-    "name": "Line items",
-    "labelSingular": "Line item",
-    "labelPlural": "Line items",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "list",
-    "titleField": "item_name",
-    "describes": "The itemized lines inside each proposal.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "item_name",
-      "label": "Line description",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "proposal",
-      "label": "Proposal",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "proposal",
-      "relationMax": 1
-     },
-     {
-      "key": "qty",
-      "label": "Quantity",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 1
-       },
-       {
-        "kind": "max",
-        "value": 1000
-       }
-      ]
-     },
-     {
-      "key": "unit_price",
-      "label": "Unit price",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "line_total",
-      "label": "Line total",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "{Quantity} * {Unit price}"
-     }
-    ],
-    "rows": [
-     {
-      "key": "it01",
-      "values": {
-       "item_name": "Discovery workshop",
-       "proposal": "pp02",
-       "qty": 1,
-       "unit_price": 4500
-      }
-     },
-     {
-      "key": "it02",
-      "values": {
-       "item_name": "Wireframes and design",
-       "proposal": "pp02",
-       "qty": 1,
-       "unit_price": 12000
-      }
-     },
-     {
-      "key": "it03",
-      "values": {
-       "item_name": "Development and launch",
-       "proposal": "pp02",
-       "qty": 1,
-       "unit_price": 19500
-      }
-     },
-     {
-      "key": "it04",
-      "values": {
-       "item_name": "Script and storyboard",
-       "proposal": "pp03",
-       "qty": 1,
-       "unit_price": 3500
-      }
-     },
-     {
-      "key": "it05",
-      "values": {
-       "item_name": "Shoot days",
-       "proposal": "pp03",
-       "qty": 2,
-       "unit_price": 5500
-      }
-     },
-     {
-      "key": "it06",
-      "values": {
-       "item_name": "Edit and delivery",
-       "proposal": "pp03",
-       "qty": 1,
-       "unit_price": 5000
-      }
-     },
-     {
-      "key": "it07",
-      "values": {
-       "item_name": "Monthly posting plan",
-       "proposal": "pp04",
-       "qty": 12,
-       "unit_price": 1500
-      }
-     },
-     {
-      "key": "it08",
-      "values": {
-       "item_name": "Community management",
-       "proposal": "pp04",
-       "qty": 12,
-       "unit_price": 500
-      }
-     },
-     {
-      "key": "it09",
-      "values": {
-       "item_name": "Booth design",
-       "proposal": "pp07",
-       "qty": 1,
-       "unit_price": 14000
-      }
-     },
-     {
-      "key": "it10",
-      "values": {
-       "item_name": "Fabrication and install",
-       "proposal": "pp07",
-       "qty": 1,
-       "unit_price": 22000
-      }
-     },
-     {
-      "key": "it11",
-      "values": {
-       "item_name": "Graphics set",
-       "proposal": "pp07",
-       "qty": 3,
-       "unit_price": 1666
-      }
-     },
-     {
-      "key": "it12",
-      "values": {
-       "item_name": "Episode planning",
-       "proposal": "pp10",
-       "qty": 1,
-       "unit_price": 2200
-      }
-     },
-     {
-      "key": "it13",
-      "values": {
-       "item_name": "Recording sessions",
-       "proposal": "pp10",
-       "qty": 6,
-       "unit_price": 900
-      }
-     },
-     {
-      "key": "it14",
-      "values": {
-       "item_name": "Editing per episode",
-       "proposal": "pp10",
-       "qty": 6,
-       "unit_price": 600
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "proposal",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "proposals_owned"
-   },
-   {
-    "describes": "Line items lists its item records.",
-    "fromTable": "proposal",
-    "fromField": "lines",
-    "toTable": "item",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "proposal_listed_lines"
-   },
-   {
-    "describes": "Proposal links to one proposal.",
-    "fromTable": "item",
-    "fromField": "proposal",
-    "toTable": "proposal",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "items_of"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Beatrix Montgomery",
-       "role": "Agency principal",
-       "work_email": "beatrix@ashgrovecreative.net",
-       "mobile": "(919) 555-0141",
-       "start_date": "@today-7y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Kenji Watanabe-Cole",
-       "role": "Account director",
-       "work_email": "kenji@ashgrovecreative.net",
-       "mobile": "(919) 555-0142",
-       "start_date": "@today-4y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Rhiannon Pugh",
-       "role": "Strategist",
-       "work_email": "rhiannon@ashgrovecreative.net",
-       "mobile": "(919) 555-0143",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Ulysses Adeyemi",
-       "role": "Producer",
-       "work_email": "ulysses@ashgrovecreative.net",
-       "mobile": "(919) 555-0144",
-       "start_date": "@today-13m"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "new_proposal",
-    "name": "Start a proposal",
-    "describes": "How a seller starts a proposal.",
-    "audience": "staff",
-    "table": "proposal",
-    "fields": [
-     {
-      "fieldKey": "proposal_name",
-      "ask": "What is the proposal called?",
-      "required": true
-     },
-     {
-      "fieldKey": "client_name",
-      "ask": "Who is it for?"
-     },
-     {
-      "fieldKey": "value",
-      "ask": "Expected value?"
-     },
-     {
-      "fieldKey": "valid_until",
-      "ask": "How long is it valid?"
-     }
-    ],
-    "submitLabel": "Start the proposal",
-    "confirmation": "Thanks. It is on the board as Drafting."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "proposal_board",
-    "name": "Board",
-    "table": "proposal",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "proposal_calendar",
-    "name": "Sent calendar",
-    "table": "proposal",
-    "kind": "calendar",
-    "dateField": "sent_on",
-    "allDay": true
-   },
-   {
-    "token": "all_proposals",
-    "name": "All proposals",
-    "table": "proposal",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "valid_until",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_items",
-    "name": "All items",
-    "table": "item",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "item_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Proposals assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "proposal",
-     "describes": "Every proposal from draft to decision with its value and expiry."
-    },
-    {
-     "name": "related_tables",
-     "table": "item",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many proposals are waiting on a client?",
-    "whyItMatters": "Beatrix chases sent proposals every Thursday.",
-    "expect": {
-     "table": "proposal",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Sent"
-     },
-     "answer": 3,
-     "unit": "proposals"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the proposal board.",
-    "action": {
-     "kind": "open",
-     "surface": "proposal_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "proposal_board",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the sent calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "proposal_calendar"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "proposal_calendar",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open all line items.",
-    "action": {
-     "kind": "open",
-     "surface": "all_items"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_items",
-     "minItems": 10
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "ashgrovecreative.net"
-   ],
-   "fictionalStreets": [
-    "Hollis Mill Road"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "proposals-tracker",
-   "parent": null,
-   "title": "Proposals Tracker",
-   "icon": {
+  "version": 2,
+  "title": "Proposals Tracker",
+  "description": "Track proposals from draft to decision, with line items and expiry dates.",
+  "forWho": "Agencies and freelancers",
+  "icon": {
     "emoji": "📄"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Know what is out, what is about to expire and how often proposals win. Open a proposal to see its line items."
-      }
-     ],
-     "background": "orange",
-     "props": {
-      "icon": "FileText"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:win-loss-dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:proposal-template"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:follow-up-schedule"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:pricing-notes"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Proposals"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "proposal",
-       "view": "proposal_board"
-      },
-      "inline": true,
-      "title": "Proposals",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-expiring-soon",
-        "name": "Expiring soon",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "Sent",
-          "Viewed"
-         ]
-        },
-        "sorts": [
-         {
-          "field": "valid_until",
-          "direction": "asc"
-         }
-        ]
-       },
-       {
-        "id": "view-win-and-loss",
-        "name": "Win and loss",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "status",
-          "direction": "asc"
-         }
-        ]
-       },
-       {
-        "id": "view-sent-calendar",
-        "name": "Sent calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "sent_on"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Line items"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "item",
-       "view": "all_items"
-      },
-      "inline": true,
-      "title": "Line items",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-items",
-        "name": "All items",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-all-items"
-     }
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
-   }
   },
-  {
-   "key": "win-loss-dashboard",
-   "parent": "proposals-tracker",
-   "title": "Win and loss dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "proposal",
-           "view": "all_proposals"
-          },
-          "inline": true,
-          "title": "Proposals",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-proposals-by-status",
-            "name": "Proposals by status",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-proposals-by-status"
-         }
-        }
-       ]
+  "category": "sales",
+  "tags": [
+    "proposals",
+    "sales",
+    "pricing",
+    "agency"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0160",
+    "catalogueId": "SP0160",
+    "useCase": "Beatrix Montgomery runs an agency and uses this to see which proposals are out, which expire soon and which she wins.",
+    "industry": "cross_industry",
+    "vertical": "Sales proposals",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "kanban",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Ashgrove Creative",
+      "describes": "A creative agency that sends several proposals a week.",
+      "address": {
+        "line1": "9 Hollis Mill Road",
+        "city": "Raleigh",
+        "region": "NC",
+        "postalCode": "27601",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "proposal",
-           "view": "all_proposals"
-          },
-          "inline": true,
-          "title": "Proposals",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-value-by-status",
-            "name": "Value by status",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "status",
-             "op": "sum",
-             "field": "value"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-value-by-status"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "proposal",
-           "view": "all_proposals"
-          },
-          "inline": true,
-          "title": "Proposals",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-decision-reasons",
-            "name": "Decision reasons",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "reason",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-decision-reasons"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(919) 555-0140",
+      "website": "ashgrovecreative.net",
+      "email": "hello@ashgrovecreative.net",
+      "timezone": "America/New_York"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-sp0160",
+    "tables": [
       {
-       "text": "Waiting on a decision"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "proposal",
-       "view": "all_proposals"
-      },
-      "inline": true,
-      "title": "Proposals",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-open",
-        "name": "Open",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": [
-          "Sent",
-          "Viewed",
-          "Negotiating"
-         ]
+        "before": [
+          [
+            "sent_on",
+            "valid_until"
+          ]
+        ],
+        "independentOf": {
+          "owner": "Anyone on the team can own this, whenever they joined."
         },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Sent",
+              "Viewed",
+              "Negotiating",
+              "Accepted",
+              "Declined",
+              "Expired"
+            ],
+            "filled": [
+              "sent_on",
+              "valid_until"
+            ]
+          }
+        ],
+        "token": "proposal",
+        "name": "Proposals",
+        "labelSingular": "Proposal",
+        "labelPlural": "Proposals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-signature",
+        "titleField": "proposal_name",
+        "describes": "Every proposal from draft to decision with its value and expiry.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "proposal_name",
+            "label": "Proposal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Drafting",
+              "Sent",
+              "Viewed",
+              "Negotiating",
+              "Accepted",
+              "Declined",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Drafting": "blue",
+              "Sent": "amber",
+              "Viewed": "violet",
+              "Negotiating": "teal",
+              "Accepted": "green",
+              "Declined": "red",
+              "Expired": "slate"
+            },
+            "required": true,
+            "default": "Drafting",
+            "statusGroups": {
+              "Drafting": "todo",
+              "Sent": "in_progress",
+              "Viewed": "in_progress",
+              "Negotiating": "in_progress",
+              "Accepted": "done",
+              "Declined": "done",
+              "Expired": "done"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "sent_on",
+            "label": "Sent",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "valid_until",
+            "label": "Valid until",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_left",
+            "label": "Days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Valid until}, 'days')"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "document",
+            "label": "Document",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reason",
+            "label": "Decision reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Price",
+              "Timing",
+              "Scope",
+              "Went with another vendor",
+              "Won on fit"
+            ],
+            "choiceColors": {
+              "Price": "blue",
+              "Timing": "green",
+              "Scope": "amber",
+              "Went with another vendor": "violet",
+              "Won on fit": "teal"
+            }
+          },
+          {
+            "key": "itemized",
+            "label": "Itemized total",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "lines",
+            "pick": "line_total",
+            "agg": "sum"
+          },
+          {
+            "key": "gap",
+            "label": "Value vs itemized",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Value} - {Itemized total}"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "won_btn",
+            "label": "Mark accepted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "proposal_won"
+            }
+          },
+          {
+            "key": "lost_btn",
+            "label": "Mark declined",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "proposal_lost"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pp01",
+            "values": {
+              "proposal_name": "Brand refresh for Linden Hardware",
+              "client_name": "Linden Hardware",
+              "status": "Accepted",
+              "value": 28500,
+              "sent_on": "@today-40d",
+              "valid_until": "@today-10d",
+              "owner": "tm-02",
+              "document": "https://ashgrovecreative.net/p/linden-brand",
+              "reason": "Won on fit"
+            }
+          },
+          {
+            "key": "pp02",
+            "values": {
+              "proposal_name": "Website redesign for Fogarty Dental",
+              "client_name": "Fogarty Dental",
+              "status": "Negotiating",
+              "value": 36000,
+              "sent_on": "@today-7d",
+              "valid_until": "@today",
+              "owner": "tm-02",
+              "document": "https://ashgrovecreative.net/p/fogarty-site"
+            }
+          },
+          {
+            "key": "pp03",
+            "values": {
+              "proposal_name": "Launch video for Tamarind Foods",
+              "client_name": "Tamarind Foods",
+              "status": "Sent",
+              "value": 19500,
+              "sent_on": "@today-11d",
+              "valid_until": "@today-4d",
+              "owner": "tm-04",
+              "document": "https://ashgrovecreative.net/p/tamarind-video"
+            }
+          },
+          {
+            "key": "pp04",
+            "values": {
+              "proposal_name": "Annual social retainer for Oakhurst Realty",
+              "client_name": "Oakhurst Realty",
+              "status": "Viewed",
+              "value": 24000,
+              "sent_on": "@today-16d",
+              "valid_until": "@today-9d",
+              "owner": "tm-01",
+              "document": "https://ashgrovecreative.net/p/oakhurst-social"
+            }
+          },
+          {
+            "key": "pp05",
+            "values": {
+              "proposal_name": "Packaging concepts for Bluebird Tea",
+              "client_name": "Bluebird Tea",
+              "status": "Declined",
+              "value": 14000,
+              "sent_on": "@today-55d",
+              "valid_until": "@today-25d",
+              "owner": "tm-03",
+              "document": "https://ashgrovecreative.net/p/bluebird-packaging",
+              "reason": "Price"
+            }
+          },
+          {
+            "key": "pp06",
+            "values": {
+              "proposal_name": "Email program for Marigold Pharmacy",
+              "client_name": "Marigold Pharmacy",
+              "status": "Drafting",
+              "value": 12500,
+              "owner": "tm-01"
+            }
+          },
+          {
+            "key": "pp07",
+            "values": {
+              "proposal_name": "Trade show booth for Cobalt Valve",
+              "client_name": "Cobalt Valve",
+              "status": "Sent",
+              "value": 41000,
+              "sent_on": "@today-4d",
+              "valid_until": "@today+3d",
+              "owner": "tm-02",
+              "document": "https://ashgrovecreative.net/p/cobalt-booth"
+            }
+          },
+          {
+            "key": "pp08",
+            "values": {
+              "proposal_name": "Photography library for Redwood Lodge",
+              "client_name": "Redwood Lodge",
+              "status": "Expired",
+              "value": 16800,
+              "sent_on": "@today-70d",
+              "valid_until": "@today-40d",
+              "owner": "tm-04",
+              "document": "https://ashgrovecreative.net/p/redwood-photo",
+              "reason": "Timing"
+            }
+          },
+          {
+            "key": "pp09",
+            "values": {
+              "proposal_name": "Audit and roadmap for Starling Bank Group",
+              "client_name": "Starling Bank Group",
+              "status": "Accepted",
+              "value": 9800,
+              "sent_on": "@today-30d",
+              "valid_until": "@today",
+              "owner": "tm-03",
+              "document": "https://ashgrovecreative.net/p/starling-audit",
+              "reason": "Scope"
+            }
+          },
+          {
+            "key": "pp10",
+            "values": {
+              "proposal_name": "Podcast launch for Ferris & Ward",
+              "client_name": "Ferris & Ward",
+              "status": "Sent",
+              "value": 11200,
+              "sent_on": "@today-5d",
+              "valid_until": "@today+2d",
+              "owner": "tm-04",
+              "document": "https://ashgrovecreative.net/p/ferris-podcast"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Proposal",
+            "values": {
+              "status": "Drafting"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What you will do and the result they get."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope and deliverables"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Deliverable"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pricing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Item"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Quantity"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Unit price"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Total"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Timeline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Milestone and date"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Payment schedule"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Valid for thirty days"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "independentOf": {
+          "proposal": "Proposal and this record each keep their own dates and status."
+        },
+        "withinParent": [
+          {
+            "relation": "proposal",
+            "field": "unit_price",
+            "op": "<=",
+            "parentField": "value"
+          }
+        ],
+        "token": "item",
+        "name": "Line items",
+        "labelSingular": "Line item",
+        "labelPlural": "Line items",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list",
+        "titleField": "item_name",
+        "describes": "The itemized lines inside each proposal.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Line description",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "proposal",
+            "label": "Proposal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "proposal",
+            "relationMax": 1
+          },
+          {
+            "key": "qty",
+            "label": "Quantity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "unit_price",
+            "label": "Unit price",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "line_total",
+            "label": "Line total",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Quantity} * {Unit price}"
+          }
+        ],
+        "rows": [
+          {
+            "key": "it01",
+            "values": {
+              "item_name": "Discovery workshop",
+              "proposal": "pp02",
+              "qty": 1,
+              "unit_price": 4500
+            }
+          },
+          {
+            "key": "it02",
+            "values": {
+              "item_name": "Wireframes and design",
+              "proposal": "pp02",
+              "qty": 1,
+              "unit_price": 12000
+            }
+          },
+          {
+            "key": "it03",
+            "values": {
+              "item_name": "Development and launch",
+              "proposal": "pp02",
+              "qty": 1,
+              "unit_price": 19500
+            }
+          },
+          {
+            "key": "it04",
+            "values": {
+              "item_name": "Script and storyboard",
+              "proposal": "pp03",
+              "qty": 1,
+              "unit_price": 3500
+            }
+          },
+          {
+            "key": "it05",
+            "values": {
+              "item_name": "Shoot days",
+              "proposal": "pp03",
+              "qty": 2,
+              "unit_price": 5500
+            }
+          },
+          {
+            "key": "it06",
+            "values": {
+              "item_name": "Edit and delivery",
+              "proposal": "pp03",
+              "qty": 1,
+              "unit_price": 5000
+            }
+          },
+          {
+            "key": "it07",
+            "values": {
+              "item_name": "Monthly posting plan",
+              "proposal": "pp04",
+              "qty": 12,
+              "unit_price": 1500
+            }
+          },
+          {
+            "key": "it08",
+            "values": {
+              "item_name": "Community management",
+              "proposal": "pp04",
+              "qty": 12,
+              "unit_price": 500
+            }
+          },
+          {
+            "key": "it09",
+            "values": {
+              "item_name": "Booth design",
+              "proposal": "pp07",
+              "qty": 1,
+              "unit_price": 14000
+            }
+          },
+          {
+            "key": "it10",
+            "values": {
+              "item_name": "Fabrication and install",
+              "proposal": "pp07",
+              "qty": 1,
+              "unit_price": 22000
+            }
+          },
+          {
+            "key": "it11",
+            "values": {
+              "item_name": "Graphics set",
+              "proposal": "pp07",
+              "qty": 3,
+              "unit_price": 1666
+            }
+          },
+          {
+            "key": "it12",
+            "values": {
+              "item_name": "Episode planning",
+              "proposal": "pp10",
+              "qty": 1,
+              "unit_price": 2200
+            }
+          },
+          {
+            "key": "it13",
+            "values": {
+              "item_name": "Recording sessions",
+              "proposal": "pp10",
+              "qty": 6,
+              "unit_price": 900
+            }
+          },
+          {
+            "key": "it14",
+            "values": {
+              "item_name": "Editing per episode",
+              "proposal": "pp10",
+              "qty": 6,
+              "unit_price": 600
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "proposal",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "proposals_owned"
+      },
+      {
+        "describes": "Proposal links to one proposal.",
+        "fromTable": "item",
+        "fromField": "proposal",
+        "toTable": "proposal",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "lines"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Beatrix Montgomery",
+              "role": "Agency principal",
+              "work_email": "beatrix@ashgrovecreative.net",
+              "mobile": "(919) 555-0141",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Kenji Watanabe-Cole",
+              "role": "Account director",
+              "work_email": "kenji@ashgrovecreative.net",
+              "mobile": "(919) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Rhiannon Pugh",
+              "role": "Strategist",
+              "work_email": "rhiannon@ashgrovecreative.net",
+              "mobile": "(919) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Ulysses Adeyemi",
+              "role": "Producer",
+              "work_email": "ulysses@ashgrovecreative.net",
+              "mobile": "(919) 555-0144",
+              "start_date": "@today-13m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "new_proposal",
+        "name": "Start a proposal",
+        "describes": "How a seller starts a proposal.",
+        "audience": "staff",
+        "table": "proposal",
+        "fields": [
+          {
+            "fieldKey": "proposal_name",
+            "ask": "What is the proposal called?",
+            "required": true
+          },
+          {
+            "fieldKey": "client_name",
+            "ask": "Who is it for?"
+          },
+          {
+            "fieldKey": "value",
+            "ask": "Expected value?"
+          },
+          {
+            "fieldKey": "valid_until",
+            "ask": "How long is it valid?"
+          }
+        ],
+        "submitLabel": "Start the proposal",
+        "confirmation": "Thanks. It is on the board as Drafting."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "proposal_won",
+        "table": "proposal",
+        "name": "Mark accepted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Accepted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "proposal_lost",
+        "table": "proposal",
+        "name": "Mark declined",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Declined"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "proposal_board",
+        "name": "Board",
+        "table": "proposal",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
+      },
+      {
+        "token": "proposal_calendar",
+        "name": "Sent calendar",
+        "table": "proposal",
+        "kind": "calendar",
+        "dateField": "sent_on",
+        "allDay": true
+      },
+      {
+        "token": "all_proposals",
+        "name": "All proposals",
+        "table": "proposal",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "valid_until",
-          "direction": "asc"
-         }
+          {
+            "field": "valid_until",
+            "direction": "asc"
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-open"
-     }
-    }
-   ]
-  },
-  {
-   "key": "proposal-template",
-   "parent": "proposals-tracker",
-   "title": "Proposal template",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
+      },
       {
-       "text": "Summary"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "What you will do and the result they get."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Scope and deliverables"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Deliverable"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Pricing"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
+        "token": "all_items",
+        "name": "All items",
+        "table": "item",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
           {
-           "text": "Item"
+            "field": "item_name",
+            "direction": "asc"
           }
-         ],
-         [
-          {
-           "text": "Quantity"
-          }
-         ],
-         [
-          {
-           "text": "Unit price"
-          }
-         ],
-         [
-          {
-           "text": "Total"
-          }
-         ]
         ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ]
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
+      },
       {
-       "text": "Timeline"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
       {
-       "text": "Milestone and date"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Terms"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Payment schedule"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Valid for thirty days"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "follow-up-schedule",
-   "parent": "proposals-tracker",
-   "title": "Follow-up schedule",
-   "icon": {
-    "emoji": "⏰"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "When"
+        "token": "proposal_week",
+        "name": "Valid until this week",
+        "table": "proposal",
+        "kind": "grid",
+        "within": {
+          "valid_until": {
+            "relative": "this_week"
           }
-         ],
-         [
-          {
-           "text": "What"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Two days after sending"
-          }
-         ],
-         [
-          {
-           "text": "Check it was received"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "One week"
-          }
-         ],
-         [
-          {
-           "text": "Offer a call to go through it"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Two weeks"
-          }
-         ],
-         [
-          {
-           "text": "Ask what is still open"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Day before it expires"
-          }
-         ],
-         [
-          {
-           "text": "Last reminder with the end date"
-          }
-         ]
-        ]
-       }
-      ]
-     }
-    }
-   ]
-  },
-  {
-   "key": "pricing-notes",
-   "parent": "proposals-tracker",
-   "title": "Pricing notes",
-   "icon": {
-    "emoji": "💰"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Write down why you priced it the way you did. It makes the next proposal faster."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Coins"
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Day rate used"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Margin target"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "What is excluded"
-      }
-     ]
-    },
-    {
-     "type": "toggle",
-     "text": [
-      {
-       "text": "Discount rules"
-      }
-     ],
-     "children": [
-      {
-       "type": "text",
-       "text": [
-        {
-         "text": "Offer at most ten percent for work paid up front."
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Viewed",
+            "Negotiating"
+          ]
         }
-       ]
+      },
+      {
+        "token": "proposal_over",
+        "name": "Overdue",
+        "table": "proposal",
+        "kind": "grid",
+        "within": {
+          "valid_until": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Viewed",
+            "Negotiating"
+          ]
+        }
+      },
+      {
+        "token": "proposal_next7",
+        "name": "Next 7 days",
+        "table": "proposal",
+        "kind": "grid",
+        "within": {
+          "valid_until": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Viewed",
+            "Negotiating"
+          ]
+        }
+      },
+      {
+        "token": "proposal_sent_30",
+        "name": "Sent in 30 days",
+        "table": "proposal",
+        "kind": "grid",
+        "within": {
+          "sent_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
       }
-     ]
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Proposals assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "proposal",
+          "describes": "Every proposal from draft to decision with its value and expiry."
+        },
+        {
+          "name": "related_tables",
+          "table": "item",
+          "describes": "The records the primary table links to."
+        }
+      ],
+      "question": {
+        "ask": "How many proposals are waiting on a client?",
+        "whyItMatters": "Beatrix chases sent proposals every Thursday.",
+        "expect": {
+          "table": "proposal",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Sent"
+          },
+          "answer": 3,
+          "unit": "proposals"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the proposal board.",
+        "action": {
+          "kind": "open",
+          "surface": "proposal_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "proposal_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the sent calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "proposal_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "proposal_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open all line items.",
+        "action": {
+          "kind": "open",
+          "surface": "all_items"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_items",
+          "minItems": 10
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "ashgrovecreative.net"
+      ],
+      "fictionalStreets": [
+        "Hollis Mill Road"
+      ]
+    },
+    "version": 2
+  },
+  "pages": [
+    {
+      "key": "proposals-tracker",
+      "parent": null,
+      "title": "Proposals Tracker",
+      "icon": {
+        "emoji": "📄"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Know what is out, what is about to expire and how often proposals win. Open a proposal to see its line items."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "FileText"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:win-loss-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:follow-up-schedule"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pricing-notes"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Proposals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any proposal to find the proposal outline (summary, scope, timeline, price, terms) already inside it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "proposal",
+              "view": "proposal_board"
+            },
+            "inline": true,
+            "title": "Proposals",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-expiring-soon",
+                "name": "Expiring soon",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Sent",
+                    "Viewed"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "valid_until",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-win-and-loss",
+                "name": "Win and loss",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "status",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-sent-calendar",
+                "name": "Sent calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "sent_on"
+              },
+              {
+                "id": "view-proposal-week",
+                "name": "Valid until this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "valid_until": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Viewed",
+                    "Negotiating"
+                  ]
+                }
+              },
+              {
+                "id": "view-proposal-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "valid_until": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Viewed",
+                    "Negotiating"
+                  ]
+                }
+              },
+              {
+                "id": "view-proposal-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "valid_until": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Viewed",
+                    "Negotiating"
+                  ]
+                }
+              },
+              {
+                "id": "view-proposal-sent-30",
+                "name": "Sent in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "sent_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Line items"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "all_items"
+            },
+            "inline": true,
+            "title": "Line items",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-items",
+                "name": "All items",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-all-items"
+          }
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      }
+    },
+    {
+      "key": "win-loss-dashboard",
+      "parent": "proposals-tracker",
+      "title": "Win and loss dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "proposal",
+                      "view": "all_proposals"
+                    },
+                    "inline": true,
+                    "title": "Proposals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-proposals-by-status",
+                        "name": "Proposals by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-proposals-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "proposal",
+                      "view": "all_proposals"
+                    },
+                    "inline": true,
+                    "title": "Proposals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-value-by-status",
+                        "name": "Value by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "value"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-value-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "proposal",
+                      "view": "all_proposals"
+                    },
+                    "inline": true,
+                    "title": "Proposals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-decision-reasons",
+                        "name": "Decision reasons",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "reason",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-decision-reasons"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waiting on a decision"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "proposal",
+              "view": "all_proposals"
+            },
+            "inline": true,
+            "title": "Proposals",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-open",
+                "name": "Open",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Sent",
+                    "Viewed",
+                    "Negotiating"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "valid_until",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-open"
+          }
+        }
+      ]
+    },
+    {
+      "key": "follow-up-schedule",
+      "parent": "proposals-tracker",
+      "title": "Follow-up schedule",
+      "icon": {
+        "emoji": "⏰"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two days after sending"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check it was received"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "One week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer a call to go through it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask what is still open"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day before it expires"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Last reminder with the end date"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A follow-up rhythm that works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A proposal that is sent and forgotten is a proposal lost. Pick a rhythm and put it on the calendar the day you send."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Same day: confirm they received it and offer a 15-minute walk-through."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Three days later: ask whether the price or the scope is the sticking point."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "One week later: offer to adjust the scope. Do not cut the price first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Two days before it expires: say the date and ask for a decision either way."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The Expiring this week list shows every proposal that needs a nudge right now."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "BellRing"
+          }
+        }
+      ]
+    },
+    {
+      "key": "pricing-notes",
+      "parent": "proposals-tracker",
+      "title": "Pricing notes",
+      "icon": {
+        "emoji": "💰"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write down why you priced it the way you did. It makes the next proposal faster."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Coins"
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day rate used"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Margin target"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is excluded"
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Discount rules"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Offer at most ten percent for work paid up front."
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

@@ -1,1891 +1,2067 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0159",
- "version": 1,
- "title": "Account Management",
- "description": "Track customer health, renewals, contacts and every touch in one view.",
- "forWho": "Customer success and account managers",
- "icon": {
-  "emoji": "🏢"
- },
- "cover": {
-  "url": "gallery:photo-lavender-dusk",
-  "offsetY": 50
- },
- "category": "clients",
- "tags": [
-  "accounts",
-  "renewals",
-  "customer success",
-  "health"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0159",
+  "packVersion": 1,
   "catalogueId": "SP0159",
-  "useCase": "Winifred Osei heads customer success and uses this to see which accounts are at risk and which renewals are coming up.",
-  "industry": "cross_industry",
-  "vertical": "Customer success",
-  "job": "customer_service",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Lumenworks Group",
-   "describes": "A software company with a customer success team managing a few dozen accounts.",
-   "address": {
-    "line1": "1180 Marlin Terrace",
-    "city": "New York",
-    "region": "NY",
-    "postalCode": "10018",
-    "country": "US"
-   },
-   "phone": "(646) 555-0110",
-   "website": "lumenworksgroup.net",
-   "email": "hello@lumenworksgroup.net",
-   "timezone": "America/New_York"
-  },
-  "cleanupTag": "use-case:spaces-sp0159",
-  "tables": [
-   {
-    "independentOf": {
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "account",
-    "name": "Accounts",
-    "labelSingular": "Account",
-    "labelPlural": "Accounts",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "building-2",
-    "titleField": "account_name",
-    "describes": "Customers under contract with their health, tier and renewal.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "account_name",
-      "label": "Account",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "health",
-      "label": "Health",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Healthy",
-       "At risk",
-       "Churn risk"
-      ],
-      "choiceColors": {
-       "Healthy": "green",
-       "At risk": "amber",
-       "Churn risk": "red"
-      },
-      "required": true,
-      "default": "Healthy"
-     },
-     {
-      "key": "tier",
-      "label": "Tier",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Standard",
-       "Plus",
-       "Premier"
-      ],
-      "choiceColors": {
-       "Standard": "blue",
-       "Plus": "green",
-       "Premier": "amber"
-      }
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "renewal_on",
-      "label": "Renewal date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "days_to_renewal",
-      "label": "Days to renewal",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "DATEDIFF(TODAY(), {Renewal date}, 'days')"
-     },
-     {
-      "key": "site",
-      "label": "Website",
-      "parityType": "url",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "deals",
-      "label": "Deals",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "deal",
-      "multi": true
-     },
-     {
-      "key": "arr",
-      "label": "Annual revenue (won deals)",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "deals",
-      "pick": "value",
-      "agg": "sum",
-      "filter": {
-       "stage": "Won"
-      }
-     },
-     {
-      "key": "acts",
-      "label": "Activities",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "activity",
-      "multi": true
-     },
-     {
-      "key": "last_touch",
-      "label": "Last activity date",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "acts",
-      "pick": "happened_on",
-      "agg": "max"
-     },
-     {
-      "key": "people",
-      "label": "Contacts",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "contact",
-      "multi": true
-     }
-    ],
-    "rows": [
-     {
-      "key": "ac01",
-      "values": {
-       "account_name": "Brookfield Pediatrics",
-       "health": "Healthy",
-       "tier": "Plus",
-       "owner": "tm-02",
-       "renewal_on": "@today+75d",
-       "site": "https://brookfieldpediatrics.net",
-       "deals": [
-        "dl01"
-       ],
-       "acts": [
-        "av01"
-       ],
-       "people": [
-        "ct01",
-        "ct02"
-       ]
-      }
-     },
-     {
-      "key": "ac02",
-      "values": {
-       "account_name": "Calloway Metalworks",
-       "health": "At risk",
-       "tier": "Premier",
-       "owner": "tm-03",
-       "renewal_on": "@today+28d",
-       "site": "https://callowaymetalworks.net",
-       "deals": [
-        "dl02",
-        "dl03"
-       ],
-       "acts": [
-        "av02",
-        "av03",
-        "av04"
-       ],
-       "people": [
-        "ct03",
-        "ct04"
-       ]
-      }
-     },
-     {
-      "key": "ac03",
-      "values": {
-       "account_name": "Dunmore Veterinary Group",
-       "health": "Healthy",
-       "tier": "Standard",
-       "owner": "tm-02",
-       "renewal_on": "@today+160d",
-       "site": "https://dunmorevet.net",
-       "deals": [
-        "dl04"
-       ],
-       "acts": [
-        "av05"
-       ],
-       "people": [
-        "ct05"
-       ]
-      }
-     },
-     {
-      "key": "ac04",
-      "values": {
-       "account_name": "Evergreen Charter School",
-       "health": "Churn risk",
-       "tier": "Plus",
-       "owner": "tm-03",
-       "renewal_on": "@today+14d",
-       "site": "https://evergreencharter.net",
-       "deals": [
-        "dl05"
-       ],
-       "acts": [
-        "av06",
-        "av07"
-       ],
-       "people": [
-        "ct06"
-       ]
-      }
-     },
-     {
-      "key": "ac05",
-      "values": {
-       "account_name": "Fallbrook Credit Union",
-       "health": "Healthy",
-       "tier": "Premier",
-       "owner": "tm-02",
-       "renewal_on": "@today+210d",
-       "site": "https://fallbrookcu.net",
-       "deals": [
-        "dl06"
-       ],
-       "acts": [
-        "av08"
-       ],
-       "people": [
-        "ct07",
-        "ct08"
-       ]
-      }
-     },
-     {
-      "key": "ac06",
-      "values": {
-       "account_name": "Gilmore Hospitality",
-       "health": "At risk",
-       "tier": "Standard",
-       "owner": "tm-03",
-       "renewal_on": "@today+55d",
-       "site": "https://gilmorehospitality.net",
-       "deals": [
-        "dl07"
-       ],
-       "acts": [
-        "av09",
-        "av10"
-       ],
-       "people": [
-        "ct09",
-        "ct10"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "account": "Account and this record each keep their own dates and status."
-    },
-    "token": "contact",
-    "name": "Contacts",
-    "labelSingular": "Contact",
-    "labelPlural": "Contacts",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "contact",
-    "titleField": "contact_name",
-    "describes": "People at each account, with the champions marked.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "contact_name",
-      "label": "Name",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "account",
-      "label": "Account",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "account",
-      "relationMax": 1
-     },
-     {
-      "key": "job_role",
-      "label": "Role",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "contact_email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "summarize"
-     },
-     {
-      "key": "contact_phone",
-      "label": "Phone",
-      "parityType": "phone",
-      "sensitivity": "confidential",
-      "contextPolicy": "exclude"
-     },
-     {
-      "key": "champion",
-      "label": "Champion",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "ct01",
-      "values": {
-       "contact_name": "Marisol Vandenberg",
-       "account": "ac01",
-       "job_role": "Practice administrator",
-       "contact_email": "marisol@brookfieldpediatrics.net",
-       "contact_phone": "(212) 555-0121",
-       "champion": true
-      }
-     },
-     {
-      "key": "ct02",
-      "values": {
-       "contact_name": "Thaddeus Ng",
-       "account": "ac01",
-       "job_role": "Medical director",
-       "contact_email": "thaddeus@brookfieldpediatrics.net",
-       "contact_phone": "(212) 555-0122",
-       "champion": false
-      }
-     },
-     {
-      "key": "ct03",
-      "values": {
-       "contact_name": "Rosalind Okeke",
-       "account": "ac02",
-       "job_role": "Plant operations lead",
-       "contact_email": "rosalind@callowaymetalworks.net",
-       "contact_phone": "(216) 555-0123",
-       "champion": true
-      }
-     },
-     {
-      "key": "ct04",
-      "values": {
-       "contact_name": "Ferdinand Kaplan",
-       "account": "ac02",
-       "job_role": "Finance director",
-       "contact_email": "ferdinand@callowaymetalworks.net",
-       "contact_phone": "(216) 555-0124",
-       "champion": false
-      }
-     },
-     {
-      "key": "ct05",
-      "values": {
-       "contact_name": "Amara Lindqvist",
-       "account": "ac03",
-       "job_role": "Clinic manager",
-       "contact_email": "amara@dunmorevet.net",
-       "contact_phone": "(303) 555-0125",
-       "champion": true
-      }
-     },
-     {
-      "key": "ct06",
-      "values": {
-       "contact_name": "Quentin Abernathy",
-       "account": "ac04",
-       "job_role": "Head of school",
-       "contact_email": "quentin@evergreencharter.net",
-       "contact_phone": "(206) 555-0126",
-       "champion": false
-      }
-     },
-     {
-      "key": "ct07",
-      "values": {
-       "contact_name": "Sabine Moreau",
-       "account": "ac05",
-       "job_role": "Chief operating officer",
-       "contact_email": "sabine@fallbrookcu.net",
-       "contact_phone": "(503) 555-0127",
-       "champion": true
-      }
-     },
-     {
-      "key": "ct08",
-      "values": {
-       "contact_name": "Pedro Villanueva",
-       "account": "ac05",
-       "job_role": "IT manager",
-       "contact_email": "pedro@fallbrookcu.net",
-       "contact_phone": "(503) 555-0128",
-       "champion": false
-      }
-     },
-     {
-      "key": "ct09",
-      "values": {
-       "contact_name": "Harriet Boateng",
-       "account": "ac06",
-       "job_role": "General manager",
-       "contact_email": "harriet@gilmorehospitality.net",
-       "contact_phone": "(415) 555-0129",
-       "champion": true
-      }
-     },
-     {
-      "key": "ct10",
-      "values": {
-       "contact_name": "Simeon Rasmussen",
-       "account": "ac06",
-       "job_role": "Revenue manager",
-       "contact_email": "simeon@gilmorehospitality.net",
-       "contact_phone": "(415) 555-0130",
-       "champion": false
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "account": "Account and this record each keep their own dates and status."
-    },
-    "token": "deal",
-    "name": "Deals",
-    "labelSingular": "Deal",
-    "labelPlural": "Deals",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "handshake",
-    "titleField": "deal_name",
-    "describes": "Plans and upsells linked to accounts.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "deal_name",
-      "label": "Deal",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "account",
-      "label": "Account",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "account",
-      "relationMax": 1
-     },
-     {
-      "key": "value",
-      "label": "Value",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 1000000
-       }
-      ]
-     },
-     {
-      "key": "stage",
-      "label": "Stage",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Idea",
-       "Proposed",
-       "Negotiating",
-       "Won",
-       "Lost"
-      ],
-      "choiceColors": {
-       "Idea": "blue",
-       "Proposed": "amber",
-       "Negotiating": "violet",
-       "Won": "green",
-       "Lost": "red"
-      },
-      "required": true,
-      "default": "Idea"
-     },
-     {
-      "key": "close_on",
-      "label": "Close date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     }
-    ],
-    "rows": [
-     {
-      "key": "dl01",
-      "values": {
-       "deal_name": "Brookfield annual plan",
-       "account": "ac01",
-       "value": 18000,
-       "stage": "Won",
-       "close_on": "@today-290d"
-      }
-     },
-     {
-      "key": "dl02",
-      "values": {
-       "deal_name": "Calloway premier support",
-       "account": "ac02",
-       "value": 64000,
-       "stage": "Won",
-       "close_on": "@today-337d"
-      }
-     },
-     {
-      "key": "dl03",
-      "values": {
-       "deal_name": "Calloway line two expansion",
-       "account": "ac02",
-       "value": 22000,
-       "stage": "Negotiating",
-       "close_on": "@today+30d"
-      }
-     },
-     {
-      "key": "dl04",
-      "values": {
-       "deal_name": "Dunmore multi-clinic add-on",
-       "account": "ac03",
-       "value": 9500,
-       "stage": "Proposed",
-       "close_on": "@today+40d"
-      }
-     },
-     {
-      "key": "dl05",
-      "values": {
-       "deal_name": "Evergreen annual plan",
-       "account": "ac04",
-       "value": 14000,
-       "stage": "Won",
-       "close_on": "@today-351d"
-      }
-     },
-     {
-      "key": "dl06",
-      "values": {
-       "deal_name": "Fallbrook premier plan",
-       "account": "ac05",
-       "value": 88000,
-       "stage": "Won",
-       "close_on": "@today-155d"
-      }
-     },
-     {
-      "key": "dl07",
-      "values": {
-       "deal_name": "Gilmore property group upgrade",
-       "account": "ac06",
-       "value": 31000,
-       "stage": "Idea",
-       "close_on": "@today+80d"
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "account": "Account and this record each keep their own dates and status."
-    },
-    "token": "activity",
-    "name": "Activities",
-    "labelSingular": "Activity",
-    "labelPlural": "Activities",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "message-circle",
-    "titleField": "summary",
-    "describes": "Reviews, calls and tickets with each account.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "summary",
-      "label": "Summary",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "account",
-      "label": "Account",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "account",
-      "relationMax": 1
-     },
-     {
-      "key": "kind",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "QBR",
-       "Check-in",
-       "Support",
-       "Upsell"
-      ],
-      "choiceColors": {
-       "QBR": "blue",
-       "Check-in": "green",
-       "Support": "amber",
-       "Upsell": "violet"
-      }
-     },
-     {
-      "key": "happened_on",
-      "label": "Date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "next_step",
-      "label": "Next step",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "done",
-      "label": "Done",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "av01",
-      "values": {
-       "summary": "Quarterly review",
-       "account": "ac01",
-       "kind": "QBR",
-       "happened_on": "@today-20d",
-       "next_step": "Share usage report",
-       "done": true
-      }
-     },
-     {
-      "key": "av02",
-      "values": {
-       "summary": "Escalated support ticket",
-       "account": "ac02",
-       "kind": "Support",
-       "happened_on": "@today-5d",
-       "next_step": "Engineer to join call",
-       "done": true
-      }
-     },
-     {
-      "key": "av03",
-      "values": {
-       "summary": "Check-in call",
-       "account": "ac02",
-       "kind": "Check-in",
-       "happened_on": "@today+2d",
-       "next_step": "Confirm renewal intent",
-       "done": false
-      }
-     },
-     {
-      "key": "av04",
-      "values": {
-       "summary": "Introduced expansion plan",
-       "account": "ac02",
-       "kind": "Upsell",
-       "happened_on": "@today-10d",
-       "next_step": "Send pricing",
-       "done": true
-      }
-     },
-     {
-      "key": "av05",
-      "values": {
-       "summary": "Onboarding refresher",
-       "account": "ac03",
-       "kind": "Check-in",
-       "happened_on": "@today-35d",
-       "next_step": "Book a follow-up",
-       "done": true
-      }
-     },
-     {
-      "key": "av06",
-      "values": {
-       "summary": "Sponsor call",
-       "account": "ac04",
-       "kind": "Check-in",
-       "happened_on": "@today-3d",
-       "next_step": "Offer a discount plan",
-       "done": true
-      }
-     },
-     {
-      "key": "av07",
-      "values": {
-       "summary": "Renewal prep meeting",
-       "account": "ac04",
-       "kind": "QBR",
-       "happened_on": "@today+4d",
-       "next_step": "Bring usage data",
-       "done": false
-      }
-     },
-     {
-      "key": "av08",
-      "values": {
-       "summary": "Executive review",
-       "account": "ac05",
-       "kind": "QBR",
-       "happened_on": "@today-18d",
-       "next_step": "Plan the rollout",
-       "done": true
-      }
-     },
-     {
-      "key": "av09",
-      "values": {
-       "summary": "Support follow-up",
-       "account": "ac06",
-       "kind": "Support",
-       "happened_on": "@today-12d",
-       "next_step": "Confirm resolution",
-       "done": true
-      }
-     },
-     {
-      "key": "av10",
-      "values": {
-       "summary": "Upsell discovery",
-       "account": "ac06",
-       "kind": "Upsell",
-       "happened_on": "@today+6d",
-       "next_step": "List property group needs",
-       "done": false
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "account",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "accounts_owned"
-   },
-   {
-    "describes": "Deals lists its deal records.",
-    "fromTable": "account",
-    "fromField": "deals",
-    "toTable": "deal",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "account_listed_deals"
-   },
-   {
-    "describes": "Activities lists its activity records.",
-    "fromTable": "account",
-    "fromField": "acts",
-    "toTable": "activity",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "account_listed_acts"
-   },
-   {
-    "describes": "Contacts lists its contact records.",
-    "fromTable": "account",
-    "fromField": "people",
-    "toTable": "contact",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "account_listed_people"
-   },
-   {
-    "describes": "Account links to one account.",
-    "fromTable": "contact",
-    "fromField": "account",
-    "toTable": "account",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "contacts_of"
-   },
-   {
-    "describes": "Account links to one account.",
-    "fromTable": "deal",
-    "fromField": "account",
-    "toTable": "account",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "deals_of"
-   },
-   {
-    "describes": "Account links to one account.",
-    "fromTable": "activity",
-    "fromField": "account",
-    "toTable": "account",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "activities_of"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Winifred Osei",
-       "role": "Head of customer success",
-       "work_email": "winifred@lumenworksgroup.net",
-       "mobile": "(646) 555-0111",
-       "start_date": "@today-5y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Gabriel Santoro",
-       "role": "Customer success manager",
-       "work_email": "gabriel@lumenworksgroup.net",
-       "mobile": "(646) 555-0112",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Leilani Kahale",
-       "role": "Customer success manager",
-       "work_email": "leilani@lumenworksgroup.net",
-       "mobile": "(646) 555-0113",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Ivor Magnusson",
-       "role": "Solutions engineer",
-       "work_email": "ivor@lumenworksgroup.net",
-       "mobile": "(646) 555-0114",
-       "start_date": "@today-4y"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "log_activity",
-    "name": "Log an activity",
-    "describes": "How a manager records a touch with an account.",
-    "audience": "staff",
-    "table": "activity",
-    "fields": [
-     {
-      "fieldKey": "summary",
-      "ask": "What happened?",
-      "required": true
-     },
-     {
-      "fieldKey": "account",
-      "ask": "Which account?"
-     },
-     {
-      "fieldKey": "kind",
-      "ask": "What type was it?"
-     },
-     {
-      "fieldKey": "next_step",
-      "ask": "What is the next step?"
-     }
-    ],
-    "submitLabel": "Log it",
-    "confirmation": "Thanks. The activity is on the account."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "health_board",
-    "name": "Health board",
-    "table": "account",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "health"
-   },
-   {
-    "token": "renewal_timeline",
-    "name": "Renewals",
-    "table": "account",
-    "kind": "calendar",
-    "dateField": "renewal_on",
-    "allDay": true
-   },
-   {
-    "token": "all_accounts",
-    "name": "All accounts",
-    "table": "account",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "renewal_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_contacts",
-    "name": "All contacts",
-    "table": "contact",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "contact_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "deal_board",
-    "name": "Board",
-    "table": "deal",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "stage"
-   },
-   {
-    "token": "all_deals",
-    "name": "All deals",
-    "table": "deal",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "close_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_activities",
-    "name": "All activities",
-    "table": "activity",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "happened_on",
-      "direction": "desc"
-     }
-    ]
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Accounts assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "account",
-     "describes": "Customers under contract with their health, tier and renewal."
-    },
-    {
-     "name": "related_tables",
-     "table": "contact",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many accounts are at risk?",
-    "whyItMatters": "Winifred reviews at-risk accounts every Monday.",
-    "expect": {
-     "table": "account",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "health": "At risk"
-     },
-     "answer": 2,
-     "unit": "accounts"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the health board.",
-    "action": {
-     "kind": "open",
-     "surface": "health_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "health_board",
-     "minItems": 6
-    }
-   },
-   {
-    "says": "Open the renewals calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "renewal_timeline"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "renewal_timeline",
-     "minItems": 6
-    }
-   },
-   {
-    "says": "Open all activities.",
-    "action": {
-     "kind": "open",
-     "surface": "all_activities"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_activities",
-     "minItems": 10
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "lumenworksgroup.net",
-    "brookfieldpediatrics.net",
-    "callowaymetalworks.net",
-    "dunmorevet.net",
-    "evergreencharter.net",
-    "fallbrookcu.net",
-    "gilmorehospitality.net"
-   ],
-   "fictionalStreets": [
-    "Marlin Terrace"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "account-management",
-   "parent": null,
-   "title": "Account Management",
-   "icon": {
+  "version": 2,
+  "title": "Account Management",
+  "description": "Track customer health, renewals, contacts and every touch in one view.",
+  "forWho": "Customer success and account managers",
+  "icon": {
     "emoji": "🏢"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Keep every customer account healthy. See renewals coming, who the champions are and when you last spoke."
-      }
-     ],
-     "background": "purple",
-     "props": {
-      "icon": "Building2"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:renewals-dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:account-review-template"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:health-score-guide"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:renewal-checklist"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Accounts"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "account",
-       "view": "health_board"
-      },
-      "inline": true,
-      "title": "Accounts",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-health",
-        "name": "Health",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "health"
-       },
-       {
-        "id": "view-renewals",
-        "name": "Renewals",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "renewal_on"
-       },
-       {
-        "id": "view-renewing-soon",
-        "name": "Renewing soon",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "renewal_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-health"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Contacts"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "contact",
-       "view": "all_contacts"
-      },
-      "inline": true,
-      "title": "Contacts",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-contacts",
-        "name": "All contacts",
-        "layout": "grid",
-        "icon": "Table"
-       },
-       {
-        "id": "view-champions",
-        "name": "Champions",
-        "layout": "list",
-        "icon": "Star",
-        "filters": {
-         "champion": true
-        }
-       }
-      ],
-      "activeViewId": "view-all-contacts"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Deals"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "deal",
-       "view": "deal_board"
-      },
-      "inline": true,
-      "title": "Deals",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "stage"
-       },
-       {
-        "id": "view-all-deals",
-        "name": "All deals",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "close_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Activity"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "activity",
-       "view": "all_activities"
-      },
-      "inline": true,
-      "title": "Activities",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-latest",
-        "name": "Latest",
-        "layout": "list",
-        "icon": "List",
-        "sorts": [
-         {
-          "field": "happened_on",
-          "direction": "desc"
-         }
-        ]
-       },
-       {
-        "id": "view-to-do",
-        "name": "To do",
-        "layout": "list",
-        "icon": "ListTodo",
-        "filters": {
-         "done": false
-        }
-       }
-      ],
-      "activeViewId": "view-latest"
-     }
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-lavender-dusk",
     "offsetY": 50
-   }
   },
-  {
-   "key": "renewals-dashboard",
-   "parent": "account-management",
-   "title": "Renewals dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "account",
-           "view": "all_accounts"
-          },
-          "inline": true,
-          "title": "Accounts",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-accounts-by-health",
-            "name": "Accounts by health",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "health",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-accounts-by-health"
-         }
-        }
-       ]
+  "category": "clients",
+  "tags": [
+    "accounts",
+    "renewals",
+    "customer success",
+    "health"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0159",
+    "catalogueId": "SP0159",
+    "useCase": "Winifred Osei heads customer success and uses this to see which accounts are at risk and which renewals are coming up.",
+    "industry": "cross_industry",
+    "vertical": "Customer success",
+    "job": "customer_service",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Lumenworks Group",
+      "describes": "A software company with a customer success team managing a few dozen accounts.",
+      "address": {
+        "line1": "1180 Marlin Terrace",
+        "city": "New York",
+        "region": "NY",
+        "postalCode": "10018",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "account",
-           "view": "all_accounts"
-          },
-          "inline": true,
-          "title": "Accounts",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-accounts-by-tier",
-            "name": "Accounts by tier",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "tier",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-accounts-by-tier"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "deal",
-           "view": "all_deals"
-          },
-          "inline": true,
-          "title": "Deals",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-deal-value-by-stage",
-            "name": "Deal value by stage",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "stage",
-             "op": "sum",
-             "field": "value"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-deal-value-by-stage"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(646) 555-0110",
+      "website": "lumenworksgroup.net",
+      "email": "hello@lumenworksgroup.net",
+      "timezone": "America/New_York"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-sp0159",
+    "tables": [
       {
-       "text": "Renewing soonest"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "account",
-       "view": "all_accounts"
+        "independentOf": {
+          "owner": "Anyone on the team can own this, whenever they joined."
+        },
+        "token": "account",
+        "name": "Accounts",
+        "labelSingular": "Account",
+        "labelPlural": "Accounts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "account_name",
+        "describes": "Customers under contract with their health, tier and renewal.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "account_name",
+            "label": "Account",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "health",
+            "label": "Health",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Healthy",
+              "At risk",
+              "Churn risk"
+            ],
+            "choiceColors": {
+              "Healthy": "green",
+              "At risk": "amber",
+              "Churn risk": "red"
+            },
+            "required": true,
+            "default": "Healthy"
+          },
+          {
+            "key": "tier",
+            "label": "Tier",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Standard",
+              "Plus",
+              "Premier"
+            ],
+            "choiceColors": {
+              "Standard": "blue",
+              "Plus": "green",
+              "Premier": "amber"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "renewal_on",
+            "label": "Renewal date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_renewal",
+            "label": "Days to renewal",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Renewal date}, 'days')"
+          },
+          {
+            "key": "site",
+            "label": "Website",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "arr",
+            "label": "Annual revenue (won deals)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deals",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "stage": "Won"
+            }
+          },
+          {
+            "key": "last_touch",
+            "label": "Last activity date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "acts",
+            "pick": "happened_on",
+            "agg": "max"
+          },
+          {
+            "key": "days_since_touch",
+            "label": "Days since last touch",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Last activity date}, TODAY(), 'days')"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ac01",
+            "values": {
+              "account_name": "Brookfield Pediatrics",
+              "health": "Healthy",
+              "tier": "Plus",
+              "owner": "tm-02",
+              "renewal_on": "@today",
+              "site": "https://brookfieldpediatrics.net"
+            }
+          },
+          {
+            "key": "ac02",
+            "values": {
+              "account_name": "Calloway Metalworks",
+              "health": "At risk",
+              "tier": "Premier",
+              "owner": "tm-03",
+              "renewal_on": "@today-4d",
+              "site": "https://callowaymetalworks.net"
+            }
+          },
+          {
+            "key": "ac03",
+            "values": {
+              "account_name": "Dunmore Veterinary Group",
+              "health": "Healthy",
+              "tier": "Standard",
+              "owner": "tm-02",
+              "renewal_on": "@today-9d",
+              "site": "https://dunmorevet.net"
+            }
+          },
+          {
+            "key": "ac04",
+            "values": {
+              "account_name": "Evergreen Charter School",
+              "health": "Churn risk",
+              "tier": "Plus",
+              "owner": "tm-03",
+              "renewal_on": "@today+3d",
+              "site": "https://evergreencharter.net"
+            }
+          },
+          {
+            "key": "ac05",
+            "values": {
+              "account_name": "Fallbrook Credit Union",
+              "health": "Healthy",
+              "tier": "Premier",
+              "owner": "tm-02",
+              "renewal_on": "@today+2d",
+              "site": "https://fallbrookcu.net"
+            }
+          },
+          {
+            "key": "ac06",
+            "values": {
+              "account_name": "Gilmore Hospitality",
+              "health": "At risk",
+              "tier": "Standard",
+              "owner": "tm-03",
+              "renewal_on": "@today+5d",
+              "site": "https://gilmorehospitality.net"
+            }
+          }
+        ]
       },
-      "inline": true,
-      "title": "Accounts",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-renewals",
+      {
+        "independentOf": {
+          "account": "Account and this record each keep their own dates and status."
+        },
+        "token": "contact",
+        "name": "Contacts",
+        "labelSingular": "Contact",
+        "labelPlural": "Contacts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "contact",
+        "titleField": "contact_name",
+        "describes": "People at each account, with the champions marked.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "contact_name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "account",
+            "label": "Account",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "account",
+            "relationMax": 1
+          },
+          {
+            "key": "job_role",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contact_email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "contact_phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "exclude"
+          },
+          {
+            "key": "champion",
+            "label": "Champion",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ct01",
+            "values": {
+              "contact_name": "Marisol Vandenberg",
+              "account": "ac01",
+              "job_role": "Practice administrator",
+              "contact_email": "marisol@brookfieldpediatrics.net",
+              "contact_phone": "(212) 555-0121",
+              "champion": true
+            }
+          },
+          {
+            "key": "ct02",
+            "values": {
+              "contact_name": "Thaddeus Ng",
+              "account": "ac01",
+              "job_role": "Medical director",
+              "contact_email": "thaddeus@brookfieldpediatrics.net",
+              "contact_phone": "(212) 555-0122",
+              "champion": false
+            }
+          },
+          {
+            "key": "ct03",
+            "values": {
+              "contact_name": "Rosalind Okeke",
+              "account": "ac02",
+              "job_role": "Plant operations lead",
+              "contact_email": "rosalind@callowaymetalworks.net",
+              "contact_phone": "(216) 555-0123",
+              "champion": true
+            }
+          },
+          {
+            "key": "ct04",
+            "values": {
+              "contact_name": "Ferdinand Kaplan",
+              "account": "ac02",
+              "job_role": "Finance director",
+              "contact_email": "ferdinand@callowaymetalworks.net",
+              "contact_phone": "(216) 555-0124",
+              "champion": false
+            }
+          },
+          {
+            "key": "ct05",
+            "values": {
+              "contact_name": "Amara Lindqvist",
+              "account": "ac03",
+              "job_role": "Clinic manager",
+              "contact_email": "amara@dunmorevet.net",
+              "contact_phone": "(303) 555-0125",
+              "champion": true
+            }
+          },
+          {
+            "key": "ct06",
+            "values": {
+              "contact_name": "Quentin Abernathy",
+              "account": "ac04",
+              "job_role": "Head of school",
+              "contact_email": "quentin@evergreencharter.net",
+              "contact_phone": "(206) 555-0126",
+              "champion": false
+            }
+          },
+          {
+            "key": "ct07",
+            "values": {
+              "contact_name": "Sabine Moreau",
+              "account": "ac05",
+              "job_role": "Chief operating officer",
+              "contact_email": "sabine@fallbrookcu.net",
+              "contact_phone": "(503) 555-0127",
+              "champion": true
+            }
+          },
+          {
+            "key": "ct08",
+            "values": {
+              "contact_name": "Pedro Villanueva",
+              "account": "ac05",
+              "job_role": "IT manager",
+              "contact_email": "pedro@fallbrookcu.net",
+              "contact_phone": "(503) 555-0128",
+              "champion": false
+            }
+          },
+          {
+            "key": "ct09",
+            "values": {
+              "contact_name": "Harriet Boateng",
+              "account": "ac06",
+              "job_role": "General manager",
+              "contact_email": "harriet@gilmorehospitality.net",
+              "contact_phone": "(415) 555-0129",
+              "champion": true
+            }
+          },
+          {
+            "key": "ct10",
+            "values": {
+              "contact_name": "Simeon Rasmussen",
+              "account": "ac06",
+              "job_role": "Revenue manager",
+              "contact_email": "simeon@gilmorehospitality.net",
+              "contact_phone": "(415) 555-0130",
+              "champion": false
+            }
+          }
+        ]
+      },
+      {
+        "independentOf": {
+          "account": "Account and this record each keep their own dates and status."
+        },
+        "token": "deal",
+        "name": "Deals",
+        "labelSingular": "Deal",
+        "labelPlural": "Deals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "deal_name",
+        "describes": "Plans and upsells linked to accounts.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "deal_name",
+            "label": "Deal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "account",
+            "label": "Account",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "account",
+            "relationMax": 1
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Idea",
+              "Proposed",
+              "Negotiating",
+              "Won",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Idea": "blue",
+              "Proposed": "amber",
+              "Negotiating": "violet",
+              "Won": "green",
+              "Lost": "red"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Proposed": "in_progress",
+              "Negotiating": "in_progress",
+              "Won": "done",
+              "Lost": "done"
+            }
+          },
+          {
+            "key": "close_on",
+            "label": "Close date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dl01",
+            "values": {
+              "deal_name": "Brookfield annual plan",
+              "account": "ac01",
+              "value": 18000,
+              "stage": "Won",
+              "close_on": "@today-290d"
+            }
+          },
+          {
+            "key": "dl02",
+            "values": {
+              "deal_name": "Calloway premier support",
+              "account": "ac02",
+              "value": 64000,
+              "stage": "Won",
+              "close_on": "@today-337d"
+            }
+          },
+          {
+            "key": "dl03",
+            "values": {
+              "deal_name": "Calloway line two expansion",
+              "account": "ac02",
+              "value": 22000,
+              "stage": "Negotiating",
+              "close_on": "@today"
+            }
+          },
+          {
+            "key": "dl04",
+            "values": {
+              "deal_name": "Dunmore multi-clinic add-on",
+              "account": "ac03",
+              "value": 9500,
+              "stage": "Proposed",
+              "close_on": "@today-4d"
+            }
+          },
+          {
+            "key": "dl05",
+            "values": {
+              "deal_name": "Evergreen annual plan",
+              "account": "ac04",
+              "value": 14000,
+              "stage": "Won",
+              "close_on": "@today-351d"
+            }
+          },
+          {
+            "key": "dl06",
+            "values": {
+              "deal_name": "Fallbrook premier plan",
+              "account": "ac05",
+              "value": 88000,
+              "stage": "Won",
+              "close_on": "@today-155d"
+            }
+          },
+          {
+            "key": "dl07",
+            "values": {
+              "deal_name": "Gilmore property group upgrade",
+              "account": "ac06",
+              "value": 31000,
+              "stage": "Idea",
+              "close_on": "@today-9d"
+            }
+          }
+        ]
+      },
+      {
+        "independentOf": {
+          "account": "Account and this record each keep their own dates and status."
+        },
+        "token": "activity",
+        "name": "Activities",
+        "labelSingular": "Activity",
+        "labelPlural": "Activities",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "message-circle",
+        "titleField": "summary",
+        "describes": "Reviews, calls and tickets with each account.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "summary",
+            "label": "Summary",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "account",
+            "label": "Account",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "account",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "QBR",
+              "Check-in",
+              "Support",
+              "Upsell"
+            ],
+            "choiceColors": {
+              "QBR": "blue",
+              "Check-in": "green",
+              "Support": "amber",
+              "Upsell": "violet"
+            }
+          },
+          {
+            "key": "happened_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_step",
+            "label": "Next step",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "av01",
+            "values": {
+              "summary": "Quarterly review",
+              "account": "ac01",
+              "kind": "QBR",
+              "happened_on": "@today-20d",
+              "next_step": "Share usage report",
+              "done": true
+            }
+          },
+          {
+            "key": "av02",
+            "values": {
+              "summary": "Escalated support ticket",
+              "account": "ac02",
+              "kind": "Support",
+              "happened_on": "@today-5d",
+              "next_step": "Engineer to join call",
+              "done": true
+            }
+          },
+          {
+            "key": "av03",
+            "values": {
+              "summary": "Check-in call",
+              "account": "ac02",
+              "kind": "Check-in",
+              "happened_on": "@today+2d",
+              "next_step": "Confirm renewal intent",
+              "done": false
+            }
+          },
+          {
+            "key": "av04",
+            "values": {
+              "summary": "Introduced expansion plan",
+              "account": "ac02",
+              "kind": "Upsell",
+              "happened_on": "@today-10d",
+              "next_step": "Send pricing",
+              "done": true
+            }
+          },
+          {
+            "key": "av05",
+            "values": {
+              "summary": "Onboarding refresher",
+              "account": "ac03",
+              "kind": "Check-in",
+              "happened_on": "@today-35d",
+              "next_step": "Book a follow-up",
+              "done": true
+            }
+          },
+          {
+            "key": "av06",
+            "values": {
+              "summary": "Sponsor call",
+              "account": "ac04",
+              "kind": "Check-in",
+              "happened_on": "@today-3d",
+              "next_step": "Offer a discount plan",
+              "done": true
+            }
+          },
+          {
+            "key": "av07",
+            "values": {
+              "summary": "Renewal prep meeting",
+              "account": "ac04",
+              "kind": "QBR",
+              "happened_on": "@today+4d",
+              "next_step": "Bring usage data",
+              "done": false
+            }
+          },
+          {
+            "key": "av08",
+            "values": {
+              "summary": "Executive review",
+              "account": "ac05",
+              "kind": "QBR",
+              "happened_on": "@today-18d",
+              "next_step": "Plan the rollout",
+              "done": true
+            }
+          },
+          {
+            "key": "av09",
+            "values": {
+              "summary": "Support follow-up",
+              "account": "ac06",
+              "kind": "Support",
+              "happened_on": "@today-12d",
+              "next_step": "Confirm resolution",
+              "done": true
+            }
+          },
+          {
+            "key": "av10",
+            "values": {
+              "summary": "Upsell discovery",
+              "account": "ac06",
+              "kind": "Upsell",
+              "happened_on": "@today+6d",
+              "next_step": "List property group needs",
+              "done": false
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Account review",
+            "values": {
+              "kind": "QBR"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Snapshot"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Health and why"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Plan and annual revenue"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Renewal date"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Wins since last review"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Win one"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Risks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Risk one"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Asks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What we need from them"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Action with an owner and a date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "account",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "accounts_owned"
+      },
+      {
+        "describes": "Account links to one account.",
+        "fromTable": "contact",
+        "fromField": "account",
+        "toTable": "account",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "people"
+      },
+      {
+        "describes": "Account links to one account.",
+        "fromTable": "deal",
+        "fromField": "account",
+        "toTable": "account",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deals"
+      },
+      {
+        "describes": "Account links to one account.",
+        "fromTable": "activity",
+        "fromField": "account",
+        "toTable": "account",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "acts"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Winifred Osei",
+              "role": "Head of customer success",
+              "work_email": "winifred@lumenworksgroup.net",
+              "mobile": "(646) 555-0111",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Gabriel Santoro",
+              "role": "Customer success manager",
+              "work_email": "gabriel@lumenworksgroup.net",
+              "mobile": "(646) 555-0112",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Leilani Kahale",
+              "role": "Customer success manager",
+              "work_email": "leilani@lumenworksgroup.net",
+              "mobile": "(646) 555-0113",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Ivor Magnusson",
+              "role": "Solutions engineer",
+              "work_email": "ivor@lumenworksgroup.net",
+              "mobile": "(646) 555-0114",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "log_activity",
+        "name": "Log an activity",
+        "describes": "How a manager records a touch with an account.",
+        "audience": "staff",
+        "table": "activity",
+        "fields": [
+          {
+            "fieldKey": "summary",
+            "ask": "What happened?",
+            "required": true
+          },
+          {
+            "fieldKey": "account",
+            "ask": "Which account?"
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What type was it?"
+          },
+          {
+            "fieldKey": "next_step",
+            "ask": "What is the next step?"
+          }
+        ],
+        "submitLabel": "Log it",
+        "confirmation": "Thanks. The activity is on the account."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "health_board",
+        "name": "Health board",
+        "table": "account",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "health"
+      },
+      {
+        "token": "renewal_timeline",
         "name": "Renewals",
-        "layout": "grid",
-        "icon": "Table",
+        "table": "account",
+        "kind": "calendar",
+        "dateField": "renewal_on",
+        "allDay": true
+      },
+      {
+        "token": "all_accounts",
+        "name": "All accounts",
+        "table": "account",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "renewal_on",
-          "direction": "asc"
-         }
+          {
+            "field": "renewal_on",
+            "direction": "asc"
+          }
         ]
-       }
+      },
+      {
+        "token": "all_contacts",
+        "name": "All contacts",
+        "table": "contact",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "contact_name",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "deal_board",
+        "name": "Board",
+        "table": "deal",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "stage"
+      },
+      {
+        "token": "all_deals",
+        "name": "All deals",
+        "table": "deal",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "close_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "all_activities",
+        "name": "All activities",
+        "table": "activity",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "happened_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "account_week",
+        "name": "Renewal date this week",
+        "table": "account",
+        "kind": "grid",
+        "within": {
+          "renewal_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "account_over",
+        "name": "Overdue",
+        "table": "account",
+        "kind": "grid",
+        "within": {
+          "renewal_on": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "account_next7",
+        "name": "Next 7 days",
+        "table": "account",
+        "kind": "grid",
+        "within": {
+          "renewal_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "account_renew_month",
+        "name": "Renewing this month",
+        "table": "account",
+        "kind": "grid",
+        "within": {
+          "renewal_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "deal_week",
+        "name": "Close date this week",
+        "table": "deal",
+        "kind": "grid",
+        "within": {
+          "close_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Idea",
+            "Proposed",
+            "Negotiating"
+          ]
+        }
+      },
+      {
+        "token": "deal_over",
+        "name": "Overdue",
+        "table": "deal",
+        "kind": "grid",
+        "within": {
+          "close_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Idea",
+            "Proposed",
+            "Negotiating"
+          ]
+        }
+      },
+      {
+        "token": "activity_recent",
+        "name": "Last 30 days",
+        "table": "activity",
+        "kind": "grid",
+        "within": {
+          "happened_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Accounts assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "account",
+          "describes": "Customers under contract with their health, tier and renewal."
+        },
+        {
+          "name": "related_tables",
+          "table": "contact",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-renewals"
-     }
-    }
-   ]
-  },
-  {
-   "key": "account-review-template",
-   "parent": "account-management",
-   "title": "Account review template",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Snapshot"
+      "question": {
+        "ask": "How many accounts are at risk?",
+        "whyItMatters": "Winifred reviews at-risk accounts every Monday.",
+        "expect": {
+          "table": "account",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "health": "At risk"
+          },
+          "answer": 2,
+          "unit": "accounts"
+        }
       }
-     ],
-     "props": {
-      "level": 2
-     }
     },
-    {
-     "type": "bulleted",
-     "text": [
+    "walk": [
       {
-       "text": "Health and why"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
+        "says": "Open the health board.",
+        "action": {
+          "kind": "open",
+          "surface": "health_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "health_board",
+          "minItems": 6
+        }
+      },
       {
-       "text": "Plan and annual revenue"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
+        "says": "Open the renewals calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "renewal_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "renewal_timeline",
+          "minItems": 6
+        }
+      },
       {
-       "text": "Renewal date"
+        "says": "Open all activities.",
+        "action": {
+          "kind": "open",
+          "surface": "all_activities"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_activities",
+          "minItems": 10
+        }
       }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Wins since last review"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Win one"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Risks"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Risk one"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Asks"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "What we need from them"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Next steps"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Action with an owner and a date"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  },
-  {
-   "key": "health-score-guide",
-   "parent": "account-management",
-   "title": "Health guide",
-   "icon": {
-    "emoji": "❤️"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "Health"
-          }
-         ],
-         [
-          {
-           "text": "Signs"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Healthy"
-          }
-         ],
-         [
-          {
-           "text": "Regular use, a champion who replies, no open escalations"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "At risk"
-          }
-         ],
-         [
-          {
-           "text": "Falling use, a missed review, or an open escalation"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Churn risk"
-          }
-         ],
-         [
-          {
-           "text": "Champion left, budget cut, or renewal not discussed"
-          }
-         ]
-        ]
-       }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lumenworksgroup.net",
+        "brookfieldpediatrics.net",
+        "callowaymetalworks.net",
+        "dunmorevet.net",
+        "evergreencharter.net",
+        "fallbrookcu.net",
+        "gilmorehospitality.net"
+      ],
+      "fictionalStreets": [
+        "Marlin Terrace"
       ]
-     }
-    }
-   ]
+    },
+    "version": 2
   },
-  {
-   "key": "renewal-checklist",
-   "parent": "account-management",
-   "title": "Renewal checklist",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Ninety days out: review usage and health"
+      "key": "account-management",
+      "parent": null,
+      "title": "Account Management",
+      "icon": {
+        "emoji": "🏢"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Keep every customer account healthy. See renewals coming, who the champions are and when you last spoke."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Building2"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:renewals-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:health-score-guide"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:renewal-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Accounts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "account",
+              "view": "health_board"
+            },
+            "inline": true,
+            "title": "Accounts",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-health",
+                "name": "Health",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "health"
+              },
+              {
+                "id": "view-renewals",
+                "name": "Renewals",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "renewal_on"
+              },
+              {
+                "id": "view-renewing-soon",
+                "name": "Renewing soon",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "renewal_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-account-week",
+                "name": "Renewal date this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "renewal_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-account-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "renewal_on": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
+                "id": "view-account-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "renewal_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
+                "id": "view-account-renew-month",
+                "name": "Renewing this month",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "renewal_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-health"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contacts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "contact",
+              "view": "all_contacts"
+            },
+            "inline": true,
+            "title": "Contacts",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-contacts",
+                "name": "All contacts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-champions",
+                "name": "Champions",
+                "layout": "list",
+                "icon": "Star",
+                "filters": {
+                  "champion": true
+                }
+              }
+            ],
+            "activeViewId": "view-all-contacts"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deal",
+              "view": "deal_board"
+            },
+            "inline": true,
+            "title": "Deals",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "view-all-deals",
+                "name": "All deals",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "close_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-deal-week",
+                "name": "Close date this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "close_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Idea",
+                    "Proposed",
+                    "Negotiating"
+                  ]
+                }
+              },
+              {
+                "id": "view-deal-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "close_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Idea",
+                    "Proposed",
+                    "Negotiating"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Activity"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any activity to find an account review outline (health, wins, risks, asks, next steps) already inside it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "activity",
+              "view": "all_activities"
+            },
+            "inline": true,
+            "title": "Activities",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-latest",
+                "name": "Latest",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "happened_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-to-do",
+                "name": "To do",
+                "layout": "list",
+                "icon": "ListTodo",
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-activity-recent",
+                "name": "Last 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "happened_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-latest"
+          }
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
       }
-     ],
-     "props": {
-      "checked": false
-     }
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Sixty days out: executive sponsor call"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "renewals-dashboard",
+      "parent": "account-management",
+      "title": "Renewals dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "account",
+                      "view": "all_accounts"
+                    },
+                    "inline": true,
+                    "title": "Accounts",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-accounts-by-health",
+                        "name": "Accounts by health",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "health",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-accounts-by-health"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "account",
+                      "view": "all_accounts"
+                    },
+                    "inline": true,
+                    "title": "Accounts",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-accounts-by-tier",
+                        "name": "Accounts by tier",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "tier",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-accounts-by-tier"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deal",
+                      "view": "all_deals"
+                    },
+                    "inline": true,
+                    "title": "Deals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-deal-value-by-stage",
+                        "name": "Deal value by stage",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "sum",
+                          "field": "value"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-deal-value-by-stage"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Renewing this month and Overdue are the two lists to start every Monday with."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "CalendarClock"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewing soonest"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "account",
+              "view": "all_accounts"
+            },
+            "inline": true,
+            "title": "Accounts",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-renewals",
+                "name": "Renewals",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "renewal_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-renewals"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Thirty days out: send the renewal quote"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "health-score-guide",
+      "parent": "account-management",
+      "title": "Health guide",
+      "icon": {
+        "emoji": "❤️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading an account’s health"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Health is a quick judgement, not a score. Set it after every real conversation, and write the reason in the next step."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Healthy: they use the product, answer quickly and talk about next year."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "At risk: usage is falling, a champion left, or replies slowed down. Book a call this week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Churn risk: they have asked about cancelling, a competitor, or a refund. Escalate today."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The Days since last touch column is the quickest early warning. Anything over 30 days deserves a check-in."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "HeartPulse"
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Health"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Signs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Healthy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Regular use, a champion who replies, no open escalations"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "At risk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Falling use, a missed review, or an open escalation"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Churn risk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Champion left, budget cut, or renewal not discussed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Fourteen days out: confirm signature route"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "After signing: log the deal as Won"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "renewal-checklist",
+      "parent": "account-management",
+      "title": "Renewal checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ninety days out: review usage and health"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sixty days out: executive sponsor call"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thirty days out: send the renewal quote"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fourteen days out: confirm signature route"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "After signing: log the deal as Won"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

@@ -1,2215 +1,2407 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0152",
- "version": 1,
- "title": "Marketing Campaign Hub",
- "description": "Campaigns with their content and KPIs, so budget and results roll up on their own.",
- "forWho": "Marketing leads and campaign managers",
- "icon": {
-  "emoji": "📣"
- },
- "cover": {
-  "url": "gallery:photo-lavender-dusk",
-  "offsetY": 50
- },
- "category": "marketing",
- "tags": [
-  "campaigns",
-  "marketing",
-  "kpis",
-  "budget"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0152",
+  "packVersion": 1,
   "catalogueId": "SP0152",
-  "useCase": "Odette Marchetti leads marketing and uses this to see each campaign's content, spend and results in one view.",
-  "industry": "cross_industry",
-  "vertical": "Marketing operations",
-  "job": "reporting",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Bright Harbor Software",
-   "describes": "A small software company running several marketing campaigns a quarter.",
-   "address": {
-    "line1": "31 Gullwing Quay",
-    "city": "Seattle",
-    "region": "WA",
-    "postalCode": "98101",
-    "country": "US"
-   },
-   "phone": "(206) 555-0110",
-   "website": "brightharbor.net",
-   "email": "hello@brightharbor.net",
-   "timezone": "America/Los_Angeles"
-  },
-  "cleanupTag": "use-case:spaces-sp0152",
-  "tables": [
-   {
-    "before": [
-     [
-      "starts_on",
-      "ends_on"
-     ]
-    ],
-    "independentOf": {
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "campaign",
-    "name": "Campaigns",
-    "labelSingular": "Campaign",
-    "labelPlural": "Campaigns",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "megaphone",
-    "titleField": "campaign_name",
-    "describes": "Every campaign, its goal, dates, owner and budget.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "campaign_name",
-      "label": "Campaign",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Planning",
-       "Active",
-       "Wrapped up",
-       "Archived"
-      ],
-      "choiceColors": {
-       "Planning": "blue",
-       "Active": "green",
-       "Wrapped up": "amber",
-       "Archived": "violet"
-      },
-      "required": true,
-      "default": "Planning"
-     },
-     {
-      "key": "starts_on",
-      "label": "Start",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "ends_on",
-      "label": "End",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "goal",
-      "label": "Goal",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "channels",
-      "label": "Channels",
-      "parityType": "multi_select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Email",
-       "Social",
-       "Paid",
-       "SEO",
-       "Events",
-       "PR",
-       "Partners"
-      ],
-      "choiceColors": {
-       "Email": "blue",
-       "Social": "green",
-       "Paid": "amber",
-       "SEO": "violet",
-       "Events": "teal",
-       "PR": "orange",
-       "Partners": "pink"
-      }
-     },
-     {
-      "key": "budget",
-      "label": "Budget",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 500000
-       }
-      ]
-     },
-     {
-      "key": "pieces",
-      "label": "Content",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "content",
-      "multi": true
-     },
-     {
-      "key": "spend",
-      "label": "Spend so far",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "pieces",
-      "pick": "cost",
-      "agg": "sum"
-     },
-     {
-      "key": "piece_total",
-      "label": "Pieces planned",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "pieces",
-      "pick": "title",
-      "agg": "count"
-     },
-     {
-      "key": "pieces_live",
-      "label": "Pieces live",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "pieces",
-      "pick": "title",
-      "agg": "count",
-      "filter": {
-       "stage": "Live"
-      }
-     },
-     {
-      "key": "results",
-      "label": "KPIs",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "kpi",
-      "multi": true
-     },
-     {
-      "key": "kpi_count",
-      "label": "Metrics tracked",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "results",
-      "pick": "metric",
-      "agg": "count"
-     }
-    ],
-    "rows": [
-     {
-      "key": "cp01",
-      "values": {
-       "campaign_name": "Autumn open house",
-       "status": "Active",
-       "starts_on": "@today-20d",
-       "ends_on": "@today+25d",
-       "owner": "tm-02",
-       "goal": "Fill 120 seats at the open house",
-       "channels": [
-        "Email",
-        "Social",
-        "Events"
-       ],
-       "budget": 18000,
-       "pieces": [
-        "ct01",
-        "ct02",
-        "ct03",
-        "ct04",
-        "ct05"
-       ],
-       "results": [
-        "kp01",
-        "kp02",
-        "kp03"
-       ]
-      }
-     },
-     {
-      "key": "cp02",
-      "values": {
-       "campaign_name": "Product launch: Harbor Pro",
-       "status": "Planning",
-       "starts_on": "@today+10d",
-       "ends_on": "@today+60d",
-       "owner": "tm-01",
-       "goal": "500 trial sign-ups in launch month",
-       "channels": [
-        "Email",
-        "Paid",
-        "PR",
-        "SEO"
-       ],
-       "budget": 42000,
-       "pieces": [
-        "ct06",
-        "ct07",
-        "ct08"
-       ],
-       "results": []
-      }
-     },
-     {
-      "key": "cp03",
-      "values": {
-       "campaign_name": "Customer stories series",
-       "status": "Active",
-       "starts_on": "@today-45d",
-       "ends_on": "@today+30d",
-       "owner": "tm-03",
-       "goal": "Publish six customer stories",
-       "channels": [
-        "SEO",
-        "Social"
-       ],
-       "budget": 9500,
-       "pieces": [
-        "ct09",
-        "ct10",
-        "ct11",
-        "ct12"
-       ],
-       "results": [
-        "kp04",
-        "kp05"
-       ]
-      }
-     },
-     {
-      "key": "cp04",
-      "values": {
-       "campaign_name": "Spring referral drive",
-       "status": "Wrapped up",
-       "starts_on": "@today-120d",
-       "ends_on": "@today-60d",
-       "owner": "tm-02",
-       "goal": "90 referred accounts",
-       "channels": [
-        "Email",
-        "Partners"
-       ],
-       "budget": 12000,
-       "pieces": [
-        "ct13",
-        "ct14"
-       ],
-       "results": [
-        "kp06",
-        "kp07"
-       ]
-      }
-     },
-     {
-      "key": "cp05",
-      "values": {
-       "campaign_name": "Webinar season",
-       "status": "Archived",
-       "starts_on": "@today-200d",
-       "ends_on": "@today-140d",
-       "owner": "tm-02",
-       "goal": "Average 150 live attendees",
-       "channels": [
-        "Email",
-        "Events"
-       ],
-       "budget": 7000,
-       "pieces": [],
-       "results": [
-        "kp08",
-        "kp09"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "before": [
-     [
-      "due_on",
-      "publish_on"
-     ]
-    ],
-    "independentOf": {
-     "campaign": "Campaign and this record each keep their own dates and status.",
-     "author": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "content",
-    "name": "Content",
-    "labelSingular": "Piece",
-    "labelPlural": "Content",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "file-text",
-    "titleField": "title",
-    "describes": "Pieces of content made for campaigns, with their stage and cost.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "title",
-      "label": "Title",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "campaign",
-      "label": "Campaign",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "campaign",
-      "relationMax": 1
-     },
-     {
-      "key": "stage",
-      "label": "Stage",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Idea",
-       "Drafting",
-       "In review",
-       "Scheduled",
-       "Live"
-      ],
-      "choiceColors": {
-       "Idea": "blue",
-       "Drafting": "green",
-       "In review": "amber",
-       "Scheduled": "violet",
-       "Live": "teal"
-      },
-      "required": true,
-      "default": "Idea"
-     },
-     {
-      "key": "format",
-      "label": "Format",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Landing page",
-       "Email",
-       "Social post",
-       "Blog post",
-       "Video",
-       "Ad"
-      ],
-      "choiceColors": {
-       "Landing page": "blue",
-       "Email": "green",
-       "Social post": "amber",
-       "Blog post": "violet",
-       "Video": "teal",
-       "Ad": "orange"
-      }
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "publish_on",
-      "label": "Publish date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "author",
-      "label": "Author",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "cost",
-      "label": "Cost",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     }
-    ],
-    "rows": [
-     {
-      "key": "ct01",
-      "values": {
-       "title": "Open house invitation email",
-       "campaign": "cp01",
-       "stage": "Live",
-       "format": "Email",
-       "due_on": "@today-18d",
-       "publish_on": "@today-16d",
-       "author": "tm-03",
-       "cost": 400
-      }
-     },
-     {
-      "key": "ct02",
-      "values": {
-       "title": "Open house save-the-date post",
-       "campaign": "cp01",
-       "stage": "Live",
-       "format": "Social post",
-       "due_on": "@today-17d",
-       "publish_on": "@today-15d",
-       "author": "tm-05",
-       "cost": 150
-      }
-     },
-     {
-      "key": "ct03",
-      "values": {
-       "title": "Open house registration page",
-       "campaign": "cp01",
-       "stage": "Live",
-       "format": "Landing page",
-       "due_on": "@today-21d",
-       "publish_on": "@today-19d",
-       "author": "tm-05",
-       "cost": 1200
-      }
-     },
-     {
-      "key": "ct04",
-      "values": {
-       "title": "Open house reminder email",
-       "campaign": "cp01",
-       "stage": "Scheduled",
-       "format": "Email",
-       "due_on": "@today+9d",
-       "publish_on": "@today+11d",
-       "author": "tm-03",
-       "cost": 400
-      }
-     },
-     {
-      "key": "ct05",
-      "values": {
-       "title": "Open house paid social ad set",
-       "campaign": "cp01",
-       "stage": "In review",
-       "format": "Ad",
-       "due_on": "@today+2d",
-       "publish_on": "@today+5d",
-       "author": "tm-04",
-       "cost": 3500
-      }
-     },
-     {
-      "key": "ct06",
-      "values": {
-       "title": "Harbor Pro announcement post",
-       "campaign": "cp02",
-       "stage": "Drafting",
-       "format": "Blog post",
-       "due_on": "@today+12d",
-       "publish_on": "@today+16d",
-       "author": "tm-03",
-       "cost": 900
-      }
-     },
-     {
-      "key": "ct07",
-      "values": {
-       "title": "Harbor Pro teaser video",
-       "campaign": "cp02",
-       "stage": "Idea",
-       "format": "Video",
-       "due_on": "@today+20d",
-       "publish_on": "@today+30d",
-       "author": "tm-05",
-       "cost": 6500
-      }
-     },
-     {
-      "key": "ct08",
-      "values": {
-       "title": "Harbor Pro launch email",
-       "campaign": "cp02",
-       "stage": "Idea",
-       "format": "Email",
-       "due_on": "@today+28d",
-       "publish_on": "@today+31d",
-       "author": "tm-03",
-       "cost": 450
-      }
-     },
-     {
-      "key": "ct09",
-      "values": {
-       "title": "Customer story: Pelham Bakery",
-       "campaign": "cp03",
-       "stage": "Live",
-       "format": "Blog post",
-       "due_on": "@today-40d",
-       "publish_on": "@today-35d",
-       "author": "tm-03",
-       "cost": 800
-      }
-     },
-     {
-      "key": "ct10",
-      "values": {
-       "title": "Customer story: Quarry Street Dental",
-       "campaign": "cp03",
-       "stage": "Live",
-       "format": "Blog post",
-       "due_on": "@today-22d",
-       "publish_on": "@today-18d",
-       "author": "tm-03",
-       "cost": 800
-      }
-     },
-     {
-      "key": "ct11",
-      "values": {
-       "title": "Customer story: Ravenscroft Tools",
-       "campaign": "cp03",
-       "stage": "In review",
-       "format": "Blog post",
-       "due_on": "@today+3d",
-       "publish_on": "@today+8d",
-       "author": "tm-03",
-       "cost": 800
-      }
-     },
-     {
-      "key": "ct12",
-      "values": {
-       "title": "Customer story social cards",
-       "campaign": "cp03",
-       "stage": "Drafting",
-       "format": "Social post",
-       "due_on": "@today+6d",
-       "publish_on": "@today+9d",
-       "author": "tm-05",
-       "cost": 300
-      }
-     },
-     {
-      "key": "ct13",
-      "values": {
-       "title": "Referral program email",
-       "campaign": "cp04",
-       "stage": "Live",
-       "format": "Email",
-       "due_on": "@today-110d",
-       "publish_on": "@today-105d",
-       "author": "tm-03",
-       "cost": 350
-      }
-     },
-     {
-      "key": "ct14",
-      "values": {
-       "title": "Referral landing page",
-       "campaign": "cp04",
-       "stage": "Live",
-       "format": "Landing page",
-       "due_on": "@today-115d",
-       "publish_on": "@today-110d",
-       "author": "tm-05",
-       "cost": 1500
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "campaign": "Campaign and this record each keep their own dates and status."
-    },
-    "token": "kpi",
-    "name": "KPIs",
-    "labelSingular": "KPI",
-    "labelPlural": "KPIs",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "gauge",
-    "titleField": "metric",
-    "describes": "Numbers recorded for each campaign against its target.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "metric",
-      "label": "Metric",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "campaign",
-      "label": "Campaign",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "campaign",
-      "relationMax": 1
-     },
-     {
-      "key": "category",
-      "label": "Category",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Awareness",
-       "Traffic",
-       "Leads",
-       "Revenue"
-      ],
-      "choiceColors": {
-       "Awareness": "blue",
-       "Traffic": "green",
-       "Leads": "amber",
-       "Revenue": "violet"
-      }
-     },
-     {
-      "key": "recorded_on",
-      "label": "Date recorded",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "actual",
-      "label": "Actual",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 10000000
-       }
-      ]
-     },
-     {
-      "key": "target",
-      "label": "Target",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 10000000
-       }
-      ]
-     },
-     {
-      "key": "attainment",
-      "label": "Attainment percent",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "{Actual} / {Target} * 100"
-     }
-    ],
-    "rows": [
-     {
-      "key": "kp01",
-      "values": {
-       "metric": "Registrations",
-       "campaign": "cp01",
-       "category": "Leads",
-       "recorded_on": "@today-3d",
-       "actual": 74,
-       "target": 120
-      }
-     },
-     {
-      "key": "kp02",
-      "values": {
-       "metric": "Email opens",
-       "campaign": "cp01",
-       "category": "Awareness",
-       "recorded_on": "@today-3d",
-       "actual": 3100,
-       "target": 4000
-      }
-     },
-     {
-      "key": "kp03",
-      "values": {
-       "metric": "Landing page visits",
-       "campaign": "cp01",
-       "category": "Traffic",
-       "recorded_on": "@today-3d",
-       "actual": 2850,
-       "target": 3000
-      }
-     },
-     {
-      "key": "kp04",
-      "values": {
-       "metric": "Story page views",
-       "campaign": "cp03",
-       "category": "Traffic",
-       "recorded_on": "@today-5d",
-       "actual": 5400,
-       "target": 6000
-      }
-     },
-     {
-      "key": "kp05",
-      "values": {
-       "metric": "Newsletter sign-ups from stories",
-       "campaign": "cp03",
-       "category": "Leads",
-       "recorded_on": "@today-5d",
-       "actual": 212,
-       "target": 300
-      }
-     },
-     {
-      "key": "kp06",
-      "values": {
-       "metric": "Referred accounts",
-       "campaign": "cp04",
-       "category": "Revenue",
-       "recorded_on": "@today-62d",
-       "actual": 96,
-       "target": 90
-      }
-     },
-     {
-      "key": "kp07",
-      "values": {
-       "metric": "Referral emails sent",
-       "campaign": "cp04",
-       "category": "Awareness",
-       "recorded_on": "@today-62d",
-       "actual": 8400,
-       "target": 8000
-      }
-     },
-     {
-      "key": "kp08",
-      "values": {
-       "metric": "Webinar attendance",
-       "campaign": "cp05",
-       "category": "Awareness",
-       "recorded_on": "@today-141d",
-       "actual": 138,
-       "target": 150
-      }
-     },
-     {
-      "key": "kp09",
-      "values": {
-       "metric": "Demo requests",
-       "campaign": "cp05",
-       "category": "Leads",
-       "recorded_on": "@today-141d",
-       "actual": 44,
-       "target": 40
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "campaign",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "campaigns_owned"
-   },
-   {
-    "describes": "Content lists its content records.",
-    "fromTable": "campaign",
-    "fromField": "pieces",
-    "toTable": "content",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "campaign_listed_pieces"
-   },
-   {
-    "describes": "KPIs lists its kpi records.",
-    "fromTable": "campaign",
-    "fromField": "results",
-    "toTable": "kpi",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "campaign_listed_results"
-   },
-   {
-    "describes": "Campaign links to one campaign.",
-    "fromTable": "content",
-    "fromField": "campaign",
-    "toTable": "campaign",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "content_of"
-   },
-   {
-    "describes": "Author links to one team member.",
-    "fromTable": "content",
-    "fromField": "author",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "content_authored"
-   },
-   {
-    "describes": "Campaign links to one campaign.",
-    "fromTable": "kpi",
-    "fromField": "campaign",
-    "toTable": "campaign",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "kpis_of"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Odette Marchetti",
-       "role": "Marketing director",
-       "work_email": "odette@brightharbor.net",
-       "mobile": "(206) 555-0111",
-       "start_date": "@today-5y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Rahim Siddiqui",
-       "role": "Campaign manager",
-       "work_email": "rahim@brightharbor.net",
-       "mobile": "(206) 555-0112",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Greta Lindholm",
-       "role": "Copywriter",
-       "work_email": "greta@brightharbor.net",
-       "mobile": "(206) 555-0113",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Tavian Brooks",
-       "role": "Paid media specialist",
-       "work_email": "tavian@brightharbor.net",
-       "mobile": "(206) 555-0114",
-       "start_date": "@today-15m"
-      }
-     },
-     {
-      "key": "tm-05",
-      "values": {
-       "full_name": "Yara Castellanos",
-       "role": "Designer",
-       "work_email": "yara@brightharbor.net",
-       "mobile": "(206) 555-0115",
-       "start_date": "@today-4y"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "campaign_idea",
-    "name": "Propose a campaign",
-    "describes": "How anyone proposes a new campaign.",
-    "audience": "staff",
-    "table": "campaign",
-    "fields": [
-     {
-      "fieldKey": "campaign_name",
-      "ask": "What is it called?",
-      "required": true
-     },
-     {
-      "fieldKey": "goal",
-      "ask": "What should it achieve?"
-     },
-     {
-      "fieldKey": "budget",
-      "ask": "Rough budget?"
-     }
-    ],
-    "submitLabel": "Send the idea",
-    "confirmation": "Thanks. It is on the board as Planning."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "campaign_board",
-    "name": "Board",
-    "table": "campaign",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "status"
-   },
-   {
-    "token": "campaign_timeline",
-    "name": "Timeline",
-    "table": "campaign",
-    "kind": "timeline",
-    "startField": "starts_on",
-    "endField": "ends_on"
-   },
-   {
-    "token": "all_campaigns",
-    "name": "All campaigns",
-    "table": "campaign",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "starts_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "content_board",
-    "name": "Board",
-    "table": "content",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "stage"
-   },
-   {
-    "token": "content_calendar",
-    "name": "Calendar",
-    "table": "content",
-    "kind": "calendar",
-    "dateField": "publish_on",
-    "allDay": true
-   },
-   {
-    "token": "due_soon",
-    "name": "Due soon",
-    "table": "content",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "due_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_kpis",
-    "name": "All KPIs",
-    "table": "kpi",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "recorded_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Campaign assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "campaign",
-     "describes": "Every campaign, its goal, dates, owner and budget."
-    },
-    {
-     "name": "related_tables",
-     "table": "content",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many campaigns are active?",
-    "whyItMatters": "Odette opens every Monday by counting active campaigns.",
-    "expect": {
-     "table": "campaign",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Active"
-     },
-     "answer": 2,
-     "unit": "campaigns"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the campaign board.",
-    "action": {
-     "kind": "open",
-     "surface": "campaign_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "campaign_board",
-     "minItems": 5
-    }
-   },
-   {
-    "says": "Open the content board.",
-    "action": {
-     "kind": "open",
-     "surface": "content_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "content_board",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open the KPI list.",
-    "action": {
-     "kind": "open",
-     "surface": "all_kpis"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_kpis",
-     "minItems": 9
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "brightharbor.net"
-   ],
-   "fictionalStreets": [
-    "Gullwing Quay"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "marketing-campaign-hub",
-   "parent": null,
-   "title": "Marketing Campaign Hub",
-   "icon": {
+  "version": 2,
+  "title": "Marketing Campaign Hub",
+  "description": "Campaigns with their content and KPIs, so budget and results roll up on their own.",
+  "forWho": "Marketing leads and campaign managers",
+  "icon": {
     "emoji": "📣"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Every campaign gets one row. Content and numbers link to it so spend and results add up on their own."
-      }
-     ],
-     "background": "purple",
-     "props": {
-      "icon": "Megaphone"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:campaign-dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:campaign-brief"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:launch-checklist"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:wrap-up-review"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Campaigns"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "campaign",
-       "view": "campaign_board"
-      },
-      "inline": true,
-      "title": "Campaigns",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-timeline",
-        "name": "Timeline",
-        "layout": "timeline",
-        "icon": "ChartGantt",
-        "dateField": "starts_on"
-       },
-       {
-        "id": "view-budgets",
-        "name": "Budgets",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "starts_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Upcoming content"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "content",
-           "view": "due_soon"
-          },
-          "inline": true,
-          "title": "Content",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-due-soon",
-            "name": "Due soon",
-            "layout": "grid",
-            "icon": "Table",
-            "filters": {
-             "stage": [
-              "Drafting",
-              "In review",
-              "Scheduled"
-             ]
-            },
-            "sorts": [
-             {
-              "field": "due_on",
-              "direction": "asc"
-             }
-            ]
-           }
-          ],
-          "activeViewId": "view-due-soon"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "heading",
-         "text": [
-          {
-           "text": "Results"
-          }
-         ],
-         "props": {
-          "level": 3
-         }
-        },
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "kpi",
-           "view": "all_kpis"
-          },
-          "inline": true,
-          "title": "KPIs",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-actual-by-category",
-            "name": "Actual by category",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "category",
-             "op": "sum",
-             "field": "actual"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-actual-by-category"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Publishing schedule"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "content",
-       "view": "content_board"
-      },
-      "inline": true,
-      "title": "Content",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-calendar",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "publish_on"
-       },
-       {
-        "id": "view-board",
-        "name": "Board",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "stage"
-       },
-       {
-        "id": "view-all-content",
-        "name": "All content",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "publish_on",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-calendar"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "KPIs"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "kpi",
-       "view": "all_kpis"
-      },
-      "inline": true,
-      "title": "KPIs",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-kpis",
-        "name": "All KPIs",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "recorded_on",
-          "direction": "desc"
-         }
-        ]
-       },
-       {
-        "id": "view-target-by-category",
-        "name": "Target by category",
-        "layout": "chart",
-        "chart": {
-         "type": "bar",
-         "groupBy": "category",
-         "op": "sum",
-         "field": "target"
-        },
-        "icon": "ChartColumn"
-       }
-      ],
-      "activeViewId": "view-all-kpis"
-     }
-    },
-    {
-     "type": "toggle",
-     "text": [
-      {
-       "text": "Archive"
-      }
-     ],
-     "children": [
-      {
-       "type": "text",
-       "text": [
-        {
-         "text": "Campaigns marked Archived stay in the table above; filter the board by status to see them."
-        }
-       ]
-      }
-     ]
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-lavender-dusk",
     "offsetY": 50
-   }
   },
-  {
-   "key": "campaign-dashboard",
-   "parent": "marketing-campaign-hub",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "campaign",
-           "view": "all_campaigns"
-          },
-          "inline": true,
-          "title": "Campaigns",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-campaigns-by-status",
-            "name": "Campaigns by status",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-campaigns-by-status"
-         }
-        }
-       ]
+  "category": "marketing",
+  "tags": [
+    "campaigns",
+    "marketing",
+    "kpis",
+    "budget"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0152",
+    "catalogueId": "SP0152",
+    "useCase": "Odette Marchetti leads marketing and uses this to see each campaign's content, spend and results in one view.",
+    "industry": "cross_industry",
+    "vertical": "Marketing operations",
+    "job": "reporting",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Bright Harbor Software",
+      "describes": "A small software company running several marketing campaigns a quarter.",
+      "address": {
+        "line1": "31 Gullwing Quay",
+        "city": "Seattle",
+        "region": "WA",
+        "postalCode": "98101",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "content",
-           "view": "content_board"
-          },
-          "inline": true,
-          "title": "Content",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-content-by-stage",
-            "name": "Content by stage",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "stage",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-content-by-stage"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "content",
-           "view": "content_board"
-          },
-          "inline": true,
-          "title": "Content",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-cost-by-format",
-            "name": "Cost by format",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "format",
-             "op": "sum",
-             "field": "cost"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-cost-by-format"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(206) 555-0110",
+      "website": "brightharbor.net",
+      "email": "hello@brightharbor.net",
+      "timezone": "America/Los_Angeles"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-sp0152",
+    "tables": [
       {
-       "text": "Campaign budgets"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "campaign",
-       "view": "all_campaigns"
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "independentOf": {
+          "owner": "Anyone on the team can own this, whenever they joined."
+        },
+        "token": "campaign",
+        "name": "Campaigns",
+        "labelSingular": "Campaign",
+        "labelPlural": "Campaigns",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "megaphone",
+        "titleField": "campaign_name",
+        "describes": "Every campaign, its goal, dates, owner and budget.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "campaign_name",
+            "label": "Campaign",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "Active",
+              "Wrapped up",
+              "Archived"
+            ],
+            "choiceColors": {
+              "Planning": "blue",
+              "Active": "green",
+              "Wrapped up": "amber",
+              "Archived": "violet"
+            },
+            "required": true,
+            "default": "Planning",
+            "statusGroups": {
+              "Planning": "todo",
+              "Active": "in_progress",
+              "Wrapped up": "done",
+              "Archived": "done"
+            }
+          },
+          {
+            "key": "starts_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "End",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "channels",
+            "label": "Channels",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Email",
+              "Social",
+              "Paid",
+              "SEO",
+              "Events",
+              "PR",
+              "Partners"
+            ],
+            "choiceColors": {
+              "Email": "blue",
+              "Social": "green",
+              "Paid": "amber",
+              "SEO": "violet",
+              "Events": "teal",
+              "PR": "orange",
+              "Partners": "pink"
+            }
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "spend",
+            "label": "Spend so far",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pieces",
+            "pick": "cost",
+            "agg": "sum"
+          },
+          {
+            "key": "remaining",
+            "label": "Budget remaining",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Budget} - {Spend so far}"
+          },
+          {
+            "key": "used_pct",
+            "label": "Budget used (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Budget} > 0, ROUND({Spend so far} / {Budget} * 100, 0), 0)"
+          },
+          {
+            "key": "spend_month",
+            "label": "Spend this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pieces",
+            "pick": "cost",
+            "agg": "sum",
+            "filter": {
+              "publish_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "piece_total",
+            "label": "Pieces planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pieces",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "pieces_live",
+            "label": "Pieces live",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pieces",
+            "pick": "title",
+            "agg": "count",
+            "filter": {
+              "stage": "Live"
+            }
+          },
+          {
+            "key": "live_pct",
+            "label": "Pieces live (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Pieces planned} > 0, ROUND({Pieces live} / {Pieces planned} * 100, 0), 0)"
+          },
+          {
+            "key": "kpi_count",
+            "label": "Metrics tracked",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "results",
+            "pick": "metric",
+            "agg": "count"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cp01",
+            "values": {
+              "campaign_name": "Autumn open house",
+              "status": "Active",
+              "starts_on": "@today-20d",
+              "ends_on": "@today+25d",
+              "owner": "tm-02",
+              "goal": "Fill 120 seats at the open house",
+              "channels": [
+                "Email",
+                "Social",
+                "Events"
+              ],
+              "budget": 18000
+            }
+          },
+          {
+            "key": "cp02",
+            "values": {
+              "campaign_name": "Product launch: Harbor Pro",
+              "status": "Planning",
+              "starts_on": "@today+10d",
+              "ends_on": "@today+60d",
+              "owner": "tm-01",
+              "goal": "500 trial sign-ups in launch month",
+              "channels": [
+                "Email",
+                "Paid",
+                "PR",
+                "SEO"
+              ],
+              "budget": 42000
+            }
+          },
+          {
+            "key": "cp03",
+            "values": {
+              "campaign_name": "Customer stories series",
+              "status": "Active",
+              "starts_on": "@today-45d",
+              "ends_on": "@today+30d",
+              "owner": "tm-03",
+              "goal": "Publish six customer stories",
+              "channels": [
+                "SEO",
+                "Social"
+              ],
+              "budget": 9500
+            }
+          },
+          {
+            "key": "cp04",
+            "values": {
+              "campaign_name": "Spring referral drive",
+              "status": "Wrapped up",
+              "starts_on": "@today-120d",
+              "ends_on": "@today-60d",
+              "owner": "tm-02",
+              "goal": "90 referred accounts",
+              "channels": [
+                "Email",
+                "Partners"
+              ],
+              "budget": 12000
+            }
+          },
+          {
+            "key": "cp05",
+            "values": {
+              "campaign_name": "Webinar season",
+              "status": "Archived",
+              "starts_on": "@today-200d",
+              "ends_on": "@today-140d",
+              "owner": "tm-02",
+              "goal": "Average 150 live attendees",
+              "channels": [
+                "Email",
+                "Events"
+              ],
+              "budget": 7000
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Campaign brief",
+            "values": {
+              "status": "Planning"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Copy this outline into a new campaign page."
+                    }
+                  ],
+                  "background": "purple",
+                  "props": {
+                    "icon": "FileText"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence with a number and a date."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Audience"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who we want to reach and what they care about."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Message"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The main idea in plain words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Channel"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "What goes out"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Owner"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "When"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Email"
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": " "
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Social"
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Paid"
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ],
+                          [
+                            {
+                              "text": ""
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How we will know"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Primary metric"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Two supporting metrics"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       },
-      "inline": true,
-      "title": "Campaigns",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-budget-and-spend",
-        "name": "Budget and spend",
-        "layout": "grid",
-        "icon": "Table",
+      {
+        "before": [
+          [
+            "due_on",
+            "publish_on"
+          ]
+        ],
+        "independentOf": {
+          "campaign": "Campaign and this record each keep their own dates and status.",
+          "author": "Anyone on the team can own this, whenever they joined."
+        },
+        "token": "content",
+        "name": "Content",
+        "labelSingular": "Piece",
+        "labelPlural": "Content",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "title",
+        "describes": "Pieces of content made for campaigns, with their stage and cost.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Idea",
+              "Drafting",
+              "In review",
+              "Scheduled",
+              "Live"
+            ],
+            "choiceColors": {
+              "Idea": "blue",
+              "Drafting": "green",
+              "In review": "amber",
+              "Scheduled": "violet",
+              "Live": "teal"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Drafting": "todo",
+              "In review": "in_progress",
+              "Scheduled": "in_progress",
+              "Live": "in_progress"
+            }
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Landing page",
+              "Email",
+              "Social post",
+              "Blog post",
+              "Video",
+              "Ad"
+            ],
+            "choiceColors": {
+              "Landing page": "blue",
+              "Email": "green",
+              "Social post": "amber",
+              "Blog post": "violet",
+              "Video": "teal",
+              "Ad": "orange"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "publish_on",
+            "label": "Publish date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "cost",
+            "label": "Cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "live_btn",
+            "label": "Mark live",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "content_live"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ct01",
+            "values": {
+              "title": "Open house invitation email",
+              "campaign": "cp01",
+              "stage": "Live",
+              "format": "Email",
+              "due_on": "@today-18d",
+              "publish_on": "@today-16d",
+              "author": "tm-03",
+              "cost": 400
+            }
+          },
+          {
+            "key": "ct02",
+            "values": {
+              "title": "Open house save-the-date post",
+              "campaign": "cp01",
+              "stage": "Live",
+              "format": "Social post",
+              "due_on": "@today-17d",
+              "publish_on": "@today-15d",
+              "author": "tm-05",
+              "cost": 150
+            }
+          },
+          {
+            "key": "ct03",
+            "values": {
+              "title": "Open house registration page",
+              "campaign": "cp01",
+              "stage": "Live",
+              "format": "Landing page",
+              "due_on": "@today-21d",
+              "publish_on": "@today-19d",
+              "author": "tm-05",
+              "cost": 1200
+            }
+          },
+          {
+            "key": "ct04",
+            "values": {
+              "title": "Open house reminder email",
+              "campaign": "cp01",
+              "stage": "Scheduled",
+              "format": "Email",
+              "due_on": "@today",
+              "publish_on": "@today+11d",
+              "author": "tm-03",
+              "cost": 400
+            }
+          },
+          {
+            "key": "ct05",
+            "values": {
+              "title": "Open house paid social ad set",
+              "campaign": "cp01",
+              "stage": "In review",
+              "format": "Ad",
+              "due_on": "@today-4d",
+              "publish_on": "@today+5d",
+              "author": "tm-04",
+              "cost": 3500
+            }
+          },
+          {
+            "key": "ct06",
+            "values": {
+              "title": "Harbor Pro announcement post",
+              "campaign": "cp02",
+              "stage": "Drafting",
+              "format": "Blog post",
+              "due_on": "@today-9d",
+              "publish_on": "@today+16d",
+              "author": "tm-03",
+              "cost": 900
+            }
+          },
+          {
+            "key": "ct07",
+            "values": {
+              "title": "Harbor Pro teaser video",
+              "campaign": "cp02",
+              "stage": "Idea",
+              "format": "Video",
+              "due_on": "@today+3d",
+              "publish_on": "@today+30d",
+              "author": "tm-05",
+              "cost": 6500
+            }
+          },
+          {
+            "key": "ct08",
+            "values": {
+              "title": "Harbor Pro launch email",
+              "campaign": "cp02",
+              "stage": "Idea",
+              "format": "Email",
+              "due_on": "@today+2d",
+              "publish_on": "@today+31d",
+              "author": "tm-03",
+              "cost": 450
+            }
+          },
+          {
+            "key": "ct09",
+            "values": {
+              "title": "Customer story: Pelham Bakery",
+              "campaign": "cp03",
+              "stage": "Live",
+              "format": "Blog post",
+              "due_on": "@today-40d",
+              "publish_on": "@today-35d",
+              "author": "tm-03",
+              "cost": 800
+            }
+          },
+          {
+            "key": "ct10",
+            "values": {
+              "title": "Customer story: Quarry Street Dental",
+              "campaign": "cp03",
+              "stage": "Live",
+              "format": "Blog post",
+              "due_on": "@today-22d",
+              "publish_on": "@today-18d",
+              "author": "tm-03",
+              "cost": 800
+            }
+          },
+          {
+            "key": "ct11",
+            "values": {
+              "title": "Customer story: Ravenscroft Tools",
+              "campaign": "cp03",
+              "stage": "In review",
+              "format": "Blog post",
+              "due_on": "@today+5d",
+              "publish_on": "@today+8d",
+              "author": "tm-03",
+              "cost": 800
+            }
+          },
+          {
+            "key": "ct12",
+            "values": {
+              "title": "Customer story social cards",
+              "campaign": "cp03",
+              "stage": "Drafting",
+              "format": "Social post",
+              "due_on": "@today+6d",
+              "publish_on": "@today+9d",
+              "author": "tm-05",
+              "cost": 300
+            }
+          },
+          {
+            "key": "ct13",
+            "values": {
+              "title": "Referral program email",
+              "campaign": "cp04",
+              "stage": "Live",
+              "format": "Email",
+              "due_on": "@today-110d",
+              "publish_on": "@today-105d",
+              "author": "tm-03",
+              "cost": 350
+            }
+          },
+          {
+            "key": "ct14",
+            "values": {
+              "title": "Referral landing page",
+              "campaign": "cp04",
+              "stage": "Live",
+              "format": "Landing page",
+              "due_on": "@today-115d",
+              "publish_on": "@today-110d",
+              "author": "tm-05",
+              "cost": 1500
+            }
+          }
+        ],
+        "statusImplies": []
+      },
+      {
+        "independentOf": {
+          "campaign": "Campaign and this record each keep their own dates and status."
+        },
+        "token": "kpi",
+        "name": "KPIs",
+        "labelSingular": "KPI",
+        "labelPlural": "KPIs",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "gauge",
+        "titleField": "metric",
+        "describes": "Numbers recorded for each campaign against its target.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "metric",
+            "label": "Metric",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Awareness",
+              "Traffic",
+              "Leads",
+              "Revenue"
+            ],
+            "choiceColors": {
+              "Awareness": "blue",
+              "Traffic": "green",
+              "Leads": "amber",
+              "Revenue": "violet"
+            }
+          },
+          {
+            "key": "recorded_on",
+            "label": "Date recorded",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "actual",
+            "label": "Actual",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "target",
+            "label": "Target",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "attainment",
+            "label": "Attainment (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Target} > 0, ROUND({Actual} / {Target} * 100, 0), 0)"
+          }
+        ],
+        "rows": [
+          {
+            "key": "kp01",
+            "values": {
+              "metric": "Registrations",
+              "campaign": "cp01",
+              "category": "Leads",
+              "recorded_on": "@today-3d",
+              "actual": 74,
+              "target": 120
+            }
+          },
+          {
+            "key": "kp02",
+            "values": {
+              "metric": "Email opens",
+              "campaign": "cp01",
+              "category": "Awareness",
+              "recorded_on": "@today-3d",
+              "actual": 3100,
+              "target": 4000
+            }
+          },
+          {
+            "key": "kp03",
+            "values": {
+              "metric": "Landing page visits",
+              "campaign": "cp01",
+              "category": "Traffic",
+              "recorded_on": "@today-3d",
+              "actual": 2850,
+              "target": 3000
+            }
+          },
+          {
+            "key": "kp04",
+            "values": {
+              "metric": "Story page views",
+              "campaign": "cp03",
+              "category": "Traffic",
+              "recorded_on": "@today-5d",
+              "actual": 5400,
+              "target": 6000
+            }
+          },
+          {
+            "key": "kp05",
+            "values": {
+              "metric": "Newsletter sign-ups from stories",
+              "campaign": "cp03",
+              "category": "Leads",
+              "recorded_on": "@today-5d",
+              "actual": 212,
+              "target": 300
+            }
+          },
+          {
+            "key": "kp06",
+            "values": {
+              "metric": "Referred accounts",
+              "campaign": "cp04",
+              "category": "Revenue",
+              "recorded_on": "@today-62d",
+              "actual": 96,
+              "target": 90
+            }
+          },
+          {
+            "key": "kp07",
+            "values": {
+              "metric": "Referral emails sent",
+              "campaign": "cp04",
+              "category": "Awareness",
+              "recorded_on": "@today-62d",
+              "actual": 8400,
+              "target": 8000
+            }
+          },
+          {
+            "key": "kp08",
+            "values": {
+              "metric": "Webinar attendance",
+              "campaign": "cp05",
+              "category": "Awareness",
+              "recorded_on": "@today-141d",
+              "actual": 138,
+              "target": 150
+            }
+          },
+          {
+            "key": "kp09",
+            "values": {
+              "metric": "Demo requests",
+              "campaign": "cp05",
+              "category": "Leads",
+              "recorded_on": "@today-141d",
+              "actual": 44,
+              "target": 40
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "campaign",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "campaigns_owned"
+      },
+      {
+        "describes": "Campaign links to one campaign.",
+        "fromTable": "content",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "pieces"
+      },
+      {
+        "describes": "Author links to one team member.",
+        "fromTable": "content",
+        "fromField": "author",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "content_authored"
+      },
+      {
+        "describes": "Campaign links to one campaign.",
+        "fromTable": "kpi",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "results"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Odette Marchetti",
+              "role": "Marketing director",
+              "work_email": "odette@brightharbor.net",
+              "mobile": "(206) 555-0111",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Rahim Siddiqui",
+              "role": "Campaign manager",
+              "work_email": "rahim@brightharbor.net",
+              "mobile": "(206) 555-0112",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Greta Lindholm",
+              "role": "Copywriter",
+              "work_email": "greta@brightharbor.net",
+              "mobile": "(206) 555-0113",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Tavian Brooks",
+              "role": "Paid media specialist",
+              "work_email": "tavian@brightharbor.net",
+              "mobile": "(206) 555-0114",
+              "start_date": "@today-15m"
+            }
+          },
+          {
+            "key": "tm-05",
+            "values": {
+              "full_name": "Yara Castellanos",
+              "role": "Designer",
+              "work_email": "yara@brightharbor.net",
+              "mobile": "(206) 555-0115",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "campaign_idea",
+        "name": "Propose a campaign",
+        "describes": "How anyone proposes a new campaign.",
+        "audience": "staff",
+        "table": "campaign",
+        "fields": [
+          {
+            "fieldKey": "campaign_name",
+            "ask": "What is it called?",
+            "required": true
+          },
+          {
+            "fieldKey": "goal",
+            "ask": "What should it achieve?"
+          },
+          {
+            "fieldKey": "budget",
+            "ask": "Rough budget?"
+          }
+        ],
+        "submitLabel": "Send the idea",
+        "confirmation": "Thanks. It is on the board as Planning."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "content_live",
+        "table": "content",
+        "name": "Mark live",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Live"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "campaign_board",
+        "name": "Board",
+        "table": "campaign",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "status"
+      },
+      {
+        "token": "campaign_timeline",
+        "name": "Timeline",
+        "table": "campaign",
+        "kind": "timeline",
+        "startField": "starts_on",
+        "endField": "ends_on"
+      },
+      {
+        "token": "all_campaigns",
+        "name": "All campaigns",
+        "table": "campaign",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "budget",
-          "direction": "desc"
-         }
+          {
+            "field": "starts_on",
+            "direction": "asc"
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-budget-and-spend"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "KPIs below target"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "kpi",
-       "view": "all_kpis"
       },
-      "inline": true,
-      "title": "KPIs",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-metrics",
-        "name": "All metrics",
-        "layout": "grid",
-        "icon": "Table",
+      {
+        "token": "content_board",
+        "name": "Board",
+        "table": "content",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "stage"
+      },
+      {
+        "token": "content_calendar",
+        "name": "Calendar",
+        "table": "content",
+        "kind": "calendar",
+        "dateField": "publish_on",
+        "allDay": true
+      },
+      {
+        "token": "due_soon",
+        "name": "Due soon",
+        "table": "content",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "attainment",
-          "direction": "asc"
-         }
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-all-metrics"
-     }
-    }
-   ]
-  },
-  {
-   "key": "campaign-brief",
-   "parent": "marketing-campaign-hub",
-   "title": "Campaign brief",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Copy this outline into a new campaign page."
-      }
-     ],
-     "background": "purple",
-     "props": {
-      "icon": "FileText"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Goal"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "One sentence with a number and a date."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Audience"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Who we want to reach and what they care about."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Message"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "The main idea in plain words."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Plan"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "Channel"
-          }
-         ],
-         [
-          {
-           "text": "What goes out"
-          }
-         ],
-         [
-          {
-           "text": "Owner"
-          }
-         ],
-         [
-          {
-           "text": "When"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Email"
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": " "
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Social"
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Paid"
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ],
-         [
-          {
-           "text": ""
-          }
-         ]
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "How we will know"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Primary metric"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Two supporting metrics"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "launch-checklist",
-   "parent": "marketing-campaign-hub",
-   "title": "Launch checklist",
-   "icon": {
-    "emoji": "🚀"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Goal and budget agreed"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Every piece has an owner and a publish date"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Tracking links tested"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Landing page reviewed on a phone"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Sales team briefed"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "KPIs created with targets"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  },
-  {
-   "key": "wrap-up-review",
-   "parent": "marketing-campaign-hub",
-   "title": "Wrap-up review",
-   "icon": {
-    "emoji": "🔍"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Within a week of a campaign ending, fill in each section."
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "What worked"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Top result and why"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "What did not"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Biggest miss and why"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Numbers"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "kpi",
-       "view": "all_kpis"
       },
-      "inline": true,
-      "title": "KPIs",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-kpis",
+      {
+        "token": "all_kpis",
         "name": "All KPIs",
-        "layout": "grid",
-        "icon": "Table",
+        "table": "kpi",
+        "kind": "grid",
+        "isDefault": true,
         "sorts": [
-         {
-          "field": "recorded_on",
-          "direction": "desc"
-         }
+          {
+            "field": "recorded_on",
+            "direction": "asc"
+          }
         ]
-       }
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "content_week",
+        "name": "Due this week",
+        "table": "content",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Idea",
+            "Drafting",
+            "In review",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "content_over",
+        "name": "Overdue",
+        "table": "content",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Idea",
+            "Drafting",
+            "In review",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "content_next7",
+        "name": "Next 7 days",
+        "table": "content",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Idea",
+            "Drafting",
+            "In review",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "content_pub_month",
+        "name": "Publishing this month",
+        "table": "content",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "campaign_ending",
+        "name": "Ending this month",
+        "table": "campaign",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "kpi_recent",
+        "name": "Recorded in 30 days",
+        "table": "kpi",
+        "kind": "grid",
+        "within": {
+          "recorded_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Campaign assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "campaign",
+          "describes": "Every campaign, its goal, dates, owner and budget."
+        },
+        {
+          "name": "related_tables",
+          "table": "content",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-all-kpis"
-     }
+      "question": {
+        "ask": "How many campaigns are active?",
+        "whyItMatters": "Odette opens every Monday by counting active campaigns.",
+        "expect": {
+          "table": "campaign",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Active"
+          },
+          "answer": 2,
+          "unit": "campaigns"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the campaign board.",
+        "action": {
+          "kind": "open",
+          "surface": "campaign_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "campaign_board",
+          "minItems": 5
+        }
+      },
+      {
+        "says": "Open the content board.",
+        "action": {
+          "kind": "open",
+          "surface": "content_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "content_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the KPI list.",
+        "action": {
+          "kind": "open",
+          "surface": "all_kpis"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_kpis",
+          "minItems": 9
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "brightharbor.net"
+      ],
+      "fictionalStreets": [
+        "Gullwing Quay"
+      ]
+    },
+    "version": 2
+  },
+  "pages": [
+    {
+      "key": "marketing-campaign-hub",
+      "parent": null,
+      "title": "Marketing Campaign Hub",
+      "icon": {
+        "emoji": "📣"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every campaign gets one row. Content and numbers link to it so spend and results add up on their own."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Megaphone"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:campaign-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:launch-checklist"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:wrap-up-review"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Campaigns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any campaign to find a brief (goal, audience, message, channels, budget) already inside it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "campaign",
+              "view": "campaign_board"
+            },
+            "inline": true,
+            "title": "Campaigns",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-timeline",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on"
+              },
+              {
+                "id": "view-budgets",
+                "name": "Budgets",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-campaign-ending",
+                "name": "Ending this month",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "ends_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Upcoming content"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "content",
+              "view": "due_soon"
+            },
+            "inline": true,
+            "title": "Content",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-due-soon",
+                "name": "Due soon",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "stage": [
+                    "Drafting",
+                    "In review",
+                    "Scheduled"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-content-week",
+                "name": "Due this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Idea",
+                    "Drafting",
+                    "In review",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-content-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Idea",
+                    "Drafting",
+                    "In review",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-content-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Idea",
+                    "Drafting",
+                    "In review",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "view-content-pub-month",
+                "name": "Publishing this month",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "publish_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-due-soon"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Results"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "kpi",
+              "view": "all_kpis"
+            },
+            "inline": true,
+            "title": "KPIs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-actual-by-category",
+                "name": "Actual by category",
+                "layout": "chart",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "field": "actual"
+                },
+                "icon": "ChartColumn"
+              },
+              {
+                "id": "view-kpi-recent",
+                "name": "Recorded in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "recorded_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-actual-by-category"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Publishing schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "content",
+              "view": "content_board"
+            },
+            "inline": true,
+            "title": "Content",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-calendar",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "publish_on"
+              },
+              {
+                "id": "view-board",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "view-all-content",
+                "name": "All content",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "publish_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "KPIs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "kpi",
+              "view": "all_kpis"
+            },
+            "inline": true,
+            "title": "KPIs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-kpis",
+                "name": "All KPIs",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "recorded_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-target-by-category",
+                "name": "Target by category",
+                "layout": "chart",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "field": "target"
+                },
+                "icon": "ChartColumn"
+              }
+            ],
+            "activeViewId": "view-all-kpis"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Archive"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Campaigns marked Archived stay in the table above; filter the board by status to see them."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      }
     },
     {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Next time"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
+      "key": "campaign-dashboard",
+      "parent": "marketing-campaign-hub",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "campaign",
+                      "view": "all_campaigns"
+                    },
+                    "inline": true,
+                    "title": "Campaigns",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-campaigns-by-status",
+                        "name": "Campaigns by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-campaigns-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "content",
+                      "view": "content_board"
+                    },
+                    "inline": true,
+                    "title": "Content",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-content-by-stage",
+                        "name": "Content by stage",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-content-by-stage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "content",
+                      "view": "content_board"
+                    },
+                    "inline": true,
+                    "title": "Content",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-cost-by-format",
+                        "name": "Cost by format",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "format",
+                          "op": "sum",
+                          "field": "cost"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-cost-by-format"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Budget remaining and Budget used are calculated from each campaign’s Budget and the cost of its content, so they stay right as you log work."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Calculator"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Campaign budgets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "campaign",
+              "view": "all_campaigns"
+            },
+            "inline": true,
+            "title": "Campaigns",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-budget-and-spend",
+                "name": "Budget and spend",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "budget",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-budget-and-spend"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "KPIs below target"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "kpi",
+              "view": "all_kpis"
+            },
+            "inline": true,
+            "title": "KPIs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-metrics",
+                "name": "All metrics",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "attainment",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-all-metrics"
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Keep"
-      }
-     ]
+      "key": "launch-checklist",
+      "parent": "marketing-campaign-hub",
+      "title": "Launch checklist",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Goal and budget agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every piece has an owner and a publish date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tracking links tested"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Landing page reviewed on a phone"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sales team briefed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "KPIs created with targets"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
     },
     {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Change"
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Try"
-      }
-     ]
+      "key": "wrap-up-review",
+      "parent": "marketing-campaign-hub",
+      "title": "Wrap-up review",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Within a week of a campaign ending, fill in each section."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What worked"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Top result and why"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What did not"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Biggest miss and why"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "kpi",
+              "view": "all_kpis"
+            },
+            "inline": true,
+            "title": "KPIs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-kpis",
+                "name": "All KPIs",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "recorded_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-all-kpis"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Next time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Change"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Try"
+            }
+          ]
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }

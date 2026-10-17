@@ -1,1969 +1,2206 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0161",
- "version": 1,
- "title": "Partnerships Tracker",
- "description": "Partners, contacts, milestones and revenue share in one workspace.",
- "forWho": "Business development and partner teams",
- "icon": {
-  "emoji": "🤝"
- },
- "cover": {
-  "url": "gallery:photo-ocean-horizon",
-  "offsetY": 50
- },
- "category": "sales",
- "tags": [
-  "partners",
-  "referrals",
-  "revenue share",
-  "bd"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-sp0161",
+  "packVersion": 1,
   "catalogueId": "SP0161",
-  "useCase": "Ottilie Brandt heads partnerships and uses this to manage partners, deliver on milestones and pay commissions accurately.",
-  "industry": "cross_industry",
-  "vertical": "Partnerships",
-  "job": "crm_pipeline",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Meridian Stack",
-   "describes": "A software company that grows through referral, reseller and integration partners.",
-   "address": {
-    "line1": "330 Embarcadero Mews",
-    "city": "San Francisco",
-    "region": "CA",
-    "postalCode": "94111",
-    "country": "US"
-   },
-   "phone": "(415) 555-0150",
-   "website": "meridianstackhq.net",
-   "email": "hello@meridianstackhq.net",
-   "timezone": "America/Los_Angeles"
-  },
-  "cleanupTag": "use-case:spaces-sp0161",
-  "tables": [
-   {
-    "independentOf": {
-     "owner": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "partner",
-    "name": "Partners",
-    "labelSingular": "Partner",
-    "labelPlural": "Partners",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "handshake",
-    "titleField": "partner_name",
-    "describes": "Referral, reseller, integration and co-marketing partners and how each is going.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "partner_name",
-      "label": "Partner",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "kind",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Referral",
-       "Reseller",
-       "Integration",
-       "Co-marketing",
-       "Affiliate"
-      ],
-      "choiceColors": {
-       "Referral": "blue",
-       "Reseller": "green",
-       "Integration": "amber",
-       "Co-marketing": "violet",
-       "Affiliate": "teal"
-      }
-     },
-     {
-      "key": "stage",
-      "label": "Stage",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Prospect",
-       "Talking",
-       "Active",
-       "Paused",
-       "Ended"
-      ],
-      "choiceColors": {
-       "Prospect": "blue",
-       "Talking": "violet",
-       "Active": "green",
-       "Paused": "amber",
-       "Ended": "slate"
-      },
-      "required": true,
-      "default": "Prospect"
-     },
-     {
-      "key": "owner",
-      "label": "Owner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     },
-     {
-      "key": "share",
-      "label": "Revenue share percent",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ],
-      "unit": "%"
-     },
-     {
-      "key": "site",
-      "label": "Website",
-      "parityType": "url",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "signed",
-      "label": "Agreement signed",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "renewal_on",
-      "label": "Renewal",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "txns",
-      "label": "Transactions",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "transaction",
-      "multi": true
-     },
-     {
-      "key": "referred",
-      "label": "Referred revenue",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "txns",
-      "pick": "amount",
-      "agg": "sum"
-     },
-     {
-      "key": "ms",
-      "label": "Milestones",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "milestone",
-      "multi": true
-     },
-     {
-      "key": "ms_count",
-      "label": "Milestones planned",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "ms",
-      "pick": "task_name",
-      "agg": "count"
-     },
-     {
-      "key": "people",
-      "label": "Contacts",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "pcontact",
-      "multi": true
-     }
-    ],
-    "rows": [
-     {
-      "key": "pn01",
-      "values": {
-       "partner_name": "Cobblestone Consulting",
-       "kind": "Referral",
-       "stage": "Active",
-       "owner": "tm-02",
-       "share": 10,
-       "site": "https://cobblestoneconsulting.net",
-       "signed": true,
-       "renewal_on": "@today+200d",
-       "txns": [
-        "tx01",
-        "tx02"
-       ],
-       "ms": [
-        "ml07",
-        "ml09",
-        "ml10"
-       ],
-       "people": [
-        "pc01"
-       ]
-      }
-     },
-     {
-      "key": "pn02",
-      "values": {
-       "partner_name": "Northwind Resellers",
-       "kind": "Reseller",
-       "stage": "Active",
-       "owner": "tm-02",
-       "share": 25,
-       "site": "https://northwindresellers.net",
-       "signed": true,
-       "renewal_on": "@today+95d",
-       "txns": [
-        "tx03",
-        "tx04",
-        "tx05"
-       ],
-       "ms": [
-        "ml05",
-        "ml06"
-       ],
-       "people": [
-        "pc02",
-        "pc03"
-       ]
-      }
-     },
-     {
-      "key": "pn03",
-      "values": {
-       "partner_name": "Tern Data Systems",
-       "kind": "Integration",
-       "stage": "Active",
-       "owner": "tm-04",
-       "share": 0,
-       "site": "https://terndatasystems.net",
-       "signed": true,
-       "renewal_on": "@today+300d",
-       "txns": [
-        "tx09",
-        "tx10"
-       ],
-       "ms": [
-        "ml03",
-        "ml04"
-       ],
-       "people": [
-        "pc04",
-        "pc05"
-       ]
-      }
-     },
-     {
-      "key": "pn04",
-      "values": {
-       "partner_name": "Quillfeather Media",
-       "kind": "Co-marketing",
-       "stage": "Talking",
-       "owner": "tm-03",
-       "share": 0,
-       "site": "https://quillfeathermedia.net",
-       "signed": false,
-       "txns": [],
-       "ms": [
-        "ml02"
-       ],
-       "people": [
-        "pc06"
-       ]
-      }
-     },
-     {
-      "key": "pn05",
-      "values": {
-       "partner_name": "Brightwater Affiliates",
-       "kind": "Affiliate",
-       "stage": "Paused",
-       "owner": "tm-02",
-       "share": 15,
-       "site": "https://brightwateraffiliates.net",
-       "signed": true,
-       "renewal_on": "@today+40d",
-       "txns": [
-        "tx06",
-        "tx07",
-        "tx08"
-       ],
-       "ms": [
-        "ml08"
-       ],
-       "people": [
-        "pc07"
-       ]
-      }
-     },
-     {
-      "key": "pn06",
-      "values": {
-       "partner_name": "Lowcountry Advisors",
-       "kind": "Referral",
-       "stage": "Prospect",
-       "owner": "tm-01",
-       "share": 10,
-       "site": "https://lowcountryadvisors.net",
-       "signed": false,
-       "txns": [],
-       "ms": [
-        "ml01"
-       ],
-       "people": [
-        "pc08"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "partner": "Partner and this record each keep their own dates and status."
-    },
-    "token": "pcontact",
-    "name": "Partner contacts",
-    "labelSingular": "Partner contact",
-    "labelPlural": "Partner contacts",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "contact",
-    "titleField": "contact_name",
-    "describes": "The people at each partner.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "contact_name",
-      "label": "Name",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "partner",
-      "label": "Partner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "partner",
-      "relationMax": 1
-     },
-     {
-      "key": "job_role",
-      "label": "Role",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "contact_email",
-      "label": "Email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "summarize"
-     }
-    ],
-    "rows": [
-     {
-      "key": "pc01",
-      "values": {
-       "contact_name": "Evander Holloway",
-       "partner": "pn01",
-       "job_role": "Managing partner",
-       "contact_email": "evander@cobblestoneconsulting.net"
-      }
-     },
-     {
-      "key": "pc02",
-      "values": {
-       "contact_name": "Sabrina Tkachenko",
-       "partner": "pn02",
-       "job_role": "Channel director",
-       "contact_email": "sabrina@northwindresellers.net"
-      }
-     },
-     {
-      "key": "pc03",
-      "values": {
-       "contact_name": "Lamar Whitfield",
-       "partner": "pn02",
-       "job_role": "Sales operations",
-       "contact_email": "lamar@northwindresellers.net"
-      }
-     },
-     {
-      "key": "pc04",
-      "values": {
-       "contact_name": "Ximena Alcántara",
-       "partner": "pn03",
-       "job_role": "Product manager",
-       "contact_email": "ximena@terndatasystems.net"
-      }
-     },
-     {
-      "key": "pc05",
-      "values": {
-       "contact_name": "Bertrand Okoye",
-       "partner": "pn03",
-       "job_role": "Engineering lead",
-       "contact_email": "bertrand@terndatasystems.net"
-      }
-     },
-     {
-      "key": "pc06",
-      "values": {
-       "contact_name": "Calliope Lindgren",
-       "partner": "pn04",
-       "job_role": "Editor",
-       "contact_email": "calliope@quillfeathermedia.net"
-      }
-     },
-     {
-      "key": "pc07",
-      "values": {
-       "contact_name": "Roderick Tan",
-       "partner": "pn05",
-       "job_role": "Founder",
-       "contact_email": "roderick@brightwateraffiliates.net"
-      }
-     },
-     {
-      "key": "pc08",
-      "values": {
-       "contact_name": "Marguerite Abara",
-       "partner": "pn06",
-       "job_role": "Partner",
-       "contact_email": "marguerite@lowcountryadvisors.net"
-      }
-     }
-    ]
-   },
-   {
-    "before": [
-     [
-      "start_on",
-      "due_on"
-     ]
-    ],
-    "independentOf": {
-     "partner": "Partner and this record each keep their own dates and status.",
-     "assignee": "Anyone on the team can own this, whenever they joined."
-    },
-    "token": "milestone",
-    "name": "Milestones",
-    "labelSingular": "Milestone",
-    "labelPlural": "Milestones",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "flag",
-    "titleField": "task_name",
-    "describes": "Tasks and milestones owed to or by each partner.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "task_name",
-      "label": "Task",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "partner",
-      "label": "Partner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "partner",
-      "relationMax": 1
-     },
-     {
-      "key": "start_on",
-      "label": "Start",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "due_on",
-      "label": "Due",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "To do",
-       "In progress",
-       "Done",
-       "Blocked"
-      ],
-      "choiceColors": {
-       "To do": "blue",
-       "In progress": "green",
-       "Done": "amber",
-       "Blocked": "violet"
-      },
-      "required": true,
-      "default": "To do"
-     },
-     {
-      "key": "assignee",
-      "label": "Assignee",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "team_member",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "ml01",
-      "values": {
-       "task_name": "Sign referral agreement",
-       "partner": "pn06",
-       "start_on": "@today-3d",
-       "due_on": "@today+7d",
-       "status": "In progress",
-       "assignee": "tm-01"
-      }
-     },
-     {
-      "key": "ml02",
-      "values": {
-       "task_name": "Joint webinar plan",
-       "partner": "pn04",
-       "start_on": "@today+2d",
-       "due_on": "@today+25d",
-       "status": "To do",
-       "assignee": "tm-03"
-      }
-     },
-     {
-      "key": "ml03",
-      "values": {
-       "task_name": "Build data connector v2",
-       "partner": "pn03",
-       "start_on": "@today-30d",
-       "due_on": "@today+14d",
-       "status": "In progress",
-       "assignee": "tm-04"
-      }
-     },
-     {
-      "key": "ml04",
-      "values": {
-       "task_name": "Publish integration guide",
-       "partner": "pn03",
-       "start_on": "@today+10d",
-       "due_on": "@today+21d",
-       "status": "To do",
-       "assignee": "tm-03"
-      }
-     },
-     {
-      "key": "ml05",
-      "values": {
-       "task_name": "Reseller training session",
-       "partner": "pn02",
-       "start_on": "@today-10d",
-       "due_on": "@today-3d",
-       "status": "Done",
-       "assignee": "tm-02"
-      }
-     },
-     {
-      "key": "ml06",
-      "values": {
-       "task_name": "Update reseller price list",
-       "partner": "pn02",
-       "start_on": "@today+1d",
-       "due_on": "@today+9d",
-       "status": "To do",
-       "assignee": "tm-02"
-      }
-     },
-     {
-      "key": "ml07",
-      "values": {
-       "task_name": "Quarterly business review",
-       "partner": "pn01",
-       "start_on": "@today+14d",
-       "due_on": "@today+16d",
-       "status": "To do",
-       "assignee": "tm-01"
-      }
-     },
-     {
-      "key": "ml08",
-      "values": {
-       "task_name": "Renew affiliate terms",
-       "partner": "pn05",
-       "start_on": "@today+20d",
-       "due_on": "@today+35d",
-       "status": "Blocked",
-       "assignee": "tm-02"
-      }
-     },
-     {
-      "key": "ml09",
-      "values": {
-       "task_name": "Co-branded case study",
-       "partner": "pn01",
-       "start_on": "@today-20d",
-       "due_on": "@today-6d",
-       "status": "Done",
-       "assignee": "tm-03"
-      }
-     },
-     {
-      "key": "ml10",
-      "values": {
-       "task_name": "Referral link tracking audit",
-       "partner": "pn01",
-       "start_on": "@today-1d",
-       "due_on": "@today+12d",
-       "status": "In progress",
-       "assignee": "tm-04"
-      }
-     }
-    ]
-   },
-   {
-    "independentOf": {
-     "partner": "Partner and this record each keep their own dates and status."
-    },
-    "withinParent": [
-     {
-      "relation": "partner",
-      "field": "rate",
-      "op": "<=",
-      "parentField": "share"
-     }
-    ],
-    "token": "transaction",
-    "name": "Transactions",
-    "labelSingular": "Transaction",
-    "labelPlural": "Transactions",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "coins",
-    "titleField": "reference",
-    "describes": "Revenue each partner brought in and the commission owed.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "reference",
-      "label": "Reference",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "partner",
-      "label": "Partner",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "partner",
-      "relationMax": 1
-     },
-     {
-      "key": "happened_on",
-      "label": "Date",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "amount",
-      "label": "Amount",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 500000
-       }
-      ]
-     },
-     {
-      "key": "rate",
-      "label": "Commission rate percent",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ],
-      "unit": "%"
-     },
-     {
-      "key": "commission",
-      "label": "Commission",
-      "parityType": "formula",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "formula": "{Amount} * {Commission rate percent} / 100"
-     }
-    ],
-    "rows": [
-     {
-      "key": "tx01",
-      "values": {
-       "reference": "Cobblestone referral: Atlas Build",
-       "partner": "pn01",
-       "happened_on": "@today-75d",
-       "amount": 18000,
-       "rate": 10
-      }
-     },
-     {
-      "key": "tx02",
-      "values": {
-       "reference": "Cobblestone referral: Meadow Foods",
-       "partner": "pn01",
-       "happened_on": "@today-30d",
-       "amount": 9500,
-       "rate": 10
-      }
-     },
-     {
-      "key": "tx03",
-      "values": {
-       "reference": "Northwind renewal: Larkspur Health",
-       "partner": "pn02",
-       "happened_on": "@today-60d",
-       "amount": 42000,
-       "rate": 25
-      }
-     },
-     {
-      "key": "tx04",
-      "values": {
-       "reference": "Northwind new: Ridgeline Supply",
-       "partner": "pn02",
-       "happened_on": "@today-33d",
-       "amount": 26000,
-       "rate": 25
-      }
-     },
-     {
-      "key": "tx05",
-      "values": {
-       "reference": "Northwind new: Copperfield Labs",
-       "partner": "pn02",
-       "happened_on": "@today-12d",
-       "amount": 31500,
-       "rate": 25
-      }
-     },
-     {
-      "key": "tx06",
-      "values": {
-       "reference": "Brightwater affiliate: October signups",
-       "partner": "pn05",
-       "happened_on": "@today-90d",
-       "amount": 4800,
-       "rate": 15
-      }
-     },
-     {
-      "key": "tx07",
-      "values": {
-       "reference": "Brightwater affiliate: November signups",
-       "partner": "pn05",
-       "happened_on": "@today-60d",
-       "amount": 5200,
-       "rate": 15
-      }
-     },
-     {
-      "key": "tx08",
-      "values": {
-       "reference": "Brightwater affiliate: December signups",
-       "partner": "pn05",
-       "happened_on": "@today-35d",
-       "amount": 3900,
-       "rate": 15
-      }
-     },
-     {
-      "key": "tx09",
-      "values": {
-       "reference": "Tern marketplace listing fee",
-       "partner": "pn03",
-       "happened_on": "@today-45d",
-       "amount": 1200,
-       "rate": 0
-      }
-     },
-     {
-      "key": "tx10",
-      "values": {
-       "reference": "Tern marketplace listing fee, renewal",
-       "partner": "pn03",
-       "happened_on": "@today-15d",
-       "amount": 1200,
-       "rate": 0
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Owner links to one team member.",
-    "fromTable": "partner",
-    "fromField": "owner",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "partners_owned"
-   },
-   {
-    "describes": "Transactions lists its transaction records.",
-    "fromTable": "partner",
-    "fromField": "txns",
-    "toTable": "transaction",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "partner_listed_txns"
-   },
-   {
-    "describes": "Milestones lists its milestone records.",
-    "fromTable": "partner",
-    "fromField": "ms",
-    "toTable": "milestone",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "partner_listed_ms"
-   },
-   {
-    "describes": "Contacts lists its pcontact records.",
-    "fromTable": "partner",
-    "fromField": "people",
-    "toTable": "pcontact",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "restrict",
-    "inverseKey": "partner_listed_people"
-   },
-   {
-    "describes": "Partner links to one partner.",
-    "fromTable": "pcontact",
-    "fromField": "partner",
-    "toTable": "partner",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "contacts_at"
-   },
-   {
-    "describes": "Partner links to one partner.",
-    "fromTable": "milestone",
-    "fromField": "partner",
-    "toTable": "partner",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "milestones_of"
-   },
-   {
-    "describes": "Assignee links to one team member.",
-    "fromTable": "milestone",
-    "fromField": "assignee",
-    "toTable": "team_member",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "set_null",
-    "inverseKey": "milestones_assigned"
-   },
-   {
-    "describes": "Partner links to one partner.",
-    "fromTable": "transaction",
-    "fromField": "partner",
-    "toTable": "partner",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "transactions_for"
-   }
-  ],
-  "sharedBlocks": [
-   {
-    "block": "team_member",
-    "rows": [
-     {
-      "key": "tm-01",
-      "values": {
-       "full_name": "Ottilie Brandt",
-       "role": "Head of partnerships",
-       "work_email": "ottilie@meridianstackhq.net",
-       "mobile": "(415) 555-0151",
-       "start_date": "@today-4y"
-      }
-     },
-     {
-      "key": "tm-02",
-      "values": {
-       "full_name": "Rafael Ibarra",
-       "role": "Partner manager",
-       "work_email": "rafael@meridianstackhq.net",
-       "mobile": "(415) 555-0152",
-       "start_date": "@today-2y"
-      }
-     },
-     {
-      "key": "tm-03",
-      "values": {
-       "full_name": "Chidinma Eze",
-       "role": "Partner marketing lead",
-       "work_email": "chidinma@meridianstackhq.net",
-       "mobile": "(415) 555-0153",
-       "start_date": "@today-3y"
-      }
-     },
-     {
-      "key": "tm-04",
-      "values": {
-       "full_name": "Stellan Forsberg",
-       "role": "Integration engineer",
-       "work_email": "stellan@meridianstackhq.net",
-       "mobile": "(415) 555-0154",
-       "start_date": "@today-18m"
-      }
-     }
-    ]
-   }
-  ],
-  "forms": [
-   {
-    "token": "partner_lead",
-    "name": "Suggest a partner",
-    "describes": "How anyone suggests a partner to approach.",
-    "audience": "staff",
-    "table": "partner",
-    "fields": [
-     {
-      "fieldKey": "partner_name",
-      "ask": "Who is the partner?",
-      "required": true
-     },
-     {
-      "fieldKey": "kind",
-      "ask": "What kind of partner?"
-     },
-     {
-      "fieldKey": "site",
-      "ask": "What is their website?"
-     }
-    ],
-    "submitLabel": "Suggest the partner",
-    "confirmation": "Thanks. The partner is on the board as a Prospect."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "partner_board",
-    "name": "Board",
-    "table": "partner",
-    "kind": "kanban",
-    "isDefault": true,
-    "groupBy": "stage"
-   },
-   {
-    "token": "all_partners",
-    "name": "All partners",
-    "table": "partner",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "partner_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_pcontacts",
-    "name": "All contacts",
-    "table": "pcontact",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "contact_name",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "milestone_timeline",
-    "name": "Timeline",
-    "table": "milestone",
-    "kind": "timeline",
-    "isDefault": true,
-    "startField": "start_on",
-    "endField": "due_on"
-   },
-   {
-    "token": "all_milestones",
-    "name": "All milestones",
-    "table": "milestone",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "due_on",
-      "direction": "asc"
-     }
-    ]
-   },
-   {
-    "token": "all_transactions",
-    "name": "All transactions",
-    "table": "transaction",
-    "kind": "grid",
-    "isDefault": true,
-    "sorts": [
-     {
-      "field": "happened_on",
-      "direction": "desc"
-     }
-    ]
-   },
-   {
-    "token": "all_team",
-    "name": "Team",
-    "table": "team_member",
-    "kind": "grid",
-    "isDefault": true
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Partnerships assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "partner",
-     "describes": "Referral, reseller, integration and co-marketing partners and how each is going."
-    },
-    {
-     "name": "related_tables",
-     "table": "pcontact",
-     "describes": "The records the primary table links to."
-    }
-   ],
-   "question": {
-    "ask": "How many partners are active?",
-    "whyItMatters": "Ottilie reports the active partner count to the leadership team.",
-    "expect": {
-     "table": "partner",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "stage": "Active"
-     },
-     "answer": 3,
-     "unit": "partners"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open the partner board.",
-    "action": {
-     "kind": "open",
-     "surface": "partner_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "partner_board",
-     "minItems": 6
-    }
-   },
-   {
-    "says": "Open the milestone timeline.",
-    "action": {
-     "kind": "open",
-     "surface": "milestone_timeline"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "milestone_timeline",
-     "minItems": 10
-    }
-   },
-   {
-    "says": "Open all transactions.",
-    "action": {
-     "kind": "open",
-     "surface": "all_transactions"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "all_transactions",
-     "minItems": 10
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "meridianstackhq.net",
-    "cobblestoneconsulting.net",
-    "northwindresellers.net",
-    "terndatasystems.net",
-    "quillfeathermedia.net",
-    "brightwateraffiliates.net",
-    "lowcountryadvisors.net"
-   ],
-   "fictionalStreets": [
-    "Embarcadero Mews"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "partnerships-tracker",
-   "parent": null,
-   "title": "Partnerships Tracker",
-   "icon": {
+  "version": 2,
+  "title": "Partnerships Tracker",
+  "description": "Partners, contacts, milestones and revenue share in one workspace.",
+  "forWho": "Business development and partner teams",
+  "icon": {
     "emoji": "🤝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Manage every partner from first call to renewal. Milestones show what is owed, and transactions add up the revenue each partner brings."
-      }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Handshake"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:partner-revenue"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:partner-onboarding"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:quarterly-review"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:partner-types"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Partners"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "partner",
-       "view": "partner_board"
-      },
-      "inline": true,
-      "title": "Partners",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-stage",
-        "name": "Stage",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "stage"
-       },
-       {
-        "id": "view-active-partners",
-        "name": "Active partners",
-        "layout": "list",
-        "icon": "CircleCheck",
-        "filters": {
-         "stage": "Active"
-        }
-       },
-       {
-        "id": "view-all-partners",
-        "name": "All partners",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "partner_name",
-          "direction": "asc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-stage"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Milestones"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "milestone",
-       "view": "milestone_timeline"
-      },
-      "inline": true,
-      "title": "Milestones",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-timeline",
-        "name": "Timeline",
-        "layout": "timeline",
-        "icon": "ChartGantt",
-        "dateField": "start_on"
-       },
-       {
-        "id": "view-all-milestones",
-        "name": "All milestones",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "due_on",
-          "direction": "asc"
-         }
-        ]
-       },
-       {
-        "id": "view-blocked",
-        "name": "Blocked",
-        "layout": "list",
-        "icon": "OctagonAlert",
-        "filters": {
-         "status": "Blocked"
-        }
-       }
-      ],
-      "activeViewId": "view-timeline"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Revenue"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "transaction",
-       "view": "all_transactions"
-      },
-      "inline": true,
-      "title": "Transactions",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-revenue-by-partner",
-        "name": "Revenue by partner",
-        "layout": "chart",
-        "chart": {
-         "type": "bar",
-         "groupBy": "partner",
-         "op": "sum",
-         "field": "amount"
-        },
-        "icon": "ChartColumn"
-       },
-       {
-        "id": "view-ledger",
-        "name": "Ledger",
-        "layout": "grid",
-        "icon": "Table",
-        "sorts": [
-         {
-          "field": "happened_on",
-          "direction": "desc"
-         }
-        ]
-       }
-      ],
-      "activeViewId": "view-revenue-by-partner"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Contacts"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "pcontact",
-       "view": "all_pcontacts"
-      },
-      "inline": true,
-      "title": "Partner contacts",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-all-contacts",
-        "name": "All contacts",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-all-contacts"
-     }
-    }
-   ],
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-ocean-horizon",
     "offsetY": 50
-   }
   },
-  {
-   "key": "partner-revenue",
-   "parent": "partnerships-tracker",
-   "title": "Partner revenue",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "partner",
-           "view": "all_partners"
-          },
-          "inline": true,
-          "title": "Partners",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-partners-by-stage",
-            "name": "Partners by stage",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "stage",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-partners-by-stage"
-         }
-        }
-       ]
+  "category": "sales",
+  "tags": [
+    "partners",
+    "referrals",
+    "revenue share",
+    "bd"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-sp0161",
+    "catalogueId": "SP0161",
+    "useCase": "Ottilie Brandt heads partnerships and uses this to manage partners, deliver on milestones and pay commissions accurately.",
+    "industry": "cross_industry",
+    "vertical": "Partnerships",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Meridian Stack",
+      "describes": "A software company that grows through referral, reseller and integration partners.",
+      "address": {
+        "line1": "330 Embarcadero Mews",
+        "city": "San Francisco",
+        "region": "CA",
+        "postalCode": "94111",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "partner",
-           "view": "all_partners"
-          },
-          "inline": true,
-          "title": "Partners",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-partners-by-type",
-            "name": "Partners by type",
-            "layout": "chart",
-            "chart": {
-             "type": "donut",
-             "groupBy": "kind",
-             "op": "count",
-             "centerValue": true
-            },
-            "icon": "ChartPie"
-           }
-          ],
-          "activeViewId": "view-partners-by-type"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "transaction",
-           "view": "all_transactions"
-          },
-          "inline": true,
-          "title": "Transactions",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-commission-by-partner",
-            "name": "Commission by partner",
-            "layout": "chart",
-            "chart": {
-             "type": "bar",
-             "groupBy": "partner",
-             "op": "sum",
-             "field": "commission"
-            },
-            "icon": "ChartColumn"
-           }
-          ],
-          "activeViewId": "view-commission-by-partner"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(415) 555-0150",
+      "website": "meridianstackhq.net",
+      "email": "hello@meridianstackhq.net",
+      "timezone": "America/Los_Angeles"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-sp0161",
+    "tables": [
       {
-       "text": "Renewals coming"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "partner",
-       "view": "all_partners"
-      },
-      "inline": true,
-      "title": "Partners",
-      "linked": true,
-      "showTitle": true,
-      "views": [
-       {
-        "id": "view-renewal",
-        "name": "Renewal",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "stage": [
-          "Active",
-          "Paused"
-         ]
+        "independentOf": {
+          "owner": "Anyone on the team can own this, whenever they joined."
         },
+        "token": "partner",
+        "name": "Partners",
+        "labelSingular": "Partner",
+        "labelPlural": "Partners",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "partner_name",
+        "describes": "Referral, reseller, integration and co-marketing partners and how each is going.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "partner_name",
+            "label": "Partner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral",
+              "Reseller",
+              "Integration",
+              "Co-marketing",
+              "Affiliate"
+            ],
+            "choiceColors": {
+              "Referral": "blue",
+              "Reseller": "green",
+              "Integration": "amber",
+              "Co-marketing": "violet",
+              "Affiliate": "teal"
+            }
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Talking",
+              "Active",
+              "Paused",
+              "Ended"
+            ],
+            "choiceColors": {
+              "Prospect": "blue",
+              "Talking": "violet",
+              "Active": "green",
+              "Paused": "amber",
+              "Ended": "slate"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Talking": "in_progress",
+              "Active": "in_progress",
+              "Paused": "in_progress",
+              "Ended": "done"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "share",
+            "label": "Revenue share percent",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "unit": "%"
+          },
+          {
+            "key": "site",
+            "label": "Website",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "signed",
+            "label": "Agreement signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "renewal_on",
+            "label": "Renewal",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "referred",
+            "label": "Referred revenue",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "txns",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "commission_total",
+            "label": "Commission earned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "txns",
+            "pick": "commission",
+            "agg": "sum"
+          },
+          {
+            "key": "referred_month",
+            "label": "Referred this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "txns",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "happened_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "ms_count",
+            "label": "Milestones planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "ms",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "ms_done",
+            "label": "Milestones done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "ms",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "ms_pct",
+            "label": "Milestones done (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Milestones planned} > 0, ROUND({Milestones done} / {Milestones planned} * 100, 0), 0)"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pn01",
+            "values": {
+              "partner_name": "Cobblestone Consulting",
+              "kind": "Referral",
+              "stage": "Active",
+              "owner": "tm-02",
+              "share": 10,
+              "site": "https://cobblestoneconsulting.net",
+              "signed": true,
+              "renewal_on": "@today"
+            }
+          },
+          {
+            "key": "pn02",
+            "values": {
+              "partner_name": "Northwind Resellers",
+              "kind": "Reseller",
+              "stage": "Active",
+              "owner": "tm-02",
+              "share": 25,
+              "site": "https://northwindresellers.net",
+              "signed": true,
+              "renewal_on": "@today-4d"
+            }
+          },
+          {
+            "key": "pn03",
+            "values": {
+              "partner_name": "Tern Data Systems",
+              "kind": "Integration",
+              "stage": "Active",
+              "owner": "tm-04",
+              "share": 0,
+              "site": "https://terndatasystems.net",
+              "signed": true,
+              "renewal_on": "@today-9d"
+            }
+          },
+          {
+            "key": "pn04",
+            "values": {
+              "partner_name": "Quillfeather Media",
+              "kind": "Co-marketing",
+              "stage": "Talking",
+              "owner": "tm-03",
+              "share": 0,
+              "site": "https://quillfeathermedia.net",
+              "signed": false,
+              "renewal_on": "@today+2d"
+            }
+          },
+          {
+            "key": "pn05",
+            "values": {
+              "partner_name": "Brightwater Affiliates",
+              "kind": "Affiliate",
+              "stage": "Paused",
+              "owner": "tm-02",
+              "share": 15,
+              "site": "https://brightwateraffiliates.net",
+              "signed": true,
+              "renewal_on": "@today+40d"
+            }
+          },
+          {
+            "key": "pn06",
+            "values": {
+              "partner_name": "Lowcountry Advisors",
+              "kind": "Referral",
+              "stage": "Prospect",
+              "owner": "tm-01",
+              "share": 10,
+              "site": "https://lowcountryadvisors.net",
+              "signed": false
+            }
+          }
+        ]
+      },
+      {
+        "independentOf": {
+          "partner": "Partner and this record each keep their own dates and status."
+        },
+        "token": "pcontact",
+        "name": "Partner contacts",
+        "labelSingular": "Partner contact",
+        "labelPlural": "Partner contacts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "contact",
+        "titleField": "contact_name",
+        "describes": "The people at each partner.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "contact_name",
+            "label": "Name",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "partner",
+            "label": "Partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "partner",
+            "relationMax": 1
+          },
+          {
+            "key": "job_role",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contact_email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pc01",
+            "values": {
+              "contact_name": "Evander Holloway",
+              "partner": "pn01",
+              "job_role": "Managing partner",
+              "contact_email": "evander@cobblestoneconsulting.net"
+            }
+          },
+          {
+            "key": "pc02",
+            "values": {
+              "contact_name": "Sabrina Tkachenko",
+              "partner": "pn02",
+              "job_role": "Channel director",
+              "contact_email": "sabrina@northwindresellers.net"
+            }
+          },
+          {
+            "key": "pc03",
+            "values": {
+              "contact_name": "Lamar Whitfield",
+              "partner": "pn02",
+              "job_role": "Sales operations",
+              "contact_email": "lamar@northwindresellers.net"
+            }
+          },
+          {
+            "key": "pc04",
+            "values": {
+              "contact_name": "Ximena Alcántara",
+              "partner": "pn03",
+              "job_role": "Product manager",
+              "contact_email": "ximena@terndatasystems.net"
+            }
+          },
+          {
+            "key": "pc05",
+            "values": {
+              "contact_name": "Bertrand Okoye",
+              "partner": "pn03",
+              "job_role": "Engineering lead",
+              "contact_email": "bertrand@terndatasystems.net"
+            }
+          },
+          {
+            "key": "pc06",
+            "values": {
+              "contact_name": "Calliope Lindgren",
+              "partner": "pn04",
+              "job_role": "Editor",
+              "contact_email": "calliope@quillfeathermedia.net"
+            }
+          },
+          {
+            "key": "pc07",
+            "values": {
+              "contact_name": "Roderick Tan",
+              "partner": "pn05",
+              "job_role": "Founder",
+              "contact_email": "roderick@brightwateraffiliates.net"
+            }
+          },
+          {
+            "key": "pc08",
+            "values": {
+              "contact_name": "Marguerite Abara",
+              "partner": "pn06",
+              "job_role": "Partner",
+              "contact_email": "marguerite@lowcountryadvisors.net"
+            }
+          }
+        ]
+      },
+      {
+        "before": [
+          [
+            "start_on",
+            "due_on"
+          ]
+        ],
+        "independentOf": {
+          "partner": "Partner and this record each keep their own dates and status.",
+          "assignee": "Anyone on the team can own this, whenever they joined."
+        },
+        "token": "milestone",
+        "name": "Milestones",
+        "labelSingular": "Milestone",
+        "labelPlural": "Milestones",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flag",
+        "titleField": "task_name",
+        "describes": "Tasks and milestones owed to or by each partner.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "partner",
+            "label": "Partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "partner",
+            "relationMax": 1
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Done",
+              "Blocked"
+            ],
+            "choiceColors": {
+              "To do": "blue",
+              "In progress": "green",
+              "Done": "amber",
+              "Blocked": "violet"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Done": "done",
+              "Blocked": "in_progress"
+            }
+          },
+          {
+            "key": "assignee",
+            "label": "Assignee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "milestone_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ml01",
+            "values": {
+              "task_name": "Sign referral agreement",
+              "partner": "pn06",
+              "start_on": "@today-7d",
+              "due_on": "@today",
+              "status": "In progress",
+              "assignee": "tm-01"
+            }
+          },
+          {
+            "key": "ml02",
+            "values": {
+              "task_name": "Joint webinar plan",
+              "partner": "pn04",
+              "start_on": "@today-11d",
+              "due_on": "@today-4d",
+              "status": "To do",
+              "assignee": "tm-03"
+            }
+          },
+          {
+            "key": "ml03",
+            "values": {
+              "task_name": "Build data connector v2",
+              "partner": "pn03",
+              "start_on": "@today-16d",
+              "due_on": "@today-9d",
+              "status": "In progress",
+              "assignee": "tm-04"
+            }
+          },
+          {
+            "key": "ml04",
+            "values": {
+              "task_name": "Publish integration guide",
+              "partner": "pn03",
+              "start_on": "@today-4d",
+              "due_on": "@today+3d",
+              "status": "To do",
+              "assignee": "tm-03"
+            }
+          },
+          {
+            "key": "ml05",
+            "values": {
+              "task_name": "Reseller training session",
+              "partner": "pn02",
+              "start_on": "@today-10d",
+              "due_on": "@today-3d",
+              "status": "Done",
+              "assignee": "tm-02"
+            }
+          },
+          {
+            "key": "ml06",
+            "values": {
+              "task_name": "Update reseller price list",
+              "partner": "pn02",
+              "start_on": "@today-5d",
+              "due_on": "@today+2d",
+              "status": "To do",
+              "assignee": "tm-02"
+            }
+          },
+          {
+            "key": "ml07",
+            "values": {
+              "task_name": "Quarterly business review",
+              "partner": "pn01",
+              "start_on": "@today-2d",
+              "due_on": "@today+5d",
+              "status": "To do",
+              "assignee": "tm-01"
+            }
+          },
+          {
+            "key": "ml08",
+            "values": {
+              "task_name": "Renew affiliate terms",
+              "partner": "pn05",
+              "start_on": "@today+20d",
+              "due_on": "@today+35d",
+              "status": "Blocked",
+              "assignee": "tm-02"
+            }
+          },
+          {
+            "key": "ml09",
+            "values": {
+              "task_name": "Co-branded case study",
+              "partner": "pn01",
+              "start_on": "@today-20d",
+              "due_on": "@today-6d",
+              "status": "Done",
+              "assignee": "tm-03"
+            }
+          },
+          {
+            "key": "ml10",
+            "values": {
+              "task_name": "Referral link tracking audit",
+              "partner": "pn01",
+              "start_on": "@today-1d",
+              "due_on": "@today+12d",
+              "status": "In progress",
+              "assignee": "tm-04"
+            }
+          }
+        ],
+        "statusImplies": []
+      },
+      {
+        "independentOf": {
+          "partner": "Partner and this record each keep their own dates and status."
+        },
+        "withinParent": [
+          {
+            "relation": "partner",
+            "field": "rate",
+            "op": "<=",
+            "parentField": "share"
+          }
+        ],
+        "token": "transaction",
+        "name": "Transactions",
+        "labelSingular": "Transaction",
+        "labelPlural": "Transactions",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "coins",
+        "titleField": "reference",
+        "describes": "Revenue each partner brought in and the commission owed.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "reference",
+            "label": "Reference",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "partner",
+            "label": "Partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "partner",
+            "relationMax": 1
+          },
+          {
+            "key": "happened_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "rate",
+            "label": "Commission rate percent",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "unit": "%"
+          },
+          {
+            "key": "commission",
+            "label": "Commission",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Amount} * {Commission rate percent} / 100"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tx01",
+            "values": {
+              "reference": "Cobblestone referral: Atlas Build",
+              "partner": "pn01",
+              "happened_on": "@today",
+              "amount": 18000,
+              "rate": 10
+            }
+          },
+          {
+            "key": "tx02",
+            "values": {
+              "reference": "Cobblestone referral: Meadow Foods",
+              "partner": "pn01",
+              "happened_on": "@today-30d",
+              "amount": 9500,
+              "rate": 10
+            }
+          },
+          {
+            "key": "tx03",
+            "values": {
+              "reference": "Northwind renewal: Larkspur Health",
+              "partner": "pn02",
+              "happened_on": "@today-60d",
+              "amount": 42000,
+              "rate": 25
+            }
+          },
+          {
+            "key": "tx04",
+            "values": {
+              "reference": "Northwind new: Ridgeline Supply",
+              "partner": "pn02",
+              "happened_on": "@today-33d",
+              "amount": 26000,
+              "rate": 25
+            }
+          },
+          {
+            "key": "tx05",
+            "values": {
+              "reference": "Northwind new: Copperfield Labs",
+              "partner": "pn02",
+              "happened_on": "@today-12d",
+              "amount": 31500,
+              "rate": 25
+            }
+          },
+          {
+            "key": "tx06",
+            "values": {
+              "reference": "Brightwater affiliate: October signups",
+              "partner": "pn05",
+              "happened_on": "@today-90d",
+              "amount": 4800,
+              "rate": 15
+            }
+          },
+          {
+            "key": "tx07",
+            "values": {
+              "reference": "Brightwater affiliate: November signups",
+              "partner": "pn05",
+              "happened_on": "@today-60d",
+              "amount": 5200,
+              "rate": 15
+            }
+          },
+          {
+            "key": "tx08",
+            "values": {
+              "reference": "Brightwater affiliate: December signups",
+              "partner": "pn05",
+              "happened_on": "@today-35d",
+              "amount": 3900,
+              "rate": 15
+            }
+          },
+          {
+            "key": "tx09",
+            "values": {
+              "reference": "Tern marketplace listing fee",
+              "partner": "pn03",
+              "happened_on": "@today-45d",
+              "amount": 1200,
+              "rate": 0
+            }
+          },
+          {
+            "key": "tx10",
+            "values": {
+              "reference": "Tern marketplace listing fee, renewal",
+              "partner": "pn03",
+              "happened_on": "@today-15d",
+              "amount": 1200,
+              "rate": 0
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to one team member.",
+        "fromTable": "partner",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "partners_owned"
+      },
+      {
+        "describes": "Partner links to one partner.",
+        "fromTable": "pcontact",
+        "fromField": "partner",
+        "toTable": "partner",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "people"
+      },
+      {
+        "describes": "Partner links to one partner.",
+        "fromTable": "milestone",
+        "fromField": "partner",
+        "toTable": "partner",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "ms"
+      },
+      {
+        "describes": "Assignee links to one team member.",
+        "fromTable": "milestone",
+        "fromField": "assignee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "milestones_assigned"
+      },
+      {
+        "describes": "Partner links to one partner.",
+        "fromTable": "transaction",
+        "fromField": "partner",
+        "toTable": "partner",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "txns"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-01",
+            "values": {
+              "full_name": "Ottilie Brandt",
+              "role": "Head of partnerships",
+              "work_email": "ottilie@meridianstackhq.net",
+              "mobile": "(415) 555-0151",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-02",
+            "values": {
+              "full_name": "Rafael Ibarra",
+              "role": "Partner manager",
+              "work_email": "rafael@meridianstackhq.net",
+              "mobile": "(415) 555-0152",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-03",
+            "values": {
+              "full_name": "Chidinma Eze",
+              "role": "Partner marketing lead",
+              "work_email": "chidinma@meridianstackhq.net",
+              "mobile": "(415) 555-0153",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-04",
+            "values": {
+              "full_name": "Stellan Forsberg",
+              "role": "Integration engineer",
+              "work_email": "stellan@meridianstackhq.net",
+              "mobile": "(415) 555-0154",
+              "start_date": "@today-18m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "partner_lead",
+        "name": "Suggest a partner",
+        "describes": "How anyone suggests a partner to approach.",
+        "audience": "staff",
+        "table": "partner",
+        "fields": [
+          {
+            "fieldKey": "partner_name",
+            "ask": "Who is the partner?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of partner?"
+          },
+          {
+            "fieldKey": "site",
+            "ask": "What is their website?"
+          }
+        ],
+        "submitLabel": "Suggest the partner",
+        "confirmation": "Thanks. The partner is on the board as a Prospect."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "milestone_done",
+        "table": "milestone",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "partner_board",
+        "name": "Board",
+        "table": "partner",
+        "kind": "kanban",
+        "isDefault": true,
+        "groupBy": "stage"
+      },
+      {
+        "token": "all_partners",
+        "name": "All partners",
+        "table": "partner",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "renewal_on",
-          "direction": "asc"
-         }
+          {
+            "field": "partner_name",
+            "direction": "asc"
+          }
         ]
-       }
+      },
+      {
+        "token": "all_pcontacts",
+        "name": "All contacts",
+        "table": "pcontact",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "contact_name",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "milestone_timeline",
+        "name": "Timeline",
+        "table": "milestone",
+        "kind": "timeline",
+        "isDefault": true,
+        "startField": "start_on",
+        "endField": "due_on"
+      },
+      {
+        "token": "all_milestones",
+        "name": "All milestones",
+        "table": "milestone",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "all_transactions",
+        "name": "All transactions",
+        "table": "transaction",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "happened_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "milestone_week",
+        "name": "Due this week",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "milestone_over",
+        "name": "Overdue",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "milestone_next7",
+        "name": "Next 7 days",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "partner_renew_month",
+        "name": "Renewing this month",
+        "table": "partner",
+        "kind": "grid",
+        "within": {
+          "renewal_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "partner_renew_over",
+        "name": "Renewal overdue",
+        "table": "partner",
+        "kind": "grid",
+        "within": {
+          "renewal_on": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "transaction_month",
+        "name": "This month",
+        "table": "transaction",
+        "kind": "grid",
+        "within": {
+          "happened_on": {
+            "relative": "this_month"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Partnerships assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "partner",
+          "describes": "Referral, reseller, integration and co-marketing partners and how each is going."
+        },
+        {
+          "name": "related_tables",
+          "table": "pcontact",
+          "describes": "The records the primary table links to."
+        }
       ],
-      "activeViewId": "view-renewal"
-     }
-    }
-   ]
-  },
-  {
-   "key": "partner-onboarding",
-   "parent": "partnerships-tracker",
-   "title": "Partner onboarding",
-   "icon": {
-    "emoji": "🚀"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Agreement signed and filed"
+      "question": {
+        "ask": "How many partners are active?",
+        "whyItMatters": "Ottilie reports the active partner count to the leadership team.",
+        "expect": {
+          "table": "partner",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "stage": "Active"
+          },
+          "answer": 3,
+          "unit": "partners"
+        }
       }
-     ],
-     "props": {
-      "checked": false
-     }
     },
-    {
-     "type": "todo",
-     "text": [
+    "walk": [
       {
-       "text": "Primary and backup contacts added"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
+        "says": "Open the partner board.",
+        "action": {
+          "kind": "open",
+          "surface": "partner_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "partner_board",
+          "minItems": 6
+        }
+      },
       {
-       "text": "Revenue share and commission rate recorded"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
+        "says": "Open the milestone timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "milestone_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "milestone_timeline",
+          "minItems": 10
+        }
+      },
       {
-       "text": "Kickoff milestone created"
+        "says": "Open all transactions.",
+        "action": {
+          "kind": "open",
+          "surface": "all_transactions"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_transactions",
+          "minItems": 10
+        }
       }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Tracking link tested end to end"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    }
-   ]
-  },
-  {
-   "key": "quarterly-review",
-   "parent": "partnerships-tracker",
-   "title": "Quarterly review",
-   "icon": {
-    "emoji": "🔍"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Numbers"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Revenue referred"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Commission owed"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Milestones"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Done and outstanding"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Relationship"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "What the partner needs from us"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "What we need from them"
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Decision"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "text",
-     "text": [
-      {
-       "text": "Continue, expand, pause or end."
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "key": "partner-types",
-   "parent": "partnerships-tracker",
-   "title": "Partner types",
-   "icon": {
-    "emoji": "📘"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "table",
-     "props": {
-      "headerRow": true,
-      "headerColumn": false,
-      "rows": [
-       {
-        "cells": [
-         [
-          {
-           "text": "Type"
-          }
-         ],
-         [
-          {
-           "text": "What it is"
-          }
-         ],
-         [
-          {
-           "text": "How it is paid"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Referral"
-          }
-         ],
-         [
-          {
-           "text": "They introduce customers"
-          }
-         ],
-         [
-          {
-           "text": "A share of first-year revenue"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Reseller"
-          }
-         ],
-         [
-          {
-           "text": "They sell and support our product"
-          }
-         ],
-         [
-          {
-           "text": "A margin on each sale"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Integration"
-          }
-         ],
-         [
-          {
-           "text": "Our products work together"
-          }
-         ],
-         [
-          {
-           "text": "Usually no payment"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Co-marketing"
-          }
-         ],
-         [
-          {
-           "text": "We promote each other"
-          }
-         ],
-         [
-          {
-           "text": "Shared costs"
-          }
-         ]
-        ]
-       },
-       {
-        "cells": [
-         [
-          {
-           "text": "Affiliate"
-          }
-         ],
-         [
-          {
-           "text": "They promote with a tracked link"
-          }
-         ],
-         [
-          {
-           "text": "A share of sign-ups"
-          }
-         ]
-        ]
-       }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "meridianstackhq.net",
+        "cobblestoneconsulting.net",
+        "northwindresellers.net",
+        "terndatasystems.net",
+        "quillfeathermedia.net",
+        "brightwateraffiliates.net",
+        "lowcountryadvisors.net"
+      ],
+      "fictionalStreets": [
+        "Embarcadero Mews"
       ]
-     }
+    },
+    "version": 2
+  },
+  "pages": [
+    {
+      "key": "partnerships-tracker",
+      "parent": null,
+      "title": "Partnerships Tracker",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Manage every partner from first call to renewal. Milestones show what is owed, and transactions add up the revenue each partner brings."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Handshake"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:partner-revenue"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:partner-onboarding"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:quarterly-review"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:partner-types"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Partners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "partner",
+              "view": "partner_board"
+            },
+            "inline": true,
+            "title": "Partners",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-stage",
+                "name": "Stage",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "view-active-partners",
+                "name": "Active partners",
+                "layout": "list",
+                "icon": "CircleCheck",
+                "filters": {
+                  "stage": "Active"
+                }
+              },
+              {
+                "id": "view-all-partners",
+                "name": "All partners",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "partner_name",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-partner-renew-month",
+                "name": "Renewing this month",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "renewal_on": {
+                    "relative": "this_month"
+                  }
+                }
+              },
+              {
+                "id": "view-partner-renew-over",
+                "name": "Renewal overdue",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "renewal_on": {
+                    "relative": "before_today"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-stage"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestones"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "milestone_timeline"
+            },
+            "inline": true,
+            "title": "Milestones",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-timeline",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "start_on"
+              },
+              {
+                "id": "view-all-milestones",
+                "name": "All milestones",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-blocked",
+                "name": "Blocked",
+                "layout": "list",
+                "icon": "OctagonAlert",
+                "filters": {
+                  "status": "Blocked"
+                }
+              },
+              {
+                "id": "view-milestone-week",
+                "name": "Due this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              },
+              {
+                "id": "view-milestone-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              },
+              {
+                "id": "view-milestone-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-timeline"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Revenue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "transaction",
+              "view": "all_transactions"
+            },
+            "inline": true,
+            "title": "Transactions",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-revenue-by-partner",
+                "name": "Revenue by partner",
+                "layout": "chart",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "partner",
+                  "op": "sum",
+                  "field": "amount"
+                },
+                "icon": "ChartColumn"
+              },
+              {
+                "id": "view-ledger",
+                "name": "Ledger",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "happened_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-transaction-month",
+                "name": "This month",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "happened_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-revenue-by-partner"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contacts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pcontact",
+              "view": "all_pcontacts"
+            },
+            "inline": true,
+            "title": "Partner contacts",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-all-contacts",
+                "name": "All contacts",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-all-contacts"
+          }
+        }
+      ],
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      }
+    },
+    {
+      "key": "partner-revenue",
+      "parent": "partnerships-tracker",
+      "title": "Partner revenue",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Referred revenue and commission come from the transactions you log. Log them monthly and the totals below stay honest."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Receipt"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "partner",
+                      "view": "all_partners"
+                    },
+                    "inline": true,
+                    "title": "Partners",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-partners-by-stage",
+                        "name": "Partners by stage",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-partners-by-stage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "partner",
+                      "view": "all_partners"
+                    },
+                    "inline": true,
+                    "title": "Partners",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-partners-by-type",
+                        "name": "Partners by type",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "view-partners-by-type"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "transaction",
+                      "view": "all_transactions"
+                    },
+                    "inline": true,
+                    "title": "Transactions",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-commission-by-partner",
+                        "name": "Commission by partner",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "partner",
+                          "op": "sum",
+                          "field": "commission"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "view-commission-by-partner"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewals coming"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "partner",
+              "view": "all_partners"
+            },
+            "inline": true,
+            "title": "Partners",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-renewal",
+                "name": "Renewal",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "stage": [
+                    "Active",
+                    "Paused"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "renewal_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-renewal"
+          }
+        }
+      ]
+    },
+    {
+      "key": "partner-onboarding",
+      "parent": "partnerships-tracker",
+      "title": "Partner onboarding",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agreement signed and filed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Primary and backup contacts added"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Revenue share and commission rate recorded"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kickoff milestone created"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tracking link tested end to end"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "quarterly-review",
+      "parent": "partnerships-tracker",
+      "title": "Quarterly review",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Revenue referred"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Commission owed"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestones"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Done and outstanding"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Relationship"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What the partner needs from us"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What we need from them"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Decision"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Continue, expand, pause or end."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "partner-types",
+      "parent": "partnerships-tracker",
+      "title": "Partner types",
+      "icon": {
+        "emoji": "📘"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How it is paid"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Referral"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "They introduce customers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A share of first-year revenue"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reseller"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "They sell and support our product"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A margin on each sale"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Integration"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Our products work together"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usually no payment"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Co-marketing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "We promote each other"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shared costs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Affiliate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "They promote with a tracked link"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A share of sign-ups"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Choosing the right kind of partner"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Referral: they introduce, you sell. Pay a fee only when the deal closes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reseller: they sell and support your product. Agree a margin and who owns support."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Integration: your products connect. The reward is shared customers, not money."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Co-marketing: joint webinars, guides or events. Agree who owns the leads before you start."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Affiliate: anyone with an audience and a link. Keep the terms short."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write one sentence for each partner: what each side gives and what each side gets. If it does not fit in one sentence, it is not ready."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Handshake"
+          }
+        }
+      ]
     }
-   ]
-  }
- ],
- "waivers": []
+  ],
+  "waivers": []
 }
