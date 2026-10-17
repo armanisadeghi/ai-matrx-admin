@@ -23,7 +23,7 @@ import { RedeemCodeField } from "@/features/entitlements/coupons/RedeemCodeField
 import { BillingSummary } from "@/features/entitlements/components/BillingSummary";
 import { MyCostSoFar } from "@/features/entitlements/usage-history/MyCostSoFar";
 import { UsageHistory } from "@/features/entitlements/usage-history/UsageHistory";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectUsageGateFreePeriod, selectUsageGatePlanName } from "@/features/entitlements/state/selectors";
@@ -36,7 +36,6 @@ export function PlanUsageTab() {
     name: planName ?? null,
     freeUntilIso: freePeriod?.status === "active" ? (freePeriod.endsAt ?? null) : null,
   };
-  const { organizations, loading: organizationsLoading } = useUserOrganizations();
   const [billingOrganizationId, setBillingOrganizationId] = useState<string | null>(null);
   const organizationId = billingOrganizationId;
 
@@ -61,20 +60,12 @@ export function PlanUsageTab() {
         <label className="text-sm font-medium text-foreground" htmlFor="billing-organization">
           Organization billing account
         </label>
-        <Select
-          value={billingOrganizationId ?? undefined}
-          onValueChange={setBillingOrganizationId}
-          disabled={organizationsLoading}
-        >
-          <SelectTrigger id="billing-organization" width="xl" className="mt-2">
-            <SelectValue placeholder={organizationsLoading ? "Loading organizations…" : "Choose an organization"} />
-          </SelectTrigger>
-          <SelectContent>
-            {organizations.map((organization) => (
-              <SelectItem key={organization.id} value={organization.id}>{organization.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <OrganizationChooser
+          value={billingOrganizationId}
+          placeholder="Choose an organization"
+          className="mt-2"
+          onChange={(org) => setBillingOrganizationId(org.id)}
+        />
       </div>
       {billingOrganizationId ? <BillingSummary scope={{ kind: "organization", organizationId: billingOrganizationId }} /> : null}
       <SettingsCallout tone="info">

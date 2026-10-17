@@ -20,7 +20,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectAdminFeature, selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { fetchFeatureKnobs } from "@/features/admin/limits/service";
 import type { FeatureKnob } from "@/features/admin/limits/types";
 import {
@@ -399,12 +399,6 @@ export function UniversalSettingsProvider({
   const canManageSystem = useAppSelector((s) =>
     selectAdminFeature(s, "knob.system-default"),
   );
-  const {
-    organizations,
-    loading: organizationsLoading,
-    error: organizationsError,
-    refresh: refreshOrganizations,
-  } = useUserOrganizations();
   const activeOrganizationId = useAppSelector(selectOrganizationId);
   const editingContext = target;
   const [changedOnly, setChangedOnly] = useState(false);
@@ -416,6 +410,14 @@ export function UniversalSettingsProvider({
   // reads nothing and the pane asks.
   const organizationId = fixedOrganizationId
     ?? (target === "organization" ? null : activeOrganizationId);
+  // Her first page of organizations PLUS the one this surface is about, asked by id (it may be
+  // beyond the page: bounded organizations, 2026-10-17). `organizations` is NOT her whole list.
+  const {
+    organizations,
+    loading: organizationsLoading,
+    error: organizationsError,
+    refresh: refreshOrganizations,
+  } = useOrganizationsWith([organizationId]);
   const organization = organizations.find((org) => org.id === organizationId) ?? null;
   const [deviceId, setDeviceId] = useState<string | null>(null);
   // `null` means BOTH "not looked yet" and "this browser has no device id"
