@@ -1,0 +1,2202 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0150",
+ "version": 1,
+ "title": "Sales CRM",
+ "description": "Deals on a pipeline board, a contact book, and every call or email logged.",
+ "forWho": "Small sales teams and solo sellers",
+ "icon": {
+  "emoji": "🤝"
+ },
+ "cover": {
+  "url": "gallery:photo-ocean-horizon",
+  "offsetY": 50
+ },
+ "category": "sales",
+ "tags": [
+  "sales",
+  "crm",
+  "pipeline",
+  "contacts",
+  "deals"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-sp0150",
+  "catalogueId": "SP0150",
+  "useCase": "Dana Okonkwo-Reyes runs a four-person sales team and uses this to see every open deal, who to call next, and what the pipeline is worth.",
+  "industry": "cross_industry",
+  "vertical": "Sales pipeline",
+  "job": "crm_pipeline",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Kestrel Bridge Software",
+   "describes": "A small software company selling operations tools to regional businesses.",
+   "address": {
+    "line1": "402 Thornapple Lane",
+    "city": "Austin",
+    "region": "TX",
+    "postalCode": "78704",
+    "country": "US"
+   },
+   "phone": "(512) 555-0140",
+   "website": "kestrelbridge.net",
+   "email": "hello@kestrelbridge.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-sp0150",
+  "tables": [
+   {
+    "token": "contact",
+    "name": "Contacts",
+    "labelSingular": "Contact",
+    "labelPlural": "Contacts",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "contact",
+    "titleField": "contact_name",
+    "describes": "Everyone you sell to, where they came from and what they might be worth.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "contact_name",
+      "label": "Name",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "company",
+      "label": "Company",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "contact_email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "summarize"
+     },
+     {
+      "key": "contact_phone",
+      "label": "Phone",
+      "parityType": "phone",
+      "sensitivity": "confidential",
+      "contextPolicy": "exclude"
+     },
+     {
+      "key": "job_role",
+      "label": "Role",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "source",
+      "label": "Source",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Referral",
+       "Inbound",
+       "Outbound",
+       "Event",
+       "Other"
+      ],
+      "choiceColors": {
+       "Referral": "blue",
+       "Inbound": "green",
+       "Outbound": "amber",
+       "Event": "violet",
+       "Other": "teal"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Lead",
+       "Active",
+       "Customer",
+       "Churned"
+      ],
+      "choiceColors": {
+       "Lead": "blue",
+       "Active": "green",
+       "Customer": "amber",
+       "Churned": "violet"
+      },
+      "required": true,
+      "default": "Lead"
+     },
+     {
+      "key": "next_followup",
+      "label": "Next follow-up",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "deals",
+      "label": "Deals",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "deal",
+      "multi": true
+     },
+     {
+      "key": "pipeline_value",
+      "label": "Pipeline value",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "deals",
+      "pick": "value",
+      "agg": "sum"
+     },
+     {
+      "key": "deal_count",
+      "label": "Deal count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "deals",
+      "pick": "deal_name",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "ct01",
+      "values": {
+       "contact_name": "Rosalind Achterberg",
+       "company": "Harborline Freight",
+       "contact_email": "rosalind@harborlinefreight.net",
+       "contact_phone": "(206) 555-0111",
+       "job_role": "Operations director",
+       "source": "Referral",
+       "status": "Active",
+       "next_followup": "@today+3d",
+       "deals": [
+        "dl01"
+       ]
+      }
+     },
+     {
+      "key": "ct02",
+      "values": {
+       "contact_name": "Tomasz Wierzbicki",
+       "company": "Northgate Brewing",
+       "contact_email": "tomasz@northgatebrewing.net",
+       "contact_phone": "(503) 555-0112",
+       "job_role": "Owner",
+       "source": "Inbound",
+       "status": "Active",
+       "next_followup": "@today+6d",
+       "deals": [
+        "dl02"
+       ]
+      }
+     },
+     {
+      "key": "ct03",
+      "values": {
+       "contact_name": "Imani Chukwu",
+       "company": "Brightleaf Dental Group",
+       "contact_email": "imani@brightleafdental.net",
+       "contact_phone": "(415) 555-0113",
+       "job_role": "Practice manager",
+       "source": "Event",
+       "status": "Lead",
+       "next_followup": "@today+1d",
+       "deals": [
+        "dl03"
+       ]
+      }
+     },
+     {
+      "key": "ct04",
+      "values": {
+       "contact_name": "Felix Ostrander",
+       "company": "Cobalt Ridge Solar",
+       "contact_email": "felix@cobaltridgesolar.net",
+       "contact_phone": "(303) 555-0114",
+       "job_role": "VP operations",
+       "source": "Outbound",
+       "status": "Active",
+       "next_followup": "@today+2d",
+       "deals": [
+        "dl04"
+       ]
+      }
+     },
+     {
+      "key": "ct05",
+      "values": {
+       "contact_name": "Priyanka Deshmukh",
+       "company": "Lumen & Loom Textiles",
+       "contact_email": "priyanka@lumenloom.net",
+       "contact_phone": "(212) 555-0115",
+       "job_role": "Head of buying",
+       "source": "Referral",
+       "status": "Customer",
+       "next_followup": "@today+14d",
+       "deals": [
+        "dl05"
+       ]
+      }
+     },
+     {
+      "key": "ct06",
+      "values": {
+       "contact_name": "Gareth Pilkington",
+       "company": "Millbrook Veterinary",
+       "contact_email": "gareth@millbrookvet.net",
+       "contact_phone": "(617) 555-0116",
+       "job_role": "Clinic owner",
+       "source": "Inbound",
+       "status": "Lead",
+       "next_followup": "@today",
+       "deals": [
+        "dl06"
+       ]
+      }
+     },
+     {
+      "key": "ct07",
+      "values": {
+       "contact_name": "Noor Al-Hashimi",
+       "company": "Tidewater Marine Supply",
+       "contact_email": "noor@tidewatermarine.net",
+       "contact_phone": "(757) 555-0117",
+       "job_role": "Procurement lead",
+       "source": "Outbound",
+       "status": "Active",
+       "next_followup": "@today+5d",
+       "deals": [
+        "dl07"
+       ]
+      }
+     },
+     {
+      "key": "ct08",
+      "values": {
+       "contact_name": "Beatriz Camargo",
+       "company": "Sunnyvale Learning Co-op",
+       "contact_email": "beatriz@sunnylearn.net",
+       "contact_phone": "(408) 555-0118",
+       "job_role": "Director",
+       "source": "Event",
+       "status": "Churned",
+       "deals": [
+        "dl08"
+       ]
+      }
+     },
+     {
+      "key": "ct09",
+      "values": {
+       "contact_name": "Henrik Solvang",
+       "company": "Fjordline Outfitters",
+       "contact_email": "henrik@fjordlineoutfitters.net",
+       "contact_phone": "(206) 555-0119",
+       "job_role": "Founder",
+       "source": "Referral",
+       "status": "Customer",
+       "next_followup": "@today+20d",
+       "deals": [
+        "dl09"
+       ]
+      }
+     },
+     {
+      "key": "ct10",
+      "values": {
+       "contact_name": "Odalys Vance",
+       "company": "Ironwood Property Mgmt",
+       "contact_email": "odalys@ironwoodpm.net",
+       "contact_phone": "(480) 555-0120",
+       "job_role": "Regional manager",
+       "source": "Inbound",
+       "status": "Lead",
+       "next_followup": "@today-2d",
+       "deals": [
+        "dl10"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "independentOf": {
+     "contact": "Contact and this record each keep their own dates and status.",
+     "owner": "Anyone on the team can own this, whenever they joined."
+    },
+    "token": "deal",
+    "name": "Deals",
+    "labelSingular": "Deal",
+    "labelPlural": "Deals",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "handshake",
+    "titleField": "deal_name",
+    "describes": "Every deal, its stage, value and likelihood to close.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "deal_name",
+      "label": "Deal",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "stage",
+      "label": "Stage",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Lead",
+       "Contacted",
+       "Qualified",
+       "Proposal",
+       "Negotiation",
+       "Won",
+       "Lost"
+      ],
+      "choiceColors": {
+       "Lead": "blue",
+       "Contacted": "amber",
+       "Qualified": "violet",
+       "Proposal": "teal",
+       "Negotiation": "orange",
+       "Won": "green",
+       "Lost": "red"
+      },
+      "required": true,
+      "default": "Lead"
+     },
+     {
+      "key": "value",
+      "label": "Value",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 1000000
+       }
+      ]
+     },
+     {
+      "key": "probability",
+      "label": "Probability",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100
+       }
+      ],
+      "unit": "%"
+     },
+     {
+      "key": "weighted_value",
+      "label": "Weighted value",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Value} * {Probability} / 100"
+     },
+     {
+      "key": "contact",
+      "label": "Contact",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "contact",
+      "relationMax": 1
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "expected_close",
+      "label": "Expected close",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "priority",
+      "label": "Priority",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "High",
+       "Medium",
+       "Low"
+      ],
+      "choiceColors": {
+       "High": "blue",
+       "Medium": "green",
+       "Low": "amber"
+      }
+     },
+     {
+      "key": "touches",
+      "label": "Interactions logged",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "interactions",
+      "pick": "summary",
+      "agg": "count"
+     },
+     {
+      "key": "interactions",
+      "label": "Interactions",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "interaction",
+      "multi": true
+     }
+    ],
+    "rows": [
+     {
+      "key": "dl01",
+      "values": {
+       "deal_name": "Harborline fleet tracking rollout",
+       "stage": "Negotiation",
+       "value": 48000,
+       "probability": 75,
+       "contact": "ct01",
+       "owner": "tm-02",
+       "expected_close": "@today+12d",
+       "priority": "High",
+       "interactions": [
+        "ix01",
+        "ix02",
+        "ix03",
+        "ix04"
+       ]
+      }
+     },
+     {
+      "key": "dl02",
+      "values": {
+       "deal_name": "Northgate taproom reporting",
+       "stage": "Proposal",
+       "value": 18500,
+       "probability": 50,
+       "contact": "ct02",
+       "owner": "tm-03",
+       "expected_close": "@today+20d",
+       "priority": "Medium",
+       "interactions": [
+        "ix05",
+        "ix06"
+       ]
+      }
+     },
+     {
+      "key": "dl03",
+      "values": {
+       "deal_name": "Brightleaf scheduling pilot",
+       "stage": "Qualified",
+       "value": 22000,
+       "probability": 25,
+       "contact": "ct03",
+       "owner": "tm-04",
+       "expected_close": "@today+35d",
+       "priority": "Medium",
+       "interactions": [
+        "ix07",
+        "ix08"
+       ]
+      }
+     },
+     {
+      "key": "dl04",
+      "values": {
+       "deal_name": "Cobalt Ridge site survey platform",
+       "stage": "Proposal",
+       "value": 95000,
+       "probability": 50,
+       "contact": "ct04",
+       "owner": "tm-02",
+       "expected_close": "@today+28d",
+       "priority": "High",
+       "interactions": [
+        "ix09",
+        "ix10",
+        "ix11"
+       ]
+      }
+     },
+     {
+      "key": "dl05",
+      "values": {
+       "deal_name": "Lumen & Loom renewal and expansion",
+       "stage": "Won",
+       "value": 36000,
+       "probability": 100,
+       "contact": "ct05",
+       "owner": "tm-03",
+       "expected_close": "@today-9d",
+       "priority": "High",
+       "interactions": [
+        "ix12"
+       ]
+      }
+     },
+     {
+      "key": "dl06",
+      "values": {
+       "deal_name": "Millbrook clinic intake forms",
+       "stage": "Lead",
+       "value": 12000,
+       "probability": 10,
+       "contact": "ct06",
+       "owner": "tm-04",
+       "expected_close": "@today+50d",
+       "priority": "Low",
+       "interactions": []
+      }
+     },
+     {
+      "key": "dl07",
+      "values": {
+       "deal_name": "Tidewater parts catalog sync",
+       "stage": "Negotiation",
+       "value": 64000,
+       "probability": 75,
+       "contact": "ct07",
+       "owner": "tm-02",
+       "expected_close": "@today+9d",
+       "priority": "High",
+       "interactions": [
+        "ix13",
+        "ix14"
+       ]
+      }
+     },
+     {
+      "key": "dl08",
+      "values": {
+       "deal_name": "Sunnyvale co-op membership system",
+       "stage": "Lost",
+       "value": 9000,
+       "probability": 0,
+       "contact": "ct08",
+       "owner": "tm-04",
+       "expected_close": "@today-30d",
+       "priority": "Low",
+       "interactions": []
+      }
+     },
+     {
+      "key": "dl09",
+      "values": {
+       "deal_name": "Fjordline wholesale portal",
+       "stage": "Won",
+       "value": 27500,
+       "probability": 100,
+       "contact": "ct09",
+       "owner": "tm-03",
+       "expected_close": "@today-21d",
+       "priority": "Medium",
+       "interactions": []
+      }
+     },
+     {
+      "key": "dl10",
+      "values": {
+       "deal_name": "Ironwood maintenance requests",
+       "stage": "Contacted",
+       "value": 31000,
+       "probability": 10,
+       "contact": "ct10",
+       "owner": "tm-04",
+       "expected_close": "@today+45d",
+       "priority": "Medium",
+       "interactions": []
+      }
+     }
+    ]
+   },
+   {
+    "before": [
+     [
+      "happened_on",
+      "due_on"
+     ]
+    ],
+    "independentOf": {
+     "contact": "Contact and this record each keep their own dates and status.",
+     "deal": "Deal and this record each keep their own dates and status."
+    },
+    "statusAgrees": [
+     {
+      "relation": "deal",
+      "field": "state",
+      "childStatus": [
+       "Upcoming"
+      ],
+      "parentField": "stage",
+      "parentStatus": [
+       "Lead",
+       "Contacted",
+       "Qualified",
+       "Proposal",
+       "Negotiation"
+      ]
+     }
+    ],
+    "token": "interaction",
+    "name": "Interactions",
+    "labelSingular": "Interaction",
+    "labelPlural": "Interactions",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "message-square",
+    "titleField": "summary",
+    "describes": "Calls, emails and meetings, past and still to do.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "summary",
+      "label": "Summary",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "contact",
+      "label": "Contact",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "contact",
+      "relationMax": 1
+     },
+     {
+      "key": "deal",
+      "label": "Deal",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "deal",
+      "relationMax": 1
+     },
+     {
+      "key": "kind",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Call",
+       "Email",
+       "Meeting",
+       "Demo",
+       "Note"
+      ],
+      "choiceColors": {
+       "Call": "blue",
+       "Email": "green",
+       "Meeting": "amber",
+       "Demo": "violet",
+       "Note": "teal"
+      }
+     },
+     {
+      "key": "happened_on",
+      "label": "Date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "state",
+      "label": "State",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Done",
+       "Upcoming"
+      ],
+      "choiceColors": {
+       "Done": "blue",
+       "Upcoming": "green"
+      },
+      "required": true,
+      "default": "Upcoming"
+     },
+     {
+      "key": "notes",
+      "label": "Notes",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "ix01",
+      "values": {
+       "summary": "Intro call about fleet visibility",
+       "contact": "ct01",
+       "deal": "dl01",
+       "kind": "Call",
+       "happened_on": "@today-40d",
+       "state": "Done",
+       "notes": "Rosalind wants live location and exception alerts."
+      }
+     },
+     {
+      "key": "ix02",
+      "values": {
+       "summary": "Sent pricing for three tiers",
+       "contact": "ct01",
+       "deal": "dl01",
+       "kind": "Email",
+       "happened_on": "@today-22d",
+       "state": "Done",
+       "notes": "Asked for annual billing option."
+      }
+     },
+     {
+      "key": "ix03",
+      "values": {
+       "summary": "Contract redline review",
+       "contact": "ct01",
+       "deal": "dl01",
+       "kind": "Meeting",
+       "happened_on": "@today-6d",
+       "state": "Done",
+       "notes": "Legal wants a 60-day exit clause."
+      }
+     },
+     {
+      "key": "ix04",
+      "values": {
+       "summary": "Send revised contract",
+       "contact": "ct01",
+       "deal": "dl01",
+       "kind": "Email",
+       "due_on": "@today+3d",
+       "state": "Upcoming",
+       "notes": "Include the exit clause wording."
+      }
+     },
+     {
+      "key": "ix05",
+      "values": {
+       "summary": "Taproom demo",
+       "contact": "ct02",
+       "deal": "dl02",
+       "kind": "Demo",
+       "happened_on": "@today-12d",
+       "state": "Done",
+       "notes": "Loved the daily keg report."
+      }
+     },
+     {
+      "key": "ix06",
+      "values": {
+       "summary": "Follow up on proposal",
+       "contact": "ct02",
+       "deal": "dl02",
+       "kind": "Call",
+       "due_on": "@today+6d",
+       "state": "Upcoming",
+       "notes": "Tomasz is checking with his bookkeeper."
+      }
+     },
+     {
+      "key": "ix07",
+      "values": {
+       "summary": "Discovery call",
+       "contact": "ct03",
+       "deal": "dl03",
+       "kind": "Call",
+       "happened_on": "@today-8d",
+       "state": "Done",
+       "notes": "Eleven chairs across two offices."
+      }
+     },
+     {
+      "key": "ix08",
+      "values": {
+       "summary": "Book on-site pilot walkthrough",
+       "contact": "ct03",
+       "deal": "dl03",
+       "kind": "Meeting",
+       "due_on": "@today+1d",
+       "state": "Upcoming",
+       "notes": "Bring the scheduling sample."
+      }
+     },
+     {
+      "key": "ix09",
+      "values": {
+       "summary": "Executive briefing",
+       "contact": "ct04",
+       "deal": "dl04",
+       "kind": "Meeting",
+       "happened_on": "@today-15d",
+       "state": "Done",
+       "notes": "Felix brought his CFO."
+      }
+     },
+     {
+      "key": "ix10",
+      "values": {
+       "summary": "Security questionnaire sent",
+       "contact": "ct04",
+       "deal": "dl04",
+       "kind": "Email",
+       "happened_on": "@today-4d",
+       "state": "Done",
+       "notes": "Reply expected within two weeks."
+      }
+     },
+     {
+      "key": "ix11",
+      "values": {
+       "summary": "Check in on questionnaire",
+       "contact": "ct04",
+       "deal": "dl04",
+       "kind": "Call",
+       "due_on": "@today+2d",
+       "state": "Upcoming",
+       "notes": "Offer a call with our security lead."
+      }
+     },
+     {
+      "key": "ix12",
+      "values": {
+       "summary": "Renewal signed",
+       "contact": "ct05",
+       "deal": "dl05",
+       "kind": "Note",
+       "happened_on": "@today-9d",
+       "state": "Done",
+       "notes": "Added two seats."
+      }
+     },
+     {
+      "key": "ix13",
+      "values": {
+       "summary": "Parts catalog walkthrough",
+       "contact": "ct07",
+       "deal": "dl07",
+       "kind": "Demo",
+       "happened_on": "@today-5d",
+       "state": "Done",
+       "notes": "Noor wants a sandbox first."
+      }
+     },
+     {
+      "key": "ix14",
+      "values": {
+       "summary": "Send sandbox credentials",
+       "contact": "ct07",
+       "deal": "dl07",
+       "kind": "Email",
+       "due_on": "@today+5d",
+       "state": "Upcoming",
+       "notes": "Use the standard 14-day sandbox."
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Deals lists its deal records.",
+    "fromTable": "contact",
+    "fromField": "deals",
+    "toTable": "deal",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "restrict",
+    "inverseKey": "contact_listed_deals"
+   },
+   {
+    "describes": "Contact links to one contact.",
+    "fromTable": "deal",
+    "fromField": "contact",
+    "toTable": "contact",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "deals_of"
+   },
+   {
+    "describes": "Owner links to one team member.",
+    "fromTable": "deal",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "deals_owned"
+   },
+   {
+    "describes": "Interactions lists its interaction records.",
+    "fromTable": "deal",
+    "fromField": "interactions",
+    "toTable": "interaction",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "restrict",
+    "inverseKey": "deal_listed_interactions"
+   },
+   {
+    "describes": "Contact links to one contact.",
+    "fromTable": "interaction",
+    "fromField": "contact",
+    "toTable": "contact",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "interactions_with"
+   },
+   {
+    "describes": "Deal links to one deal.",
+    "fromTable": "interaction",
+    "fromField": "deal",
+    "toTable": "deal",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "deal_interactions"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-01",
+      "values": {
+       "full_name": "Dana Okonkwo-Reyes",
+       "role": "Head of sales",
+       "work_email": "dana@kestrelbridge.net",
+       "mobile": "(512) 555-0141",
+       "start_date": "@today-5y"
+      }
+     },
+     {
+      "key": "tm-02",
+      "values": {
+       "full_name": "Luis Fontaine",
+       "role": "Account executive",
+       "work_email": "luis@kestrelbridge.net",
+       "mobile": "(512) 555-0142",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-03",
+      "values": {
+       "full_name": "Mina Takahashi",
+       "role": "Account executive",
+       "work_email": "mina@kestrelbridge.net",
+       "mobile": "(512) 555-0143",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-04",
+      "values": {
+       "full_name": "Colm Brennan",
+       "role": "Sales development rep",
+       "work_email": "colm@kestrelbridge.net",
+       "mobile": "(512) 555-0144",
+       "start_date": "@today-11m"
+      }
+     },
+     {
+      "key": "tm-05",
+      "values": {
+       "full_name": "Ayesha Rahman",
+       "role": "Sales operations",
+       "work_email": "ayesha@kestrelbridge.net",
+       "mobile": "(512) 555-0145",
+       "start_date": "@today-4y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "new_contact",
+    "name": "Add a contact",
+    "describes": "How anyone adds a new contact to the book.",
+    "audience": "staff",
+    "table": "contact",
+    "fields": [
+     {
+      "fieldKey": "contact_name",
+      "ask": "Who is it?",
+      "required": true
+     },
+     {
+      "fieldKey": "company",
+      "ask": "Which company?"
+     },
+     {
+      "fieldKey": "source",
+      "ask": "Where did they come from?"
+     },
+     {
+      "fieldKey": "job_role",
+      "ask": "What is their role?"
+     }
+    ],
+    "submitLabel": "Add the contact",
+    "confirmation": "Thanks. They are in the contact book as a Lead."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_contacts",
+    "name": "All contacts",
+    "table": "contact",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "contact_name",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "contact_board",
+    "name": "By status",
+    "table": "contact",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "deal_board",
+    "name": "Pipeline",
+    "table": "deal",
+    "kind": "kanban",
+    "isDefault": true,
+    "groupBy": "stage"
+   },
+   {
+    "token": "all_deals",
+    "name": "All deals",
+    "table": "deal",
+    "kind": "grid",
+    "sorts": [
+     {
+      "field": "expected_close",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "deal_calendar",
+    "name": "Closing calendar",
+    "table": "deal",
+    "kind": "calendar",
+    "dateField": "expected_close",
+    "allDay": true
+   },
+   {
+    "token": "all_interactions",
+    "name": "All interactions",
+    "table": "interaction",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "due_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Sales assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "deal",
+     "describes": "Every deal, its stage, value and likelihood to close."
+    },
+    {
+     "name": "related_tables",
+     "table": "contact",
+     "describes": "The records the primary table links to."
+    }
+   ],
+   "question": {
+    "ask": "How many deals are in negotiation?",
+    "whyItMatters": "Dana reviews negotiation deals first every Monday.",
+    "expect": {
+     "table": "deal",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "stage": "Negotiation"
+     },
+     "answer": 2,
+     "unit": "deals"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the pipeline board.",
+    "action": {
+     "kind": "open",
+     "surface": "deal_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "deal_board",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open the contact list.",
+    "action": {
+     "kind": "open",
+     "surface": "all_contacts"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_contacts",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open the interaction list.",
+    "action": {
+     "kind": "open",
+     "surface": "all_interactions"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_interactions",
+     "minItems": 10
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "kestrelbridge.net",
+    "harborlinefreight.net",
+    "northgatebrewing.net",
+    "brightleafdental.net",
+    "cobaltridgesolar.net",
+    "lumenloom.net",
+    "millbrookvet.net",
+    "tidewatermarine.net",
+    "sunnylearn.net",
+    "fjordlineoutfitters.net",
+    "ironwoodpm.net"
+   ],
+   "fictionalStreets": [
+    "Thornapple Lane"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "sales-crm",
+   "parent": null,
+   "title": "Sales CRM",
+   "icon": {
+    "emoji": "🤝"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Keep every deal and contact in one place. Move deals across the pipeline, log each touch, and use the lists below to decide who to call next."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:pipeline-dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:playbook"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:weekly-pipeline-review"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:deal-qualification-checklist"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Pipeline"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "deal",
+       "view": "deal_board"
+      },
+      "inline": true,
+      "title": "Deals",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-pipeline",
+        "name": "Pipeline",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "stage"
+       },
+       {
+        "id": "view-all-deals",
+        "name": "All deals",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "expected_close",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-high-priority",
+        "name": "High priority",
+        "layout": "list",
+        "icon": "Flag",
+        "filters": {
+         "priority": "High"
+        }
+       },
+       {
+        "id": "view-closing-calendar",
+        "name": "Closing calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "expected_close"
+       }
+      ],
+      "activeViewId": "view-pipeline"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Contacts"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "contact",
+       "view": "all_contacts"
+      },
+      "inline": true,
+      "title": "Contacts",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-all-contacts",
+        "name": "All contacts",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "contact_name",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-by-status",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-customers",
+        "name": "Customers",
+        "layout": "list",
+        "icon": "Star",
+        "filters": {
+         "status": "Customer"
+        }
+       }
+      ],
+      "activeViewId": "view-all-contacts"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Interactions"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "interaction",
+       "view": "all_interactions"
+      },
+      "inline": true,
+      "title": "Interactions",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-to-do",
+        "name": "To do",
+        "layout": "list",
+        "icon": "ListTodo",
+        "filters": {
+         "state": "Upcoming"
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-history",
+        "name": "History",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "state": "Done"
+        },
+        "sorts": [
+         {
+          "field": "happened_on",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-to-do"
+     }
+    }
+   ],
+   "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+   }
+  },
+  {
+   "key": "pipeline-dashboard",
+   "parent": "sales-crm",
+   "title": "Pipeline dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "deal",
+           "view": "all_deals"
+          },
+          "inline": true,
+          "title": "Deals",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-deals-by-stage",
+            "name": "Deals by stage",
+            "layout": "chart",
+            "chart": {
+             "type": "donut",
+             "groupBy": "stage",
+             "op": "count",
+             "centerValue": true
+            },
+            "icon": "ChartPie"
+           }
+          ],
+          "activeViewId": "view-deals-by-stage"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "deal",
+           "view": "all_deals"
+          },
+          "inline": true,
+          "title": "Deals",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-value-by-stage",
+            "name": "Value by stage",
+            "layout": "chart",
+            "chart": {
+             "type": "bar",
+             "groupBy": "stage",
+             "op": "sum",
+             "field": "value"
+            },
+            "icon": "ChartColumn"
+           }
+          ],
+          "activeViewId": "view-value-by-stage"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "contact",
+           "view": "all_contacts"
+          },
+          "inline": true,
+          "title": "Contacts",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-contacts-by-source",
+            "name": "Contacts by source",
+            "layout": "chart",
+            "chart": {
+             "type": "donut",
+             "groupBy": "source",
+             "op": "count",
+             "centerValue": true
+            },
+            "icon": "ChartPie"
+           }
+          ],
+          "activeViewId": "view-contacts-by-source"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Biggest open deals"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "deal",
+       "view": "all_deals"
+      },
+      "inline": true,
+      "title": "Deals",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-open",
+        "name": "Open",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "stage": [
+          "Qualified",
+          "Proposal",
+          "Negotiation"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "value",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-open"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Needs a follow-up"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "interaction",
+       "view": "all_interactions"
+      },
+      "inline": true,
+      "title": "Interactions",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-due-soon",
+        "name": "Due soon",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "state": "Upcoming"
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-due-soon"
+     }
+    }
+   ]
+  },
+  {
+   "key": "playbook",
+   "parent": "sales-crm",
+   "title": "Playbook",
+   "icon": {
+    "emoji": "📘"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "One way of working keeps the pipeline honest. Adjust it to your own team."
+      }
+     ],
+     "background": "green",
+     "props": {
+      "icon": "BookOpen"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Stages"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "table",
+     "props": {
+      "headerRow": true,
+      "headerColumn": false,
+      "rows": [
+       {
+        "cells": [
+         [
+          {
+           "text": "Stage"
+          }
+         ],
+         [
+          {
+           "text": "What it means"
+          }
+         ],
+         [
+          {
+           "text": "Usual odds"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Lead"
+          }
+         ],
+         [
+          {
+           "text": "Someone who might need us"
+          }
+         ],
+         [
+          {
+           "text": "10 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Contacted"
+          }
+         ],
+         [
+          {
+           "text": "We have spoken once"
+          }
+         ],
+         [
+          {
+           "text": "10 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Qualified"
+          }
+         ],
+         [
+          {
+           "text": "Budget, need and timing confirmed"
+          }
+         ],
+         [
+          {
+           "text": "25 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Proposal"
+          }
+         ],
+         [
+          {
+           "text": "A price is on the table"
+          }
+         ],
+         [
+          {
+           "text": "50 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Negotiation"
+          }
+         ],
+         [
+          {
+           "text": "Terms are being agreed"
+          }
+         ],
+         [
+          {
+           "text": "75 percent"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Habits"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Log every call or email the same day."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Give every open deal a next step with a date."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Update the probability when a stage changes."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Close lost deals with a one-line reason in the notes."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "weekly-pipeline-review",
+   "parent": "sales-crm",
+   "title": "Weekly pipeline review",
+   "icon": {
+    "emoji": "🗓️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Run this in fifteen minutes on Monday."
+      }
+     ]
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Open deals with no next step have one"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Anything past its expected close date is moved or closed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Every proposal older than a week has had a follow-up"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "New leads are assigned an owner"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Write the forecast number in the notes below"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Deals to look at"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "deal",
+       "view": "all_deals"
+      },
+      "inline": true,
+      "title": "Deals",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-closing-soon",
+        "name": "Closing soon",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "stage": [
+          "Proposal",
+          "Negotiation"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "expected_close",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-closing-soon"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Notes"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "What changed, what is stuck, who needs help."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "deal-qualification-checklist",
+   "parent": "sales-crm",
+   "title": "Deal qualification checklist",
+   "icon": {
+    "emoji": "✅"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Before a deal moves to Qualified, confirm each of these."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "ListChecks"
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "There is a named person who can say yes"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "The problem is stated in their words"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "A budget range is known"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "A decision date is known"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Competing options are noted"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "What to do when a box stays empty"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Keep the deal in Contacted and add an interaction to ask. Do not guess a probability."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "waivers": []
+}

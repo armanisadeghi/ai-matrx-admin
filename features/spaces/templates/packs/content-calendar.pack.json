@@ -1,0 +1,1731 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0151",
+ "version": 1,
+ "title": "Content Calendar",
+ "description": "Plan posts, emails and videos on a calendar, board and timeline across channels.",
+ "forWho": "Marketers, creators and small content teams",
+ "icon": {
+  "emoji": "🗓️"
+ },
+ "cover": {
+  "url": "gallery:photo-pine-forest",
+  "offsetY": 50
+ },
+ "category": "marketing",
+ "tags": [
+  "content",
+  "calendar",
+  "editorial",
+  "publishing"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-sp0151",
+  "catalogueId": "SP0151",
+  "useCase": "Marisol Echeverria leads content at a garden supply shop and uses this to see what is publishing each week and where every piece stands.",
+  "industry": "cross_industry",
+  "vertical": "Content marketing",
+  "job": "content",
+  "audience": "organization",
+  "teaches": "calendar",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Thistlewick Garden Co.",
+   "describes": "A garden supply shop that publishes weekly how-to content for home gardeners.",
+   "address": {
+    "line1": "88 Larkin Court",
+    "city": "Minneapolis",
+    "region": "MN",
+    "postalCode": "55408",
+    "country": "US"
+   },
+   "phone": "(612) 555-0100",
+   "website": "thistlewick.net",
+   "email": "hello@thistlewick.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-sp0151",
+  "tables": [
+   {
+    "token": "channel",
+    "name": "Channels",
+    "labelSingular": "Channel",
+    "labelPlural": "Channels",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "radio",
+    "titleField": "channel_name",
+    "describes": "Where content goes out and how big each audience is.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "channel_name",
+      "label": "Channel",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "channel_kind",
+      "label": "Kind",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Owned",
+       "Social",
+       "Email",
+       "Video",
+       "Audio"
+      ],
+      "choiceColors": {
+       "Owned": "blue",
+       "Social": "green",
+       "Email": "amber",
+       "Video": "violet",
+       "Audio": "teal"
+      }
+     },
+     {
+      "key": "followers",
+      "label": "Audience size",
+      "parityType": "number",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 5000000
+       }
+      ]
+     },
+     {
+      "key": "weekly_goal",
+      "label": "Posts per week goal",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 30
+       }
+      ]
+     },
+     {
+      "key": "channel_url",
+      "label": "Link",
+      "parityType": "url",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "pieces",
+      "label": "Content",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "content",
+      "multi": true
+     },
+     {
+      "key": "piece_count",
+      "label": "Pieces planned",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "pieces",
+      "pick": "title",
+      "agg": "count"
+     },
+     {
+      "key": "live_count",
+      "label": "Pieces published",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "pieces",
+      "pick": "title",
+      "agg": "count",
+      "filter": {
+       "status": "Published"
+      }
+     }
+    ],
+    "rows": [
+     {
+      "key": "ch01",
+      "values": {
+       "channel_name": "Thistlewick blog",
+       "channel_kind": "Owned",
+       "followers": 14200,
+       "weekly_goal": 2,
+       "channel_url": "https://thistlewick.net/journal",
+       "pieces": [
+        "cn01",
+        "cn02",
+        "cn06",
+        "cn09",
+        "cn12"
+       ]
+      }
+     },
+     {
+      "key": "ch02",
+      "values": {
+       "channel_name": "Instagram",
+       "channel_kind": "Social",
+       "followers": 8900,
+       "weekly_goal": 4,
+       "channel_url": "https://thistlewick.net/instagram",
+       "pieces": [
+        "cn03",
+        "cn08",
+        "cn13"
+       ]
+      }
+     },
+     {
+      "key": "ch03",
+      "values": {
+       "channel_name": "LinkedIn",
+       "channel_kind": "Social",
+       "followers": 5300,
+       "weekly_goal": 3,
+       "channel_url": "https://thistlewick.net/linkedin",
+       "pieces": [
+        "cn15",
+        "cn16"
+       ]
+      }
+     },
+     {
+      "key": "ch04",
+      "values": {
+       "channel_name": "Weekly email",
+       "channel_kind": "Email",
+       "followers": 11800,
+       "weekly_goal": 1,
+       "pieces": [
+        "cn05",
+        "cn10",
+        "cn14",
+        "cn18"
+       ]
+      }
+     },
+     {
+      "key": "ch05",
+      "values": {
+       "channel_name": "YouTube",
+       "channel_kind": "Video",
+       "followers": 3400,
+       "weekly_goal": 1,
+       "channel_url": "https://thistlewick.net/video",
+       "pieces": [
+        "cn04",
+        "cn07",
+        "cn17"
+       ]
+      }
+     },
+     {
+      "key": "ch06",
+      "values": {
+       "channel_name": "Garden Notes podcast",
+       "channel_kind": "Audio",
+       "followers": 2100,
+       "weekly_goal": 1,
+       "pieces": [
+        "cn11"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "before": [
+     [
+      "due_on",
+      "publish_on"
+     ]
+    ],
+    "independentOf": {
+     "channel": "Channel and this record each keep their own dates and status.",
+     "author": "Anyone on the team can own this, whenever they joined."
+    },
+    "token": "content",
+    "name": "Content",
+    "labelSingular": "Piece",
+    "labelPlural": "Content",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "calendar-days",
+    "titleField": "title",
+    "describes": "Every piece of content, its channel, author and when it goes out.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "title",
+      "label": "Title",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Idea",
+       "Drafting",
+       "Editing",
+       "Scheduled",
+       "Published",
+       "Promoted"
+      ],
+      "choiceColors": {
+       "Idea": "blue",
+       "Drafting": "green",
+       "Editing": "amber",
+       "Scheduled": "violet",
+       "Published": "teal",
+       "Promoted": "orange"
+      },
+      "required": true,
+      "default": "Idea"
+     },
+     {
+      "key": "kind",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Blog post",
+       "Email",
+       "Social",
+       "Video",
+       "Podcast",
+       "Webinar"
+      ],
+      "choiceColors": {
+       "Blog post": "blue",
+       "Email": "green",
+       "Social": "amber",
+       "Video": "violet",
+       "Podcast": "teal",
+       "Webinar": "orange"
+      }
+     },
+     {
+      "key": "channel",
+      "label": "Channel",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "channel",
+      "relationMax": 1
+     },
+     {
+      "key": "author",
+      "label": "Author",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "due_on",
+      "label": "Due date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "publish_on",
+      "label": "Publish date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "days_out",
+      "label": "Days until publish",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "DATEDIFF(TODAY(), {Publish date}, 'days')"
+     },
+     {
+      "key": "topics",
+      "label": "Topics",
+      "parityType": "multi_select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Seeds",
+       "Soil",
+       "Containers",
+       "Pests",
+       "Tools",
+       "Seasonal",
+       "Community"
+      ],
+      "choiceColors": {
+       "Seeds": "blue",
+       "Soil": "green",
+       "Containers": "amber",
+       "Pests": "violet",
+       "Tools": "teal",
+       "Seasonal": "orange",
+       "Community": "pink"
+      }
+     },
+     {
+      "key": "draft_link",
+      "label": "Draft link",
+      "parityType": "url",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "brief",
+      "label": "Brief",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "cn01",
+      "values": {
+       "title": "Ten herbs that survive a missed watering",
+       "status": "Published",
+       "kind": "Blog post",
+       "channel": "ch01",
+       "author": "tm-02",
+       "due_on": "@today-24d",
+       "publish_on": "@today-21d",
+       "topics": [
+        "Seeds",
+        "Containers"
+       ],
+       "brief": "Practical list for beginners with one photo per herb."
+      }
+     },
+     {
+      "key": "cn02",
+      "values": {
+       "title": "Spring seed starting calendar",
+       "status": "Published",
+       "kind": "Blog post",
+       "channel": "ch01",
+       "author": "tm-02",
+       "due_on": "@today-14d",
+       "publish_on": "@today-11d",
+       "topics": [
+        "Seeds",
+        "Seasonal"
+       ],
+       "brief": "Month-by-month table for zones 4 to 6."
+      }
+     },
+     {
+      "key": "cn03",
+      "values": {
+       "title": "Before and after: a cracked planter reborn",
+       "status": "Published",
+       "kind": "Social",
+       "channel": "ch02",
+       "author": "tm-05",
+       "due_on": "@today-9d",
+       "publish_on": "@today-8d",
+       "topics": [
+        "Containers"
+       ],
+       "brief": "Carousel of five images."
+      }
+     },
+     {
+      "key": "cn04",
+      "values": {
+       "title": "Soil test kits compared",
+       "status": "Promoted",
+       "kind": "Video",
+       "channel": "ch05",
+       "author": "tm-04",
+       "due_on": "@today-18d",
+       "publish_on": "@today-12d",
+       "topics": [
+        "Soil",
+        "Tools"
+       ],
+       "brief": "Side by side test of three kits."
+      }
+     },
+     {
+      "key": "cn05",
+      "values": {
+       "title": "What the newsletter is changing",
+       "status": "Published",
+       "kind": "Email",
+       "channel": "ch04",
+       "author": "tm-01",
+       "due_on": "@today-6d",
+       "publish_on": "@today-4d",
+       "topics": [
+        "Community"
+       ],
+       "brief": "Short note on a new format."
+      }
+     },
+     {
+      "key": "cn06",
+      "values": {
+       "title": "Compost myths, answered",
+       "status": "Editing",
+       "kind": "Blog post",
+       "channel": "ch01",
+       "author": "tm-02",
+       "due_on": "@today+1d",
+       "publish_on": "@today+3d",
+       "topics": [
+        "Soil"
+       ],
+       "brief": "Five myths, one expert quote each."
+      }
+     },
+     {
+      "key": "cn07",
+      "values": {
+       "title": "Raised bed on a budget",
+       "status": "Editing",
+       "kind": "Video",
+       "channel": "ch05",
+       "author": "tm-04",
+       "due_on": "@today+2d",
+       "publish_on": "@today+6d",
+       "topics": [
+        "Tools",
+        "Containers"
+       ],
+       "brief": "Under 120 dollars build."
+      }
+     },
+     {
+      "key": "cn08",
+      "values": {
+       "title": "Behind the scenes at the test garden",
+       "status": "Scheduled",
+       "kind": "Social",
+       "channel": "ch02",
+       "author": "tm-05",
+       "due_on": "@today-1d",
+       "publish_on": "@today+2d",
+       "topics": [
+        "Community"
+       ],
+       "brief": "Stories series."
+      }
+     },
+     {
+      "key": "cn09",
+      "values": {
+       "title": "Aphids: spot them early",
+       "status": "Drafting",
+       "kind": "Blog post",
+       "channel": "ch01",
+       "author": "tm-02",
+       "due_on": "@today+5d",
+       "publish_on": "@today+9d",
+       "topics": [
+        "Pests"
+       ],
+       "brief": "Photo guide with remedies."
+      }
+     },
+     {
+      "key": "cn10",
+      "values": {
+       "title": "Weekly email: planting window opens",
+       "status": "Scheduled",
+       "kind": "Email",
+       "channel": "ch04",
+       "author": "tm-01",
+       "due_on": "@today+1d",
+       "publish_on": "@today+4d",
+       "topics": [
+        "Seasonal"
+       ],
+       "brief": "Three links and one tip."
+      }
+     },
+     {
+      "key": "cn11",
+      "values": {
+       "title": "Interview: a community garden coordinator",
+       "status": "Drafting",
+       "kind": "Podcast",
+       "channel": "ch06",
+       "author": "tm-03",
+       "due_on": "@today+7d",
+       "publish_on": "@today+12d",
+       "topics": [
+        "Community"
+       ],
+       "brief": "Forty-minute conversation."
+      }
+     },
+     {
+      "key": "cn12",
+      "values": {
+       "title": "Tool shed organization checklist",
+       "status": "Idea",
+       "kind": "Blog post",
+       "channel": "ch01",
+       "author": "tm-02",
+       "topics": [
+        "Tools"
+       ],
+       "brief": "Printable checklist."
+      }
+     },
+     {
+      "key": "cn13",
+      "values": {
+       "title": "Five-minute watering routine",
+       "status": "Idea",
+       "kind": "Social",
+       "channel": "ch02",
+       "author": "tm-05",
+       "topics": [
+        "Containers"
+       ],
+       "brief": "Short vertical video."
+      }
+     },
+     {
+      "key": "cn14",
+      "values": {
+       "title": "Fall bulbs: what to order now",
+       "status": "Drafting",
+       "kind": "Email",
+       "channel": "ch04",
+       "author": "tm-01",
+       "due_on": "@today+10d",
+       "publish_on": "@today+14d",
+       "topics": [
+        "Seasonal",
+        "Seeds"
+       ],
+       "brief": "Supplier shortlist."
+      }
+     },
+     {
+      "key": "cn15",
+      "values": {
+       "title": "Live Q and A: your first vegetable bed",
+       "status": "Idea",
+       "kind": "Webinar",
+       "channel": "ch03",
+       "author": "tm-01",
+       "due_on": "@today+20d",
+       "publish_on": "@today+26d",
+       "topics": [
+        "Seeds",
+        "Soil"
+       ],
+       "brief": "Sixty minutes, questions taken in advance."
+      }
+     },
+     {
+      "key": "cn16",
+      "values": {
+       "title": "Garden journal templates",
+       "status": "Scheduled",
+       "kind": "Social",
+       "channel": "ch03",
+       "author": "tm-03",
+       "due_on": "@today+3d",
+       "publish_on": "@today+5d",
+       "topics": [
+        "Tools"
+       ],
+       "brief": "Share the free template."
+      }
+     },
+     {
+      "key": "cn17",
+      "values": {
+       "title": "Pruning without panic",
+       "status": "Idea",
+       "kind": "Video",
+       "channel": "ch05",
+       "author": "tm-04",
+       "topics": [
+        "Tools"
+       ],
+       "brief": "Demonstration on three shrubs."
+      }
+     },
+     {
+      "key": "cn18",
+      "values": {
+       "title": "Season recap",
+       "status": "Idea",
+       "kind": "Email",
+       "channel": "ch04",
+       "author": "tm-01",
+       "topics": [
+        "Seasonal"
+       ],
+       "brief": "Wrap-up with reader photos."
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Content lists its content records.",
+    "fromTable": "channel",
+    "fromField": "pieces",
+    "toTable": "content",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "restrict",
+    "inverseKey": "channel_listed_pieces"
+   },
+   {
+    "describes": "Channel links to one channel.",
+    "fromTable": "content",
+    "fromField": "channel",
+    "toTable": "channel",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "content_on"
+   },
+   {
+    "describes": "Author links to one team member.",
+    "fromTable": "content",
+    "fromField": "author",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "content_written"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-01",
+      "values": {
+       "full_name": "Marisol Echeverria",
+       "role": "Content lead",
+       "work_email": "marisol@thistlewick.net",
+       "mobile": "(612) 555-0101",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-02",
+      "values": {
+       "full_name": "Jonah Pettibone",
+       "role": "Writer",
+       "work_email": "jonah@thistlewick.net",
+       "mobile": "(612) 555-0102",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-03",
+      "values": {
+       "full_name": "Sunita Verma",
+       "role": "Designer",
+       "work_email": "sunita@thistlewick.net",
+       "mobile": "(612) 555-0103",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-04",
+      "values": {
+       "full_name": "Kofi Mensah-Boyd",
+       "role": "Video producer",
+       "work_email": "kofi@thistlewick.net",
+       "mobile": "(612) 555-0104",
+       "start_date": "@today-18m"
+      }
+     },
+     {
+      "key": "tm-05",
+      "values": {
+       "full_name": "Lena Gutierrez",
+       "role": "Social manager",
+       "work_email": "lena@thistlewick.net",
+       "mobile": "(612) 555-0105",
+       "start_date": "@today-1y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "content_idea",
+    "name": "Suggest a content idea",
+    "describes": "How anyone on the team adds an idea to the calendar.",
+    "audience": "staff",
+    "table": "content",
+    "fields": [
+     {
+      "fieldKey": "title",
+      "ask": "What is the idea?",
+      "required": true
+     },
+     {
+      "fieldKey": "kind",
+      "ask": "What kind of piece is it?"
+     },
+     {
+      "fieldKey": "channel",
+      "ask": "Where would it run?"
+     },
+     {
+      "fieldKey": "brief",
+      "ask": "Why would readers care?"
+     }
+    ],
+    "submitLabel": "Add the idea",
+    "confirmation": "Thanks. It is on the board as an Idea."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_channels",
+    "name": "All channels",
+    "table": "channel",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "channel_name",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "content_calendar",
+    "name": "Calendar",
+    "table": "content",
+    "kind": "calendar",
+    "isDefault": true,
+    "dateField": "publish_on",
+    "allDay": true
+   },
+   {
+    "token": "content_board",
+    "name": "Board",
+    "table": "content",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "all_content",
+    "name": "All content",
+    "table": "content",
+    "kind": "grid",
+    "sorts": [
+     {
+      "field": "publish_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "content_timeline",
+    "name": "Timeline",
+    "table": "content",
+    "kind": "timeline",
+    "startField": "due_on",
+    "endField": "publish_on"
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Content assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "content",
+     "describes": "Every piece of content, its channel, author and when it goes out."
+    },
+    {
+     "name": "related_tables",
+     "table": "channel",
+     "describes": "The records the primary table links to."
+    }
+   ],
+   "question": {
+    "ask": "How many pieces are scheduled to publish?",
+    "whyItMatters": "Marisol checks the scheduled count before each Monday meeting.",
+    "expect": {
+     "table": "content",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Scheduled"
+     },
+     "answer": 3,
+     "unit": "pieces"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the content calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "content_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "content_calendar",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open the content board.",
+    "action": {
+     "kind": "open",
+     "surface": "content_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "content_board",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open all channels.",
+    "action": {
+     "kind": "open",
+     "surface": "all_channels"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_channels",
+     "minItems": 6
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "thistlewick.net"
+   ],
+   "fictionalStreets": [
+    "Larkin Court"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "content-calendar",
+   "parent": null,
+   "title": "Content Calendar",
+   "icon": {
+    "emoji": "🗓️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Plan every post, email and video in one place. Start on the calendar, drag nothing, just open a piece and set its date."
+      }
+     ],
+     "background": "green",
+     "props": {
+      "icon": "CalendarDays"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:content-dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:brief-template"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:weekly-planning"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:publishing-checklist"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Content"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "content",
+       "view": "content_calendar"
+      },
+      "inline": true,
+      "title": "Content",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-calendar",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "publish_on"
+       },
+       {
+        "id": "view-board",
+        "name": "Board",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-all",
+        "name": "All",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-timeline",
+        "name": "Timeline",
+        "layout": "timeline",
+        "icon": "ChartGantt",
+        "dateField": "due_on"
+       },
+       {
+        "id": "view-this-week",
+        "name": "This week",
+        "layout": "list",
+        "icon": "CalendarClock",
+        "filters": {
+         "status": [
+          "Drafting",
+          "Editing",
+          "Scheduled"
+         ]
+        }
+       },
+       {
+        "id": "view-cards",
+        "name": "Cards",
+        "layout": "gallery",
+        "icon": "LayoutGrid"
+       }
+      ],
+      "activeViewId": "view-calendar"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Channels"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "channel",
+       "view": "all_channels"
+      },
+      "inline": true,
+      "title": "Channels",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-all-channels",
+        "name": "All channels",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "view-audience-by-channel",
+        "name": "Audience by channel",
+        "layout": "chart",
+        "chart": {
+         "type": "bar",
+         "groupBy": "channel_kind",
+         "op": "sum",
+         "field": "followers"
+        },
+        "icon": "ChartColumn"
+       }
+      ],
+      "activeViewId": "view-all-channels"
+     }
+    }
+   ],
+   "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+   }
+  },
+  {
+   "key": "content-dashboard",
+   "parent": "content-calendar",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "content",
+           "view": "all_content"
+          },
+          "inline": true,
+          "title": "Content",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-content-by-status",
+            "name": "Content by status",
+            "layout": "chart",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            },
+            "icon": "ChartPie"
+           }
+          ],
+          "activeViewId": "view-content-by-status"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "content",
+           "view": "all_content"
+          },
+          "inline": true,
+          "title": "Content",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-content-by-type",
+            "name": "Content by type",
+            "layout": "chart",
+            "chart": {
+             "type": "donut",
+             "groupBy": "kind",
+             "op": "count",
+             "centerValue": true
+            },
+            "icon": "ChartPie"
+           }
+          ],
+          "activeViewId": "view-content-by-type"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "content",
+           "view": "all_content"
+          },
+          "inline": true,
+          "title": "Content",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-pieces-per-author",
+            "name": "Pieces per author",
+            "layout": "chart",
+            "chart": {
+             "type": "bar",
+             "groupBy": "author",
+             "op": "count"
+            },
+            "icon": "ChartColumn"
+           }
+          ],
+          "activeViewId": "view-pieces-per-author"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Needs attention"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "content",
+       "view": "all_content"
+      },
+      "inline": true,
+      "title": "Content",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-unscheduled-ideas",
+        "name": "Unscheduled ideas",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": "Idea"
+        }
+       }
+      ],
+      "activeViewId": "view-unscheduled-ideas"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Coming up"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "content",
+       "view": "all_content"
+      },
+      "inline": true,
+      "title": "Content",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-scheduled",
+        "name": "Scheduled",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "status": [
+          "Scheduled",
+          "Editing"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-scheduled"
+     }
+    }
+   ]
+  },
+  {
+   "key": "brief-template",
+   "parent": "content-calendar",
+   "title": "Brief template",
+   "icon": {
+    "emoji": "📝"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Copy this outline into any piece before drafting starts."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "FileText"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Goal"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "What should a reader do or know afterwards?"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Audience"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Who is this for, and what do they already know?"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Outline"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Hook"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Three main points"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Call to action"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Keywords and links"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Main phrase"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Two internal links"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "weekly-planning",
+   "parent": "content-calendar",
+   "title": "Weekly planning",
+   "icon": {
+    "emoji": "📅"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Fifteen minutes each Monday keeps the month honest."
+      }
+     ]
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Every scheduled piece has an author and a date"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Nothing is stuck in editing for more than three days"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "One idea is promoted to a draft"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Check each channel against its weekly goal"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "This week"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "content",
+       "view": "all_content"
+      },
+      "inline": true,
+      "title": "Content",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-due-this-week",
+        "name": "Due this week",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": [
+          "Drafting",
+          "Editing",
+          "Scheduled"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-due-this-week"
+     }
+    }
+   ]
+  },
+  {
+   "key": "publishing-checklist",
+   "parent": "content-calendar",
+   "title": "Publishing checklist",
+   "icon": {
+    "emoji": "✅"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Title and first line read well on their own"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Images have descriptions"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Links open and go where they should"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Preview looks right on a phone"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Published address pasted back into the piece"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "After publishing"
+      }
+     ],
+     "children": [
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Share once on each social channel"
+        }
+       ]
+      },
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Move the status to Published"
+        }
+       ]
+      },
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Note anything to change next time"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "waivers": []
+}
