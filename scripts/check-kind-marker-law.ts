@@ -70,6 +70,10 @@ const REDUCERS = [
 
 /** file (repo-relative) → why it is allowed to reduce. */
 const BLESSED: Record<string, string> = {
+  "features/tool-result-tables/rowsFromKind.ts":
+    "not a door — a COLUMN census: describeRows picks which of a kind's data fields become a " +
+    "person's table columns; the discriminator is identity, never a column. The kind instance is " +
+    "read, never rewritten, and only header→cell rows leave.",
   "features/content-ir/kinds/schema-proposal.ts":
     "door 2 — EXTERNAL EGRESS: the proposal is applied verbatim to agx_agent.output_schema, " +
     "a JSON Schema document, so its own ROOT marker must not be written into it.",

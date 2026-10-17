@@ -11,6 +11,12 @@
  *
  *   node scripts/check-matrx-deps-declared.mjs              # check the repo
  *   node scripts/check-matrx-deps-declared.mjs --self-test  # prove it fails on a planted import
+ *   node scripts/check-matrx-deps-declared.mjs --staged     # pre-commit: only what THIS commit stages
+ *
+ * --staged reads the staged blobs, never the working tree: in the shared checkout another session's
+ * unfinished, uncommitted import must not refuse an unrelated commit (2026-10-16, an untracked
+ * WebVault.tsx importing @ai-matrx/vault refused every commit in the checkout). A staged
+ * package.json widens it to every file in the index.
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync, mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
@@ -20,8 +26,11 @@ import { tmpdir } from "node:os";
 const SOURCE = /\.(?:[cm]?[jt]sx?)$/;
 const IMPORT = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*|\bvi\.mock\s*\(\s*|\bjest\.mock\s*\(\s*)["'](@ai-matrx\/[a-z0-9][a-z0-9._-]*)(?:\/[^"']*)?["']/g;
 
-function undeclared(root, files) {
-  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+const fromDisk = (root) => (file) => readFileSync(join(root, file), "utf8");
+const fromIndex = (root) => (file) => execFileSync("git", ["show", `:${file}`], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+
+function undeclared(root, files, read = fromDisk(root)) {
+  const manifest = JSON.parse(read("package.json"));
   const declared = new Set([
     manifest.name,
     ...Object.keys(manifest.dependencies ?? {}),
@@ -32,9 +41,9 @@ function undeclared(root, files) {
   for (const file of files) {
     let text;
     try {
-      text = readFileSync(join(root, file), "utf8");
+      text = read(file);
     } catch {
-      continue; // deleted in the working tree
+      continue; // deleted in the working tree (or the index)
     }
     for (const m of text.matchAll(IMPORT)) {
       const name = m[1];
@@ -47,8 +56,8 @@ function undeclared(root, files) {
   return missing;
 }
 
-function trackedSources(root) {
-  const out = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], {
+function trackedSources(root, args = ["ls-files", "-z", "--cached", "--others", "--exclude-standard"]) {
+  const out = execFileSync("git", args, {
     cwd: root,
     encoding: "utf8",
     maxBuffer: 256 * 1024 * 1024,
@@ -87,7 +96,14 @@ if (process.argv.includes("--self-test")) {
 }
 
 const root = process.cwd();
-const missing = undeclared(root, trackedSources(root));
+let missing;
+if (process.argv.includes("--staged")) {
+  const staged = execFileSync("git", ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"], { cwd: root, encoding: "utf8" }).split("\0");
+  const files = staged.includes("package.json") ? trackedSources(root, ["ls-files", "-z", "--cached"]) : trackedSources(root, ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"]);
+  missing = undeclared(root, files, fromIndex(root));
+} else {
+  missing = undeclared(root, trackedSources(root));
+}
 if (missing.size) {
   report(missing);
   process.exit(1);
