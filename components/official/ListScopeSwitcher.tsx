@@ -9,7 +9,7 @@
 // separate axes: lib/list-scope/types.ts § TWO AXES).
 
 import { User, Users2, Building2 } from "lucide-react";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { scopeKey, type ListScope } from "@/lib/list-scope/types";
 import { Tabs } from "@ai-matrx/design-system/controls";
 
@@ -30,7 +30,8 @@ export function ListScopeSwitcher({
   onShared,
   className,
 }: ListScopeSwitcherProps) {
-  const { organizations } = useUserOrganizations();
+  // Tabs for the organizations she used most recently (her first page) plus the one named by `orgId`.
+  const { organizations } = useOrganizationsWith([orgId]);
   const activeKey =
     value.kind === "orgs" && orgId ? `orgs:${orgId}` : scopeKey(value);
 

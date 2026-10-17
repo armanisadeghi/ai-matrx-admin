@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { useActiveOrganizationPicker } from "@/features/organizations/hooks/useActiveOrganizationPicker";
 import { useBrand, useCreateSite } from "@/features/marketing/data/hooks";
 import { useBrandBySegment } from "@/features/marketing/data/keys-hooks";
@@ -300,28 +301,13 @@ export function NewSiteForm() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Owning organization</Label>
-              <Select
-                value={selectedOrgId}
-                onValueChange={setOrganizationId}
+              <OrganizationChooser
+                value={selectedOrgId ?? null}
+                valueName={orgs.organizations.find((o) => o.id === selectedOrgId)?.name ?? null}
+                placeholder="Choose an organization"
                 disabled={orgs.loading || Boolean(targetBrand.data)}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      orgs.loading
-                        ? "Loading organizations…"
-                        : "Choose organization"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {orgs.organizations.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(org) => setOrganizationId(org.id)}
+              />
               {orgs.loadFailed ? (
                 <p className="text-[11px] text-destructive">
                   We couldn’t load your organizations. Refresh this page or{" "}

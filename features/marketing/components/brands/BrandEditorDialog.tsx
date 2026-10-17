@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { useActiveOrganizationPicker } from "@/features/organizations/hooks/useActiveOrganizationPicker";
 import {
   useCreateBrand,
@@ -408,18 +409,13 @@ function BrandEditorDialogBody({
             {orgs.organizations.length > 1 && !kindLocked ? (
               <div className="space-y-1">
                 <Label className="text-xs">Owning organization</Label>
-                <Select value={selectedOrgId ?? ""} onValueChange={setOrganizationId} disabled={orgs.loading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose an organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {orgs.organizations.map((org) => (
-                      <SelectItem key={org.id} value={org.id}>
-                        {org.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <OrganizationChooser
+                value={selectedOrgId ?? null}
+                valueName={orgs.organizations.find((o) => o.id === selectedOrgId)?.name ?? null}
+                placeholder="Choose an organization"
+                disabled={orgs.loading}
+                onChange={(org) => setOrganizationId(org.id)}
+              />
               </div>
             ) : null}
             <HandleBrandCreator
@@ -436,22 +432,13 @@ function BrandEditorDialogBody({
           {!brand ? (
             <div className="space-y-1">
               <Label className="text-xs">Owning organization</Label>
-              <Select
-                value={selectedOrgId ?? ""}
-                onValueChange={setOrganizationId}
+              <OrganizationChooser
+                value={selectedOrgId ?? null}
+                valueName={orgs.organizations.find((o) => o.id === selectedOrgId)?.name ?? null}
+                placeholder="Choose an organization"
                 disabled={orgs.loading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose an organization" />
-                </SelectTrigger>
-                <SelectContent>
-                  {orgs.organizations.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(org) => setOrganizationId(org.id)}
+              />
             </div>
           ) : null}
 

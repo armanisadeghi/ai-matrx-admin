@@ -6,33 +6,28 @@
 // admin section is filed there — never the platform tenant. Stored in the
 // unified settings store (`userPreferences.organization.adminOrganizationId`).
 // Choosing one applies at once; "Current org" clears it.
+//
+// Her organizations are a PAGE of a longer list (bounded organizations, 2026-10-17): the shared
+// chooser searches server-side and pages.
 
-import { Building2 } from "lucide-react";
-import { Select } from "@ai-matrx/design-system/controls";
+import { X } from "lucide-react";
+import { Button } from "@ai-matrx/design-system";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { useSetting } from "@/features/settings/hooks/useSetting";
-import { useUserOrganizations } from "@/features/organizations/hooks";
-
-const CURRENT = "";
 
 export function AdminOrganizationPicker() {
   const [declared, setDeclared] = useSetting<string | null>(
     "userPreferences.organization.adminOrganizationId",
   );
-  const { organizations, loading } = useUserOrganizations();
-
-  const options = [
-    { value: CURRENT, label: "Current org" },
-    ...organizations.map((org) => ({ value: org.id, label: org.name })),
-  ];
 
   return (
-    <Select
-      aria-label="Admin org: admin pages run work in this org"
-      icon={<Building2 className="h-4 w-4" />}
-      value={declared ?? CURRENT}
-      options={options}
-      onValueChange={(next: string) => setDeclared(next === CURRENT ? null : next)}
-      disabled={loading}
-    />
+    <div className="flex items-center gap-1" aria-label="Admin org: admin pages run work in this org">
+      <OrganizationChooser value={declared ?? null} placeholder="Current org" onChange={(org) => setDeclared(org.id)} />
+      {declared ? (
+        <Button variant="ghost" size="icon" aria-label="Use the current org" onClick={() => setDeclared(null)}>
+          <X aria-hidden />
+        </Button>
+      ) : null}
+    </div>
   );
 }

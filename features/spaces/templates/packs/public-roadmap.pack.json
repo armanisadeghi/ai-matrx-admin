@@ -1,0 +1,1373 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0353",
+ "version": 1,
+ "title": "Public Roadmap & Feedback Forms",
+ "description": "Share a roadmap and collect feature requests and bug reports through forms.",
+ "forWho": "Product teams with outside customers",
+ "icon": {
+  "emoji": "🗺️"
+ },
+ "cover": {
+  "url": "gallery:photo-ocean-horizon",
+  "offsetY": 50
+ },
+ "category": "projects",
+ "tags": [
+  "roadmap",
+  "public",
+  "feedback",
+  "bugs"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-public-roadmap",
+  "catalogueId": "SP0353",
+  "useCase": "The product team shares what is next and triages what customers send in.",
+  "industry": "cross_industry",
+  "vertical": "Product management",
+  "job": "projects",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Kestrel Ledger Software",
+   "describes": "Bookkeeping software for small trades companies.",
+   "address": {
+    "line1": "64 Larkspur Mews",
+    "city": "Denver",
+    "region": "CO",
+    "postalCode": "80205",
+    "country": "US"
+   },
+   "phone": "(303) 555-0150",
+   "website": "kestrelledger.net",
+   "email": "hello@kestrelledger.net",
+   "timezone": "America/Denver"
+  },
+  "cleanupTag": "use-case:spaces-public-roadmap",
+  "tables": [
+   {
+    "token": "roadmap_item",
+    "name": "Roadmap items",
+    "labelSingular": "Roadmap item",
+    "labelPlural": "Roadmap items",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "map",
+    "titleField": "item_name",
+    "describes": "Everything planned, its horizon and whether it is public.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "item_name",
+      "label": "Roadmap item",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "horizon",
+      "label": "Horizon",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Now",
+       "Next",
+       "Later",
+       "Shipped"
+      ],
+      "choiceColors": {
+       "Now": "green",
+       "Next": "blue",
+       "Later": "slate",
+       "Shipped": "violet"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Idea",
+       "Planned",
+       "In progress",
+       "Shipped"
+      ],
+      "choiceColors": {
+       "Idea": "blue",
+       "Planned": "violet",
+       "In progress": "teal",
+       "Shipped": "green"
+      }
+     },
+     {
+      "key": "quarter",
+      "label": "Target quarter",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Q4",
+       "Q1",
+       "Q2",
+       "Q3"
+      ],
+      "choiceColors": {
+       "Q4": "blue",
+       "Q1": "violet",
+       "Q2": "teal",
+       "Q3": "orange"
+      }
+     },
+     {
+      "key": "public",
+      "label": "Public",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "summary",
+      "label": "Summary",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "requests",
+      "label": "Linked requests",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "request",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "request_count",
+      "label": "Request count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "requests",
+      "pick": "title",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "ri1",
+      "values": {
+       "item_name": "Team calendar view",
+       "horizon": "Now",
+       "status": "In progress",
+       "quarter": "Q4",
+       "public": true,
+       "summary": "See every teammate's schedule in a single week or month grid."
+      }
+     },
+     {
+      "key": "ri2",
+      "values": {
+       "item_name": "Mobile offline sync",
+       "horizon": "Now",
+       "status": "Planned",
+       "quarter": "Q4",
+       "public": true,
+       "summary": "Keep working without a connection and sync when back online."
+      }
+     },
+     {
+      "key": "ri3",
+      "values": {
+       "item_name": "Single sign-on",
+       "horizon": "Next",
+       "status": "Planned",
+       "quarter": "Q1",
+       "public": true,
+       "summary": "Sign in with your company directory account."
+      }
+     },
+     {
+      "key": "ri4",
+      "values": {
+       "item_name": "Public API v2",
+       "horizon": "Next",
+       "status": "Idea",
+       "quarter": "Q2",
+       "public": true,
+       "summary": "A cleaner, faster programming interface with versioned endpoints."
+      }
+     },
+     {
+      "key": "ri5",
+      "values": {
+       "item_name": "Custom report builder",
+       "horizon": "Later",
+       "status": "Idea",
+       "quarter": "Q2",
+       "public": true,
+       "summary": "Build your own tables of results and save them."
+      }
+     },
+     {
+      "key": "ri6",
+      "values": {
+       "item_name": "Two-way email sync",
+       "horizon": "Later",
+       "status": "Idea",
+       "quarter": "Q3",
+       "public": true,
+       "summary": "Messages sent from the app land in your own inbox and replies return."
+      }
+     },
+     {
+      "key": "ri7",
+      "values": {
+       "item_name": "Dark theme",
+       "horizon": "Shipped",
+       "status": "Shipped",
+       "quarter": "Q3",
+       "public": true,
+       "summary": "A restful low-light look across the whole app."
+      }
+     },
+     {
+      "key": "ri8",
+      "values": {
+       "item_name": "Bulk import wizard",
+       "horizon": "Shipped",
+       "status": "Shipped",
+       "quarter": "Q2",
+       "public": true,
+       "summary": "Upload a spreadsheet and map columns in four steps."
+      }
+     },
+     {
+      "key": "ri9",
+      "values": {
+       "item_name": "Audit log export",
+       "horizon": "Next",
+       "status": "Planned",
+       "quarter": "Q1",
+       "public": false,
+       "summary": "Download the full record of who changed what."
+      }
+     },
+     {
+      "key": "ri10",
+      "values": {
+       "item_name": "Usage-based billing engine",
+       "horizon": "Later",
+       "status": "Idea",
+       "quarter": "Q3",
+       "public": false,
+       "summary": "Charge customers by what they use."
+      }
+     }
+    ]
+   },
+   {
+    "token": "request",
+    "name": "Feature requests",
+    "labelSingular": "Feature request",
+    "labelPlural": "Feature requests",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "lightbulb",
+    "titleField": "title",
+    "describes": "Requests sent in by customers with votes and a link to the roadmap.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "title",
+      "label": "Request",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "details",
+      "label": "Details",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "submitter",
+      "label": "Submitter email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "askOfSubject": true
+     },
+     {
+      "key": "votes",
+      "label": "Votes",
+      "parityType": "integer",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "linked_item",
+      "label": "Roadmap item",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "roadmap_item",
+      "relationMax": 1
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "New",
+       "Under review",
+       "Planned",
+       "Shipped",
+       "Declined"
+      ],
+      "choiceColors": {
+       "New": "blue",
+       "Under review": "violet",
+       "Planned": "teal",
+       "Shipped": "green",
+       "Declined": "red"
+      }
+     }
+    ],
+    "rows": [
+     {
+      "key": "q1",
+      "values": {
+       "title": "Reminder texts before appointments",
+       "details": "Customers forget visits and no-shows cost them money.",
+       "submitter": "kendra@hartwellclinic.net",
+       "votes": 42,
+       "linked_item": "ri5",
+       "status": "Under review"
+      }
+     },
+     {
+      "key": "q2",
+      "values": {
+       "title": "Export invoices as PDF in bulk",
+       "details": "Month-end means downloading dozens of files one at a time.",
+       "submitter": "finance@ostrandlumber.net",
+       "votes": 31,
+       "linked_item": "ri8",
+       "status": "Planned"
+      }
+     },
+     {
+      "key": "q3",
+      "values": {
+       "title": "Color labels for job types",
+       "details": "Easier to scan the calendar at a glance.",
+       "submitter": "rosa@verdantlawns.net",
+       "votes": 18,
+       "linked_item": "ri1",
+       "status": "Planned"
+      }
+     },
+     {
+      "key": "q4",
+      "values": {
+       "title": "Time zone per team member",
+       "details": "Our crew works across two zones.",
+       "submitter": "ahmed@lowcountrysolar.net",
+       "votes": 24,
+       "linked_item": "ri1",
+       "status": "New"
+      }
+     },
+     {
+      "key": "q5",
+      "values": {
+       "title": "Import from the old system",
+       "details": "We have six years of customers in another tool.",
+       "submitter": "owner@fenwickbakery.net",
+       "votes": 55,
+       "linked_item": "ri8",
+       "status": "Shipped"
+      }
+     },
+     {
+      "key": "q6",
+      "values": {
+       "title": "Read-only guest access",
+       "details": "Accountants need to look, not edit.",
+       "submitter": "sam@teller-and-hart.net",
+       "votes": 37,
+       "linked_item": "ri3",
+       "status": "New"
+      }
+     }
+    ],
+    "independentOf": {
+     "linked_item": "Requests are logged when customers ask, independent of roadmap dates."
+    }
+   },
+   {
+    "token": "bug",
+    "name": "Bug reports",
+    "labelSingular": "Bug report",
+    "labelPlural": "Bug reports",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "bug",
+    "titleField": "bug_title",
+    "describes": "Problems reported with steps, severity and progress.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "bug_title",
+      "label": "Bug",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "steps",
+      "label": "Steps to reproduce",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "severity",
+      "label": "Severity",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "S1",
+       "S2",
+       "S3",
+       "S4"
+      ],
+      "choiceColors": {
+       "S1": "red",
+       "S2": "orange",
+       "S3": "amber",
+       "S4": "slate"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "New",
+       "Confirmed",
+       "Fixing",
+       "Fixed"
+      ],
+      "choiceColors": {
+       "New": "blue",
+       "Confirmed": "violet",
+       "Fixing": "teal",
+       "Fixed": "green"
+      }
+     },
+     {
+      "key": "reporter",
+      "label": "Reporter email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "askOfSubject": true
+     },
+     {
+      "key": "reported_on",
+      "label": "Reported",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     }
+    ],
+    "rows": [
+     {
+      "key": "b1",
+      "values": {
+       "bug_title": "Calendar shows the wrong day for late events",
+       "steps": "Create an event at 11:30pm. It appears on the next day in month view.",
+       "severity": "S2",
+       "status": "Confirmed",
+       "reporter": "lena.b@harrowgate-gym.net",
+       "reported_on": "@today-6d"
+      }
+     },
+     {
+      "key": "b2",
+      "values": {
+       "bug_title": "Import stops partway through large files",
+       "steps": "Uploading a 900-row file stops silently around the halfway mark.",
+       "severity": "S1",
+       "status": "Fixing",
+       "reporter": "dmitri@pinecrestsupply.net",
+       "reported_on": "@today-3d"
+      }
+     },
+     {
+      "key": "b3",
+      "values": {
+       "bug_title": "Search ignores accents",
+       "steps": "Searching Jose will not find Jose with an accent.",
+       "severity": "S3",
+       "status": "New",
+       "reporter": "camille@bonvoyage-tours.net",
+       "reported_on": "@today-1d"
+      }
+     },
+     {
+      "key": "b4",
+      "values": {
+       "bug_title": "Print view cuts off the last column",
+       "steps": "Wide tables lose the final column when printed.",
+       "severity": "S3",
+       "status": "Confirmed",
+       "reporter": "wanda@eastbankcredit.net",
+       "reported_on": "@today-12d"
+      }
+     },
+     {
+      "key": "b5",
+      "values": {
+       "bug_title": "Duplicate reminder emails",
+       "steps": "Two identical reminders are sent for recurring visits.",
+       "severity": "S2",
+       "status": "Fixed",
+       "reporter": "tyler@marshallroofing.net",
+       "reported_on": "@today-20d"
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "A request can point at the roadmap item that answers it.",
+    "fromTable": "request",
+    "fromField": "linked_item",
+    "toTable": "roadmap_item",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "item_requests"
+   },
+   {
+    "describes": "A roadmap item gathers its requests.",
+    "fromTable": "roadmap_item",
+    "fromField": "requests",
+    "toTable": "request",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "on_items"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "request_form",
+    "name": "Request a feature",
+    "describes": "Public form for feature ideas.",
+    "audience": "public",
+    "table": "request",
+    "fields": [
+     {
+      "fieldKey": "title",
+      "ask": "What would you like to see?",
+      "required": true
+     },
+     {
+      "fieldKey": "details",
+      "ask": "Tell us more about what you need."
+     },
+     {
+      "fieldKey": "submitter",
+      "ask": "What email can we reach you at?"
+     }
+    ],
+    "submitLabel": "Send request",
+    "confirmation": "Thanks. Your idea is in the queue."
+   },
+   {
+    "token": "bug_form",
+    "name": "Report a bug",
+    "describes": "Public form for problems.",
+    "audience": "public",
+    "table": "bug",
+    "fields": [
+     {
+      "fieldKey": "bug_title",
+      "ask": "What went wrong?",
+      "required": true
+     },
+     {
+      "fieldKey": "steps",
+      "ask": "What steps lead to the problem?",
+      "required": true
+     },
+     {
+      "fieldKey": "severity",
+      "ask": "How badly does it block you?"
+     },
+     {
+      "fieldKey": "reporter",
+      "ask": "What email can we reach you at?"
+     }
+    ],
+    "submitLabel": "Send report",
+    "confirmation": "Thanks. We will follow up by email."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_items",
+    "name": "All items",
+    "table": "roadmap_item",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "public_board",
+    "name": "Public board",
+    "table": "roadmap_item",
+    "kind": "kanban",
+    "groupBy": "horizon",
+    "filters": {
+     "public": true
+    }
+   },
+   {
+    "token": "all_requests",
+    "name": "Requests",
+    "table": "request",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "votes",
+      "direction": "desc"
+     }
+    ]
+   },
+   {
+    "token": "all_bugs",
+    "name": "Bug reports",
+    "table": "bug",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "reported_on",
+      "direction": "desc"
+     }
+    ]
+   },
+   {
+    "token": "bug_board",
+    "name": "By status",
+    "table": "bug",
+    "kind": "kanban",
+    "groupBy": "status"
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Roadmap assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "roadmap_item",
+     "describes": "Roadmap items with horizon and status."
+    },
+    {
+     "name": "related_tables",
+     "table": "request",
+     "describes": "Feature requests linked to items."
+    }
+   ],
+   "question": {
+    "ask": "How many roadmap items are public?",
+    "whyItMatters": "Only public items go on the shared board.",
+    "expect": {
+     "table": "roadmap_item",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "public": true
+     },
+     "answer": 8,
+     "unit": "items"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the public board.",
+    "action": {
+     "kind": "open",
+     "surface": "public_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "public_board",
+     "minItems": 8
+    }
+   },
+   {
+    "says": "Open the bug board.",
+    "action": {
+     "kind": "open",
+     "surface": "bug_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "bug_board",
+     "minItems": 4
+    }
+   },
+   {
+    "says": "Open the requests.",
+    "action": {
+     "kind": "open",
+     "surface": "all_requests"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_requests",
+     "minItems": 5
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "kestrelledger.net",
+    "hartwellclinic.net",
+    "ostrandlumber.net",
+    "verdantlawns.net",
+    "lowcountrysolar.net",
+    "fenwickbakery.net",
+    "teller-and-hart.net",
+    "harrowgate-gym.net",
+    "pinecrestsupply.net",
+    "bonvoyage-tours.net",
+    "eastbankcredit.net",
+    "marshallroofing.net"
+   ],
+   "fictionalStreets": [
+    "Larkspur Mews"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "public-roadmap",
+   "parent": null,
+   "title": "Public Roadmap",
+   "icon": {
+    "emoji": "🗺️"
+   },
+   "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Share what is coming with customers and let them ask for features or report bugs. Only items marked Public appear on the shared board."
+      }
+     ],
+     "background": "green",
+     "props": {
+      "icon": "Globe"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Roadmap"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "roadmap_item",
+       "view": "public_board"
+      },
+      "inline": true,
+      "title": "Roadmap items",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-b",
+        "name": "Public board",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "horizon",
+        "filters": {
+         "public": true
+        }
+       },
+       {
+        "id": "v-t",
+        "name": "All items",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-q",
+        "name": "By quarter",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "quarter",
+         "op": "count"
+        }
+       }
+      ],
+      "activeViewId": "v-b"
+     }
+    },
+    {
+     "type": "divider"
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "heading",
+         "text": [
+          {
+           "text": "Ask for a feature"
+          }
+         ],
+         "props": {
+          "level": 3
+         }
+        },
+        {
+         "type": "text",
+         "text": [
+          {
+           "text": "Share the form link with customers. Requests land in the table below."
+          }
+         ]
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:request-triage"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "heading",
+         "text": [
+          {
+           "text": "Report a bug"
+          }
+         ],
+         "props": {
+          "level": 3
+         }
+        },
+        {
+         "type": "text",
+         "text": [
+          {
+           "text": "Bug reports land in the bug table with severity and steps."
+          }
+         ]
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:bug-triage"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Feature requests"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "request",
+       "view": "all_requests"
+      },
+      "inline": true,
+      "title": "Feature requests",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-r",
+        "name": "Most voted",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "votes",
+          "direction": "desc"
+         }
+        ]
+       },
+       {
+        "id": "v-n",
+        "name": "New",
+        "layout": "list",
+        "icon": "Inbox",
+        "filters": {
+         "status": "New"
+        }
+       }
+      ],
+      "activeViewId": "v-r"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Bug reports"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "bug",
+       "view": "all_bugs"
+      },
+      "inline": true,
+      "title": "Bug reports",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-bb",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "v-bt",
+        "name": "All bugs",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "reported_on",
+          "direction": "desc"
+         }
+        ]
+       },
+       {
+        "id": "v-bs",
+        "name": "By severity",
+        "layout": "chart",
+        "icon": "ChartPie",
+        "chart": {
+         "type": "donut",
+         "groupBy": "severity",
+         "op": "count",
+         "centerValue": true
+        }
+       }
+      ],
+      "activeViewId": "v-bb"
+     }
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "Changelog"
+      }
+     ],
+     "children": [
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Bulk import wizard shipped: map columns in four steps."
+        }
+       ]
+      },
+      {
+       "type": "bulleted",
+       "text": [
+        {
+         "text": "Dark theme shipped across web and mobile."
+        }
+       ]
+      },
+      {
+       "type": "page",
+       "props": {
+        "spaceId": "page:release-log-note"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "request-triage",
+   "parent": "public-roadmap",
+   "title": "Triage feature requests",
+   "icon": {
+    "emoji": "🧭"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Each week"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Link repeat requests to one roadmap item."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Sort by votes and read the details."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Set a status and reply to the submitter."
+      }
+     ]
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "request",
+       "view": "all_requests"
+      },
+      "inline": true,
+      "title": "Feature requests",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-x",
+        "name": "Needs a decision",
+        "layout": "list",
+        "icon": "Clock",
+        "filters": {
+         "status": [
+          "New",
+          "Under review"
+         ]
+        }
+       }
+      ],
+      "activeViewId": "v-x"
+     }
+    }
+   ]
+  },
+  {
+   "key": "bug-triage",
+   "parent": "public-roadmap",
+   "title": "Triage bug reports",
+   "icon": {
+    "emoji": "🪲"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Severity guide"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "table",
+     "props": {
+      "headerRow": true,
+      "headerColumn": false,
+      "rows": [
+       {
+        "cells": [
+         [
+          {
+           "text": "Level"
+          }
+         ],
+         [
+          {
+           "text": "Meaning"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "S1"
+          }
+         ],
+         [
+          {
+           "text": "Blocks work for many people"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "S2"
+          }
+         ],
+         [
+          {
+           "text": "Blocks one workflow"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "S3"
+          }
+         ],
+         [
+          {
+           "text": "Annoying but has a workaround"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "S4"
+          }
+         ],
+         [
+          {
+           "text": "Cosmetic"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Open bugs"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "bug",
+       "view": "all_bugs"
+      },
+      "inline": true,
+      "title": "Bug reports",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-o",
+        "name": "Open",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": [
+          "New",
+          "Confirmed",
+          "Fixing"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "severity",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "v-o"
+     }
+    }
+   ]
+  },
+  {
+   "key": "release-log-note",
+   "parent": "public-roadmap",
+   "title": "Writing a changelog entry",
+   "icon": {
+    "emoji": "📣"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Lead with what a customer can now do."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Name the roadmap item it closes."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Keep it under three sentences."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
