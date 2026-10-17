@@ -22,7 +22,7 @@ const SKIP = /(^|\/)(node_modules|\.next|\.wt|\.git|types|migrations|docs|covera
 const READ = /\.from\(\s*["'`]app_instances["'`]\s*\)/;
 const MARK = "app-instances: not-a-computer-list";
 /** The computer filters (lib/app-instances/computers.ts): a list read, a single-row read, the raw filter. */
-const FILTERS = ["onlyComputers(", "computerQuery(", "computerFilter("];
+const FILTERS = ["onlyComputers(", "onlyRealComputers(", "computerQuery(", "computerFilter("];
 
 function walk(dir: string, out: string[]): void {
   for (const name of readdirSync(dir)) {

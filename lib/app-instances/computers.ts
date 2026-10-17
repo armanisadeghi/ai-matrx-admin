@@ -82,6 +82,29 @@ export async function computerQuery<Q extends { or(filters: string): Q }>(query:
   return { query: filter === null ? query : query.or(filter) };
 }
 
+/**
+ * A Matrx 2 TEST copy: a computer marked as a test by its `inst_automation_` instance id (minted only by
+ * the desktop's automationIdentity; the database's twin is platform.is_test_app_instance). It IS a
+ * computer: Devices lists it (last) and opens it. Only pickers that choose a real machine for real work
+ * leave it out, through onlyRealComputers.
+ */
+export const TEST_INSTANCE_PREFIX = "inst_automation_";
+
+export function isTestDevice(row: { instance_id?: string | null }): boolean {
+  return typeof row.instance_id === "string" && row.instance_id.startsWith(TEST_INSTANCE_PREFIX);
+}
+
+/**
+ * FOR PICKERS THAT CHOOSE A REAL MACHINE FOR REAL WORK (compute targets, local tools): computers only,
+ * and never a test copy. Runs the read, like onlyComputers.
+ */
+export async function onlyRealComputers<Q extends { or(filters: string): Q; not(column: string, operator: string, value: string): Q }>(
+  query: Q,
+  client: unknown,
+): Promise<Awaited<Q>> {
+  return onlyComputers(query.not("instance_id", "like", `${TEST_INSTANCE_PREFIX}%`), client);
+}
+
 /** Same rule for a row already in hand. */
 export function isComputerPlatform(platform: string | null | undefined, excluded: readonly string[]): boolean {
   return platform == null || !excluded.includes(platform);

@@ -4,9 +4,9 @@ import { Suspense } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { DeviceConsole } from "@/features/files/devices/console/DeviceConsole";
-import { fetchConsoleDevice } from "@/features/files/devices/console/devices-query";
+import { consoleDeviceVerdict, fetchConsoleDevice, type ConsoleDeviceVerdict } from "@/features/files/devices/console/devices-query";
+import { DeviceUnavailable } from "@/features/files/devices/console/DeviceUnavailable";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
-import type { DeviceRow } from "@/features/files/devices/types";
 
 type Params = Promise<{ deviceId: string }>;
 
@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: { params: Params }) {
 
 /**
  * The device row is read on the server (its name and platform paint with the page); the live
- * connection is the client's. A device that is not this person's, or no longer active, gets the
- * access gate — never a page that would dial the relay only to be refused.
+ * connection is the client's. A device that cannot open says WHY (consoleDeviceVerdict): someone
+ * else's device gets the access gate; not found, removed, not a computer and turned off each say so.
  */
 export default async function DevicePage({ params }: { params: Params }) {
   const { deviceId } = await params;
@@ -34,24 +34,33 @@ export default async function DevicePage({ params }: { params: Params }) {
   const { data: claimsUser } = await getClaimsUser(supabase);
   const userId = claimsUser.user?.id ?? null;
   let error: unknown = null;
-  let device: DeviceRow | null = null;
+  let verdict: ConsoleDeviceVerdict | null = null;
   if (userId) {
     try {
-      device = await fetchConsoleDevice(supabase, userId, deviceId);
+      verdict = await consoleDeviceVerdict(supabase, userId, deviceId);
     } catch (e) {
       error = e;
     }
   }
-  if (!device || device.is_active === false) {
+  // Signed out, a failed read, or someone else's device: the access gate (it names those). Every other
+  // refusal names its real reason (DeviceUnavailable), never a false "no access".
+  if (!verdict || verdict.kind === "not_yours") {
     return (
       <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
         <AccessGate token="app_instance" id={deviceId} error={error ?? undefined} fallbackHref="/devices" fallbackLabel="Devices" />
       </div>
     );
   }
+  if (verdict.kind !== "ok") {
+    return (
+      <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
+        <DeviceUnavailable verdict={verdict} />
+      </div>
+    );
+  }
   return (
     <Suspense>
-      <DeviceConsole key={device.id} device={device} />
+      <DeviceConsole key={verdict.device.id} device={verdict.device} />
     </Suspense>
   );
 }
