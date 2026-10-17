@@ -1,6 +1,7 @@
 -- inverse of 20261017011000_defects_b_a_choice_is_found_by_its_label_or_key.sql
 -- lane: DEFECTS
 -- lock: custom
+-- chair-step: restores the prior custom.rule_eval body and drops custom._rule_choice_label_is (a choice is again found only by its key).
 CREATE OR REPLACE FUNCTION custom.rule_eval(p_organization_id uuid, p_expr jsonb, p_values jsonb, p_context jsonb DEFAULT '{}'::jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql

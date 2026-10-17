@@ -1,6 +1,7 @@
 -- inverse of 20261017012000_defects_c_slack_and_webhook_steps_say_the_real_delivery.sql
 -- lane: DEFECTS
 -- lock: custom
+-- chair-step: unschedules custom-automation-delivery-tick if present, restores the prior custom._automation_step body (steps say Sent at queue time), drops custom.automation_delivery_tick, unregisters and drops custom.automation_delivery. Run after the 20261017015000 inverse.
 select cron.unschedule('custom-automation-delivery-tick') where exists (select 1 from cron.job where jobname = 'custom-automation-delivery-tick');
 CREATE OR REPLACE FUNCTION custom._automation_step(p_organization_id uuid, p_table_id uuid, p_record_id uuid, p_automation jsonb, p_byid jsonb, p_fields jsonb, p_change_id uuid, p_trigger jsonb, p_n integer, p_act jsonb)
  RETURNS jsonb
