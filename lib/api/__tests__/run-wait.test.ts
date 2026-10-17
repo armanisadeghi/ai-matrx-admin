@@ -108,12 +108,15 @@ describe("what the person is told", () => {
 describe("no agent run path carries a fixed first-response wait", () => {
   // The class: a literal connectTimeoutMs on an agent-run stream. Every such
   // wait is the organization's knob, resolved through resolveRunWait.
+  // Reads the installed, published @ai-matrx/chat build — never a sibling
+  // ../aidream checkout, so the result does not depend on the machine's layout.
   const RUN_PATHS = [
-    "../aidream/apps/shared/chat/src/agents/redux/execution-system/thunks/execute-manual-instance.thunk.ts",
-    "../aidream/apps/shared/chat/src/agents/redux/execution-system/thunks/run-ai-stream.ts",
+    "node_modules/@ai-matrx/chat/dist/agents/redux/execution-system/thunks/execute-manual-instance.thunk.js",
+    "node_modules/@ai-matrx/chat/dist/agents/redux/execution-system/thunks/run-ai-stream.js",
   ];
   it.each(RUN_PATHS)("%s", (path) => {
     const source = readFileSync(join(process.cwd(), path), "utf8");
+    expect(source.length).toBeGreaterThan(500); // an empty/missing build must not pass
     expect(source).not.toMatch(/connectTimeoutMs:\s*[\d_]+/);
     expect(source).not.toMatch(/CONNECT_TIMEOUT_MS\s*=\s*[\d_]+/);
   });
