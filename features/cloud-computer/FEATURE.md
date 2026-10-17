@@ -63,7 +63,9 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
    (2026-10-17: a window panel stacked a second one). The first opener's chat binds Take control.
 7. **Our own status, never the stream's.** The frame src carries `?parent=<page origin>`; the stream
    page posts `{type:"matrx-stream", state:"connecting"|"connected"|"reconnecting"|"disconnected"}`
-   to it. Only the endpoint's origin and the frame's own window are believed. Until `connected`,
+   to it; `connected` means a picture is on screen (the video peer is up AND a frame arrived after
+   that connection; 2026-10-17 it fired on ICE alone and the page's black loader showed between).
+   Only the endpoint's origin and the frame's own window are believed. Until `connected`,
    `ScaledFrame` covers the frame (absolute, no shift) with a shimmering "Connecting…" /
    "Reconnecting…" (or a still "Disconnected"). A page that never speaks is revealed 8 s after `load`
    (`SILENT_STREAM_REVEAL_MS`) — the fallback until the stream page that posts state ships.
