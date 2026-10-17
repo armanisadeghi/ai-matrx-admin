@@ -3,7 +3,7 @@
 import type { DrillDefinition } from "@ai-matrx/records";
 import type { RecordsClient } from "@ai-matrx/records/core";
 
-import { describeOnce } from "../describeOnce";
+import { describeOnce, shareIdenticalAsks } from "../describeOnce";
 import { hidePinnedDistinct, recordsForTrail } from "../drillPinned";
 
 const def = {
@@ -49,5 +49,17 @@ describe("describeOnce", () => {
     const client = { drillDescribe } as unknown as RecordsClient;
     await Promise.all([describeOnce(client, { kind: "entity", token: "x" }), describeOnce(client, { kind: "entity", token: "x" })]);
     expect(drillDescribe).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("shareIdenticalAsks", () => {
+  it("one call for the same question asked twice at once, a fresh call once it has answered", async () => {
+    const drillAsk = jest.fn(async () => ({ ok: true, data: { rows: [] } }));
+    const client = shareIdenticalAsks({ drillAsk } as unknown as RecordsClient);
+    const q = { source: { kind: "entity", token: "x" }, question: { by: ["person"], show: ["runs"], where: {} } } as never;
+    await Promise.all([client.drillAsk(q), client.drillAsk(q)]);
+    expect(drillAsk).toHaveBeenCalledTimes(1);
+    await client.drillAsk(q);
+    expect(drillAsk).toHaveBeenCalledTimes(2);
   });
 });

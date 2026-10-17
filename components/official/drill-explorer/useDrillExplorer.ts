@@ -33,7 +33,7 @@ import { useDrillNameBookOr, useDrillNames, type DrillNameBook } from "./drillNa
 import { carriedAsk, type DrillCarried } from "./questionParts";
 import { drillDoorLabels } from "./dimensionWords";
 import { hidePinnedDistinct } from "./drillPinned";
-import { describeOnce } from "./describeOnce";
+import { describeOnce, shareIdenticalAsks } from "./describeOnce";
 
 const clients = new Map<string, RecordsClient>();
 
@@ -62,11 +62,11 @@ export function drillClientFor(organizationId: string, userId: string | null, ac
   const key = `${organizationId}:${userId ?? ""}:${across ? "all" : "one"}`;
   let client = clients.get(key);
   if (!client) {
-    client = createRecordsClient({
+    client = shareIdenticalAsks(createRecordsClient({
       dataSource: across ? acrossOrganizations(recordsDataSource(supabase)) : recordsDataSource(supabase),
       actor: personActor(userId),
       organizationId,
-    });
+    }));
     clients.set(key, client);
   }
   return client;
@@ -287,9 +287,6 @@ export function useDrillExplorer(args: {
     // THRESHOLDS ARE ON GROUPS (lane DRILL-FLIP-FIXES L1): the total (no grouping) is asked without them,
     // and a grouped ask also shows every Measure a threshold reads (the door judges a number it shows)
     const thresholdShow = (door?.having ?? []).map((h) => h.measure).filter((k) => def.measures.some((m) => m.key === k));
-    // IDENTICAL ASKS ARE ONE ASK: two requests that compile to the same door question share one call
-    const inFlight = new Map<string, ReturnType<typeof client.drillAsk>>();
-    // (the open view's own filters narrow every number, the trail's crumbs on top)
     const ask = (by: string[], w: Record<string, unknown>) => {
       const { having, ...rest } = carriedAsk(door);
       const doorQuestion = {
@@ -302,12 +299,7 @@ export function useDrillExplorer(args: {
         ...(by.length > 0 && having ? { having } : {}),
         ...sortFor(by),
       };
-      const same = JSON.stringify(doorQuestion);
-      const held = inFlight.get(same);
-      if (held) return held;
-      const sent = client.drillAsk({ source: src, question: doorQuestion });
-      inFlight.set(same, sent);
-      return sent;
+      return client.drillAsk({ source: src, question: doorQuestion });
     };
     void Promise.all([
       ...requests.map(async (request) => ({ key: request.key, by: request.by, got: await ask(request.by, where) })),

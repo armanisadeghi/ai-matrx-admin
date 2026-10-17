@@ -26,3 +26,24 @@ export function describeOnce(client: RecordsClient, source: DrillSource): Descri
   );
   return asked;
 }
+
+/**
+ * IDENTICAL ASKS ARE ONE ASK (lane DRILL-ROUND2): two asks of one client that are the same question at
+ * the same moment (the table's and a glance column's, the table's and the chart's) share one call. Only
+ * the call in flight is shared; a later ask is a fresh read, so a recount is never answered from here.
+ */
+export function shareIdenticalAsks(client: RecordsClient): RecordsClient {
+  const ask = client.drillAsk.bind(client);
+  const flying = new Map<string, ReturnType<RecordsClient["drillAsk"]>>();
+  client.drillAsk = ((args: Parameters<RecordsClient["drillAsk"]>[0]) => {
+    const key = JSON.stringify(args);
+    const held = flying.get(key);
+    if (held) return held;
+    const sent = ask(args);
+    flying.set(key, sent);
+    const done = () => flying.delete(key);
+    void sent.then(done, done);
+    return sent;
+  }) as RecordsClient["drillAsk"];
+  return client;
+}
