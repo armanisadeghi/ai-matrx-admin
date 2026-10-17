@@ -210,6 +210,17 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
   /** Bumped on every edit, so the comment margin re-reads block positions. */
   const [contentTick, setContentTick] = useState(0);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const hasDoc = Boolean(doc);
+  // The page stacks its columns by its own width (spaces.css [data-narrow]); the attribute is set on the node, no re-render.
+  useEffect(() => {
+    const node = contentRef.current;
+    if (!node) return;
+    const mark = () => node.setAttribute("data-narrow", String(node.clientWidth < 560));
+    mark();
+    const ro = new ResizeObserver(mark);
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [hasDoc]); // the content node exists only once the page has loaded
   const comments = useSpaceComments(spaceId, doc?.title ?? "");
   const room = useSpaceRoom(spaceId, comments.reload);
   // H5 — what this person may do here: the database decides (get_resource_access); a viewer or
