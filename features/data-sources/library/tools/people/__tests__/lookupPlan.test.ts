@@ -42,10 +42,10 @@ describe("found is not verified", () => {
   });
   it("falls back to what the person typed when the source left the name out", () => {
     const bare = { __kind: "work_email", email: "ari@zingermans.com" };
-    expect(partyToKeep(bare, { inputs: { first_name: "Ari", last_name: "Weinzweig", domain: "zingermans.com" } })).toMatchObject({
-      displayName: "Ari Weinzweig",
-      primaryDomain: "zingermans.com",
-    });
+    const kept = partyToKeep(bare, { inputs: { first_name: "Ari", last_name: "Weinzweig", domain: "zingermans.com" } });
+    expect(kept).toMatchObject({ displayName: "Ari Weinzweig", attributes: { works_at_domain: "zingermans.com" } });
+    // The party table refuses a website on a person (check party_org_facet): it must never be sent as one.
+    expect(kept?.primaryDomain).toBeUndefined();
     expect(partyToKeep(bare)).toBeNull();
   });
 });
