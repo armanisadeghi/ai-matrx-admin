@@ -78,7 +78,7 @@ const loading = (
 );
 
 export function MyUsageExplorer({ headerExtras }: { headerExtras?: ReactNode }) {
-  const active = useOrganizationRequired();
+  const active = useOrganizationRequired(); // org-filter: server-call the mine lane counts every organization; the active one only sets the calendar's time zone
   const memberships = useUserOrganizations();
   const [orgFilter, setOrgFilter] = useOrgFilterParam([]);
   // org-fallback-deliberate: the mine lane counts the person's rows in every organization; the organization here only cuts the calendar of its periods

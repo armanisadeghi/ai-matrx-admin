@@ -193,6 +193,14 @@ interface Props<TRow> {
  * still names, then every other declared column at its DECLARED place — never
  * appended because a lane showed it later (list-shell fix D, 2026-09-28).
  */
+
+const LIST_DATE_FORMATS = new Set(["date", "datetime", "created_time", "modified_time", "relative_time"]);
+/** A date-typed list column whose spec did not declare `filter: "date"` (its RPC applies no window). */
+function listDateFilterIsUnwired<T>(column: MatrxColumnDef<T>): boolean {
+  if (column.filter === "date" || column.filter === false || column.filterOptions?.length) return false;
+  return LIST_DATE_FORMATS.has(column.format?.id ?? "");
+}
+
 export function resolveColumnOrder(
   declared: readonly string[],
   stored: readonly string[] | undefined,
@@ -482,6 +490,12 @@ export function EntityListTable<TRow>({
         // explicit false. Inventing a client control when the server has no
         // matching ORDER BY branch silently sorts by its fallback instead.
         sortable: entityColumnSortable(spec),
+        // A LIST'S DATE FILTER IS EXPLICIT (2026-10-17). The table picks a date-range filter from a
+        // date field type on server-driven tables; an entity list's scoped RPC applies a date window
+        // only when it calls `platform.list_date_filter_ok`. So a date column offers the filter only
+        // when its spec says `filter: "date"` (the RPC was wired); otherwise none — never a filter the
+        // server silently ignores. Bucket columns with their own options keep them.
+        ...(listDateFilterIsUnwired(spec.column) ? { filter: false as const } : {}),
         // Finite value sets get real options WITH counts, so the user picks
         // from what exists instead of guessing at a text box. Columns that
         // declare their own fixed options (the date buckets) keep them.
