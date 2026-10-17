@@ -10,6 +10,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { requestRichContentHost, useRichContentHostLanded } from "@ai-matrx/rich-content/host";
+import { componentRegistry } from "@/features/content-ir/registry/component-registry";
 import { SearchX } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { planSimpleBox } from "@ai-matrx/chat/mandates/invoke/simple-box";
@@ -55,6 +57,17 @@ const RUNNING = new Set(["queued", "running", "waiting"]);
 export function ResearchTab() {
   const params = useSearchParams();
   const tools = useResearchTools();
+
+  // The answers draw as kinds. The kind registry's database tiers are registered by the lazily loaded rich-content
+  // host, and a kind drawn before they are read settles on the universal viewer for good; so the host is requested
+  // the moment the screen opens (the person is still typing) and the component rows are read once it lands.
+  const hostLanded = useRichContentHostLanded();
+  useEffect(() => {
+    requestRichContentHost();
+  }, []);
+  useEffect(() => {
+    if (hostLanded) void componentRegistry.refreshKindComponents(0);
+  }, [hostLanded]);
 
   const initialMode = params.get("mode");
   const [mode, setMode] = useState<ResearchMode>(isResearchMode(initialMode) ? initialMode : "account");
