@@ -1,5 +1,7 @@
 "use client";
 
+import { readAllRows } from "@ai-matrx/data/db";
+
 /**
  * Background work — what the platform has fetched for this brand and what is still to fetch, on the
  * brand home: the Smart Add setup run, every site's crawl, and every confirmed account's posts.
@@ -121,29 +123,35 @@ export async function loadAccounts(brandId: string): Promise<AccountJob[]> {
     .limit(200);
   if (tracked.error) throw tracked.error;
   const byProperty = new Map((tracked.data ?? []).filter((t) => t.property_id).map((t) => [t.property_id as string, t]));
-  return Promise.all(
-    properties.map(async (p) => {
-      const t = byProperty.get(p.id) ?? null;
-      let posts = 0;
-      let lastPostAt: string | null = null;
-      if (t?.profile_id) {
-        const count = await supabase
+  // ONE batched read for every account's posts (count + latest), never two reads per account.
+  const profileIds = [...new Set([...byProperty.values()].map((t) => t.profile_id).filter((id): id is string => Boolean(id)))];
+  const postStats = new Map<string, { posts: number; lastPostAt: string | null }>();
+  if (profileIds.length) {
+    const rows = await readAllRows<{ profile_id: string; created_at: string }>(
+      ({ from, to }) =>
+        supabase
           .schema("social")
           .from("post")
-          .select("id", { count: "exact", head: true })
-          .eq("profile_id", t.profile_id)
-          .is("deleted_at", null);
-        posts = count.count ?? 0;
-        const last = await supabase
-          .schema("social")
-          .from("post")
-          .select("created_at")
-          .eq("profile_id", t.profile_id)
+          .select("profile_id, created_at")
+          .in("profile_id", profileIds)
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
-          .limit(1);
-        lastPostAt = last.data?.[0]?.created_at ?? null;
-      }
+          .order("id", { ascending: true })
+          .range(from, to)
+          .returns<{ profile_id: string; created_at: string }[]>(),
+      { label: "social.post brand background work" },
+    );
+    for (const row of rows) {
+      const hit = postStats.get(row.profile_id);
+      if (hit) hit.posts += 1;
+      else postStats.set(row.profile_id, { posts: 1, lastPostAt: row.created_at });
+    }
+  }
+  return properties.map((p) => {
+      const t = byProperty.get(p.id) ?? null;
+      const stat = t?.profile_id ? postStats.get(t.profile_id) : undefined;
+      const posts = stat?.posts ?? 0;
+      const lastPostAt = stat?.lastPostAt ?? null;
       return {
         propertyId: p.id,
         kind: p.kind,
@@ -154,8 +162,7 @@ export async function loadAccounts(brandId: string): Promise<AccountJob[]> {
         posts,
         lastPostAt,
       };
-    }),
-  );
+    });
 }
 
 type WorkState = "running" | "done" | "failed" | "todo";

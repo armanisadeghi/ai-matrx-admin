@@ -5,7 +5,9 @@ import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { EmptyState, Tabs } from "@ai-matrx/design-system/controls";
+import type { ChipTone } from "@ai-matrx/design-system/controls";
 import {
   AtSign,
   Award,
@@ -80,6 +82,14 @@ import { PropertyEditorDialog } from "@/features/marketing/components/brands/Pro
 import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
 import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
+import {
+  BrandOverviewAbout,
+  BrandOverviewAssets,
+  BrandOverviewContact,
+  BrandOverviewFacts,
+  BrandOverviewSocial,
+  BrandOverviewWebsites,
+} from "@/features/marketing/components/brands/BrandOverview";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -338,18 +348,29 @@ const FACT_KIND_ORDER: BusinessFactKind[] = [
   "address",
 ];
 
-/** The brand home's areas, in page order, for the section jump bar. */
-const BRAND_SECTIONS: ReadonlyArray<{ id: string; label: string }> = [
-  { id: "products-and-services", label: "Products & services" },
-  { id: "websites", label: "Websites" },
-  { id: "social-profiles", label: "Social profiles" },
-  { id: "business-facts", label: "Business facts" },
-  { id: "relationships", label: "Relationships" },
-  { id: "temp-brand-recognition", label: "Recognition" },
-  { id: "temp-brand-firmographic", label: "Company profile" },
-  { id: "temp-brand-presence", label: "Online presence" },
-  { id: "brand-assets", label: "Brand assets" },
+/** The brand home's tabs. Each tab renders (and fetches) only its own areas. */
+type BrandTab = "overview" | "facts" | "social" | "web" | "relationships" | "profile" | "assets" | "activity";
+const BRAND_TABS: ReadonlyArray<{ value: BrandTab; label: string }> = [
+  { value: "overview", label: "Overview" },
+  { value: "facts", label: "Facts" },
+  { value: "social", label: "Social" },
+  { value: "web", label: "Web & search" },
+  { value: "relationships", label: "Relationships" },
+  { value: "profile", label: "Profile" },
+  { value: "assets", label: "Assets" },
+  { value: "activity", label: "Activity" },
 ];
+function toBrandTab(value: string | null | undefined): BrandTab {
+  return BRAND_TABS.some((tab) => tab.value === value) ? (value as BrandTab) : "overview";
+}
+/** The fact family's chip tone (Overview summary), matching the group chips below. */
+const FACT_CHIP_TONE: Record<FactTone, ChipTone> = {
+  primary: "primary",
+  success: "success",
+  warning: "warning",
+  info: "info",
+  destructive: "destructive",
+};
 
 /** Groups preview this many rows; the rest sit behind Show all. */
 const FACT_GROUP_PREVIEW = 5;
@@ -448,8 +469,8 @@ function BusinessFactRow({
           {subLabel}
         </span>
       ) : null}
-      {contactFactValue({ kind: fact.kind, value, className: "flex min-w-0 flex-1 text-sm text-foreground" }) ?? (
-        <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={value}>
+      {contactFactValue({ kind: fact.kind, value, className: "flex min-w-0 flex-1 type-body text-foreground" }) ?? (
+        <span className="min-w-0 flex-1 truncate type-body text-foreground" title={value}>
           {value}
         </span>
       )}
@@ -516,11 +537,11 @@ function BusinessFactGroup({
   const GroupIcon = FACT_KIND_ICONS[kind];
   return (
     <section className="min-w-0 overflow-hidden rounded-md border border-border" data-fact-group={kind}>
-      <div className="flex h-9 items-center gap-2 bg-muted px-3">
+      <div className="flex h-10 items-center gap-2 border-b border-border px-3">
         <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${FACT_TONE_CLASS[factTone(kind)]}`}>
           <GroupIcon className="h-3.5 w-3.5" />
         </span>
-        <h3 className="text-sm font-medium text-foreground">{label}</h3>
+        <h3 className="type-title text-foreground">{label}</h3>
         <span className="type-meta tabular-nums text-muted-foreground">{folded.length}</span>
       </div>
       <ul className="divide-y divide-border">
@@ -539,7 +560,7 @@ function BusinessFactGroup({
       {folded.length > FACT_GROUP_PREVIEW ? (
         <button
           type="button"
-          className="flex h-8 w-full items-center gap-1 border-t border-border px-3 text-xs font-medium text-primary hover:bg-accent/40"
+          className="flex h-8 w-full items-center gap-1 border-t border-border px-3 type-secondary font-medium text-primary hover:bg-accent/40"
           onClick={onToggle}
           aria-expanded={expanded}
         >
@@ -553,6 +574,19 @@ function BusinessFactGroup({
 
 export function BrandWorkspace({ brandId }: { brandId: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // The tab lives in the URL (?tab=), so a reload, a shared link and Back all keep it.
+  const [tab, setTabState] = useState<BrandTab>(() => toBrandTab(searchParams.get("tab")));
+  const setTab = (next: BrandTab) => {
+    setTabState(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "overview") params.delete("tab");
+    else params.set("tab", next);
+    const query = params.toString();
+    router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+  };
+
   const brand = useBrand(brandId);
   // What the viewer may DO is the record's own access answer (not the active
   // organization, not "can the page load"): write controls show only at
@@ -841,7 +875,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
       <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
         <div className="grid w-full gap-3">
           {/* A person brand leads with the person: their face and their accounts come first. */}
-          <section className={`flex flex-wrap items-start gap-4 rounded-lg border border-border bg-card p-4${isPersonBrand(current) ? " order-first" : ""}`}>
+          <section className={`flex items-start gap-3 rounded-lg sm:gap-4 border border-border bg-card p-4${isPersonBrand(current) ? " order-first" : ""}`}>
             {isPersonBrand(current) ? (
               <PersonBrandAvatar
                 brandId={current.id}
@@ -857,17 +891,70 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               />
             )}
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                {current.name}
-              </h2>
+              {/* Name and actions share the top line; the actions wrap under the name when the row runs out. */}
+              <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+                <h2 className="min-w-0 break-words text-xl font-semibold tracking-tight text-foreground">
+                  {current.name}
+                </h2>
+                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                  <CopyButtons size="icon" {...brandCopy} />
+                  <ShareButton
+                    resourceType="web_brand"
+                    resourceId={current.id}
+                    resourceName={current.name}
+                    size="icon"
+                    showStatus={false}
+                  />
+                  {/* Fixed minimum width, so the count arriving never resizes the row. */}
+                  <Button asChild variant="outline" className="min-w-[3.5rem] tabular-nums">
+                    <Link
+                      prefetch={false}
+                      href={marketingRoutes.brandDiscovery(brandId)}
+                      aria-label={`${(pending.data ?? 0).toLocaleString()} to review`}
+                      title={`${(pending.data ?? 0).toLocaleString()} to review`}
+                    >
+                      <Inbox className="h-3.5 w-3.5" />
+                      {pending.isLoading ? "…" : (pending.data ?? 0).toLocaleString()}
+                    </Link>
+                  </Button>
+                  {canEdit ? (
+                    <>
+                      <Button asChild variant="outline">
+                        <Link prefetch={false} href={marketingRoutes.smartAddEnrich(current.id)} data-testid="brand-enrich-smart-add">
+                          <ScanSearch className="h-3.5 w-3.5" />
+                          Enrich Brand
+                        </Link>
+                      </Button>
+                      <Button
+                        icon={<Pencil />}
+                        variant="outline"
+                        aria-label="Edit brand"
+                        title="Edit brand"
+                        onClick={() => setEditorOpen(true)}
+                      />
+                      <Button
+                        icon={<ArrowRightLeft />}
+                        variant="outline"
+                        aria-label="Move to another organization"
+                        title="Move to another organization"
+                        onClick={() => setMoving(true)}
+                        data-testid="brand-move-organization"
+                      />
+                      <Button
+                        icon={<Archive />}
+                        variant="danger"
+                        aria-label="Archive brand"
+                        title="Archive brand"
+                        onClick={() => setConfirmingDelete(true)}
+                      />
+                    </>
+                  ) : null}
+                </div>
+              </div>
               {current.website_url ? (
-                <OutboundLink
-                  href={externalHref(current.website_url)}
-                  className="matrx-tap-area inline-flex max-w-full items-center gap-1.5 text-sm text-muted-foreground hover:text-primary"
-                >
-                  <span className="truncate">{current.website_url}</span>
-                  <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                </OutboundLink>
+                <div className="mt-0.5 flex h-6 min-w-0 items-center">
+                  {contactFactValue({ kind: "website", value: externalHref(current.website_url) })}
+                </div>
               ) : null}
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <StatusBadge value={current.status} />
@@ -901,6 +988,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                         : label;
                       return internal && href ? (
                         <Link
+                          prefetch={false}
                           key={property.id}
                           href={href}
                           title={title}
@@ -928,20 +1016,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       );
                     })}
                     {socialProperties.length > 8 ? (
-                      <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
+                      <button type="button" onClick={() => setTab("social")} className="type-meta tabular-nums text-muted-foreground hover:text-foreground">
                         +{socialProperties.length - 8}
-                      </span>
+                      </button>
                     ) : null}
                   </span>
                 ) : null}
-              {current.description ? (
-                <p
-                  className="mt-2 line-clamp-3 max-w-prose text-sm leading-6 text-muted-foreground"
-                  title={current.description}
-                >
-                  {current.description}
-                </p>
-              ) : null}
             </div>
             {heroCover ? (
               // The homepage picture (else the brand's own og/hero image). The box is a fixed 16:10
@@ -959,105 +1039,152 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 />
               </div>
             ) : null}
-            <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:shrink-0">
-              <CopyButtons size="icon" {...brandCopy} />
-              <ShareButton
-                resourceType="web_brand"
-                resourceId={current.id}
-                resourceName={current.name}
-                size="sm"
-                showStatus={false}
-              />
-              {/* Always the real button at one fixed minimum width, so the count arriving never resizes the row. */}
-              <Button asChild variant="outline" className="min-w-[8.5rem]">
-                <Link href={marketingRoutes.brandDiscovery(brandId)}>
-                  <Inbox className="h-3.5 w-3.5" />
-                  {pending.isLoading ? "…" : (pending.data ?? 0).toLocaleString()} to review
-                </Link>
-              </Button>
-              {canEdit ? (
-                <>
-                  <Button asChild variant="outline">
-                    <Link href={marketingRoutes.smartAddEnrich(current.id)} data-testid="brand-enrich-smart-add">
-                      <ScanSearch className="h-3.5 w-3.5" />
-                      Enrich with Smart Add
-                    </Link>
-                  </Button>
-                  <Button
-                    icon={<Pencil />}
-                    variant="outline"
-                    onClick={() => setEditorOpen(true)}
-                  >
-                    Edit brand
-                  </Button>
-                  <Button
-                    icon={<ArrowRightLeft />}
-                    variant="quiet"
-                    onClick={() => setMoving(true)}
-                    data-testid="brand-move-organization"
-                  >
-                    Move
-                  </Button>
-                  <Button
-                    icon={<Archive />}
-                    variant="quiet"
-                    onClick={() => setConfirmingDelete(true)}
-                  >
-                    Archive
-                  </Button>
-                </>
-              ) : null}
-            </div>
           </section>
 
           {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
           {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
 
-          {/* Section jumps: the home is long, so every area is one click away; sub-pages sit at the end. */}
+          {/* Tabs: the home is a summary; each area has its own tab, and only the open tab loads. */}
           <nav
             aria-label="Brand sections"
-            className="sticky top-[var(--shell-header-h)] z-10 flex min-w-0 items-center gap-1 overflow-x-auto rounded-lg border border-border bg-card px-2 py-1 shadow-sm"
+            className="sticky top-[var(--shell-header-h)] z-10 flex min-w-0 items-end gap-2 overflow-x-auto rounded-lg border border-border bg-card px-2"
           >
-            {BRAND_SECTIONS.map((section) => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                className="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-sm text-foreground hover:bg-accent"
-              >
-                {section.label}
-              </a>
-            ))}
-            <span className="mx-1 h-4 w-px shrink-0 bg-border" aria-hidden="true" />
-            <Link
-              href={marketingRoutes.brandOfferings(brandId)}
-              className="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent"
-            >
-              Products list
-            </Link>
-            <Link
-              href={marketingRoutes.brandIdentity(brandId)}
-              className="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent"
-            >
-              Identity
-            </Link>
-            <Link
-              href={marketingRoutes.brandDiscovery(brandId)}
-              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-accent"
-            >
-              Inbox
-              {pending.data ? (
-                <span className="rounded bg-warning/10 px-1.5 type-meta tabular-nums text-warning-ink">
-                  {pending.data.toLocaleString()}
-                </span>
-              ) : null}
-            </Link>
-            {/* THE HUMAN GATE: a button here (nothing moves when it appears); the question opens in a dialog. */}
-            <SmartAddBasicsGate brandId={current.id} />
+            <Tabs
+              value={tab}
+              onValueChange={setTab}
+              rule={false}
+              aria-label="Brand sections"
+              data={BRAND_TABS.map((item) => ({
+                value: item.value,
+                label: item.label,
+                count:
+                  item.value === "facts"
+                    ? factRows.length || null
+                    : item.value === "social"
+                      ? socialProperties.length || null
+                      : item.value === "web"
+                        ? websiteSites.length || null
+                        : item.value === "assets"
+                          ? assetRows.length || null
+                          : null,
+              }))}
+            />
+            <div className="ml-auto flex shrink-0 items-center self-center">
+              {/* THE HUMAN GATE: a button here (nothing moves when it appears); the question opens in a dialog. */}
+              <SmartAddBasicsGate brandId={current.id} />
+            </div>
           </nav>
 
-          {/* Every fetch the platform does for this brand: setup, crawls, posts. */}
-          <BrandBackgroundWork brand={current} canEdit={canEdit} />
+          {tab === "overview" ? (
+            <div className="grid items-start gap-3 lg:grid-cols-3">
+              <div className="grid min-w-0 gap-3 lg:col-span-2">
+                <BrandOverviewAbout
+                  facts={factRows}
+                  description={current.description}
+                  industry={current.industry}
+                  websiteUrl={publicWebsiteUrl}
+                />
+                {/* Products & services: a one-line summary here; the grouped table lives on its own page. */}
+                <SectionCard
+                  title="Products & services"
+                  anchor="products-and-services"
+                  className="scroll-mt-24"
+                  action={{ label: "Open list", href: marketingRoutes.brandOfferings(brandId) }}
+                >
+                  <BrandOfferingsSummary
+                    brand={{ id: current.id, name: current.name, organizationId: current.organization_id }}
+                  />
+                </SectionCard>
 
+                <BrandOverviewFacts
+                  title={overviewCopy.factsTitle}
+                  total={factRows.length}
+                  groups={factGroups.map(([kind, groupFacts]) => ({
+                    kind,
+                    count: foldFacts(groupFacts).length,
+                    icon: FACT_KIND_ICONS[kind],
+                    tone: FACT_CHIP_TONE[factTone(kind)],
+                  }))}
+                  onOpen={() => setTab("facts")}
+                />
+              </div>
+              <div className="grid min-w-0 gap-3">
+                <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
+                <BrandOverviewWebsites brandId={brandId} sites={websiteSites} onOpen={() => setTab("web")} />
+                <BrandOverviewSocial properties={socialProperties} onOpen={() => setTab("social")} />
+                <BrandOverviewAssets
+                  total={assetRows.length}
+                  assets={sortedAssets.map((asset) => ({
+                    id: asset.id,
+                    preview: assetPreviewUrl(asset),
+                    color: assetColorValue(asset),
+                    label: isBrandAssetKind(asset.kind)
+                      ? BRAND_ASSET_KIND_LABELS[asset.kind]
+                      : (humanizeIdentifier(asset.kind) || asset.kind),
+                  }))}
+                  onOpen={() => setTab("assets")}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {tab === "facts" ? (
+          <SectionCard
+            title={overviewCopy.factsTitle}
+            anchor="business-facts"
+            className="scroll-mt-24"
+            copy={factsCopy}
+            action={
+              canEdit
+                ? {
+                    label: overviewCopy.factsAdd,
+                    onClick: () => setFactEditor({ open: true, fact: null }),
+                  }
+                : undefined
+            }
+          >
+            {factRows.length === 0 ? (
+              <EmptyState icon={<ListChecks />} title={overviewCopy.factsEmpty} />
+            ) : (
+              // Groups sit side by side on wide screens, so one phone number never spans the whole page.
+              <div className="grid items-start gap-3 p-3 lg:grid-cols-2 2xl:grid-cols-3">
+                {factGroups.map(([kind, groupFacts]) => (
+                  <BusinessFactGroup
+                    key={kind}
+                    kind={kind}
+                    facts={groupFacts}
+                    canEdit={canEdit}
+                    expanded={Boolean(expandedFactKinds[kind])}
+                    onToggle={() =>
+                      setExpandedFactKinds((state) => ({ ...state, [kind]: !state[kind] }))
+                    }
+                    onEdit={(fact) => setFactEditor({ open: true, fact })}
+                    onDelete={(fact) => setDeletingFact(fact)}
+                  />
+                ))}
+              </div>
+            )}
+          </SectionCard>
+          ) : null}
+
+          {tab === "social" ? (
+          <div id="social-profiles" className="min-w-0 scroll-mt-24">
+          <BrandSocialProfilesCard
+            brandId={current.id}
+            brandSeg={marketingSeg(current)}
+            organizationId={current.organization_id}
+            properties={socialProperties}
+            canEdit={canEdit}
+            copy={socialsCopy}
+            onAdd={() => setPropertyEditor({ open: true, property: null })}
+            onEdit={(property) => setPropertyEditor({ open: true, property })}
+            onDelete={(property) => setDeletingProperty(property)}
+          />
+          </div>
+          ) : null}
+
+          {tab === "web" ? (
+            <>
           {/* The brand is the anchor entity, but it carried no search data at
               all — every number lived one or two routes down on an individual
               site. This is the brand-level answer to "is our money traffic up
@@ -1073,37 +1200,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             />
           ) : null}
 
-          {/* The brand's topical map — which pages this client should have and
-              where they live. A map belongs to the BRAND, so it is a card here
-              rather than another row action on one site. */}
-          <BrandTopicalMapCard
-            title={overviewCopy.mapTitle}
-            brandId={current.id}
-            brandSeg={marketingSeg(current)}
-            organizationId={current.organization_id}
-            canEdit={canEdit}
-          />
-
-          {/* Products & services: a one-line summary here; the grouped table lives on its own page. */}
-          <SectionCard
-            title="Products & services"
-            anchor="products-and-services"
-            className="scroll-mt-24"
-            action={{ label: "Open list", href: marketingRoutes.brandOfferings(brandId) }}
-          >
-            <BrandOfferingsSummary
-              brand={{ id: current.id, name: current.name, organizationId: current.organization_id }}
-            />
-          </SectionCard>
-
-          {/* What AI says about this brand — the owner is the brand, so it shows with or without a site. */}
-          <BrandAiVisibilityCard
-            brandId={current.id}
-            brandSeg={marketingSeg(current)}
-            organizationId={current.organization_id}
-            canEdit={canEdit}
-          />
-
           <SectionCard
             title="Websites"
             anchor="websites"
@@ -1118,44 +1214,43 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             {websiteSites.length === 0 && !canEdit && publicWebsiteUrl ? (
               // A viewer who cannot read the managed site still sees the
               // brand's public website, as a plain link.
-              <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">
-                <OutboundLink
-                  href={publicWebsiteUrl}
-                  className="truncate font-medium text-foreground hover:underline"
-                >
-                  {linkLabelOf(publicWebsiteUrl).replace(/\/+$/, "")}
-                </OutboundLink>
+              <div className="flex min-h-11 items-center px-3">
+                {contactFactValue({ kind: "website", value: externalHref(publicWebsiteUrl) })}
               </div>
             ) : websiteSites.length === 0 ? (
-              <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-xs text-muted-foreground">
-                <p>{overviewCopy.websitesEmpty}</p>
-                {canEdit && current.website_url ? (
-                  <Button
-                    variant="outline"
-                    disabled={createSite.isPending}
-                    onClick={() => void addBrandWebsite()}
-                  >
-                    {`Add ${linkLabelOf(current.website_url)}`}
-                  </Button>
-                ) : null}
-              </div>
+              <EmptyState
+                icon={<Globe2 />}
+                title={overviewCopy.websitesEmpty}
+                action={
+                  canEdit && current.website_url ? (
+                    <Button
+                      variant="outline"
+                      disabled={createSite.isPending}
+                      onClick={() => void addBrandWebsite()}
+                    >
+                      {`Add ${linkLabelOf(current.website_url)}`}
+                    </Button>
+                  ) : undefined
+                }
+              />
             ) : (
               <ul className="divide-y divide-border">
                 {websiteSites.map((site) => (
                   <li
                     key={site.id}
-                    className="flex flex-wrap items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/30"
+                    className="flex flex-wrap items-center gap-3 px-3 py-2 transition-colors hover:bg-accent/40"
                   >
                     <Link
+                      prefetch={false}
                       href={marketingRoutes.site(brandId, site.id)}
                       className="flex min-w-0 flex-1 basis-48 items-center gap-3"
                     >
                       <SiteIdentityMark site={site} size={28} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground hover:underline">
+                        <p className="truncate type-title text-foreground hover:underline">
                           {site.name}
                         </p>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p className="truncate type-meta text-muted-foreground">
                           {site.domain}
                         </p>
                       </div>
@@ -1192,23 +1287,21 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       >
                         <ListTree className="h-3.5 w-3.5" />
                       </RowActionButton>
-                      {canEdit ? (
-                        <>
-                          <RowActionButton
-                            title="Edit site"
-                            onClick={() => setEditingSite(site)}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </RowActionButton>
-                          <RowActionButton
-                            title="Delete site"
-                            destructive
-                            onClick={() => setDeletingSite(site)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </RowActionButton>
-                        </>
-                      ) : null}
+                      <RowActionButton
+                        title={canEdit ? "Edit site" : "Only editors can edit"}
+                        disabled={!canEdit}
+                        onClick={() => setEditingSite(site)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </RowActionButton>
+                      <RowActionButton
+                        title={canEdit ? "Delete site" : "Only editors can delete"}
+                        destructive
+                        disabled={!canEdit}
+                        onClick={() => setDeletingSite(site)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </RowActionButton>
                     </div>
                   </li>
                 ))}
@@ -1216,69 +1309,43 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             )}
           </SectionCard>
 
-          <div className={`grid gap-3${isPersonBrand(current) ? " -order-1" : ""}`}>
-            <div id="social-profiles" className="min-w-0 scroll-mt-24">
-            <BrandSocialProfilesCard
-              brandId={current.id}
-              brandSeg={marketingSeg(current)}
-              organizationId={current.organization_id}
-              properties={socialProperties}
-              canEdit={canEdit}
-              copy={socialsCopy}
-              onAdd={() => setPropertyEditor({ open: true, property: null })}
-              onEdit={(property) => setPropertyEditor({ open: true, property })}
-              onDelete={(property) => setDeletingProperty(property)}
-            />
-            </div>
+          {/* The brand's topical map — which pages this client should have and
+              where they live. A map belongs to the BRAND, so it is a card here
+              rather than another row action on one site. */}
+          <BrandTopicalMapCard
+            title={overviewCopy.mapTitle}
+            brandId={current.id}
+            brandSeg={marketingSeg(current)}
+            organizationId={current.organization_id}
+            canEdit={canEdit}
+          />
 
-            <SectionCard
-              title={overviewCopy.factsTitle}
-              anchor="business-facts"
-              className="scroll-mt-24"
-              copy={factsCopy}
-              action={
-                canEdit
-                  ? {
-                      label: overviewCopy.factsAdd,
-                      onClick: () => setFactEditor({ open: true, fact: null }),
-                    }
-                  : undefined
-              }
-            >
-              {factRows.length === 0 ? (
-                <p className="px-4 py-2.5 text-xs text-muted-foreground">
-                  {overviewCopy.factsEmpty}
-                </p>
-              ) : (
-                // Groups sit side by side on wide screens, so one phone number never spans the whole page.
-                <div className="grid items-start gap-3 p-3 lg:grid-cols-2 2xl:grid-cols-3">
-                  {factGroups.map(([kind, groupFacts]) => (
-                    <BusinessFactGroup
-                      key={kind}
-                      kind={kind}
-                      facts={groupFacts}
-                      canEdit={canEdit}
-                      expanded={Boolean(expandedFactKinds[kind])}
-                      onToggle={() =>
-                        setExpandedFactKinds((state) => ({ ...state, [kind]: !state[kind] }))
-                      }
-                      onEdit={(fact) => setFactEditor({ open: true, fact })}
-                      onDelete={(fact) => setDeletingFact(fact)}
-                    />
-                  ))}
-                </div>
-              )}
-            </SectionCard>
-          </div>
+          {/* What AI says about this brand — the owner is the brand, so it shows with or without a site. */}
+          <BrandAiVisibilityCard
+            brandId={current.id}
+            brandSeg={marketingSeg(current)}
+            organizationId={current.organization_id}
+            canEdit={canEdit}
+          />
 
-          {/* Names, people, related companies, competitors, listings, mentions, "Not us". */}
+            </>
+          ) : null}
+
+          {tab === "relationships" ? (
           <BrandRelationsCard brand={current} canEdit={canEdit} />
 
-          {/* Temporary homes: what Smart Add promoted that has no permanent table yet. */}
+          ) : null}
+
+          {tab === "profile" ? (
+            <>
           <BrandRecognitionSection brandId={current.id} canEdit={canEdit} />
           <BrandFirmographicSection brandId={current.id} canEdit={canEdit} />
           <BrandPresenceSection brandId={current.id} canEdit={canEdit} />
 
+            </>
+          ) : null}
+
+          {tab === "assets" ? (
           <SectionCard
             title="Brand assets"
             anchor="brand-assets"
@@ -1293,7 +1360,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 asChild
                 variant="outline"
               >
-                <Link href={marketingRoutes.brandAssets(brandId)}>
+                <Link prefetch={false} href={marketingRoutes.brandAssets(brandId)}>
                   <Images className="h-3.5 w-3.5" />
                   Open asset desk
                 </Link>
@@ -1309,7 +1376,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             }
           >
             {(assets.data ?? []).length === 0 ? (
-              <p className="px-4 py-2.5 text-xs text-muted-foreground">No confirmed assets yet.</p>
+              <EmptyState icon={<Images />} title="No confirmed assets yet" />
             ) : (
               <BrandAssetGallery
                 items={sortedAssets.map((asset) => ({
@@ -1351,31 +1418,33 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       }
                       dataType="Agent"
                     />
-                    {canEdit ? (
-                      <>
-                        <RowActionButton
-                          title="Edit asset"
-                          onClick={() =>
-                            setAssetEditor({ open: true, asset })
-                          }
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </RowActionButton>
-                        <RowActionButton
-                          title="Delete asset"
-                          destructive
-                          onClick={() => setDeletingAsset(asset)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </RowActionButton>
-                      </>
-                    ) : null}
+                    <RowActionButton
+                      title={canEdit ? "Edit asset" : "Only editors can edit"}
+                      disabled={!canEdit}
+                      onClick={() => setAssetEditor({ open: true, asset })}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </RowActionButton>
+                    <RowActionButton
+                      title={canEdit ? "Delete asset" : "Only editors can delete"}
+                      destructive
+                      disabled={!canEdit}
+                      onClick={() => setDeletingAsset(asset)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </RowActionButton>
                     </>
                   );
                 }}
               />
             )}
           </SectionCard>
+          ) : null}
+
+          {tab === "activity" ? (
+          <BrandBackgroundWork brand={current} canEdit={canEdit} />
+
+          ) : null}
         </div>
       </main>
 

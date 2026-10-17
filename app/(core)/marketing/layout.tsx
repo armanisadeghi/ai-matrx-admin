@@ -13,6 +13,7 @@
 // it, so this costs nothing.
 
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import MarketingLanding from "@/features/auth/components/module-landing/landings/MarketingLanding";
 import { MarketingPageShell } from "@/features/shell/components/MarketingPageShell";
@@ -20,6 +21,17 @@ import { getMarketingRouteMetadata } from "@/features/marketing/lib/route-metada
 import { MARKETING_RESERVED_SEGMENTS } from "@/features/marketing/lib/keys";
 import { resolveBrandParam } from "@/features/marketing/lib/keys-server";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
+import { currentRequestLoginHref } from "@/utils/auth/server-login-href";
+
+/** Static route folders under /marketing that the reserved-key list does not carry. */
+const STATIC_MARKETING_SEGMENTS: ReadonlySet<string> = new Set(["ai-visibility"]);
+
+/** `/marketing/<brand>/…` — a client workspace address, not a module page. */
+function brandAddressOf(pathname: string): string | null {
+  const seg = /^\/marketing\/([^/?#]+)/.exec(pathname)?.[1];
+  if (!seg || MARKETING_RESERVED_SEGMENTS.has(seg) || STATIC_MARKETING_SEGMENTS.has(seg)) return null;
+  return seg;
+}
 
 export async function generateMetadata() {
   const pathname = (await headers()).get("x-pathname") ?? "/marketing";
@@ -42,9 +54,15 @@ export default async function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated } = await getSessionVerdict();
+  const verdict = await getSessionVerdict();
+  const { isAuthenticated } = verdict;
 
   if (!isAuthenticated) {
+    // A client address is a real record behind sign-in: the visitor goes to sign in with the
+    // full deep link kept (utils/auth), never the module pitch inside that client's navigation.
+    const pathname = (await headers()).get("x-pathname") ?? "/marketing";
+    // Unverified (auth unreachable) is never a signed-out person: no bounce.
+    if (verdict.state === "signed_out" && brandAddressOf(pathname)) redirect(await currentRequestLoginHref(pathname));
     return (
       <MarketingPageShell>
         <MarketingLanding />
