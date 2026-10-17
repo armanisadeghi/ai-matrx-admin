@@ -32,13 +32,17 @@ begin
   v_r := custom.record_write(v_org, v_cust, jsonb_build_object('title','Hollis','phone','555-0101'));
   v_out := custom.button_press(v_org, v_r, v_btn);
   if v_out ->> 'do' <> 'add_row' or (v_out ->> 'table_id')::uuid <> v_jobs or v_out ->> 'record_id' is null then raise exception 'R2 RED: %', v_out; end if;
+  execute 'reset role';
   v_vals := custom.record_values(v_org, (v_out ->> 'record_id')::uuid);
   if v_vals ->> 'title' <> 'Hollis' or v_vals ->> 'phone' <> '555-0101' or v_vals ->> 'from_row' <> v_r::text then raise exception 'R2 RED: the job holds %', v_vals; end if;
   raise notice 'R2 PASS - a job in the linked table, prefilled: %', v_vals;
+  perform set_config('role','authenticated', true);
   -- R3 with no table_id the row lands in this table
   v_out := custom.button_press(v_org, v_r, v_same);
+  execute 'reset role';
   if (v_out ->> 'table_id')::uuid <> v_cust or custom.record_values(v_org, (v_out ->> 'record_id')::uuid) ->> 'title' <> 'Hollis' then raise exception 'R3 RED: %', v_out; end if;
   raise notice 'R3 PASS - a copy in this table';
+  perform set_config('role','authenticated', true);
   -- R4 a prefill that is not a map is refused by name
   begin perform custom.field_update(v_org, v_same, jsonb_build_object('button', jsonb_build_object('label','Bad','do','add_row','prefill','title')));
     raise exception 'R4 RED: a string prefill was stored';
