@@ -5,7 +5,7 @@
 // their code, their refresh paths and their failure states; only the first boot read is answered
 // without a request:
 //   - the account row → `readAccountPreferencesRow` (the preferences slice AND the org ladder);
-//   - memberships + organization rows → `readMemberOrganizationRows` / `membershipsService.forUser`;
+//   - the first page of her organizations → `readMemberOrganizationRows` (a page, never all);
 //   - member counts → `membershipsService.counts`.
 // A write, an organization switch, a membership change, a sign-out or a stale refresh forgets the
 // held answer and asks the database again, exactly as before (`lib/sharedReads.ts` `prime`).
@@ -23,7 +23,8 @@ import { registerBootSeedDrain, STREAMED_CORE_SEED_GLOBAL, STREAMED_KNOB_SEED_GL
 export function primeCoreBootSeed(seed: CoreBootSeed | null | undefined): void {
   if (!seed || typeof window === "undefined") return;
   primeAccountPreferencesRow(seed.userId, seed.preferencesRow);
-  primeOrganizationMembershipReads(seed.memberships, seed.counts);
+  // Counts only: the seed's memberships are one PAGE, so they never answer "all my memberships".
+  primeOrganizationMembershipReads(seed.counts);
   const { roleByOrgId, joinedAtByOrgId } = membershipMaps(
     seed.memberships.map((m) => ({
       containerId: m.container_id,
@@ -36,7 +37,11 @@ export function primeCoreBootSeed(seed: CoreBootSeed | null | undefined): void {
     ok: true,
     roleByOrgId,
     joinedAtByOrgId,
+    memberCountByOrgId: new Map(seed.counts.map((c) => [c.container_id, Number(c.member_count)])),
     rows: seed.organizations,
+    total: seed.organizationsTotal,
+    hasMore: seed.organizationsHasMore,
+    nextCursor: seed.organizationsNextCursor,
   });
 }
 
@@ -66,6 +71,9 @@ function toRaw(seed: CoreBootSeed): Record<string, unknown> {
     memberships: seed.memberships,
     organizations: seed.organizations,
     counts: seed.counts,
+    organizations_total: seed.organizationsTotal,
+    organizations_has_more: seed.organizationsHasMore,
+    organizations_next_cursor: seed.organizationsNextCursor,
     preferences_row: seed.preferencesRow,
   };
 }

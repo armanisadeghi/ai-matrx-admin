@@ -52,6 +52,18 @@ function rpc(fn: string, args: Record<string, unknown>) {
   bump(fn);
   if (fn === "knob_defaults") return Promise.resolve({ data: { version: "d1", unchanged: false, defaults: { "a.b": 1 } }, error: null });
   if (fn === "knob_snapshot_delta") return Promise.resolve({ data: { etag: "e", defaults_version: "d1", unchanged: false, overrides: {} }, error: null });
+  if (fn === "my_organizations_page") {
+    return Promise.resolve({
+      data: {
+        organizations: [{ organization: { id: ORG, name: "Northwind Recycling", archived_at: null }, role: "owner", status: "active", joined_at: null, member_count: 1 }],
+        total: 1,
+        has_more: false,
+        next_cursor: null,
+        page_size: 50,
+      },
+      error: null,
+    });
+  }
   if (fn === "entitlement_snapshot") return Promise.resolve({ data: { tier: "pro", is_subscribed: true, trial_ends_at: null, usage: {} }, error: null });
   return Promise.resolve({ data: [{ fn, args }], error: null });
 }
@@ -114,7 +126,8 @@ it("boot: every shared door is called once however many surfaces ask in the same
   await Promise.all(asks);
 
   expect({
-    organizations: calls["iam.organizations"],
+    // Her organizations: ONE bounded page call (2026-10-16), never memberships + organization rows.
+    organizations: calls.my_organizations_page,
     memberships: calls.memberships,
     work_inbox: calls.work_inbox,
     entitlement_snapshot: calls.entitlement_snapshot,
@@ -124,7 +137,7 @@ it("boot: every shared door is called once however many surfaces ask in the same
     user_preferences: calls["users.user_preferences"],
   }).toEqual({
     organizations: 1,
-    memberships: 1,
+    memberships: undefined,
     work_inbox: 1,
     entitlement_snapshot: 1,
     get_dm_conversations_with_details: 1,

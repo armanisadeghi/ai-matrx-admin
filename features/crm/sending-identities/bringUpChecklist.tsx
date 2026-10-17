@@ -185,29 +185,22 @@ export const bringUpChecklist = registerChecklist<BringUpContext>({
     {
       kind: "verified",
       id: "vendor_keys",
-      title: "The contact-finding services are connected",
+      title: "Finding and checking addresses is switched on",
       description:
-        "Finding and verifying email addresses uses two outside services you sign up for. Each one gives you a key — a long code — that you save here once.",
+        "AI Matrx finds email addresses and checks that each one works before anything is sent to it. It comes with your plan — there is nothing for you to sign up for or save.",
       check: (ctx) =>
         readinessOrUnknown(ctx, (readiness) => {
-          const missing: string[] = [];
-          if (!readiness.hunter_key_present) {
-            missing.push(
-              "Hunter (finds addresses — included on their free plan; hunter.io)",
-            );
-          }
-          if (!readiness.millionverifier_key_present) {
-            missing.push(
-              "MillionVerifier (confirms an address works before anything is sent to it; millionverifier.com)",
-            );
-          }
-          if (missing.length > 0) {
+          if (
+            !readiness.hunter_key_present ||
+            !readiness.millionverifier_key_present
+          ) {
             return {
               status: "fail",
-              reason: `Not connected yet: ${missing.join("; ")}.`,
+              reason:
+                "Address finding and checking isn't switched on for this workspace yet.",
               detail:
-                "Sign up, copy the key each service gives you, and save it on the Keys page — Hunter's under the name HUNTER_API_KEY, MillionVerifier's under MILLIONVERIFIER_API_KEY.",
-              fix: { label: "Open the Keys page", href: "/vault" },
+                "AI Matrx turns it on as part of platform setup. Check again in a little while.",
+              fix: { label: "Check again now", run: ctx.refreshReadiness },
             };
           }
           return { status: "pass" };
@@ -323,6 +316,30 @@ export const platformBringUpChecklist = registerChecklist<BringUpContext>({
               "Not granted. After the current review closes, AI Matrx must submit gmail.readonly separately, complete Google's restricted-scope requirements, and reconnect the mailbox. Campaigns correctly refuse to run rather than send without listening.",
             fix: { label: "Check again", run: ctx.refreshReadiness },
           };
+        }),
+    },
+    {
+      kind: "verified",
+      id: "vendor_keys_company",
+      title: "The contact-finding services have their company keys",
+      description:
+        "Finding and verifying addresses runs on the company's own accounts, saved once as organization secrets on the company organization. Customers never sign up for these.",
+      check: (ctx) =>
+        readinessOrUnknown(ctx, (readiness) => {
+          const missing: string[] = [];
+          if (!readiness.hunter_key_present) missing.push("HUNTER_API_KEY");
+          if (!readiness.millionverifier_key_present)
+            missing.push("MILLIONVERIFIER_API_KEY");
+          if (missing.length > 0) {
+            return {
+              status: "fail",
+              reason: `Missing company secret${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}.`,
+              detail:
+                "Save each as an organization secret on the company organization, then check again.",
+              fix: { label: "Check again now", run: ctx.refreshReadiness },
+            };
+          }
+          return { status: "pass" };
         }),
     },
   ],

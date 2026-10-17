@@ -353,10 +353,6 @@ export function BrandOfferingsSummary({ brand }: Props) {
           }
         />
       </div>
-      {/* Both slots always render, at a fixed minimum width, so the answers arriving never move their neighbours. */}
-      <div className="min-w-[14rem]">
-        <PropertyRow label="Coverage" value={verdictText ?? (items ? "—" : "…")} />
-      </div>
         <div className="min-w-[10rem]">
           <PropertyRow
             label="Top groups"
@@ -378,6 +374,12 @@ export function BrandOfferingsSummary({ brand }: Props) {
             }
           />
         </div>
+      {/* Coverage shows only once it is computed, last in the row, so its arrival moves nothing. */}
+      {verdictText ? (
+        <div className="min-w-[14rem]">
+          <PropertyRow label="Coverage" value={verdictText} />
+        </div>
+      ) : null}
     </div>
   );
 }

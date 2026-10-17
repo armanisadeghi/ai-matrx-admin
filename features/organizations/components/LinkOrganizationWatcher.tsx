@@ -80,14 +80,24 @@ function LinkOrganizationWatcherInner(): null {
       // The LIVE membership list. A link can open an organization the person
       // already belongs to; it can never grant one, so this read is the
       // authority and the URL is only a request.
-      const { getUserOrganizations } = await import(
+      // BOUNDED (2026-10-16): only the LINK's organization is in question, so ONE by-id call
+      // (or one slug search) answers it — never every membership she has.
+      const { getMyOrganizationsByIds, getUserOrganizationsPage } = await import(
         "@/features/organizations/service"
       );
+      const asked = readLinkOrganizationParam(`?${LINK_ORGANIZATION_QUERY_KEY}=${raw}`);
       // `slug` rides along so an address link (`/hr/...?org=<slug>`) is
       // matched exactly like an id link.
       let memberships: Array<{ id: string; name: string; slug?: string | null }>;
       try {
-        memberships = (await getUserOrganizations()) ?? [];
+        if (asked.kind === "named") {
+          memberships = (await getMyOrganizationsByIds([asked.organizationId])).filter((o) => !o.archivedAt);
+        } else if (asked.kind === "addressed") {
+          const found = await getUserOrganizationsPage({ search: asked.slug, limit: 10 });
+          memberships = found.organizations.filter((o) => o.slug === asked.slug);
+        } else {
+          memberships = [];
+        }
       } catch (error) {
         // We could not CHECK. Saying "you are not a member" here would be a
         // lie (R37's fourth state), and switching would be worse, so the link

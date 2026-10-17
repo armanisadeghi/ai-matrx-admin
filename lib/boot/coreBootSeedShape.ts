@@ -5,6 +5,9 @@
 // it with no request. The server half is `coreBootSeed.server.ts` (one `iam.core_boot_seed` call,
 // bounded); the browser half is `coreBootSeed.ts` (primes the shared reads the boot already uses).
 //
+// BOUNDED (2026-10-16): the seed carries the FIRST PAGE of her live organizations for any
+// membership count (`iam.core_boot_seed` → `iam.my_organizations_page`), never all of them.
+//
 // The ACTIVE ORGANIZATION is still chosen in the browser, by the one ladder
 // (`resolveActiveOrgContext`): this tab's held organization and the link's `?org=` are only known
 // there. The seed carries the ladder's INPUTS (memberships, organization rows, the account row),
@@ -18,9 +21,15 @@ import type { KnobSnapshotSeed } from "@/lib/scoped-config/effectiveKnobs";
 
 export interface CoreBootSeed {
   userId: string;
+  /** The memberships of the FIRST PAGE of her live organizations (never all of them). */
   memberships: MbrForUserRow[];
+  /** The first page of her live organizations, by last use (`iam.my_organizations_page`). */
   organizations: MemberOrganizationRow[];
   counts: MbrCountRow[];
+  /** How many live organizations she has in all; `hasMore` = the page is not all of them. */
+  organizationsTotal: number;
+  organizationsHasMore: boolean;
+  organizationsNextCursor: string | null;
   /** The account's `users.user_preferences` row; null when the person has none. */
   preferencesRow: AccountPreferencesRow | null;
 }
@@ -35,12 +44,16 @@ export function parseCoreBootSeed(raw: unknown, userId: string): CoreBootSeed | 
   if (!Array.isArray(r.memberships) || !Array.isArray(r.organizations) || !Array.isArray(r.counts)) {
     return null;
   }
+  if (typeof r.organizations_total !== "number" || typeof r.organizations_has_more !== "boolean") return null;
   const row = r.preferences_row;
   return {
     userId,
     memberships: r.memberships as MbrForUserRow[],
     organizations: r.organizations as MemberOrganizationRow[],
     counts: r.counts as MbrCountRow[],
+    organizationsTotal: r.organizations_total,
+    organizationsHasMore: r.organizations_has_more,
+    organizationsNextCursor: typeof r.organizations_next_cursor === "string" ? r.organizations_next_cursor : null,
     preferencesRow: row && typeof row === "object" ? (row as AccountPreferencesRow) : null,
   };
 }

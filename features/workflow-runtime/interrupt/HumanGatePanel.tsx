@@ -25,13 +25,19 @@ interface OpenGate {
   decision: Record<string, unknown> | null;
 }
 
-/** Re-ask while a page is open: a gate opens when a background run reaches it. */
+/** Re-ask while the gate panel itself is on screen: a gate opens when a background run reaches it. */
 const GATE_POLL_MS = 15_000;
 
 export const openGatesKey = (entityType: string, entityId: string) => ["workflow", "open-gates", entityType, entityId];
 
 /** The open gates on a record. Shared by the panel and by hosts that show the gate elsewhere (a button, a dialog). */
-export function useOpenGates(entityType: string, entityId: string) {
+export function useOpenGates(
+  entityType: string,
+  entityId: string,
+  /** `poll`: re-ask every 15s — only while someone is looking at the gate (the panel). A host that
+   *  only shows a door to it reads once, and again on focus (no background polling). */
+  { poll = false }: { poll?: boolean } = {},
+) {
   const dispatch = useAppDispatch();
   return useQuery({
     queryKey: openGatesKey(entityType, entityId),
@@ -48,8 +54,9 @@ export function useOpenGates(entityType: string, entityId: string) {
       const data = result.data as { gates?: OpenGate[] } | undefined;
       return Array.isArray(data?.gates) ? data.gates : [];
     },
-    refetchInterval: GATE_POLL_MS,
+    refetchInterval: poll ? GATE_POLL_MS : false,
     refetchIntervalInBackground: false,
+    staleTime: poll ? 0 : 60_000,
   });
 }
 
@@ -69,7 +76,7 @@ export function HumanGatePanel({
   const { answerInterrupt } = useWorkflowRunControls();
   const [sending, setSending] = useState(false);
   const queryKey = openGatesKey(entityType, entityId);
-  const gates = useOpenGates(entityType, entityId);
+  const gates = useOpenGates(entityType, entityId, { poll: true });
   const gate = gates.data?.[0];
   const spec = gate ? parseDecisionSpec(gate.decision) : null;
   if (!gate || !spec || !gate.checkpoint_id) return null;

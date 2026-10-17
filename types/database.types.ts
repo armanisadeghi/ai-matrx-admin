@@ -4048,6 +4048,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          display_order: number | null
+          facts: Json
           gallery_file_ids: string[]
           hero_file_id: string | null
           id: string
@@ -4074,6 +4076,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          display_order?: number | null
+          facts?: Json
           gallery_file_ids?: string[]
           hero_file_id?: string | null
           id?: string
@@ -4100,6 +4104,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          display_order?: number | null
+          facts?: Json
           gallery_file_ids?: string[]
           hero_file_id?: string | null
           id?: string
@@ -8290,6 +8296,120 @@ export type Database = {
           },
         ]
       }
+      ci_package_build: {
+        Row: {
+          billed_minutes: number
+          built_at: string
+          commit_sha: string | null
+          content_changed: boolean | null
+          cost_usd: number
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          details: Json
+          ecosystem: string
+          id: string
+          job_id: number
+          job_minutes: number | null
+          metadata: Json
+          no_op: boolean
+          organization_id: string
+          outcome: string
+          package: string
+          package_version: string | null
+          plan_reason: string | null
+          planned: boolean | null
+          queue_minutes: number | null
+          reason: string | null
+          recorded_by: string
+          repo: string
+          requested_by: string | null
+          run_attempt: number
+          run_id: number
+          runner: string | null
+          source_files_changed: number | null
+          trigger: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          workflow: string
+        }
+        Insert: {
+          billed_minutes?: number
+          built_at: string
+          commit_sha?: string | null
+          content_changed?: boolean | null
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          details?: Json
+          ecosystem: string
+          id?: string
+          job_id: number
+          job_minutes?: number | null
+          metadata?: Json
+          no_op: boolean
+          organization_id: string
+          outcome: string
+          package: string
+          package_version?: string | null
+          plan_reason?: string | null
+          planned?: boolean | null
+          queue_minutes?: number | null
+          reason?: string | null
+          recorded_by?: string
+          repo: string
+          requested_by?: string | null
+          run_attempt?: number
+          run_id: number
+          runner?: string | null
+          source_files_changed?: number | null
+          trigger: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          workflow: string
+        }
+        Update: {
+          billed_minutes?: number
+          built_at?: string
+          commit_sha?: string | null
+          content_changed?: boolean | null
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          details?: Json
+          ecosystem?: string
+          id?: string
+          job_id?: number
+          job_minutes?: number | null
+          metadata?: Json
+          no_op?: boolean
+          organization_id?: string
+          outcome?: string
+          package?: string
+          package_version?: string | null
+          plan_reason?: string | null
+          planned?: boolean | null
+          queue_minutes?: number | null
+          reason?: string | null
+          recorded_by?: string
+          repo?: string
+          requested_by?: string | null
+          run_attempt?: number
+          run_id?: number
+          runner?: string | null
+          source_files_changed?: number | null
+          trigger?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          workflow?: string
+        }
+        Relationships: []
+      }
       class_purchase: {
         Row: {
           amount_total: number
@@ -8721,6 +8841,63 @@ export type Database = {
           settlement_status?: string
           started_at?: string | null
           state?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      external_call_vendor: {
+        Row: {
+          attempt_id: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          data_provider: string
+          deleted_at: string | null
+          detail: Json | null
+          execution_id: string
+          id: string
+          invoiced_by: string
+          metadata: Json
+          operation: string | null
+          organization_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          attempt_id?: string | null
+          category: string
+          created_at?: string
+          created_by?: string | null
+          data_provider: string
+          deleted_at?: string | null
+          detail?: Json | null
+          execution_id: string
+          id?: string
+          invoiced_by: string
+          metadata?: Json
+          operation?: string | null
+          organization_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          attempt_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          data_provider?: string
+          deleted_at?: string | null
+          detail?: Json | null
+          execution_id?: string
+          id?: string
+          invoiced_by?: string
+          metadata?: Json
+          operation?: string | null
+          organization_id?: string
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -10114,6 +10291,87 @@ export type Database = {
           },
         ]
       }
+      spend_hold: {
+        Row: {
+          cost_centre: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          expires_at: string
+          id: string
+          link_id: string
+          link_kind: string
+          metadata: Json
+          organization_id: string
+          points: number
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          reason: string
+          settled_points: number | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          spend_approval_id: string | null
+          state: string
+          updated_at: string
+          updated_by: string | null
+          usd: number | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          cost_centre?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          expires_at: string
+          id?: string
+          link_id: string
+          link_kind: string
+          metadata?: Json
+          organization_id: string
+          points: number
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          reason: string
+          settled_points?: number | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          spend_approval_id?: string | null
+          state?: string
+          updated_at?: string
+          updated_by?: string | null
+          usd?: number | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          cost_centre?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          expires_at?: string
+          id?: string
+          link_id?: string
+          link_kind?: string
+          metadata?: Json
+          organization_id?: string
+          points?: number
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          reason?: string
+          settled_points?: number | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          spend_approval_id?: string | null
+          state?: string
+          updated_at?: string
+          updated_by?: string | null
+          usd?: number | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       stripe_event: {
         Row: {
           id: string
@@ -10665,6 +10923,23 @@ export type Database = {
         Args: { p_error_code: string; p_request_id: string }
         Returns: Json
       }
+      external_call_vendor_record: {
+        Args: {
+          p_attempt: string
+          p_category: string
+          p_data_provider: string
+          p_execution: string
+          p_invoiced_by: string
+          p_operation: string
+        }
+        Returns: undefined
+      }
+      external_call_vendor_repair: { Args: never; Returns: number }
+      external_call_vendor_set_detail: {
+        Args: { p_detail: Json; p_execution: string }
+        Returns: undefined
+      }
+      external_vendor_category: { Args: { p_vendor: string }; Returns: string }
       free_months_apply: {
         Args: {
           p_months: number
@@ -11477,6 +11752,35 @@ export type Database = {
           status: string
         }[]
       }
+      spend_digest_numbers: {
+        Args: {
+          p_day: string
+          p_over_budget_prefixes?: string[]
+          p_tz?: string
+        }
+        Returns: Json
+      }
+      spend_hold_expire_stale: { Args: never; Returns: number }
+      spend_hold_place: {
+        Args: {
+          p_cost_centre: string
+          p_expires_at: string
+          p_link_id: string
+          p_link_kind: string
+          p_org: string
+          p_points: number
+          p_reason: string
+          p_spend_approval_id: string
+          p_usd: number
+          p_user: string
+        }
+        Returns: string
+      }
+      spend_hold_release: { Args: { p_hold: string }; Returns: boolean }
+      spend_hold_settle: {
+        Args: { p_hold: string; p_points: number }
+        Returns: boolean
+      }
       tier_max: {
         Args: {
           a: Database["billing"]["Enums"]["tier"]
@@ -11495,6 +11799,13 @@ export type Database = {
       tier_rank: {
         Args: { p_tier: Database["billing"]["Enums"]["tier"] }
         Returns: number
+      }
+      tool_spend_state: {
+        Args: { p_cost_centre: string; p_day: string; p_org: string }
+        Returns: {
+          points: number
+          usd: number
+        }[]
       }
       unattributed_paid_sources: {
         Args: { p_since: string }
@@ -15699,6 +16010,7 @@ export type Database = {
         Row: {
           ai_model_id: string
           api_duration_ms: number | null
+          cache_write_tokens: number | null
           cached_tokens: number | null
           conversation_id: string
           cost: number | null
@@ -15734,6 +16046,7 @@ export type Database = {
         Insert: {
           ai_model_id: string
           api_duration_ms?: number | null
+          cache_write_tokens?: number | null
           cached_tokens?: number | null
           conversation_id: string
           cost?: number | null
@@ -15769,6 +16082,7 @@ export type Database = {
         Update: {
           ai_model_id?: string
           api_duration_ms?: number | null
+          cache_write_tokens?: number | null
           cached_tokens?: number | null
           conversation_id?: string
           cost?: number | null
@@ -17099,6 +17413,15 @@ export type Database = {
       root_conversation_id: {
         Args: { p_conversation_id: string }
         Returns: string
+      }
+      route_seed: {
+        Args: {
+          p_filters?: Json
+          p_model_ids?: string[]
+          p_page_size?: number
+          p_pinned_agents?: boolean
+        }
+        Returns: Json
       }
       sidebar_bucket:
         | {
@@ -25809,6 +26132,19 @@ export type Database = {
           receipt_id: string
         }[]
       }
+      claim_spare_sms_number: {
+        Args: {
+          p_actor?: string
+          p_auto?: boolean
+          p_organization_id: string
+          p_phone?: string
+        }
+        Returns: {
+          claimed: boolean
+          phone_number: string
+          refusal: string
+        }[]
+      }
       claim_voice_call_consent_event: {
         Args: {
           p_consented_at: string
@@ -27652,6 +27988,14 @@ export type Database = {
           interaction_id: string
         }[]
       }
+      release_spare_sms_number: {
+        Args: { p_actor?: string; p_phone: string }
+        Returns: {
+          phone_number: string
+          refusal: string
+          released: boolean
+        }[]
+      }
       report_dropped_sms_part: {
         Args: {
           p_context?: Json
@@ -27823,6 +28167,18 @@ export type Database = {
       sms_reply_part_wait_seconds: {
         Args: { p_organization_id: string }
         Returns: number
+      }
+      spare_sms_pool_status: {
+        Args: never
+        Returns: {
+          available: number
+          kept_on_hand: number
+          shortfall: number
+        }[]
+      }
+      spend_desk_claim_reply: {
+        Args: { p_inbound_message_id: string; p_window_minutes?: number }
+        Returns: Json
       }
       stamp_notification_render: {
         Args: {
@@ -31518,7 +31874,6 @@ export type Database = {
           deleted_at: string | null
           engagement_breakdown: Json
           engagement_score: number | null
-          enrichment_call_id: string | null
           first_seen_at: string
           id: string
           is_role_address: boolean
@@ -31560,7 +31915,6 @@ export type Database = {
           deleted_at?: string | null
           engagement_breakdown?: Json
           engagement_score?: number | null
-          enrichment_call_id?: string | null
           first_seen_at?: string
           id?: string
           is_role_address?: boolean
@@ -31602,7 +31956,6 @@ export type Database = {
           deleted_at?: string | null
           engagement_breakdown?: Json
           engagement_score?: number | null
-          enrichment_call_id?: string | null
           first_seen_at?: string
           id?: string
           is_role_address?: boolean
@@ -31638,13 +31991,6 @@ export type Database = {
             columns: ["confirmed_contact_point_id"]
             isOneToOne: false
             referencedRelation: "party_contact_point"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_candidate_enrichment_call_id_fkey"
-            columns: ["enrichment_call_id"]
-            isOneToOne: false
-            referencedRelation: "enrichment_call"
             referencedColumns: ["id"]
           },
           {
@@ -32008,107 +32354,6 @@ export type Database = {
             columns: ["deal_id"]
             isOneToOne: false
             referencedRelation: "deal"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      enrichment_call: {
-        Row: {
-          cache_key: string
-          created_at: string
-          created_by: string | null
-          credits_used: number | null
-          custom_fields: Json
-          deleted_at: string | null
-          error: string | null
-          estimated_cost_usd: number | null
-          expires_at: string | null
-          id: string
-          latency_ms: number | null
-          metadata: Json
-          operation: string
-          organization_id: string
-          party_id: string | null
-          provider: string
-          published_to_web: boolean
-          published_to_web_at: string | null
-          published_to_web_by: string | null
-          request: Json
-          response: Json
-          result_count: number
-          shown_to: Database["platform"]["Enums"]["shown_to"] | null
-          status: string
-          updated_at: string
-          updated_by: string | null
-          version: number
-          visibility: Database["platform"]["Enums"]["visibility"]
-        }
-        Insert: {
-          cache_key: string
-          created_at?: string
-          created_by?: string | null
-          credits_used?: number | null
-          custom_fields?: Json
-          deleted_at?: string | null
-          error?: string | null
-          estimated_cost_usd?: number | null
-          expires_at?: string | null
-          id?: string
-          latency_ms?: number | null
-          metadata?: Json
-          operation: string
-          organization_id: string
-          party_id?: string | null
-          provider: string
-          published_to_web?: boolean
-          published_to_web_at?: string | null
-          published_to_web_by?: string | null
-          request?: Json
-          response?: Json
-          result_count?: number
-          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
-          status?: string
-          updated_at?: string
-          updated_by?: string | null
-          version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
-        }
-        Update: {
-          cache_key?: string
-          created_at?: string
-          created_by?: string | null
-          credits_used?: number | null
-          custom_fields?: Json
-          deleted_at?: string | null
-          error?: string | null
-          estimated_cost_usd?: number | null
-          expires_at?: string | null
-          id?: string
-          latency_ms?: number | null
-          metadata?: Json
-          operation?: string
-          organization_id?: string
-          party_id?: string | null
-          provider?: string
-          published_to_web?: boolean
-          published_to_web_at?: string | null
-          published_to_web_by?: string | null
-          request?: Json
-          response?: Json
-          result_count?: number
-          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
-          status?: string
-          updated_at?: string
-          updated_by?: string | null
-          version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "enrichment_call_party_id_fkey"
-            columns: ["party_id"]
-            isOneToOne: false
-            referencedRelation: "party"
             referencedColumns: ["id"]
           },
         ]
@@ -35013,6 +35258,36 @@ export type Database = {
           updated_by?: string | null
           version?: number
           visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      automation_delivery: {
+        Row: {
+          automation_id: string | null
+          created_at: string
+          kind: string
+          organization_id: string
+          request_id: number
+          step_n: number | null
+          url_host: string | null
+        }
+        Insert: {
+          automation_id?: string | null
+          created_at?: string
+          kind: string
+          organization_id: string
+          request_id: number
+          step_n?: number | null
+          url_host?: string | null
+        }
+        Update: {
+          automation_id?: string | null
+          created_at?: string
+          kind?: string
+          organization_id?: string
+          request_id?: number
+          step_n?: number | null
+          url_host?: string | null
         }
         Relationships: []
       }
@@ -39549,6 +39824,15 @@ export type Database = {
         }
         Returns: string
       }
+      _rule_choice_label_is: {
+        Args: {
+          p_arg: Json
+          p_given: Json
+          p_organization_id: string
+          p_stored: Json
+        }
+        Returns: boolean
+      }
       _rule_eval_seated: {
         Args: {
           p_context?: Json
@@ -40371,6 +40655,7 @@ export type Database = {
         }
         Returns: Json
       }
+      automation_delivery_tick: { Args: never; Returns: number }
       automation_note: {
         Args: { p_run_id: string; p_says: string }
         Returns: Json
@@ -45393,6 +45678,7 @@ export type Database = {
         Args: { p_source: Json; p_sources: Json }
         Returns: string
       }
+      space_templates: { Args: { p_filter?: Json }; Returns: Json }
       stage_rule_enforcement: {
         Args: { p_organization_id: string }
         Returns: string
@@ -46480,6 +46766,25 @@ export type Database = {
           p_approve: boolean
           p_note?: string
           p_organization_id: string
+        }
+        Returns: Json
+      }
+      work_approval_host_run: {
+        Args: {
+          p_approval_id?: string
+          p_conversation_id?: string
+          p_fingerprint: string
+          p_organization_id: string
+        }
+        Returns: Json
+      }
+      work_approval_host_run_done: {
+        Args: {
+          p_approval_id: string
+          p_ok: boolean
+          p_organization_id: string
+          p_outcome: string
+          p_report?: Json
         }
         Returns: Json
       }
@@ -84645,6 +84950,16 @@ export type Database = {
       my_admin_orgs: { Args: never; Returns: string[] }
       my_grantable_levels: {
         Args: { p_resource_id: string; p_resource_type: string }
+        Returns: Json
+      }
+      my_organizations_by_ids: { Args: { p_ids: string[] }; Returns: Json }
+      my_organizations_page: {
+        Args: {
+          p_archive?: string
+          p_cursor?: string
+          p_limit?: number
+          p_search?: string
+        }
         Returns: Json
       }
       my_orgs: { Args: never; Returns: string[] }
@@ -124050,6 +124365,7 @@ export type Database = {
           request_in_ledger: boolean | null
           session_id: string | null
           status: string | null
+          tokens_cache_write: number | null
           tokens_cached: number | null
           tokens_in: number | null
           tokens_out: number | null
@@ -125002,6 +125318,7 @@ export type Database = {
       data_fetch_job: {
         Row: {
           billed_at: string | null
+          call_id: string | null
           cost_usd: number | null
           created_at: string
           created_by: string | null
@@ -125039,6 +125356,7 @@ export type Database = {
         }
         Insert: {
           billed_at?: string | null
+          call_id?: string | null
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
@@ -125076,6 +125394,7 @@ export type Database = {
         }
         Update: {
           billed_at?: string | null
+          call_id?: string | null
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
@@ -139712,6 +140031,710 @@ export type Database = {
           },
         ]
       }
+      catalog_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          created_by: string | null
+          cross_org_reuse: boolean
+          data_class: string
+          deleted_at: string | null
+          display_source: string | null
+          endpoint_id: string | null
+          expires_at: string
+          hit_count: number
+          id: string
+          ignored_filters: Json
+          metadata: Json
+          organization_id: string
+          origin_call_id: string | null
+          origin_organization_id: string
+          original_cost_usd: number
+          original_points: number
+          output: Json | null
+          raw: Json | null
+          tool_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          created_by?: string | null
+          cross_org_reuse?: boolean
+          data_class?: string
+          deleted_at?: string | null
+          display_source?: string | null
+          endpoint_id?: string | null
+          expires_at: string
+          hit_count?: number
+          id?: string
+          ignored_filters?: Json
+          metadata?: Json
+          organization_id: string
+          origin_call_id?: string | null
+          origin_organization_id: string
+          original_cost_usd?: number
+          original_points?: number
+          output?: Json | null
+          raw?: Json | null
+          tool_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          created_by?: string | null
+          cross_org_reuse?: boolean
+          data_class?: string
+          deleted_at?: string | null
+          display_source?: string | null
+          endpoint_id?: string | null
+          expires_at?: string
+          hit_count?: number
+          id?: string
+          ignored_filters?: Json
+          metadata?: Json
+          organization_id?: string
+          origin_call_id?: string | null
+          origin_organization_id?: string
+          original_cost_usd?: number
+          original_points?: number
+          output?: Json | null
+          raw?: Json | null
+          tool_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      catalog_call: {
+        Row: {
+          approval: Json | null
+          attempts_count: number
+          cache: string
+          cache_policy: string
+          caller_ref: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          display_source: string | null
+          door: string
+          endpoint_id: string | null
+          error_code: string | null
+          error_message: string | null
+          execution_id: string | null
+          finished_at: string | null
+          hold_id: string | null
+          id: string
+          idempotency_key: string | null
+          ignored_filters: Json
+          input_hash: string
+          inputs: Json
+          lease_until: string | null
+          max_points: number | null
+          metadata: Json
+          organization_id: string
+          output: Json | null
+          points_charged: number
+          points_held: number
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          raw_projected: Json | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          spend_approval_id: string | null
+          stage: string
+          started_at: string | null
+          status: string
+          tags: Json
+          tool_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          approval?: Json | null
+          attempts_count?: number
+          cache?: string
+          cache_policy?: string
+          caller_ref?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          display_source?: string | null
+          door: string
+          endpoint_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          execution_id?: string | null
+          finished_at?: string | null
+          hold_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          ignored_filters?: Json
+          input_hash: string
+          inputs?: Json
+          lease_until?: string | null
+          max_points?: number | null
+          metadata?: Json
+          organization_id: string
+          output?: Json | null
+          points_charged?: number
+          points_held?: number
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          raw_projected?: Json | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          spend_approval_id?: string | null
+          stage?: string
+          started_at?: string | null
+          status?: string
+          tags?: Json
+          tool_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          approval?: Json | null
+          attempts_count?: number
+          cache?: string
+          cache_policy?: string
+          caller_ref?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          display_source?: string | null
+          door?: string
+          endpoint_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          execution_id?: string | null
+          finished_at?: string | null
+          hold_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          ignored_filters?: Json
+          input_hash?: string
+          inputs?: Json
+          lease_until?: string | null
+          max_points?: number | null
+          metadata?: Json
+          organization_id?: string
+          output?: Json | null
+          points_charged?: number
+          points_held?: number
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          raw_projected?: Json | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          spend_approval_id?: string | null
+          stage?: string
+          started_at?: string | null
+          status?: string
+          tags?: Json
+          tool_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      catalog_call_attempt: {
+        Row: {
+          billed_to: string | null
+          cache_policy: string
+          call_id: string
+          caller_organization_id: string | null
+          created_at: string
+          created_by: string | null
+          credential_scope: string
+          deleted_at: string | null
+          direct_bypass: boolean
+          door: string
+          endpoint_id: string | null
+          error_class: string | null
+          execution_id: string | null
+          finished_at: string | null
+          http_status: number | null
+          id: string
+          invoiced_by: string
+          latency_ms: number | null
+          metadata: Json
+          organization_id: string
+          outcome: string | null
+          price_ref: string | null
+          price_source: string | null
+          provider_slug: string
+          seq: number
+          served_by_vendor: string | null
+          started_at: string
+          state: string
+          test_replay: string
+          units: number | null
+          updated_at: string
+          updated_by: string | null
+          vendor_cost_usd: number | null
+          vendor_ticket: Json | null
+          version: number
+          via: string
+        }
+        Insert: {
+          billed_to?: string | null
+          cache_policy: string
+          call_id: string
+          caller_organization_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credential_scope?: string
+          deleted_at?: string | null
+          direct_bypass?: boolean
+          door: string
+          endpoint_id?: string | null
+          error_class?: string | null
+          execution_id?: string | null
+          finished_at?: string | null
+          http_status?: number | null
+          id?: string
+          invoiced_by: string
+          latency_ms?: number | null
+          metadata?: Json
+          organization_id: string
+          outcome?: string | null
+          price_ref?: string | null
+          price_source?: string | null
+          provider_slug: string
+          seq: number
+          served_by_vendor?: string | null
+          started_at?: string
+          state?: string
+          test_replay?: string
+          units?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          vendor_cost_usd?: number | null
+          vendor_ticket?: Json | null
+          version?: number
+          via: string
+        }
+        Update: {
+          billed_to?: string | null
+          cache_policy?: string
+          call_id?: string
+          caller_organization_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credential_scope?: string
+          deleted_at?: string | null
+          direct_bypass?: boolean
+          door?: string
+          endpoint_id?: string | null
+          error_class?: string | null
+          execution_id?: string | null
+          finished_at?: string | null
+          http_status?: number | null
+          id?: string
+          invoiced_by?: string
+          latency_ms?: number | null
+          metadata?: Json
+          organization_id?: string
+          outcome?: string | null
+          price_ref?: string | null
+          price_source?: string | null
+          provider_slug?: string
+          seq?: number
+          served_by_vendor?: string | null
+          started_at?: string
+          state?: string
+          test_replay?: string
+          units?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          vendor_cost_usd?: number | null
+          vendor_ticket?: Json | null
+          version?: number
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_call_attempt_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_call"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_call_detail: {
+        Row: {
+          billed_to: string | null
+          cache_entry_id: string | null
+          call_id: string
+          caller_organization_id: string | null
+          cost_centre: string | null
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          raw_full: Json | null
+          router_trace: Json
+          served_endpoint_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          billed_to?: string | null
+          cache_entry_id?: string | null
+          call_id: string
+          caller_organization_id?: string | null
+          cost_centre?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          raw_full?: Json | null
+          router_trace?: Json
+          served_endpoint_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          billed_to?: string | null
+          cache_entry_id?: string | null
+          call_id?: string
+          caller_organization_id?: string | null
+          cost_centre?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          raw_full?: Json | null
+          router_trace?: Json
+          served_endpoint_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_call_detail_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_call"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_endpoint: {
+        Row: {
+          adapter: string
+          applies_when: Json | null
+          async_spec: Json | null
+          cache_ttl_s: number | null
+          cost_basis: Json
+          created_at: string
+          created_by: string | null
+          cross_org_reuse: boolean
+          data_class: string
+          definitive_miss: Json | null
+          deleted_at: string | null
+          id: string
+          idempotent_resubmit: boolean
+          interactive: boolean
+          last_probe: Json | null
+          metadata: Json
+          miss_predicate: Json | null
+          organization_id: string
+          output_map: Json
+          param_map: Json
+          price_ref: string | null
+          priority: number
+          provider_slug: string
+          state: string
+          supported_inputs: string[]
+          timeout_s: number
+          tool_id: string
+          trap_notes: string
+          updated_at: string
+          updated_by: string | null
+          vendor_op: string
+          verified_at: string | null
+          version: number
+          via: string
+        }
+        Insert: {
+          adapter: string
+          applies_when?: Json | null
+          async_spec?: Json | null
+          cache_ttl_s?: number | null
+          cost_basis?: Json
+          created_at?: string
+          created_by?: string | null
+          cross_org_reuse?: boolean
+          data_class?: string
+          definitive_miss?: Json | null
+          deleted_at?: string | null
+          id?: string
+          idempotent_resubmit?: boolean
+          interactive?: boolean
+          last_probe?: Json | null
+          metadata?: Json
+          miss_predicate?: Json | null
+          organization_id: string
+          output_map?: Json
+          param_map?: Json
+          price_ref?: string | null
+          priority?: number
+          provider_slug: string
+          state?: string
+          supported_inputs?: string[]
+          timeout_s?: number
+          tool_id: string
+          trap_notes?: string
+          updated_at?: string
+          updated_by?: string | null
+          vendor_op: string
+          verified_at?: string | null
+          version?: number
+          via?: string
+        }
+        Update: {
+          adapter?: string
+          applies_when?: Json | null
+          async_spec?: Json | null
+          cache_ttl_s?: number | null
+          cost_basis?: Json
+          created_at?: string
+          created_by?: string | null
+          cross_org_reuse?: boolean
+          data_class?: string
+          definitive_miss?: Json | null
+          deleted_at?: string | null
+          id?: string
+          idempotent_resubmit?: boolean
+          interactive?: boolean
+          last_probe?: Json | null
+          metadata?: Json
+          miss_predicate?: Json | null
+          organization_id?: string
+          output_map?: Json
+          param_map?: Json
+          price_ref?: string | null
+          priority?: number
+          provider_slug?: string
+          state?: string
+          supported_inputs?: string[]
+          timeout_s?: number
+          tool_id?: string
+          trap_notes?: string
+          updated_at?: string
+          updated_by?: string | null
+          vendor_op?: string
+          verified_at?: string | null
+          version?: number
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_endpoint_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "definition"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_entry: {
+        Row: {
+          compare_sources: Json
+          created_at: string
+          created_by: string | null
+          default_cache_ttl_s: number
+          deleted_at: string | null
+          display_name: string
+          display_noun: string
+          display_rule: string
+          id: string
+          job_family: string
+          job_key: string
+          metadata: Json
+          mode: string
+          organization_id: string
+          output_kind: string | null
+          price_hint_points: number | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          search_text: string
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          state: string
+          submit_label: string
+          sufficiency: Json | null
+          summary: string
+          tool_id: string
+          trap_notes: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          compare_sources?: Json
+          created_at?: string
+          created_by?: string | null
+          default_cache_ttl_s?: number
+          deleted_at?: string | null
+          display_name: string
+          display_noun?: string
+          display_rule?: string
+          id?: string
+          job_family: string
+          job_key: string
+          metadata?: Json
+          mode?: string
+          organization_id: string
+          output_kind?: string | null
+          price_hint_points?: number | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          search_text?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
+          submit_label?: string
+          sufficiency?: Json | null
+          summary?: string
+          tool_id: string
+          trap_notes?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          compare_sources?: Json
+          created_at?: string
+          created_by?: string | null
+          default_cache_ttl_s?: number
+          deleted_at?: string | null
+          display_name?: string
+          display_noun?: string
+          display_rule?: string
+          id?: string
+          job_family?: string
+          job_key?: string
+          metadata?: Json
+          mode?: string
+          organization_id?: string
+          output_kind?: string | null
+          price_hint_points?: number | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          search_text?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
+          submit_label?: string
+          sufficiency?: Json | null
+          summary?: string
+          tool_id?: string
+          trap_notes?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_entry_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "definition"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_provider: {
+        Row: {
+          admin_name: string
+          created_at: string
+          created_by: string | null
+          credential_ref: Json
+          deleted_at: string | null
+          direct_account: boolean
+          display: string
+          id: string
+          metadata: Json
+          organization_id: string
+          slug: string
+          state: string
+          terms_cache_reuse: boolean
+          terms_note: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          admin_name: string
+          created_at?: string
+          created_by?: string | null
+          credential_ref?: Json
+          deleted_at?: string | null
+          direct_account?: boolean
+          display?: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          slug: string
+          state?: string
+          terms_cache_reuse?: boolean
+          terms_note?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          admin_name?: string
+          created_at?: string
+          created_by?: string | null
+          credential_ref?: Json
+          deleted_at?: string | null
+          direct_account?: boolean
+          display?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          slug?: string
+          state?: string
+          terms_cache_reuse?: boolean
+          terms_note?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       definition: {
         Row: {
           admin_only: boolean
@@ -140838,7 +141861,34 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      endpoint_scorecard: {
+        Row: {
+          consecutive_unexpected: number | null
+          decided: number | null
+          endpoint_id: string | null
+          hit_rate: number | null
+          hits: number | null
+          last_error_at: string | null
+          last_success_at: string | null
+          p50_ms: number | null
+          p95_ms: number | null
+          samples: number | null
+          unexpected_error_rate: number | null
+          unexpected_errors: number | null
+          window_days: number | null
+        }
+        Relationships: []
+      }
+      endpoint_strip: {
+        Row: {
+          bucket_start: string | null
+          endpoint_id: string | null
+          hits: number | null
+          misses: number | null
+          unexpected_errors: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _breaker_evaluate: {
@@ -140855,6 +141905,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      _control_actor: { Args: never; Returns: undefined }
       _control_assert_admin: { Args: never; Returns: undefined }
       _control_close_alarm: {
         Args: { p_kind: string; p_note: string; p_subject_key: string }
@@ -140878,11 +141929,66 @@ export type Database = {
         Args: { p_reason?: string; p_tool: string }
         Returns: string
       }
+      _system_org: { Args: never; Returns: string }
       _verification_proof: {
         Args: { p_call: string; p_endpoint: string }
         Returns: string
       }
+      api_key_budgets_get: { Args: { p_key_id: string }; Returns: Json }
+      api_key_budgets_set: {
+        Args: { p_budgets: Json; p_key_id: string }
+        Returns: Json
+      }
+      api_key_spend: {
+        Args: {
+          p_key_id: string
+          p_since: string
+          p_tag_key: string
+          p_tag_value: string
+        }
+        Returns: number
+      }
+      api_key_usage_by_tag: {
+        Args: {
+          p_key_id: string
+          p_since: string
+          p_tag_key: string
+          p_until: string
+        }
+        Returns: Json
+      }
+      catalog_cache_get: { Args: { p_key: string }; Returns: Json }
+      catalog_cache_note_hit: { Args: { p_id: string }; Returns: undefined }
+      catalog_cache_put: { Args: { p: Json }; Returns: Json }
+      catalog_call_attempt_insert: { Args: { p: Json }; Returns: Json }
+      catalog_call_attempt_update: {
+        Args: { p: Json; p_id: string }
+        Returns: Json
+      }
+      catalog_call_attempts: { Args: { p_call: string }; Returns: Json }
+      catalog_call_claim: {
+        Args: { p_id: string; p_lease_s: number }
+        Returns: Json
+      }
+      catalog_call_detail_get: { Args: { p_call: string }; Returns: Json }
+      catalog_call_detail_upsert: {
+        Args: { p: Json; p_call: string }
+        Returns: undefined
+      }
+      catalog_call_get: { Args: { p_id: string }; Returns: Json }
+      catalog_call_in_flight: {
+        Args: { p_exclude: string; p_hash: string; p_org: string }
+        Returns: string
+      }
+      catalog_call_open: { Args: { p: Json }; Returns: Json }
+      catalog_call_resumable: { Args: { p_limit: number }; Returns: string[] }
+      catalog_call_update: { Args: { p: Json; p_id: string }; Returns: Json }
       catalog_off_notice: { Args: { p_tool: string }; Returns: string }
+      clear_single_display_sources: { Args: never; Returns: number }
+      control_decide_proposal: {
+        Args: { p_alarm: string; p_decision: string; p_note?: string }
+        Returns: Json
+      }
       control_for_attention: {
         Args: never
         Returns: {
@@ -140897,6 +142003,13 @@ export type Database = {
           title: string
         }[]
       }
+      control_mark_notified: {
+        Args: { p_state: string; p_tool: string }
+        Returns: undefined
+      }
+      control_notice_context: { Args: { p_tool: string }; Returns: Json }
+      control_scorecard: { Args: { p_endpoint: string }; Returns: Json }
+      control_unnotified_tools: { Args: never; Returns: Json }
       endpoint_begin_verification: {
         Args: { p_actor?: string; p_endpoint: string }
         Returns: Json
@@ -140910,6 +142023,7 @@ export type Database = {
         }
         Returns: Json
       }
+      endpoint_probe_context: { Args: { p_endpoint: string }; Returns: Json }
       endpoint_turn_off: {
         Args: {
           p_actor?: string
@@ -140954,6 +142068,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      global_execution_exists: { Args: { p_id: string }; Returns: boolean }
       provider_set_state: {
         Args: {
           p_actor?: string
@@ -140963,6 +142078,7 @@ export type Database = {
         }
         Returns: Json
       }
+      tool_reliability: { Args: { p_tool_ids: string[] }; Returns: Json }
       tool_set_paused: {
         Args: {
           p_actor?: string
@@ -140989,7 +142105,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           metadata: Json
-          organization_id: string | null
+          organization_id: string
           pass_index: number
           processor_key: string
           recording_segment_id: string | null
@@ -141007,7 +142123,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           metadata?: Json
-          organization_id?: string | null
+          organization_id: string
           pass_index: number
           processor_key?: string
           recording_segment_id?: string | null
@@ -141025,7 +142141,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           metadata?: Json
-          organization_id?: string | null
+          organization_id?: string
           pass_index?: number
           processor_key?: string
           recording_segment_id?: string | null
@@ -141072,6 +142188,7 @@ export type Database = {
           kind: string
           label: string
           metadata: Json
+          organization_id: string
           pass_index: number
           run_id: string | null
           session_id: string
@@ -141088,6 +142205,7 @@ export type Database = {
           kind: string
           label: string
           metadata?: Json
+          organization_id: string
           pass_index: number
           run_id?: string | null
           session_id: string
@@ -141104,6 +142222,7 @@ export type Database = {
           kind?: string
           label?: string
           metadata?: Json
+          organization_id?: string
           pass_index?: number
           run_id?: string | null
           session_id?: string
@@ -141195,6 +142314,7 @@ export type Database = {
           id: string
           metadata: Json
           module_id: string
+          organization_id: string
           pass_index: number
           payload: Json
           run_id: string | null
@@ -141210,6 +142330,7 @@ export type Database = {
           id?: string
           metadata?: Json
           module_id: string
+          organization_id: string
           pass_index: number
           payload?: Json
           run_id?: string | null
@@ -141225,6 +142346,7 @@ export type Database = {
           id?: string
           metadata?: Json
           module_id?: string
+          organization_id?: string
           pass_index?: number
           payload?: Json
           run_id?: string | null
@@ -141257,6 +142379,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           metadata: Json
+          organization_id: string
           recording_segment_id: string | null
           session_id: string
           source: string
@@ -141272,6 +142395,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           metadata?: Json
+          organization_id: string
           recording_segment_id?: string | null
           session_id: string
           source?: string
@@ -141287,6 +142411,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           metadata?: Json
+          organization_id?: string
           recording_segment_id?: string | null
           session_id?: string
           source?: string
@@ -143426,6 +144551,7 @@ export type Database = {
           feedback_id: string
           id: string
           metadata: Json
+          organization_id: string
         }
         Insert: {
           author_name?: string | null
@@ -143436,6 +144562,7 @@ export type Database = {
           feedback_id: string
           id?: string
           metadata?: Json
+          organization_id: string
         }
         Update: {
           author_name?: string | null
@@ -143446,6 +144573,7 @@ export type Database = {
           feedback_id?: string
           id?: string
           metadata?: Json
+          organization_id?: string
         }
         Relationships: [
           {
@@ -143468,6 +144596,7 @@ export type Database = {
           image_file_ids: string[]
           image_urls: string[] | null
           metadata: Json
+          organization_id: string
           sender_name: string | null
           sender_type: string
         }
@@ -143481,6 +144610,7 @@ export type Database = {
           image_file_ids?: string[]
           image_urls?: string[] | null
           metadata?: Json
+          organization_id: string
           sender_name?: string | null
           sender_type: string
         }
@@ -143494,6 +144624,7 @@ export type Database = {
           image_file_ids?: string[]
           image_urls?: string[] | null
           metadata?: Json
+          organization_id?: string
           sender_name?: string | null
           sender_type?: string
         }
@@ -144882,6 +146013,7 @@ export type Database = {
           metadata: Json
           organization_id: string
           preferences: Json
+          recent_organization_ids: string[]
           startup_organization_id: string | null
           updated_at: string
           updated_by: string | null
@@ -144899,6 +146031,7 @@ export type Database = {
           metadata?: Json
           organization_id: string
           preferences: Json
+          recent_organization_ids?: string[]
           startup_organization_id?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -144916,6 +146049,7 @@ export type Database = {
           metadata?: Json
           organization_id?: string
           preferences?: Json
+          recent_organization_ids?: string[]
           startup_organization_id?: string | null
           updated_at?: string
           updated_by?: string | null

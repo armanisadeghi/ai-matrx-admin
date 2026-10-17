@@ -40,7 +40,8 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { getUserOrganizations } from "@/features/organizations/service";
+import { getMyOrganizationsByIds, getUserOrganizationsFirstPage } from "@/features/organizations/service";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import type { PartyKind } from "../../types";
 import {
   buildTemplateCsv,
@@ -105,6 +106,8 @@ export function ImportWizard() {
   // that reads as "you belong to none" (RC-B12 r13).
   const [orgsError, setOrgsError] = useState<unknown>(null);
   const [orgsAttempt, setOrgsAttempt] = useState(0);
+  // The first page of a longer list (bounded organizations): choose through the searchable chooser.
+  const [orgsPartial, setOrgsPartial] = useState(false);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [pastedText, setPastedText] = useState("");
@@ -127,9 +130,18 @@ export function ImportWizard() {
     let cancelled = false;
     void (async () => {
       try {
-        const list = await getUserOrganizations();
+        const first = await getUserOrganizationsFirstPage();
         if (cancelled) return;
-        setOrgs(list.map((o) => ({ id: o.id, name: o.name })));
+        const rows = first.organizations.map((o) => ({ id: o.id, name: o.name }));
+        // The default target (the active organization) may be beyond the page.
+        const named = activeOrgId ?? null;
+        if (first.hasMore && named && !rows.some((o) => o.id === named)) {
+          const extra = await getMyOrganizationsByIds([named]);
+          if (cancelled) return;
+          rows.push(...extra.filter((o) => !o.archivedAt).map((o) => ({ id: o.id, name: o.name })));
+        }
+        setOrgs(rows);
+        setOrgsPartial(first.hasMore);
         setOrgsError(null);
       } catch (e) {
         console.error("[crm-import] failed to load organizations:", e);
@@ -139,7 +151,7 @@ export function ImportWizard() {
     return () => {
       cancelled = true;
     };
-  }, [orgsAttempt]);
+  }, [orgsAttempt, activeOrgId]);
 
   const resolvedOrgId = orgId ?? activeOrgId ?? null;
   const selectedOrg = orgs.find(
@@ -395,6 +407,16 @@ export function ImportWizard() {
                 <span className="text-xs font-medium text-muted-foreground">
                   Into organization
                 </span>
+                {orgsPartial ? (
+                  <OrganizationChooser
+                    value={resolvedOrgId}
+                    valueName={selectedOrg?.name ?? null}
+                    onChange={(org) => {
+                      setOrgs((prev) => (prev.some((o) => o.id === org.id) ? prev : [...prev, { id: org.id, name: org.name }]));
+                      setOrgId(org.id);
+                    }}
+                  />
+                ) : (
                 <Select
                   value={resolvedOrgId ?? undefined}
                   onValueChange={(v) => setOrgId(v)}
@@ -410,6 +432,7 @@ export function ImportWizard() {
                     ))}
                   </SelectContent>
                 </Select>
+                )}
                 {orgsError != null && (
                   <ReadFailure
                     error={orgsError}

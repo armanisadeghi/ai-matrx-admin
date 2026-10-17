@@ -1,4 +1,4 @@
-import { addVital, readFirstHiddenTime, effectiveRate, isSampled, loadIsSampled, readStoredRouteRates, ROUTE_RATES_STORAGE_KEY, routeRateFor, routeRatesOf, writeStoredRouteRates, readStoredRate, RATE_STORAGE_KEY, writeStoredRate, routeTemplate, sampleRateOf, type VitalName, type VitalSample } from "./vitals";
+import { addVital, documentFirstByteMs, readFirstHiddenTime, effectiveRate, isSampled, loadIsSampled, readStoredRouteRates, ROUTE_RATES_STORAGE_KEY, routeRateFor, routeRatesOf, writeStoredRouteRates, readStoredRate, RATE_STORAGE_KEY, writeStoredRate, routeTemplate, sampleRateOf, type VitalName, type VitalSample } from "./vitals";
 
 describe("routeTemplate", () => {
   it("names dynamic params instead of their values", () => {
@@ -131,5 +131,23 @@ describe("hidden-start and restored loads", () => {
     expect(readFirstHiddenTime({ visibilityState: "hidden" }, perf([]))).toBe(0);
     expect(readFirstHiddenTime({ visibilityState: "hidden", prerendering: true }, perf([]))).toBe(Infinity);
     expect(readFirstHiddenTime({ visibilityState: "visible" }, perf([]))).toBe(Infinity);
+  });
+});
+
+describe("documentFirstByteMs — the page's own first byte, not the edge's 103 Early Hints", () => {
+  it("is the final response headers when an interim response came first (live: 104 ms hint, 1356 ms page)", () => {
+    expect(documentFirstByteMs({ responseStart: 104, finalResponseHeadersStart: 1356, activationStart: 0 })).toBe(1356);
+  });
+  it("falls back to responseStart where the browser has no final-headers field", () => {
+    expect(documentFirstByteMs({ responseStart: 420 })).toBe(420);
+    expect(documentFirstByteMs({ responseStart: 420, finalResponseHeadersStart: 0 })).toBe(420);
+  });
+  it("is measured from activation for a prerendered page, never negative", () => {
+    expect(documentFirstByteMs({ responseStart: 50, finalResponseHeadersStart: 900, activationStart: 300 })).toBe(600);
+    expect(documentFirstByteMs({ responseStart: 50, finalResponseHeadersStart: 200, activationStart: 300 })).toBe(0);
+  });
+  it("is null without a navigation entry", () => {
+    expect(documentFirstByteMs(undefined)).toBeNull();
+    expect(documentFirstByteMs({})).toBeNull();
   });
 });

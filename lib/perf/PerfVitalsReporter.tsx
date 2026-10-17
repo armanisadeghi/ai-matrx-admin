@@ -24,6 +24,7 @@ import { supabase } from "@/utils/supabase/client";
 import { resolveSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import {
   addVital,
+  documentFirstByteMs,
   effectiveRate,
   readFirstHiddenTime,
   isSampled,
@@ -93,18 +94,26 @@ function flush(): void {
 }
 
 // One stable callback per metric (web-vitals calls it as each metric finalizes).
+// TTFB is the page's own first byte, never the edge's 103 Early Hints (`documentFirstByteMs`).
 function onMetric(metric: { name: string; value: number; rating?: string; navigationType?: string }): void {
   if (dropped) return;
-  addVital(batch, metric, loadRoute ?? "/", vitalContext);
+  const realFirstByte = metric.name === "TTFB" ? documentFirstByteMs(navigationEntryOf()) : null;
+  const kept = realFirstByte === null ? metric : { ...metric, value: Math.max(metric.value, realFirstByte), rating: undefined };
+  addVital(batch, kept, loadRoute ?? "/", vitalContext);
+}
+
+type NavigationEntry = PerformanceNavigationTiming & { activationStart?: number; finalResponseHeadersStart?: number };
+
+function navigationEntryOf(): NavigationEntry | undefined {
+  try {
+    return performance.getEntriesByType("navigation")[0] as NavigationEntry | undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function activationStartOf(): number {
-  try {
-    const nav = performance.getEntriesByType("navigation")[0] as (PerformanceNavigationTiming & { activationStart?: number }) | undefined;
-    return nav?.activationStart ?? 0;
-  } catch {
-    return 0;
-  }
+  return navigationEntryOf()?.activationStart ?? 0;
 }
 
 /** Loads web-vitals once, after idle (never on the critical path), and subscribes to the five metrics. */

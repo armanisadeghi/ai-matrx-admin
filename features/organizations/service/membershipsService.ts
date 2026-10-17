@@ -80,29 +80,24 @@ function countsKey(containerType: string, containerIds: string[]): string {
   return `${containerType}::${[...new Set(containerIds)].sort().join(",")}`;
 }
 
-// THE BOOT SEED (first-paint fetch contract G1): the (core) layout read the person's organization
-// memberships and their member counts for this page load; the first boot reads answer from them.
-const organizationMembershipsSeed = createSeedHold<MbrForUserRow[]>();
+// THE BOOT SEED (first-paint fetch contract G1): the (core) layout read the member counts of the
+// first page of her organizations; the first boot count reads answer from them. Her memberships
+// are NOT seeded here: the seed holds one page (bounded organizations, 2026-10-16), and `forUser`
+// means ALL of them.
 const organizationCountsSeed = createSeedHold<Map<string, number>>();
 
-/** Hold the server's organization memberships + member counts for this page load's first reads. */
-export function primeOrganizationMembershipReads(
-  memberships: MbrForUserRow[],
-  counts: MbrCountRow[],
-): void {
-  organizationMembershipsSeed.put(memberships);
+/** Hold the server's organization member counts for this page load's first reads. */
+export function primeOrganizationMembershipReads(counts: MbrCountRow[]): void {
   organizationCountsSeed.put(new Map(counts.map((c) => [c.container_id, Number(c.member_count)])));
 }
 
 // A write or refresh (`forgetMemberOrganizationRows`) drops whatever of these is still unread.
 registerBootSeedForget(() => {
-  organizationMembershipsSeed.drop();
   organizationCountsSeed.drop();
 });
 
 /** Drop cached membership reads for `containerType` (e.g. after a write). */
 function invalidateForUserCache(containerType?: string): void {
-  if (!containerType || containerType === "organization") organizationMembershipsSeed.drop();
   if (!containerType) {
     forUserCache.clear();
     return;
@@ -136,7 +131,6 @@ function installSignOutHook(): void {
       countsCache.clear();
     }
     if (event === "SIGNED_OUT") {
-      organizationMembershipsSeed.drop();
       organizationCountsSeed.drop();
     }
   });
@@ -353,10 +347,6 @@ export const membershipsService = {
 
     const cached = forUserCache.get(key);
     if (cached && cached.expiresAt > Date.now()) return cached.value;
-
-    if (containerType === "organization") drainBootSeeds();
-    const seeded = containerType === "organization" ? organizationMembershipsSeed.take() : undefined;
-    if (seeded) return ok({ memberships: seeded.map(toUserMembership) });
 
     const pending = forUserInflight.get(key);
     if (pending) return pending;

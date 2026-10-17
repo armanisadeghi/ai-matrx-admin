@@ -48,7 +48,27 @@ function chain(door: string, answer: () => { data: unknown; error: null }) {
   return q;
 }
 
-function rpc(fn: string) {
+// THE BOUNDED READ (2026-10-16): one page of her organizations, by last use.
+const ENTRY = (orgId: string) => {
+  const m = MEMBERSHIPS.find((x) => x.container_id === orgId)!;
+  return {
+    organization: ORGS.find((o) => o.id === orgId),
+    role: m.role,
+    status: m.status,
+    joined_at: m.created_at,
+    member_count: COUNTS.find((c) => c.container_id === orgId)!.member_count,
+  };
+};
+let pageAnswer = () => ({ organizations: [ENTRY(ORG_A), ENTRY(ORG_B)], total: 2, has_more: false, next_cursor: null, page_size: 50 });
+let byIdsAnswer = (ids: string[]) => ({ organizations: ids.filter((id) => ORGS.some((o) => o.id === id)).map(ENTRY) });
+let lastByIds: string[] = [];
+
+function rpc(fn: string, args?: Record<string, unknown>) {
+  if (fn === "my_organizations_page") return chain(fn, () => ({ data: pageAnswer(), error: null }));
+  if (fn === "my_organizations_by_ids") {
+    lastByIds = (args?.p_ids as string[]) ?? [];
+    return chain(fn, () => ({ data: byIdsAnswer(lastByIds), error: null }));
+  }
   if (fn === "knob_defaults") return chain(fn, () => ({ data: { version: "d1", unchanged: false, defaults: { "billing.free_period_warning_days": 5 } }, error: null }));
   if (fn === "knob_snapshot_delta") return chain(fn, () => ({ data: { etag: "e1", defaults_version: "d1", overrides: { "chat.x": true } }, error: null }));
   if (fn === "mbr_for_user") return chain(fn, () => ({ data: MEMBERSHIPS, error: null }));
@@ -58,10 +78,10 @@ function rpc(fn: string) {
 
 const wire = {
   schema: (name: string) => ({
-    rpc,
+    rpc: (fn: string, args?: Record<string, unknown>) => rpc(fn, args),
     from: (table: string) => chain(`${name}.${table}`, () => ({ data: table === "organizations" ? ORGS : [PREFS_ROW], error: null })),
   }),
-  rpc,
+  rpc: (fn: string, args?: Record<string, unknown>) => rpc(fn, args),
   from: (table: string) => chain(`public.${table}`, () => ({ data: [], error: null })),
   auth: {
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
@@ -85,6 +105,10 @@ const RAW_SEED = {
   memberships: MEMBERSHIPS,
   organizations: ORGS,
   counts: COUNTS,
+  organizations_total: 2,
+  organizations_has_more: false,
+  organizations_next_cursor: null,
+  organizations_page_size: 50,
   preferences_row: PREFS_ROW,
   preferences_row_read: true,
 };
@@ -117,11 +141,12 @@ function warmStoredDefaults() {
   window.localStorage.setItem("knobs.defaults.v1", JSON.stringify({ version: "d1", values: { "billing.free_period_warning_days": 5 } }));
 }
 
-it("control (no seed): the boot's reads reach the wire", async () => {
+it("control (no seed): the boot's reads reach the wire — ONE page call, never every membership", async () => {
   await bootReads();
-  expect(calls.mbr_for_user).toBeGreaterThan(0);
-  expect(calls["iam.organizations"]).toBeGreaterThan(0);
-  expect(calls.mbr_count).toBeGreaterThan(0);
+  expect(calls.my_organizations_page).toBe(1);
+  expect(calls.mbr_for_user).toBeUndefined();
+  expect(calls["iam.organizations"]).toBeUndefined();
+  expect(calls.mbr_count).toBeUndefined();
   expect(calls["users.user_preferences"]).toBeGreaterThan(0);
   expect(calls.knob_snapshot_delta).toBeGreaterThan(0);
 });
@@ -165,7 +190,7 @@ it("an organization switch / membership change still re-reads (forget drops the 
   await readAccountPreferencesRow(USER);
   await getUserOrganizations();
   expect(calls["users.user_preferences"]).toBe(1);
-  expect(calls["iam.organizations"]).toBe(1);
+  expect(calls.my_organizations_page).toBe(1);
 });
 
 it("a tab that lands on ANOTHER organization reads its own knob snapshot", async () => {
@@ -236,7 +261,7 @@ describe("a seed answers the boot's first read, never a later one (review findin
     primeCoreBootSeed(seed());
     forgetMemberOrganizationRows();
     await getUserOrganizations();
-    expect(calls["iam.organizations"]).toBe(1);
+    expect(calls.my_organizations_page).toBe(1);
   });
 
   it("an organization write within the first minute makes the next membership read hit the database", async () => {
@@ -246,7 +271,7 @@ describe("a seed answers the boot's first read, never a later one (review findin
     later(10_000); // still inside the seed's 60 s life
     forgetMemberOrganizationRows(); // createOrganization / acceptInvitation / leaveOrganization
     await getUserOrganizations();
-    expect(calls.mbr_for_user).toBe(1);
+    expect(calls.my_organizations_page).toBe(1);
   });
 
   it("the preferences focus revalidation after boot reads the database", async () => {
@@ -264,5 +289,58 @@ describe("a seed answers the boot's first read, never a later one (review findin
     invalidateEffectiveKnob("chat.x"); // a settings directive lands before any read drained it
     await ensureKnobSnapshot(ORG_A, USER);
     expect(calls.knob_snapshot_delta).toBe(1);
+  });
+});
+
+describe("BOUNDED: a person in more organizations than one page (an agency, test@test.com)", () => {
+  const FAR = "5d4c3b2a-1908-4f7e-8d6c-5b4a39281706";
+  beforeEach(() => {
+    // Page 1 holds ORG_A only; 1,531 exist. ORG_B is beyond the page.
+    pageAnswer = () => ({ organizations: [ENTRY(ORG_A)], total: 1531, has_more: true, next_cursor: "o1", page_size: 1 });
+  });
+  afterEach(() => {
+    pageAnswer = () => ({ organizations: [ENTRY(ORG_A), ENTRY(ORG_B)], total: 2, has_more: false, next_cursor: null, page_size: 50 });
+  });
+  const bounded = () =>
+    parseCoreBootSeed(
+      { ...RAW_SEED, memberships: [MEMBERSHIPS[0]], organizations: [ORGS[0]], counts: [COUNTS[0]], organizations_total: 1531, organizations_has_more: true, organizations_next_cursor: "o1" },
+      USER,
+    )!;
+
+  it("is seeded (no 'too many' skip) and the boot reads nothing at all", async () => {
+    const parsed = bounded();
+    expect(parsed.organizationsTotal).toBe(1531);
+    expect(parsed.organizationsHasMore).toBe(true);
+    primeCoreBootSeed(parsed);
+    const orgs = await getUserOrganizations();
+    const ladder = await resolveActiveOrgContext(USER, {});
+    expect(orgs.map((o) => o.id)).toEqual([ORG_A]);
+    expect(ladder?.organization_id).toBe(ORG_A);
+    expect(total()).toBe(0);
+  });
+
+  it("an unseeded read is ONE page call — never mbr_for_user, never chunked organization reads", async () => {
+    await getUserOrganizations();
+    await resolveActiveOrgContext(USER, {});
+    expect(calls.my_organizations_page).toBe(1);
+    expect(calls.mbr_for_user).toBeUndefined();
+    expect(calls["iam.organizations"]).toBeUndefined();
+    expect(calls.mbr_count).toBeUndefined();
+  });
+
+  it("the ladder keeps a held organization beyond the page with ONE by-id question", async () => {
+    primeCoreBootSeed(bounded());
+    const held = await resolveActiveOrgContext(USER, { heldOrganizationId: ORG_B });
+    expect(held?.organization_id).toBe(ORG_B);
+    expect(calls.my_organizations_by_ids).toBe(1);
+    expect(lastByIds).toEqual([ORG_B]);
+    expect(calls.mbr_for_user).toBeUndefined();
+  });
+
+  it("a link to an organization she is not in, beyond the page, is checked by id and refused", async () => {
+    primeCoreBootSeed(bounded());
+    const linked = await resolveActiveOrgContext(USER, { linkOrganizationId: `org=${FAR}`, switchWhenALinkAsks: true });
+    expect(linked?.organization_id).toBe(ORG_A);
+    expect(lastByIds).toEqual([FAR]);
   });
 });

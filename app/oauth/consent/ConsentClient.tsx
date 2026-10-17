@@ -29,7 +29,8 @@ import {
 // first character: exactly what these copies did by hand.
 import { getInitials } from "@ai-matrx/kit/format";
 import { Select } from "@ai-matrx/design-system/controls";
-import { getUserOrganizations } from "@/features/organizations/service";
+import { getMyOrganizationsByIds, getUserOrganizationsFirstPage } from "@/features/organizations/service";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { activeOrgCookie } from "@/lib/organizations/activeOrgCookie";
 import { setMcpConnectionOrganization } from "@/features/connectors/connectionOrganization";
 
@@ -216,6 +217,9 @@ export default function ConsentClient() {
   // THE CONNECTION'S ORGANIZATION (2026-10-04): the app's own selection, shown and changeable;
   // approving files this AI app's work there, so the AI never has to ask.
   const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+  // Her organizations are a PAGE when she has more than one page of them (bounded organizations).
+  const [orgsPartial, setOrgsPartial] = useState(false);
+  const [connectionOrgName, setConnectionOrgName] = useState<string | null>(null);
   const [connectionOrgId, setConnectionOrgId] = useState("");
   const [actionLoading, setActionLoading] = useState<"approve" | "deny" | null>(
     null,
@@ -335,16 +339,21 @@ export default function ConsentClient() {
   useEffect(() => {
     if (pageState.kind !== "consent") return;
     const userId = pageState.user.sub;
-    void getUserOrganizations().then(
-      (list) => {
-        const rows = list.map((o) => ({ id: o.id, name: o.name }));
-        setOrgs(rows);
-        const stored = activeOrgCookie.read(userId);
-        const pick = rows.find((o) => o.id === stored)?.id ?? (rows.length === 1 ? rows[0].id : "");
-        setConnectionOrgId((current) => current || pick);
-      },
-      () => setOrgs([]),
-    );
+    void (async () => {
+      const first = await getUserOrganizationsFirstPage();
+      const rows = first.organizations.map((o) => ({ id: o.id, name: o.name }));
+      setOrgs(rows);
+      setOrgsPartial(first.hasMore);
+      const stored = activeOrgCookie.read(userId);
+      let pick = rows.find((o) => o.id === stored) ?? (rows.length === 1 && !first.hasMore ? rows[0] : null);
+      // The remembered organization may sit beyond the first page: ONE by-id question.
+      if (!pick && stored && first.hasMore) {
+        const [mine] = (await getMyOrganizationsByIds([stored])).filter((o) => !o.archivedAt);
+        if (mine) pick = { id: mine.id, name: mine.name };
+      }
+      if (pick) setConnectionOrgName(pick.name);
+      setConnectionOrgId((current) => current || pick?.id || "");
+    })().catch(() => setOrgs([]));
   }, [pageState]);
 
   async function handleApprove() {
@@ -486,6 +495,8 @@ export default function ConsentClient() {
               onApprove={handleApprove}
               onDeny={handleDeny}
               orgs={orgs}
+              orgsPartial={orgsPartial}
+              connectionOrgName={connectionOrgName}
               connectionOrgId={connectionOrgId}
               onConnectionOrg={setConnectionOrgId}
             />
@@ -616,6 +627,8 @@ function ConsentForm({
   onApprove,
   onDeny,
   orgs,
+  orgsPartial,
+  connectionOrgName,
   connectionOrgId,
   onConnectionOrg,
 }: {
@@ -625,6 +638,9 @@ function ConsentForm({
   onApprove: () => void;
   onDeny: () => void;
   orgs: { id: string; name: string }[];
+  /** `orgs` is the first page of a longer list: choose through the searchable chooser. */
+  orgsPartial: boolean;
+  connectionOrgName: string | null;
   connectionOrgId: string;
   onConnectionOrg: (id: string) => void;
 }) {
@@ -744,7 +760,16 @@ function ConsentForm({
       </div>
 
       {/* Where this app works — the person's own selection, never asked again by the AI */}
-      {orgs.length > 1 ? (
+      {orgsPartial ? (
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">Works in</span>
+          <OrganizationChooser
+            value={connectionOrgId || null}
+            valueName={connectionOrgName}
+            onChange={(org) => onConnectionOrg(org.id)}
+          />
+        </div>
+      ) : orgs.length > 1 ? (
         <div className="mb-4 flex items-center justify-between gap-3">
           <span className="text-xs text-muted-foreground">Works in</span>
           <Select

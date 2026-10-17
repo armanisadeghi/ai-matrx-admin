@@ -27,9 +27,16 @@
 // (`accountOrganizationChoices.ts`); nothing else may read them to decide where
 // anything acts.
 
-import { getUserOrganizations } from "@/features/organizations/service";
+import {
+  getMyOrganizationsByIds,
+  getUserOrganizationsFirstPage,
+  getUserOrganizationsPage,
+} from "@/features/organizations/service";
+import type { OrganizationWithRole } from "@/features/organizations/types";
 import { readAccountOrganizationChoices } from "@/lib/organizations/accountOrganizationChoices";
 import {
+  classifyLinkOrganizationValue,
+  readLinkOrganizationParam,
   resolveOrganizationWithLink,
   type LinkOrganizationDecision,
 } from "@ai-matrx/auth/organizations";
@@ -91,7 +98,7 @@ export async function resolveActiveOrgContext(
   userId: string,
   options: ResolveActiveOrgContextOptions = {},
 ): Promise<ResolvedOrgContext | null> {
-  const orgs = await getUserOrganizations();
+  const orgs = await ladderMemberships(options);
 
   // No memberships at all. With nothing to belong to there is nothing to
   // select and nothing to ask about; the caller renders the honest "you belong
@@ -130,4 +137,36 @@ export async function resolveActiveOrgContext(
     organization_name: r.organization.name,
     ...(r.link.kind === "no-link" ? {} : { link: r.link }),
   };
+}
+
+/**
+ * THE LADDER'S MEMBERSHIPS, BOUNDED (2026-10-16). The first page of her live organizations is
+ * ordered by last use, so last active and start-up are on it. The two rungs that can name an
+ * organization beyond it — this tab's held one and the link's — are confirmed by ONE by-id call
+ * (or one slug search), never by reading every membership.
+ */
+async function ladderMemberships(options: ResolveActiveOrgContextOptions): Promise<OrganizationWithRole[]> {
+  const first = await getUserOrganizationsFirstPage();
+  if (!first.hasMore) return first.organizations;
+  const onPage = new Set(first.organizations.map((o) => o.id));
+  const wantedIds = new Set<string>();
+  if (options.heldOrganizationId && !onPage.has(options.heldOrganizationId)) wantedIds.add(options.heldOrganizationId);
+  let wantedSlug: string | null = null;
+  if (options.linkOrganizationId) {
+    const raw = options.linkOrganizationId;
+    // The resolver accepts the raw value OR a query string / URLSearchParams — read it the same way.
+    const link =
+      typeof raw === "string" && !raw.includes("=") ? classifyLinkOrganizationValue(raw) : readLinkOrganizationParam(raw);
+    if (link.kind === "named" && !onPage.has(link.organizationId)) wantedIds.add(link.organizationId);
+    if (link.kind === "addressed" && !first.organizations.some((o) => o.slug === link.slug)) wantedSlug = link.slug;
+  }
+  const extra: OrganizationWithRole[] = [];
+  if (wantedIds.size > 0) {
+    extra.push(...(await getMyOrganizationsByIds([...wantedIds])).filter((o) => !o.archivedAt));
+  }
+  if (wantedSlug) {
+    const found = await getUserOrganizationsPage({ search: wantedSlug, limit: 10 });
+    extra.push(...found.organizations.filter((o) => o.slug === wantedSlug));
+  }
+  return [...first.organizations, ...extra.filter((o) => !onPage.has(o.id))];
 }

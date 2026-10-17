@@ -1,33 +1,52 @@
 // features/organizations/service/memberOrganizationRows.ts — lane PAGE-BUNDLE-2
 //
-// HER ORGANIZATIONS ARE READ ONCE PER PAGE LOAD, NOT FOUR TIMES.
+// HER ORGANIZATIONS ARE READ ONCE PER PAGE LOAD, NOT FOUR TIMES — AND NEVER WHOLE (bounded
+// organizations, 2026-10-16: the first page, see `MemberOrganizationRows`).
 //
 // Every page load read `iam.organizations` for the same person from three places a moment apart —
 // the member list (`getUserOrganizations`, once per archive filter), the scope tree's skeleton and
 // its whole tree — measured on production at 8 organization calls per page for admin@admin.com.
-// They now share ONE read: her memberships, then EVERY organization row she is a member of
-// (`select *`, archived included — each caller filters what it shows, as before). Shared while in
+// They now share ONE read per archive slice: the first page of `iam.my_organizations_page` (rows,
+// roles, join dates, member counts in one fixed-URL call). Shared while in
 // flight and for SHARED_MS after it lands; a write that changes her organizations, or an explicit
 // refresh, forgets it (`forgetMemberOrganizationRows`). A failed read is never shared past its flight.
 
-import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
-import { membershipsService } from "@/features/organizations/service/membershipsService";
-import { readInChunks } from "@/features/scopes/service/inChunks";
-import { isRecordsErr } from "@ai-matrx/records/results";
 import type { Database } from "@/types/database.types";
 import { SEED_MAX_AGE_MS } from "@/lib/sharedReads";
 import { drainBootSeeds, dropUnreadBootSeeds } from "@/lib/boot/bootSeedSlot";
+import {
+  readMyOrganizationsPage,
+  type MyOrganizationEntry,
+  type OrganizationArchiveSlice,
+} from "./myOrganizationsPage";
 
 export type MemberOrganizationRow = Database["iam"]["Tables"]["organizations"]["Row"];
 
+/**
+ * 🚨 A PAGE, NEVER ASSUMED WHOLE (bounded organizations, 2026-10-16). `rows` is the FIRST PAGE of
+ * her organizations in the asked archive slice (ordered by last use; page size = the knob
+ * `organizations.switcher_page_size`). `hasMore` true means more exist: page or search through
+ * `iam.my_organizations_page` (`myOrganizationsPage.ts`), look one up by id through
+ * `iam.my_organizations_by_ids` — never read them all.
+ */
 export type MemberOrganizationRows =
-  | { ok: true; roleByOrgId: Map<string, string>; joinedAtByOrgId: Map<string, string>; rows: MemberOrganizationRow[] }
+  | {
+      ok: true;
+      roleByOrgId: Map<string, string>;
+      joinedAtByOrgId: Map<string, string>;
+      memberCountByOrgId: Map<string, number>;
+      rows: MemberOrganizationRow[];
+      total: number;
+      hasMore: boolean;
+      nextCursor: string | null;
+    }
   | { ok: false; stage: "memberships"; error: { message: string; code?: string } }
   | { ok: false; stage: "organizations"; error: { message: string; code?: string; details?: string; hint?: string } };
 
 const SHARED_MS = 5_000;
-let shared: { userId: string; at: number; read: Promise<MemberOrganizationRows>; seededAt?: number } | null = null;
+type SharedEntry = { userId: string; at: number; read: Promise<MemberOrganizationRows>; seededAt?: number };
+const shared = new Map<OrganizationArchiveSlice, SharedEntry>();
 
 /** Role and join date per organization, from her memberships (the server seed builds the same maps). */
 export function membershipMaps(
@@ -43,30 +62,38 @@ export function membershipMaps(
   return { roleByOrgId, joinedAtByOrgId };
 }
 
-async function readOnce(): Promise<MemberOrganizationRows> {
-  const memberships = await membershipsService.forUser("organization");
-  if (isRecordsErr(memberships)) {
-    return { ok: false, stage: "memberships", error: { message: memberships.error.message, code: memberships.error.code } };
-  }
-  const { roleByOrgId, joinedAtByOrgId } = membershipMaps(memberships.data.memberships);
-  const orgIds = [...roleByOrgId.keys()];
-  if (orgIds.length === 0) return { ok: true, roleByOrgId, joinedAtByOrgId, rows: [] };
-  // ONE GET url carries ~100 ids, not a person's ~1000 memberships: read in chunks.
-  const { data, error } = await readInChunks(orgIds, (chunk) =>
-    supabase.schema("iam").from("organizations").select("*").in("id", chunk),
+/** One page of `iam.my_organizations_page` → the shared shape. */
+export function memberRowsFromEntries(
+  entries: readonly MyOrganizationEntry[],
+  page: { total: number; hasMore: boolean; nextCursor: string | null },
+): MemberOrganizationRows & { ok: true } {
+  const { roleByOrgId, joinedAtByOrgId } = membershipMaps(
+    entries.map((e) => ({ containerId: e.organization.id, role: e.role, status: e.status, createdAt: e.joinedAt })),
   );
-  if (error) {
-    const e = error as { message?: string; code?: string; details?: string; hint?: string };
-    return { ok: false, stage: "organizations", error: { message: e.message ?? "The organizations could not be read.", code: e.code, details: e.details, hint: e.hint } };
-  }
-  return { ok: true, roleByOrgId, joinedAtByOrgId, rows: (data ?? []) as MemberOrganizationRow[] };
+  return {
+    ok: true,
+    roleByOrgId,
+    joinedAtByOrgId,
+    memberCountByOrgId: new Map(entries.map((e) => [e.organization.id, e.memberCount])),
+    rows: entries.map((e) => e.organization),
+    total: page.total,
+    hasMore: page.hasMore,
+    nextCursor: page.nextCursor,
+  };
 }
 
-/** Her memberships and every organization row she is a member of — one read, shared. */
-export function readMemberOrganizationRows(): Promise<MemberOrganizationRows> {
+async function readOnce(archive: OrganizationArchiveSlice): Promise<MemberOrganizationRows> {
+  // ONE fixed-URL call for any membership count — never a chunked read of every row.
+  const answer = await readMyOrganizationsPage({ archive });
+  if (!answer.ok) return { ok: false, stage: "organizations", error: answer.error };
+  return memberRowsFromEntries(answer.page.entries, answer.page);
+}
+
+/** The first page of her organizations in `archive` (default: live ones) — one read, shared. */
+export function readMemberOrganizationRows(archive: OrganizationArchiveSlice = "active"): Promise<MemberOrganizationRows> {
   const userId = requireUserId();
   drainBootSeeds(); // a streamed boot seed that has arrived answers first
-  const held = shared;
+  const held = shared.get(archive);
   if (held?.seededAt !== undefined) {
     // The first read turns the seed into an ordinary held read (aging from now, `SHARED_MS`).
     if (held.userId === userId && Date.now() - held.seededAt < SEED_MAX_AGE_MS) {
@@ -74,21 +101,21 @@ export function readMemberOrganizationRows(): Promise<MemberOrganizationRows> {
       held.at = Date.now();
       return held.read;
     }
-    shared = null;
+    shared.delete(archive);
   } else if (held && held.userId === userId && (held.at === 0 || Date.now() - held.at < SHARED_MS)) return held.read;
-  const entry: { userId: string; at: number; read: Promise<MemberOrganizationRows> } = { userId, at: 0, read: Promise.resolve({ ok: true, roleByOrgId: new Map(), joinedAtByOrgId: new Map(), rows: [] }) };
-  entry.read = readOnce().then(
+  const entry: SharedEntry = { userId, at: 0, read: Promise.resolve({ ok: false, stage: "organizations", error: { message: "not read yet" } }) };
+  entry.read = readOnce(archive).then(
     (answer) => {
       if (answer.ok) entry.at = Date.now();
-      else if (shared === entry) shared = null;
+      else if (shared.get(archive) === entry) shared.delete(archive);
       return answer;
     },
     (thrown: unknown) => {
-      if (shared === entry) shared = null;
+      if (shared.get(archive) === entry) shared.delete(archive);
       throw thrown;
     },
   );
-  shared = entry;
+  shared.set(archive, entry);
   return entry.read;
 }
 
@@ -98,12 +125,12 @@ export function readMemberOrganizationRows(): Promise<MemberOrganizationRows> {
  * like any held read.
  */
 export function primeMemberOrganizationRows(userId: string, answer: MemberOrganizationRows & { ok: true }): void {
-  if (shared) return; // a read already flew or landed
-  shared = { userId, at: Date.now(), read: Promise.resolve(answer), seededAt: Date.now() };
+  if (shared.has("active")) return; // a read already flew or landed
+  shared.set("active", { userId, at: Date.now(), read: Promise.resolve(answer), seededAt: Date.now() });
 }
 
 /** A write that changed her organizations, or a refresh: the next read asks again. */
 export function forgetMemberOrganizationRows(): void {
-  shared = null;
+  shared.clear();
   dropUnreadBootSeeds(); // no boot seed outlives a write or refresh
 }

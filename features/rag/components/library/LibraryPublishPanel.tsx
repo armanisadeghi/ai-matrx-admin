@@ -44,7 +44,8 @@ import {
   type LibraryEntityType,
 } from "@/features/rag/hooks/useLibraryGrants";
 import { useIndustries } from "@/features/industries/hooks";
-import { getUserOrganizations } from "@/features/organizations/service";
+import { getUserOrganizationsFirstPage } from "@/features/organizations/service";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { orgNameDistinguisher } from "@/features/scopes/utils/formatOrgDisplayName";
 
 export interface PublishOrganizationOption {
@@ -85,6 +86,9 @@ export function LibraryPublishPanel({
   const [industryId, setIndustryId] = useState<string>("");
   const [organizationId, setOrganizationId] = useState<string>("");
   const [fallbackOrgs, setFallbackOrgs] = useState<PublishOrganizationOption[]>([]);
+  // Her own organizations are a PAGE of a longer list (bounded organizations): search instead.
+  const [fallbackPartial, setFallbackPartial] = useState(false);
+  const [chosenOrgName, setChosenOrgName] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const orgOptions = organizationOptions ?? fallbackOrgs;
@@ -98,9 +102,11 @@ export function LibraryPublishPanel({
   useEffect(() => {
     if (!isOpen || organizationOptions) return;
     let cancelled = false;
-    getUserOrganizations()
-      .then((orgs) => {
-        if (!cancelled) setFallbackOrgs(orgs.map((o) => ({ id: o.id, name: o.name, slug: o.slug })));
+    getUserOrganizationsFirstPage()
+      .then((first) => {
+        if (cancelled) return;
+        setFallbackOrgs(first.organizations.map((o) => ({ id: o.id, name: o.name, slug: o.slug })));
+        setFallbackPartial(first.hasMore);
       })
       .catch((e) => {
         console.error("[LibraryPublishPanel] could not load orgs:", e);
@@ -249,6 +255,17 @@ export function LibraryPublishPanel({
                 ? " This is how a proposed pack is piloted with one customer before ratification."
                 : ""}
             </p>
+            {!organizationOptions && fallbackPartial ? (
+              <OrganizationChooser
+                value={organizationId || null}
+                valueName={chosenOrgName}
+                placeholder="Choose an organization…"
+                onChange={(org) => {
+                  setChosenOrgName(org.name);
+                  setOrganizationId(org.id);
+                }}
+              />
+            ) : (
             <Select value={organizationId} onValueChange={setOrganizationId}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose an organization…" />
@@ -268,6 +285,7 @@ export function LibraryPublishPanel({
                 })}
               </SelectContent>
             </Select>
+            )}
             <Button
               icon={busy ? <Loader2 className="animate-spin" /> : null}
               variant="primary"

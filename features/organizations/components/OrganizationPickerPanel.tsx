@@ -11,8 +11,16 @@
 // `activeOrgCookieMiddleware`), so Studio wakes up in the same organization.
 
 import { OrganizationPicker } from "@ai-matrx/design-system";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useActiveOrganizationPicker } from "@/features/organizations/hooks/useActiveOrganizationPicker";
 import { useOrganizationFavorites } from "@/features/organizations/hooks/useOrganizationFavorites";
+import { pagedPickerProps, usePagedOrganizations } from "@/features/organizations/hooks/usePagedOrganizations";
+import type { OrganizationWithRole } from "@/features/organizations/types";
+
+// 🚨 BOUNDED (2026-10-16): the rows are the shared FIRST PAGE of her live organizations by last
+// use (`usePagedOrganizations`), never the whole list. When it is a page, the picker's search goes
+// to the server and "Show more" pages it (`OrganizationPicker`'s `more`).
 
 export function OrganizationPickerPanel({
   hideHeading = false,
@@ -21,28 +29,49 @@ export function OrganizationPickerPanel({
   hideHeading?: boolean;
   itemClassName?: string;
 }) {
-  const { activeOrgId, organizations, loading, loadFailed, selectOrganization } =
-    useActiveOrganizationPicker();
+  const { activeOrgId, selectOrganization } = useActiveOrganizationPicker({ load: false });
+  const paged = usePagedOrganizations();
+  const userId = useAppSelector(selectUserId);
   const { favoriteIds, toggleFavorite } = useOrganizationFavorites();
 
   return (
     <OrganizationPicker
       hideHeading={hideHeading}
       itemClassName={itemClassName}
-      organizations={toPickerOrganizations(organizations)}
+      organizations={toPickerOrganizations(paged.organizations.map((org) => toPickerSource(org, userId)))}
       activeOrganizationId={activeOrgId}
       favoriteOrganizationIds={favoriteIds}
-      loading={loading}
-      loadFailed={loadFailed}
+      loading={paged.loading}
+      loadFailed={Boolean(paged.error) && paged.organizations.length === 0}
+      {...pagedPickerProps(paged)}
       onSelect={(org) => selectOrganization(org.id, org.name)}
       onToggleFavorite={toggleFavorite}
     />
   );
 }
 
-type PickerSourceOrganization = ReturnType<
-  typeof useActiveOrganizationPicker
->["organizations"][number];
+/** What the picker needs of an organization — a scope-tree node and a page row both carry it. */
+type PickerSourceOrganization = {
+  id: string;
+  name: string;
+  abbreviation?: string | null;
+  slug: string;
+  is_test_fixture?: boolean;
+  is_own?: boolean;
+};
+
+/** A page row → the picker's source shape (the same classification the scope tree stores). */
+function toPickerSource(org: OrganizationWithRole, viewerId: string | null): PickerSourceOrganization {
+  const settings = org.settings as Record<string, unknown> | undefined;
+  return {
+    id: org.id,
+    name: org.name,
+    abbreviation: org.abbreviation,
+    slug: org.slug,
+    is_test_fixture: !!settings && typeof settings === "object" && "test_fixture" in settings,
+    is_own: !!org.createdBy && org.createdBy === viewerId,
+  };
+}
 
 /**
  * A membership as the shared `OrganizationPicker` draws it. ONE mapping, used

@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   loadMemberOrganizations,
+  loadMoreMemberOrganizations,
   memberOrganizationsInvalidated,
   memberOrganizationsKey,
   selectMemberOrganizations,
@@ -57,7 +58,9 @@ import { DEFAULT_ARCHIVE_FILTER } from "@ai-matrx/design-system";
 // ============================================================================
 
 /**
- * Hook to get all organizations for current user.
+ * Hook to get the person's organizations — 🚨 THE FIRST PAGE, by last use, never assumed whole
+ * (bounded organizations, 2026-10-16). `hasMore` true = more exist (`total` in all): `loadMore`
+ * appends the next page; a picker searches server-side (`usePagedOrganizations`).
  *
  * THE ARCHIVED-ITEMS LAW: `archived` defaults to "active", so every caller
  * hides archived organizations unless it asks for them. A surface that offers
@@ -87,11 +90,21 @@ export function useUserOrganizations(
     if (canFetch && userId) void dispatch(loadMemberOrganizations({ userId, archiveFilter, force: true }));
   };
 
+  const loadMore = () => {
+    if (canFetch && userId) void dispatch(loadMoreMemberOrganizations({ userId, archiveFilter }));
+  };
+
   return {
     organizations: entry?.organizations ?? NO_ORGANIZATIONS,
     loading: key === null || !entry || entry.organizations === null,
     error: entry?.error ?? null,
     refresh,
+    /** How many she has in all (this archive slice); null until the first page lands. */
+    total: entry?.total ?? null,
+    /** More exist than are loaded: never treat `organizations` as all of them. */
+    hasMore: entry?.hasMore ?? false,
+    loadingMore: entry?.loadingMore ?? false,
+    loadMore,
   };
 }
 

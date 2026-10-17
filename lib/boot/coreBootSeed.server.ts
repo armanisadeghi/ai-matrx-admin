@@ -60,8 +60,6 @@ async function readSeed(supabase: ServerClient, userId: string, ms: number): Pro
     console.warn(`[core-boot-seed] iam.core_boot_seed failed: ${answer.error.message}`);
     return null;
   }
-  // Over 200 organizations the seed would be megabytes on the page: not seeded, by design.
-  if ((answer.data as { too_many?: unknown } | null)?.too_many) return null;
   const seed = parseCoreBootSeed(answer.data, userId);
   if (!seed) console.warn("[core-boot-seed] iam.core_boot_seed answered an unexpected shape; not seeding");
   else if (Date.now() - started > CORE_SEED_DEADLINE_MS) {

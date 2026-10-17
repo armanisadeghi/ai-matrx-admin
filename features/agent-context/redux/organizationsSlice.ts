@@ -11,9 +11,12 @@ import { archiveOrganization as archiveOrganizationDoor } from "@/features/organ
 import { supabase } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { requireUserId } from "@/utils/auth/getUserId";
-import { membershipsService } from "@/features/organizations/service/membershipsService";
+import { readMyOrganizationsByIds } from "@/features/organizations/service/myOrganizationsPage";
 import type { NavOrganization } from "./hierarchySlice";
-import { getUserOrganizations } from "@/features/organizations/service";
+import {
+  getUserOrganizationsFirstPage,
+  getUserOrganizationsPage,
+} from "@/features/organizations/service";
 import type { OrganizationWithRole } from "@/features/organizations/types";
 import type { OrganizationArchiveFilter } from "@/features/organizations/service/organizationArchive";
 
@@ -62,7 +65,16 @@ const orgsAdapter = createEntityAdapter<OrgRecord>();
  * change made here marks every list `stale` and the views on screen re-read.
  */
 export interface MemberOrganizationsEntry {
+  /**
+   * 🚨 A PAGE, NEVER ASSUMED WHOLE (bounded organizations, 2026-10-16): the pages read so far, by
+   * last use. `hasMore` = more exist (`total` in all): page with `loadMoreMemberOrganizations`,
+   * search server-side (`useOrganizationSearch`), look one up by id — never read them all.
+   */
   organizations: OrganizationWithRole[] | null;
+  total: number | null;
+  hasMore: boolean;
+  nextCursor: string | null;
+  loadingMore: boolean;
   loading: boolean;
   error: string | null;
   stale: boolean;
@@ -119,12 +131,11 @@ export const fetchOrg = createAsyncThunk<FetchOrgResult, string>(
     if (error) throw error;
     if (!data) return { status: "missing", id: orgId };
 
-    // Also get the user's role in this org — canonical membership read.
+    // Her role in this ONE organization — a by-id question, never all of her memberships.
     requireUserId();
-    const membersResult = await membershipsService.forUser("organization");
-    const role = membersResult.ok
-      ? (membersResult.data.memberships.find((m) => m.containerId === orgId)
-          ?.role ?? "member")
+    const mine = await readMyOrganizationsByIds([orgId]);
+    const role = mine.ok
+      ? (mine.entries.find((e) => e.organization.id === orgId)?.role ?? "member")
       : "member";
 
     return {
@@ -137,16 +148,16 @@ export const fetchOrg = createAsyncThunk<FetchOrgResult, string>(
   },
 );
 
-/** Read the person's organizations into `memberLists` (once, unless `force` or stale). */
+/** Read the FIRST PAGE of the person's organizations into `memberLists` (once, unless `force` or stale). */
 export const loadMemberOrganizations = createAsyncThunk<
-  { key: string; organizations: OrganizationWithRole[] },
+  { key: string; organizations: OrganizationWithRole[]; total: number; hasMore: boolean; nextCursor: string | null },
   { userId: string; archiveFilter: OrganizationArchiveFilter; force?: boolean },
   { state: StateWithOrgs }
 >(
   "organizations/loadMemberLists",
   async ({ userId, archiveFilter }) => ({
     key: memberOrganizationsKey(userId, archiveFilter),
-    organizations: await getUserOrganizations(archiveFilter),
+    ...(await getUserOrganizationsFirstPage(archiveFilter)),
   }),
   {
     condition: ({ userId, archiveFilter, force }, { getState }) => {
@@ -154,6 +165,26 @@ export const loadMemberOrganizations = createAsyncThunk<
       if (!entry) return true;
       if (entry.loading) return false;
       return Boolean(force) || entry.stale;
+    },
+  },
+);
+
+/** Append the NEXT page to a member list (one `iam.my_organizations_page` call). */
+export const loadMoreMemberOrganizations = createAsyncThunk<
+  { key: string; organizations: OrganizationWithRole[]; total: number; hasMore: boolean; nextCursor: string | null },
+  { userId: string; archiveFilter: OrganizationArchiveFilter },
+  { state: StateWithOrgs }
+>(
+  "organizations/loadMoreMemberLists",
+  async ({ userId, archiveFilter }, { getState }) => {
+    const key = memberOrganizationsKey(userId, archiveFilter);
+    const cursor = getState().organizations.memberLists[key]?.nextCursor ?? null;
+    return { key, ...(await getUserOrganizationsPage({ cursor, archiveFilter })) };
+  },
+  {
+    condition: ({ userId, archiveFilter }, { getState }) => {
+      const entry = getState().organizations.memberLists[memberOrganizationsKey(userId, archiveFilter)];
+      return Boolean(entry && entry.hasMore && entry.nextCursor && !entry.loadingMore && !entry.loading);
     },
   },
 );
@@ -263,23 +294,63 @@ const organizationsSlice = createSlice({
           entry.loading = true;
           entry.stale = false;
         } else {
-          state.memberLists[key] = { organizations: null, loading: true, error: null, stale: false };
+          state.memberLists[key] = {
+            organizations: null,
+            total: null,
+            hasMore: false,
+            nextCursor: null,
+            loadingMore: false,
+            loading: true,
+            error: null,
+            stale: false,
+          };
         }
       })
       .addCase(loadMemberOrganizations.fulfilled, (state, action) => {
         const entry = state.memberLists[action.payload.key];
         state.memberLists[action.payload.key] = {
           organizations: action.payload.organizations,
+          total: action.payload.total,
+          hasMore: action.payload.hasMore,
+          nextCursor: action.payload.nextCursor,
+          loadingMore: false,
           loading: false,
           error: null,
           stale: entry?.stale ?? false,
         };
+      })
+      .addCase(loadMoreMemberOrganizations.pending, (state, action) => {
+        const entry = state.memberLists[memberOrganizationsKey(action.meta.arg.userId, action.meta.arg.archiveFilter)];
+        if (entry) entry.loadingMore = true;
+      })
+      .addCase(loadMoreMemberOrganizations.fulfilled, (state, action) => {
+        const entry = state.memberLists[action.payload.key];
+        if (!entry) return;
+        const seen = new Set((entry.organizations ?? []).map((o) => o.id));
+        entry.organizations = [
+          ...(entry.organizations ?? []),
+          ...action.payload.organizations.filter((o) => !seen.has(o.id)),
+        ];
+        entry.total = action.payload.total;
+        entry.hasMore = action.payload.hasMore;
+        entry.nextCursor = action.payload.nextCursor;
+        entry.loadingMore = false;
+      })
+      .addCase(loadMoreMemberOrganizations.rejected, (state, action) => {
+        const entry = state.memberLists[memberOrganizationsKey(action.meta.arg.userId, action.meta.arg.archiveFilter)];
+        if (!entry) return;
+        entry.loadingMore = false;
+        entry.error = action.error.message ?? "Failed to fetch more organizations";
       })
       .addCase(loadMemberOrganizations.rejected, (state, action) => {
         const key = memberOrganizationsKey(action.meta.arg.userId, action.meta.arg.archiveFilter);
         const entry = state.memberLists[key];
         state.memberLists[key] = {
           organizations: entry?.organizations ?? null,
+          total: entry?.total ?? null,
+          hasMore: entry?.hasMore ?? false,
+          nextCursor: entry?.nextCursor ?? null,
+          loadingMore: false,
           loading: false,
           error: action.error.message ?? "Failed to fetch organizations",
           stale: entry?.stale ?? false,

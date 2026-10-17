@@ -53,8 +53,13 @@ import {
 import { emailErrorMessage } from "@/lib/email/error-message";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { makeCreatedOrganizationActive } from "./madeOrganizationIsActive";
-import { idChunks } from "@/features/scopes/service/inChunks";
 import { forgetMemberOrganizationRows, readMemberOrganizationRows } from "./service/memberOrganizationRows";
+import {
+  readMyOrganizationsByIds,
+  readMyOrganizationsPage,
+  type MyOrganizationEntry,
+  type MyOrganizationsPageQuery,
+} from "./service/myOrganizationsPage";
 
 // ============================================================================
 // Organization CRUD Operations
@@ -384,66 +389,89 @@ export async function getOrganizationBySlugOrId(
   return getOrganizationBySlug(slugOrId);
 }
 
+/** One page entry → the app's organization-with-role. */
+function toOrganizationWithRole(entry: MyOrganizationEntry): OrganizationWithRole {
+  const org = transformOrganizationFromDb(entry.organization);
+  return {
+    ...org,
+    role: toOrgRole(entry.role),
+    memberCount: entry.memberCount,
+    ...(entry.joinedAt ? { joinedAt: entry.joinedAt } : {}),
+  };
+}
+
+const ARCHIVE_SLICE = { active: "active", archived: "archived", all: "all" } as const;
+
 /**
- * Get all organizations for current user
- * @returns Array of organizations with user's role
+ * 🚨 THE FIRST PAGE of her organizations — NEVER ASSUMED TO BE ALL OF THEM (bounded
+ * organizations, 2026-10-16). Ordered by last use (last active, start-up, recent switches, then
+ * name); page size = the knob `organizations.switcher_page_size`. A person in more organizations
+ * than one page (an agency, test@test.com) gets the first page here: a picker pages and searches
+ * through `getUserOrganizationsPage`, a by-id question asks `getMyOrganizationsByIds`.
+ * THE ARCHIVED-ITEMS LAW: the default HIDES archived organizations; the reveal is this parameter.
  */
 export async function getUserOrganizations(
   archiveFilter: OrganizationArchiveFilter = DEFAULT_ARCHIVE_FILTER,
 ): Promise<OrganizationWithRole[]> {
-  requireUserId();
+  return (await getUserOrganizationsFirstPage(archiveFilter)).organizations;
+}
 
-  // ONE READ OF HER ORGANIZATIONS PER PAGE LOAD (lane PAGE-BUNDLE-2): her memberships and every
-  // organization row she is in, shared with the scope tree's boot reads
-  // (`memberOrganizationRows.ts`). THE ARCHIVED-ITEMS LAW is applied here, on the shared rows: the
-  // default HIDES archived organizations, and the reveal is this one parameter.
-  const shared = await readMemberOrganizationRows();
+export interface UserOrganizationsPage {
+  organizations: OrganizationWithRole[];
+  total: number;
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
+/** The shared first page (seeded at boot, shared per archive slice) with its paging facts. */
+export async function getUserOrganizationsFirstPage(
+  archiveFilter: OrganizationArchiveFilter = DEFAULT_ARCHIVE_FILTER,
+): Promise<UserOrganizationsPage> {
+  requireUserId();
+  const shared = await readMemberOrganizationRows(ARCHIVE_SLICE[archiveFilter]);
   if (!shared.ok) {
-    if (shared.stage === "memberships") {
-      // The Supabase capture boundary already owns the structured error. Throw only to preserve
-      // failure semantics for the UI; do not mirror it to the console (a duplicate incident).
-      throw new Error(shared.error.message);
-    }
+    // The Supabase capture boundary already owns the structured error. Throw only to preserve
+    // failure semantics for the UI; do not mirror it to the console (a duplicate incident).
     throw pgErrorToError(shared.error as Parameters<typeof pgErrorToError>[0]);
   }
-  if (shared.roleByOrgId.size === 0) return [];
-  const roleByOrgId = new Map<string, OrgRole>();
-  for (const [orgId, role] of shared.roleByOrgId) roleByOrgId.set(orgId, toOrgRole(role));
-  const orgIds = [...roleByOrgId.keys()];
-  const orgRows = shared.rows.filter((row) =>
-    archiveFilter === "active" ? !row.archived_at : archiveFilter === "archived" ? Boolean(row.archived_at) : true,
+  const organizations = shared.rows.map((row) =>
+    toOrganizationWithRole({
+      organization: row,
+      role: shared.roleByOrgId.get(row.id) ?? "member",
+      status: shared.joinedAtByOrgId.has(row.id) ? "active" : "inactive",
+      joinedAt: shared.joinedAtByOrgId.get(row.id) ?? null,
+      memberCount: shared.memberCountByOrgId.get(row.id) ?? 0,
+    }),
   );
+  return { organizations, total: shared.total, hasMore: shared.hasMore, nextCursor: shared.nextCursor };
+}
 
-  // Batch member counts — one call per id chunk (a person in ~1000 organizations never sends them all at once).
-  const countByOrgId = new Map<string, number>();
-  const countsResults = await Promise.all(
-    idChunks(orgIds).map((chunk) => membershipsService.counts("organization", chunk)),
-  );
-  for (const countsResult of countsResults) {
-    if (isRecordsErr(countsResult)) {
-      throw new Error(countsResult.error.message);
-    }
-    for (const c of countsResult.data.counts) {
-      countByOrgId.set(c.containerId, c.memberCount);
-    }
-  }
-  const orgs: OrganizationWithRole[] = (orgRows ?? []).map((row) => {
-    const org = transformOrganizationFromDb(row);
-    return {
-      ...org,
-      role: roleByOrgId.get(org.id) ?? "member",
-      memberCount: countByOrgId.get(org.id) ?? 0,
-      ...(shared.joinedAtByOrgId.get(org.id) ? { joinedAt: shared.joinedAtByOrgId.get(org.id) } : {}),
-    };
+/** Any page or search of her organizations — ONE fixed-URL call (`iam.my_organizations_page`). */
+export async function getUserOrganizationsPage(
+  query: Omit<MyOrganizationsPageQuery, "archive"> & { archiveFilter?: OrganizationArchiveFilter } = {},
+): Promise<UserOrganizationsPage> {
+  requireUserId();
+  const answer = await readMyOrganizationsPage({
+    cursor: query.cursor,
+    search: query.search,
+    limit: query.limit,
+    archive: ARCHIVE_SLICE[query.archiveFilter ?? DEFAULT_ARCHIVE_FILTER],
   });
+  if (!answer.ok) throw pgErrorToError(answer.error as Parameters<typeof pgErrorToError>[0]);
+  return {
+    organizations: answer.page.entries.map(toOrganizationWithRole),
+    total: answer.page.total,
+    hasMore: answer.page.hasMore,
+    nextCursor: answer.page.nextCursor,
+  };
+}
 
-  // Sort: live before archived, then by name.
-  return orgs.sort((a, b) => {
-    const aArchived = Boolean(a.archivedAt);
-    const bArchived = Boolean(b.archivedAt);
-    if (aArchived !== bArchived) return aArchived ? 1 : -1;
-    return a.name.localeCompare(b.name);
-  });
+/** Which of these organizations are hers (archived included; the caller filters) — one call. */
+export async function getMyOrganizationsByIds(ids: readonly string[]): Promise<OrganizationWithRole[]> {
+  requireUserId();
+  const answer = await readMyOrganizationsByIds(ids);
+  if (!answer.ok) throw pgErrorToError(answer.error as Parameters<typeof pgErrorToError>[0]);
+  return answer.entries.map(toOrganizationWithRole);
 }
 
 /**
@@ -715,15 +743,13 @@ export async function getUserRole(orgId: string): Promise<OrgRole | null> {
   // used to answer null, which every caller reads as "no access".
   requireUserId();
 
-  // The current user's org memberships (canonical RPC); find this org.
-  const membersResult = await membershipsService.forUser("organization");
-  if (isRecordsErr(membersResult)) {
-    console.error("Error fetching user role:", membersResult.error.message);
-    throw new Error(membersResult.error.message || "Could not read your role in this organization");
+  // ONE by-id question (`iam.my_organizations_by_ids`), never all of her memberships.
+  const answer = await readMyOrganizationsByIds([orgId]);
+  if (!answer.ok) {
+    console.error("Error fetching user role:", answer.error.message);
+    throw new Error(answer.error.message || "Could not read your role in this organization");
   }
-  const membership = membersResult.data.memberships.find(
-    (m) => m.containerId === orgId,
-  );
+  const membership = answer.entries.find((e) => e.organization.id === orgId);
   return membership ? toOrgRole(membership.role) : null;
 }
 
