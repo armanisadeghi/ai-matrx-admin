@@ -35,7 +35,7 @@ jest.mock("@ai-matrx/chat/surfaces/runtime/registry", () => ({
   getSurfaceAncestry: () => [],
   getSurfaceChildren: () => [],
 }));
-jest.mock("@/features/content-ir/registry/schema-source-kind-tables", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => ({
   getKindInputContractBySlug: jest.fn(),
 }));
 

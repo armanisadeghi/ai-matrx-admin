@@ -2,7 +2,7 @@
 jest.mock("server-only", () => ({}));
 jest.mock("@/utils/supabase/server", () => ({ createClient: jest.fn() }));
 jest.mock("@/utils/supabase/sessionVerdict", () => ({ getSessionVerdict: jest.fn() }));
-jest.mock("@/features/content-ir/registry/schema-source-kind-tables", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => ({
   GENERATED_CONTRACT_FAMILY_VALUES: new Set(["agent_io"]),
   kindFamilyFromMetadata: (metadata: { family?: string }) => metadata?.family,
 }));

@@ -20,7 +20,7 @@ const getKindSchemaAndMetaBySlugFromTables = jest.fn(async (_kind: string) => ({
   emittedJsonSchema: { type: "object", properties: {} },
 }));
 
-jest.mock("../registry/schema-source-kind-tables", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => ({
   listKindCatalogFromTables: () => listKindCatalogFromTables(),
   getKindSchemaAndMetaBySlugFromTables: (kind: string) =>
     getKindSchemaAndMetaBySlugFromTables(kind),

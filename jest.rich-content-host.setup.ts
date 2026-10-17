@@ -58,6 +58,9 @@ configureRichContent({
   },
   useOpenSaveToTable: () => require("@/features/overlays/openers/saveToTable").useOpenSaveToTable(),
   kindRegistry: late(() => require("@/features/content-ir/registry/kind-registry").kindRegistry),
+  // The package kind registry's database tiers read through these (the host passes the same two to registerKindHost).
+  kindDataClient: async () => require("@/utils/supabase/client").supabase,
+  loadTableKindSource: async () => require("@/features/content-ir/registry/table-kind-source"),
   componentRegistry: late(() => require("@/features/content-ir/registry/component-registry").componentRegistry),
   contentIrHost: late(() => require("@/features/content-ir/host/ContentIrHostBoundary").matrxContentIrHost),
   reportKindComponentIncident: (incident) => require("@/features/content-ir/react/db-component/kindComponentIncident").reportKindComponentIncident(incident),

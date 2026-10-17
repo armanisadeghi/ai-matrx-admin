@@ -40,8 +40,8 @@ import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
 
 const KIND = "applet_build_result";
 
-jest.mock("@/features/content-ir/registry/schema-source-kind-tables", () => {
-  const actual = jest.requireActual("@/features/content-ir/registry/schema-source-kind-tables");
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => {
+  const actual = jest.requireActual("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables");
   const { kindSchemaFromJsonSchema } = jest.requireActual("@ai-matrx/content-ir");
   const { readFileSync: read } = jest.requireActual("node:fs");
   const { join: joinPath } = jest.requireActual("node:path");

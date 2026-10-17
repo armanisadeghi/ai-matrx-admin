@@ -1,13 +1,2 @@
-export {
-  isRecordValue,
-  formatInlineValue,
-  collectExtras,
-  plainFieldLabel,
-  extrasList,
-  additionalDetailsSection,
-  joinBlocks,
-  humanizeKind,
-  type NestedKindMarkdown,
-  genericKindMarkdown,
-  plainValueMarkdown,
-} from "@ai-matrx/content-ir/surfaces";
+/** The kind-markdown helpers are the package's (@ai-matrx/rich-content kinds/definitions/kind-markdown-utils); re-exported for this app's kinds. */
+export * from "@ai-matrx/rich-content/kinds/definitions/kind-markdown-utils";

@@ -11,7 +11,7 @@ import { kindRegistry } from "../registry/kind-registry";
 import { componentRegistry } from "@/features/content-ir/registry/component-registry";
 import { IR_ENVELOPE_KEY } from "@ai-matrx/content-ir";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
-import { flashcardsServerDataFromEnvelope } from "../kinds/flashcard-set";
+import { flashcardsServerDataFromEnvelope } from "@ai-matrx/rich-content/kinds/definitions/flashcard-set";
 
 const FLASHCARDS = JSON.stringify({
   __kind: "flashcard_set",

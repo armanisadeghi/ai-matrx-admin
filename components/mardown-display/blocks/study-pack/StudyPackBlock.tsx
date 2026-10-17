@@ -24,7 +24,7 @@ import {
   STUDY_PACK_CHILDREN,
   type StudyPackChild,
   type StudyPackData,
-} from "@/features/content-ir/kinds/study-pack";
+} from "@ai-matrx/rich-content/kinds/definitions/study-pack";
 import { resolveKindLoadingComponent } from "@ai-matrx/rich-content/kinds/react/loading/kind-loading-registry";
 import { resolveLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/resolve-loading-slug";
 import { cn } from "@/lib/utils";

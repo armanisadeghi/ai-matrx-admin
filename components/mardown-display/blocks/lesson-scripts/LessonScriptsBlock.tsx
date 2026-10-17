@@ -35,8 +35,8 @@ import {
 import type {
   LessonScriptSection,
   LessonScriptsData,
-} from "@/features/content-ir/kinds/lesson-scripts";
-import { lessonScriptsMarkdownFromValue } from "@/features/content-ir/kinds/lesson-scripts";
+} from "@ai-matrx/rich-content/kinds/definitions/lesson-scripts";
+import { lessonScriptsMarkdownFromValue } from "@ai-matrx/rich-content/kinds/definitions/lesson-scripts";
 import { cn } from "@/lib/utils";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). THE UNIT LAW: the unit is in the name.

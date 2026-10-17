@@ -10,7 +10,20 @@ import type { DeviceRow } from "../types";
 import { computerQuery, onlyComputers } from "@/lib/app-instances/computers";
 
 /** Only what the console renders — never `select("*")`. */
-export const CONSOLE_DEVICE_COLUMNS = "id, instance_name, hostname, platform, os_version, app_version, last_seen, is_active, created_at, organization_id";
+export const CONSOLE_DEVICE_COLUMNS = "id, instance_id, instance_name, hostname, platform, os_version, app_version, last_seen, is_active, created_at, organization_id";
+
+/**
+ * A Matrx 2 TEST copy's row: the `inst_automation_` instance id only desktop automationIdentity mints.
+ * The same mark as the database's platform.is_test_app_instance (the idle-test sweep's one filter).
+ */
+export function isTestDevice(row: { instance_id?: string | null }): boolean {
+  return typeof row.instance_id === "string" && row.instance_id.startsWith("inst_automation_");
+}
+
+/** The person's own computers first (newest check-in first, as read), test copies after them. */
+export function testDevicesLast<T extends { instance_id?: string | null }>(rows: readonly T[]): T[] {
+  return [...rows.filter((r) => !isTestDevice(r)), ...rows.filter(isTestDevice)];
+}
 
 export async function fetchConsoleDevices(client: SupabaseClient, userId: string): Promise<DeviceRow[]> {
   const { data, error } = await onlyComputers(
@@ -24,7 +37,7 @@ export async function fetchConsoleDevices(client: SupabaseClient, userId: string
     client,
   );
   if (error) throw error;
-  return (data ?? []) as unknown as DeviceRow[];
+  return testDevicesLast((data ?? []) as unknown as DeviceRow[]);
 }
 
 /** One device, if it is this person's and active; null otherwise (the page shows the access gate). */

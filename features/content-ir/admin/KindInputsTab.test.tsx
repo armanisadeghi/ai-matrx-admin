@@ -38,7 +38,7 @@ jest.mock("@ai-matrx/chat/agents/components/inputs/input-components/VariableInpu
   VariableInputComponent: () => null,
 }));
 
-jest.mock("@/features/content-ir/registry/schema-source-kind-tables", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => ({
   getKindSchemaBySlugFromTables: jest.fn(async () => ({
     kind: "example",
     fields: {
