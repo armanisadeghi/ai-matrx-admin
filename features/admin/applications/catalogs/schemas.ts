@@ -671,3 +671,60 @@ export function entrySnapshotJson(snapshot: {
 export function rowSnapshotJson(row: CatalogEntryRow): string {
   return entrySnapshotJson(row);
 }
+
+// ── Fact controls (the model catalog's facts, typed from the kind schemas above) ──
+//
+// A model kind's display facts (ai.model_presentation.facts) are the old payload fields with no typed
+// home in ai.*. Their control comes from THIS file's per-kind schema — never a second list: a number
+// field is a number input (integer when the schema says int; min/max from the schema), a boolean a
+// yes/no switch, a z.enum a choice list, a list/object JSON, and a plain string text (with the values
+// in use offered as suggestions). A fact the schema does not name takes the type of its value.
+
+export type FactControl =
+  | { kind: "number"; integer: boolean; min: number | null; max: number | null }
+  | { kind: "boolean" }
+  | { kind: "choice"; options: string[] }
+  | { kind: "text" }
+  | { kind: "json" };
+
+type ZodLike = { def?: { type?: string; innerType?: ZodLike }; options?: unknown[]; isInt?: boolean; minValue?: number; maxValue?: number };
+
+/** The control a zod field asks for (optional / nullable / default unwrapped). */
+export function controlOfZod(field: unknown): FactControl {
+  let s = field as ZodLike | undefined;
+  while (s?.def?.innerType) s = s.def.innerType;
+  switch (s?.def?.type) {
+    case "number": {
+      const min = typeof s.minValue === "number" && Number.isFinite(s.minValue) && Math.abs(s.minValue) < Number.MAX_SAFE_INTEGER ? s.minValue : null;
+      const max = typeof s.maxValue === "number" && Number.isFinite(s.maxValue) && Math.abs(s.maxValue) < Number.MAX_SAFE_INTEGER ? s.maxValue : null;
+      return { kind: "number", integer: s.isInt === true, min, max };
+    }
+    case "boolean":
+      return { kind: "boolean" };
+    case "enum":
+      return { kind: "choice", options: (s.options ?? []).map(String) };
+    case "string":
+      return { kind: "text" };
+    default:
+      return { kind: "json" };
+  }
+}
+
+/** The control a value of unknown type asks for (a fact the kind schema does not name). */
+export function controlOfValue(value: unknown): FactControl {
+  if (typeof value === "number") return { kind: "number", integer: Number.isInteger(value), min: null, max: null };
+  if (typeof value === "boolean") return { kind: "boolean" };
+  if (typeof value === "string") return { kind: "text" };
+  return value === null || value === undefined ? { kind: "text" } : { kind: "json" };
+}
+
+/** Every fact control a kind's schema names, by field name. */
+export function factControlsFor(kind: string): Map<string, FactControl> {
+  const shape = (kindDef(kind)?.schema as unknown as { shape?: Record<string, unknown> } | undefined)?.shape ?? {};
+  return new Map(Object.entries(shape).map(([k, f]) => [k, controlOfZod(f)]));
+}
+
+/** The control for one fact: the kind schema's type when it names the field, else the value's own type. */
+export function factControl(kind: string, key: string, value: unknown): FactControl {
+  return factControlsFor(kind).get(key) ?? controlOfValue(value);
+}

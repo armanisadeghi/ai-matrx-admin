@@ -5,9 +5,11 @@
 // The Catalogs page's model edit (one editor): name, common name, description, order, active and the
 // display facts (ratings, speed, knowledge cutoff, tier, notes — what the old catalog entry payload
 // carried) — saved through THE one write path, PATCH /admin/ai-catalog/discovery/models/{id}/listing,
-// with the last-read stamp so a stale edit is refused, never silently overwritten.
+// with the last-read stamp so a stale edit is refused, never silently overwritten. Each fact keeps the
+// typed control its kind's payload schema gives it (schemas.ts factControl): number, yes/no, choice
+// list, JSON for lists/objects, and text (with the values in use as suggestions) only when untyped.
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { CuratedModel } from "@ai-matrx/agents/models";
 
 import {
@@ -24,25 +26,7 @@ import { Label } from "@/components/ui/label";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import type { ListingEdit } from "@/features/ai-models/discovery/api";
-
-/** A fact value as text (strings as they are, everything else as JSON). */
-export function factText(v: unknown): string {
-  return typeof v === "string" ? v : JSON.stringify(v);
-}
-
-/** Text back to a fact value: a number, true/false, null, an object or list as JSON; anything else is text. */
-export function factValue(text: string): unknown {
-  const t = text.trim();
-  if (t === "") return null;
-  if (/^(-?\d+(\.\d+)?|true|false|null)$/.test(t) || /^[[{]/.test(t)) {
-    try {
-      return JSON.parse(t);
-    } catch {
-      return text;
-    }
-  }
-  return text;
-}
+import { factControl, factControlsFor, type FactControl } from "@/features/admin/applications/catalogs/schemas";
 
 /** The listing edit for what changed (fields and a facts merge; a removed fact is sent as null). */
 export function listingEditOf(model: CuratedModel, form: ListingForm): ListingEdit {
@@ -59,8 +43,8 @@ export function listingEditOf(model: CuratedModel, form: ListingForm): ListingEd
   for (const f of form.facts) {
     const k = f.key.trim();
     if (!k) continue;
-    const v = factValue(f.value);
-    if (JSON.stringify(v) !== JSON.stringify(model.facts[k] ?? null)) facts[k] = v;
+    const v = f.value;
+    if (JSON.stringify(v ?? null) !== JSON.stringify(model.facts[k] ?? null)) facts[k] = v ?? null;
   }
   if (Object.keys(facts).length) edit.facts = facts;
   return edit;
@@ -72,7 +56,8 @@ export interface ListingForm {
   description: string;
   order: string;
   active: boolean;
-  facts: Array<{ key: string; value: string }>;
+  /** Typed values (a number stays a number); `bad` holds a JSON fact that does not parse yet. */
+  facts: Array<{ key: string; value: unknown; bad?: boolean }>;
 }
 
 const formOf = (m: CuratedModel): ListingForm => ({
@@ -81,22 +66,102 @@ const formOf = (m: CuratedModel): ListingForm => ({
   description: m.description ?? "",
   order: m.presentation?.display_order == null ? "" : String(m.presentation.display_order),
   active: m.offered,
-  facts: Object.entries(m.facts).map(([key, value]) => ({ key, value: factText(value) })),
+  facts: Object.entries(m.facts).map(([key, value]) => ({ key, value })),
 });
 
+/** One fact's control, typed by the kind schema (or the value's own type when the schema does not name it). */
+function FactInput({ name, control, value, suggestions, onChange }: { name: string; control: FactControl; value: unknown; suggestions: string[]; onChange: (v: unknown, bad?: boolean) => void }) {
+  const listId = useId();
+  const [jsonText, setJsonText] = useState(() => (value === undefined ? "" : JSON.stringify(value, null, 2)));
+  switch (control.kind) {
+    case "number":
+      return (
+        <Input
+          type="number"
+          aria-label={name}
+          data-fact-control="number"
+          step={control.integer ? 1 : "any"}
+          {...(control.min !== null ? { min: control.min } : {})}
+          {...(control.max !== null ? { max: control.max } : {})}
+          value={typeof value === "number" ? String(value) : ""}
+          onChange={(e) => onChange(e.target.value.trim() === "" ? null : Number(e.target.value))}
+        />
+      );
+    case "boolean":
+      return <Switch aria-label={name} data-fact-control="boolean" checked={value === true} onCheckedChange={(v) => onChange(Boolean(v))} />;
+    case "choice":
+      return (
+        <select
+          aria-label={name}
+          data-fact-control="choice"
+          data-options={control.options.join(",")}
+          className="h-9 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+          value={typeof value === "string" ? value : ""}
+          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
+        >
+          <option value="">Not set</option>
+          {control.options.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      );
+    case "json":
+      return (
+        <Textarea
+          aria-label={name}
+          data-fact-control="json"
+          rows={3}
+          className="font-mono text-xs"
+          value={jsonText}
+          onChange={(e) => {
+            setJsonText(e.target.value);
+            const t = e.target.value.trim();
+            if (t === "") return onChange(null);
+            try {
+              onChange(JSON.parse(t));
+            } catch {
+              onChange(value, true);
+            }
+          }}
+        />
+      );
+    default:
+      return (
+        <>
+          <Input type="text" aria-label={name} data-fact-control="text" list={listId} value={value == null ? "" : String(value)} onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)} />
+          <datalist id={listId}>
+            {suggestions.map((v) => (
+              <option key={v} value={v} />
+            ))}
+          </datalist>
+        </>
+      );
+  }
+}
+
 interface ModelListingEditorProps {
+  /** The catalog kind the model is listed under: its payload schema types the facts. */
+  kind: string;
+  /** Text facts offer the values other models of the kind use. */
+  suggestions?: Record<string, string[]>;
   model: CuratedModel;
   onClose: () => void;
   /** Sends the edit; resolves when saved (the parent reloads), throws a sentence when refused. */
   onSave: (edit: ListingEdit) => Promise<void>;
 }
 
-export function ModelListingEditor({ model, onClose, onSave }: ModelListingEditorProps) {
+export function ModelListingEditor({ kind, suggestions = {}, model, onClose, onSave }: ModelListingEditorProps) {
+  const schemaKeys = [...factControlsFor(kind).keys()];
   const [form, setForm] = useState<ListingForm>(() => formOf(model));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = <K extends keyof ListingForm>(k: K, v: ListingForm[K]) => setForm((f) => ({ ...f, [k]: v }));
   const orderBad = form.order.trim() !== "" && !Number.isInteger(Number(form.order));
+  const factsBad = form.facts.some((f) => f.bad);
+  const setFact = (i: number, patch: Partial<ListingForm["facts"][number]>) => set("facts", form.facts.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const factListId = useId();
 
   const save = async () => {
     const edit = listingEditOf(model, form);
@@ -135,26 +200,38 @@ export function ModelListingEditor({ model, onClose, onSave }: ModelListingEdito
         <section className="space-y-2" aria-label="Facts">
           <h3 className="text-sm font-semibold text-foreground">Facts</h3>
           {form.facts.length === 0 ? <p className="text-xs text-muted-foreground">No facts yet</p> : null}
+          <datalist id={factListId}>
+            {schemaKeys.filter((k) => !form.facts.some((f) => f.key === k)).map((k) => (
+              <option key={k} value={k} />
+            ))}
+          </datalist>
           {form.facts.map((f, i) => (
-            <div key={i} className="grid grid-cols-[12rem_1fr_auto] items-center gap-2">
-              <Input aria-label={`Fact ${i + 1} name`} mono value={f.key} onChange={(e) => set("facts", form.facts.map((x, j) => (j === i ? { ...x, key: e.target.value } : x)))} />
-              <Input aria-label={`Fact ${i + 1} value`} value={f.value} onChange={(e) => set("facts", form.facts.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))} />
+            <div key={`${i}-${f.key}`} className="grid grid-cols-[12rem_1fr_auto] items-center gap-2">
+              <Input aria-label={`Fact ${i + 1} name`} mono list={factListId} value={f.key} onChange={(e) => setFact(i, { key: e.target.value })} />
+              <FactInput
+                name={f.key || `Fact ${i + 1} value`}
+                control={factControl(kind, f.key.trim(), f.value)}
+                value={f.value}
+                suggestions={suggestions[f.key] ?? []}
+                onChange={(value, bad) => setFact(i, { value, bad: Boolean(bad) })}
+              />
               <Button type="button" variant="quiet" onClick={() => set("facts", form.facts.filter((_, j) => j !== i))}>
                 Remove
               </Button>
             </div>
           ))}
-          <Button type="button" variant="outline" onClick={() => set("facts", [...form.facts, { key: "", value: "" }])}>
+          <Button type="button" variant="outline" onClick={() => set("facts", [...form.facts, { key: "", value: null }])}>
             Add a fact
           </Button>
         </section>
         {orderBad ? <p className="text-xs text-destructive-ink">The order must be a whole number</p> : null}
+        {factsBad ? <p className="text-xs text-destructive-ink">A list or object fact is not valid JSON yet</p> : null}
         {error ? <ErrorNotice message={error} size="compact" /> : null}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="button" variant="primary" disabled={busy || orderBad} onClick={() => void save()}>
+          <Button type="button" variant="primary" disabled={busy || orderBad || factsBad} onClick={() => void save()}>
             {busy ? "Saving…" : "Save"}
           </Button>
         </div>
