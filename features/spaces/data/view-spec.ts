@@ -22,6 +22,22 @@ export function scalarFilters(f: SpaceDbView["filters"]): Record<string, string 
   return out;
 }
 
+/**
+ * THE QUESTION A BLOCK'S GRID ASKS (the `filter` handed to records-ui's ViewSwitcher, which reads no `where` of
+ * its own): the view's saved `where` (N7's advanced filter, a pack's within / me / anyOf) ANDed with its "is"
+ * filters by field id, or the "is" filters alone. Undefined = every row.
+ */
+export function blockQuestion(view: Pick<SpaceDbView, "filters" | "where">, fields: Field[]): Record<string, string | number | boolean | null> | RuleExpression | undefined {
+  const flat = scalarFilters(view.filters);
+  const keys = Object.keys(flat);
+  const where = view.where && typeof view.where === "object" ? (view.where as unknown as RuleExpression) : null;
+  if (!where) return keys.length ? flat : undefined;
+  if (!keys.length) return where;
+  const idOf = (key: string) => fields.find((f) => f.key === key)?.id ?? key;
+  const is = keys.map((k) => (flat[k] === null ? { op: "is_empty", args: [{ field: idOf(k) }] } : { op: "eq", args: [{ field: idOf(k) }, { const: flat[k] }] }));
+  return { op: "and", args: [where, ...is] } as unknown as RuleExpression;
+}
+
 /** Notion's default date is "Full date" (January 1, 2026): every date column of an inline grid. */
 function longDates(fields: Field[]): Record<string, { id: "date"; options: { dateStyle: "long" } }> {
   const out: Record<string, { id: "date"; options: { dateStyle: "long" } }> = {};

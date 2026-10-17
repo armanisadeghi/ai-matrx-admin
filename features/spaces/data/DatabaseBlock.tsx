@@ -58,7 +58,7 @@ import { designMarkdown } from "./designed-database";
 import { FieldList, MenuRow, SidePeek, ViewerSaveBar, ViewerSortButton, ViewTab, filtersDiffer, shownFilters, shownSorts, type FilterChoice, type SortChoice, NewButton } from "./menu-parts";
 import { ChartView, choicesOfField } from "./ChartView";
 import { DEFAULT_CHART } from "./first-reads";
-import { effectiveHidden, kindOf, scalarFilters, viewSpec, type ViewWithSummaries } from "./view-spec";
+import { blockQuestion, effectiveHidden, kindOf, viewSpec, type ViewWithSummaries } from "./view-spec";
 import { useOwningRow } from "./owning-row";
 import { resolveThisRow, thisRowValues, THIS_ROW, THIS_ROW_LABEL, usesThisRow } from "./this-row";
 import { BlockRecordsSeed } from "../page/space-seed-context";
@@ -461,7 +461,7 @@ function DatabaseBody({
         searchBox={false}
         hideRefusedRowActions
         onOpenRecord={onOpenRecord}
-        filter={view.filters && Object.keys(view.filters).length ? scalarFilters(view.filters) : undefined}
+        filter={blockQuestion(view, fields)}
         onViewChange={
           onSummaries
             ? (patch) => {

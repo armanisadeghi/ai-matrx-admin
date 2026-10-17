@@ -187,6 +187,9 @@ async function tableBlockSeed(reads: PageReads, { props }: DatabaseOnPage): Prom
   // "This page's row" is resolved in the browser (data/owning-row.tsx); the server never asks the store
   // with the token, so the block draws its own first page.
   if (usesThisRow(view.filters)) return { tableId, where: where.where, records: null };
+  // A view with a `where` (a relative day, "me", an advanced filter) is asked by the browser (data/view-spec.ts
+  // blockQuestion), so a first page from here could never be the page the grid asks for.
+  if (view.where) return { tableId, where: where.where, records: null };
   const page = await reads.tablePage(tableId, where.organizationId, gridSpecOf(tableId, view));
   if (serverRowsOf(page)?.on !== true) return { tableId, where: where.where, records: null };
   const filter = (view.filters ?? {}) as Record<string, unknown>;
