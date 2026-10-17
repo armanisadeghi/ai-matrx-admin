@@ -4,12 +4,22 @@ import { useCallback } from "react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import type { CanvasContent } from "@/features/canvas/canvasContent";
 
-/** The Computer tab's per-chat canvas identity. */
-export function cloudComputerCanvasSourceId(conversationId: string): string {
-  return `cloud-computer:${conversationId}`;
+/**
+ * The Computer tab's canvas identity — ONE per person, never per chat. A person
+ * has one machine, so every opener (the main chat, a chat window panel bound to
+ * the same machine, an agent's browser outcome) focuses the same tab
+ * (2026-10-17: a chat window panel opened a second Computer tab). The argument
+ * is accepted so per-chat callers keep their shape; it never changes the id.
+ */
+export const CLOUD_COMPUTER_CANVAS_SOURCE_ID = "cloud-computer";
+export function cloudComputerCanvasSourceId(_conversationId?: string | null): string {
+  return CLOUD_COMPUTER_CANVAS_SOURCE_ID;
 }
 
-/** The Computer tab's canvas item — one per chat. */
+/**
+ * The Computer tab's canvas item — one per machine. `conversationId` binds Take
+ * control to the chat that opened it first; a later opener focuses that tab.
+ */
 export function buildCloudComputerCanvasContent(
   opts: { conversationId?: string | null } = {},
 ): CanvasContent {
@@ -20,9 +30,7 @@ export function buildCloudComputerCanvasContent(
     metadata: {
       title: "Computer",
       conversationId,
-      sourceMessageId: conversationId
-        ? cloudComputerCanvasSourceId(conversationId)
-        : undefined,
+      sourceMessageId: CLOUD_COMPUTER_CANVAS_SOURCE_ID,
     },
   };
 }
