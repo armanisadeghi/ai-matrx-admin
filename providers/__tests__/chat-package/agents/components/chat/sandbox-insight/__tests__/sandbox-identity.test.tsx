@@ -133,7 +133,7 @@ describe("the sandbox pane names ONE box", () => {
     }));
     const postLoad = identity(after.container);
 
-    expect(postLoad).toBe("bare · hosted · 2c23df");
+    expect(postLoad).toBe("Bare hosted 2c23df");
     // THE GUARD: one identity. The suffix does not change under the user, and
     // the orchestrator id never appears as a competing identity.
     expect(postLoad).toContain("2c23df");
