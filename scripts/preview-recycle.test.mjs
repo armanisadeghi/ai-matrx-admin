@@ -300,6 +300,24 @@ test("stopping an OLD server never deletes the lease a NEWER server already wrot
   }
 });
 
+test("an install that leaves the server failing to resolve @ai-matrx code is not deferred for holds", () => {
+  const dir = stateDir();
+  try {
+    const log = join(dir, "shared-next-dev.log");
+    writeFileSync(log, "Module not found: Can't resolve '@ai-matrx/old/before-the-install'\n");
+    const offset = readFileSync(log).length;
+    const check = (extra) => {
+      writeFileSync(log, "Module not found: Can't resolve '@ai-matrx/old/before-the-install'\n" + extra);
+      return sourced(dir, `NM_PENDING_LOG_OFFSET=${offset}; stale_graph_failing; echo rc=$?`).out;
+    };
+    assert.match(check(" GET /notes 200 in 2s\n"), /rc=1/, "errors from before the install do not count");
+    assert.match(check("Module not found: Can't resolve '@ai-matrx/chat/agents/redux/execution-system/utils/page-leaving'\n"), /rc=0/);
+    assert.match(check("Error: Export pageIsLeaving doesn't exist in target module\n"), /rc=0/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("past the restart budget the watchdog stops restarting and says CRASH LOOP", () => {
   const dir = stateDir();
   const marker = join(dir, "restart-ran");
