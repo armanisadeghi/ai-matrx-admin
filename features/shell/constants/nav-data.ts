@@ -925,7 +925,7 @@ export const primaryNavItems: ShellNavItem[] = [
       { label: "Prompt blocks", href: "/agents/prompt-blocks", iconName: "Boxes", group: "Agents", guestHidden: true },
       { label: "Categories", href: "/agents/categories", iconName: "Folder", group: "Agents" },
       { label: "Org Chart", href: "/agents/org-chart", iconName: "Network", group: "Agents", guestHidden: true },
-      { label: "System Builder", href: "/agents/system-builder", iconName: "Network", group: "Agents", guestHidden: true },
+      { label: "Orchestra Studio", href: "/agents/orchestra-studio", iconName: "Network", group: "Agents", guestHidden: true },
       {
         label: "Agent Battle",
         href: "/agents/battle",

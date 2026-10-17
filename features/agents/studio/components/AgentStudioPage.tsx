@@ -274,7 +274,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     })();
   }, [state.agentId, studioCase, build, mode.id]);
 
-  // Opened from a System Builder step: the kept agent is written back onto that step, once.
+  // Opened from an Orchestra Studio step: the kept agent is written back onto that step, once.
   const wroteBackFor = useRef<string | null>(null);
   useEffect(() => {
     const { agentId, planId, planStep } = state;

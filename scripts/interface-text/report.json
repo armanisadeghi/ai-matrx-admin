@@ -15174,7 +15174,7 @@
       "detail": "file name, doc reference"
     },
     {
-      "file": "features/agents/system-builder/SystemBuilderPage.tsx",
+      "file": "features/agents/orchestra-studio/OrchestraStudioPage.tsx",
       "line": 243,
       "rule": "over-budget",
       "severity": 2,

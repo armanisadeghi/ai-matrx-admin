@@ -1999,9 +1999,9 @@
       "source": "app/(core)/agents/shortcuts/new/page.tsx"
     },
     {
-      "pattern": "/agents/system-builder",
+      "pattern": "/agents/orchestra-studio",
       "status": "live",
-      "source": "app/(core)/agents/system-builder/page.tsx"
+      "source": "app/(core)/agents/orchestra-studio/page.tsx"
     },
     {
       "pattern": "/agents/templates",

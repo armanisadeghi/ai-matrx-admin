@@ -43,7 +43,7 @@ const opensInPlace = (mode: StudioMode): mode is StudioMode & { id: OpenMode } =
 interface StudioStartProps {
   onStart: (patch: Partial<StudioState>) => void;
   onBack: () => void;
-  /** A Orchestra Studio step's job: "Describe it" opens prefilled with it. */
+  /** An Orchestra Studio step's job: "Describe it" opens prefilled with it. */
   initialJob?: string;
   /** The "from plan … step n" back-link, when opened from a plan. */
   planLink?: React.ReactNode;

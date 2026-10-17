@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * The Studio opened from a System Builder plan step (`?from=system-plan&plan=<note>&step=<n>`):
+ * The Studio opened from an Orchestra Studio plan step (`?from=system-plan&plan=<note>&step=<n>`):
  * a small back-link to that plan, and — once the Studio's agent exists — the agent written back
- * onto that step (`usesAgentId`) through the plan's own store (`features/agents/system-builder`).
+ * onto that step (`usesAgentId`) through the plan's own store (`features/agents/orchestra-studio`).
  */
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { loadPlan, savePlanChanges } from "@/features/agents/system-builder/plan-store";
+import { loadPlan, savePlanChanges } from "@/features/agents/orchestra-studio/plan-store";
 import type { StudioState } from "../studio-state";
 
 export function PlanBackLink({ state }: { state: StudioState }) {
@@ -28,7 +28,7 @@ export function PlanBackLink({ state }: { state: StudioState }) {
   if (!state.planId) return null;
   return (
     <Link
-      href={`/agents/system-builder?plan=${encodeURIComponent(state.planId)}`}
+      href={`/agents/orchestra-studio?plan=${encodeURIComponent(state.planId)}`}
       className="truncate text-xs text-primary hover:underline"
       data-testid="studio-plan-link"
     >

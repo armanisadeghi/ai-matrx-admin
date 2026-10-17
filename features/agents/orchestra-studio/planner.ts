@@ -23,7 +23,7 @@ export async function runPlanner(
     launch = await dispatch(
       launchAgentExecution({ initiation: initiation,
         mandateKey: PLANNER_MANDATE_KEY,
-        surfaceKey: "system-builder",
+        surfaceKey: "orchestra-studio",
         sourceFeature: "agent-generator",
         isEphemeral: false,
         autoClearConversation: false,

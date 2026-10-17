@@ -58,10 +58,10 @@ const CREATION_OPTIONS = [
     gradient: "from-blue-500/5 to-cyan-500/10",
   },
   {
-    href: "/agents/system-builder",
+    href: "/agents/orchestra-studio",
     icon: Network,
     iconClass: "text-rose-600 dark:text-rose-400",
-    title: "System Builder",
+    title: "Orchestra Studio",
     description:
       "More than one agent? Describe the whole job, get a plan of steps, then build or pick an agent for each",
     gradient: "from-rose-500/5 to-orange-500/10",

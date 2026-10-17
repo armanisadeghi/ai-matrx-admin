@@ -56,7 +56,7 @@ const STATUS_OPTIONS = [
 
 const PLACE_OPTIONS = [
   ...DOORS.map((d) => ({ value: d.key, label: d.place })),
-  { value: "system_plan", label: "System Builder (via Agent Studio)" },
+  { value: "system_plan", label: "Orchestra Studio (via Agent Studio)" },
   { value: "admin_page", label: "Admin page" },
   { value: "script", label: "Script" },
   { value: "not_recorded", label: "Not recorded" },
