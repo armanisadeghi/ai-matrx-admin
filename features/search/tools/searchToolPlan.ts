@@ -180,7 +180,7 @@ export function needsFinder(laneId: string, text: string): boolean {
   if (!t || !laneCanFind(laneId)) return false;
   // A link (even without its https://), an app number, or the `id…` the store prints: nothing to look for.
   if (/^https?:\/\//i.test(t) || /^(id)?\d{6,}$/i.test(t) || detectReviewLane(t)) return false;
-  if (laneId === "maps") return !/^ChIJ[\w-]{10,}$/.test(t);
+  if (laneId === "maps") return !(/^ChIJ[\w-]{10,}$/.test(t) || /^\d{12,}$/.test(t));
   if (laneId === "trustpilot") {
     const kind = classifyText(t, { anyEnding: true })?.type;
     return kind !== "domain" && kind !== "url";
@@ -225,7 +225,8 @@ export function pickPlaces(places: readonly Record<string, unknown>[], max = 5):
   for (const place of places) {
     const id = typeof place.place_id === "string" ? place.place_id : "";
     const name = typeof place.name === "string" ? place.name.trim() : "";
-    if (!id || !name || seen.has(id) || !/^ChIJ/.test(id)) continue;
+    // Google's own handle for a place: its place id (ChIJ…) or its cid (the long number) — the reviews Tool takes either.
+    if (!id || !name || seen.has(id) || !(/^ChIJ/.test(id) || /^\d{8,}$/.test(id))) continue;
     seen.add(id);
     const address = place.address;
     const display =

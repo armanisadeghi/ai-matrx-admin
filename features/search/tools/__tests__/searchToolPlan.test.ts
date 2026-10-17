@@ -106,6 +106,7 @@ describe("finding an app or a business by its name", () => {
     expect(needsFinder("trustpilot", "Ten Thousand")).toBe(true);
     expect(needsFinder("maps", "Epoch Coffee Austin")).toBe(true);
     expect(needsFinder("maps", "ChIJG-gJw2vKRIYROWi2uwOp8QE")).toBe(false);
+    expect(needsFinder("maps", "11265938073076301333")).toBe(false);
     expect(needsFinder("maps", "https://www.google.com/maps/place/Epoch+Coffee")).toBe(false);
     expect(needsFinder("appstore", "   ")).toBe(false);
     // a link pasted without its https://, and the id as the store prints it, are not names
@@ -146,11 +147,13 @@ describe("finding an app or a business by its name", () => {
     const places = [
       { name: "Epoch Coffee", place_id: "ChIJG-gJw2vKRIYROWi2uwOp8QE", address: { display: "221 W North Loop Blvd, Austin, TX 78751, United States" } },
       { name: "Epoch Coffee", place_id: "ChIJG-gJw2vKRIYROWi2uwOp8QE" },
+      { name: "Fetch Cafe", place_id: "11265938073076301333" },
       { name: "A cafe", place_id: "brave-123" },
       { name: "No id" },
     ];
     expect(pickPlaces(places)).toEqual([
       { label: "Epoch Coffee", caption: "221 W North Loop Blvd, Austin, TX 78751", value: "ChIJG-gJw2vKRIYROWi2uwOp8QE" },
+      { label: "Fetch Cafe", caption: "Google Maps", value: "11265938073076301333" },
     ]);
   });
 });
