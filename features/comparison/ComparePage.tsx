@@ -40,6 +40,7 @@ import { parseInput, type KindKey } from "./parse-input";
 import { CompareInput } from "./components/CompareInput";
 import { ComparisonView } from "./components/ComparisonView";
 import { FoundStep, type FoundRow } from "./components/FoundStep";
+import { ShareButton } from "./public/ShareButton";
 import { RunProgress, type ProgressRowIdentity } from "./components/RunProgress";
 
 export function ComparePage() {
@@ -82,7 +83,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const params = useSearchParams();
   const live = kinds.filter((k) => k.status === "live");
   const [kindKey, setKindKey] = useState<string>(live[0]?.key ?? "");
-  const [text, setText] = useState("");
+  const [text, setText] = useState(() => params.get("q") ?? ""); // a public-page hand-off arrives as ?q=
   const [area, setArea] = useState("");
   // A page opened on ?run=<id> (a refresh, a new tab, a shared link) starts on that saved run.
   const runParam = params.get("run");
@@ -259,7 +260,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
           seesDollars={seesDollars}
           factsHref={(i) => (i.table_id ? `/data/${i.table_id}` : null)}
           onPick={pick}
-          actions={<Button variant="outline" icon={<RotateCcw className="h-4 w-4" />} onClick={startOver}>New comparison</Button>}
+          actions={<><ShareButton /><Button variant="outline" icon={<RotateCcw className="h-4 w-4" />} onClick={startOver}>New comparison</Button></>}
         />
         {savedRunId ? (
           <div className="pt-4">
