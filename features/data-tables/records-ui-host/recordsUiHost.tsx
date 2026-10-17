@@ -64,7 +64,8 @@ import { organizationArchiveState, restoreArchivedOrganizationById } from "@/fea
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { selectUserRequestResult } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectActiveUserAvatarUrl, selectDisplayName, selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { createRecordsPresencePort } from "@ai-matrx/records/realtime";
 import { createRecordsRealtimePort } from "@ai-matrx/records/realtime";
 import type { DataBuildOrAskOffer } from "@ai-matrx/agents/generated/provision-offers";
 
@@ -87,6 +88,8 @@ export interface RecordsUiPorts {
   organizationId: string | null;
   /** "Link a record…" on a store record: the one record picker, pointed at that record. */
   linkRecord?: (target: { tableId: string; recordId: string; name: string }) => void;
+  /** Who else is looking at this table (records-ui `presence`), on the app's one realtime manager. */
+  presence?: RecordsUiHost["presence"];
 }
 
 export interface RecordsUiHostArgs {
@@ -174,6 +177,7 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     ...(ports.navigate ? { navigate: ports.navigate } : {}),
     runAgentAction: ports.runAgentAction,
     ...(ports.askTable ? { askTable: ports.askTable } : {}),
+    ...(ports.presence ? { presence: ports.presence } : {}),
     ...(ports.enrich ? { enrich: ports.enrich } : {}),
     // Every cost the package shows is points at the platform's rate (records-ui `pointsRate`).
     // Spread as its own object: a records-ui build before the port ignores the key.
@@ -449,7 +453,18 @@ export function useRecordsUiPorts({
   );
 
   const navigate = useCallback((href: string) => router.push(href), [router]);
-  return { members, onAskForOne, openRecords, navigate, runAgentAction, askTable, enrich, organizationId, linkRecord };
+  const presence = useMemo(
+    () =>
+      createRecordsPresencePort({
+        self: () => {
+          const state = store.getState();
+          const id = selectUserId(state);
+          return id ? { userId: id, name: selectDisplayName(state), avatarUrl: selectActiveUserAvatarUrl(state) ?? null } : null;
+        },
+      }),
+    [store],
+  );
+  return { members, onAskForOne, openRecords, navigate, runAgentAction, askTable, enrich, organizationId, linkRecord, presence };
 }
 
 
