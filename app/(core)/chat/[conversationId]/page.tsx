@@ -1,3 +1,4 @@
+import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import { Suspense } from "react";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
@@ -156,6 +157,7 @@ async function ChatConversationSeeded({
 
   return (
     <>
+      <LoadMark name="page /chat/[id]" />
       <ChatConversationWarmup
         conversationId={conversationId}
         agentId={display?.agentId ?? null}

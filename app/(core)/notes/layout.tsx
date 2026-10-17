@@ -7,6 +7,7 @@
 // into the other's bundle, and no Lucide icons (or other non-serializable
 // values) cross a server→client boundary.
 
+import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import "./notes.css";
 import { cookies } from "next/headers";
 import {
@@ -73,6 +74,7 @@ export default async function NotesV2Layout({
 
   return (
     <>
+      <LoadMark name="page /notes" />
       <div
         className="notes-root relative z-0 h-full overflow-y-auto overflow-x-hidden"
         // An app viewport on every device: what floats over its foot is padding,

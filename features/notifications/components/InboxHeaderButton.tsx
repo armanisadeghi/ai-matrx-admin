@@ -18,6 +18,7 @@
  * `G` then `N` anywhere (outside a text field) opens the inbox window.
  */
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useEffect, useRef } from "react";
 import { BellRingTapButton, BellTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -134,6 +135,7 @@ function SignedInInboxButton() {
 }
 
 export function InboxHeaderButton({ isAuthenticated }: { isAuthenticated: boolean }) {
+  useLoadMark("Notifications bell");
   return isAuthenticated ? <SignedInInboxButton /> : <GuestInboxButton />;
 }
 

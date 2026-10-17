@@ -3,12 +3,14 @@
 // body is a client component; this server wrapper just keeps the route a Server
 // Component by default. Guests are redirected off /dashboard by the proxy, and
 // new users are funneled to /welcome by the sibling layout.
+import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { DashboardClient } from "@/features/dashboard/components/DashboardClient";
 
 export default function DashboardPage() {
   return (
     <>
+      <LoadMark name="page /dashboard" />
       <RecordPageHeader record={{ name: "Dashboard" }} />
       <DashboardClient />
     </>

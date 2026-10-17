@@ -27,6 +27,7 @@
 // - Context menus (wrapped externally)
 // - Conflict resolution UI
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import React, { useRef, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
 import { createMarkdownImageUpload } from "@ai-matrx/rich-content/editor/format/markdown-image-upload";
@@ -278,6 +279,7 @@ export function NoteEditorCore({
   enableTextStats = false,
   imagePolicy,
 }: NoteEditorCoreProps) {
+  useLoadMark("Notes editor on screen", "heavy", { home: ["/notes"] });
   // Plain is an editing view. A person who may only READ the note gets the
   // canonical rendered view, never its raw source (round 6, R6).
   const editorMode: EditorMode =

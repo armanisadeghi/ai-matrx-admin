@@ -19,6 +19,7 @@
  *   <WindowTray />
  */
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import React, { useCallback, useRef } from "react";
 import { ChevronsUpDown, AppWindow } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ const TRAY_RIGHT = 12;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function WindowTray() {
+  useLoadMark("Window tray");
   const minimized = useAppSelector(selectTrayWindows);
   const isMobile = useIsMobile();
 

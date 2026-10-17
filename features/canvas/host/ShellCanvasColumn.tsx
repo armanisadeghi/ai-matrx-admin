@@ -10,6 +10,7 @@
  * moves on the package's motion contract (canvas-host.css).
  */
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import "@ai-matrx/canvas/styles.css";
 import "@ai-matrx/canvas/tokens.css";
 import "./canvas-host.css";
@@ -23,6 +24,7 @@ import { useCanvasSurfaceScope } from "./canvasSurfaceScope";
 import { canvasWriteHandlers } from "./canvasWriteHandlers";
 
 export function ShellCanvasColumn() {
+  useLoadMark("Canvas column slot");
   const width = useCanvasColumnWidth();
   const getScope = useCanvasSurfaceScope();
   const canvas = useCanvas();

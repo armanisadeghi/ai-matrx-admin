@@ -26,6 +26,7 @@
 
 "use client";
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import {
   useCallback,
   useEffect,
@@ -402,6 +403,7 @@ export default function PdfDocumentRenderer({
   toolbarStart,
   toolbarEnd,
 }: PdfDocumentRendererProps) {
+  useLoadMark("PDF viewer on screen", "heavy");
   const [numPages, setNumPages] = useState(0);
   const [internalPage, setInternalPage] = useState(1);
   // Controlled vs uncontrolled page — when the parent provides

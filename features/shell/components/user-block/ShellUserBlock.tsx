@@ -23,6 +23,7 @@
 // (rendered by the shell root), so every item's `<label htmlFor>` close keeps
 // working. Geometry lives in styles/shell.css § 15b.
 
+import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import { ChevronRight } from "lucide-react";
 import UserMenuPanel from "../header/header-right-menu/UserMenuPanel";
 import GuestUserMenuTrigger from "../header/header-right-menu/GuestUserMenuTrigger";
@@ -49,6 +50,7 @@ export default function ShellUserBlock({
   const hasAccount = isAuthenticated && !userData.isAnonymous;
   return (
     <div className="shell-user-block" data-shell-user-block>
+      <LoadMark name="User block" />
       <UserMenuEscape />
       <div className="shell-account-rail" data-title-side="right">
         <ShellSettingsMenu />

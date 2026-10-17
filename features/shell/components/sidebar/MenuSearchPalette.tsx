@@ -11,6 +11,7 @@
 // Rows run exactly what the sidebar row would: navigate, open in a new tab,
 // open a window panel, or run a create action.
 
+import { markRendered } from "@/lib/diagnostics/loadMark";
 import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownLeft } from "lucide-react";
@@ -148,6 +149,7 @@ interface MenuSearchPaletteProps {
 }
 
 export default function MenuSearchPalette({ open, onOpenChange, query, onQueryChange }: MenuSearchPaletteProps) {
+  if (open) markRendered("Command palette (menu search)");
   const router = useRouter();
   const navActions = useNavActions();
   const navPanelActions = useNavPanelActions();

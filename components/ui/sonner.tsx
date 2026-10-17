@@ -1,5 +1,6 @@
 "use client"
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useEffect, useRef, useSyncExternalStore } from "react"
 import { usePathname } from "next/navigation"
 import { Toaster as Sonner } from "sonner"
@@ -240,6 +241,7 @@ function useModalOpenOnPhone(): boolean {
 }
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  useLoadMark("Toasts");
   const theme = useThemeMode()
   const modalOnPhone = useModalOpenOnPhone()
   useToastHold()
