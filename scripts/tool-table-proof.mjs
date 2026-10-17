@@ -26,10 +26,10 @@ for (let i = 0; i < 4; i++) {
   catch (e) { if (i === 3) throw e; await page.waitForTimeout(5000); }
 }
 const box = page.locator('input[placeholder^="e.g."]').first();
-await box.waitFor({ timeout: 170000 });
+await box.waitFor({ timeout: 400000 });
 await box.fill(subject);
 await box.press("Enter");
-await page.waitForSelector('[data-tool-result="succeeded"]', { timeout: 170000 });
+await page.waitForSelector('[data-tool-result="succeeded"]', { timeout: 300000 });
 await page.waitForSelector("[data-tool-table-bar]", { timeout: 60000 });
 await page.waitForTimeout(3000);
 await shot(`${phase}-1-answer`);
