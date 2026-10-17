@@ -1006,9 +1006,11 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               <div className="mt-0.5 flex h-6 min-w-0 items-center overflow-hidden">
                 {current.website_url ? contactFactValue({ kind: "website", value: externalHref(current.website_url) }) : null}
               </div>
-              {/* Status, kind and industry, with the setup status at the end of the same line (often empty). */}
+              {/* Status, kind and industry, then the setup status on the same line (often empty). */}
               <div className="mt-2 flex h-7 min-w-0 flex-nowrap items-center gap-2 overflow-hidden">
-                <StatusBadge value={current.status} />
+                <span className="inline-flex shrink-0">
+                  <StatusBadge value={current.status} />
+                </span>
                 {isPersonBrand(current) ? (
                   <>
                     <Badge variant="outline">{BRAND_KIND_COPY.person.label}</Badge>
