@@ -26,7 +26,7 @@
     "useCase": "Noor Haddadi tracks eight small habits and checks in each evening to see which ones are sticking.",
     "industry": "cross_industry",
     "vertical": "Personal habits",
-    "job": "personal",
+    "job": "projects",
     "audience": "individual",
     "teaches": "boards",
     "strengths": [],
@@ -114,6 +114,64 @@
             "contextPolicy": "include"
           },
           {
+            "key": "time_of_day",
+            "label": "Time of day",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Morning",
+              "Evening",
+              "Anytime"
+            ],
+            "choiceColors": {
+              "Morning": "slate",
+              "Evening": "blue",
+              "Anytime": "green"
+            }
+          },
+          {
+            "key": "why",
+            "label": "Why it matters",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "started_on",
+            "label": "Started",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "logs",
+            "label": "Log entries",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "habit_log",
+            "multi": true
+          },
+          {
             "key": "days_logged",
             "label": "Days logged",
             "parityType": "rollup",
@@ -135,16 +193,6 @@
             "filter": {
               "done": true
             }
-          },
-          {
-            "key": "completion",
-            "label": "Completion %",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Days done} / {Days logged} * 100",
-            "source": "formula",
-            "computeOn": "read"
           }
         ],
         "rows": [
@@ -154,7 +202,11 @@
               "habit_name": "Drink 2 litres of water",
               "frequency": "Daily",
               "category": "Health",
-              "active": true
+              "active": true,
+              "time_of_day": "Morning",
+              "why": "Fewer headaches in the afternoon",
+              "minutes": 2,
+              "started_on": "@today-300d"
             }
           },
           {
@@ -163,7 +215,11 @@
               "habit_name": "Walk 30 minutes",
               "frequency": "Daily",
               "category": "Health",
-              "active": true
+              "active": true,
+              "time_of_day": "Evening",
+              "why": "Clears my head after work",
+              "minutes": 30,
+              "started_on": "@today-200d"
             }
           },
           {
@@ -172,7 +228,11 @@
               "habit_name": "Read 20 pages",
               "frequency": "Daily",
               "category": "Mind",
-              "active": true
+              "active": true,
+              "time_of_day": "Evening",
+              "why": "Finish twelve books by December",
+              "minutes": 25,
+              "started_on": "@today-120d"
             }
           },
           {
@@ -181,16 +241,24 @@
               "habit_name": "Meditate 10 minutes",
               "frequency": "Weekdays",
               "category": "Mind",
-              "active": true
+              "active": true,
+              "time_of_day": "Morning",
+              "why": "Calmer starts to the day",
+              "minutes": 10,
+              "started_on": "@today-90d"
             }
           },
           {
             "key": "h-plan",
             "values": {
-              "habit_name": "Plan tomorrow",
+              "habit_name": "Write the next day's top three",
               "frequency": "Weekdays",
               "category": "Work",
-              "active": true
+              "active": true,
+              "time_of_day": "Evening",
+              "why": "Fewer mornings lost to deciding",
+              "minutes": 5,
+              "started_on": "@today-60d"
             }
           },
           {
@@ -199,7 +267,11 @@
               "habit_name": "Clear the inbox",
               "frequency": "Weekdays",
               "category": "Work",
-              "active": true
+              "active": true,
+              "time_of_day": "Anytime",
+              "why": "Stop the 40-message pile-ups",
+              "minutes": 15,
+              "started_on": "@today-45d"
             }
           },
           {
@@ -208,7 +280,11 @@
               "habit_name": "Laundry day",
               "frequency": "Weekly",
               "category": "Home",
-              "active": true
+              "active": true,
+              "time_of_day": "Anytime",
+              "why": "Keep the week's chores predictable",
+              "minutes": 90,
+              "started_on": "@today-150d"
             }
           },
           {
@@ -217,7 +293,11 @@
               "habit_name": "Evening stretch",
               "frequency": "Daily",
               "category": "Health",
-              "active": false
+              "active": false,
+              "time_of_day": "Evening",
+              "why": "Loosen the hips after long desk days",
+              "minutes": 8,
+              "started_on": "@today-30d"
             }
           }
         ]
@@ -241,7 +321,7 @@
         "fields": [
           {
             "key": "log_name",
-            "label": "Entry",
+            "label": "Check-in",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -283,7 +363,7 @@
           {
             "key": "l01",
             "values": {
-              "log_name": "Drink 2 litres of water · day -0",
+              "log_name": "Drink 2 litres of water on day 0",
               "habit": "h-water",
               "logged_on": "@today-0d",
               "done": true,
@@ -293,7 +373,7 @@
           {
             "key": "l02",
             "values": {
-              "log_name": "Drink 2 litres of water · day -1",
+              "log_name": "Drink 2 litres of water on day 1",
               "habit": "h-water",
               "logged_on": "@today-1d",
               "done": true
@@ -302,7 +382,7 @@
           {
             "key": "l03",
             "values": {
-              "log_name": "Drink 2 litres of water · day -2",
+              "log_name": "Drink 2 litres of water on day 2",
               "habit": "h-water",
               "logged_on": "@today-2d",
               "done": true
@@ -311,7 +391,7 @@
           {
             "key": "l04",
             "values": {
-              "log_name": "Drink 2 litres of water · day -3",
+              "log_name": "Drink 2 litres of water on day 3",
               "habit": "h-water",
               "logged_on": "@today-3d",
               "done": false,
@@ -321,7 +401,7 @@
           {
             "key": "l05",
             "values": {
-              "log_name": "Drink 2 litres of water · day -4",
+              "log_name": "Drink 2 litres of water on day 4",
               "habit": "h-water",
               "logged_on": "@today-4d",
               "done": true,
@@ -331,7 +411,7 @@
           {
             "key": "l06",
             "values": {
-              "log_name": "Drink 2 litres of water · day -5",
+              "log_name": "Drink 2 litres of water on day 5",
               "habit": "h-water",
               "logged_on": "@today-5d",
               "done": true,
@@ -341,7 +421,7 @@
           {
             "key": "l07",
             "values": {
-              "log_name": "Drink 2 litres of water · day -6",
+              "log_name": "Drink 2 litres of water on day 6",
               "habit": "h-water",
               "logged_on": "@today-6d",
               "done": true,
@@ -351,7 +431,7 @@
           {
             "key": "l08",
             "values": {
-              "log_name": "Drink 2 litres of water · day -7",
+              "log_name": "Drink 2 litres of water on day 7",
               "habit": "h-water",
               "logged_on": "@today-7d",
               "done": true,
@@ -361,7 +441,7 @@
           {
             "key": "l09",
             "values": {
-              "log_name": "Drink 2 litres of water · day -8",
+              "log_name": "Drink 2 litres of water on day 8",
               "habit": "h-water",
               "logged_on": "@today-8d",
               "done": true
@@ -370,7 +450,7 @@
           {
             "key": "l10",
             "values": {
-              "log_name": "Drink 2 litres of water · day -9",
+              "log_name": "Drink 2 litres of water on day 9",
               "habit": "h-water",
               "logged_on": "@today-9d",
               "done": true
@@ -379,7 +459,7 @@
           {
             "key": "l11",
             "values": {
-              "log_name": "Drink 2 litres of water · day -10",
+              "log_name": "Drink 2 litres of water on day 10",
               "habit": "h-water",
               "logged_on": "@today-10d",
               "done": true,
@@ -389,7 +469,7 @@
           {
             "key": "l12",
             "values": {
-              "log_name": "Drink 2 litres of water · day -11",
+              "log_name": "Drink 2 litres of water on day 11",
               "habit": "h-water",
               "logged_on": "@today-11d",
               "done": true
@@ -398,7 +478,7 @@
           {
             "key": "l13",
             "values": {
-              "log_name": "Drink 2 litres of water · day -12",
+              "log_name": "Drink 2 litres of water on day 12",
               "habit": "h-water",
               "logged_on": "@today-12d",
               "done": true,
@@ -408,7 +488,7 @@
           {
             "key": "l14",
             "values": {
-              "log_name": "Drink 2 litres of water · day -13",
+              "log_name": "Drink 2 litres of water on day 13",
               "habit": "h-water",
               "logged_on": "@today-13d",
               "done": true
@@ -417,7 +497,7 @@
           {
             "key": "l15",
             "values": {
-              "log_name": "Walk 30 minutes · day -0",
+              "log_name": "Walk 30 minutes on day 0",
               "habit": "h-walk",
               "logged_on": "@today-0d",
               "done": true,
@@ -427,7 +507,7 @@
           {
             "key": "l16",
             "values": {
-              "log_name": "Walk 30 minutes · day -1",
+              "log_name": "Walk 30 minutes on day 1",
               "habit": "h-walk",
               "logged_on": "@today-1d",
               "done": true
@@ -436,7 +516,7 @@
           {
             "key": "l17",
             "values": {
-              "log_name": "Walk 30 minutes · day -2",
+              "log_name": "Walk 30 minutes on day 2",
               "habit": "h-walk",
               "logged_on": "@today-2d",
               "done": true
@@ -445,7 +525,7 @@
           {
             "key": "l18",
             "values": {
-              "log_name": "Walk 30 minutes · day -3",
+              "log_name": "Walk 30 minutes on day 3",
               "habit": "h-walk",
               "logged_on": "@today-3d",
               "done": true
@@ -454,7 +534,7 @@
           {
             "key": "l19",
             "values": {
-              "log_name": "Walk 30 minutes · day -4",
+              "log_name": "Walk 30 minutes on day 4",
               "habit": "h-walk",
               "logged_on": "@today-4d",
               "done": true,
@@ -464,7 +544,7 @@
           {
             "key": "l20",
             "values": {
-              "log_name": "Walk 30 minutes · day -5",
+              "log_name": "Walk 30 minutes on day 5",
               "habit": "h-walk",
               "logged_on": "@today-5d",
               "done": true,
@@ -474,7 +554,7 @@
           {
             "key": "l21",
             "values": {
-              "log_name": "Walk 30 minutes · day -6",
+              "log_name": "Walk 30 minutes on day 6",
               "habit": "h-walk",
               "logged_on": "@today-6d",
               "done": true
@@ -483,7 +563,7 @@
           {
             "key": "l22",
             "values": {
-              "log_name": "Walk 30 minutes · day -7",
+              "log_name": "Walk 30 minutes on day 7",
               "habit": "h-walk",
               "logged_on": "@today-7d",
               "done": true
@@ -492,7 +572,7 @@
           {
             "key": "l23",
             "values": {
-              "log_name": "Walk 30 minutes · day -8",
+              "log_name": "Walk 30 minutes on day 8",
               "habit": "h-walk",
               "logged_on": "@today-8d",
               "done": true,
@@ -502,7 +582,7 @@
           {
             "key": "l24",
             "values": {
-              "log_name": "Walk 30 minutes · day -9",
+              "log_name": "Walk 30 minutes on day 9",
               "habit": "h-walk",
               "logged_on": "@today-9d",
               "done": true
@@ -511,7 +591,7 @@
           {
             "key": "l25",
             "values": {
-              "log_name": "Walk 30 minutes · day -10",
+              "log_name": "Walk 30 minutes on day 10",
               "habit": "h-walk",
               "logged_on": "@today-10d",
               "done": true
@@ -520,7 +600,7 @@
           {
             "key": "l26",
             "values": {
-              "log_name": "Walk 30 minutes · day -11",
+              "log_name": "Walk 30 minutes on day 11",
               "habit": "h-walk",
               "logged_on": "@today-11d",
               "done": true
@@ -529,7 +609,7 @@
           {
             "key": "l27",
             "values": {
-              "log_name": "Walk 30 minutes · day -12",
+              "log_name": "Walk 30 minutes on day 12",
               "habit": "h-walk",
               "logged_on": "@today-12d",
               "done": false
@@ -538,7 +618,7 @@
           {
             "key": "l28",
             "values": {
-              "log_name": "Walk 30 minutes · day -13",
+              "log_name": "Walk 30 minutes on day 13",
               "habit": "h-walk",
               "logged_on": "@today-13d",
               "done": false,
@@ -548,7 +628,7 @@
           {
             "key": "l29",
             "values": {
-              "log_name": "Read 20 pages · day -0",
+              "log_name": "Read 20 pages on day 0",
               "habit": "h-read",
               "logged_on": "@today-0d",
               "done": true
@@ -557,7 +637,7 @@
           {
             "key": "l30",
             "values": {
-              "log_name": "Read 20 pages · day -1",
+              "log_name": "Read 20 pages on day 1",
               "habit": "h-read",
               "logged_on": "@today-1d",
               "done": false,
@@ -567,7 +647,7 @@
           {
             "key": "l31",
             "values": {
-              "log_name": "Read 20 pages · day -2",
+              "log_name": "Read 20 pages on day 2",
               "habit": "h-read",
               "logged_on": "@today-2d",
               "done": false
@@ -576,7 +656,7 @@
           {
             "key": "l32",
             "values": {
-              "log_name": "Read 20 pages · day -3",
+              "log_name": "Read 20 pages on day 3",
               "habit": "h-read",
               "logged_on": "@today-3d",
               "done": false,
@@ -586,7 +666,7 @@
           {
             "key": "l33",
             "values": {
-              "log_name": "Read 20 pages · day -4",
+              "log_name": "Read 20 pages on day 4",
               "habit": "h-read",
               "logged_on": "@today-4d",
               "done": true
@@ -595,7 +675,7 @@
           {
             "key": "l34",
             "values": {
-              "log_name": "Read 20 pages · day -5",
+              "log_name": "Read 20 pages on day 5",
               "habit": "h-read",
               "logged_on": "@today-5d",
               "done": false
@@ -604,7 +684,7 @@
           {
             "key": "l35",
             "values": {
-              "log_name": "Read 20 pages · day -6",
+              "log_name": "Read 20 pages on day 6",
               "habit": "h-read",
               "logged_on": "@today-6d",
               "done": false
@@ -613,7 +693,7 @@
           {
             "key": "l36",
             "values": {
-              "log_name": "Read 20 pages · day -7",
+              "log_name": "Read 20 pages on day 7",
               "habit": "h-read",
               "logged_on": "@today-7d",
               "done": true
@@ -622,7 +702,7 @@
           {
             "key": "l37",
             "values": {
-              "log_name": "Read 20 pages · day -8",
+              "log_name": "Read 20 pages on day 8",
               "habit": "h-read",
               "logged_on": "@today-8d",
               "done": true
@@ -631,7 +711,7 @@
           {
             "key": "l38",
             "values": {
-              "log_name": "Read 20 pages · day -9",
+              "log_name": "Read 20 pages on day 9",
               "habit": "h-read",
               "logged_on": "@today-9d",
               "done": true,
@@ -641,7 +721,7 @@
           {
             "key": "l39",
             "values": {
-              "log_name": "Read 20 pages · day -10",
+              "log_name": "Read 20 pages on day 10",
               "habit": "h-read",
               "logged_on": "@today-10d",
               "done": true,
@@ -651,7 +731,7 @@
           {
             "key": "l40",
             "values": {
-              "log_name": "Read 20 pages · day -11",
+              "log_name": "Read 20 pages on day 11",
               "habit": "h-read",
               "logged_on": "@today-11d",
               "done": false
@@ -660,7 +740,7 @@
           {
             "key": "l41",
             "values": {
-              "log_name": "Read 20 pages · day -12",
+              "log_name": "Read 20 pages on day 12",
               "habit": "h-read",
               "logged_on": "@today-12d",
               "done": true
@@ -669,7 +749,7 @@
           {
             "key": "l42",
             "values": {
-              "log_name": "Read 20 pages · day -13",
+              "log_name": "Read 20 pages on day 13",
               "habit": "h-read",
               "logged_on": "@today-13d",
               "done": true,
@@ -679,7 +759,7 @@
           {
             "key": "l43",
             "values": {
-              "log_name": "Meditate 10 minutes · day -0",
+              "log_name": "Meditate 10 minutes on day 0",
               "habit": "h-med",
               "logged_on": "@today-0d",
               "done": false,
@@ -689,7 +769,7 @@
           {
             "key": "l44",
             "values": {
-              "log_name": "Meditate 10 minutes · day -1",
+              "log_name": "Meditate 10 minutes on day 1",
               "habit": "h-med",
               "logged_on": "@today-1d",
               "done": false
@@ -698,7 +778,7 @@
           {
             "key": "l45",
             "values": {
-              "log_name": "Meditate 10 minutes · day -2",
+              "log_name": "Meditate 10 minutes on day 2",
               "habit": "h-med",
               "logged_on": "@today-2d",
               "done": true,
@@ -708,7 +788,7 @@
           {
             "key": "l46",
             "values": {
-              "log_name": "Meditate 10 minutes · day -3",
+              "log_name": "Meditate 10 minutes on day 3",
               "habit": "h-med",
               "logged_on": "@today-3d",
               "done": true,
@@ -718,7 +798,7 @@
           {
             "key": "l47",
             "values": {
-              "log_name": "Meditate 10 minutes · day -4",
+              "log_name": "Meditate 10 minutes on day 4",
               "habit": "h-med",
               "logged_on": "@today-4d",
               "done": true
@@ -727,7 +807,7 @@
           {
             "key": "l48",
             "values": {
-              "log_name": "Meditate 10 minutes · day -7",
+              "log_name": "Meditate 10 minutes on day 7",
               "habit": "h-med",
               "logged_on": "@today-7d",
               "done": true,
@@ -737,7 +817,7 @@
           {
             "key": "l49",
             "values": {
-              "log_name": "Meditate 10 minutes · day -8",
+              "log_name": "Meditate 10 minutes on day 8",
               "habit": "h-med",
               "logged_on": "@today-8d",
               "done": true
@@ -746,7 +826,7 @@
           {
             "key": "l50",
             "values": {
-              "log_name": "Meditate 10 minutes · day -9",
+              "log_name": "Meditate 10 minutes on day 9",
               "habit": "h-med",
               "logged_on": "@today-9d",
               "done": true
@@ -755,7 +835,7 @@
           {
             "key": "l51",
             "values": {
-              "log_name": "Meditate 10 minutes · day -10",
+              "log_name": "Meditate 10 minutes on day 10",
               "habit": "h-med",
               "logged_on": "@today-10d",
               "done": false
@@ -764,7 +844,7 @@
           {
             "key": "l52",
             "values": {
-              "log_name": "Meditate 10 minutes · day -11",
+              "log_name": "Meditate 10 minutes on day 11",
               "habit": "h-med",
               "logged_on": "@today-11d",
               "done": true
@@ -773,7 +853,7 @@
           {
             "key": "l53",
             "values": {
-              "log_name": "Plan tomorrow · day -0",
+              "log_name": "Write the next day's top three on day 0",
               "habit": "h-plan",
               "logged_on": "@today-0d",
               "done": true
@@ -782,7 +862,7 @@
           {
             "key": "l54",
             "values": {
-              "log_name": "Plan tomorrow · day -1",
+              "log_name": "Write the next day's top three on day 1",
               "habit": "h-plan",
               "logged_on": "@today-1d",
               "done": false
@@ -791,7 +871,7 @@
           {
             "key": "l55",
             "values": {
-              "log_name": "Plan tomorrow · day -2",
+              "log_name": "Write the next day's top three on day 2",
               "habit": "h-plan",
               "logged_on": "@today-2d",
               "done": false
@@ -800,7 +880,7 @@
           {
             "key": "l56",
             "values": {
-              "log_name": "Plan tomorrow · day -3",
+              "log_name": "Write the next day's top three on day 3",
               "habit": "h-plan",
               "logged_on": "@today-3d",
               "done": true,
@@ -810,7 +890,7 @@
           {
             "key": "l57",
             "values": {
-              "log_name": "Plan tomorrow · day -4",
+              "log_name": "Write the next day's top three on day 4",
               "habit": "h-plan",
               "logged_on": "@today-4d",
               "done": true,
@@ -820,7 +900,7 @@
           {
             "key": "l58",
             "values": {
-              "log_name": "Plan tomorrow · day -7",
+              "log_name": "Write the next day's top three on day 7",
               "habit": "h-plan",
               "logged_on": "@today-7d",
               "done": true,
@@ -830,7 +910,7 @@
           {
             "key": "l59",
             "values": {
-              "log_name": "Plan tomorrow · day -8",
+              "log_name": "Write the next day's top three on day 8",
               "habit": "h-plan",
               "logged_on": "@today-8d",
               "done": true
@@ -839,7 +919,7 @@
           {
             "key": "l60",
             "values": {
-              "log_name": "Plan tomorrow · day -9",
+              "log_name": "Write the next day's top three on day 9",
               "habit": "h-plan",
               "logged_on": "@today-9d",
               "done": false
@@ -848,7 +928,7 @@
           {
             "key": "l61",
             "values": {
-              "log_name": "Plan tomorrow · day -10",
+              "log_name": "Write the next day's top three on day 10",
               "habit": "h-plan",
               "logged_on": "@today-10d",
               "done": false,
@@ -858,7 +938,7 @@
           {
             "key": "l62",
             "values": {
-              "log_name": "Plan tomorrow · day -11",
+              "log_name": "Write the next day's top three on day 11",
               "habit": "h-plan",
               "logged_on": "@today-11d",
               "done": false,
@@ -868,7 +948,7 @@
           {
             "key": "l63",
             "values": {
-              "log_name": "Clear the inbox · day -0",
+              "log_name": "Clear the inbox on day 0",
               "habit": "h-inbox",
               "logged_on": "@today-0d",
               "done": false
@@ -877,7 +957,7 @@
           {
             "key": "l64",
             "values": {
-              "log_name": "Clear the inbox · day -1",
+              "log_name": "Clear the inbox on day 1",
               "habit": "h-inbox",
               "logged_on": "@today-1d",
               "done": true,
@@ -887,7 +967,7 @@
           {
             "key": "l65",
             "values": {
-              "log_name": "Clear the inbox · day -2",
+              "log_name": "Clear the inbox on day 2",
               "habit": "h-inbox",
               "logged_on": "@today-2d",
               "done": false
@@ -896,7 +976,7 @@
           {
             "key": "l66",
             "values": {
-              "log_name": "Clear the inbox · day -3",
+              "log_name": "Clear the inbox on day 3",
               "habit": "h-inbox",
               "logged_on": "@today-3d",
               "done": true,
@@ -906,7 +986,7 @@
           {
             "key": "l67",
             "values": {
-              "log_name": "Clear the inbox · day -4",
+              "log_name": "Clear the inbox on day 4",
               "habit": "h-inbox",
               "logged_on": "@today-4d",
               "done": false
@@ -915,7 +995,7 @@
           {
             "key": "l68",
             "values": {
-              "log_name": "Clear the inbox · day -7",
+              "log_name": "Clear the inbox on day 7",
               "habit": "h-inbox",
               "logged_on": "@today-7d",
               "done": true
@@ -924,7 +1004,7 @@
           {
             "key": "l69",
             "values": {
-              "log_name": "Clear the inbox · day -8",
+              "log_name": "Clear the inbox on day 8",
               "habit": "h-inbox",
               "logged_on": "@today-8d",
               "done": true,
@@ -934,7 +1014,7 @@
           {
             "key": "l70",
             "values": {
-              "log_name": "Clear the inbox · day -9",
+              "log_name": "Clear the inbox on day 9",
               "habit": "h-inbox",
               "logged_on": "@today-9d",
               "done": true
@@ -943,7 +1023,7 @@
           {
             "key": "l71",
             "values": {
-              "log_name": "Clear the inbox · day -10",
+              "log_name": "Clear the inbox on day 10",
               "habit": "h-inbox",
               "logged_on": "@today-10d",
               "done": true
@@ -952,7 +1032,7 @@
           {
             "key": "l72",
             "values": {
-              "log_name": "Clear the inbox · day -11",
+              "log_name": "Clear the inbox on day 11",
               "habit": "h-inbox",
               "logged_on": "@today-11d",
               "done": false
@@ -961,7 +1041,7 @@
           {
             "key": "l73",
             "values": {
-              "log_name": "Laundry day · day -0",
+              "log_name": "Laundry day on day 0",
               "habit": "h-laundry",
               "logged_on": "@today-0d",
               "done": true,
@@ -971,7 +1051,7 @@
           {
             "key": "l74",
             "values": {
-              "log_name": "Laundry day · day -7",
+              "log_name": "Laundry day on day 7",
               "habit": "h-laundry",
               "logged_on": "@today-7d",
               "done": false
@@ -980,7 +1060,7 @@
           {
             "key": "l75",
             "values": {
-              "log_name": "Laundry day · day -14",
+              "log_name": "Laundry day on day 14",
               "habit": "h-laundry",
               "logged_on": "@today-14d",
               "done": true
@@ -989,7 +1069,7 @@
           {
             "key": "l76",
             "values": {
-              "log_name": "Laundry day · day -21",
+              "log_name": "Laundry day on day 21",
               "habit": "h-laundry",
               "logged_on": "@today-21d",
               "done": true
@@ -998,7 +1078,7 @@
           {
             "key": "l77",
             "values": {
-              "log_name": "Evening stretch · day -0",
+              "log_name": "Evening stretch on day 0",
               "habit": "h-stretch",
               "logged_on": "@today-0d",
               "done": false
@@ -1007,7 +1087,7 @@
           {
             "key": "l78",
             "values": {
-              "log_name": "Evening stretch · day -1",
+              "log_name": "Evening stretch on day 1",
               "habit": "h-stretch",
               "logged_on": "@today-1d",
               "done": false,
@@ -1017,7 +1097,7 @@
           {
             "key": "l79",
             "values": {
-              "log_name": "Evening stretch · day -2",
+              "log_name": "Evening stretch on day 2",
               "habit": "h-stretch",
               "logged_on": "@today-2d",
               "done": false
@@ -1026,7 +1106,7 @@
           {
             "key": "l80",
             "values": {
-              "log_name": "Evening stretch · day -3",
+              "log_name": "Evening stretch on day 3",
               "habit": "h-stretch",
               "logged_on": "@today-3d",
               "done": true
@@ -1035,7 +1115,7 @@
           {
             "key": "l81",
             "values": {
-              "log_name": "Evening stretch · day -4",
+              "log_name": "Evening stretch on day 4",
               "habit": "h-stretch",
               "logged_on": "@today-4d",
               "done": false,
@@ -1045,7 +1125,7 @@
           {
             "key": "l82",
             "values": {
-              "log_name": "Evening stretch · day -5",
+              "log_name": "Evening stretch on day 5",
               "habit": "h-stretch",
               "logged_on": "@today-5d",
               "done": false
@@ -1063,7 +1143,17 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "logs"
+        "inverseKey": "entries_for"
+      },
+      {
+        "describes": "A habit lists its check-ins.",
+        "fromTable": "habit",
+        "fromField": "logs",
+        "toTable": "habit_log",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "entries_of"
       }
     ],
     "sharedBlocks": [],
@@ -1134,13 +1224,6 @@
         "kind": "calendar",
         "dateField": "logged_on",
         "allDay": true
-      },
-      {
-        "token": "log_board",
-        "name": "By habit",
-        "table": "habit_log",
-        "kind": "kanban",
-        "groupBy": "habit"
       }
     ],
     "agent": {
@@ -1251,7 +1334,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Check in each day, see the week fill up, and watch the habits that stick. Add an entry for today in the log below."
+              "text": "Check in each day, see the week fill up, and watch the habits that stick. Add a check-in to the log below."
             }
           ],
           "background": "blue",
@@ -1272,7 +1355,7 @@
                   "type": "heading",
                   "text": [
                     {
-                      "text": "Today"
+                      "text": "Check in"
                     }
                   ],
                   "props": {
@@ -1288,24 +1371,18 @@
                       "view": "all_logs"
                     },
                     "inline": true,
-                    "title": "Today's check-ins",
+                    "title": "Recent check-ins",
                     "linked": true,
                     "showTitle": true,
                     "views": [
                       {
                         "id": "view-1",
-                        "name": "Today",
+                        "name": "Done",
                         "layout": "list",
                         "icon": "List",
                         "filters": {
-                          "logged_on": "@today"
-                        },
-                        "sorts": [
-                          {
-                            "field": "habit",
-                            "direction": "asc"
-                          }
-                        ]
+                          "done": true
+                        }
                       },
                       {
                         "id": "view-2",
@@ -1469,10 +1546,10 @@
               },
               {
                 "id": "view-9",
-                "name": "By habit",
+                "name": "Done or missed",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "habit"
+                "groupField": "done"
               },
               {
                 "id": "view-10",
@@ -1795,66 +1872,66 @@
           "type": "table",
           "props": {
             "headerRow": true,
-            "headerColumn": false
-          },
-          "rows": [
-            {
-              "cells": [
-                [
-                  {
-                    "text": "Frequency"
-                  }
-                ],
-                [
-                  {
-                    "text": "Use it when"
-                  }
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Frequency"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use it when"
+                    }
+                  ]
                 ]
-              ]
-            },
-            {
-              "cells": [
-                [
-                  {
-                    "text": "Daily"
-                  }
-                ],
-                [
-                  {
-                    "text": "The habit works only with repetition"
-                  }
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Daily"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The habit works only with repetition"
+                    }
+                  ]
                 ]
-              ]
-            },
-            {
-              "cells": [
-                [
-                  {
-                    "text": "Weekdays"
-                  }
-                ],
-                [
-                  {
-                    "text": "It belongs to the work rhythm"
-                  }
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weekdays"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "It belongs to the work rhythm"
+                    }
+                  ]
                 ]
-              ]
-            },
-            {
-              "cells": [
-                [
-                  {
-                    "text": "Weekly"
-                  }
-                ],
-                [
-                  {
-                    "text": "It is a chore or a long session"
-                  }
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weekly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "It is a chore or a long session"
+                    }
+                  ]
                 ]
-              ]
-            }
-          ]
+              }
+            ]
+          }
         }
       ]
     }

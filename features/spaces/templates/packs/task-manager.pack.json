@@ -1,0 +1,1398 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0201",
+  "version": 1,
+  "title": "Task Manager",
+  "description": "Capture tasks, sort by status and priority, and work from smart lists and a calendar.",
+  "forWho": "Anyone with too many things to do",
+  "icon": {
+    "emoji": "☑️"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "tasks",
+    "todo",
+    "gtd"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-task-manager",
+    "catalogueId": "SP0201",
+    "useCase": "Dev Ramanathan collects every small errand and chore in one place and works through it by context.",
+    "industry": "cross_industry",
+    "vertical": "Personal task management",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-task-manager",
+    "tables": [
+      {
+        "token": "context",
+        "name": "Contexts",
+        "labelSingular": "Context",
+        "labelPlural": "Contexts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map-pin",
+        "titleField": "context_name",
+        "describes": "Where or how a task gets done, so you can batch similar work.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "context_name",
+            "label": "Context",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "where",
+            "label": "Where it happens",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "best_time",
+            "label": "Best time",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tasks",
+            "label": "Tasks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "multi": true
+          },
+          {
+            "key": "open_tasks",
+            "label": "Open tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "done": false
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c-home",
+            "values": {
+              "context_name": "At home",
+              "where": "Chores and tasks that need the house",
+              "best_time": "Evenings and weekends"
+            }
+          },
+          {
+            "key": "c-errand",
+            "values": {
+              "context_name": "Errands",
+              "where": "Anything that needs a trip out",
+              "best_time": "Saturday mornings"
+            }
+          },
+          {
+            "key": "c-desk",
+            "values": {
+              "context_name": "At the computer",
+              "where": "Online forms, email and research",
+              "best_time": "Weekday mornings"
+            }
+          },
+          {
+            "key": "c-phone",
+            "values": {
+              "context_name": "Calls",
+              "where": "People or companies to ring",
+              "best_time": "Lunch breaks"
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Every to-do with its due day, priority and where it gets done.",
+        "subject": "thing",
+        "independentOf": {
+          "context": "A task can be done in any context on any day."
+        },
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "default": "Not started"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High",
+              "Urgent"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "blue",
+              "High": "green",
+              "Urgent": "amber"
+            }
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Home",
+              "Work",
+              "Admin",
+              "Health",
+              "Family"
+            ],
+            "choiceColors": {
+              "Home": "slate",
+              "Work": "blue",
+              "Admin": "green",
+              "Health": "amber",
+              "Family": "red"
+            }
+          },
+          {
+            "key": "context",
+            "label": "Context",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "context",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "repeats",
+            "label": "Repeats",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Never",
+              "Weekly",
+              "Monthly",
+              "Yearly"
+            ],
+            "choiceColors": {
+              "Never": "slate",
+              "Weekly": "blue",
+              "Monthly": "green",
+              "Yearly": "amber"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes needed",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "days_left",
+            "label": "Days until due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')",
+            "source": "formula",
+            "computeOn": "read"
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "task_name": "Renew car registration",
+              "status": "Not started",
+              "priority": "Urgent",
+              "category": "Admin",
+              "context": "c-desk",
+              "due_on": "@today+4d",
+              "done": false,
+              "repeats": "Never",
+              "minutes": 15,
+              "notes": "Bring the old paperwork"
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "task_name": "Book dentist cleaning",
+              "status": "Not started",
+              "priority": "Medium",
+              "category": "Health",
+              "context": "c-phone",
+              "due_on": "@today+14d",
+              "done": false,
+              "repeats": "Never",
+              "minutes": 10,
+              "notes": "Ask about the weekend slot"
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "task_name": "Pick up dry cleaning",
+              "status": "Not started",
+              "priority": "Low",
+              "category": "Home",
+              "context": "c-errand",
+              "due_on": "@today+1d",
+              "done": false,
+              "repeats": "Monthly",
+              "minutes": 20,
+              "notes": "Needs the receipt"
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "task_name": "Fix the dripping bathroom tap",
+              "status": "In progress",
+              "priority": "Medium",
+              "category": "Home",
+              "context": "c-home",
+              "due_on": "@today+6d",
+              "done": false,
+              "repeats": "Never",
+              "minutes": 45,
+              "notes": "Check the spare key"
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "task_name": "Reply to landlord about lease",
+              "status": "In progress",
+              "priority": "High",
+              "category": "Admin",
+              "context": "c-desk",
+              "due_on": "@today+2d",
+              "done": false,
+              "repeats": "Yearly",
+              "minutes": 10,
+              "notes": "Use the shared folder"
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "task_name": "Order birthday gift for Sofia",
+              "status": "Not started",
+              "priority": "Medium",
+              "category": "Family",
+              "context": "c-desk",
+              "due_on": "@today+9d",
+              "done": false,
+              "repeats": "Weekly",
+              "minutes": 25,
+              "notes": "Confirm by email afterward"
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "task_name": "Return the ladder to Walt",
+              "status": "Not started",
+              "priority": "Low",
+              "category": "Family",
+              "context": "c-errand",
+              "due_on": "@today-2d",
+              "done": false,
+              "repeats": "Never",
+              "minutes": 30,
+              "notes": "Bring the old paperwork"
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "task_name": "File expense report",
+              "status": "Not started",
+              "priority": "High",
+              "category": "Work",
+              "context": "c-desk",
+              "due_on": "@today-1d",
+              "done": false,
+              "repeats": "Never",
+              "minutes": 40,
+              "notes": "Ask about the weekend slot"
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "task_name": "Call insurance about claim 4417",
+              "status": "Not started",
+              "priority": "High",
+              "category": "Admin",
+              "context": "c-phone",
+              "due_on": "@today+3d",
+              "done": false,
+              "repeats": "Monthly",
+              "minutes": 20,
+              "notes": "Needs the receipt"
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "task_name": "Water the balcony plants",
+              "status": "Done",
+              "priority": "Low",
+              "category": "Home",
+              "context": "c-home",
+              "due_on": "@today-1d",
+              "done": true,
+              "repeats": "Never",
+              "minutes": 5,
+              "notes": "Check the spare key"
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "task_name": "Submit passport photos",
+              "status": "Done",
+              "priority": "Medium",
+              "category": "Admin",
+              "context": "c-errand",
+              "due_on": "@today-6d",
+              "done": true,
+              "repeats": "Yearly",
+              "minutes": 35,
+              "notes": "Use the shared folder"
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "task_name": "Cancel gym trial",
+              "status": "Done",
+              "priority": "Medium",
+              "category": "Health",
+              "context": "c-phone",
+              "due_on": "@today-8d",
+              "done": true,
+              "repeats": "Weekly",
+              "minutes": 10,
+              "notes": "Confirm by email afterward"
+            }
+          },
+          {
+            "key": "t13",
+            "values": {
+              "task_name": "Draft the quarterly update",
+              "status": "In progress",
+              "priority": "High",
+              "category": "Work",
+              "context": "c-desk",
+              "due_on": "@today+5d",
+              "done": false,
+              "repeats": "Never",
+              "minutes": 90,
+              "notes": "Bring the old paperwork"
+            }
+          },
+          {
+            "key": "t14",
+            "values": {
+              "task_name": "Sort the garage shelf",
+              "status": "Not started",
+              "priority": "Low",
+              "category": "Home",
+              "context": "c-home",
+              "due_on": "@today+20d",
+              "done": false,
+              "repeats": "Never",
+              "minutes": 120,
+              "notes": "Ask about the weekend slot"
+            }
+          },
+          {
+            "key": "t15",
+            "values": {
+              "task_name": "Take the bike for a tune-up",
+              "status": "Not started",
+              "priority": "Medium",
+              "category": "Health",
+              "context": "c-errand",
+              "due_on": "@today+11d",
+              "done": false,
+              "repeats": "Monthly",
+              "minutes": 60,
+              "notes": "Needs the receipt"
+            }
+          },
+          {
+            "key": "t16",
+            "values": {
+              "task_name": "Send thank-you notes",
+              "status": "Done",
+              "priority": "Low",
+              "category": "Family",
+              "context": "c-desk",
+              "due_on": "@today-4d",
+              "done": true,
+              "repeats": "Never",
+              "minutes": 30,
+              "notes": "Check the spare key"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each task has one context.",
+        "fromTable": "task",
+        "fromField": "context",
+        "toTable": "context",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks_in"
+      },
+      {
+        "describes": "A context lists its tasks.",
+        "fromTable": "context",
+        "fromField": "tasks",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "context_tasks"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_task",
+        "name": "Add a task",
+        "describes": "Capture something to do.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What is the task?",
+            "required": true
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When is it due?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How important is it?"
+          },
+          {
+            "fieldKey": "category",
+            "ask": "What kind of task?"
+          }
+        ],
+        "submitLabel": "Add task",
+        "confirmation": "Added to your list."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_tasks",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "By status",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "task_priority",
+        "name": "By priority",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "priority"
+      },
+      {
+        "token": "all_contexts",
+        "name": "Contexts",
+        "table": "context",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every task, its status and priority."
+        },
+        {
+          "name": "related_tables",
+          "table": "context",
+          "describes": "Where each task gets done."
+        }
+      ],
+      "question": {
+        "ask": "How many tasks are done?",
+        "whyItMatters": "Dev checks the done count at the end of the week.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Done"
+          },
+          "answer": 4,
+          "unit": "tasks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open the task calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "task_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_calendar",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open tasks by priority.",
+        "action": {
+          "kind": "open",
+          "surface": "task_priority"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_priority",
+          "minItems": 12
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "task-manager",
+      "parent": null,
+      "title": "Task Manager",
+      "icon": {
+        "emoji": "☑️"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Capture everything, then work from the smart lists. Add a task, give it a day if it has one, and let the views sort the rest."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Not started"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Not started",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "Not started",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": "Not started"
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "In progress"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "In progress",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-2",
+                        "name": "In progress",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": "In progress"
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Finished"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Finished",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-3",
+                        "name": "Finished",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": "Done"
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "All tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-4",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-5",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-6",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "view-7",
+                "name": "By priority",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "priority"
+              },
+              {
+                "id": "view-8",
+                "name": "Urgent and high",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "priority": [
+                    "Urgent",
+                    "High"
+                  ],
+                  "done": false
+                }
+              }
+            ],
+            "activeViewId": "view-4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contexts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "context",
+              "view": "all_contexts"
+            },
+            "inline": true,
+            "title": "Contexts",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-9",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-10",
+                "name": "Table",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-9"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:overview"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:triage-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "overview",
+      "parent": "task-manager",
+      "title": "Overview",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-11",
+                        "name": "By status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-11"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-12",
+                        "name": "By category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-12"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-13",
+                        "name": "Minutes by context",
+                        "layout": "chart",
+                        "icon": "ChartBar",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "context",
+                          "op": "sum",
+                          "field": "minutes"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-13"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waiting on action"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-14",
+                "name": "Open tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "done": false
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-14"
+          }
+        }
+      ]
+    },
+    {
+      "key": "triage-guide",
+      "parent": "task-manager",
+      "title": "Triage guide",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the list gets long, run it through these questions in order."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Does it take under two minutes? Do it now."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Does it have a hard day? Give it a due date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Can someone else do it? Note who and when to check."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Is it a someday idea? Move it out of this list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Otherwise pick a context and a priority."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A short list you trust beats a long list you avoid."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Sparkles"
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Priority"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Urgent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Blocks something or has a penalty today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "High"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Matters this week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Medium"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Should happen soon"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Low"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nice to have"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

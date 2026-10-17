@@ -1,0 +1,2849 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0200",
+  "version": 1,
+  "title": "Life OS",
+  "description": "Tasks, projects, notes, goals and areas in one connected home with a daily view.",
+  "forWho": "Anyone running their whole life from one place",
+  "icon": {
+    "emoji": "🧭"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "life",
+    "tasks",
+    "goals",
+    "para"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-life-os",
+    "catalogueId": "SP0200",
+    "useCase": "Camila Reyes keeps her work, health and money projects in one place and starts each morning from a short list of what matters.",
+    "industry": "cross_industry",
+    "vertical": "Personal operating system",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-life-os",
+    "tables": [
+      {
+        "token": "area",
+        "name": "Areas",
+        "labelSingular": "Area",
+        "labelPlural": "Areas",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "layers",
+        "titleField": "area_name",
+        "describes": "The ongoing parts of life that never finish and need a standard.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "area_name",
+            "label": "Area",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "standard",
+            "label": "Standard to maintain",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "review",
+            "label": "Review cadence",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly",
+              "Monthly",
+              "Quarterly"
+            ],
+            "choiceColors": {
+              "Weekly": "slate",
+              "Monthly": "blue",
+              "Quarterly": "green"
+            }
+          },
+          {
+            "key": "health",
+            "label": "Health",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Thriving",
+              "Steady",
+              "Needs attention"
+            ],
+            "choiceColors": {
+              "Thriving": "slate",
+              "Steady": "blue",
+              "Needs attention": "green"
+            }
+          },
+          {
+            "key": "focus",
+            "label": "Current focus",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "projects",
+            "label": "Projects",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "multi": true
+          },
+          {
+            "key": "project_count",
+            "label": "Project count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ar-health",
+            "values": {
+              "area_name": "Health and fitness",
+              "standard": "Keep energy high and the body in working order",
+              "review": "Monthly",
+              "health": "Thriving",
+              "focus": "Base mileage"
+            }
+          },
+          {
+            "key": "ar-career",
+            "values": {
+              "area_name": "Career and craft",
+              "standard": "Grow skills and do work I am proud of",
+              "review": "Quarterly",
+              "health": "Steady",
+              "focus": "Checkout redesign"
+            }
+          },
+          {
+            "key": "ar-money",
+            "values": {
+              "area_name": "Money and admin",
+              "standard": "Bills paid, taxes filed, savings growing",
+              "review": "Monthly",
+              "health": "Needs attention",
+              "focus": "Budget rebuild"
+            }
+          },
+          {
+            "key": "ar-home",
+            "values": {
+              "area_name": "Home and family",
+              "standard": "A calm home and time with the people who matter",
+              "review": "Weekly",
+              "health": "Steady",
+              "focus": "Raised beds"
+            }
+          },
+          {
+            "key": "ar-learn",
+            "values": {
+              "area_name": "Learning",
+              "standard": "Always have one deep thing I am studying",
+              "review": "Quarterly",
+              "health": "Thriving",
+              "focus": "Spanish unit one"
+            }
+          }
+        ]
+      },
+      {
+        "token": "goal",
+        "name": "Goals",
+        "labelSingular": "Goal",
+        "labelPlural": "Goals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "goal_name",
+        "describes": "Outcomes worth pursuing this season, each broken into milestones.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "goal_name",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "In progress",
+              "Achieved",
+              "Dropped"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "In progress": "blue",
+              "Achieved": "green",
+              "Dropped": "amber"
+            }
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "area",
+            "relationMax": 1
+          },
+          {
+            "key": "target_on",
+            "label": "Target date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "why",
+            "label": "Why it matters",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "milestones",
+            "label": "Milestones",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "milestone",
+            "multi": true
+          },
+          {
+            "key": "projects",
+            "label": "Projects",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "multi": true
+          },
+          {
+            "key": "milestones_total",
+            "label": "Milestone count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "milestones",
+            "pick": "milestone_name",
+            "agg": "count"
+          },
+          {
+            "key": "milestones_done",
+            "label": "Milestones done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "milestones",
+            "pick": "milestone_name",
+            "agg": "count",
+            "filter": {
+              "done": true
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "g-half",
+            "values": {
+              "goal_name": "Run a half marathon",
+              "area": "ar-health",
+              "status": "In progress",
+              "target_on": "@today+120d",
+              "why": "Prove to myself I can train consistently"
+            }
+          },
+          {
+            "key": "g-promo",
+            "values": {
+              "goal_name": "Move into a senior design role",
+              "area": "ar-career",
+              "status": "In progress",
+              "target_on": "@today+240d",
+              "why": "More ownership of product decisions"
+            }
+          },
+          {
+            "key": "g-fund",
+            "values": {
+              "goal_name": "Build a six-month cash cushion",
+              "area": "ar-money",
+              "status": "In progress",
+              "target_on": "@today+300d",
+              "why": "Sleep better knowing I have room"
+            }
+          },
+          {
+            "key": "g-spanish",
+            "values": {
+              "goal_name": "Hold a 20-minute conversation in Spanish",
+              "area": "ar-learn",
+              "status": "Not started",
+              "target_on": "@today+200d",
+              "why": "Travel next spring without a phrasebook"
+            }
+          },
+          {
+            "key": "g-garden",
+            "values": {
+              "goal_name": "Turn the backyard into a vegetable garden",
+              "area": "ar-home",
+              "status": "Achieved",
+              "target_on": "@today-20d",
+              "why": "Cook from what we grow"
+            }
+          }
+        ]
+      },
+      {
+        "token": "milestone",
+        "name": "Milestones",
+        "labelSingular": "Milestone",
+        "labelPlural": "Milestones",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flag",
+        "titleField": "milestone_name",
+        "describes": "Checkpoints that show a goal is on track.",
+        "subject": "thing",
+        "independentOf": {
+          "goal": "A milestone can fall due before or after its goal's target as plans shift."
+        },
+        "fields": [
+          {
+            "key": "milestone_name",
+            "label": "Milestone",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "goal",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "effort",
+            "label": "Effort",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Small",
+              "Medium",
+              "Large"
+            ],
+            "choiceColors": {
+              "Small": "slate",
+              "Medium": "blue",
+              "Large": "green"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m1",
+            "values": {
+              "milestone_name": "Run 10 km without stopping",
+              "goal": "g-half",
+              "due_on": "@today-10d",
+              "done": true,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m2",
+            "values": {
+              "milestone_name": "Finish a 15 km long run",
+              "goal": "g-half",
+              "due_on": "@today+35d",
+              "done": false,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m3",
+            "values": {
+              "milestone_name": "Register for the autumn race",
+              "goal": "g-half",
+              "due_on": "@today+60d",
+              "done": false,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m4",
+            "values": {
+              "milestone_name": "Lead the checkout redesign end to end",
+              "goal": "g-promo",
+              "due_on": "@today+70d",
+              "done": false,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m5",
+            "values": {
+              "milestone_name": "Write the case study for the portfolio",
+              "goal": "g-promo",
+              "due_on": "@today+110d",
+              "done": false,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m6",
+            "values": {
+              "milestone_name": "Save one month of expenses",
+              "goal": "g-fund",
+              "due_on": "@today-30d",
+              "done": true,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m7",
+            "values": {
+              "milestone_name": "Save three months of expenses",
+              "goal": "g-fund",
+              "due_on": "@today+120d",
+              "done": false,
+              "effort": "Small"
+            }
+          },
+          {
+            "key": "m8",
+            "values": {
+              "milestone_name": "Finish the first Spanish course unit",
+              "goal": "g-spanish",
+              "due_on": "@today+45d",
+              "done": false,
+              "effort": "Medium"
+            }
+          },
+          {
+            "key": "m9",
+            "values": {
+              "milestone_name": "Build the raised beds",
+              "goal": "g-garden",
+              "due_on": "@today-60d",
+              "done": true,
+              "effort": "Large"
+            }
+          },
+          {
+            "key": "m10",
+            "values": {
+              "milestone_name": "Harvest the first tomatoes",
+              "goal": "g-garden",
+              "due_on": "@today-25d",
+              "done": true,
+              "effort": "Small"
+            }
+          }
+        ]
+      },
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "project_name",
+        "describes": "Finite pieces of work, each tied to an area and usually a goal.",
+        "subject": "thing",
+        "before": [
+          [
+            "start_on",
+            "target_on"
+          ]
+        ],
+        "independentOf": {
+          "area": "Any project can sit under any area regardless of dates.",
+          "goal": "A project may be planned before or run past its goal's target."
+        },
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "In progress",
+              "On hold",
+              "Done"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "In progress": "blue",
+              "On hold": "green",
+              "Done": "amber"
+            },
+            "default": "Planned"
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "area",
+            "relationMax": 1
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "goal",
+            "relationMax": 1
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "target_on",
+            "label": "Target",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "favorite",
+            "label": "Favorite",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tasks",
+            "label": "Tasks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "multi": true
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "note",
+            "multi": true
+          },
+          {
+            "key": "task_count",
+            "label": "Task count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "tasks_done",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "p-race",
+            "values": {
+              "project_name": "Half marathon training plan",
+              "area": "ar-health",
+              "status": "In progress",
+              "start_on": "@today-30d",
+              "target_on": "@today+110d",
+              "goal": "g-half",
+              "favorite": true
+            }
+          },
+          {
+            "key": "p-checkout",
+            "values": {
+              "project_name": "Checkout redesign",
+              "area": "ar-career",
+              "status": "In progress",
+              "start_on": "@today-20d",
+              "target_on": "@today+60d",
+              "goal": "g-promo",
+              "favorite": true
+            }
+          },
+          {
+            "key": "p-portfolio",
+            "values": {
+              "project_name": "Portfolio case study",
+              "area": "ar-career",
+              "status": "Planned",
+              "start_on": "@today+14d",
+              "target_on": "@today+100d",
+              "goal": "g-promo",
+              "favorite": false
+            }
+          },
+          {
+            "key": "p-budget",
+            "values": {
+              "project_name": "Monthly budget rebuild",
+              "area": "ar-money",
+              "status": "In progress",
+              "start_on": "@today-14d",
+              "target_on": "@today+21d",
+              "goal": "g-fund",
+              "favorite": false
+            }
+          },
+          {
+            "key": "p-taxes",
+            "values": {
+              "project_name": "Gather documents for tax filing",
+              "area": "ar-money",
+              "status": "On hold",
+              "start_on": "@today-5d",
+              "target_on": "@today+40d",
+              "favorite": false
+            }
+          },
+          {
+            "key": "p-beds",
+            "values": {
+              "project_name": "Backyard raised beds",
+              "area": "ar-home",
+              "status": "Done",
+              "start_on": "@today-90d",
+              "target_on": "@today-30d",
+              "goal": "g-garden",
+              "favorite": false
+            }
+          },
+          {
+            "key": "p-spanish",
+            "values": {
+              "project_name": "Spanish course, unit one",
+              "area": "ar-learn",
+              "status": "Planned",
+              "start_on": "@today+7d",
+              "target_on": "@today+50d",
+              "goal": "g-spanish",
+              "favorite": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Every next action, with a due date, a smart list and an optional project.",
+        "subject": "thing",
+        "independentOf": {
+          "project": "Tasks can be due before or after the project window moves."
+        },
+        "statusAgrees": [
+          {
+            "relation": "project",
+            "field": "status",
+            "childStatus": [
+              "To do",
+              "Doing"
+            ],
+            "parentField": "status",
+            "parentStatus": [
+              "Planned",
+              "In progress",
+              "On hold"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "Doing",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Doing": "blue",
+              "Done": "green"
+            },
+            "default": "To do"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "blue",
+              "High": "green"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "smart_list",
+            "label": "Smart list",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Do next",
+              "Delegated",
+              "Someday"
+            ],
+            "choiceColors": {
+              "Do next": "slate",
+              "Delegated": "blue",
+              "Someday": "green"
+            }
+          },
+          {
+            "key": "my_day",
+            "label": "My day",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "estimate_min",
+            "label": "Estimate (min)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1440
+              }
+            ]
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "sessions",
+            "label": "Work sessions",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "work_session",
+            "multi": true
+          },
+          {
+            "key": "minutes_tracked",
+            "label": "Minutes tracked",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sessions",
+            "pick": "minutes",
+            "agg": "sum"
+          },
+          {
+            "key": "days_left",
+            "label": "Days until due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')",
+            "source": "formula",
+            "computeOn": "read"
+          }
+        ],
+        "rows": [
+          {
+            "key": "t1",
+            "values": {
+              "task_name": "Book the race registration",
+              "project": "p-race",
+              "status": "Doing",
+              "priority": "High",
+              "due_on": "@today+3d",
+              "smart_list": "Do next",
+              "my_day": true,
+              "estimate_min": 45
+            }
+          },
+          {
+            "key": "t2",
+            "values": {
+              "task_name": "Run the Sunday long run",
+              "project": "p-race",
+              "status": "To do",
+              "priority": "Medium",
+              "due_on": "@today+4d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 30
+            }
+          },
+          {
+            "key": "t3",
+            "values": {
+              "task_name": "Buy new trail shoes",
+              "project": "p-race",
+              "status": "To do",
+              "priority": "Low",
+              "due_on": "@today+12d",
+              "smart_list": "Someday",
+              "my_day": false,
+              "estimate_min": 60
+            }
+          },
+          {
+            "key": "t4",
+            "values": {
+              "task_name": "Interview three customers about checkout",
+              "project": "p-checkout",
+              "status": "Done",
+              "priority": "High",
+              "due_on": "@today-8d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 90
+            }
+          },
+          {
+            "key": "t5",
+            "values": {
+              "task_name": "Sketch the one-page flow",
+              "project": "p-checkout",
+              "status": "Doing",
+              "priority": "High",
+              "due_on": "@today+2d",
+              "smart_list": "Do next",
+              "my_day": true,
+              "estimate_min": 25
+            }
+          },
+          {
+            "key": "t6",
+            "values": {
+              "task_name": "Review prototype with engineering",
+              "project": "p-checkout",
+              "status": "To do",
+              "priority": "Medium",
+              "due_on": "@today+9d",
+              "smart_list": "Delegated",
+              "my_day": false,
+              "estimate_min": 20
+            }
+          },
+          {
+            "key": "t7",
+            "values": {
+              "task_name": "Draft case study outline",
+              "project": "p-portfolio",
+              "status": "To do",
+              "priority": "Medium",
+              "due_on": "@today+20d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 45
+            }
+          },
+          {
+            "key": "t8",
+            "values": {
+              "task_name": "Export last quarter's statements",
+              "project": "p-budget",
+              "status": "Done",
+              "priority": "Medium",
+              "due_on": "@today-6d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 30
+            }
+          },
+          {
+            "key": "t9",
+            "values": {
+              "task_name": "Set category limits",
+              "project": "p-budget",
+              "status": "Doing",
+              "priority": "High",
+              "due_on": "@today+5d",
+              "smart_list": "Do next",
+              "my_day": true,
+              "estimate_min": 60
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "task_name": "Cancel unused subscriptions",
+              "project": "p-budget",
+              "status": "To do",
+              "priority": "Low",
+              "due_on": "@today+10d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 90
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "task_name": "Find the prior-year tax forms",
+              "project": "p-taxes",
+              "status": "To do",
+              "priority": "Medium",
+              "due_on": "@today+25d",
+              "smart_list": "Someday",
+              "my_day": false,
+              "estimate_min": 25
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "task_name": "Order soil for the beds",
+              "project": "p-beds",
+              "status": "Done",
+              "priority": "Medium",
+              "due_on": "@today-70d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 20
+            }
+          },
+          {
+            "key": "t13",
+            "values": {
+              "task_name": "Download the course workbook",
+              "project": "p-spanish",
+              "status": "To do",
+              "priority": "Low",
+              "due_on": "@today+8d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 45
+            }
+          },
+          {
+            "key": "t14",
+            "values": {
+              "task_name": "Call the accountant about extension",
+              "project": "p-taxes",
+              "status": "To do",
+              "priority": "High",
+              "due_on": "@today+6d",
+              "smart_list": "Delegated",
+              "my_day": false,
+              "estimate_min": 30
+            }
+          },
+          {
+            "key": "t15",
+            "values": {
+              "task_name": "Water the tomatoes",
+              "project": "p-beds",
+              "status": "Done",
+              "priority": "Low",
+              "due_on": "@today-26d",
+              "smart_list": "Do next",
+              "my_day": false,
+              "estimate_min": 60
+            }
+          }
+        ]
+      },
+      {
+        "token": "note",
+        "name": "Notes",
+        "labelSingular": "Note",
+        "labelPlural": "Notes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "notebook",
+        "titleField": "note_title",
+        "describes": "Everything worth keeping: meeting notes, clips, journal pages and references.",
+        "subject": "thing",
+        "independentOf": {
+          "project": "A note can be written at any point in a project."
+        },
+        "fields": [
+          {
+            "key": "note_title",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Note",
+              "Web clip",
+              "Journal",
+              "Meeting",
+              "Reference"
+            ],
+            "choiceColors": {
+              "Note": "slate",
+              "Web clip": "blue",
+              "Journal": "green",
+              "Meeting": "amber",
+              "Reference": "red"
+            }
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "favorite",
+            "label": "Favorite",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "captured_on",
+            "label": "Captured",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "n1",
+            "values": {
+              "note_title": "Interview takeaways: checkout",
+              "kind": "Meeting",
+              "project": "p-checkout",
+              "favorite": true,
+              "summary": "Customers abandon at the shipping step",
+              "captured_on": "@today-1d"
+            }
+          },
+          {
+            "key": "n2",
+            "values": {
+              "note_title": "Pacing notes from the long run",
+              "kind": "Journal",
+              "project": "p-race",
+              "favorite": false,
+              "summary": "First 5 km too fast",
+              "captured_on": "@today-4d"
+            }
+          },
+          {
+            "key": "n3",
+            "values": {
+              "note_title": "Budget method I want to try",
+              "kind": "Reference",
+              "favorite": true,
+              "summary": "Zero-based plan with a buffer envelope",
+              "captured_on": "@today-7d"
+            }
+          },
+          {
+            "key": "n4",
+            "values": {
+              "note_title": "Article: designing for trust",
+              "kind": "Web clip",
+              "project": "p-portfolio",
+              "favorite": false,
+              "summary": "Patterns for payment pages",
+              "captured_on": "@today-10d"
+            }
+          },
+          {
+            "key": "n5",
+            "values": {
+              "note_title": "Garden bed layout",
+              "kind": "Note",
+              "project": "p-beds",
+              "favorite": false,
+              "summary": "Tomatoes north, herbs near the door",
+              "captured_on": "@today-13d"
+            }
+          },
+          {
+            "key": "n6",
+            "values": {
+              "note_title": "Spanish verbs cheat sheet",
+              "kind": "Reference",
+              "project": "p-spanish",
+              "favorite": true,
+              "summary": "Top 50 verbs, present tense",
+              "captured_on": "@today-16d"
+            }
+          },
+          {
+            "key": "n7",
+            "values": {
+              "note_title": "Retro on the last design sprint",
+              "kind": "Meeting",
+              "project": "p-checkout",
+              "favorite": false,
+              "summary": "Handoff notes were the weak point",
+              "captured_on": "@today-19d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "person",
+        "name": "People",
+        "labelSingular": "Person",
+        "labelPlural": "People",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "person_name",
+        "describes": "The people who matter to your projects and goals.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "person_name",
+            "label": "Person",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "relationship",
+            "label": "Relationship",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Friend",
+              "Colleague",
+              "Mentor",
+              "Accountant"
+            ],
+            "choiceColors": {
+              "Friend": "slate",
+              "Colleague": "blue",
+              "Mentor": "green",
+              "Accountant": "amber"
+            }
+          },
+          {
+            "key": "context",
+            "label": "Context",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_talk",
+            "label": "Last spoke",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pe1",
+            "values": {
+              "person_name": "Marisol Quintero",
+              "relationship": "Friend",
+              "context": "Runs the Saturday group",
+              "email": "marisol@quintero-mail.net",
+              "last_talk": "@today-9d"
+            }
+          },
+          {
+            "key": "pe2",
+            "values": {
+              "person_name": "Daniel Okonkwo",
+              "relationship": "Colleague",
+              "context": "Engineering lead on checkout",
+              "email": "daniel@brightharbor.net",
+              "last_talk": "@today-18d"
+            }
+          },
+          {
+            "key": "pe3",
+            "values": {
+              "person_name": "Ingrid Solheim",
+              "relationship": "Mentor",
+              "context": "Quarterly career check-in",
+              "email": "ingrid@solheimcoaching.net",
+              "last_talk": "@today-27d"
+            }
+          },
+          {
+            "key": "pe4",
+            "values": {
+              "person_name": "Tomas Ferreira",
+              "relationship": "Accountant",
+              "context": "Handles the annual filing",
+              "email": "tomas@ferreiratax.net",
+              "last_talk": "@today-36d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "work_session",
+        "name": "Work sessions",
+        "labelSingular": "Work session",
+        "labelPlural": "Work sessions",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "timer",
+        "titleField": "session_name",
+        "describes": "Time you actually spent on a task, logged as you go.",
+        "subject": "thing",
+        "independentOf": {
+          "task": "Sessions are logged whenever the work happens."
+        },
+        "fields": [
+          {
+            "key": "session_name",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "task",
+            "label": "Task",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "relationMax": 1
+          },
+          {
+            "key": "started_at",
+            "label": "Started",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "energy",
+            "label": "Energy",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Steady",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Steady": "blue",
+              "High": "green"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "w1",
+            "values": {
+              "session_name": "Interview synthesis",
+              "task": "t4",
+              "started_at": "@today-9d 09:00",
+              "minutes": 50,
+              "energy": "Steady"
+            }
+          },
+          {
+            "key": "w2",
+            "values": {
+              "session_name": "Interview debrief",
+              "task": "t4",
+              "started_at": "@today-8d 14:00",
+              "minutes": 70,
+              "energy": "High"
+            }
+          },
+          {
+            "key": "w3",
+            "values": {
+              "session_name": "Flow sketching",
+              "task": "t5",
+              "started_at": "@today-2d 10:00",
+              "minutes": 40,
+              "energy": "Low"
+            }
+          },
+          {
+            "key": "w4",
+            "values": {
+              "session_name": "Flow sketch review",
+              "task": "t5",
+              "started_at": "@today-1d 16:30",
+              "minutes": 35,
+              "energy": "Steady"
+            }
+          },
+          {
+            "key": "w5",
+            "values": {
+              "session_name": "Statement export",
+              "task": "t8",
+              "started_at": "@today-7d 08:15",
+              "minutes": 25,
+              "energy": "High"
+            }
+          },
+          {
+            "key": "w6",
+            "values": {
+              "session_name": "Category limit setup",
+              "task": "t9",
+              "started_at": "@today-1d 20:00",
+              "minutes": 45,
+              "energy": "Low"
+            }
+          },
+          {
+            "key": "w7",
+            "values": {
+              "session_name": "Soil delivery and filling",
+              "task": "t12",
+              "started_at": "@today-72d 11:00",
+              "minutes": 90,
+              "energy": "Steady"
+            }
+          },
+          {
+            "key": "w8",
+            "values": {
+              "session_name": "Race registration research",
+              "task": "t1",
+              "started_at": "@today-1d 12:10",
+              "minutes": 15,
+              "energy": "High"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A project belongs to one area.",
+        "fromTable": "project",
+        "fromField": "area",
+        "toTable": "area",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "projects_in"
+      },
+      {
+        "describes": "A project can serve a goal.",
+        "fromTable": "project",
+        "fromField": "goal",
+        "toTable": "goal",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "projects_for"
+      },
+      {
+        "describes": "A goal sits in one area.",
+        "fromTable": "goal",
+        "fromField": "area",
+        "toTable": "area",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "goals_in"
+      },
+      {
+        "describes": "A milestone belongs to a goal.",
+        "fromTable": "milestone",
+        "fromField": "goal",
+        "toTable": "goal",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "milestones_of"
+      },
+      {
+        "describes": "A task belongs to a project.",
+        "fromTable": "task",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks_in"
+      },
+      {
+        "describes": "A note can belong to a project.",
+        "fromTable": "note",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "notes_in"
+      },
+      {
+        "describes": "A session is time on one task.",
+        "fromTable": "work_session",
+        "fromField": "task",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sessions_on"
+      },
+      {
+        "describes": "An area lists its projects.",
+        "fromTable": "area",
+        "fromField": "projects",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "area_projects"
+      },
+      {
+        "describes": "A goal lists its milestones.",
+        "fromTable": "goal",
+        "fromField": "milestones",
+        "toTable": "milestone",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "goal_milestones"
+      },
+      {
+        "describes": "A goal lists its projects.",
+        "fromTable": "goal",
+        "fromField": "projects",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "goal_projects"
+      },
+      {
+        "describes": "A project lists its tasks.",
+        "fromTable": "project",
+        "fromField": "tasks",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "project_tasks"
+      },
+      {
+        "describes": "A project lists its notes.",
+        "fromTable": "project",
+        "fromField": "notes",
+        "toTable": "note",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "project_notes"
+      },
+      {
+        "describes": "A task lists its sessions.",
+        "fromTable": "task",
+        "fromField": "sessions",
+        "toTable": "work_session",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "task_sessions"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "quick_task",
+        "name": "Capture a task",
+        "describes": "Drop a task into the inbox.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What needs doing?",
+            "required": true
+          },
+          {
+            "fieldKey": "project",
+            "ask": "Which project?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "Due when?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How important?"
+          }
+        ],
+        "submitLabel": "Add task",
+        "confirmation": "Captured in your task list."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_areas",
+        "name": "All areas",
+        "table": "area",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_goals",
+        "name": "All goals",
+        "table": "goal",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "goal_board",
+        "name": "By status",
+        "table": "goal",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "goal_timeline",
+        "name": "Timeline",
+        "table": "goal",
+        "kind": "timeline",
+        "startField": "target_on",
+        "endField": "target_on"
+      },
+      {
+        "token": "all_milestones",
+        "name": "All milestones",
+        "table": "milestone",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "all_projects",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "project_board",
+        "name": "By status",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_timeline",
+        "name": "Timeline",
+        "table": "project",
+        "kind": "timeline",
+        "startField": "start_on",
+        "endField": "target_on"
+      },
+      {
+        "token": "all_tasks",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "Board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "all_notes",
+        "name": "All notes",
+        "table": "note",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "note_types",
+        "name": "By type",
+        "table": "note",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_people",
+        "name": "People",
+        "table": "person",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_sessions",
+        "name": "Sessions",
+        "table": "work_session",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "started_at",
+            "direction": "desc"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every task and its due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "project",
+          "describes": "The projects the tasks belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many tasks are still in progress?",
+        "whyItMatters": "Camila limits herself to a few tasks in progress.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Doing"
+          },
+          "answer": 3,
+          "unit": "tasks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open the project timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "project_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_timeline",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open goals by status.",
+        "action": {
+          "kind": "open",
+          "surface": "goal_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "goal_board",
+          "minItems": 4
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "life-os",
+      "parent": null,
+      "title": "Life OS",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One home for tasks, projects, notes and goals. Start with My day, capture anything new, and review the goals each week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "My day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "My day",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "my_day": true
+                        }
+                      },
+                      {
+                        "id": "view-2",
+                        "name": "Do next",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "filters": {
+                          "smart_list": "Do next",
+                          "status": [
+                            "To do",
+                            "Doing"
+                          ]
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Coming up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-3",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "due_on"
+                      },
+                      {
+                        "id": "view-4",
+                        "name": "Board",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "status"
+                      }
+                    ],
+                    "activeViewId": "view-3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_projects"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-5",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-6",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-7",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "start_on"
+              },
+              {
+                "id": "view-8",
+                "name": "All projects",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Goals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "goal",
+              "view": "all_goals"
+            },
+            "inline": true,
+            "title": "Goals",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-9",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-10",
+                "name": "All goals",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-11",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "target_on"
+              }
+            ],
+            "activeViewId": "view-9"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notes and people"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "note",
+                      "view": "all_notes"
+                    },
+                    "inline": true,
+                    "title": "Notes",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "view-12",
+                        "name": "Favorites",
+                        "layout": "gallery",
+                        "icon": "LayoutGrid",
+                        "filters": {
+                          "favorite": true
+                        }
+                      },
+                      {
+                        "id": "view-13",
+                        "name": "By type",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "kind"
+                      },
+                      {
+                        "id": "view-14",
+                        "name": "All notes",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "view-12"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "person",
+                      "view": "all_people"
+                    },
+                    "inline": true,
+                    "title": "People",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "view-15",
+                        "name": "All people",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "view-15"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-review"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:areas-and-milestones"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "life-os",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-16",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-16"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_projects"
+                    },
+                    "inline": true,
+                    "title": "Projects",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-17",
+                        "name": "Projects by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-17"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-18",
+                        "name": "Minutes by priority",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "priority",
+                          "op": "sum",
+                          "field": "estimate_min"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-18"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open high priority"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-19",
+                "name": "High priority",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "priority": "High",
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-19"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time logged"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "work_session",
+              "view": "all_sessions"
+            },
+            "inline": true,
+            "title": "Sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-20",
+                "name": "Minutes by energy",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "energy",
+                  "op": "sum",
+                  "field": "minutes"
+                }
+              },
+              {
+                "id": "view-21",
+                "name": "Latest",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "started_at",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-20"
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-review",
+      "parent": "life-os",
+      "title": "Weekly review",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Thirty minutes, once a week, keeps the whole system trustworthy."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clear"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Empty the notes inbox into projects"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Move finished tasks to Done"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick the three tasks that matter most"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Scan projects that have no open task"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Look at goal progress and milestone dates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note one thing to drop"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Flag next week's My day candidates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Block time for the biggest project"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Message anyone you owe a reply"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_projects"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-22",
+                "name": "Active",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "In progress"
+                }
+              }
+            ],
+            "activeViewId": "view-22"
+          }
+        }
+      ]
+    },
+    {
+      "key": "areas-and-milestones",
+      "parent": "life-os",
+      "title": "Areas and milestones",
+      "icon": {
+        "emoji": "🗺️"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Areas are standards you maintain; goals are outcomes you chase. Keep both short."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "area",
+              "view": "all_areas"
+            },
+            "inline": true,
+            "title": "Areas",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-23",
+                "name": "Areas",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-24",
+                "name": "Table",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-23"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestones"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "all_milestones"
+            },
+            "inline": true,
+            "title": "Milestones",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-25",
+                "name": "Upcoming",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "done": false
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-26",
+                "name": "Done",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "done": true
+                }
+              }
+            ],
+            "activeViewId": "view-25"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Work sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "work_session",
+              "view": "all_sessions"
+            },
+            "inline": true,
+            "title": "Sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-27",
+                "name": "Sessions",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-27"
+          }
+        }
+      ]
+    }
+  ]
+}
