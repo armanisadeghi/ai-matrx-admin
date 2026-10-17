@@ -12,7 +12,7 @@
 -- FIX (the shared layer, every definition inherits it): after the title-column relations, drill_ask
 -- names every relation Dimension of a DECLARED definition the answer still has no words for, through
 -- platform.drill_relation_names — read as the seat:
---   hr_pay_period  its dates ("Oct 1 – Oct 14, 2026"), through hr.pay_period's own row security
+--   hr_pay_period  its dates and pay group ("Oct 1 – Oct 14, 2026 · Studio Crew — Weekly"), as the seat
 --   hr_employment  the employee's display name, through hr.employment / hr.employee row security
 --   user / person  platform._drill_people_names: the seat herself, anyone who shares an organization
 --                  with her, or anyone for a platform admin in the admin apps; words as
@@ -74,13 +74,16 @@ begin
     return platform._drill_people_names(v_ids);
   end if;
   if p_token = 'hr_pay_period' then
+    -- its dates, then its pay group (two pay groups share the same dates)
     select coalesce(jsonb_object_agg(p.id, case
              when p.period_start_on is null or p.period_end_on is null then 'Pay period ' || coalesce(p.sequence_number::text, '')
              when extract(year from p.period_start_on) = extract(year from p.period_end_on)
                then to_char(p.period_start_on, 'Mon FMDD') || ' – ' || to_char(p.period_end_on, 'Mon FMDD, YYYY')
-             else to_char(p.period_start_on, 'Mon FMDD, YYYY') || ' – ' || to_char(p.period_end_on, 'Mon FMDD, YYYY') end), '{}'::jsonb)
+             else to_char(p.period_start_on, 'Mon FMDD, YYYY') || ' – ' || to_char(p.period_end_on, 'Mon FMDD, YYYY') end
+           || coalesce(' · ' || nullif(btrim(g.name), ''), '')), '{}'::jsonb)
       into v
-      from hr.pay_period p where p.id = any (v_ids);
+      from hr.pay_period p left join hr.pay_group g on g.id = p.pay_group_id
+     where p.id = any (v_ids);
     return v;
   end if;
   if p_token = 'hr_employment' then
