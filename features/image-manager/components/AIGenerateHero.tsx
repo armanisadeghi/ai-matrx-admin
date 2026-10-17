@@ -15,7 +15,7 @@
 import { Settings, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 
 export function AIGenerateHero() {
   const dispatch = useAppDispatch();

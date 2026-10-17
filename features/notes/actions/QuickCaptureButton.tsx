@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 
 interface QuickCaptureButtonProps {
   defaultContent?: string;

@@ -8,8 +8,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteAnalyticsWindow" as const;
@@ -43,7 +43,7 @@ export function useOpenSiteAnalyticsWindow() {
 
 export type SiteAnalyticsWindowDefinitionData = OpenSiteAnalyticsWindowOptions;
 
-export const siteAnalyticsWindowOverlay = defineOverlay<SiteAnalyticsWindowDefinitionData>()({
+export const siteAnalyticsWindowOverlay = /* @__PURE__ */ defineOverlay<SiteAnalyticsWindowDefinitionData>()({
   id: "siteAnalyticsWindow",
   label: "Google Analytics",
   instance: "single",

@@ -13,7 +13,7 @@ import {
   type OpenSmartCodeEditorWindowOptions,
   type SmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/smart-code-editor/useOpenSmartCodeEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 export {
@@ -38,7 +38,7 @@ export function SmartCodeEditorWindowController(
 
 export type SmartCodeEditorWindowDefinitionData = OpenSmartCodeEditorWindowOptions;
 
-export const smartCodeEditorWindowOverlay = defineOverlay<SmartCodeEditorWindowDefinitionData>()({
+export const smartCodeEditorWindowOverlay = /* @__PURE__ */ defineOverlay<SmartCodeEditorWindowDefinitionData>()({
   id: "smartCodeEditorWindow",
   label: "Smart Code Editor Window",
   instance: "multi",

@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "markdownEditorWindow" as const;
@@ -69,7 +69,7 @@ export function MarkdownEditorWindowController(props: OpenMarkdownEditorWindowOp
 
 export type MarkdownEditorWindowDefinitionData = OpenMarkdownEditorWindowOptions;
 
-export const markdownEditorWindowOverlay = defineOverlay<MarkdownEditorWindowDefinitionData>()({
+export const markdownEditorWindowOverlay = /* @__PURE__ */ defineOverlay<MarkdownEditorWindowDefinitionData>()({
   id: "markdownEditorWindow",
   label: "Markdown Editor Window",
   instance: "single",

@@ -16,7 +16,7 @@ import {
   type SourceReviewOptions,
   type SourceReviewOutcome,
 } from "@/features/resource-manager/source-input/review/openSourceReview";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export { openSourceReview, type SourceReviewOptions, type SourceReviewOutcome };
@@ -30,7 +30,7 @@ export function useOpenSourceReviewWindow(): typeof openSourceReview {
 
 export type SourceReviewWindowDefinitionData = Record<string, unknown>;
 
-export const sourceReviewWindowOverlay = defineOverlay<SourceReviewWindowDefinitionData>()({
+export const sourceReviewWindowOverlay = /* @__PURE__ */ defineOverlay<SourceReviewWindowDefinitionData>()({
   id: "sourceReviewWindow",
   label: "Review what goes in",
   instance: "single",

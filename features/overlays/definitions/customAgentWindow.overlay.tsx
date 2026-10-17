@@ -14,12 +14,12 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import {
   registerCustomAgentSession,
   type CustomAgentSession,
 } from "@ai-matrx/chat/agents/components/custom-agent/session";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "customAgentWindow" as const;
@@ -47,7 +47,7 @@ export function useOpenCustomAgentWindow() {
 
 export type CustomAgentWindowDefinitionData = Record<string, unknown>;
 
-export const customAgentWindowOverlay = defineOverlay<CustomAgentWindowDefinitionData>()({
+export const customAgentWindowOverlay = /* @__PURE__ */ defineOverlay<CustomAgentWindowDefinitionData>()({
   id: "customAgentWindow",
   label: "Custom agent",
   instance: "multi",

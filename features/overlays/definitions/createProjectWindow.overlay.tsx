@@ -15,7 +15,7 @@ import {
   type OpenCreateProjectWindowOptions,
   type CreateProjectWindowHandle,
 } from "@/features/window-panels/windows/projects/useOpenCreateProjectWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -40,7 +40,7 @@ export function CreateProjectWindowController(
 
 export type CreateProjectWindowDefinitionData = OpenCreateProjectWindowOptions;
 
-export const createProjectWindowOverlay = defineOverlay<CreateProjectWindowDefinitionData>()({
+export const createProjectWindowOverlay = /* @__PURE__ */ defineOverlay<CreateProjectWindowDefinitionData>()({
   id: "createProjectWindow",
   label: "Create Project",
   instance: "multi",

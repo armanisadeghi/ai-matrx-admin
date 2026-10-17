@@ -8,7 +8,11 @@
     "^summon/url",
     "^summon/persistence",
     "^summon/(dialog|sheet|testing)",
-    "^app:features/overlays/definitions/(registry|register|overlay-definitions\\.gen|render-map)"
+    "^app:features/overlays/definitions/(registry|register|overlay-definitions\\.gen|render-map)",
+    "^summon/core/(overlaysSlice|windowManagerSlice|linksSlice|overlayStateSlice|store)\\.ts",
+    "^summon/core/(middleware|geometry)/",
+    "^summon/react/",
+    "^summon/window/"
   ],
   "routes": {
     "(core)/notes": 147337,

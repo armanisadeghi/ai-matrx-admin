@@ -13,7 +13,7 @@ import {
   type OpenSurfaceAgentBindWindowOptions,
   type SurfaceAgentBindWindowHandle,
 } from "@/features/window-panels/windows/surfaces/useOpenSurfaceAgentBindWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -38,7 +38,7 @@ export function SurfaceAgentBindWindowController(
 
 export type SurfaceAgentBindWindowDefinitionData = OpenSurfaceAgentBindWindowOptions;
 
-export const surfaceAgentBindWindowOverlay = defineOverlay<SurfaceAgentBindWindowDefinitionData>()({
+export const surfaceAgentBindWindowOverlay = /* @__PURE__ */ defineOverlay<SurfaceAgentBindWindowDefinitionData>()({
   id: "surfaceAgentBindWindow",
   label: "Add Agent to Surface",
   instance: "multi",

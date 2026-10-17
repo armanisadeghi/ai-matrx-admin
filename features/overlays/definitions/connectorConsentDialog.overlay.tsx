@@ -10,8 +10,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "connectorConsentDialog" as const;
@@ -74,7 +74,7 @@ export function ConnectorConsentDialogController({
 
 export type ConnectorConsentDialogDefinitionData = OpenConnectorConsentOptions;
 
-export const connectorConsentDialogOverlay = defineOverlay<ConnectorConsentDialogDefinitionData>()({
+export const connectorConsentDialogOverlay = /* @__PURE__ */ defineOverlay<ConnectorConsentDialogDefinitionData>()({
   id: "connectorConsentDialog",
   label: "Choose what to connect",
   instance: "single",

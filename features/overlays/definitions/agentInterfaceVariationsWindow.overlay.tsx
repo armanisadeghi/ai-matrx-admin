@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentInterfaceVariationsWindow" as const;
@@ -65,7 +65,7 @@ export function AgentInterfaceVariationsWindowController(props: OpenAgentInterfa
 
 export type AgentInterfaceVariationsWindowDefinitionData = OpenAgentInterfaceVariationsWindowOptions;
 
-export const agentInterfaceVariationsWindowOverlay = defineOverlay<AgentInterfaceVariationsWindowDefinitionData>()({
+export const agentInterfaceVariationsWindowOverlay = /* @__PURE__ */ defineOverlay<AgentInterfaceVariationsWindowDefinitionData>()({
   id: "agentInterfaceVariationsWindow",
   label: "Agent Interface Variations Window",
   instance: "single",

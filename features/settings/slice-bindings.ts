@@ -14,7 +14,7 @@ import {
   clearAdminPreferences,
 } from "@/lib/redux/preferences/adminPreferencesSlice";
 import { setIsInWindow, setLayoutStyle } from "@/lib/redux/slices/layoutSlice";
-import { toggleWindowsHidden, restoreAll } from "@ai-matrx/summon";
+import { toggleWindowsHidden, restoreAll } from "@ai-matrx/summon/open";
 import type { SettingsPersistence } from "./types";
 
 /**
