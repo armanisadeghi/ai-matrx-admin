@@ -7,7 +7,7 @@
  */
 import { __resetNonComputerPlatformsForTests } from "@/lib/app-instances/computers";
 
-import { fetchConsoleDevice, fetchConsoleDevices } from "./devices-query";
+import { fetchConsoleDevice, fetchConsoleDevices, isTestDevice } from "./devices-query";
 
 type Row = Record<string, unknown>;
 
@@ -48,7 +48,8 @@ class Builder implements PromiseLike<{ data: Row[]; error: null }> {
 
 const ME = "user-1";
 const ROWS: Row[] = [
-  { id: "mac", user_id: ME, platform: "darwin", is_active: true, deleted_at: null },
+  { id: "test-copy", user_id: ME, platform: "darwin", instance_id: "inst_automation_computer_f57e4101afd8b67e8a6f8a56665c323c", is_active: true, deleted_at: null },
+  { id: "mac", user_id: ME, platform: "darwin", instance_id: "inst_aa12f3fb87a094fc61d8ad5fe49a4022", is_active: true, deleted_at: null },
   { id: "tab", user_id: ME, platform: "web", is_active: true, deleted_at: null },
   { id: "old", user_id: ME, platform: null, is_active: true, deleted_at: null },
   { id: "theirs", user_id: "user-2", platform: "darwin", is_active: true, deleted_at: null },
@@ -91,6 +92,14 @@ describe("fetchConsoleDevice (one computer, through the computer filter)", () =>
 describe("fetchConsoleDevices (the list, through onlyComputers)", () => {
   it("lists only this person's computers", async () => {
     const rows = (await fetchConsoleDevices(client(), ME)) as unknown as Row[];
-    expect(rows.map((r) => r.id).sort()).toEqual(["mac", "old"]);
+    expect(rows.map((r) => r.id).sort()).toEqual(["mac", "old", "test-copy"]);
+  });
+
+  it("test copies sort after the person's own computers; a real installation's id is never a test mark", async () => {
+    const rows = (await fetchConsoleDevices(client(), ME)) as unknown as Row[];
+    expect(rows.map((r) => r.id)).toEqual(["mac", "old", "test-copy"]);
+    expect(isTestDevice({ instance_id: "inst_aa12f3fb87a094fc61d8ad5fe49a4022" })).toBe(false);
+    expect(isTestDevice({ instance_id: "server:aidream:host.local" })).toBe(false);
+    expect(isTestDevice({ instance_id: null })).toBe(false);
   });
 });
