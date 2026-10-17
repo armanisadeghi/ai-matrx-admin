@@ -3,6 +3,7 @@
  * Pressing one opens "Improve an agent I have" on it, so only agents `canEditAgent` allows qualify.
  */
 
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { canEditAgent } from "./improve";
 
 export interface RecentAgentLike {
@@ -26,22 +27,9 @@ export function recentAgents<T extends RecentAgentLike>(agents: readonly T[], co
     .slice(0, count);
 }
 
-const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
-  ["year", 365 * 86_400_000],
-  ["month", 30 * 86_400_000],
-  ["week", 7 * 86_400_000],
-  ["day", 86_400_000],
-  ["hour", 3_600_000],
-  ["minute", 60_000],
-];
-
 /** "Edited 3 days ago" — the line under a recent agent; null when the record carries no date. */
 export function editedLine(agent: Pick<RecentAgentLike, "updatedAt" | "createdAt">, now = Date.now()): string | null {
-  const at = Date.parse(agent.updatedAt ?? agent.createdAt ?? "");
-  if (!at) return null;
-  const ago = Math.max(0, now - at);
-  const [unit, ms] = UNITS.find(([, size]) => ago >= size) ?? ["minute", 60_000];
-  if (ago < 60_000) return "Edited just now";
-  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-  return `Edited ${rtf.format(-Math.floor(ago / ms), unit)}`;
+  const at = agent.updatedAt ?? agent.createdAt;
+  if (!at || !Date.parse(at)) return null;
+  return `Edited ${formatRelativeTime(at, { style: "intl", now })}`;
 }

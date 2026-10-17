@@ -81,9 +81,10 @@ import {
 import { useOpenCloudComputerCanvas } from "@/features/cloud-computer/useOpenCloudComputerCanvas";
 import { flattenResourcePickerItems } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 import { useAttachResourcePicker } from "@/features/connectors/useAttachResourcePicker";
-import { usePopoutContainer } from "@ai-matrx/summon/window";
-import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/url";
-import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
+// Light entries only: ./window and ./url each ship as one module, so a hook imported from them
+// carried the whole window section / link manager into every route's first load.
+import { usePopoutContainer, useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window-host";
+import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/react";
 import {
   disposeFullScreenEditorCallbackGroup,
   emitFullScreenEditorSave,

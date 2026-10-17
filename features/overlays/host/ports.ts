@@ -6,7 +6,7 @@
  */
 import { createDb } from "@ai-matrx/data/db";
 import type { DebugPort, ErrorSinkPort, IdentityPort, NotifyOptions, NotifyPort, OverlayPersistencePort } from "@ai-matrx/summon";
-import { createDataPersistence } from "@ai-matrx/summon/persistence/data";
+import type { DataOverlayPersistence } from "@ai-matrx/summon/persistence/data";
 import { toast } from "@/lib/toast";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
@@ -74,9 +74,28 @@ export function createIdentityPort(store: StoreLike): IdentityPort {
   };
 }
 
+/**
+ * Persistence over `users.user_surface_state`. The adapter loads on the first call (persistence
+ * starts in the idle-loaded overlay services), so the root provider's static graph never carries it.
+ * Boot is one `loadAll` read.
+ */
 export function createPersistencePort(store: StoreLike): OverlayPersistencePort {
-  const db = createDb({ client: supabase, organization: () => selectOrganizationId(store.getState() as RootState) });
-  return createDataPersistence({ db, userId: () => selectUserId(store.getState() as RootState) });
+  let adapter: Promise<DataOverlayPersistence> | null = null;
+  const real = () =>
+    (adapter ??= import("@ai-matrx/summon/persistence/data").then(({ createDataPersistence }) =>
+      createDataPersistence({
+        db: createDb({ client: supabase, organization: () => selectOrganizationId(store.getState() as RootState) }),
+        userId: () => selectUserId(store.getState() as RootState),
+      }),
+    ));
+  return {
+    perPerson: true,
+    load: async (key) => (await real()).load(key),
+    save: async (key, value, options) => (await real()).save(key, value, options),
+    remove: async (key) => (await real()).remove(key),
+    list: async (prefix) => (await real()).list(prefix),
+    loadAll: async () => (await real()).loadAll(),
+  };
 }
 
 export function createAppOverlayPorts(store: StoreLike) {

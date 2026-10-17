@@ -34,8 +34,10 @@ describe("HR custom fields — the table's empty state", () => {
 
   it("does not claim nothing was added while archived definitions exist", () => {
     const text = source(FILE);
-    // The live half feeds the table, so the "Nothing has been added" copy may
-    // only be reached when the archived half is empty too.
+    // The live half feeds the table (archived rows are read with
+    // `entityFields({ include_retired: true })` and hidden until "Archived
+    // fields" opens), so "No custom fields" may only be reached when the
+    // archived half is empty too.
     expect(text).toMatch(
       /liveDefinitions\.length === 0 &&\s*archivedDefinitions\.length > 0/,
     );
@@ -44,6 +46,14 @@ describe("HR custom fields — the table's empty state", () => {
 
   it("still keeps the honest empty copy for a genuinely empty registry", () => {
     expect(source(FILE)).toContain("No custom fields on HR records");
+  });
+
+  it("reads the archived half from the custom store and offers Restore by id", () => {
+    const text = source(FILE);
+    // The store's read answers retired fields only when asked; without this the archived half is always 0.
+    expect(text).toMatch(/entityFields\(\{ token, include_retired: true \}\)/);
+    expect(text).toMatch(/<ArchivedDisclosure[\s\S]*?count=\{archivedDefinitions\.length\}/);
+    expect(text).toMatch(/client\.fieldRestore\(\{ field_id: line\.id \}\)/);
   });
 });
 
