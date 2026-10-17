@@ -15,10 +15,10 @@
  *
  *   `outreach.production_bring_up` — THE CUSTOMER's steps. Rendered for every
  *       org: a named mailbox on a proven domain, the sending rules, and the
- *       two contact-finding services. The vendor keys ARE a customer step
- *       because `bring-up-readiness` checks them in the personal→org secrets
- *       vault (`_secret_present(user_id, org_id, key)`) — they are per-org
- *       facts the org itself supplies, not platform config.
+ *       contact-finding switch. The contact-finding keys are COMPANY
+ *       organization secrets (`bring-up-readiness` reads them on the company
+ *       org), so the customer step only reports whether the service is on;
+ *       the named keys live in the operator checklist below.
  *
  *   `outreach.platform_bring_up` — THE OPERATOR's steps. Rendered ONLY for
  *       super-admins, under an explicit "Platform setup" section: the Google
@@ -335,7 +335,7 @@ export const platformBringUpChecklist = registerChecklist<BringUpContext>({
               status: "fail",
               reason: `Missing company secret${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}.`,
               detail:
-                "Save each as an organization secret on the company organization, then check again.",
+                "Save each as a company secret, then check again.",
               fix: { label: "Check again now", run: ctx.refreshReadiness },
             };
           }

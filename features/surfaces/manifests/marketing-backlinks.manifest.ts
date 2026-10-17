@@ -312,7 +312,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "refresh_schedule",
     label: "Automatic refresh schedule",
     description:
-      "The site's stored DataForSEO refresh configuration as shown in the schedule editor: { enabled, cadence (weekly|monthly), detail_limit }. Always reflects the saved site row, not unsaved edits — which is why its write twin `backlink_refresh_schedule` persists on apply instead of staging a draft. Empty only while the site row is still loading.",
+      "The site's stored data refresh configuration as shown in the schedule editor: { enabled, cadence (weekly|monthly), detail_limit }. Always reflects the saved site row, not unsaved edits — which is why its write twin `backlink_refresh_schedule` persists on apply instead of staging a draft. Empty only while the site row is still loading.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 90,
