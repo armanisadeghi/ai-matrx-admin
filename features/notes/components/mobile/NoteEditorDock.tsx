@@ -8,6 +8,7 @@
  * of Link-based navigation, since this is a contextual toolbar, not a nav bar.
  */
 
+import { useNoteRenderHost } from "../../hooks/useNoteRenderHost";
 import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
 import type { FormatTarget } from "@ai-matrx/rich-content/editor/format/format-target";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -95,6 +96,8 @@ export function NoteEditorDock({
   readOnly = false,
   formatResolve = null,
 }: NoteEditorDockProps) {
+  // The note's view key reads the "note" source adapter, which the lazy rich-content host registers.
+  const hostLanded = useNoteRenderHost();
   const toast = useToastManager("notes");
   const openKnowledge = useOpenNoteKnowledgePanel();
   const ingest = useNoteIngestStatus(noteId);
@@ -463,7 +466,7 @@ export function NoteEditorDock({
             <ContentActionMenuRows
               content={() => content}
               title={exportNote?.label || "Note"}
-              viewKey={richDocumentViewKey(noteIdentityContentSource(noteId), "")}
+              viewKey={hostLanded ? richDocumentViewKey(noteIdentityContentSource(noteId), "") : undefined}
               onTransform={() => void openExportPalette(exportKey)}
               onDone={() => setSheetOpen(null)}
               rowClassName="min-h-11 gap-3 rounded-lg px-3"
