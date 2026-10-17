@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0159",
-  "version": 2,
+  "version": 3,
   "title": "Account Management",
   "description": "Track customer health, renewals, contacts and every touch in one view.",
   "forWho": "Customer success and account managers",
@@ -162,7 +162,10 @@
             "contextPolicy": "include",
             "via": "acts",
             "pick": "happened_on",
-            "agg": "max"
+            "agg": "max",
+            "filter": {
+              "done": true
+            }
           },
           {
             "key": "days_since_touch",
@@ -1315,7 +1318,7 @@
         "Marlin Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
