@@ -356,6 +356,7 @@ export function BrandSocialProfilesCard({
         id: "best",
         label: "Best multiple (30d)",
         header: "Best 30d",
+        hidden: true, // secondary: fits the table at desktop width; still in the Columns dialog
         width: 80,
         align: "right",
         accessorFn: (r) => r.account?.bestScore ?? null,

@@ -83,6 +83,7 @@ import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEdit
 import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
 import {
+  BrandHomeSkeleton,
   BrandOverviewAbout,
   BrandOverviewAssets,
   BrandOverviewContact,
@@ -108,7 +109,6 @@ import {
   marketingKeys,
 } from "@/features/marketing/data/hooks";
 import {
-  LoadingSurface,
   SectionCard,
   StatusBadge,
 } from "@/features/marketing/components/shared/MarketingUi";
@@ -253,17 +253,6 @@ function firstAssetUrl(
     if (match) return assetPreviewUrl(match);
   }
   return null;
-}
-
-/**
- * The homepage as a visitor sees it on a computer (Smart Add files it as an `image` titled
- * "Homepage on a computer"): more than a logo, so it fronts the header.
- */
-function homepageShotUrl(assets: BrandAsset[]): string | null {
-  const match = assets
-    .filter((asset) => asset.kind === "image" && /^homepage on a computer$/i.test((asset.title ?? "").trim()))
-    .sort((a, b) => a.sort_order - b.sort_order)[0];
-  return match ? assetPreviewUrl(match) : null;
 }
 
 const FACT_KIND_ICONS: Record<BusinessFactKind, LucideIcon> = {
@@ -645,7 +634,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   if (brand.isLoading || (brand.data && (sites.isLoading || properties.isLoading))) {
     // The [brandId] layout's trail is the header for this whole tree — a
     // second per-page RouteHeader here would hide it (Arman, 2026-08-30).
-    return <LoadingSurface label="Loading brand…" />;
+    return <BrandHomeSkeleton />;
   }
   if (brand.isError || !brand.data) {
     return (
@@ -686,10 +675,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
       firstAssetUrl(assetRows, ["logo", "logo_dark", "wordmark", "headshot"]),
     favicon_url: current.favicon_url || firstAssetUrl(assetRows, ["favicon"]),
   };
-  const heroCover =
-    homepageShotUrl(assetRows) ||
-    secureImageUrl(current.og_image_url) ||
-    firstAssetUrl(assetRows, ["og_image", "hero_image", "twitter_image"]);
+
   const sortedAssets = [...assetRows].sort(
     (a, b) =>
       Number(b.is_primary) - Number(a.is_primary) ||
@@ -1025,31 +1011,17 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   </span>
                 ) : null}
             </div>
-            {heroCover ? (
-              // The homepage picture (else the brand's own og/hero image). The box is a fixed 16:10
-              // size so the header never shifts when the image arrives; the image loads lazily.
-              <div className="relative hidden h-20 w-32 shrink-0 overflow-hidden rounded-md border border-border bg-muted sm:block">
-                <img
-                  src={heroCover}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 h-full w-full object-contain p-1"
-                  onError={(event) => {
-                    event.currentTarget.parentElement?.style.setProperty("display", "none");
-                  }}
-                />
-              </div>
-            ) : null}
           </section>
 
           {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
           {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
 
-          {/* Tabs: the home is a summary; each area has its own tab, and only the open tab loads. */}
+          {/* Tabs: the home is a summary; each area has its own tab, and only the open tab loads.
+              Sticky offsets cancel <main>'s top padding (header + 0.5rem / 0.75rem), so the bar sits
+              flush under the shell header with no strip of scrolling content above it. */}
           <nav
             aria-label="Brand sections"
-            className="sticky top-[var(--shell-header-h)] z-10 flex min-w-0 items-end gap-2 overflow-x-auto rounded-lg border border-border bg-card px-2"
+            className="sticky -top-2 z-10 flex min-w-0 items-end sm:-top-3 gap-2 overflow-x-auto rounded-lg border border-border bg-card px-2"
           >
             <Tabs
               value={tab}
@@ -1085,6 +1057,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   description={current.description}
                   industry={current.industry}
                   websiteUrl={publicWebsiteUrl}
+                  canEdit={canEdit}
+                  onAdd={() => setFactEditor({ open: true, fact: null })}
                 />
                 {/* Products & services: a one-line summary here; the grouped table lives on its own page. */}
                 <SectionCard
@@ -1112,7 +1086,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               </div>
               <div className="grid min-w-0 gap-3">
                 <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
-                <BrandOverviewWebsites brandId={brandId} sites={websiteSites} onOpen={() => setTab("web")} />
+                <BrandOverviewWebsites
+                  brandId={brandId}
+                  sites={websiteSites}
+                  publicWebsiteUrl={publicWebsiteUrl}
+                  onOpen={() => setTab("web")}
+                />
                 <BrandOverviewSocial properties={socialProperties} onOpen={() => setTab("social")} />
                 <BrandOverviewAssets
                   total={assetRows.length}

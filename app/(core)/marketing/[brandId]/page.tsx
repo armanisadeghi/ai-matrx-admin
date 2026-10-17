@@ -2,7 +2,7 @@ import { MarketingAddressUnavailable } from "@/features/marketing/components/sha
 import { Suspense } from "react";
 
 import { BrandWorkspace } from "@/features/marketing/components/brands/BrandWorkspace";
-import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";
+import { BrandHomeSkeleton } from "@/features/marketing/components/brands/BrandOverview";
 import { resolveBrandParam } from "@/features/marketing/lib/keys-server";
 
 export default async function MarketingBrandPage({
@@ -15,7 +15,7 @@ export default async function MarketingBrandPage({
   const brand = await resolveBrandParam(brandId);
   if (!brand) return <MarketingAddressUnavailable token="web_brand" address={brandId} />;
   return (
-    <Suspense fallback={<LoadingSurface label="Loading brand…" />}>
+    <Suspense fallback={<BrandHomeSkeleton />}>
       <BrandWorkspace brandId={brand.id} />
     </Suspense>
   );

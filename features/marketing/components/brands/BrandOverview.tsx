@@ -5,11 +5,13 @@
  * tab or page (never the full list on the home). Reads only what BrandWorkspace already loaded.
  */
 import { useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, AtSign, Globe2, Images, ListChecks } from "lucide-react";
+import { ArrowRight, AtSign, Globe2, Images, ListChecks, Plus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { Chip, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Button, Chip, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Skeleton } from "@ai-matrx/design-system";
 import type { ChipTone } from "@ai-matrx/design-system/controls";
 
 import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
@@ -70,38 +72,59 @@ export function BrandOverviewAbout({
   description,
   industry,
   websiteUrl,
+  canEdit,
+  onAdd,
 }: {
   facts: BusinessFact[];
   description: string | null;
   industry: string | null;
   websiteUrl: string | null;
+  canEdit: boolean;
+  /** Opens the fact editor for a missing field. */
+  onAdd: () => void;
 }) {
-  const tagline = firstOfKind(facts, "tagline");
-  const founded = firstOfKind(facts, "founded");
-  const legal = firstOfKind(facts, "legal_name");
+  const textOf = (kind: BusinessFactKind) => {
+    const fact = firstOfKind(facts, kind);
+    return fact ? businessFactValueText(fact.value) : "";
+  };
+  const fields: ReadonlyArray<{ label: string; value: ReactNode | null; wide?: boolean }> = [
+    { label: "Tagline", value: textOf("tagline") || null, wide: true },
+    {
+      label: "Description",
+      wide: true,
+      value: description ? (
+        <span className="line-clamp-4" title={description}>
+          {description}
+        </span>
+      ) : null,
+    },
+    { label: "Industry", value: industry || null },
+    { label: "Founded", value: textOf("founded") || null },
+    { label: "Legal name", value: textOf("legal_name") || null },
+    { label: "Website", value: websiteUrl ? contactFactValue({ kind: "website", value: websiteUrl }) : null },
+  ];
+  const present = fields.filter((field) => field.value);
+  const missing = fields.filter((field) => !field.value);
   return (
     <SectionCard title="About" anchor="about">
-      <div className="grid gap-3 p-3">
-        <PropertyRow label="Tagline" value={tagline ? businessFactValueText(tagline.value) : null} />
-        <PropertyRow
-          label="Description"
-          value={
-            description ? (
-              <span className="line-clamp-4" title={description}>
-                {description}
-              </span>
-            ) : null
-          }
-        />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <PropertyRow label="Industry" value={industry} />
-          <PropertyRow label="Founded" value={founded ? businessFactValueText(founded.value) : null} />
-          <PropertyRow label="Legal name" value={legal ? businessFactValueText(legal.value) : null} />
-          <PropertyRow
-            label="Website"
-            value={websiteUrl ? contactFactValue({ kind: "website", value: websiteUrl }) : null}
-          />
-        </div>
+      <div className="grid gap-3 p-3 sm:grid-cols-2">
+        {present.map((field) => (
+          <div key={field.label} className={field.wide ? "sm:col-span-2" : undefined}>
+            <PropertyRow label={field.label} value={field.value} />
+          </div>
+        ))}
+        {missing.length ? (
+          // Missing fields share ONE line, never a "Not provided" tag per row.
+          <div className="flex min-h-7 flex-wrap items-center gap-x-2 gap-y-1 sm:col-span-2">
+            <span className="type-label">Missing</span>
+            <span className="min-w-0 flex-1 type-secondary text-muted-foreground">
+              {missing.map((field) => field.label).join(" · ")}
+            </span>
+            <Button variant="quiet" icon={<Plus />} disabled={!canEdit} onClick={onAdd}>
+              Add
+            </Button>
+          </div>
+        ) : null}
       </div>
     </SectionCard>
   );
@@ -117,26 +140,37 @@ export function BrandOverviewContact({
   websiteUrl: string | null;
   onOpen: () => void;
 }) {
+  const rows = CONTACT_KINDS.map(({ kind, label }) => {
+    const matches = facts.filter((fact) => fact.kind === kind);
+    const first = matches[0];
+    const value = first
+      ? businessFactValueText(first.value)
+      : kind === "website" && websiteUrl
+        ? websiteUrl
+        : "";
+    return { kind, label, value, more: Math.max(0, matches.length - 1) };
+  });
+  const present = rows.filter((row) => row.value);
+  const missing = rows.filter((row) => !row.value);
   return (
     <SectionCard title="Contact" anchor="contact" headerExtra={<OpenLink label="All facts" onClick={onOpen} />}>
       <div className="grid gap-3 p-3">
-        {CONTACT_KINDS.map(({ kind, label }) => {
-          const matches = facts.filter((fact) => fact.kind === kind);
-          const first = matches[0];
-          const value = first
-            ? businessFactValueText(first.value)
-            : kind === "website" && websiteUrl
-              ? websiteUrl
-              : "";
-          return (
-            <PropertyRow
-              key={kind}
-              label={label}
-              meta={matches.length > 1 ? `+${matches.length - 1}` : undefined}
-              value={value ? (contactFactValue({ kind, value }) ?? value) : null}
-            />
-          );
-        })}
+        {present.map(({ kind, label, value, more }) => (
+          <PropertyRow
+            key={kind}
+            label={label}
+            meta={more ? `+${more}` : undefined}
+            value={contactFactValue({ kind, value }) ?? value}
+          />
+        ))}
+        {missing.length ? (
+          <div className="flex min-h-7 flex-wrap items-center gap-x-2">
+            <span className="type-label">Missing</span>
+            <span className="min-w-0 flex-1 type-secondary text-muted-foreground">
+              {missing.map((row) => row.label).join(" · ")}
+            </span>
+          </div>
+        ) : null}
       </div>
     </SectionCard>
   );
@@ -145,10 +179,13 @@ export function BrandOverviewContact({
 export function BrandOverviewWebsites({
   brandId,
   sites,
+  publicWebsiteUrl,
   onOpen,
 }: {
   brandId: string;
   sites: MarketingSite[];
+  /** A viewer who cannot read the managed site still sees the brand's public website. */
+  publicWebsiteUrl: string | null;
   onOpen: () => void;
 }) {
   return (
@@ -157,7 +194,11 @@ export function BrandOverviewWebsites({
       anchor="overview-websites"
       headerExtra={<OpenLink label={sites.length > PREVIEW_SITES ? `All ${sites.length}` : "Open"} onClick={onOpen} />}
     >
-      {sites.length === 0 ? (
+      {sites.length === 0 && publicWebsiteUrl ? (
+        <div className="flex min-h-11 items-center px-3">
+          {contactFactValue({ kind: "website", value: publicWebsiteUrl })}
+        </div>
+      ) : sites.length === 0 ? (
         <EmptyState icon={<Globe2 />} title="No websites yet" />
       ) : (
         <ul className="divide-y divide-border">
@@ -258,6 +299,44 @@ export function BrandOverviewFacts({
   );
 }
 
+/** One asset tile: shimmer while the picture loads, the asset's kind if it fails — never a broken image. */
+function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () => void }) {
+  const [state, setState] = useState<"loading" | "ready" | "failed">(asset.preview ? "loading" : "ready");
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      title={asset.label}
+      aria-label={asset.label}
+      className="relative aspect-square overflow-hidden rounded-md border border-border bg-background"
+    >
+      {asset.preview && state !== "failed" ? (
+        <img
+          src={asset.preview}
+          alt=""
+          decoding="async"
+          // A picture that failed before hydration never fires onError: read its state on mount.
+          ref={(img) => {
+            if (img?.complete) setState(img.naturalWidth > 0 ? "ready" : "failed");
+          }}
+          onLoad={() => setState("ready")}
+          onError={() => setState("failed")}
+          className={state === "ready" ? "absolute inset-0 h-full w-full object-contain p-1" : "absolute inset-0 h-full w-full object-contain p-1 opacity-0"}
+        />
+      ) : null}
+      {asset.preview && state === "loading" ? <Skeleton motion="shimmer" className="absolute inset-0" /> : null}
+      {asset.preview && state === "failed" ? (
+        <span className="absolute inset-0 flex items-center justify-center p-1 text-center type-meta text-muted-foreground">
+          {asset.label}
+        </span>
+      ) : null}
+      {!asset.preview && asset.color ? (
+        <span className="absolute inset-1 rounded" style={{ background: asset.color }} />
+      ) : null}
+    </button>
+  );
+}
+
 export function BrandOverviewAssets({
   assets,
   total,
@@ -267,8 +346,6 @@ export function BrandOverviewAssets({
   total: number;
   onOpen: () => void;
 }) {
-  // A dead image URL keeps its tile (nothing moves) and shows the asset's kind, never a broken image.
-  const [failed, setFailed] = useState<ReadonlySet<string>>(() => new Set());
   const shown = assets.filter((asset) => asset.preview || asset.color).slice(0, PREVIEW_ASSETS);
   return (
     <SectionCard
@@ -281,37 +358,39 @@ export function BrandOverviewAssets({
       ) : (
         <div className="grid grid-cols-4 gap-2 p-3 sm:grid-cols-8 lg:grid-cols-4">
           {shown.map((asset) => (
-            <button
-              key={asset.id}
-              type="button"
-              onClick={onOpen}
-              title={asset.label}
-              aria-label={asset.label}
-              className="relative aspect-square overflow-hidden rounded-md border border-border bg-background"
-            >
-              {asset.preview && failed.has(asset.preview) ? (
-                <span className="absolute inset-0 flex items-center justify-center p-1 type-meta text-muted-foreground">
-                  {asset.label}
-                </span>
-              ) : asset.preview ? (
-                <img
-                  src={asset.preview}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 h-full w-full object-contain p-1"
-                  onError={() => {
-                    const src = asset.preview;
-                    if (src) setFailed((prev) => new Set(prev).add(src));
-                  }}
-                />
-              ) : (
-                <span className="absolute inset-1 rounded" style={{ background: asset.color ?? undefined }} />
-              )}
-            </button>
+            <AssetTile key={asset.id} asset={asset} onOpen={onOpen} />
           ))}
         </div>
       )}
     </SectionCard>
+  );
+}
+
+/** The brand home while it loads: the same frame (header card, tab bar, two-column grid), so nothing moves when it arrives. */
+export function BrandHomeSkeleton() {
+  return (
+    <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
+      <div className="grid w-full gap-3" aria-busy="true" aria-label="Loading brand">
+        <div className="flex h-[196px] items-start gap-3 rounded-lg border border-border bg-card p-4 sm:gap-4">
+          <Skeleton className="h-[72px] w-[72px] shrink-0 rounded-lg" />
+          <div className="grid min-w-0 flex-1 gap-2">
+            <Skeleton className="h-6 w-56 max-w-full" />
+            <Skeleton className="h-4 w-40 max-w-full" />
+            <Skeleton className="h-5 w-64 max-w-full" />
+          </div>
+        </div>
+        <div className="h-[34px] rounded-lg border border-border bg-card" />
+        <div className="grid items-start gap-3 lg:grid-cols-3">
+          <div className="grid min-w-0 gap-3 lg:col-span-2">
+            <div className="h-64 rounded-lg border border-border bg-card" />
+            <div className="h-32 rounded-lg border border-border bg-card" />
+          </div>
+          <div className="grid min-w-0 gap-3">
+            <div className="h-48 rounded-lg border border-border bg-card" />
+            <div className="h-24 rounded-lg border border-border bg-card" />
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }
