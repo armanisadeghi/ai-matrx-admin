@@ -125,8 +125,16 @@ export function holdKeepsSlot(
 ): boolean {
   if (!held.has(hostName(host))) return false;
   const last = Math.max(registry.admitted.get(host) ?? 0, registry.lastRequest?.get(host) ?? 0);
-  return now - last <= windowMs;
+  return now - last <= Math.min(windowMs, HELD_IDLE_PROTECT_MS);
 }
+
+/**
+ * How long a held host may go without ANY request before its hold stops protecting its slot
+ * (2026-10-16). With the 10-minute window, four held sessions sitting 5–8 minutes idle kept all four
+ * slots while newcomers were refused 844 times in one log (a preflight waited 15 minutes, twice). A run
+ * that is really walking pages touches the server far more often than this.
+ */
+export const HELD_IDLE_PROTECT_MS = 5 * 60_000;
 
 /** Frees a host's slot at once (a runner that has ended): no tombstone, so the host may sign in again later. */
 export function releaseWalkHost(registry: WalkRegistry, host: string): boolean {

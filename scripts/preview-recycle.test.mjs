@@ -284,6 +284,22 @@ test("a deliberate stop by another process is never read as a crash: no restart,
   }
 });
 
+test("stopping an OLD server never deletes the lease a NEWER server already wrote (2026-10-16 UNMANAGED)", () => {
+  const dir = stateDir();
+  const oldPid = fakeServer();
+  const newPid = fakeServer();
+  try {
+    writeLease(dir, { pid: newPid, usedAgoSec: 0, root: REPO_ROOT, port: 3001 });
+    sourced(dir, `stop_for_limit ${oldPid} "preview restarted at 49 GB (cap 48 GB)"`);
+    assert.ok(!isAlive(oldPid), "the old server is stopped");
+    assert.match(readFileSync(join(dir, "shared-next-dev.meta"), "utf8"), new RegExp(`PID=${newPid}`), "the newer server keeps its lease");
+    assert.ok(existsSync(join(dir, "shared-next-dev.ready")), "and its ready marker");
+    assert.ok(isAlive(newPid));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("past the restart budget the watchdog stops restarting and says CRASH LOOP", () => {
   const dir = stateDir();
   const marker = join(dir, "restart-ran");

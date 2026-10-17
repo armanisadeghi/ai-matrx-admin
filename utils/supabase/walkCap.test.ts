@@ -224,6 +224,26 @@ describe("decideWalkAdmission — a held test run is never paused", () => {
     expect(registry.admitted.size).toBe(4);
   });
 
+  it("a held host quiet for more than 5 minutes no longer blocks a newcomer (844 refusals, 2026-10-16)", () => {
+    const held = new Set(["r1.localhost", "r2.localhost", "r3.localhost", "r4.localhost"]);
+    const registry = registryWith([
+      ["r1.localhost:3001", T0 - 30 * MIN],
+      ["r2.localhost:3001", T0 - 30 * MIN],
+      ["r3.localhost:3001", T0 - 30 * MIN],
+      ["r4.localhost:3001", T0 - 30 * MIN],
+    ]);
+    registry.lastRequest = new Map([
+      ["r1.localhost:3001", T0 - 4 * MIN],
+      ["r2.localhost:3001", T0 - 4 * MIN],
+      ["r3.localhost:3001", T0 - 4 * MIN],
+      ["r4.localhost:3001", T0 - 7 * MIN],
+    ]);
+    const decision = decideWalkAdmission(registry, "x.localhost:3001", T0, KNOBS, "document", held);
+    expect(decision.verdict).toBe("admit");
+    expect(registry.evicted.has("r4.localhost:3001")).toBe(true);
+    expect(registry.admitted.has("r1.localhost:3001")).toBe(true);
+  });
+
   it("the idle timer also expires a held host that went quiet for the window", () => {
     jest.useFakeTimers();
     const dir = mkdtempSync(join(tmpdir(), "walk-holds-timer-"));
