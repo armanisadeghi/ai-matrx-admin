@@ -65,3 +65,5 @@ channel. INCONCLUSIVE when the runner did not finish — never a pass.
 | Date | Fault (channel, where, how restored) | Runner | Grade | Marker that failed | Verdict on the playbook |
 |---|---|---|---|---|---|
 | | | | | | trusted / rewritten |
+
+Subjects: playbooks never name a subject. Step 1 draws one with `pick_test_subject.py --category/--tag --claim` (rule: operations/real-tests/RUNNER-ADDENDUM.md, Test subjects).

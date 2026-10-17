@@ -15,18 +15,14 @@ timestamp: 2026-10-15T00:00:00Z
 
 # safety-net
 
-**Arman, 2026-10-01, verbatim:** *"I'm not talking about tests that run automatically or each time we
-build… I'm talking about what I call REAL TESTS. The ones you run yourself right after big changes and
-just confirm the results are what they need to be. Not automated, not blocking, not stuff like that.
-They're blocking because if they fail, you stop and address it, not because some system blocks you…
-one passing test means hundreds of things had to have worked perfectly."*
+Real tests are run by you right after big changes, never automatically; they block because a failure
+stops you, never because a system blocks you; one pass means hundreds of things worked ([his words](/operations/real-tests/VISION.md)).
 
 A **real test** is a playbook: a plain-language procedure that a fresh, cheap agent walks in the live
 product against the live database as `admin@admin.com`, plus a **sealed check-sheet** that agent never sees.
 It is **proven to fail** on a break it was not told about. Around a change it is written **before** the
 change, run on the unchanged product, and run again after. As a **check** of how something works today,
-it is run once on the product as it is (Arman, 2026-10-15: "simply test something that isn't being
-changed... when we're questioning the current state of the system"). Pass → done. Fail → you stop and
+it is run once on the product as it is. Pass → done. Fail → you stop and
 fix the product.
 
 This is not a test suite, not CI, not a gate, not a dashboard. Nothing here runs on its own and
@@ -48,7 +44,7 @@ safety net"; there was no weakness list, no sealed check, and the tests were edi
 | Finding every consumer and trigger path, including rows that are configuration | `safe-cutover` Step 1 |
 | Briefs that can return what you do not already believe | reality-is-the-referee · `subagent-dispatch` §1 |
 | Realistic data and people | test-data-looks-real · `@ai-matrx/records/use-cases` · persona factory · aidream `scripts/pick_test_subject.py` (businesses and people to test on) |
-| The database tests run on | the live database, as `admin@admin.com`, on disposable records (Arman, 2026-10-03). The nightly clone is only for rehearsing destructive migrations or jobs that lock live 10+ minutes (`operations/clone/CURRENT.md`) |
+| The database tests run on | the live database, as `admin@admin.com`, on disposable records. The nightly clone is only for rehearsing destructive migrations or jobs that lock live 10+ minutes (`operations/clone/CURRENT.md`) |
 | A working localhost before any runner | §4a below; matrx-frontend `pnpm preview:ready`; memory rules in `operations/real-tests/RUNNER-ADDENDUM.md` |
 
 ## 0. Pick the scenario first — it decides what "before" means
@@ -192,8 +188,7 @@ That is what makes one passing test worth hundreds of smaller ones.
 this skill and hides each piece of its answer behind a different row there, so a missing piece names the
 break. Only Arman adds rows; propose new ones to him in chat.
 
-**One primary chain, one rich UI; every other test is short and different** (Arman, 2026-10-15: "we don't
-need to run the same test on all uis… it kills the test on the other surface"). The server and the core
+**One primary chain, one rich UI; every other test is short and different** ([his words](/operations/real-tests/VISION.md)). The server and the core
 front-end work (variables, bindings, attachments, context, agent calls, the confirmed write) are proven once,
 by the primary chain on one surface rich enough to exercise them (Notes). Another UI gets its own quick test
 of only what that UI does differently: its surface map, its tools, one read and one write. Server-only
@@ -205,7 +200,7 @@ same job (a server-side door, a mandate), and a run is one playbook through one 
 same server path are one trigger, not two.
 Agent runs have several server doors (the Builder's manual door, the agent door behind the run page and chat,
 conversation continue): every baseline, fault and after-run picks its door AT RANDOM among the playbook's
-triggers, and the after-run covers every door (Arman, 2026-10-16: testing only in the Builder tests one API).
+triggers, and the after-run covers every door: testing only in the Builder tests one API.
 
 **No screen.** When what is tested has no page (a server path, a package, an agent behind a mandate),
 the runner's tool is the product's own door as the person: the AI Dream MCP (`agent_run`, the mandate
@@ -228,7 +223,7 @@ sink.
 ## 4. The runner
 
 - A **fresh agent** with no part in the change, on **Claude Haiku 5.5** (`quick` lane, `model: haiku`) by
-  default (Arman, 2026-10-15: "use a much cheaper model, like Haiku, who will do this job just as well").
+  default ([his words](/operations/real-tests/VISION.md)).
   Raise it to Sonnet only when a run is INCONCLUSIVE for reasons of the runner, never of the product.
   The agents under test default to Haiku 5.5 too, unless the playbook tests a specific model.
 - **Gets:** the STEPS half, its own localhost hostname and the dev-login route, signed in as `admin@admin.com`, plus the
@@ -244,13 +239,14 @@ sink.
   pass. Twice on one playbook, for reasons other than the environment (§4a), means the steps are unclear or the product is unusable at that step,
   and you find out which.
 - The product under test is localhost (the page, the local aidream, the one database at `https://db.matrxserver.com`), signed in as
-  `admin@admin.com` (Arman, 2026-10-03: test on live; the clone is no longer a test target). The runner touches only
+  `admin@admin.com` (live, never the clone). The runner touches only
   that account's disposable records. A run during which another session changed the shared localhost server's build is
   INCONCLUSIVE. Never Arman's Chrome. Never a sign-in or sign-out on a Matrx host outside the runner's own hostname.
-- **Test subjects** (businesses, people) come from aidream `scripts/pick_test_subject.py`, one per run
-  (`--n 1`): it marks every subject it hands out as used, and a used subject is never reused. Record
-  each in the ledger.
-- **A person driving it** (Arman asked to "drive the test after Sonnet confirms"): after the check run
+- **Test subjects** (businesses, people) are never chosen by the agent
+  ([his words](/systems/marketing/websites-and-brands/projects/smart-add-brand/VISION.md)). They come from aidream `scripts/pick_test_subject.py --category/--tag --claim "<run>"`, drawn at random
+  from `operations/real-tests/SUBJECT-POOL.md`; a claimed subject is never reused. Every build is followed by a
+  test on `--different-from <id>`. Record each id in the ledger.
+- **A person driving it** ([his words](/operations/real-tests/VISION.md)): after the check run
   is graded, fixed and green, he gets the STEPS sheet and his own hostname, never the checks. He is a
   runner; the grader grades what he returns.
 - **Delegating the net:** a manager who hands any step to a worker names this skill and the step in

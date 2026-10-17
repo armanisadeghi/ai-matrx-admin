@@ -9,7 +9,7 @@ timestamp: 2026-10-16T00:00:00Z
 
 # Scores file format
 
-One JSON array, one object per scored agent. Example file: `operations/spend/reasoning-scores-2026-10-16.json` (496 rows, not committed) and its `-summary.md`.
+One JSON array, one object per scored agent. Example file: [the 2026-10-16 scores file](https://www.aimatrx.com/files/f/0de391f4-d229-4f3d-ba2b-585075889d45) (496 rows) and its `-summary.md`.
 
 | Key | Meaning |
 |---|---|

@@ -26,7 +26,7 @@ timestamp: 2026-10-16T00:00:00Z
 | `high` | Rare. Open-ended hard reasoning where one miss cascades into many downstream things: adversarial appraisal, structure other agents inherit, orchestration with authority to refuse. Arman tunes these himself. | Do not set it on your own; propose it |
 | `very_high` | A scorer label only, not a setting. It maps to `high`. | none set directly |
 
-Opus and Sonnet think as much as the task needs. `high` on a simple task is a pure waste (Arman, 2026-10-15). Run counts are meaningless until test runs are removed: about 90 percent of runs are tests.
+Opus and Sonnet think as much as the task needs. `high` on a simple task is a pure waste. Run counts are meaningless until test runs are removed: about 90 percent of runs are tests.
 
 ## 2. Hard rules
 
@@ -86,7 +86,7 @@ Pick 3 to 5 agents per batch, the ones where being wrong costs most (highest sco
 3. **Run at the new level, then at `high`, same model, same input**, through `agent_run` (the canonical path; never a raw provider call). `agent_run` has no per-run effort override, so flip the setting with the section 4 SQL, run, and restore. Do the steps one at a time: running `agent_run` and the restore in the same batch races, and the run lands on the wrong version (it happened on 2026-10-16).
 4. **Prove which level each run used.** `chat.user_request.agent_version_id` joins to `agent.definition_version`; read `settings->>'reasoning_effort'` there. Pull `total_duration_ms`, `total_cost`, `total_output_tokens`, `total_tool_calls` from the same row.
 5. **Compare** the items and verdicts (same ones out, anything missing or wrong), the mandatory steps of its own prompt (did a numbered step get skipped), tokens, latency and cost.
-6. **Restore, then re-query**: the agent's live effort equals the new level. Spend limit for a batch is set by the owner (3 dollars on 2026-10-16).
+6. **Restore, then re-query**: the agent's live effort equals the new level. Spend limit for a batch is set by the owner.
 7. **Verdict per agent:** "new level is fine" or "needs one step up". Step up only when the level's output is wrong on the decision, drops an item, or skips a mandatory step on more than one of two runs. One run each is a hint, not proof; same level varies run to run (Newsworthiness Check scored 4 then 2 at medium). If it needs a step up, apply it with the section 4 SQL and write why in the change tag.
 
 ## 6. Red flags
