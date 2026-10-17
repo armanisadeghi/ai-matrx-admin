@@ -9,8 +9,9 @@
  * global universal rule sat in the utilities layer, outranked the shell's auto-hiding bar
  * and painted a grey track under every horizontal scroller.
  *
- * Now there is ONE default — app/globals.css, base layer, thin and auto-hiding — used by
- * pages, dialogs and popovers alike. RED before: the universal rule sat in
+ * Now there is ONE default — @ai-matrx/design-system web-base.css (imported by
+ * app/globals.css), base layer, thin and auto-hiding — used by pages, dialogs and
+ * popovers alike. The host keeps no copy of it. RED before: the universal rule sat in
  * `@layer utilities` with a painted track, and the shell kept its own copy.
  */
 import { readFileSync } from "node:fs";
@@ -18,6 +19,12 @@ import { join } from "node:path";
 
 const globals = readFileSync(join(__dirname, "../../../app/globals.css"), "utf8");
 const shell = readFileSync(join(__dirname, "../../../styles/shell.css"), "utf8");
+const webBase = readFileSync(
+  // Read by path: jest's moduleNameMapper turns a resolved .css into a stub.
+  join(__dirname, "../../../node_modules/@ai-matrx/design-system/dist/web-base.css"),
+  "utf8",
+);
+const DEFAULT_RULE = /\n\s*\*\s*\{\s*scrollbar-width:/g;
 
 function enclosingLayer(css: string, at: number): string | null {
   let depth = 0;
@@ -35,13 +42,15 @@ function enclosingLayer(css: string, at: number): string | null {
 }
 
 it("the one default scrollbar lives in the base layer, where any utility beats it", () => {
-  const rules = [...globals.matchAll(/\n\s*\*\s*\{\s*scrollbar-width:/g)];
+  expect(globals).toContain('@import "@ai-matrx/design-system/web-base.css";');
+  expect([...globals.matchAll(DEFAULT_RULE)]).toHaveLength(0);
+  const rules = [...webBase.matchAll(DEFAULT_RULE)];
   expect(rules).toHaveLength(1);
-  expect(enclosingLayer(globals, rules[0].index!)).toBe("base");
+  expect(enclosingLayer(webBase, rules[0].index!)).toBe("base");
 });
 
 it("the default is thin with no painted track at rest", () => {
-  expect(globals).toMatch(/\n\s*\*\s*\{\s*scrollbar-width:\s*thin;\s*scrollbar-color:\s*transparent transparent;/);
+  expect(webBase).toMatch(/\n\s*\*\s*\{\s*scrollbar-width:\s*thin;\s*scrollbar-color:\s*transparent transparent;/);
 });
 
 it("the shell keeps no second copy of the default", () => {
