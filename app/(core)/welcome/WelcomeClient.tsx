@@ -19,8 +19,15 @@ import {
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { ONBOARDING_METADATA_KEY } from "@/utils/onboarding";
+import { Button } from "@ai-matrx/design-system/controls";
 import { WelcomeDoor } from "@/features/marketing/smart-add/welcome/WelcomeDoor";
 import { MeetMatrx } from "@/features/onboarding/meet-matrx/meetMatrx";
+import {
+  MEET_MATRX_SEEN_KEY,
+  firstStep,
+  nextStep,
+  type WelcomeStep,
+} from "@/features/onboarding/welcome-steps/welcomeSteps";
 
 interface WelcomeOption {
   label: string;
@@ -97,8 +104,27 @@ const OPTIONS: WelcomeOption[] = [
   },
 ];
 
-export function WelcomeClient({ firstName, newUser }: { firstName: string | null; newUser: boolean }) {
+export function WelcomeClient({
+  firstName,
+  newUser,
+  meetSeen,
+}: {
+  firstName: string | null;
+  newUser: boolean;
+  meetSeen: boolean;
+}) {
   const router = useRouter();
+  // One step on screen at a time. The server already knows the start (new account / met Matrx), so there is no flash.
+  const [step, setStep] = useState<WelcomeStep>(() => firstStep({ newUser, meetSeen }));
+  const [met, setMet] = useState(meetSeen);
+
+  /** Leaving Meet Matrx either way is remembered for this person on the server (not this browser). */
+  async function leaveMeet() {
+    setMet(true);
+    setStep("start");
+    const { error } = await supabase.auth.updateUser({ data: { [MEET_MATRX_SEEN_KEY]: true } });
+    if (error) toast.error(`Could not save your progress: ${error.message}`);
+  }
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [isNavPending, startNav] = useTransition();
   const [finishing, setFinishing] = useState(false);
@@ -139,13 +165,38 @@ export function WelcomeClient({ firstName, newUser }: { firstName: string | null
     <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
       <div className="h-full overflow-y-auto">
         <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col justify-center px-5 py-12 sm:py-16">
-          {/* A new account: "here's what we found" from the login alone, the tiles below it. */}
-          <WelcomeDoor showDoor={newUser}>
-          {/* Meet Matrx: the studios and building blocks first (Arman, 2026-10-17), then a place to start. */}
-          <MeetMatrx eyebrow={firstName ? `Welcome, ${firstName}` : "Welcome to AI Matrx"} />
-          <div className="mx-auto mt-14 w-full max-w-3xl">
+          {step === "identity" ? (
+            // A new account: "here's what we found" (or one name field) from the login alone. Its Skip / Looks right
+            // moves on; a name the login already gives is never asked for.
+            <WelcomeDoor showDoor onFinished={() => setStep(nextStep("identity", met))} />
+          ) : null}
+          {step === "meet" ? (
+            <div
+              className="flex flex-col gap-8"
+              data-welcome-step="meet"
+              // Opening one of the pieces also counts as having met Matrx: it is remembered, the step is left behind.
+              onClickCapture={(e) => {
+                if (!met && (e.target as HTMLElement).closest("[data-intro-item]")) {
+                  setMet(true);
+                  void supabase.auth.updateUser({ data: { [MEET_MATRX_SEEN_KEY]: true } });
+                }
+              }}
+            >
+              <MeetMatrx eyebrow={firstName ? `Welcome, ${firstName}` : "Welcome to AI Matrx"} />
+              <div className="flex items-center justify-center gap-2">
+                <Button variant="primary" hero icon={<ArrowRight aria-hidden />} onClick={() => void leaveMeet()} data-testid="meet-continue">
+                  Continue
+                </Button>
+                <Button variant="quiet" onClick={() => void leaveMeet()} data-testid="meet-later">
+                  Later
+                </Button>
+              </div>
+            </div>
+          ) : null}
+          {step === "start" ? (
+          <div className="mx-auto w-full max-w-3xl" data-welcome-step="start">
           <header className="text-center">
-            <h2 className="text-xl font-semibold text-foreground">Or pick a place to start</h2>
+            <h1 className="text-xl font-semibold text-foreground">Pick a place to start</h1>
           </header>
 
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -183,7 +234,7 @@ export function WelcomeClient({ firstName, newUser }: { firstName: string | null
             })}
           </div>
           </div>
-          </WelcomeDoor>
+          ) : null}
         </div>
       </div>
     </div>

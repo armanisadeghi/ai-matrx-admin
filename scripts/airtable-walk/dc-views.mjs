@@ -10,8 +10,8 @@ for (const w of [1600, 768, 375]) {
   await page.setViewportSize({ width: w, height: w === 375 ? 812 : 1000 });
   await page.goto(ORIGIN + path, { waitUntil: "domcontentloaded" }); await page.waitForTimeout(12000);
   for (const t of tabs) {
-    const loc = page.getByRole("button", { name: new RegExp("^" + t) }).or(page.getByText(t, { exact: true }));
-    const el = loc.first(); await el.scrollIntoViewIfNeeded(); await el.click(); await page.waitForTimeout(5000);
+    const loc = page.locator("button, [role=tab]").filter({ hasText: new RegExp("^" + t) });
+    const el = loc.first(); await el.scrollIntoViewIfNeeded(); await el.click({ force: true }); await page.waitForTimeout(5000);
     const m = await page.evaluate(() => {
       const cal = document.querySelector('[data-view-kind="calendar"], [class*="calendar" i]');
       const heads = [...document.querySelectorAll("[role=columnheader]")].map(e => { const r = e.getBoundingClientRect(); return [e.textContent.trim().slice(0,9), Math.round(r.left), Math.round(r.right)]; });

@@ -10,7 +10,7 @@
  * domain, GitHub login) that replaces the real seed for this session on a test subject. Nobody else sees it.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { FlaskConical } from "lucide-react";
 import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
@@ -80,7 +80,7 @@ function TestLoginFields({ initial, onUse }: { initial: TestLogin | null; onUse:
   );
 }
 
-export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; children: React.ReactNode }) {
+export function WelcomeDoor({ showDoor, onFinished }: { showDoor: boolean; onFinished: () => void }) {
   const testable = useAppSelector(selectIsSuperAdminDebugger) && Boolean(useAppSelector(selectIsDebugMode));
   const [user, setUser] = useState<User | null>(null);
   const [test, setTest] = useState<TestLogin | null>(null);
@@ -95,6 +95,16 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
   const [done, setDone] = useState<WelcomeDone | null>(null);
   // Skip (no name to search by, or nothing found): the welcome page's own content, this visit.
   const [skipped, setSkipped] = useState(false);
+  // Their brand was made. "Looks right" then reports `done` at once and the sequence moves on by itself; the
+  // structured "something's off" path never does, so after a moment it offers its own Continue (never a dead end).
+  const [created, setCreated] = useState(false);
+  const [stuckOpen, setStuckOpen] = useState(false);
+  useEffect(() => {
+    if (!created || done) return;
+    const t = window.setTimeout(() => setStuckOpen(true), 1500);
+    return () => window.clearTimeout(t);
+  }, [created, done]);
+  const [moved, setMoved] = useState(false);
 
   // A "Looks right" whose profile write never finished (the page went away mid-way) is written now, door or not.
   useEffect(() => {
@@ -129,11 +139,20 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
   /** Their brand exists: the welcome is done for this account (never for an admin's test login). */
   const completeOnboarding = async () => {
     if (login?.test) return;
+    setCreated(true);
     const { error } = await supabase.auth.updateUser({ data: { [ONBOARDING_METADATA_KEY]: true } });
     if (error) toast.error(`Could not save your progress: ${extractErrorMessage(error)}`);
   };
 
-  const doorOpen = Boolean(login) && !done && !skipped;
+  const doorOpen = Boolean(login) && !done && !skipped && !moved;
+  // The door is this step's only content: when it is over (Skip, a structured Create, or "Looks right" with no
+  // paid cards to show) the sequence moves on. The paid cards, when there are any, end with a Continue.
+  const finished = useEffectEvent(onFinished);
+  const cardsHost = done?.paidHost ?? null;
+  const over = skipped || moved || (Boolean(done) && !cardsHost);
+  useEffect(() => {
+    if (over) finished();
+  }, [over]);
   return (
     <div className="flex flex-col gap-8">
       {testable ? (
@@ -158,8 +177,24 @@ export function WelcomeDoor({ showDoor, children }: { showDoor: boolean; childre
           onWelcomeSkip={() => setSkipped(true)}
         />
       ) : null}
-      {done?.paidHost ? <WelcomeSearchCards host={done.paidHost} names={ownNames(done.brand, done.paidHost)} /> : null}
-      {children}
+      {stuckOpen && !done && !moved ? (
+        <div className="flex justify-center">
+          <Button variant="quiet" onClick={() => setMoved(true)} data-testid="welcome-created-continue">
+            Continue
+          </Button>
+        </div>
+      ) : null}
+      {!login && !over ? <div aria-busy className="min-h-[24rem]" data-testid="welcome-door-pending" /> : null}
+      {done && cardsHost ? (
+        <>
+          <WelcomeSearchCards host={cardsHost} names={ownNames(done.brand, cardsHost)} />
+          <div className="flex justify-center">
+            <Button variant="primary" hero onClick={onFinished} data-testid="welcome-continue">
+              Continue
+            </Button>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
