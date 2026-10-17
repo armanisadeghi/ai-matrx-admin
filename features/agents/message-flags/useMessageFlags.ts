@@ -27,6 +27,7 @@ import {
   type MessageFlagKey,
   type MessageFlags,
 } from "@ai-matrx/chat/agents/message-flags/flags";
+import { movePrefillIntoInstructions } from "./prefillWayOut";
 import type { FlagToggleState } from "@ai-matrx/chat/agents/message-flags/MessageFlagToggles";
 import { useMessageFlagProfile } from "@ai-matrx/chat/agents/message-flags/useMessageFlagProfile";
 
@@ -34,6 +35,14 @@ export interface MessageFlagsController {
   flags: MessageFlags;
   states: Partial<Record<MessageFlagKey, FlagToggleState>>;
   onToggle: (flag: MessageFlagKey) => void;
+  /** The prefill way-out menu (PrefillCompatNote): the verdict plus the fixes. */
+  prefill: {
+    on: boolean;
+    verdict: FlagToggleState["verdict"];
+    pickModel: () => void;
+    moveIntoInstructions: () => void;
+    remove: () => void;
+  };
 }
 
 export function useMessageFlags(agentId: string, messageIndex: number): MessageFlagsController {
@@ -81,5 +90,30 @@ export function useMessageFlags(agentId: string, messageIndex: number): MessageF
     );
   };
 
-  return { flags, states, onToggle };
+  const prefillVerdictNow = prefillVerdict(model, mode);
+  const prefill = {
+    on: flags.prefill === true,
+    verdict: prefillVerdictNow,
+    pickModel: () => {
+      const section = document.querySelector<HTMLElement>('[data-agent-builder-section="model"]');
+      if (!section) {
+        console.error("[useMessageFlags] the model section is not on this page");
+        return;
+      }
+      section.scrollIntoView({ block: "center", behavior: "smooth" });
+      window.setTimeout(() => section.querySelector<HTMLElement>("button")?.click(), 250);
+    },
+    moveIntoInstructions: () => {
+      if (!messages) return;
+      dispatch(
+        setAgentMessages({
+          id: agentId,
+          messages: movePrefillIntoInstructions(messages) as AgentDefinitionMessage[],
+        }),
+      );
+    },
+    remove: () => onToggle("prefill"),
+  };
+
+  return { flags, states, onToggle, prefill };
 }

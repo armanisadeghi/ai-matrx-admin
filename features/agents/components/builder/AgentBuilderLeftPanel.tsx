@@ -37,7 +37,9 @@ export function AgentBuilderLeftPanel({ agentId }: AgentBuilderLeftPanelProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-col gap-2 shrink-0 pt-0.5 pb-2">
-        <AgentModelConfiguration agentId={agentId} />
+        <div data-agent-builder-section="model">
+          <AgentModelConfiguration agentId={agentId} />
+        </div>
         <div data-agent-builder-section="variables">
           <AgentVariablesManager agentId={agentId} />
         </div>
