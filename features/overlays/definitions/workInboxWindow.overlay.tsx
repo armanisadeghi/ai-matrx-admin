@@ -11,8 +11,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "workInboxWindow" as const;
@@ -44,7 +44,7 @@ export function WorkInboxWindowController(): null {
 
 export type WorkInboxWindowDefinitionData = Record<string, unknown>;
 
-export const workInboxWindowOverlay = defineOverlay<WorkInboxWindowDefinitionData>()({
+export const workInboxWindowOverlay = /* @__PURE__ */ defineOverlay<WorkInboxWindowDefinitionData>()({
   id: "workInboxWindow",
   label: "In your tables",
   instance: "single",

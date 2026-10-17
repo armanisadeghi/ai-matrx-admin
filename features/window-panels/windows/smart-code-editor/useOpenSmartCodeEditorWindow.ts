@@ -22,7 +22,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay, closeOverlay } from "@ai-matrx/summon";
+import { openOverlay, closeOverlay } from "@ai-matrx/summon/open";
 import {
   createSmartCodeEditorCallbackGroup,
   type SmartCodeEditorWindowHandlers,

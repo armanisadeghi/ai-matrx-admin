@@ -20,7 +20,7 @@ import {
 } from "@/lib/api/service-routing";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
-import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon";
+import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

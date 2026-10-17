@@ -72,7 +72,7 @@ import { formatCount } from "@/features/marketing/search-console/types";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { reviewWindow } from "../lib";
 import {
   previewMatcherReach,

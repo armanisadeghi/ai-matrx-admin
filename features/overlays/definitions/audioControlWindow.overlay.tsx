@@ -15,9 +15,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { activateAudio } from "@/features/audio/activation";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "audioControlWindow" as const;
@@ -58,7 +58,7 @@ export function AudioControlWindowController(): null {
 
 export type AudioControlWindowDefinitionData = Record<string, unknown>;
 
-export const audioControlWindowOverlay = defineOverlay<AudioControlWindowDefinitionData>()({
+export const audioControlWindowOverlay = /* @__PURE__ */ defineOverlay<AudioControlWindowDefinitionData>()({
   id: "audioControlWindow",
   label: "Media",
   instance: "single",

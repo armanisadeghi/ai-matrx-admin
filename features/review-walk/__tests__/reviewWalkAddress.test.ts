@@ -5,7 +5,8 @@
  */
 import { configureStore, type Middleware, type UnknownAction } from "@reduxjs/toolkit";
 
-import { overlaysReducer, selectOpenInstances } from "@ai-matrx/summon";
+import { selectOpenInstances } from "@ai-matrx/summon/open";
+import { overlaysReducer } from "@ai-matrx/summon";
 import { appOverlayDefinition } from "@/features/overlays/definitions/register";
 import { linkHydrator, parsePanels, registerAppLinks } from "@/features/overlays/definitions/__tests__/linkKit";
 import type { AppDispatch } from "@/lib/redux/store";

@@ -15,11 +15,11 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createKnowledgeCommandBarCallbackGroup } from "./callbacks/knowledgeCommandBar";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "knowledgeCommandBar" as const;
@@ -75,7 +75,7 @@ export function useOpenKnowledgeCommandBar() {
 
 export type KnowledgeCommandBarDefinitionData = OpenKnowledgeCommandBarOptions;
 
-export const knowledgeCommandBarOverlay = defineOverlay<KnowledgeCommandBarDefinitionData>()({
+export const knowledgeCommandBarOverlay = /* @__PURE__ */ defineOverlay<KnowledgeCommandBarDefinitionData>()({
   id: "knowledgeCommandBar",
   label: "Search your knowledge",
   instance: "single",

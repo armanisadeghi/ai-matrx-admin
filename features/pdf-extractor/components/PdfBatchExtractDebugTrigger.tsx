@@ -17,7 +17,7 @@ import {
   selectPdfBatchExtractDebugSessions,
 } from "@/features/pdf-extractor/state/pdfBatchExtractDebugSlice";
 import { useOpenPdfBatchExtractDebugWindow } from "@/features/overlays/definitions/pdfBatchExtractDebugWindow.overlay";
-import { selectIsOverlayOpen } from "@ai-matrx/summon";
+import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
 
 interface PdfBatchExtractDebugTriggerProps {
   /** When true, auto-open the debug window once per new streaming session. */

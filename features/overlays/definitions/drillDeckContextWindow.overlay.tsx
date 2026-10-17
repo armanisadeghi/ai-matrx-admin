@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "drillDeckContextWindow" as const;
@@ -46,7 +46,7 @@ export function DrillDeckContextWindowController(
 
 export type DrillDeckContextWindowDefinitionData = OpenDrillDeckContextWindowOptions;
 
-export const drillDeckContextWindowOverlay = defineOverlay<DrillDeckContextWindowDefinitionData>()({
+export const drillDeckContextWindowOverlay = /* @__PURE__ */ defineOverlay<DrillDeckContextWindowDefinitionData>()({
   id: "drillDeckContextWindow",
   label: "Drill Deck Context Window",
   instance: "single",

@@ -28,11 +28,11 @@ import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/feat
 import { runIsOver } from "@/features/workflow-runtime/types";
 import { useOptionalCanvas, useOptionalCanvasState } from "@ai-matrx/canvas/react";
 import { canvasItemId } from "@ai-matrx/canvas";
-import { closeOverlay } from "@ai-matrx/summon";
+import { closeOverlay } from "@ai-matrx/summon/open";
 import { watchAiCopyToClose } from "./watch-ai-one-place";
 import { openToolInCanvas } from "@/features/canvas/host/toolCanvas";
 import { AI_WATCH_CANVAS_ID, AI_WATCH_CANVAS_KEY, WORKFLOW_RUN_CANVAS_ID } from "./canvas/runViewKinds";
-import { selectOpenInstances } from "@ai-matrx/summon";
+import { selectOpenInstances } from "@ai-matrx/summon/open";
 import type { RootState } from "@/lib/redux/store";
 
 /** Root runs on this page that are running right now, as one stable key. */

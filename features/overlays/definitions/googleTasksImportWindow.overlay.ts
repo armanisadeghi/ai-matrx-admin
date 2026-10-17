@@ -1,12 +1,12 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 import type { OpenGoogleTasksImportOptions } from "./googleContactsImportWindow.overlay";
 
 export type GoogleTasksImportWindowDefinitionData = OpenGoogleTasksImportOptions;
 
-export const googleTasksImportWindowOverlay = defineOverlay<GoogleTasksImportWindowDefinitionData>()({
+export const googleTasksImportWindowOverlay = /* @__PURE__ */ defineOverlay<GoogleTasksImportWindowDefinitionData>()({
   id: "googleTasksImportWindow",
   label: "Import from Google Tasks",
   instance: "single",

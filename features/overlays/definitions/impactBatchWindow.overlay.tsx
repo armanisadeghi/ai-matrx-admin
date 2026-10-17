@@ -16,8 +16,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "impactBatchWindow" as const;
@@ -117,7 +117,7 @@ export function ImpactBatchWindowController(
 
 export type ImpactBatchWindowDefinitionData = OpenImpactBatchWindowOptions;
 
-export const impactBatchWindowOverlay = defineOverlay<ImpactBatchWindowDefinitionData>()({
+export const impactBatchWindowOverlay = /* @__PURE__ */ defineOverlay<ImpactBatchWindowDefinitionData>()({
   id: "impactBatchWindow",
   label: "Change impact",
   instance: "single",

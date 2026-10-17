@@ -16,7 +16,7 @@
 import { useCallback } from "react";
 import { FileText } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { toggleOverlay } from "@ai-matrx/summon";
+import { toggleOverlay } from "@ai-matrx/summon/open";
 import { useOverlayOpen } from "@/features/window-panels/hooks/useOverlay";
 
 export default function SidebarNotesToggle() {

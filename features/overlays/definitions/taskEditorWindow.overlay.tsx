@@ -10,8 +10,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "taskEditorWindow" as const;
@@ -57,7 +57,7 @@ export function useOpenTaskEditorWindow() {
 
 export type TaskEditorWindowDefinitionData = OpenTaskEditorWindowOptions;
 
-export const taskEditorWindowOverlay = defineOverlay<TaskEditorWindowDefinitionData>()({
+export const taskEditorWindowOverlay = /* @__PURE__ */ defineOverlay<TaskEditorWindowDefinitionData>()({
   id: "taskEditorWindow",
   label: "Task Editor Window",
   instance: "multi",

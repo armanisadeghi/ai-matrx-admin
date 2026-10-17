@@ -19,7 +19,7 @@ import {
   type OpenImageUploaderWindowOptions,
   type ImageUploaderWindowHandle,
 } from "@/features/window-panels/windows/image/useOpenImageUploaderWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -57,7 +57,7 @@ export function ImageUploaderWindowController(
 
 export type ImageUploaderWindowDefinitionData = OpenImageUploaderWindowOptions;
 
-export const imageUploaderWindowOverlay = defineOverlay<ImageUploaderWindowDefinitionData>()({
+export const imageUploaderWindowOverlay = /* @__PURE__ */ defineOverlay<ImageUploaderWindowDefinitionData>()({
   id: "imageUploaderWindow",
   label: "Image Uploader Window",
   instance: "multi",

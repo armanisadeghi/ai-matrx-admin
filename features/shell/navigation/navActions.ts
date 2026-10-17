@@ -45,7 +45,7 @@ import { useOpenPickListManagerWindow } from "@/features/overlays/definitions/pi
 import { useOpenFavoritesManagerWindow } from "@/features/overlays/definitions/favoritesManagerWindow.overlay";
 import { useOpenCrmCreatePartyWindow } from "@/features/overlays/definitions/crmCreatePartyWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { isServiceFailure } from "@/features/data-tables/types";
 import type { ShellNavActionId } from "../constants/nav-data";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";

@@ -14,7 +14,7 @@
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { playbackSnapshotUpdated } from "@/lib/redux/slices/audioPlaybackSlice";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { subscribePlayback } from "@ai-matrx/media/speech";
 import { subscribePlaybackLock } from "@ai-matrx/media/speech";
 import { installAudioUnlockListeners } from "@ai-matrx/media/speech";
