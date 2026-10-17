@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-// pnpm check:smoke [--route /notes]... [--admin-only|--member-only] [--after 4000] [--plant]
+// pnpm check:smoke [--route /notes]... [--admin-only|--member-only] [--after 4000] [--tail 18000] [--plant]
 //
 // THE SMOKE DETECTORS, checked in a real browser (lib/diagnostics/loadTrace.ts has the rules).
 // Signs in on the ONE shared preview (port 3001) with `pnpm dev-login` as admin and as member,
 // loads each route headless and touches NOTHING (no click, no key), waits for the page to settle
-// plus `--after` ms, prints the page-load timeline, and FAILS when
+// plus `--after` ms AND until `--tail` ms after navigation start (THE IDLE TAIL: the late idle tier
+// runs seconds after settle — the Meet call engine loaded at +13.6 s on /chat/new with no input,
+// after the old window closed), prints the page-load timeline, and FAILS when
 //   - a `load:heavy:*` marker fired (a heavy module evaluated before anyone engaged);
 //   - a `load:lazy:*` marker fired before the page settled;
 //   - CLS (every shift not caused by input) is over 0.02.
@@ -37,12 +39,14 @@ const argv = process.argv.slice(2);
 const routes = [];
 let roles = ["admin", "member"];
 let after = 4_000;
+let tail = 18_000;
 let plant = false;
 for (let i = 0; i < argv.length; i += 1) {
   if (argv[i] === "--route") routes.push(argv[++i]);
   else if (argv[i] === "--admin-only") roles = ["admin"];
   else if (argv[i] === "--member-only") roles = ["member"];
   else if (argv[i] === "--after") after = Number(argv[++i]);
+  else if (argv[i] === "--tail") tail = Number(argv[++i]);
   else if (argv[i] === "--plant") plant = true;
   else {
     console.error(`[smoke] unknown argument ${argv[i]}`);
@@ -68,6 +72,8 @@ function mintLogin(role) {
 const PLANT = () => {
   performance.mark("load:heavy:PLANTED heavy module");
   setTimeout(() => performance.mark("load:lazy:PLANTED lazy read"), 50);
+  // A heavy module that loads with no input deep in the idle tail (the +13 s Meet shape).
+  setTimeout(() => performance.mark("load:heavy:PLANTED late heavy module"), 13_000);
   window.addEventListener("load", () => {
     setTimeout(() => {
       const block = document.createElement("div");
@@ -127,7 +133,9 @@ for (const role of roles) {
       await page.waitForTimeout(500);
     }
     if (report?.settledAt != null) {
-      await page.waitForTimeout(after);
+      // Settle + `after`, and never less than the idle tail measured from navigation start.
+      const sinceNav = await page.evaluate(() => performance.now()).catch(() => 0);
+      await page.waitForTimeout(Math.max(after, tail - sinceNav));
       report = await page.evaluate(() => window.__matrxLoadTrace()).catch(() => report);
     }
     page.off("console", onConsole);

@@ -74,7 +74,7 @@ import { useCallback, useRef, useState, type ReactNode } from "react";
 import { MeetHostContext } from "@ai-matrx/meet/host-slot";
 import type { MeetDiagnostic, MeetHost as MeetHostValue } from "@ai-matrx/meet/react";
 import { usePathname } from "next/navigation";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { useMeetHostDemanded } from "./meetHostDemand";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
@@ -143,18 +143,17 @@ const MeetHostCore = dynamic(() => import("./MeetHostCore"), { ssr: false, loadi
 export function MeetHost({ children }: MeetHostProps) {
   const identity = useMeetMemberIdentity();
   const organizationId = useAppSelector(selectActiveOrganizationId);
-  // FIRST-PAINT CONTRACT (V2). An incoming call is SERVER-INITIATED: nothing the person does can
-  // engage it, so its listener (`meet_pending_call_invites` + the call-invite channel, inside
-  // MeetHostCore) cannot wait for an engagement and must exist for a call to ring. TRADE-OFF
-  // CHOSEN: attach it in the LATE tier (after first paint, the idle flush, and a few more seconds)
-  // instead of at idle, accepting that a call placed in the first seconds of a page load is
-  // caught by the pending-invites read when the listener attaches (that read is what finds an
-  // invite sent before the channel was up). It loads at once when something DOES engage: a /meet
-  // route, or a DM thread opened (its call chips need the runtime).
-  const lateIdle = useLateIdleReady();
+  // FIRST-PAINT CONTRACT (V2, owner 2026-10-16: nothing loads until the person engages). The call
+  // engine (MeetProvider + IncomingCallHost, which carries the heavy "Meet calls UI") attaches on
+  // the page's FIRST ENGAGEMENT (lib/boot/firstEngagement: a trusted press, key or touch), at once
+  // on a /meet route, and at once when a DM thread is opened (its call chips need the runtime).
+  // It used to attach in the late idle tier (~+13 s on /chat/new with no input). TRADE-OFF: a call
+  // placed while the page sits untouched rings at the person's first press — the pending-invites
+  // read the listener runs on attach finds an invite sent before the channel was up.
+  const engaged = useHasEngaged();
   const demanded = useMeetHostDemanded();
   const onMeetRoute = (usePathname() ?? "").startsWith("/meet");
-  const ready = lateIdle || demanded || onMeetRoute;
+  const ready = engaged || demanded || onMeetRoute;
   const [host, setHost] = useState<MeetHostValue | null>(null);
 
   return (

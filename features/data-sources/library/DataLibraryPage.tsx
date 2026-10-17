@@ -15,8 +15,10 @@
  */
 
 import { createElement, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { ArrowLeft, ChevronRight, SearchX, ShieldCheck } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, ChevronRight, Database, SearchX, ShieldCheck } from "lucide-react";
+import { useOwnToolSearch } from "@ai-matrx/chat/agents/identity/tool-search";
+import type { CatalogToolHit } from "@ai-matrx/agents/tools";
 import { Badge, Button, Chip, ChipSet, DisclosureHeader, EmptyState, RegionSkeleton, SearchField, Tile } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -41,31 +43,125 @@ import {
 import { GroupMark } from "./groupMark";
 import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
 import { useLibrary, useLibraryOrganizationId, usePriceText } from "./hooks";
+import { GiveToAgentDialog } from "./tools/GiveToAgentDialog";
+import { ToolPage } from "./tools/ToolPage";
+import { ToolsHome } from "./tools/ToolsHome";
 
 type View = { kind: "home" } | { kind: "browse" } | { kind: "task"; id: string };
 
+/**
+ * The page is the Tools home (R-12: the data library grew into it, there is no second home). It opens
+ * on the Tools search; a Tool opens in place (`?tool=<id>`, a running call `&call=<id>`); the data
+ * sources stay one press away (`?view=data`, and every `?source=` link). A server with no Tool
+ * catalog yet shows the data library exactly as it was — never an empty Tools page.
+ */
 export function DataLibraryPage() {
-  const organizationId = useLibraryOrganizationId();
-  const library = useLibrary(organizationId);
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const toolId = params.get("tool");
+  const callId = params.get("call");
+  const dataMode = params.get("view") === "data" || params.get("source") !== null;
+
+  const [query, setQuery] = useState("");
+  const [family, setFamily] = useState<string | null>(null);
+  const [opened, setOpened] = useState<CatalogToolHit | null>(null);
+  const [giving, setGiving] = useState<CatalogToolHit | null>(null);
+  const search = useOwnToolSearch(query, family, !toolId && !dataMode);
+  const toolsOpen = search.status !== "unavailable";
+
+  const go = (next: Record<string, string | null>) => {
+    const p = new URLSearchParams(params.toString());
+    for (const [key, value] of Object.entries(next)) {
+      if (value === null) p.delete(key);
+      else p.set(key, value);
+    }
+    const text = p.toString();
+    router.push(text ? `${pathname}?${text}` : pathname);
+  };
+  const back = () => (window.history.length > 1 ? router.back() : router.replace(pathname));
+
   return (
     <>
-      <RecordPageHeader backHref="/data" record={{ name: "Data library" }} />
+      <RecordPageHeader backHref="/data" record={{ name: toolsOpen ? "Tools" : "Data library" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-data-library="">
-          {!organizationId || library.isLoading ? (
-            <div className="mx-auto max-w-6xl p-4">
-              <RegionSkeleton shape="cards" count={8} aria-label="Loading tasks" />
-            </div>
-          ) : library.error || !library.data ? (
-            <div className="mx-auto max-w-6xl p-4">
-              <ReadFailure error={library.error} what="the data library" onRetry={() => void library.refetch()} />
-            </div>
+          {toolId ? (
+            <ToolPage toolId={toolId} known={opened?.tool_id === toolId ? opened : (search.known[toolId] ?? null)} callId={callId} onBack={back} />
+          ) : toolsOpen && !dataMode ? (
+            <ToolsHome
+              search={search}
+              query={query}
+              onQuery={setQuery}
+              family={family}
+              onFamily={setFamily}
+              onOpenTool={(hit) => {
+                setOpened(hit);
+                go({ tool: hit.tool_id });
+              }}
+              onGive={setGiving}
+              dataSection={<DataSourcesDoor query={query} onOpen={() => go({ view: "data" })} />}
+            />
           ) : (
-            <LibraryBody library={library.data} />
+            <>
+              {toolsOpen ? (
+                <div className="mx-auto max-w-6xl px-4 pt-4">
+                  <Button variant="quiet" onClick={() => go({ view: null, source: null, field: null, value: null })} icon={<ArrowLeft className="h-4 w-4" />}>
+                    All Tools
+                  </Button>
+                </div>
+              ) : null}
+              <DataSourcesBody />
+            </>
           )}
         </div>
       </div>
+      {giving ? <GiveToAgentDialog toolId={giving.tool_id} toolName={giving.display_name} onClose={() => setGiving(null)} /> : null}
     </>
+  );
+}
+
+/** The data sources, as the library has always shown them. */
+function DataSourcesBody() {
+  const organizationId = useLibraryOrganizationId();
+  const library = useLibrary(organizationId);
+  return !organizationId || library.isLoading ? (
+    <div className="mx-auto max-w-6xl p-4">
+      <RegionSkeleton shape="cards" count={8} aria-label="Loading tasks" />
+    </div>
+  ) : library.error || !library.data ? (
+    <div className="mx-auto max-w-6xl p-4">
+      <ReadFailure error={library.error} what="the data library" onRetry={() => void library.refetch()} />
+    </div>
+  ) : (
+    <LibraryBody library={library.data} />
+  );
+}
+
+/**
+ * Under the Tools: the data sources that answer the same words (a search), or one door into them.
+ * The library is read only when a search needs it or the person asks for it.
+ */
+function DataSourcesDoor({ query, onOpen }: { query: string; onOpen: () => void }) {
+  const searching = query.trim().length > 0;
+  const organizationId = useLibraryOrganizationId();
+  const library = useLibrary(searching ? organizationId : null);
+  const openSource = useOpenDataSourceWindow();
+  const matches = searching && library.data ? searchSources(library.data.sources, query).slice(0, 8) : [];
+  return (
+    <section className="flex flex-col gap-3" aria-label="Data sources">
+      {matches.length > 0 ? (
+        <>
+          <SectionTitle title="Data sources" count={matches.length} />
+          <CardGrid sources={matches} onOpen={openSource} />
+        </>
+      ) : null}
+      <div className="flex items-center justify-center">
+        <Button variant="outline" onClick={onOpen} icon={<Database className="h-4 w-4" />}>
+          Browse data sources
+        </Button>
+      </div>
+    </section>
   );
 }
 

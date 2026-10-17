@@ -100,7 +100,8 @@ function PersonCard({ person, onPick }: { person: PersonGroup; onPick: (person: 
   );
 }
 
-function NarrowField({ onNarrow }: { onNarrow: (text: string) => void }) {
+/** One field (city or company) that narrows the next round; also the welcome's "nothing found" frame. */
+export function NarrowField({ onNarrow }: { onNarrow: (text: string) => void }) {
   const [text, setText] = useState("");
   return (
     <form

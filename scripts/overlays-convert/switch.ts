@@ -1415,6 +1415,25 @@ function rewriteImporters(): void {
 }
 
 /** WindowPanel props the package removed (minimize always keeps the body; persistence is the store's). */
+/**
+ * Package subpaths the published packages retired in favour of summon: @ai-matrx/chat 0.8.138
+ * dropped "./utils/callbackManager" (its handles now come from @ai-matrx/summon/handles), so any app
+ * file still naming it (imports, jest.mock, import()) is repointed to the summon module.
+ */
+const RETIRED_PACKAGE_SPECS: Record<string, string> = { "@ai-matrx/chat/utils/callbackManager": "@ai-matrx/summon/handles" };
+function repointRetiredPackageSpecs(): void {
+  for (const rel of sourceFiles()) {
+    if (rel.startsWith("scripts/overlays-convert/") || isDeleted(rel)) continue;
+    let text = read(rel);
+    if (!Object.keys(RETIRED_PACKAGE_SPECS).some((k) => text.includes(k))) continue;
+    for (const [from, to] of Object.entries(RETIRED_PACKAGE_SPECS)) {
+      text = text.replace(new RegExp(`(["'])${from.replace(/[/.]/g, "\\$&")}\\1`, "g"), (_m, q) => `${q}${to}${q}`);
+    }
+    write(rel, text);
+    resolve(`${rel}: retired package subpath(s) ${Object.keys(RETIRED_PACKAGE_SPECS).join(", ")} → summon`);
+  }
+}
+
 const REMOVED_WINDOW_PROPS = new Set(["retainBodyOnMinimize", "onSessionSaved", "onHeavySnapshot"]);
 
 /** B2: drop removed WindowPanel props; host windows that extend Omit<WindowPanelProps, …> and close
@@ -1566,6 +1585,7 @@ if (preSwitch) {
   emitPortedTests();
 }
 rewriteImporters();
+repointRetiredPackageSpecs();
 adaptWindowPanelUsers();
 deleteReplaced();
 repointGuards();
