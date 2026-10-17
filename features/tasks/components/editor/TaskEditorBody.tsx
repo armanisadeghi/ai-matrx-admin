@@ -73,7 +73,7 @@ import { TaskRecurrencePicker } from "../TaskRecurrencePicker";
 import { TaskProvenanceChip } from "../TaskProvenanceChip";
 import { TaskSnoozeButton } from "../TaskSnoozeButton";
 import { TaskSmsReminderButton } from "../TaskSmsReminderButton";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import { formatDateOnly } from "@ai-matrx/kit/dates";
 import { cn } from "@/utils/cn";
 import { useRefocusInputAfterAsync } from "@/features/tasks/hooks/useRefocusInputAfterAsync";

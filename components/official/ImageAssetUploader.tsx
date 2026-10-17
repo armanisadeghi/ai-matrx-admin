@@ -56,7 +56,7 @@ import { InlineMediaRef } from "@ai-matrx/media/react";
 import { openFilePicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { getAssetForFile, addAssetVariants } from "@/features/files/api/assets";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { extractErrorMessage } from "@/utils/errors";
 import { Button } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";

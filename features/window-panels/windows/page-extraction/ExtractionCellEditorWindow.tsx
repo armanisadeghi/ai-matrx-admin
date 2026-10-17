@@ -13,7 +13,7 @@ import { BasicContentEditor } from "@/components/content-refine/BasicContentEdit
 import { JsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { Button } from "@/components/ui/button";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { updateResultPayloadField } from "@/features/page-extraction/api/runs";
 import {

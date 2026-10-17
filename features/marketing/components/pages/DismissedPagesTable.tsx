@@ -12,7 +12,7 @@ import {
   pageEntityRef,
   buildPageMenuSection,
 } from "@/features/marketing/search-console/components/insights/insight-row-menu";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { useMarketingTableState } from "@/features/marketing/data/query-state";
 import {

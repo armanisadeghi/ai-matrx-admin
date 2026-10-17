@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@ai-matrx/design-system/controls";
-import { useOpenGoogleContactsImport } from "@/features/overlays/openers/googleImportWindows";
+import { useOpenGoogleContactsImport } from "@/features/overlays/definitions/googleContactsImportWindow.overlay";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type {
   ColumnFiltersState,
@@ -120,7 +120,7 @@ import { PARTY_COLUMNS } from "./columns";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { partyMenuTarget, useCrmRowMenu } from "./crm-row-actions";
 import { AddToOutreachListDialog } from "./outreach-lists/AddToOutreachListDialog";
-import { useOpenCrmCreatePartyWindow } from "@/features/overlays/openers/crmCreatePartyWindow";
+import { useOpenCrmCreatePartyWindow } from "@/features/overlays/definitions/crmCreatePartyWindow.overlay";
 import { CRM_CREATE_NAME_PARAM, CRM_CREATE_PARAM } from "../routes";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { CRM_SURFACE_NAME } from "@/features/surfaces/manifests/crm.manifest";

@@ -59,7 +59,7 @@ import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraItem,
 } from "@ai-matrx/context-menu/engine";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { archiveRule } from "@/features/marketing/search-console/data-class-rules";
 import { extractErrorMessage } from "@/utils/errors";
 import { Button } from "@/components/ui/button";

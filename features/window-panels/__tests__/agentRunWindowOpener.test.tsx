@@ -3,14 +3,14 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import overlayReducer from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlayReducer } from "@ai-matrx/summon";
 // eslint-disable-next-line no-restricted-syntax -- the opener reads the real Surface A organization selection.
 import appContext, { setOrganization } from "@/lib/redux/slices/appContextSlice";
 import userAuth, { setUserAuth } from "@/lib/redux/slices/userAuthSlice";
 import {
   useOpenAgentRunWindow,
   type AgentRunWindowHandle,
-} from "@/features/overlays/openers/agentRunWindow";
+} from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 
 /**

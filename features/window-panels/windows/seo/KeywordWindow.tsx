@@ -9,7 +9,7 @@ import {
 } from "react";
 import { ChevronRight, FolderSearch, Target } from "lucide-react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { KeywordIntelPanel } from "@/features/marketing/seo/keyword/KeywordIntelPanel";
 import { normalizeKeywordPhrase } from "@/features/marketing/seo/keyword/data";
 import {

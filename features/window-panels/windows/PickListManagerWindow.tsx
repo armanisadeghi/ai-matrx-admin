@@ -2,16 +2,13 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
-import {
-  WindowPanel,
-  type WindowPanelProps,
-} from "@/features/window-panels/WindowPanel";
+import { closeOverlay } from "@ai-matrx/summon";
+import { WindowPanel, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
 import { PickListWindowBody } from "@/features/data-tables/pick-lists/components/PickListWindowBody";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface PickListManagerWindowProps extends Omit<
-  WindowPanelProps,
+  WindowPanelBaseProps,
   "children" | "title" | "actionsLeft" | "actionsRight"
 > {
   title?: string;

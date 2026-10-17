@@ -22,7 +22,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { CheckCircle2, CircleDashed, Eye, Loader2 } from "lucide-react";
 
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
-import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
+import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import type { NodeInvocationState } from "../redux/workflow-runs.slice";
 
 import { useAppSelector } from "@/lib/redux/hooks";

@@ -61,7 +61,7 @@ jest.mock("@ai-matrx/associations/react", () => ({
   ...jest.requireActual("@ai-matrx/associations/react"),
   AssociationCardGrid: () => null,
 }));
-jest.mock("@/features/overlays/openers/contextItemsWindow", () => ({
+jest.mock("@/features/overlays/definitions/contextItemsWindow.overlay", () => ({
   useOpenContextItemsWindow: () => jest.fn(),
 }));
 jest.mock("@/features/scopes/service/scopesService", () => ({

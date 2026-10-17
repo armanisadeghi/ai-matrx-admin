@@ -38,8 +38,8 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import { openOverlay } from "@ai-matrx/summon";
 // Legacy openFilePreview removed in Phase 11 — we just open the source URL
 // in a new tab now (signed / share URLs are browser-loadable directly).
 import { useAppDispatch } from "@/lib/redux/hooks";

@@ -1,4 +1,4 @@
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 import type { UserSearchCandidate } from "./types";
 
 export interface UserSearchSelectedEvent {

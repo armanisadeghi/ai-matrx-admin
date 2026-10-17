@@ -12,7 +12,7 @@
 // "Bundle invariant".
 
 import { Radar } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import MasterAgentPanel from "./MasterAgentPanel";
 
 // Docked bottom-right on open (computed from the viewport in `initialRect`).

@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@ai-matrx/design-system";
-import { useOverlaySurfaceRenderAck } from "@/features/window-panels/diagnostics/useOverlaySurfaceRenderAck";
+import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
 import { SourceReview } from "./SourceReview";
 import { SOURCE_REVIEW_OVERLAY_ID, settleSourceReview } from "./openSourceReview";
 import type { SourceReviewOptions, SourceReviewOutcome } from "./types";

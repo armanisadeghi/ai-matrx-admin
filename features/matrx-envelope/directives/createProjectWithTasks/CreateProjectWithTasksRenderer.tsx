@@ -16,7 +16,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { useOpenItemPresentation } from "@/features/item-presentation/useOpenItemPresentation";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import type { DirectiveRendererProps } from "@ai-matrx/content-ir/react";
 
 import { parseCreateProjectWithTasksItems } from "./parseDirectiveItems";

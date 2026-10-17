@@ -9,7 +9,7 @@
 // through overlay data.
 
 import React, { Suspense, lazy } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {

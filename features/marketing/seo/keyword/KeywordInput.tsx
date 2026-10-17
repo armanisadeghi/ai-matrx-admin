@@ -21,7 +21,7 @@ import { Search, Database, Loader2 } from "lucide-react";
 
 import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import {
   formatSearchVolume,
   KeywordCompetitionBadge,

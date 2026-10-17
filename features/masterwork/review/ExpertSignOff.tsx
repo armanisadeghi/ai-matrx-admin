@@ -48,7 +48,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useOutputFeedback } from "@/lib/output-feedback/useOutputFeedback";
-import { useOpenAddToRulebookDialog } from "@/features/overlays/openers/addToRulebookDialog";
+import { useOpenAddToRulebookDialog } from "@/features/overlays/definitions/addToRulebookDialog.overlay";
 
 import { EXPERT_SIGNATURE_SURFACE } from "./signature";
 

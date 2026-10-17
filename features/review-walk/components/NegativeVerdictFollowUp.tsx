@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from "@ai-matrx/design-system";
 import { useOutputFeedback } from "@/lib/output-feedback/useOutputFeedback";
-import { useOpenReviewWalkWindow } from "@/features/overlays/openers/reviewWalkWindow";
+import { useOpenReviewWalkWindow } from "@/features/overlays/definitions/reviewWalkWindow.overlay";
 import { cn } from "@/lib/utils";
 
 // The editor pulls ProTextarea (voice + agent menu) — loaded only after the

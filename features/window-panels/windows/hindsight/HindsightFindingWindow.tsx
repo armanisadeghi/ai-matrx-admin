@@ -15,7 +15,7 @@ import { LEVER_LABEL } from "@/features/hindsight/components/tokens";
 import { getEnrollment } from "@/features/hindsight/api";
 import type { DoorAudience } from "@/features/hindsight/subject-doors";
 import type { Finding } from "@/features/hindsight/types";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 interface HindsightFindingWindowProps {

@@ -25,7 +25,7 @@ jest.mock(
 );
 
 import ReferencePickerOverlay from "@/features/overlays/components/ReferencePickerOverlay";
-import { createReferencePickerCallbackGroup } from "@/features/overlays/callbacks/referencePicker";
+import { createReferencePickerCallbackGroup } from "@/features/overlays/definitions/callbacks/referencePicker";
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }

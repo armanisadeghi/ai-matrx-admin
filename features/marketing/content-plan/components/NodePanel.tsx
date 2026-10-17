@@ -116,7 +116,7 @@ import { readSeoPlan } from "@/features/marketing/seo/plan/plan-model";
 import { useResolvedKeyword } from "@/features/marketing/seo/keyword/hooks";
 import { buildKeywordBrief } from "@/features/marketing/seo/keyword/keyword-brief";
 import { AssociationList } from "@ai-matrx/associations/react";
-import { useOpenPageResearchWindow } from "@/features/overlays/openers/pageResearchWindow";
+import { useOpenPageResearchWindow } from "@/features/overlays/definitions/pageResearchWindow.overlay";
 import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
 import { RESEARCH_LINEAGE_TOKENS } from "@/features/cms/hooks/useCmsResearchLineage";
 

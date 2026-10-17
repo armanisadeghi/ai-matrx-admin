@@ -39,7 +39,7 @@ jest.mock("../matrx-directives/MatrxDirectivesTab", () => ({
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({
   ErrorAlchemyMenu: () => null,
 }));
-jest.mock("@/features/overlays/openers/diffViewerWindow", () => ({
+jest.mock("@/features/overlays/definitions/diffViewerWindow.overlay", () => ({
   useOpenDiffViewerWindow: () => () => undefined,
 }));
 

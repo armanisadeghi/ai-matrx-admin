@@ -47,7 +47,7 @@ import { useAgentShortcuts } from "../hooks/useAgentShortcuts";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import { CategorySelect } from "./CategorySelect";
-import { lazyOverlay } from "@/features/overlays/boundary/lazyOverlay";
+import dynamic from "next/dynamic";
 
 /**
  * `CategoryForm` drags in the icon registry (`IconInputWithValidation.dynamic`)
@@ -58,12 +58,9 @@ import { lazyOverlay } from "@/features/overlays/boundary/lazyOverlay";
  * was being OOM-killed by concurrent sessions while this was written, so no
  * before/after compile comparison was possible.
  */
-const CategoryForm = lazyOverlay<
-  import("./CategoryForm").CategoryFormProps
->(
+const CategoryForm = dynamic<import("./CategoryForm").CategoryFormProps>(
   () => import("./CategoryForm").then((m) => m.CategoryForm),
   { ssr: false },
-  "features/agent-shortcuts/components/CategoryForm",
 );
 import type { AgentVariableDefinition } from "./ScopeMappingEditor";
 import type { ScopeProps } from "../types";

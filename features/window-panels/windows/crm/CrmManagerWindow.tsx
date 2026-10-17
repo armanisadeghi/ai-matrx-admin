@@ -1,6 +1,6 @@
 "use client";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { CrmListPage } from "@/features/crm/components/CrmListPage";
 import { CRM_MANAGER_SURFACE_NAME } from "@/features/surfaces/manifests/crm-manager.manifest";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";

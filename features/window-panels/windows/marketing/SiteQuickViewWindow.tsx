@@ -42,7 +42,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import SitePeekBody from "@/features/marketing/components/sites/SitePeekBody";
 import { getSiteListRow } from "@/features/marketing/data/service";
 import { marketingKeys } from "@/features/marketing/data/hooks";

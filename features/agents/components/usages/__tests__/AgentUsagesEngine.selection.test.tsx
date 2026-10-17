@@ -63,7 +63,7 @@ jest.mock("@/features/mandates/admin/impact-advance", () => ({
     revert: jest.fn(),
   }),
 }));
-jest.mock("@/features/overlays/openers/impactBatchWindow", () => ({
+jest.mock("@/features/overlays/definitions/impactBatchWindow.overlay", () => ({
   useOpenImpactBatchWindow: () => jest.fn(),
 }));
 jest.mock("@/features/mandates/candidate-dialog/TryAsCandidateButton", () => ({

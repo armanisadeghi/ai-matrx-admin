@@ -1,0 +1,90 @@
+"use client";
+
+/**
+ * Opener for the `agentDataStorageWindow` overlay.
+ *
+ * - `useOpenAgentDataStorageWindow()` — imperative hook. Call to open with typed options;
+ *   returns a handle with a `close()` method.
+ * - `<AgentDataStorageWindowController />` — declarative wrapper. Mount to open,
+ *   unmount to close. Equivalent ergonomics to rendering a normal component.
+ *
+ * Hand-maintained opener — see features/overlays/FEATURE.md.
+ */
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "agentDataStorageWindow" as const;
+
+export interface OpenAgentDataStorageWindowOptions {
+  agentId?: string | null;
+}
+
+export interface AgentDataStorageWindowHandle {
+  close: () => void;
+}
+
+export function useOpenAgentDataStorageWindow() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenAgentDataStorageWindowOptions = {}): AgentDataStorageWindowHandle => {
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          data: {
+            agentId: opts.agentId,
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+/**
+ * Declarative form. Renders nothing visible; opens the overlay on mount,
+ * closes it on unmount. Use this when a caller wants to express overlay
+ * state declaratively (the way they'd render a normal component).
+ */
+export function AgentDataStorageWindowController(props: OpenAgentDataStorageWindowOptions): null {
+  const open = useOpenAgentDataStorageWindow();
+  useEffect(() => {
+    const handle = open(props);
+    return () => handle.close();
+  }, [open, props.agentId]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type AgentDataStorageWindowDefinitionData = OpenAgentDataStorageWindowOptions;
+
+export const agentDataStorageWindowOverlay = defineOverlay<AgentDataStorageWindowDefinitionData>()({
+  id: "agentDataStorageWindow",
+  label: "Agent Data Storage Window",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  window: {
+    restoreDefaults: { agentId: null },
+    windowId: "agent-data-storage-window",
+    mobile: "fullscreen",
+    ephemeral: true,
+    deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
+  },
+  render: () => import("./agentDataStorageWindow.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    agentDataStorageWindow: OverlayWire<AgentDataStorageWindowDefinitionData>;
+  }
+}

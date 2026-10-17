@@ -28,15 +28,9 @@
  */
 
 import type { Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import {
-  OpenPanelPayloadSchema,
-  type OpenPanelPayload,
-} from "@/lib/types/bridge-envelope";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import {
-  isOverlayId,
-  type OverlayId,
-} from "@/features/overlays/catalogue";
+import { openPanelRequest } from "@ai-matrx/summon/url";
+import { OpenPanelPayloadSchema } from "@/lib/types/bridge-envelope";
+import { ensureAppOverlaysRegistered } from "@/features/overlays/definitions/register";
 
 /**
  * Result returned to the extension over the bridge. Mirrors the
@@ -44,74 +38,24 @@ import {
  * callback and its Broadcast reply handler can use one branch.
  */
 export type OpenPanelResult =
-  | { ok: true; opened: true; panelId: OverlayId; instanceId: string | null }
+  | { ok: true; opened: true; panelId: string; instanceId: string | null }
   | { ok: false; error: string; details?: unknown };
 
-/** Default instance id used by singleton overlays (matches overlaySlice). */
-const DEFAULT_INSTANCE_ID = "default";
-
 /**
- * Translate an inbound `openPanel` envelope into a Redux `openOverlay`
- * dispatch. Pure function (Redux dispatch passed in) so it's trivially
- * testable and has no React-tree coupling.
- *
- * Failure modes are returned as `{ ok: false, error }` rather than thrown —
- * the bridge subscriber needs to publish them back to the extension verbatim.
+ * Translate an inbound `openPanel` envelope into an overlay open through the package's one
+ * link door (`openPanelRequest`: registered-id check, default instance, same open path every
+ * in-app caller takes). The envelope is validated against the bridge schema first.
  */
 export function handleExtensionOpenPanel(
   dispatch: Dispatch<UnknownAction>,
   rawPayload: unknown,
 ): OpenPanelResult {
-  // 1. Wire-format validation. The extension may ship a malformed
-  // envelope; better to surface a structured error than to throw.
   const parsed = OpenPanelPayloadSchema.safeParse(rawPayload);
   if (!parsed.success) {
-    return {
-      ok: false,
-      error: "invalid_payload",
-      details: parsed.error.issues,
-    };
+    return { ok: false, error: "invalid_payload", details: parsed.error.issues };
   }
-
-  const payload: OpenPanelPayload = parsed.data;
-
-  // 2. Registry membership check. We MUST narrow `panelId` to the typed
-  // `OverlayId` union before calling `openOverlay` — the action creator
-  // is typed against that union and would otherwise fail at the type
-  // boundary. Dispatching an unknown overlayId would also write a dead
-  // entry into Redux state that no controller renders.
-  if (!isOverlayId(payload.panelId)) {
-    return {
-      ok: false,
-      error: "unknown_panel",
-      details: {
-        panelId: payload.panelId,
-        hint: "panelId must match a registered window-panels overlayId. See features/overlays/catalogue.ts (OVERLAY_CATALOGUE keys).",
-      },
-    };
-  }
-
-  const overlayId: OverlayId = payload.panelId;
-  const instanceId = payload.instanceId ?? DEFAULT_INSTANCE_ID;
-
-  // 3. Dispatch — same path every in-app caller takes. The reducer
-  // handles "open already-open instance" idempotently (just refreshes
-  // data + lastUsedAt), so re-firing the same envelope is safe.
-  dispatch(
-    openOverlay({
-      overlayId,
-      instanceId,
-      data: payload.data,
-    }),
-  );
-
-  return {
-    ok: true,
-    opened: true,
-    panelId: overlayId,
-    // Echo back the resolved instanceId. `null` (rather than
-    // `"default"`) when the caller did not supply one, so the extension
-    // can tell whether it was using a singleton slot.
-    instanceId: payload.instanceId ?? null,
-  };
+  ensureAppOverlaysRegistered();
+  const result = openPanelRequest(parsed.data, { dispatch });
+  if (!result.ok) return { ok: false, error: result.error, details: result.details };
+  return { ok: true, opened: true, panelId: result.panelId, instanceId: result.instanceId };
 }

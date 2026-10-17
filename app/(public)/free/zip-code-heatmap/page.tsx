@@ -12,7 +12,7 @@ import ColorLegend from "./components/ColorLegend";
 import ColorScaleSelector from "./components/ColorScaleSelector";
 import ViewModeSelector from "./components/ViewModeSelector";
 import TableDataSource from "./components/TableDataSource";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import SaveHeatmapModal from "./components/SaveHeatmapModal";
 import type { ColorScaleOptions } from "./components/ColorScaleSelector";
 import type { ViewMode } from "./components/ViewModeSelector";

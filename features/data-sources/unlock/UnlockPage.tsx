@@ -20,7 +20,7 @@ import { ProInput } from "@/components/official/ProInput";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { supabase } from "@/utils/supabase/client";
 import { copyToClipboard } from "@/lib/clipboard/copy";
-import { useOpenQuickNoteSaveWindow } from "@/features/overlays/openers/quickNoteSaveWindow";
+import { useOpenQuickNoteSaveWindow } from "@/features/overlays/definitions/quickNoteSaveWindow.overlay";
 
 import { useLibraryOrganizationId, usePriceText } from "../library/hooks";
 import {

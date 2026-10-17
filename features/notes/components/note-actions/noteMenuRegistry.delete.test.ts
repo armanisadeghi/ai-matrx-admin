@@ -14,7 +14,7 @@ const ensureNoteBodiesLoaded = jest.fn();
 
 jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({ confirm: (...a: unknown[]) => confirm(...a) }));
 jest.mock("@/lib/toast", () => ({ toast: { error: (...a: unknown[]) => toastError(...a), success: jest.fn() } }));
-jest.mock("@/lib/redux/slices/overlaySlice", () => ({ openOverlay: jest.fn() }));
+jest.mock("@ai-matrx/summon", () => ({ openOverlay: jest.fn() }));
 jest.mock("../../redux/thunks", () => ({
   // A getter, so the real thunk's shape survives (`deleteNote.rejected.match`).
   get deleteNote() {

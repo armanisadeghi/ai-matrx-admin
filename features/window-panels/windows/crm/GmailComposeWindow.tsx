@@ -15,8 +15,8 @@
  * A modal would hide the very facts the writer is quoting.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { callbackManager } from "@/utils/callbackManager";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import { callbackManager } from "@ai-matrx/summon/handles";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { GmailComposePanel } from "@/features/crm/gmail/GmailComposePanel";
 import type { GmailDraftedBy } from "@/features/crm/gmail/types";
@@ -71,7 +71,6 @@ export default function GmailComposeWindow({
       position="center"
       onClose={onClose}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
-      retainBodyOnMinimize
     >
       {/* A window answers for itself; without this a right-click here is
           answered by whatever page is open behind it. The entity is the

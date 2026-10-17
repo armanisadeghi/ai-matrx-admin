@@ -28,7 +28,6 @@ import { DetailHost } from "@/features/window-panels/detail/DetailHost";
 import { AgentCatalogHost } from "@/providers/AgentCatalogHost";
 import { MatrxDataTableHost } from "@/components/official/MatrxDataTableHost";
 import { ToastProvider } from "@/providers/toast-context";
-import { RefProvider } from "@/lib/refs";
 import { AlchemyHost } from "@/components/agent-copy/AlchemyHost";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
@@ -49,7 +48,6 @@ export function AppProviders({ store, children }: { store: AppStore; children: R
                 <MatrxDataTableHost>
                   <ToastProvider>
                     <AlchemyHost>
-                    <RefProvider>
                       <TooltipProvider delayDuration={200}>
                         <ModuleHeaderProvider>
                           <SelectedImagesProvider>
@@ -57,7 +55,6 @@ export function AppProviders({ store, children }: { store: AppStore; children: R
                           </SelectedImagesProvider>
                         </ModuleHeaderProvider>
                       </TooltipProvider>
-                    </RefProvider>
                     </AlchemyHost>
                   </ToastProvider>
                 </MatrxDataTableHost>

@@ -10,7 +10,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Cloud } from "lucide-react";
-import { useOpenCloudBrowserWindow } from "@/features/overlays/openers/cloudBrowserWindow";
+import { useOpenCloudBrowserWindow } from "@/features/overlays/definitions/cloudBrowserWindow.overlay";
 import { CloudBrowserWindow } from "@/features/cloud-browser/components/CloudBrowserWindow";
 import { TelemetrySurface } from "@/features/cloud-browser/components/TelemetrySurface";
 import { AuditTimeline } from "@/features/cloud-browser/components/AuditTimeline";

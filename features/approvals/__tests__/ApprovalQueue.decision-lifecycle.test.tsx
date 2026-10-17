@@ -42,7 +42,7 @@ jest.mock("@/components/navigation/AppLink", () => ({
 jest.mock("@/features/marketing/components/shared/MarketingUi", () => ({
   InlineQueryError: () => <div>error</div>,
 }));
-jest.mock("@/features/overlays/openers/keywordWindow", () => ({
+jest.mock("@/features/overlays/definitions/keywordWindow.overlay", () => ({
   useOpenKeywordWindow: () => () => undefined,
 }));
 jest.mock("@/features/marketing/seo/keyword-workbench/data", () => ({

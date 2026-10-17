@@ -14,7 +14,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { Plus, X, ChevronDown, Layers, Search, Link2, Pencil } from "lucide-react";
-import { useOpenScopeBatchImportWindow } from "@/features/overlays/openers/scopeBatchImportWindow";
+import { useOpenScopeBatchImportWindow } from "@/features/overlays/definitions/scopeBatchImportWindow.overlay";
 import { Button } from "@ai-matrx/design-system";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";

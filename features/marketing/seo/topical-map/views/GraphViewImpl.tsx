@@ -68,7 +68,7 @@ import { topicalMapErrorText } from "../errors";
 import { useMapGraph, usePageIntents, useSetMapTopicLayout, useTopicalMap } from "../hooks";
 import { useTopicalMapKnobs } from "../knobs";
 import { useMapLinks } from "../links";
-import { useOpenTopicPanel } from "@/features/overlays/openers/topicalMapTopicPanel";
+import { useOpenTopicPanel } from "@/features/overlays/definitions/topicalMapTopicPanel.overlay";
 import {
   selectMapFilters,
   selectMapGraph,

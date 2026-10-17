@@ -46,7 +46,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
-import { LiveRunWindowController } from "@/features/overlays/openers/liveRunWindow";
+import { LiveRunWindowController } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { useContainerLinks } from "@/features/scopes/hooks/useContainerLinks";
 import { useResearchApi } from "@/features/research/hooks/useResearchApi";
 import { useResearchStream } from "@/features/research/hooks/useResearchStream";
@@ -66,7 +66,7 @@ import {
   getSurfaceDisplayLabel,
   surfaceValueLabels,
 } from "@ai-matrx/chat/surfaces/utils/surface-display";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";

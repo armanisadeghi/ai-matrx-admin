@@ -14,7 +14,7 @@ import { Button, Switch } from "@ai-matrx/design-system/controls";
 
 import { getTableMetadata } from "@/features/data-tables/service";
 import { isServiceFailure } from "@/features/data-tables/types";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 

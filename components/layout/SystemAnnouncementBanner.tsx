@@ -9,7 +9,7 @@ import type {
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setModulePreferences } from "@/lib/redux/preferences/userPreferencesSlice";
 import { Button } from "@/components/ui/button";
-import { useOpenAnnouncementsViewer } from "@/features/overlays/openers/announcements";
+import { useOpenAnnouncementsViewer } from "@/features/overlays/definitions/announcements.overlay";
 import { cn } from "@/lib/utils";
 
 interface SystemAnnouncementBannerProps {

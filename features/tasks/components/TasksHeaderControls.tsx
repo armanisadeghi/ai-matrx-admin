@@ -11,7 +11,7 @@ import { HrTasksDoor } from "@/features/hr/entry-points/HrTasksDoor";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectSelectedTaskId } from "@/features/tasks/redux/taskUiSlice";
 import { useOrganizationGatedControl } from "@/features/organizations/useOrganizationGatedControl";
-import { useOpenGoogleTasksImport } from "@/features/overlays/openers/googleImportWindows";
+import { useOpenGoogleTasksImport } from "@/features/overlays/definitions/googleContactsImportWindow.overlay";
 import { Button } from "@/components/ui/button";
 import { CalendarCheck } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";

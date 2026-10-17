@@ -12,7 +12,7 @@ import { isMandateKey, type MandateKey } from "@ai-matrx/agents/mandates";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import type { AdvisoryOffer } from "./service";
 
 export function MandateOffer({

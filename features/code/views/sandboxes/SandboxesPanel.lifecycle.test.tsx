@@ -38,7 +38,7 @@ jest.mock("../../CodeWorkspaceProvider", () => ({
 jest.mock("./useSandboxWorkspaceConnection", () => ({
   useSandboxWorkspaceConnection: () => ({ connect: jest.fn(), connectingId: null, wireInstance: jest.fn() }),
 }));
-jest.mock("@/features/overlays/openers/sandboxManagementWindow", () => ({
+jest.mock("@/features/overlays/definitions/sandboxManagementWindow.overlay", () => ({
   useOpenSandboxManagementWindow: () => jest.fn(),
 }));
 jest.mock("./useSandboxCreate", () => ({

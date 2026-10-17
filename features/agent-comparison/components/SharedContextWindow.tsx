@@ -23,7 +23,7 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2, Building2, Briefcase, ClipboardList, Layers } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {

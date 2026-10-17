@@ -1,6 +1,6 @@
 jest.mock("@/lib/redux/slices/userSlice", () => ({ selectUserId: (state: { userId?: string }) => state.userId }));
 jest.mock("@/lib/redux/slices/appContextSlice", () => ({ selectOrganizationId: (state: { organizationId?: string }) => state.organizationId }));
-jest.mock("@/lib/redux/slices/overlaySlice", () => ({ openOverlay: (payload: unknown) => ({ type: "overlay/open", payload }) }));
+jest.mock("@ai-matrx/summon", () => ({ openOverlay: (payload: unknown) => ({ type: "overlay/open", payload }) }));
 jest.mock("@/features/tasks/redux/taskUiSlice", () => ({ setPendingSource: (payload: unknown) => ({ type: "task/pending", payload }) }));
 jest.mock("@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.slice", () => ({ clearFocus: (payload: unknown) => ({ type: "focus/clear", payload }) }));
 jest.mock("@ai-matrx/chat/agents/redux/chat/chat-route.slice", () => ({ bumpFreshSession: () => ({ type: "chat/bump" }) }));

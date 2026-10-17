@@ -26,7 +26,7 @@ import { toast } from "@/lib/toast";
 import {
   disposeReferencePickerCallbackGroup,
   getReferencePickerCallbackGroup,
-} from "@/features/overlays/callbacks/referencePicker";
+} from "@/features/overlays/definitions/callbacks/referencePicker";
 import { ReferencePickerBody } from "@/features/matrx-envelope/components/reference-picker/ReferencePickerBody";
 import type {
   ReferenceDelivery,

@@ -122,8 +122,8 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { buildAgentPayload } from "@/components/agent-copy/buildAgentPayload";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { useOpenTableViewerWindow } from "@/features/overlays/openers/tableViewerWindow";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenTableViewerWindow } from "@/features/overlays/definitions/tableViewerWindow.overlay";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { readSearchKindValue, text } from "../search-kinds/search-kind-data";
 import {
   ColumnTypeBadge,

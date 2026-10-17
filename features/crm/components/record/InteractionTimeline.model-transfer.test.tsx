@@ -61,7 +61,7 @@ jest.mock("@/components/official/CollapsibleText", () => ({
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({
   useSurfaceWriteHandlers: () => undefined,
 }));
-jest.mock("@/features/overlays/openers/gmailComposeWindow", () => ({
+jest.mock("@/features/overlays/definitions/gmailComposeWindow.overlay", () => ({
   useOpenGmailComposeWindow: () => jest.fn(),
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => null }));

@@ -3,9 +3,9 @@ import { createRoot, type Root } from "react-dom/client";
 import {
   createFullScreenEditorCallbackGroup,
   emitFullScreenEditorSave,
-} from "@/features/overlays/callbacks/fullScreenEditor";
+} from "@/features/overlays/definitions/callbacks/fullScreenEditor";
 import { FullScreenMarkdownEditorBridge } from "./FullScreenMarkdownEditorBridge";
-import { FullScreenMarkdownEditorBridgeController } from "@/features/overlays/openers/fullScreenEditor";
+import { FullScreenMarkdownEditorBridgeController } from "@/features/overlays/definitions/fullScreenEditor.overlay";
 
 let editorProps: {
   onSave: (content: string) => Promise<void>;

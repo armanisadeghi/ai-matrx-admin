@@ -18,7 +18,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay } from "@ai-matrx/summon";
 import {
   selectVoicePadEntries,
   selectVoicePadDraftText,
@@ -26,7 +26,7 @@ import {
   clearAllEntries,
   setDraftText,
 } from "@/lib/redux/slices/voicePadSlice";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
 import {

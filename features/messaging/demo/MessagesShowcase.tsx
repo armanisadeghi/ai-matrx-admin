@@ -16,7 +16,7 @@ import {
 } from "@ai-matrx/messaging/react";
 import { Select } from "@ai-matrx/design-system/controls";
 import { Search, SquarePen, ChevronLeft } from "lucide-react";
-import { useOpenMessagesWindow } from "@/features/overlays/openers/messagesWindow";
+import { useOpenMessagesWindow } from "@/features/overlays/definitions/messagesWindow.overlay";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { MESSAGE_EXAMPLES } from "./examples";
 import "../messages-native.css";

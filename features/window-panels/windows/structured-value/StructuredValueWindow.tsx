@@ -33,7 +33,7 @@
  * rather than replacing the first.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 

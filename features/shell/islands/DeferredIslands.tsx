@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 
 // NOTE: Voice-pad-slice overlays (`voicePad`, `voicePadAdvanced`, `transcriptionCleanup`)
 // are mounted exclusively by the unified window registry now. The legacy
@@ -18,18 +17,10 @@ import CommandBarHotkey from "@/features/knowledge/command-bar/CommandBarHotkey"
 // browser session while the person is over their cap.
 import { OrganizationCapReminder } from "@/features/organizations/limits/OrganizationCapReminder";
 
-const WindowTraySync = dynamic(
-  () => import("@/features/window-panels/WindowTraySync"),
-  { ssr: false, loading: () => null },
-);
 
 export default function DeferredIslands() {
   return (
     <>
-      {/* Window geometry must listen before idle work: a viewport can shrink
-          while the shell is still settling, and an open footer must remain
-          reachable even if no later resize event occurs. */}
-      <WindowTraySync />
       <CommandBarHotkey />
       <OrganizationCapReminder />
     </>

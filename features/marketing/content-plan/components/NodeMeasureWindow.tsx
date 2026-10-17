@@ -9,7 +9,7 @@
  */
 
 import { CmsPageMeasureLazy } from "@/features/cms/components/measure/CmsPageMeasureLazy";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 
 export default function NodeMeasureWindow({
   webPageId,

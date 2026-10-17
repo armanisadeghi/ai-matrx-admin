@@ -25,7 +25,7 @@ import { Card } from "@/components/ui/card";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { cn } from "@/lib/utils";
-import { useOpenHindsightFindingWindow } from "@/features/overlays/openers/hindsightFindingWindow";
+import { useOpenHindsightFindingWindow } from "@/features/overlays/definitions/hindsightFindingWindow.overlay";
 
 import { applyFinding, rejectFinding } from "../api";
 import {

@@ -24,9 +24,10 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
-import windowManager from "@/lib/redux/slices/windowManagerSlice";
+import { windowManagerReducer as windowManager } from "@ai-matrx/summon";
 import adminDebug from "@/lib/redux/preferences/adminDebugSlice";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import { SummonProvider } from "@ai-matrx/summon/react";
 
 import { DetailActions, DetailTitle } from "@ai-matrx/detail/react";
 import { useDetailCore } from "@ai-matrx/detail/react";
@@ -74,6 +75,7 @@ function mountWindowChrome(titleNode: React.ReactNode) {
   act(() => {
     root.render(
       <Provider store={store}>
+        <SummonProvider store={store}>
         <WindowPanel
           id="detail-window-test"
           title="Q3 partnership agreement — signed copy.pdf"
@@ -83,6 +85,7 @@ function mountWindowChrome(titleNode: React.ReactNode) {
         >
           <div>body</div>
         </WindowPanel>
+        </SummonProvider>
       </Provider>,
     );
   });

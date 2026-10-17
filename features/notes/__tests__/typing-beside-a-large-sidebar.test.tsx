@@ -66,7 +66,7 @@ import appContextReducer, { makeAppContextState } from "@/lib/redux/slices/appCo
 import scopesTreeReducer from "@/features/scopes/redux/scopesSlice";
 import userPreferencesReducer from "@/lib/redux/preferences/userPreferencesSlice";
 import workingCopiesReducer from "@/lib/working-copy/workingCopySlice";
-import overlaysReducer from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer } from "@ai-matrx/summon";
 import adminDebugReducer from "@/lib/redux/preferences/adminDebugSlice";
 import notesReducer, {
   addInstanceTab,

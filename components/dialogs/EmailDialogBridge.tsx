@@ -2,11 +2,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  closeOverlay,
-  selectIsOverlayOpen,
-  selectOverlayData,
-} from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@ai-matrx/summon";
 import { toast } from "@/lib/toast-service";
 import { EmailInputDialog } from "./EmailInputDialog";
 

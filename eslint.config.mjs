@@ -38,7 +38,7 @@ const windowPanelsImportRestriction = {
         "@/features/window-panels/windows/**/*", "@ai-matrx/chat/window-panels/windows/**/*",
       ],
       message:
-        "Import window components only via the overlay controller's per-overlay dynamic() (features/overlays/OverlayController.tsx). Direct imports break bundle splitting. See .claude/skills/overlay-system/SKILL.md.",
+        "Import window components only from an overlay's render module (features/overlays/definitions/<id>.render.tsx, loaded lazily by its definition). Direct imports break bundle splitting. See .claude/skills/overlay-system/SKILL.md.",
     },
     // File-handling: the public index barrel was deleted (2026-07-26).
     // Import directly from the owning module. Internal subdirs below
@@ -2061,7 +2061,7 @@ export default [
     // component prop-shape drift at compile time — a single `{...spread}`
     // anywhere in here would defeat the point. See
     // docs/OVERLAY_WINDOW_OVERHAUL.md.
-    files: ["features/overlays/OverlayController.tsx"],
+    files: ["features/overlays/definitions/*.render.tsx"],
     rules: {
       // Flat config REPLACES (not merges) the rule per file, so this
       // override re-lists every global syntax ban alongside the
@@ -2086,7 +2086,7 @@ export default [
         {
           selector: "JSXSpreadAttribute",
           message:
-            "No JSX prop spread in OverlayController.tsx — wire every prop by name. Spread reintroduces the dispatch/component drift bug class this file exists to eliminate. See docs/OVERLAY_WINDOW_OVERHAUL.md.",
+            "No JSX prop spread in an overlay render module — wire every prop by name. Spread reintroduces the dispatch/component drift bug class this file exists to eliminate. See docs/OVERLAY_WINDOW_OVERHAUL.md.",
         },
       ],
     },
@@ -2100,7 +2100,7 @@ export default [
       // sanctioned place that loads them (lazily). The legacy
       // UnifiedOverlayController / OverlaySurface / windowRegistry.ts
       // files that used to share this exemption are deleted.
-      "features/overlays/OverlayController.tsx",
+      "features/overlays/definitions/*.render.tsx",
     ],
     rules: {
       "no-restricted-imports": "off",
@@ -2234,7 +2234,7 @@ export default [
   //
   // windowPanelsImportRestriction bans importing
   // features/window-panels/windows/** so no caller can statically pull a heavy
-  // window component into its own chunk. `features/overlays/openers/**` is the
+  // window component into its own chunk. `features/overlays/definitions/**` is the
   // indirection layer that ban exists to force callers through: each opener is
   // a thin module that either re-exports the window's own `useOpen*Window`
   // hook (which only dispatches `openOverlay` — verified: no opener hook
@@ -2245,7 +2245,7 @@ export default [
   // owns every actual component import.
   //
   // Do NOT widen this beyond features/overlays/** — a call site outside it
-  // must import from `@/features/overlays/openers/<overlay>`, not from
+  // must import from `@/features/overlays/definitions/<overlay>.overlay`, not from
   // `features/window-panels/windows/**`.
   {
     files: ["features/overlays/**/*.{ts,tsx}"],

@@ -1,20 +1,18 @@
-/**
- * AN OPENED OVERLAY IS A CATALOGUED OVERLAY (Bugbot finding 2 on e718a50c).
- *
- * `features/overlays/catalogue.ts` is THE single list of overlay ids: its keys
- * define the `OverlayId` union AND the runtime `isOverlayId` guard the Redux
- * middleware uses. An overlay opened by an id that is not a key type-checks
- * nowhere and is REJECTED at runtime — persistence, session restore and every
- * catalogue-gated path treat it as unknown, which is exactly what happened to
- * the two Google import windows before they were registered.
- *
- * This guards the class, not the instance: every overlay id the window
- * registry declares must be a catalogue key.
- */
 
+import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
-import { OVERLAY_CATALOGUE } from "@/features/overlays/catalogue";
-import { ALL_WINDOW_STATIC_METADATA } from "@/features/window-panels/registry/windowRegistryMetadata";
+/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
+const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
+  APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
+);
+/** The old window-metadata rows, read from the definitions: windows with a window id, other overlays with a link. */
+const ALL_WINDOW_STATIC_METADATA = APP_OVERLAYS.filter((d) => (d.window ? d.window.windowId !== undefined : d.link !== undefined)).map((d) => ({
+  overlayId: d.id,
+  slug: d.window?.windowId ?? d.id,
+  urlSync: d.link ? { key: d.link.key } : undefined,
+  defaultData: d.window?.restoreDefaults as Record<string, unknown> | undefined,
+}));
+
 
 describe("the overlay catalogue is the one id list", () => {
   it("carries both Google import windows", () => {

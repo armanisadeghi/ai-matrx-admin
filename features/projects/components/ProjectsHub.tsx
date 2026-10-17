@@ -61,7 +61,7 @@ import { projectsDb } from "@/utils/supabase/projectsDb";
 import { scopesService } from "@/features/scopes/service/scopesService";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { getOrganizationBySlugOrId } from "@/features/organizations/service";
-import { useOpenCreateProjectWindow } from "@/features/overlays/openers/createProjectWindow";
+import { useOpenCreateProjectWindow } from "@/features/overlays/definitions/createProjectWindow.overlay";
 import {
   useListViewPrefs,
   type LegacyListViewImport,

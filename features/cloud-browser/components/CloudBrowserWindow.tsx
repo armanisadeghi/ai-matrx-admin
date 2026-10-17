@@ -11,8 +11,8 @@
  */
 
 import React from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import type { OverlayId } from "@/features/overlays/catalogue";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import type { OverlayId } from "@ai-matrx/summon";
 import { CloudBrowserBody } from "./CloudBrowserBody";
 
 export interface CloudBrowserWindowProps {

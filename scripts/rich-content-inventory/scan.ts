@@ -617,7 +617,9 @@ export const OVERLAY_CONTROLLER = "features/overlays/OverlayController.tsx";
 const WINDOW_REGISTRY = "features/window-panels/registry/windowRegistryMetadata.ts";
 const ROUTE_FILE = /^app\/(.*\/)?(page|layout|template|default|not-found|error|global-error|loading)\.(tsx|ts|jsx|js)$/;
 const API_FILE = /^app\/(.*\/)?route\.(ts|js)$/;
-const OPENER_FILE = featureRegExp(/^features\/overlays\/openers\/[^/]+\.tsx?$/);
+const OPENER_FILE = featureRegExp(/^features\/overlays\/definitions\/[^/]+\.overlay\.tsx?$/);
+/** An overlay's render module IS its surface root (it renders the overlay's component). */
+const RENDER_FILE = featureRegExp(/^features\/overlays\/definitions\/[^/]+\.render\.tsx$/);
 
 function routeUrl(rel: string): string {
   const segs = rel.split("/").slice(1, -1).filter((s) => !(s.startsWith("(") && s.endsWith(")")));
@@ -632,7 +634,8 @@ export function rootSurfaceOf(rel: string): string | null {
     return kind === "page" ? `route ${url}` : `${kind} ${url}`;
   }
   if (API_FILE.test(rel)) return `api ${routeUrl(rel)}`;
-  if (OPENER_FILE.test(rel)) return `opener ${path.basename(rel).replace(/\.tsx?$/, "")}`;
+  if (RENDER_FILE.test(rel)) return `overlay ${path.basename(rel).replace(/\.render\.tsx$/, "")}`;
+  if (OPENER_FILE.test(rel)) return `opener ${path.basename(rel).replace(/\.overlay\.tsx?$/, "")}`;
   return null;
 }
 

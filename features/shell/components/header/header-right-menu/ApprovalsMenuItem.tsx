@@ -13,7 +13,7 @@
 import { useCallback } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { usePendingApprovalCount } from "@/features/approvals/usePendingApprovalCount";
-import { useOpenApprovalsWindow } from "@/features/overlays/openers/approvalsWindow";
+import { useOpenApprovalsWindow } from "@/features/overlays/definitions/approvalsWindow.overlay";
 import { MENU_ITEM_CLASS } from "./menuItemClass";
 import { MenuItemCloseLabel } from "./menuCheckboxId";
 

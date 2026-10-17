@@ -12,15 +12,8 @@
  */
 import { useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  closeOverlay,
-  openOverlay,
-  selectIsOverlayOpen,
-  selectOpenInstances,
-  selectOverlayData,
-  toggleOverlay,
-} from "@/lib/redux/slices/overlaySlice";
-import type { OverlayId } from "@/features/overlays/catalogue";
+import { closeOverlay, openOverlay, selectIsOverlayOpen, selectOpenInstances, selectOverlayData, toggleOverlay } from "@ai-matrx/summon";
+import type { OverlayId } from "@ai-matrx/summon";
 
 const DEFAULT_INSTANCE_ID = "default";
 

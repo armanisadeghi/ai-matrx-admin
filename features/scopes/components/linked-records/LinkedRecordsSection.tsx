@@ -26,7 +26,7 @@ import { useAssociations } from "@/features/scopes/hooks/useAssociations";
 import { getAssociationsStore } from "@/features/scopes/host/associationsStore";
 import { entityTitleFallback, fetchEntityTitles } from "@/features/scopes/service/entityTitles";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { useOpenLinkRecordSheet } from "@/features/overlays/openers/linkRecordSheet";
+import { useOpenLinkRecordSheet } from "@/features/overlays/definitions/linkRecordSheet.overlay";
 import { toast } from "@/components/ui/use-toast";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

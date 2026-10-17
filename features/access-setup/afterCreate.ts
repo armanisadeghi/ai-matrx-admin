@@ -5,7 +5,7 @@
 // only caller that turns it into a window. Access is already correct before it opens, so a creation
 // whose organization already confirmed the type (needs_confirm false) opens nothing.
 
-import { useOpenAccessSetupWindow } from "@/features/overlays/openers/accessSetupWindow";
+import { useOpenAccessSetupWindow } from "@/features/overlays/definitions/accessSetupWindow.overlay";
 
 import { parseAfterCreate } from "./types";
 

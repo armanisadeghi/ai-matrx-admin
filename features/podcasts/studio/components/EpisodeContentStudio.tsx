@@ -20,7 +20,7 @@ import {
   RefreshCw,
   GitCompareArrows,
 } from "lucide-react";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";

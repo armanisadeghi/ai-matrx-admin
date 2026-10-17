@@ -19,7 +19,7 @@ import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { agentForPromptKey } from "@/features/code-editor/agent-code-editor/agents";
-import { useOpenSmartCodeEditorWindow } from "@/features/overlays/openers/smartCodeEditorWindow";
+import { useOpenSmartCodeEditorWindow } from "@/features/overlays/definitions/smartCodeEditorWindow.overlay";
 import {
   mapLanguageForMonaco,
   getMonacoFileExtension,

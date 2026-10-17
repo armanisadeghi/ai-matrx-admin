@@ -53,7 +53,7 @@ import { getGoogleDrivePickerToken } from "@/features/google-workspace/drivePick
 import {
   disposeGoogleConnectCallbackGroup,
   emitGoogleConnectEvent,
-} from "@/features/overlays/callbacks/googleConnectWindow";
+} from "@/features/overlays/definitions/callbacks/googleConnectWindow";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";

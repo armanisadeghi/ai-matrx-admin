@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
 import {
   createUserSearchCallbackGroup,
   type UserSearchHandlers,

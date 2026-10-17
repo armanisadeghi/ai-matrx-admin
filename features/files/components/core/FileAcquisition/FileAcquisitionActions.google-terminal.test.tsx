@@ -11,8 +11,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { GoogleWorkspaceConnectBody } from "@/features/google-workspace/GoogleWorkspaceConnectBody";
 import {
   createGoogleConnectCallbackGroup,
-} from "@/features/overlays/callbacks/googleConnectWindow";
-import type { OpenGoogleConnectOptions } from "@/features/overlays/openers/googleConnectWindow";
+} from "@/features/overlays/definitions/callbacks/googleConnectWindow";
+import type { OpenGoogleConnectOptions } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import type { CanonicalStorageImport } from "@/features/files/storage-sources/types";
 import { FileAcquisitionActions } from "./FileAcquisitionActions";
 
@@ -25,10 +25,10 @@ const mockImportBatch = jest.fn();
 const mockPick = jest.fn();
 const mockDispatch = jest.fn();
 
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => mockOpenGoogle,
 }));
-jest.mock("@/features/overlays/openers/storageSourcePicker", () => ({
+jest.mock("@/features/overlays/definitions/storageSourcePicker.overlay", () => ({
   useOpenStorageSourcePicker: () => jest.fn(),
 }));
 jest.mock("@/providers/google-provider/LazyGoogleAPIProvider", () => ({

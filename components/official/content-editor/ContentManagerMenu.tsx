@@ -23,7 +23,7 @@ import { NotesAPI } from "@/features/notes/service/notesApi";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 
 interface ContentManagerMenuProps {

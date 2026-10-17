@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { RecordReferencePicker } from "@/features/matrx-envelope/components/ReferenceTypeAdder";
 import type { ReferenceItem } from "@ai-matrx/agents/envelope";

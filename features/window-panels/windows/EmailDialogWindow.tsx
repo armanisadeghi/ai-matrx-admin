@@ -9,7 +9,7 @@
 // inside the body — so it can't duplicate WindowPanel's footer.
 
 import React, { useCallback, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";

@@ -6,7 +6,7 @@
  * Run-settings windows. Not a new panel system beside them.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { DecisionComparisonTable } from "./DecisionComparisonTable";
 
 interface DecisionComparisonWindowProps {

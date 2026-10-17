@@ -17,7 +17,7 @@ import { OrganizationContextNotice } from "@/features/organizations/components/O
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { GoogleAccountSelect } from "@/features/google-workspace/GoogleAccountSelect";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
-import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
+import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 import { GOOGLE_SCOPE } from "@/lib/googleScopes";
 import { getUserMessage } from "@ai-matrx/api";
 import { toast } from "@/lib/toast";

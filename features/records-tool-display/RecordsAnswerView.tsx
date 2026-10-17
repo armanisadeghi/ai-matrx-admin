@@ -37,7 +37,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { useTableKind } from "@/components/mardown-display/blocks/result-kinds/use-table-record";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import {

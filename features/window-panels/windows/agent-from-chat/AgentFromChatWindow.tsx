@@ -22,7 +22,7 @@ import type {
 } from "@ai-matrx/chat/agents/components/live-run/LiveRunProgress";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";
 import { ExamplesField, ProofCount, emptyExamples, filledExamples } from "@/features/agents/factory/components/ExamplesField";
 import { useFactoryDoor } from "@/features/agents/factory/door";

@@ -49,7 +49,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
-import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
+import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
 import { useOpenBarOrGate } from "@/features/knowledge/command-bar/OpenCommandBarButtons";
 import {
   AGENTS_AUTH_GATE,

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MillerColumns } from "@/features/scopes/components/active-context/miller-columns/MillerColumns";
 import { MillerColumnsPopover } from "@/features/scopes/components/active-context/miller-columns/MillerColumnsPopover";
 import { useSelectionEngine } from "@/features/scopes/components/active-context/quick-pick/engine";
-import { useOpenContextSwitcherWindow } from "@/features/overlays/openers/contextSwitcherWindow";
+import { useOpenContextSwitcherWindow } from "@/features/overlays/definitions/contextSwitcherWindow.overlay";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;

@@ -53,7 +53,7 @@ import { ScribeLiveScreen } from "./ScribeLiveScreen";
 import { AssistantAgentBar } from "./AssistantAgentBar";
 import { WorkingDocumentHeader } from "./WorkingDocumentHeader";
 import { VoicePlaybackButton } from "./VoicePlaybackButton";
-import { useOpenDictionarySelectorWindow } from "@/features/overlays/openers/dictionarySelectorWindow";
+import { useOpenDictionarySelectorWindow } from "@/features/overlays/definitions/dictionarySelectorWindow.overlay";
 import { useStudioAssistant } from "../../hooks/useStudioAssistant";
 import { addClientTool } from "@ai-matrx/chat/agents/redux/execution-system/instance-client-tools/instance-client-tools.slice";
 import { SCRIBE_TOOL_NAMES } from "@ai-matrx/chat/agents/scribe-tools/tools/names";

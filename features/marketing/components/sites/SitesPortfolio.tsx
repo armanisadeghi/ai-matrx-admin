@@ -38,7 +38,7 @@ import {
 import type { MarketingSite, SiteListRow } from "@/features/marketing/types";
 import { MarketingWorkspaceNav } from "@/features/marketing/components/shared/MarketingWorkspaceNav";
 import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
-import { useOpenSiteQuickViewWindow } from "@/features/overlays/openers/siteQuickViewWindow";
+import { useOpenSiteQuickViewWindow } from "@/features/overlays/definitions/siteQuickViewWindow.overlay";
 import { createMarketingScope } from "@/features/surfaces/manifests/marketing.manifest";
 import type { SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DrillDeck } from "@/features/scopes/components/active-context/drill-deck/DrillDeck";
 import { DrillDeckPopover } from "@/features/scopes/components/active-context/drill-deck/DrillDeckPopover";
 import { useSelectionEngine } from "@/features/scopes/components/active-context/quick-pick/engine";
-import { useOpenDrillDeckContextWindow } from "@/features/overlays/openers/drillDeckContextWindow";
+import { useOpenDrillDeckContextWindow } from "@/features/overlays/definitions/drillDeckContextWindow.overlay";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;

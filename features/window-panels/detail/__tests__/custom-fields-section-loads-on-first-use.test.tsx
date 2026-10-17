@@ -21,7 +21,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { createCanvasStore } from "@ai-matrx/canvas";
 import { CanvasProvider } from "@ai-matrx/canvas/react";
 import { useDetailHost } from "@ai-matrx/detail/react";
-import overlays from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlays } from "@ai-matrx/summon";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

@@ -50,7 +50,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   closeWorkflowRunWindowAction,
   openWorkflowRunWindowAction,
-} from "@/features/overlays/openers/workflowRunWindow";
+} from "@/features/overlays/definitions/workflowRunWindow.overlay";
 
 import { selectRunStatus } from "../redux/workflow-runs.selectors";
 import { runIsOver } from "../types";

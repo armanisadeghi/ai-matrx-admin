@@ -56,13 +56,13 @@ import { cn, ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { AI_WATCH_PAGE_INSTANCE } from "@/features/overlays/openers/aiWatchWindow";
+import { AI_WATCH_PAGE_INSTANCE } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import { autoSelection, buildRail, callKindTitle, focusKey, railGroupHeading, UNRECORDED_GROUP } from "@/features/ai-watch/watch-rail";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { loadRunValues } from "@/features/workflow-runtime/transport/run-values";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
-import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
+import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 import {
   chatTurns,
   fetchAgentVersion,

@@ -26,7 +26,7 @@ import {
   selectOrgPositions,
   selectOrgPositionsStatus,
 } from "@/features/agents/redux/orchestras/selectors";
-import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { selectIsOverlayOpen } from "@ai-matrx/summon";
 import { onMandateCacheInvalidated } from "@ai-matrx/chat/mandates/service";
 import { useEnsureAgentsLoaded } from "@/features/agents/orchestras/hooks/useEnsureAgentsLoaded";
 import { buildAgentOrgForest, type OrchestraShape } from "./buildAgentOrgForest";

@@ -17,7 +17,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   useOpenLiveRunWindow,
   type LiveRunWindowHandle,
-} from "@/features/overlays/openers/liveRunWindow";
+} from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { isJsonObject, type JsonObject } from "@/types/json";
 
 import { aiVisibilityEvidenceKey, listAiVisibilityEvidence } from "./data";

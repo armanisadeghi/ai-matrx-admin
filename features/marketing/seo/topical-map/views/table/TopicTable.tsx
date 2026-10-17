@@ -41,7 +41,7 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { MatrxDataTableHost } from "@/components/official/MatrxDataTableHost";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
-import { useOpenTopicPanel } from "@/features/overlays/openers/topicalMapTopicPanel";
+import { useOpenTopicPanel } from "@/features/overlays/definitions/topicalMapTopicPanel.overlay";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";

@@ -46,6 +46,7 @@
 // handed to the package (`store`), which keeps its `chatHost` slice synced.
 
 import { thisMachineLocalModels } from "@/features/ai-models/local/this-machine-local-models";
+import { overlaysRawActions } from "@ai-matrx/summon";
 import type { ReactNode } from "react";
 import { ChatProvider } from "@ai-matrx/chat/host/react";
 import { useNextNavigation } from "@ai-matrx/chat/next/navigation";
@@ -93,59 +94,51 @@ import { SettingDoor } from "@/features/settings/doors/SettingDoor";
 import { VOICE_SETTING_DOORS } from "@/features/settings/tabs/voices/voiceSettingDoors";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { appChatServerApi } from "@/lib/api/chat-server-api";
-import {
-  closeOverlay,
-  openOverlay,
-  selectIsOverlayOpen,
-} from "@/lib/redux/slices/overlaySlice";
-import {
-  focusWindow,
-  restoreWindow,
-  selectAllWindows,
-} from "@/lib/redux/slices/windowManagerSlice";
-import type { OverlayId } from "@/features/overlays/catalogue";
+import { closeOverlay, openOverlay, selectIsOverlayOpen } from "@ai-matrx/summon";
+import { focusWindow, restoreWindow, selectAllWindows } from "@ai-matrx/summon";
+import type { OverlayId } from "@ai-matrx/summon";
 import { requireOrganizationForChat } from "@/lib/organization/chat-org-port";
 import { toast, recordToast } from "@/lib/toast";
 import { createAppChatDiagnostics } from "@/lib/diagnostics/chat-diagnostics-port";
 import { getAgentCatalog } from "@/lib/agents/catalog";
-import { useOpenAgentAdminFindUsagesWindow } from "@/features/overlays/openers/agentAdminFindUsagesWindow";
-import { useOpenAgentShortcutQuickCreateWindow } from "@/features/overlays/openers/agentAdminShortcutWindow";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
-import { useOpenAgentConvertSystemWindow } from "@/features/overlays/openers/agentConvertSystemWindow";
-import { useOpenAgentCreateAppWindow } from "@/features/overlays/openers/agentCreateAppWindow";
-import { useOpenAgentDataStorageWindow } from "@/features/overlays/openers/agentDataStorageWindow";
-import { useOpenAgentFindUsagesWindow } from "@/features/overlays/openers/agentFindUsagesWindow";
-import { useOpenAgentImportWindow } from "@/features/overlays/openers/agentImportWindow";
-import { useOpenAgentInterfaceVariationsWindow } from "@/features/overlays/openers/agentInterfaceVariationsWindow";
-import { useOpenAgentMemoryWindow } from "@/features/overlays/openers/agentMemoryWindow";
-import { useOpenAgentOptimizerWindow } from "@/features/overlays/openers/agentOptimizerWindow";
-import { useOpenAgentRunHistoryWindow } from "@/features/overlays/openers/agentRunHistoryWindow";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
-import { useOpenAgentSettingsWindow } from "@/features/overlays/openers/agentSettingsWindow";
-import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
-import { useOpenChatDebugWindow } from "@/features/overlays/openers/chatDebugWindow";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
-import { useOpenLiveIntegrationsWindow } from "@/features/overlays/openers/liveIntegrationsWindow";
-import { useOpenGmailComposeWindow } from "@/features/overlays/openers/gmailComposeWindow";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
-import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
+import { useOpenAgentAdminFindUsagesWindow } from "@/features/overlays/definitions/agentAdminFindUsagesWindow.overlay";
+import { useOpenAgentShortcutQuickCreateWindow } from "@/features/overlays/definitions/agentAdminShortcutWindow.overlay";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
+import { useOpenAgentConvertSystemWindow } from "@/features/overlays/definitions/agentConvertSystemWindow.overlay";
+import { useOpenAgentCreateAppWindow } from "@/features/overlays/definitions/agentCreateAppWindow.overlay";
+import { useOpenAgentDataStorageWindow } from "@/features/overlays/definitions/agentDataStorageWindow.overlay";
+import { useOpenAgentFindUsagesWindow } from "@/features/overlays/definitions/agentFindUsagesWindow.overlay";
+import { useOpenAgentImportWindow } from "@/features/overlays/definitions/agentImportWindow.overlay";
+import { useOpenAgentInterfaceVariationsWindow } from "@/features/overlays/definitions/agentInterfaceVariationsWindow.overlay";
+import { useOpenAgentMemoryWindow } from "@/features/overlays/definitions/agentMemoryWindow.overlay";
+import { useOpenAgentOptimizerWindow } from "@/features/overlays/definitions/agentOptimizerWindow.overlay";
+import { useOpenAgentRunHistoryWindow } from "@/features/overlays/definitions/agentRunHistoryWindow.overlay";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
+import { useOpenAgentSettingsWindow } from "@/features/overlays/definitions/agentSettingsWindow.overlay";
+import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
+import { useOpenChatDebugWindow } from "@/features/overlays/definitions/chatDebugWindow.overlay";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
+import { useOpenLiveIntegrationsWindow } from "@/features/overlays/definitions/liveIntegrationsWindow.overlay";
+import { useOpenGmailComposeWindow } from "@/features/overlays/definitions/gmailComposeWindow.overlay";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
-import { useOpenFullScreenMarkdownEditorBridge } from "@/features/overlays/openers/fullScreenEditor";
-import { openImageViewer } from "@/features/overlays/openers/imageViewer";
-import { useOpenShortcutEditorWindow } from "@/features/overlays/openers/shortcutEditorWindow";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
-import { useOpenNotesWindow } from "@/features/overlays/openers/notesWindow";
-import { useOpenPromptPreviewWindow } from "@/features/overlays/openers/promptPreviewWindow";
-import { useOpenRunControlsWindow } from "@/features/overlays/openers/runControlsWindow";
-import { useOpenSaveTemplateDialog } from "@/features/overlays/openers/saveTemplateDialog";
-import { useOpenScraperWindow } from "@/features/overlays/openers/scraperWindow";
-import { useOpenPickListManagerWindow } from "@/features/overlays/openers/pickListManagerWindow";
-import { useOpenSurfaceContextInspector } from "@/features/overlays/openers/surfaceContextInspector";
-import { useOpenSurfaceContextWindow } from "@/features/overlays/openers/surfaceContextWindow";
-import { useOpenSystemInstructionWindow } from "@/features/overlays/openers/systemInstructionWindow";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
-import { useOpenTopicalMapWindow } from "@/features/overlays/openers/topicalMapWindow";
-import { useOpenWorkingDocumentWindow } from "@/features/overlays/openers/workingDocumentWindow";
+import { useOpenFullScreenMarkdownEditorBridge } from "@/features/overlays/definitions/fullScreenEditor.overlay";
+import { openImageViewer } from "@/features/overlays/definitions/imageViewer.overlay";
+import { useOpenShortcutEditorWindow } from "@/features/overlays/definitions/shortcutEditorWindow.overlay";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
+import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
+import { useOpenPromptPreviewWindow } from "@/features/overlays/definitions/promptPreviewWindow.overlay";
+import { useOpenRunControlsWindow } from "@/features/overlays/definitions/runControlsWindow.overlay";
+import { useOpenSaveTemplateDialog } from "@/features/overlays/definitions/saveTemplateDialog.overlay";
+import { useOpenScraperWindow } from "@/features/overlays/definitions/scraperWindow.overlay";
+import { useOpenPickListManagerWindow } from "@/features/overlays/definitions/pickListManagerWindow.overlay";
+import { useOpenSurfaceContextInspector } from "@/features/overlays/definitions/surfaceContextInspector.overlay";
+import { useOpenSurfaceContextWindow } from "@/features/overlays/definitions/surfaceContextWindow.overlay";
+import { useOpenSystemInstructionWindow } from "@/features/overlays/definitions/systemInstructionWindow.overlay";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
+import { useOpenTopicalMapWindow } from "@/features/overlays/definitions/topicalMapWindow.overlay";
+import { useOpenWorkingDocumentWindow } from "@/features/overlays/definitions/workingDocumentWindow.overlay";
 import { submitFeedback } from "@/actions/feedback.actions";
 import PageHeaderPortal from "@/features/shell/components/header/PageHeaderPortal";
 import PageHeaderRightPortal from "@/features/shell/components/header/PageHeaderRightPortal";
@@ -368,7 +361,7 @@ function reduxWindows(store: AppStore, canvas: CanvasController | null): ChatWin
         return;
       }
       store.dispatch(
-        openOverlay({ overlayId: chatWindowOverlay(id), instanceId, data }),
+        overlaysRawActions.openOverlay({ overlayId: chatWindowOverlay(id), instanceId, data: data as Readonly<Record<string, unknown>> | null }),
       );
     },
     close(id, instanceId) {

@@ -49,7 +49,7 @@ import {
   NoteEditorCore,
   type EditorMode,
 } from "@/features/notes/components/NoteEditorCore";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { ScopeContextTargetPicker } from "@/features/scopes/components/quick-assign/ScopeContextTargetPicker";
 import { scopeHref } from "@/features/scopes/lib/scopeRoutes";
 import { useSetContextValue } from "./useSetContextValue";

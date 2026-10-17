@@ -31,7 +31,7 @@ import {
   useSavedKeywordResearch,
 } from "../useSavedKeywordResearch";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
-import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
+import { useFloatingLiveRun } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import SavedResearchFeed from "./SavedResearchFeed";
 import { KeywordInput } from "@/features/marketing/seo/keyword/KeywordInput";

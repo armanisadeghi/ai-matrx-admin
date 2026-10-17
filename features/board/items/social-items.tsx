@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { PostTranscriptBlock } from "@/components/mardown-display/blocks/social-kinds/social-kind-blocks";
-import { useOpenSocialPost } from "@/features/overlays/openers/socialPostWindow";
+import { useOpenSocialPost } from "@/features/overlays/definitions/socialPostWindow.overlay";
 import { useMarketingBrandOptional } from "@/features/marketing/lib/brand-context";
 import {
   useInvalidateSocial,

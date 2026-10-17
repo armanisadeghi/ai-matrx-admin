@@ -8,8 +8,8 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { useOverlaySurfaceRenderAck } from "@/features/window-panels/diagnostics/useOverlaySurfaceRenderAck";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { AlertCircle, BookOpen } from "lucide-react";
 import FlashcardItem from "@/components/mardown-display/blocks/flashcards/FlashcardItem";
@@ -35,7 +35,7 @@ import {
   buildFlashcardMenuSection,
   flashcardEntityRef,
 } from "@/features/flashcards/components/flashcard-menu";
-import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
+import { useOpenFlashcardItemWindow } from "@/features/overlays/definitions/flashcardItemWindow.overlay";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export interface FlashcardStudyWindowProps {

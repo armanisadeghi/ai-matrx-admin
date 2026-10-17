@@ -12,7 +12,7 @@ import { Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Button } from "@/components/ui/button";
 import { extractErrorMessage } from "@/utils/errors";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ShortcutEditorNext } from "@/features/agent-shortcuts/components/next/ShortcutEditorNext";
 import {
   fetchFullAgent,

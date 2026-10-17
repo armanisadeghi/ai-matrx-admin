@@ -54,10 +54,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectOverlayData } from "@/lib/redux/slices/overlaySlice";
+import { selectOverlayData } from "@ai-matrx/summon";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useGlobalRecordingOptional } from "@/providers/GlobalRecordingProvider";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { MediaDevicesPanel } from "@/features/audio/components/devices/MediaDevicesPanel";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CameraControlTab } from "@/features/media-capture/components/CameraControlTab";

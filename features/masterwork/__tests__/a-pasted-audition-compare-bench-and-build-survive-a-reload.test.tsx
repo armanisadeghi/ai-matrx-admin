@@ -144,7 +144,7 @@ jest.mock("../build/useBuildRun", () => ({
   useBuildRun: () => mockBuildRun,
 }));
 
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({
     children,
     footer,

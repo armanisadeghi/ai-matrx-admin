@@ -15,7 +15,7 @@
 
 import React from "react";
 import { FindReplaceModal } from "@/components/modals/FindReplaceModal";
-import { getFindReplaceCallbackGroup } from "@/features/overlays/callbacks/findReplace";
+import { getFindReplaceCallbackGroup } from "@/features/overlays/definitions/callbacks/findReplace";
 
 export interface FindReplaceOverlayProps {
   isOpen: boolean;

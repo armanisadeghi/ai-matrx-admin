@@ -11,7 +11,7 @@ import { GitBranch, MessageSquare } from "lucide-react";
 import { MatrxDataTable, useTableUrlState } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { useOpenAgentFromChatWindow } from "@/features/overlays/openers/agentFromChatWindow";
+import { useOpenAgentFromChatWindow } from "@/features/overlays/definitions/agentFromChatWindow.overlay";
 import { formatRelativeTime } from "@/features/cx-dashboard/utils/format";
 import { buildCxSourcePageExportConfig } from "@/features/cx-dashboard/utils/export";
 import { useCxRowMenu, type CxMenuTarget } from "@/features/cx-dashboard/components/cx-row-actions";

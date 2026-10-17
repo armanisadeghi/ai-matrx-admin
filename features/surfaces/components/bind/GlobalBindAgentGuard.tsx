@@ -30,7 +30,7 @@ import {
   fetchLinkedCounterpart,
 } from "@/features/agents/redux/builder-tier.thunks";
 import type { LinkedAgentRef } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { useOpenAgentConvertSystemWindow } from "@/features/overlays/openers/agentConvertSystemWindow";
+import { useOpenAgentConvertSystemWindow } from "@/features/overlays/definitions/agentConvertSystemWindow.overlay";
 import { createClient } from "@/utils/supabase/client";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import {

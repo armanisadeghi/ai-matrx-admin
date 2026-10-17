@@ -30,7 +30,7 @@ import {
   TaskHeaderActions,
   TaskMetadataFooter,
 } from "@/features/tasks/components/editor/TaskWindowChrome";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   createTasksExtraSections,

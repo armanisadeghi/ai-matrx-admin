@@ -23,7 +23,7 @@ import type { CustomDataBinding } from "@ai-matrx/chat/agents/types/agent-defini
 import { Button } from "@/components/ui/button";
 import { InfoHint } from "@/components/official/InfoHint";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { CustomDataBindingPreview } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingPreview";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

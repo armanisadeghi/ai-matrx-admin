@@ -1,0 +1,83 @@
+"use client";
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "surfaceContextWindow" as const;
+
+export interface OpenSurfaceContextWindowOptions {
+  surfaceName: string;
+  isEditable?: boolean;
+  /** Which tab "This page" lands on. Default "values". */
+  initialSection?: "values" | "actions" | "agents";
+}
+
+export function useOpenSurfaceContextWindow() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (options: OpenSurfaceContextWindowOptions) => {
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          data: {
+            surfaceName: options.surfaceName,
+            isEditable: options.isEditable === true,
+            initialSection: options.initialSection ?? "values",
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+export function SurfaceContextWindowController(
+  props: OpenSurfaceContextWindowOptions,
+): null {
+  const open = useOpenSurfaceContextWindow();
+  useEffect(() => {
+    const handle = open(props);
+    return () => {
+      handle.close();
+    };
+  }, [open, props.initialSection, props.isEditable, props.surfaceName]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type SurfaceContextWindowDefinitionData = OpenSurfaceContextWindowOptions;
+
+export const surfaceContextWindowOverlay = defineOverlay<SurfaceContextWindowDefinitionData>()({
+  id: "surfaceContextWindow",
+  label: "This page",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  window: {
+    restoreDefaults: {
+          surfaceName: "",
+          isEditable: false,
+          initialSection: "values",
+        },
+    windowId: "surface-context-window",
+    mobile: "drawer",
+    mobileSidebarAs: "drawer",
+    ephemeral: true,
+  },
+  render: () => import("./surfaceContextWindow.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    surfaceContextWindow: OverlayWire<SurfaceContextWindowDefinitionData>;
+  }
+}

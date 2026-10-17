@@ -2,11 +2,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  openOverlay,
-  closeOverlay,
-  toggleOverlay,
-} from "@/lib/redux/slices/overlaySlice";
+import { openOverlay, closeOverlay, toggleOverlay } from "@ai-matrx/summon";
 
 export const ERROR_INSPECTOR_OVERLAY_ID = "errorInspectorWindow" as const;
 

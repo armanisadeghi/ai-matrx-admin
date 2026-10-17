@@ -101,7 +101,7 @@ jest.mock("@/features/rag/components/library/DocumentSearch", () => ({
 jest.mock("@/features/access-gate/components/AccessGate", () => ({
   AccessGate: () => <div>access-gate</div>,
 }));
-jest.mock("@/features/overlays/openers/diffViewerWindow", () => ({
+jest.mock("@/features/overlays/definitions/diffViewerWindow.overlay", () => ({
   useOpenDiffViewerWindow: () => jest.fn(),
 }));
 jest.mock("@/features/rag/api/fork", () => ({

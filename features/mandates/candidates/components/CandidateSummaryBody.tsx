@@ -19,7 +19,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { BackendApiError } from "@ai-matrx/api";
 import { formatDurationMs } from "@ai-matrx/kit/format";
-import { useOpenMandateWindowNext } from "@/features/overlays/openers/mandateWindowNext";
+import { useOpenMandateWindowNext } from "@/features/overlays/definitions/mandateWindowNext.overlay";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 

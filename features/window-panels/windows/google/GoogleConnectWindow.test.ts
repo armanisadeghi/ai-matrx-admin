@@ -3,7 +3,7 @@ import { closeGoogleWorkspaceConnect } from "@/features/google-workspace/GoogleW
 import {
   createGoogleConnectCallbackGroup,
   emitGoogleConnectEvent,
-} from "@/features/overlays/callbacks/googleConnectWindow";
+} from "@/features/overlays/definitions/callbacks/googleConnectWindow";
 
 describe("GoogleConnectWindow authorization readiness", () => {
   it("blocks every authorization action until Google Identity Services loads", () => {

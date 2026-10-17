@@ -28,7 +28,7 @@ import {
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { KIND_CREATOR_MANDATE_KEY } from "../../studio/constants";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { composeKindComponentFixIntent } from "../../studio/kind-agent-intents";

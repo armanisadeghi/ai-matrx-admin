@@ -22,26 +22,26 @@ import { createRoot } from "react-dom/client";
 const openSiteQuickView = jest.fn();
 const openDetail = jest.fn();
 
-jest.mock("@/features/overlays/openers/siteQuickViewWindow", () => ({
+jest.mock("@/features/overlays/definitions/siteQuickViewWindow.overlay", () => ({
   useOpenSiteQuickViewWindow: () => openSiteQuickView,
 }));
 jest.mock("@ai-matrx/detail/react", () => ({
   ...jest.requireActual("@ai-matrx/detail/react"),
   useOpenDetail: () => openDetail,
 }));
-jest.mock("@/features/overlays/openers/agentRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/agentRunWindow.overlay", () => ({
   useOpenAgentRunWindow: () => jest.fn(),
 }));
-jest.mock("@/features/overlays/openers/notesWindow", () => ({
+jest.mock("@/features/overlays/definitions/notesWindow.overlay", () => ({
   useOpenNotesWindow: () => jest.fn(),
 }));
-jest.mock("@/features/overlays/openers/filePreviewWindow", () => ({
+jest.mock("@/features/overlays/definitions/filePreviewWindow.overlay", () => ({
   useOpenFilePreviewWindow: () => jest.fn(),
 }));
-jest.mock("@/features/overlays/openers/taskEditorWindow", () => ({
+jest.mock("@/features/overlays/definitions/taskEditorWindow.overlay", () => ({
   useOpenTaskEditorWindow: () => jest.fn(),
 }));
-jest.mock("@/features/overlays/openers/pickListManagerWindow", () => ({
+jest.mock("@/features/overlays/definitions/pickListManagerWindow.overlay", () => ({
   useOpenPickListManagerWindow: () => jest.fn(),
 }));
 

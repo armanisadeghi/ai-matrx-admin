@@ -23,7 +23,7 @@ import {
   pageEntityRef,
   buildPageMenuSection,
 } from "@/features/marketing/search-console/components/insights/insight-row-menu";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

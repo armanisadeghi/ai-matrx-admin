@@ -45,7 +45,7 @@ export function tableDensityFromKnob(value: unknown): TableDensity {
     : "normal";
 }
 
-const WindowPanel = dynamic(() => import("@/features/window-panels/WindowPanel").then((module) => module.WindowPanel), { ssr: false });
+const WindowPanel = dynamic(() => import("@ai-matrx/summon/window").then((module) => module.WindowPanel), { ssr: false });
 
 // The sole Next dynamic front door for package-owned row windows. Its callers
 // preserve the existing open-on-demand behavior without reintroducing a host implementation.

@@ -20,7 +20,7 @@
 
 import { useCallback } from "react";
 
-import { useOpenTopicalMapWindow } from "@/features/overlays/openers/topicalMapWindow";
+import { useOpenTopicalMapWindow } from "@/features/overlays/definitions/topicalMapWindow.overlay";
 
 export interface OpenProposalReviewOptions {
   mapId: string;

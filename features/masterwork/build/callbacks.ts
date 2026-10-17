@@ -6,7 +6,7 @@
  * cannot travel through Redux.
  */
 
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 
 export interface BuildBuiltEvent {
   type: "built";

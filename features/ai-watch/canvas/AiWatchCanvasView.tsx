@@ -2,7 +2,7 @@
 
 /** The body of the Watch AI canvas tab: the page's one Watch AI, without a window frame (rail above the call). */
 
-import { AI_WATCH_PAGE_INSTANCE } from "@/features/overlays/openers/aiWatchWindow";
+import { AI_WATCH_PAGE_INSTANCE } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import { useAiWatchPanel } from "../useAiWatchPanel";
 
 export default function AiWatchCanvasView() {

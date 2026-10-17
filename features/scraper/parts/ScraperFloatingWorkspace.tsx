@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { ProcessForRagButton } from "@/features/rag/components/ProcessForRagButton";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import {
   useScraperApi,
   type ScraperResult,
@@ -62,7 +62,7 @@ import {
 } from "@/features/scraper/utils/scraper-floating-helpers";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openImageViewer } from "@/features/overlays/openers/imageViewer";
+import { openImageViewer } from "@/features/overlays/definitions/imageViewer.overlay";
 import {
   isScrapeMode,
   isValidPageLimit,

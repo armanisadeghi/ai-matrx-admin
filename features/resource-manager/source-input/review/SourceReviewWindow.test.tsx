@@ -1,6 +1,6 @@
 const ack = jest.fn();
 const clear = jest.fn();
-jest.mock("@/features/window-panels/diagnostics/overlayRenderWatchdog", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   ackOverlaySurfaceRender: (id: string) => ack(id),
   clearOverlaySurfaceRender: (id: string) => clear(id),
 }));

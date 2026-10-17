@@ -1,7 +1,7 @@
 "use client";
 
 import { ActiveDrillDeck } from "@/features/scopes/components/active-context/drill-deck/ActiveDrillDeck";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface DrillDeckContextWindowProps {

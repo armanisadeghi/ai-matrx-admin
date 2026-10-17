@@ -36,11 +36,11 @@ jest.mock("@/features/marketing/google/hooks", () => ({
   }),
 }));
 
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => mockOpenGoogle,
 }));
 
-jest.mock("@/features/overlays/openers/storageSourcePicker", () => ({
+jest.mock("@/features/overlays/definitions/storageSourcePicker.overlay", () => ({
   useOpenStorageSourcePicker: () => mockOpenStorage,
 }));
 

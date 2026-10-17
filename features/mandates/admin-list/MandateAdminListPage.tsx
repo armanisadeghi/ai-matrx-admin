@@ -66,7 +66,7 @@ import {
 } from "@/features/mandates/admin/workflow-advance";
 import type { WorkflowImpactVerdict } from "@/features/mandates/admin/workflow-impact";
 import { recordToast, toast } from "@/lib/toast";
-import { useOpenImpactBatchWindow } from "@/features/overlays/openers/impactBatchWindow";
+import { useOpenImpactBatchWindow } from "@/features/overlays/definitions/impactBatchWindow.overlay";
 import { adminMandateListConfig, supportMandateListConfig } from "./listConfig";
 import { withCodeLocationColumn } from "@/features/mandates/code-location/CodeLocationCell";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";

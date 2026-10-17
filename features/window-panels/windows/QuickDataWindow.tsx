@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { QuickDataSheet } from "@/features/quick-actions/components/QuickDataSheet";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { QUICK_DATA_SURFACE_NAME } from "@/features/surfaces/manifests/quick-data.manifest";

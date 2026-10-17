@@ -1,0 +1,136 @@
+"use client";
+
+/**
+ * Openers for the two Google import windows (Google-native PLAN §4.5, §4.7).
+ *
+ * `useOpenGoogleContactsImport()` / `useOpenGoogleTasksImport()` — imperative
+ * hooks; each returns a handle with `close()`. Singletons: opening again
+ * retargets the one window instead of stacking a second copy.
+ */
+
+import { useCallback } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const CONTACTS_OVERLAY_ID = "googleContactsImportWindow" as const;
+const TASKS_OVERLAY_ID = "googleTasksImportWindow" as const;
+
+export interface GoogleImportWindowHandle {
+  close: () => void;
+}
+
+export type GoogleContactsImportInitialView = "contacts" | "directory";
+
+export interface GoogleContactsImportWindowLaunchData {
+  /** The organization the imported People are written into. Required by the
+   *  server: nothing chooses one for the caller. */
+  organizationId: string | null;
+  /** Opens with one contact preselected — the "Update from Google" door. */
+  initialExternalId?: string | null;
+  /** The existing reviewer tab to reveal first. */
+  initialView?: GoogleContactsImportInitialView;
+}
+
+export type OpenGoogleContactsImportOptions = GoogleContactsImportWindowLaunchData;
+
+export function readGoogleContactsImportLaunchData(
+  value: unknown,
+): GoogleContactsImportWindowLaunchData {
+  const data =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
+  return {
+    organizationId:
+      typeof data.organizationId === "string" ? data.organizationId : null,
+    initialExternalId:
+      typeof data.initialExternalId === "string" ? data.initialExternalId : null,
+    initialView: data.initialView === "directory" ? "directory" : "contacts",
+  };
+}
+
+export function useOpenGoogleContactsImport() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenGoogleContactsImportOptions): GoogleImportWindowHandle => {
+      dispatch(
+        openOverlay({
+          overlayId: CONTACTS_OVERLAY_ID,
+          data: {
+            organizationId: opts.organizationId ?? null,
+            initialExternalId: opts.initialExternalId ?? null,
+            initialView: opts.initialView ?? "contacts",
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: CONTACTS_OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+export interface OpenGoogleTasksImportOptions {
+  organizationId: string | null;
+  /** The AI Matrx project imported tasks belong to, when the caller has one. */
+  projectId?: string | null;
+}
+
+export function useOpenGoogleTasksImport() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenGoogleTasksImportOptions): GoogleImportWindowHandle => {
+      dispatch(
+        openOverlay({
+          overlayId: TASKS_OVERLAY_ID,
+          data: {
+            organizationId: opts.organizationId ?? null,
+            projectId: opts.projectId ?? null,
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: TASKS_OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type GoogleContactsImportWindowDefinitionData = OpenGoogleContactsImportOptions;
+
+export const googleContactsImportWindowOverlay = defineOverlay<GoogleContactsImportWindowDefinitionData>()({
+  id: "googleContactsImportWindow",
+  label: "Import from Google Contacts",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  window: {
+    restoreDefaults: {
+          organizationId: null,
+          initialExternalId: null,
+          initialView: "contacts",
+        },
+    windowId: "google-contacts-import-window",
+    mobile: "drawer",
+    ephemeral: true,
+  },
+  link: {
+    key: "google_contacts_import",
+    hydrate: (ctx) => import("./googleContactsImportWindow.link").then((m) => m.hydrate(ctx)),
+  },
+  render: () => import("./googleContactsImportWindow.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    googleContactsImportWindow: OverlayWire<GoogleContactsImportWindowDefinitionData>;
+  }
+}

@@ -25,7 +25,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { asKindInstance } from "@ai-matrx/content-ir";
 
 import apiConfigReducer from "@/lib/redux/slices/apiConfigSlice";
-import overlayReducer from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlayReducer } from "@ai-matrx/summon";
 import { setStoreSingleton } from "@/lib/redux/store-singleton";
 
 import MatrxEnvelopeBlock from "@/features/matrx-envelope/MatrxEnvelopeBlock";

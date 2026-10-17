@@ -24,7 +24,7 @@ import {
   MediaShareAccessSummary,
   mediaShareNotifier,
 } from "@/features/files/blocks/BlockSharePopover";
-import { useOpenShareLinkDialog } from "@/features/overlays/openers/shareLinkDialog";
+import { useOpenShareLinkDialog } from "@/features/overlays/definitions/shareLinkDialog.overlay";
 
 function fileIdOf(context: MediaActionContext): string | null {
   return typeof context.ref === "string"

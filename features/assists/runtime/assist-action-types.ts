@@ -20,7 +20,7 @@ import type {
   HandToOwnBrowserOutcome,
   HandToOwnBrowserRequest,
 } from "@/lib/extension-bridge/handToOwnBrowser";
-import type { OpenAgentRunWindowOptions } from "@/features/overlays/openers/agentRunWindow";
+import type { OpenAgentRunWindowOptions } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import type { SourceFeature } from "@ai-matrx/agents/generated/source-attribution";
 import type { Assist } from "../types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";

@@ -48,7 +48,7 @@ import {
 } from "@ai-matrx/design-system/tap-target/buttons";
 import { PageJumperTapGroup } from "@/features/pdf/components/PageJumperTapGroup";
 import { downloadFile } from "@/features/files/api/files";
-import { useOpenShareModalWindow } from "@/features/overlays/openers/shareModalWindow";
+import { useOpenShareModalWindow } from "@/features/overlays/definitions/shareModalWindow.overlay";
 import { useDownloadBlob } from "@/features/pdf/hooks/useDownloadBlob";
 import { PdfStudioDocTitle } from "./PdfStudioDocTitle";
 import type { StudioDocSummary } from "./hooks/usePdfStudioDocs";

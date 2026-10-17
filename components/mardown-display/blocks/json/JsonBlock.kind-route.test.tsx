@@ -17,7 +17,7 @@ jest.mock("next/dynamic", () => ({
       return React.createElement("div", { "data-testid": "dynamic-stub" });
     },
 }));
-jest.mock("@/features/overlays/openers/convertToShapeWindow", () => ({
+jest.mock("@/features/overlays/definitions/convertToShapeWindow.overlay", () => ({
   useOpenConvertToShapeWindow: () => jest.fn(),
 }));
 jest.mock("@/components/ui/tooltip", () => ({

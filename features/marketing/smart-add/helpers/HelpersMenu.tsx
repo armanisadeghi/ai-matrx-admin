@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useOpenSmartAddHelper } from "@/features/overlays/openers/smartAddHelperWindow";
+import { useOpenSmartAddHelper } from "@/features/overlays/definitions/smartAddHelperWindow.overlay";
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { HELPER_LABELS, type HelperMethod } from "./types";
 

@@ -20,9 +20,9 @@ import {
 } from "@/features/admin/constants/admin-navigation";
 import { ADMIN_APP_URL } from "@/features/shell/constants/nav-data";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { toggleOverlay } from "@/lib/redux/slices/overlaySlice";
+import { toggleOverlay } from "@ai-matrx/summon";
 import { ERROR_INSPECTOR_OVERLAY_ID } from "@/features/admin/error-inspector/useOpenErrorInspector";
-import { BUILDER_PANEL_OVERLAY_ID } from "@/features/overlays/openers/builderPanelWindow";
+import { BUILDER_PANEL_OVERLAY_ID } from "@/features/overlays/definitions/builderPanelWindow.overlay";
 import { closeShellMobileMenu } from "@/features/shell/utils/closeShellMobileMenu";
 import { usePathname } from "next/navigation";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";

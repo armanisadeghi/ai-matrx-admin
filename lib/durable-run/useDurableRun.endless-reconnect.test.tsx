@@ -54,7 +54,7 @@ jest.mock(
   () => ({ removeRequest: jest.fn() }),
 );
 
-jest.mock("@/features/overlays/openers/liveRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/liveRunWindow.overlay", () => ({
   useFloatingLiveRun: jest.fn(),
 }));
 

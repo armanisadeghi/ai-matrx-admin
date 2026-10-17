@@ -1,0 +1,97 @@
+"use client";
+
+/**
+ * Opener for the `agentRunHistoryWindow` overlay.
+ *
+ * - `useOpenAgentRunHistoryWindow()` — imperative hook. Call to open with typed options;
+ *   returns a handle with a `close()` method.
+ * - `<AgentRunHistoryWindowController />` — declarative wrapper. Mount to open,
+ *   unmount to close. Equivalent ergonomics to rendering a normal component.
+ *
+ * Hand-maintained opener — see features/overlays/FEATURE.md.
+ */
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "agentRunHistoryWindow" as const;
+
+export interface OpenAgentRunHistoryWindowOptions {
+  agentId?: string | null;
+  initialSelectedConversationId?: string | null;
+  /**
+   * What the history is OF, in the person's words — the window reads
+   * "Run History — <subject>". An Applet passes its own name; without it
+   * the window names the agent (an app's agent is often unnamed: "— Agent").
+   */
+  subject?: string | null;
+}
+
+export interface AgentRunHistoryWindowHandle {
+  close: () => void;
+}
+
+export function useOpenAgentRunHistoryWindow() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenAgentRunHistoryWindowOptions = {}): AgentRunHistoryWindowHandle => {
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          data: {
+            agentId: opts.agentId,
+            initialSelectedConversationId: opts.initialSelectedConversationId,
+            subject: opts.subject ?? null,
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+/**
+ * Declarative form. Renders nothing visible; opens the overlay on mount,
+ * closes it on unmount. Use this when a caller wants to express overlay
+ * state declaratively (the way they'd render a normal component).
+ */
+export function AgentRunHistoryWindowController(props: OpenAgentRunHistoryWindowOptions): null {
+  const open = useOpenAgentRunHistoryWindow();
+  useEffect(() => {
+    const handle = open(props);
+    return () => handle.close();
+  }, [open, props.agentId, props.initialSelectedConversationId, props.subject]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type AgentRunHistoryWindowDefinitionData = OpenAgentRunHistoryWindowOptions;
+
+export const agentRunHistoryWindowOverlay = defineOverlay<AgentRunHistoryWindowDefinitionData>()({
+  id: "agentRunHistoryWindow",
+  label: "Agent Run History Window",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  window: {
+    restoreDefaults: { agentId: null, initialSelectedConversationId: null },
+    windowId: "agent-run-history-window",
+    mobile: "fullscreen",
+  },
+  render: () => import("./agentRunHistoryWindow.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    agentRunHistoryWindow: OverlayWire<AgentRunHistoryWindowDefinitionData>;
+  }
+}

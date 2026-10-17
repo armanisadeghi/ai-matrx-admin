@@ -18,7 +18,7 @@ import { CaptureThumb } from "@/features/marketing/components/shared/CaptureThum
 import { CaptureAttachments } from "@/features/marketing/components/pages/CaptureAttachments";
 import { CaptureObservations } from "@/features/marketing/components/pages/CaptureObservations";
 import { usePageVisualFeedback } from "@/features/marketing/components/pages/PageVisualFeedback";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import {
   useDeleteScreenshot,
   usePageScreenshots,

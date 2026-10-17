@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { QuickMessageTemplateSaveCore } from "@/features/message-templates/quick-save/QuickMessageTemplateSaveCore";
 import type { MessageRole } from "@/features/message-templates/types/message-templates-db";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

@@ -32,7 +32,7 @@ import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
-import { useOpenTopicPanel } from "@/features/overlays/openers/topicalMapTopicPanel";
+import { useOpenTopicPanel } from "@/features/overlays/definitions/topicalMapTopicPanel.overlay";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

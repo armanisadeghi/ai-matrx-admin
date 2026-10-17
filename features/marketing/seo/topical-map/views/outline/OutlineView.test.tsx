@@ -108,7 +108,7 @@ jest.mock("@/components/official/entity-ref/EntityRef", () => ({
   EntityRef: ({ name }: { name?: string | null }) => <span data-entity-ref>{name}</span>,
 }));
 const openTopicPanel = jest.fn();
-jest.mock("@/features/overlays/openers/topicalMapTopicPanel", () => ({
+jest.mock("@/features/overlays/definitions/topicalMapTopicPanel.overlay", () => ({
   __esModule: true,
   useOpenTopicPanel: () => openTopicPanel,
 }));

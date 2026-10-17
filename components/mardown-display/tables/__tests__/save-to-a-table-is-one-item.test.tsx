@@ -16,7 +16,7 @@ import { createRoot, type Root } from "react-dom/client";
 jest.mock("@ai-matrx/rich-content/display/tables/SendToWorkbookButton", () => ({ useSendToWorkbook: () => ({ pushing: false, send: jest.fn(), dialog: null }) }));
 jest.mock("@ai-matrx/rich-content/display/tables/SendToGoogleSheetButton", () => ({ useSendToGoogleSheet: () => ({ pushing: false, send: jest.fn() }) }));
 const opened: Array<Record<string, unknown>> = [];
-jest.mock("@/features/overlays/openers/saveToTable", () => ({
+jest.mock("@/features/overlays/definitions/saveToTable.overlay", () => ({
   useOpenSaveToTable: () => (options: Record<string, unknown>) => {
     opened.push(options);
     return { instanceId: "t", close: () => undefined };

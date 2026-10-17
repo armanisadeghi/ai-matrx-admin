@@ -13,7 +13,7 @@ import { Cloud } from "lucide-react";
 import { Button, Select } from "@ai-matrx/design-system/controls";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay, selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay, selectIsOverlayOpen } from "@ai-matrx/summon";
 import type { CaptureHandoff } from "@/features/capture-ladder/types";
 
 import type { GuidedCaptureTarget } from "./guidedApi";

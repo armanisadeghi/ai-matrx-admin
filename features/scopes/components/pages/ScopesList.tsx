@@ -77,7 +77,7 @@ import {
   contextItemsHref,
   contextItemHref,
 } from "@/features/scopes/lib/scopeRoutes";
-import { useOpenContextItemsWindow } from "@/features/overlays/openers/contextItemsWindow";
+import { useOpenContextItemsWindow } from "@/features/overlays/definitions/contextItemsWindow.overlay";
 import { useScopeSuggestions } from "@/features/kg-suggestions/hooks/useScopeSuggestions";
 import { KgSuggestionHint } from "@/features/kg-suggestions/components/KgSuggestionHint";
 import { AssociationCardGrid } from "@ai-matrx/associations/react";

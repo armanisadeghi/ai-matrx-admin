@@ -25,7 +25,7 @@
 import AppLink from "@/components/navigation/AppLink";
 import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, BookOpenCheck, Library, ScanSearch } from "lucide-react";
-import { useOpenSiteDiscoveryWindow } from "@/features/overlays/openers/siteDiscoveryWindow";
+import { useOpenSiteDiscoveryWindow } from "@/features/overlays/definitions/siteDiscoveryWindow.overlay";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
 import { Button } from "@/components/ui/button";

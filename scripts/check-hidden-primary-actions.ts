@@ -583,7 +583,7 @@ export function CleanupPad() {
 `;
 
 /** The Transcription Cleanup window, reduced: "Clean Up" in WindowPanel's sidebar only. */
-const cleanupWindow = (bodyExtra: string) => `import { WindowPanel } from "@/features/window-panels/WindowPanel";
+const cleanupWindow = (bodyExtra: string) => `import { WindowPanel } from "@ai-matrx/summon/window";
 export function TranscriptionCleanup() {
   const handleProcess = () => {};
   const sidebar = (

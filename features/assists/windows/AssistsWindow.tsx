@@ -11,7 +11,7 @@
  * Rendered only behind the lazy overlay boundary (`OverlayController`).
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AssistsManager } from "../manager/AssistsManager";
 
 export function AssistsWindow({ onClose }: { onClose?: () => void }) {

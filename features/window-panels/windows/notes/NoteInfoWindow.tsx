@@ -21,7 +21,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NoteInfoPanel } from "@/features/notes/components/NoteInfoPanel";
 import { HomePickerDialog } from "@/features/notes/homes/HomePicker";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -38,7 +38,7 @@ import {
   selectNoteContent,
 } from "@/features/notes/redux/selectors";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
-import { useOpenNotesWindow } from "@/features/overlays/openers/notesWindow";
+import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
 
 export interface NoteInfoWindowProps {
   isOpen: boolean;

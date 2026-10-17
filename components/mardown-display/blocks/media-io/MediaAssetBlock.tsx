@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { formatDurationMs, formatFileSize } from "@ai-matrx/kit/format";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import YouTubeEmbed from "@/features/files/blocks/youtube/YouTubeEmbed";
 import {
   readMediaAsset,

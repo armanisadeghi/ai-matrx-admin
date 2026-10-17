@@ -32,7 +32,7 @@ import {
 import { toast } from "@/lib/toast";
 import { downloadBlob } from "@/utils/file-operations/utils";
 import { fileSafe } from "@/features/meet/components/record/AttendancePanel";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 
 /**
  * The transcript as rows for THE one "Save to a table": one row per line — when it was said (a

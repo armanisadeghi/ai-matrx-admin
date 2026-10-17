@@ -8,7 +8,7 @@ import type {
 const openShareLinkDialog = jest.fn();
 
 jest.mock(
-  "@/features/overlays/openers/shareLinkDialog",
+  "@/features/overlays/definitions/shareLinkDialog.overlay",
   () => ({ useOpenShareLinkDialog: () => openShareLinkDialog }),
   { virtual: true },
 );

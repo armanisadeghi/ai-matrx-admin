@@ -17,7 +17,6 @@ import { useWarmup } from "@ai-matrx/agents/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import PersonTimeZoneCapture from "@/components/layout/PersonTimeZoneCapture";
 import VendorNameRuntimeGuard from "@/components/dev/VendorNameRuntimeGuard";
@@ -42,7 +41,7 @@ import {
   setEntitlementsLoading,
   clearEntitlements,
 } from "@/features/entitlements/state/entitlementsSlice";
-import { UrlPanelManager } from "@/features/window-panels/url-sync/UrlPanelManager";
+import { OverlayServices } from "@/features/overlays/host/OverlayServices";
 import { KindLeakSentinel } from "@/features/content-ir/surfaces/KindLeakSentinel";
 import { SurfaceRowGuard } from "@/features/surfaces/dev/SurfaceRowGuard";
 
@@ -127,7 +126,6 @@ export default function DeferredSingletonCore() {
 
   return (
     <>
-      <PersistentDOMConnector />
       {/* OverlayController + PersonPeekHost are NOT here: they are the overlay world
           (app/DeferredOverlayWorld.tsx), loaded by the wrapper on the first open. */}
       {/* G1: files any `__kind` drawn as raw text (never-raw law). */}
@@ -146,9 +144,7 @@ export default function DeferredSingletonCore() {
           on every other route a silent no-op — no window, no warning. Never
           re-scope it to one route: a deep link that works only where its
           author happened to test it is the same defect. */}
-      <Suspense fallback={null}>
-        <UrlPanelManager />
-      </Suspense>
+      <OverlayServices />
       <KgNewSuggestionNotifier />
       <AssistsDock />
       {/* Render-free. Reads `?cloudBrowserHandoff=` — the door a D-14 "your

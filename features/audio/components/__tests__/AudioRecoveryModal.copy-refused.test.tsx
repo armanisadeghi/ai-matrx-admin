@@ -30,7 +30,7 @@ jest.mock("@/lib/toast", () => ({
   },
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppDispatch: () => dispatch }));
-jest.mock("@/lib/redux/slices/overlaySlice", () => ({
+jest.mock("@ai-matrx/summon", () => ({
   openOverlay: (payload: unknown) => ({ type: "overlay/open", payload }),
 }));
 jest.mock("@ai-matrx/design-system", () => ({ ReadFailure: () => null }));

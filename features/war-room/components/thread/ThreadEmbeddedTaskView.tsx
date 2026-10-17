@@ -11,7 +11,7 @@ import TaskEditor from "@/features/tasks/components/TaskEditor";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
-import { useOpenTaskEditorWindow } from "@/features/overlays/openers/taskEditorWindow";
+import { useOpenTaskEditorWindow } from "@/features/overlays/definitions/taskEditorWindow.overlay";
 import { cn } from "@/lib/utils";
 import { ThreadDrillHeader, type DrillSegment } from "./ThreadDrillHeader";
 import { SubtaskRail } from "./SubtaskRail";

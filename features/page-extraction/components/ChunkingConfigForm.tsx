@@ -114,7 +114,7 @@ import type {
 } from "@/features/page-extraction/types";
 import type { ChunkingConfigDraft } from "@/features/page-extraction/redux/pageExtractionSlice";
 import { normalizeExtraInputs } from "@/features/page-extraction/utils/extra-inputs";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";

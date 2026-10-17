@@ -74,7 +74,7 @@ jest.mock("@ai-matrx/kit/media-query", () => ({
   ...jest.requireActual("@ai-matrx/kit/media-query"),
   useIsMobile: () => false,
 }));
-jest.mock("@/features/overlays/openers/tableViewerWindow", () => ({
+jest.mock("@/features/overlays/definitions/tableViewerWindow.overlay", () => ({
   useOpenTableViewerWindow: () => jest.fn(),
 }));
 jest.mock("@/features/canvas/hooks/useCanvas", () => ({

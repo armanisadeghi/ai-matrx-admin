@@ -28,8 +28,8 @@ import {
   AppWindow,
 } from "lucide-react";
 
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
-import { useOpenTopicalMapWindow } from "@/features/overlays/openers/topicalMapWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
+import { useOpenTopicalMapWindow } from "@/features/overlays/definitions/topicalMapWindow.overlay";
 import { cn } from "@/lib/utils";
 
 import { TopicalMapEmpty } from "../components/TopicalMapStates";

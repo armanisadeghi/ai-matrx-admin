@@ -31,7 +31,7 @@ jest.mock("@/features/marketing/google/hooks", () => ({
     isError: false,
   }),
 }));
-jest.mock("@/features/overlays/openers/connectorConsentDialog", () => ({
+jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({
   useOpenConnectorConsentDialog: () => openConsent,
 }));
 

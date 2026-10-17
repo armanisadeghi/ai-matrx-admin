@@ -25,7 +25,7 @@ import { DataRowWindow } from "@ai-matrx/design-system/data-table/data-row-windo
 import { ErrorBoundaryWithCapture } from "@/lib/error-boundary/ErrorBoundaryWithCapture";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { revealWindow } from "@/lib/redux/slices/windowManagerSlice";
+import { revealWindow } from "@ai-matrx/summon";
 import { cn } from "@/lib/utils";
 import { viewerTimeZone } from "../clock/stampedTime";
 

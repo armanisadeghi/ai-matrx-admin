@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import {
   useCreateOrganization,
   useCreateProject,
   useCreateTask,
 } from "@/features/agent-context/hooks/useHierarchy";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay } from "@ai-matrx/summon";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";

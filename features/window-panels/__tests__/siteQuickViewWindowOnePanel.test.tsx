@@ -29,7 +29,7 @@ type CollectData = (() => Record<string, unknown>) | undefined;
 const panelMounts: string[] = [];
 let lastCollectData: CollectData;
 
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({
     id,
     overlayId,

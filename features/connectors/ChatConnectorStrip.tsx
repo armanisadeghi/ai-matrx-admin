@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { useOpenLiveIntegrationsWindow } from "@/features/overlays/openers/liveIntegrationsWindow";
+import { useOpenLiveIntegrationsWindow } from "@/features/overlays/definitions/liveIntegrationsWindow.overlay";
 import { ConnectorStrip } from "./ConnectorStrip";
 import { drawConnectorRotation, parseConnectorRotationState } from "./rotation";
 import { useLiveConnectors } from "./useLiveConnectors";

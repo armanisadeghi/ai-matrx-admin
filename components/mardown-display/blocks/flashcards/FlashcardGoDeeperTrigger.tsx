@@ -3,7 +3,7 @@
 import { type MouseEvent } from "react";
 import { Layers } from "lucide-react";
 import { Chip } from "@ai-matrx/design-system/controls";
-import { useOpenFlashcardSubcardsWindow } from "@/features/overlays/openers/flashcardSubcardsWindow";
+import { useOpenFlashcardSubcardsWindow } from "@/features/overlays/definitions/flashcardSubcardsWindow.overlay";
 import type { FlashcardSubcard } from "./flashcard-subcards";
 import { subcardsWindowTitle } from "./flashcard-subcards";
 

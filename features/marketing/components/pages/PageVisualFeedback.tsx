@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { fileIdToMediaRef } from "@/features/files/redux/converters";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
-import { useOpenImageAnnotationWindow } from "@/features/overlays/openers/imageAnnotationWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
+import { useOpenImageAnnotationWindow } from "@/features/overlays/definitions/imageAnnotationWindow.overlay";
 import {
   type ContainerLink,
   useContainerLinks,

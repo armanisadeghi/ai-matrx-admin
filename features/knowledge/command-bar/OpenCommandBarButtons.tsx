@@ -12,8 +12,8 @@
 
 import { Search } from "lucide-react";
 import { SearchTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { useOpenKnowledgeCommandBar } from "@/features/overlays/openers/knowledgeCommandBar";
-import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
+import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
+import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
 
 const GATE = {
   featureName: "Search",

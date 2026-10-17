@@ -38,7 +38,7 @@ import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectAllOrgs } from "@/features/agent-context/redux/organizationsSlice";
 import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
-import { useOpenDictionarySelectorWindow } from "@/features/overlays/openers/dictionarySelectorWindow";
+import { useOpenDictionarySelectorWindow } from "@/features/overlays/definitions/dictionarySelectorWindow.overlay";
 import { getManifest } from "@/features/surfaces/manifests/registry";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { useSurfaceConfig } from "@ai-matrx/chat/surfaces/hooks/useSurfaceConfig";

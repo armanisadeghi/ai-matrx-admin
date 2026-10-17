@@ -58,13 +58,13 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 
-jest.mock("@/features/overlays/openers/siteQuickViewWindow", () => ({
+jest.mock("@/features/overlays/definitions/siteQuickViewWindow.overlay", () => ({
   useOpenSiteQuickViewWindow: () => openSiteQuickView,
 }));
 
 // The one panel primitive — if the portfolio ever mounts one again, this
 // records it so the test can fail the assertion instead of silently passing.
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   __esModule: true,
   WindowPanel: (props: { children?: React.ReactNode }) => {
     windowPanelMounts();

@@ -17,7 +17,7 @@ const mockInventory = jest.fn();
 const mockCapabilities = jest.fn();
 const mockOpenConsent = jest.fn();
 
-jest.mock("@/features/overlays/openers/connectorConsentDialog", () => ({
+jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({
   useOpenConnectorConsentDialog: () => mockOpenConsent,
 }));
 jest.mock("@/features/marketing/google/hooks", () => ({

@@ -27,7 +27,7 @@ import React, {
   useMemo,
 } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openImageViewer } from "@/features/overlays/openers/imageViewer";
+import { openImageViewer } from "@/features/overlays/definitions/imageViewer.overlay";
 
 export interface BrowseImagesPayload {
   /** Resolved URLs to open in the viewer. Order matters. */

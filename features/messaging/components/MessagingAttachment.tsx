@@ -3,7 +3,7 @@
 import type { Attachment } from "@ai-matrx/messaging";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { FileText, ExternalLink } from "lucide-react";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 
 /** Media resolves through the same authenticated file pipeline as Chat. */
 export function MessagingAttachment({

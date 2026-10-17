@@ -3,11 +3,7 @@
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  closeOverlay,
-  selectIsOverlayOpen,
-  selectOverlayData,
-} from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@ai-matrx/summon";
 import { SettingsShell } from "./SettingsShell";
 
 /**

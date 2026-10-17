@@ -9,11 +9,7 @@ import { SettingsSubHeader } from "@/components/official/settings/layout/Setting
 import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  minimizeAll,
-  restoreAll,
-  toggleWindowsHidden,
-} from "@/lib/redux/slices/windowManagerSlice";
+import { minimizeAll, restoreAll, toggleWindowsHidden } from "@ai-matrx/summon";
 
 export default function WindowsTab() {
   const dispatch = useAppDispatch();

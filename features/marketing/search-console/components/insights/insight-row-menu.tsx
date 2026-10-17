@@ -38,7 +38,7 @@ import {
   applyAvailability,
   type AvailabilityMap,
 } from "@ai-matrx/context-menu/engine";
-import type { OpenGscDrilldownWindowOptions } from "@/features/overlays/openers/gscDrilldownWindow";
+import type { OpenGscDrilldownWindowOptions } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { levelVocabularyHref } from "@/features/marketing/seo/value-system/reason-links";
 

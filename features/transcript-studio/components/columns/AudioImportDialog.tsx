@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { saveAudioToStorage } from "@/features/transcripts/service/audioStorageService";
 import {
   transcribeAudioUrl,

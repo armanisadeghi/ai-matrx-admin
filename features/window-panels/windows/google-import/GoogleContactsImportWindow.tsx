@@ -15,7 +15,7 @@
 "use client";
 
 import { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { GoogleContactsImportPanel } from "@/features/connectors/import/GoogleContactsImportPanel";
 import { DirectoryReview } from "@/features/google-workspace/directory/DirectoryReview";
 import { canUseGoogleOAuthInternalTest } from "@/features/marketing/google/internal-test-reviewer";
@@ -25,7 +25,7 @@ import {
   selectAdminFeature,
   selectUserEmail,
 } from "@/lib/redux/selectors/userSelectors";
-import type { GoogleContactsImportInitialView } from "@/features/overlays/openers/googleImportWindows";
+import type { GoogleContactsImportInitialView } from "@/features/overlays/definitions/googleContactsImportWindow.overlay";
 
 export interface GoogleContactsImportWindowProps {
   isOpen: boolean;

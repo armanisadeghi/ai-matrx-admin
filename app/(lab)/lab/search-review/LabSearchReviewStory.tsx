@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@ai-matrx/summon";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { SmartAddWebRow } from "@/features/marketing/smart-add/SmartAddWebRow";
 import type { WebChoice } from "@/features/marketing/smart-add/webKinds";

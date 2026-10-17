@@ -58,7 +58,7 @@ import { Skeleton } from "@ai-matrx/design-system";
 import { useDebounce } from "@ai-matrx/kit/hooks";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { formatCount } from "@/features/marketing/search-console/types";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import {
   adoptStarterPack,
   getValueVocabulary,

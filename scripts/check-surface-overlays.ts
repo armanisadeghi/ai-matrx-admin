@@ -12,7 +12,7 @@
  */
 
 import { ALL_MANIFESTS } from "@/features/surfaces/manifests/registry";
-import { OVERLAY_CATALOGUE } from "@/features/overlays/catalogue";
+import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 
 const manifestsByOverlay = new Map<string, string[]>();
@@ -26,7 +26,7 @@ for (const manifest of ALL_MANIFESTS) {
 
 // The catalogue's keys ARE the overlay ids; object keys cannot repeat, and
 // TypeScript rejects a duplicate key in the literal, so no duplicate-id pass.
-const overlayIds = new Set<string>(Object.keys(OVERLAY_CATALOGUE));
+const overlayIds = new Set<string>(APP_OVERLAYS.map((d) => d.id));
 const missing = [...overlayIds].filter(
   (overlayId) => !manifestsByOverlay.has(overlayId),
 );
@@ -50,7 +50,7 @@ if (missing.length > 0) {
 
 if (unknown.length > 0) {
   console.error(
-    "\nPHANTOM overlay declarations: these manifests name an overlay id that is absent from OVERLAY_CATALOGUE:",
+    "\nPHANTOM overlay declarations: these manifests name an overlay id that is absent from APP_OVERLAYS:",
   );
   for (const [overlayId, surfaceNames] of unknown) {
     console.error(`  - ${overlayId} <- ${surfaceNames.join(", ")}`);

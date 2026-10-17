@@ -43,8 +43,8 @@ import { officeLookCookieMiddleware } from "@/lib/redux/preferences/officeLookCo
 import { tabOrganizationMiddleware } from "@/lib/organizations/tabOrganization";
 import { scopeTreeInvalidationMiddleware } from "@/features/scopes/redux/scopeTreeInvalidationMiddleware";
 import { scopeTreeDemandEnhancer } from "@/features/scopes/redux/scopeTreeDemand";
-import { overlayRenderWatchdogMiddleware } from "@/features/window-panels/diagnostics/overlayRenderWatchdog";
-import { windowPersistenceCloseMiddleware } from "@/features/window-panels/persistence/windowPersistenceCloseMiddleware";
+import { createSummonMiddleware } from "@ai-matrx/summon";
+import { bindOverlayStoreState, createStoreOverlayPorts } from "@/features/overlays/host/ports";
 import { reduxErrorCaptureMiddleware } from "@/lib/diagnostics/reduxErrorCaptureMiddleware";
 import {
   createSyncMiddleware,
@@ -296,8 +296,8 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
         officeLookCookieMiddleware,
         tabOrganizationMiddleware,
         scopeTreeInvalidationMiddleware,
-        windowPersistenceCloseMiddleware,
-        overlayRenderWatchdogMiddleware,
+        // close lifecycle + render watchdog (@ai-matrx/summon)
+        ...createSummonMiddleware(createStoreOverlayPorts()),
         reduxErrorCaptureMiddleware,
       ),
     // OUTSIDE applyMiddleware (prepend): the scope tree loads on its first READ, never at idle —
@@ -306,6 +306,7 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
     devTools: process.env.NODE_ENV !== "production",
   });
 
+  bindOverlayStoreState(() => store.getState());
   let bootPromise: Promise<void> | null = null;
   // True once bootSync has resolved: persisted records for `bootIdentity` are loaded.
   let bootSyncDone = false;

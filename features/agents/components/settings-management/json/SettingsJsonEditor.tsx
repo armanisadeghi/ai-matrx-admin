@@ -18,7 +18,7 @@ import JSON5 from "json5";
 import { TextareaLegacy as Textarea } from "@/components/ui/textarea";
 import { Button } from "@ai-matrx/design-system";
 import { AlertTriangle, GitCompareArrows } from "lucide-react";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { extractErrorMessage } from "@/utils/errors";
 
 interface SettingsJsonEditorProps {

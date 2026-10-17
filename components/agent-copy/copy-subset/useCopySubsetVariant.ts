@@ -18,7 +18,7 @@ import { SlidersHorizontal } from "lucide-react";
 
 import type { AiVariant } from "@/components/agent-copy/AiCopyMenu";
 import type { CopySubsetSource } from "@/components/agent-copy/copy-subset/types";
-import { useOpenCopySubsetWindow } from "@/features/overlays/openers/copySubsetWindow";
+import { useOpenCopySubsetWindow } from "@/features/overlays/definitions/copySubsetWindow.overlay";
 
 export const COPY_SUBSET_VARIANT_ID = "copy-subset";
 export const COPY_SUBSET_VARIANT_LABEL = "Filter & sort before copying…";

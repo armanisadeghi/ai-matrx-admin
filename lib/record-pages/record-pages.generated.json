@@ -5883,10 +5883,6 @@
    "file": "features/window-panels/windows/AudioControlWindow.tsx",
    "pending": true
   },
-  "window:features/window-panels/windows/AudioDevicesWindow.tsx": {
-   "file": "features/window-panels/windows/AudioDevicesWindow.tsx",
-   "pending": true
-  },
   "window:features/window-panels/windows/CanvasViewerWindow.tsx": {
    "file": "features/window-panels/windows/CanvasViewerWindow.tsx",
    "pending": true

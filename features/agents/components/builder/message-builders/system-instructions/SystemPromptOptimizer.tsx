@@ -44,7 +44,7 @@ import {
   AlertTriangle,
   GitCompareArrows,
 } from "lucide-react";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { usePathname } from "next/navigation";

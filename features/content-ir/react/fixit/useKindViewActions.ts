@@ -21,7 +21,7 @@ import { useOrgAdminGate } from "@/features/organizations/admin/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { KIND_CREATOR_MANDATE_KEY } from "../../studio/constants";
 import {

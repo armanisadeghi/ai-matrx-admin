@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { isUuidValue } from "@/components/official/entity-ref/doors";
@@ -52,7 +52,7 @@ import CreatorRunTabContent, {
   useCreatorRunWindows,
   type RunTabId,
 } from "@/features/agents/components/run-controls/CreatorRunTabContent";
-import type { CreatorHubTabId } from "@/features/overlays/openers/creatorHub";
+import type { CreatorHubTabId } from "@/features/overlays/definitions/creatorHub.overlay";
 import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { StreamDebugPanel } from "@ai-matrx/chat/agents/components/debug/StreamDebugPanel";

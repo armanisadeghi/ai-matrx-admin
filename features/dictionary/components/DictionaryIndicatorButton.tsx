@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useDictionaryContext } from "@/features/dictionary/hooks/useDictionaryContext";
-import { useOpenDictionarySelectorWindow } from "@/features/overlays/openers/dictionarySelectorWindow";
+import { useOpenDictionarySelectorWindow } from "@/features/overlays/definitions/dictionarySelectorWindow.overlay";
 
 interface Props {
   surfaceKey: string;

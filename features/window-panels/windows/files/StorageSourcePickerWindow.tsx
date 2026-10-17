@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input, Select } from "@ai-matrx/design-system/controls";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { SettingDoor } from "@/features/settings/doors/SettingDoor";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   ensureEffectiveKnob,
@@ -41,7 +41,7 @@ import type {
 import {
   deliverStorageSourceImports,
   disposeStorageSourcePickerCallbackGroup,
-} from "@/features/overlays/callbacks/storageSourcePicker";
+} from "@/features/overlays/definitions/callbacks/storageSourcePicker";
 import { extractErrorMessage } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

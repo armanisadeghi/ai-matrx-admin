@@ -4,7 +4,7 @@ import { GmailLogo } from "@/components/icons/google-brand";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
-import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
+import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 import {
   useGoogleCapabilities,
   useGoogleConnectionInventory,

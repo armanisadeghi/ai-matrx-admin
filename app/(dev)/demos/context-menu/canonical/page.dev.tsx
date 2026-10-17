@@ -20,7 +20,7 @@
 import { useRef, useState } from "react";
 import { Code2 } from "lucide-react";
 import { DiffViewer } from "@ai-matrx/diff/react";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { AgentBuilderDemoPanel } from "../_components/AgentBuilderDemoPanel";

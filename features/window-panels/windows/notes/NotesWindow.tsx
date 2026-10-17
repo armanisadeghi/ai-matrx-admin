@@ -15,10 +15,7 @@
 
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import React, { useEffect, useRef } from "react";
-import {
-  WindowPanel,
-  type WindowPanelProps,
-} from "@/features/window-panels/WindowPanel";
+import { WindowPanel, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
@@ -44,7 +41,7 @@ import { Plus } from "lucide-react";
 import { ErrorNotice } from "@ai-matrx/design-system";
 
 export interface NotesWindowProps extends Omit<
-  WindowPanelProps,
+  WindowPanelBaseProps,
   "children" | "title" | "sidebar" | "onClose"
 > {
   title?: string;

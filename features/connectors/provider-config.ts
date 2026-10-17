@@ -46,8 +46,8 @@ import {
   GOOGLE_WORKSPACE_FILE_SCOPES,
 } from "@/lib/googleScopes";
 import type { GoogleAgendaWindowLaunchData } from "@/features/google-workspace/calendar/window-types";
-import type { GoogleContactsImportWindowLaunchData } from "@/features/overlays/openers/googleImportWindows";
-import type { OverlayId } from "@/features/overlays/catalogue";
+import type { GoogleContactsImportWindowLaunchData } from "@/features/overlays/definitions/googleContactsImportWindow.overlay";
+import type { OverlayId } from "@ai-matrx/summon";
 import type { ConnectorId, ConnectorLogo } from "./types";
 import {
   GmailMark,

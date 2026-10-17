@@ -40,7 +40,7 @@ jest.mock("@/features/marketing/analytics/components/SiteAnalyticsPanel", () => 
 jest.mock("@/components/official/entity-ref/EntityRef", () => ({
   EntityRef: ({ name }: { name: string }) => <span>{name}</span>,
 }));
-jest.mock("@/features/overlays/openers/siteAnalyticsWindow", () => ({
+jest.mock("@/features/overlays/definitions/siteAnalyticsWindow.overlay", () => ({
   useOpenSiteAnalyticsWindow: () => () => undefined,
 }));
 jest.mock("@/features/marketing/components/shared/MarketingUi", () => ({

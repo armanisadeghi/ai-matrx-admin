@@ -38,12 +38,10 @@ import { CanvasHostProvider } from "@/features/canvas/host/CanvasHostProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FirstUseHintHost } from "@/providers/FirstUseHintHost";
 import type { BaseReduxState } from "@/types/reduxTypes";
-import { RefProvider } from "@/lib/refs";
 import { AlchemyHost } from "@/components/agent-copy/AlchemyHost";
 import { AlchemySessionPortal } from "@/components/agent-copy/AlchemySessionPortal";
 import { ToastProvider } from "@/providers/toast-context";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
-import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 // ONE audio mount. The entire audio system (recording engine, TTS speaker,
@@ -102,19 +100,7 @@ import DeferredSingletonWrapper from "./DeferredSingletonWrapper";
 import { ServerToggleQueryReset } from "@/providers/ServerToggleQueryReset";
 import { LoopbackApiAccessSync } from "@/providers/LoopbackApiAccessSync";
 import { RetiredApiSelectionNotice } from "@/providers/RetiredApiSelectionNotice";
-// WindowPersistenceManager provides the React context that WindowPanel
-// reads via `useWindowPersistence()` — without this mounted, every
-// `saveWindow`/`closeWindow` call resolves to the no-op default and
-// persistence silently disappears. This also hydrates the identity/tab-scoped
-// local workspace cache on session boot and runs the idle GC sweep. Keep this
-// OUTSIDE DeferredSingletons
-// so the context is available to OverlayController's children
-// and so hydration begins as soon as the user is authenticated rather
-// than waiting on idle. Imports only metadata + local-cache helpers — none
-// of the heavy window-panel core files are pulled into this graph.
-// Needs research & testing
-// disaster
-import { WindowPersistenceManager } from "@/features/window-panels/WindowPersistenceManager";
+import { AppSummonProvider } from "@/features/overlays/host/AppSummonProvider";
 // ExtensionBridgeSubscriber bridges matrx-extend Chrome extension envelopes
 // (Broadcast channel `matrx-extension-bridge:<userId>`) into the
 // window-panels overlay system. When the extension publishes
@@ -196,11 +182,9 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
             <ModelCatalogHost>
             <MatrxDataTableHost>
             <ContactValuesHost>
-              <WindowPersistenceManager>
-                <PersistentComponentProvider>
+              <AppSummonProvider>
                   <ToastProvider>
                     <AlchemyHost>
-                      <RefProvider>
                         <TooltipProvider delayDuration={200}>
                           <FirstUseHintHost>
                           <ModuleHeaderProvider>
@@ -280,11 +264,9 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                           </ModuleHeaderProvider>
                           </FirstUseHintHost>
                         </TooltipProvider>
-                      </RefProvider>
                     </AlchemyHost>
                   </ToastProvider>
-                </PersistentComponentProvider>
-              </WindowPersistenceManager>
+              </AppSummonProvider>
             </ContactValuesHost>
             </MatrxDataTableHost>
             </ModelCatalogHost>
