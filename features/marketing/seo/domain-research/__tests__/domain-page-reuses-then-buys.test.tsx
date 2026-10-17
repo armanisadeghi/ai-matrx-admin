@@ -124,7 +124,7 @@ afterEach(() => {
 });
 
 it("reuses a stored result first: the probe returns it free and no paid call is made", async () => {
-  search = new URLSearchParams("d=https://www.Python.org/about");
+  search = new URLSearchParams("d=https://www.Python.org/about&tab=keywords");
   requestRaw.mockImplementation(async (_path: string, init: { body: string }) => {
     const { arguments: a } = JSON.parse(init.body) as Call;
     return a.action === "overview" ? ok(envelope(OVERVIEW, true)) : refused("over_max_cost", "estimated at $0.02");
@@ -150,7 +150,7 @@ it("reuses a stored result first: the probe returns it free and no paid call is 
 });
 
 it("offers the paid run at the definition's price and only a click spends", async () => {
-  search = new URLSearchParams("d=python.org");
+  search = new URLSearchParams("d=python.org&tab=keywords");
   requestRaw.mockImplementation(async (_path: string, init: { body: string }) => {
     const { arguments: a } = JSON.parse(init.body) as Call;
     if (a.max_cost_usd) return refused("over_max_cost", "estimated at $0.04");
@@ -175,7 +175,7 @@ it("offers the paid run at the definition's price and only a click spends", asyn
 });
 
 it("shows the server's failure, and Try again asks for stored data without spending", async () => {
-  search = new URLSearchParams("d=python.org");
+  search = new URLSearchParams("d=python.org&tab=keywords");
   requestRaw.mockImplementation(async () => refused("provider_error", "DataForSEO did not answer."));
   await render();
 

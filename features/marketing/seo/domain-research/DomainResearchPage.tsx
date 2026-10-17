@@ -57,11 +57,15 @@ import type {
   SerpCompetitorRow,
 } from "./types";
 import { useDomainSection } from "./useDomainSection";
+import { KeywordVolumeBox } from "./KeywordVolumeBox";
+import { useSeoTools } from "./seoTools";
+import { WebsiteCheck } from "./WebsiteCheck";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
-export type DomainTab = "keywords" | "competitors" | "gap";
+export type DomainTab = "overview" | "keywords" | "competitors" | "gap";
 const TABS: { tab: DomainTab; name: string; description: string }[] = [
+  { tab: "overview", name: "Overview", description: "Authority, backlinks, search and ads" },
   { tab: "keywords", name: "Keywords", description: "Organic keywords this domain ranks for" },
   { tab: "competitors", name: "Competitors", description: "Domains winning the same searches" },
   { tab: "gap", name: "They rank, we don't", description: "Their keywords your site is missing" },
@@ -71,7 +75,7 @@ const TABS: { tab: DomainTab; name: string; description: string }[] = [
 export const COMPETITOR_SEED_KEYWORDS = 10;
 
 export function parseTab(value: string | null): DomainTab {
-  return value === "competitors" || value === "gap" ? value : "keywords";
+  return value === "keywords" || value === "competitors" || value === "gap" ? value : "overview";
 }
 
 export function priceLabel(
@@ -120,7 +124,7 @@ export function DomainResearchPage() {
     const t = next.tab ?? tab;
     if (d) q.set("d", d);
     if (site) q.set("site", site);
-    if (t !== "keywords") q.set("tab", t);
+    if (t !== "overview") q.set("tab", t);
     const query = q.toString();
     return `${pathname ?? marketingRoutes.domainResearch()}${query ? `?${query}` : ""}`;
   };
@@ -144,10 +148,13 @@ export function DomainResearchPage() {
   const tracked = (competitorRows.data ?? []).some((r) => r.tracking_status === "tracked");
   const site = (sites.data ?? []).find((s) => s.id === siteId) ?? null;
 
-  const overview = useDomainSection("overview", host ? { target: host } : null);
+  // The Overview tab runs on catalog Tools (WebsiteCheck); the stored-read sections below belong to the other tabs.
+  const seoTools = useSeoTools();
+  const onOverview = tab === "overview";
+  const overview = useDomainSection("overview", host && !onOverview ? { target: host } : null);
   const keywords = useDomainSection(
     "ranked_keywords",
-    host ? { target: host, ...(siteId ? { site_id: siteId } : {}) } : null,
+    host && !onOverview ? { target: host, ...(siteId ? { site_id: siteId } : {}) } : null,
   );
   const seeds =
     keywords.state.kind === "ready" ? seedKeywords(keywords.state.data.rows) : [];
@@ -201,10 +208,24 @@ export function DomainResearchPage() {
               <EmptyState
                 icon={<Globe />}
                 title="Research any domain"
-                line="Traffic, keywords and competitors, with sources and dates."
+                line="Authority, backlinks, keywords and ads in one check."
               />
             ) : (
               <>
+                {onOverview ? (
+                  seoTools.isLoading ? (
+                    <RegionSkeleton shape="cards" count={3} aria-label="Loading checks" />
+                  ) : seoTools.isError || !seoTools.data ? (
+                    <ErrorNotice
+                      title="The checks could not be loaded"
+                      error={seoTools.error}
+                      operation="Read the SEO Tools"
+                      actions={<Button onClick={() => void seoTools.refetch()}>Try again</Button>}
+                    />
+                  ) : (
+                    <WebsiteCheck key={host} host={host} tools={seoTools.data} />
+                  )
+                ) : (
                 <section aria-label="Domain stats" className="flex flex-col gap-2">
                   <SourceLine
                     what="Stats"
@@ -227,9 +248,13 @@ export function DomainResearchPage() {
                     ) : null}
                   </SectionGate>
                 </section>
+                )}
 
                 {tab === "keywords" ? (
                   <section aria-label="Keywords" className="flex flex-col gap-2">
+                    {seoTools.data?.keywords ? (
+                      <KeywordVolumeBox hit={seoTools.data.keywords} seeds={seeds} />
+                    ) : null}
                     <SourceLine
                       what="Keywords"
                       state={keywords.state}
