@@ -34,6 +34,7 @@ import { APPLICATIONS_ADMIN_LOCATION } from "@/features/admin/applications/const
 import { AddFromLinkDialog } from "@/features/admin/applications/catalogs/components/AddFromLinkDialog";
 import { CatalogEntryEditor } from "@/features/admin/applications/catalogs/components/CatalogEntryEditor";
 import { CatalogKindTable } from "@/features/admin/applications/catalogs/components/CatalogKindTable";
+import { MODEL_KINDS, UnifiedModelKindTable } from "@/features/admin/applications/catalogs/components/UnifiedModelKindTable";
 import {
   CATALOG_KINDS,
   DEFAULT_CATALOG_APP,
@@ -438,6 +439,30 @@ export function CatalogsClient({
         getScope={getSurfaceScope}
       >
         <div className="flex h-full flex-col gap-3 p-4">
+          {MODEL_KINDS.has(view.kind) ? (
+            // Arman's "one editor": model kinds read and write the unified catalog (ai.*); the old
+            // catalog_entries rows stay viewable, read-only, for comparison.
+            <UnifiedModelKindTable
+              app={app}
+              kind={view.kind}
+              allEntries={rows}
+              onBack={() => setView({ mode: "kinds" })}
+              onAddFromLink={() => openAddFromLink(view.kind)}
+              oldList={
+                <CatalogKindTable
+                  app={app}
+                  kind={view.kind}
+                  entries={kindEntries}
+                  readOnly
+                  onBack={() => setView({ mode: "kinds" })}
+                  onOpenEntry={() => {}}
+                  onNewEntry={() => {}}
+                  onAddFromLink={() => {}}
+                  onChanged={() => void refreshRows()}
+                />
+              }
+            />
+          ) : (
           <CatalogKindTable
             app={app}
             kind={view.kind}
@@ -452,6 +477,7 @@ export function CatalogsClient({
             onAddFromLink={() => openAddFromLink(view.kind)}
             onChanged={() => void refreshRows()}
           />
+          )}
           <AddFromLinkDialog
             key={`link-${linkDialogKind ?? "auto"}`}
             open={linkDialogOpen}

@@ -76,6 +76,8 @@ interface CatalogKindTableProps {
   onAddFromLink: () => void;
   /** Refetch after any table-level write (toggle, sort) or conflict. */
   onChanged: () => void;
+  /** View only: no toggles, order edits, new entries or entry editor (the old model rows, kept for comparison). */
+  readOnly?: boolean;
 }
 
 /** The entry as readable text — what Copy-as / Export / AI actions carry. */
@@ -105,6 +107,7 @@ export function CatalogKindTable({
   onNewEntry,
   onAddFromLink,
   onChanged,
+  readOnly = false,
 }: CatalogKindTableProps) {
   const { toast } = useToast();
   const accessToken = useAppSelector(selectAccessToken);
@@ -280,7 +283,7 @@ export function CatalogKindTable({
         id: "name",
         header: "Name",
         accessorFn: (row) => payloadDisplayName(row.payload) ?? "",
-        href: (row) => catalogEntryHref(row.app, row.kind, row.id),
+        ...(readOnly ? {} : { href: (row: CatalogEntryRow) => catalogEntryHref(row.app, row.kind, row.id) }),
         cell: (row) => {
           const name = payloadDisplayName(row.payload);
           return name ? (
@@ -326,6 +329,7 @@ export function CatalogKindTable({
         cell: (row) => (
           <Switch
             checked={row.is_active}
+            disabled={readOnly}
             onCheckedChange={(next) => setPendingToggle({ row, next })}
             aria-label={`Toggle ${row.key} active`}
           />
@@ -336,7 +340,7 @@ export function CatalogKindTable({
         id: "sort_order",
         accessorKey: "sort_order",
         header: "Sort",
-        editable: "number",
+        ...(readOnly ? {} : { editable: "number" as const }),
         align: "right",
         cell: (row) => (
           <span className="font-mono text-xs">{row.sort_order}</span>
@@ -389,7 +393,7 @@ export function CatalogKindTable({
         width: 200,
       },
     ];
-  }, [adminEmails]);
+  }, [adminEmails, readOnly]);
 
   const activationPayloadCheck = pendingToggle?.next
     ? validatePayload(pendingToggle.row.kind, pendingToggle.row.payload)
@@ -445,7 +449,7 @@ export function CatalogKindTable({
                   id: "catalog-open-entry",
                   label: "Open entry",
                   icon: Link2,
-                  disabled: !clickedRow,
+                  disabled: !clickedRow || readOnly,
                   description: "Open the entry editor",
                   onSelect: () => {
                     if (clickedRow) onOpenEntry(clickedRow);
@@ -469,7 +473,9 @@ export function CatalogKindTable({
           toolbar={{
             search: true,
             searchPlaceholder: "Search key, name…",
-            actions: (
+            actions: readOnly ? (
+              <span className="text-xs text-muted-foreground">Old list, read-only</span>
+            ) : (
               <div className="flex items-center gap-2">
                 <Button icon={<Link2 />} variant="primary" type="button" onClick={onAddFromLink}> Add from link
                 </Button>
@@ -483,9 +489,9 @@ export function CatalogKindTable({
               </div>
             ),
           }}
-          onRowOpen={(row) => onOpenEntry(row)}
+          {...(readOnly ? {} : { onRowOpen: (row: CatalogEntryRow) => onOpenEntry(row) })}
           detail={{ enabled: false }}
-          edit={{ enabled: true, onSave: saveEdits }}
+          edit={{ enabled: !readOnly, onSave: saveEdits }}
           copy={{
             label: "Catalog entry",
             listLabel: `${kindLabel(kind)} entries (this view)`,
