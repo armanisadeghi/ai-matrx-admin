@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { CopyForAiAction } from "@/features/admin/attention/CopyForAiAction";
 import { Button } from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { decideToolProposal, fetchToolHealth } from "@/features/admin/attention/tool-health-service";
@@ -110,7 +111,7 @@ export function ToolAlertRecord({ alarmId }: { alarmId: string }) {
       {query.isLoading ? (
         <Spinner />
       ) : query.error ? (
-        <div className="text-sm text-destructive">Could not read this alert: {extractErrorMessage(query.error)}</div>
+        <ErrorNotice title="Could not read this alert" message={extractErrorMessage(query.error)} size="inline" />
       ) : !row || !item ? (
         <div className="text-sm text-muted-foreground" data-testid="tool-alert-closed">
           This alert is closed: it no longer appears among the open Tool alerts, so it was resolved. Open Tool control to see current state.
