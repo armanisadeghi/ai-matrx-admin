@@ -242,10 +242,11 @@ export function ToolSearchPanel({ tab, seed }: { tab: ToolTab; seed: string }) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5" data-tool-tab={tab}>
       {lanes.length > 1 ? (
+        <div className="max-w-full overflow-x-auto scrollbar-none">
         <Tabs
           aria-label="Where to read them"
           variant="capsule"
-          className="flex-wrap"
+          className="flex-nowrap"
           value={laneId}
           onValueChange={(next: string) => {
             setLaneId(next);
@@ -253,6 +254,7 @@ export function ToolSearchPanel({ tab, seed }: { tab: ToolTab; seed: string }) {
           }}
           data={lanes.map((l) => ({ value: l.id, label: l.label }))}
         />
+        </div>
       ) : null}
       <LaneBox
         key={lane.id}
