@@ -129,7 +129,7 @@ describe("Catalogs model kinds are the one catalog", () => {
     await act(async () => root.unmount());
   });
 
-  it("the editor sends only what changed, a removed fact as null, through the same route's body", async () => {
+  it("the editor sends only what changed (typed values as they are), a removed fact as null", async () => {
     const zeta = (await fetchCuratedModels(client)).find((m) => m.id === "m-zeta")!;
     const edit = listingEditOf(zeta, {
       name: "zeta",
@@ -137,7 +137,7 @@ describe("Catalogs model kinds are the one catalog", () => {
       description: "",
       order: "1",
       active: true,
-      facts: [{ key: "tier", value: "max" }, { key: "speed", value: "12" }],
+      facts: [{ key: "tier", value: "max" }, { key: "speed", value: 12 }],
     });
     expect(edit).toEqual({
       expected_updated_at: "2026-10-16T03:00:00+00:00",

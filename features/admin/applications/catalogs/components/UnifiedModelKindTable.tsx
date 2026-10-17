@@ -133,6 +133,13 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
     [models, kind, kindOfEntry],
   );
 
+  // Text facts offer the values the kind's other models already use (from the data, never a list here).
+  const suggestions = useMemo(() => {
+    const out: Record<string, Set<string>> = {};
+    for (const r of rows) for (const [k, v] of Object.entries(r.model.facts)) if (typeof v === "string" && v) (out[k] ??= new Set()).add(v);
+    return Object.fromEntries(Object.entries(out).map(([k, set]) => [k, [...set].sort()]));
+  }, [rows]);
+
   const saveEdits = useCallback(
     async (edits: CellEditsMap, editedRows: ModelRow[]) => {
       const failures: string[] = [];
@@ -263,7 +270,9 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
           />
         </div>
       )}
-      {editing ? <ModelListingEditor model={editing} onClose={() => setEditing(null)} onSave={(change) => edit(editing, change)} /> : null}
+      {editing ? (
+        <ModelListingEditor kind={kind} suggestions={suggestions} model={editing} onClose={() => setEditing(null)} onSave={(change) => edit(editing, change)} />
+      ) : null}
     </div>
   );
 }
