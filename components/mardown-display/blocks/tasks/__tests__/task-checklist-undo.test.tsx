@@ -9,6 +9,8 @@ import { createRoot, type Root } from "react-dom/client";
 import TaskChecklist from "@/components/mardown-display/blocks/tasks/TaskChecklist";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+jest.mock("@/features/tasks/components/ImportTasksModal", () => ({ __esModule: true, default: () => null }));
+
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 (globalThis as typeof globalThis & { ResizeObserver?: unknown }).ResizeObserver = class {
   observe() {}

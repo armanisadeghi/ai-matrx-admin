@@ -31,7 +31,9 @@ export interface DomainOverviewData {
   paid_keywords: number | null;
   backlinks: number | null;
   referring_domains: number | null;
-  backlinks_source: "stored_backlink_summary" | "dataforseo_backlinks_summary" | null;
+  /** "stored_backlink_summary" = the person's saved summary; any other value = a fresh estimate, named by its
+   * display source (never a vendor). */
+  backlinks_source: string | null;
   backlinks_as_of: string | null;
   market: DomainMarket;
   as_of: string | null;
