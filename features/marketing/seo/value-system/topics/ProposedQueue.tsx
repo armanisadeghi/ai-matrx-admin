@@ -17,6 +17,7 @@
  * `seo.gsc_perf_breakdown` at all.
  */
 
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { Check, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -124,12 +125,11 @@ export function ProposedQueue({
   return (
     <section className="flex min-h-[24rem] flex-col rounded-lg border border-warning/40 bg-card">
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <h2 className="text-sm font-semibold text-foreground">
-          The assigner placed these — is it right?
-        </h2>
-        <p className="hidden text-[11px] text-muted-foreground sm:block">
-          They are already placed. Confirming makes them yours.
-        </p>
+        <h2 className="type-title text-foreground">Check these placements</h2>
+        <AboutPeek
+          title="Check these placements"
+          about="The assigner already placed these keywords on offerings it was unsure about. Confirming a placement makes it yours."
+        />
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col p-2">

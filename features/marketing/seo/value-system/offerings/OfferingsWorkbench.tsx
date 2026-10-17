@@ -932,17 +932,17 @@ function OfferingStrip({
               aria-pressed={active === card.key}
               title={card.detail}
               className={cn(
-                "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 rounded-md border border-border bg-background px-2 py-1.5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1 rounded-md border border-border bg-background px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active === card.key && "ring-2 ring-ring",
               )}
             >
-              <span className="truncate text-[11px] font-medium text-foreground">{card.label}</span>
-              <span className={cn("text-sm font-semibold tabular-nums text-foreground", card.tone)}>
-                {card.value}
+              {/* What a press does lives in the tooltip; the tile shows only its name and number. */}
+              <span className="col-span-2 flex min-w-0 items-center gap-1.5">
+                <Icon className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground", card.tone)} />
+                <span className="truncate text-xs font-medium text-muted-foreground">{card.label}</span>
               </span>
-              <span className="col-span-2 flex min-w-0 items-center gap-1">
-                <Icon className={cn("h-3 w-3 shrink-0 text-muted-foreground", card.tone)} />
-                <span className="truncate text-[10px] text-muted-foreground">{card.detail}</span>
+              <span className={cn("col-span-2 text-base font-semibold tabular-nums text-foreground", card.tone)}>
+                {card.value}
               </span>
             </button>
           );

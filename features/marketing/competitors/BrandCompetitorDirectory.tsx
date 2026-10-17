@@ -126,7 +126,7 @@ function RowSocialActions({ row, brand }: { row: BrandCompetitor; brand: { id: s
             }
           }}
         >
-          {found?.status === "finding" ? "Reading…" : "Find socials · Free"}
+          {found?.status === "finding" ? "Reading…" : "Find socials"}
         </Button>
       ) : null}
       {found?.links.length ? (

@@ -13,6 +13,7 @@
  * - Every count is a door: "In branch" opens those keywords.
  */
 
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import type { ReactNode } from "react";
 import {
   ChevronRight,
@@ -386,9 +387,11 @@ export function OfferingCatalogTable({
           searchPlaceholder: "Search this brand's offerings…",
           searchMatch: {},
           leading: brandOnly ? undefined : (
-            <span className="hidden text-xs text-muted-foreground xl:inline">
-              Drag onto a row&apos;s edge to reorder · middle to nest it inside.
-            </span>
+            <AboutPeek
+              title="Reorder offerings"
+              label="How to reorder"
+              about="Drag an offering onto a row's top or bottom edge to move it there; drop it on the middle of a row to nest it inside."
+            />
           ),
           actions: (
             <Button icon={<Plus />} variant="primary" onClick={onAdd}>
