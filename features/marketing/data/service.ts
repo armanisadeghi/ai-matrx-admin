@@ -1,3 +1,4 @@
+import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
 import { marketingProperties, toRelationUsage, type RelationUsage } from "./relation-usage";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { applyHiddenView, type HiddenView } from "@/features/access-gate/service/hiddenByMe";
@@ -136,13 +137,17 @@ function numberFilter(
   return filter?.kind === "number" ? filter : null;
 }
 
-/** A `date` column filter: `since` inclusive, `until` exclusive (ISO instants). */
+/**
+ * A `date` column filter as bounds: `since` inclusive, `until` exclusive (ISO instants). A relative
+ * preset ("Last hour", "Today") resolves through the table's own `dateFilterBounds`, so the server
+ * applies exactly the range the person picked.
+ */
 function dateFilter(
   state: MatrxDataTableQueryState,
   column: string,
 ): { since?: string; until?: string } | null {
   const filter = state.columnFilters[column];
-  return filter?.kind === "date" ? filter : null;
+  return filter?.kind === "date" ? dateFilterBounds(filter) : null;
 }
 
 function selectFilter(

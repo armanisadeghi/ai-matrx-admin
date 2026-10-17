@@ -1,3 +1,4 @@
+import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import type {
   CrawlCanonicalMapResult,
@@ -122,13 +123,17 @@ function numberFilter(
   return filter?.kind === "number" ? filter : null;
 }
 
-/** A `date` column filter: `since` inclusive, `until` exclusive (ISO instants). */
+/**
+ * A `date` column filter as bounds: `since` inclusive, `until` exclusive (ISO instants). A relative
+ * preset ("Last hour", "Today") resolves through the table's own `dateFilterBounds`, so the server
+ * applies exactly the range the person picked.
+ */
 function dateFilter(
   state: MatrxDataTableQueryState,
   column: string,
 ): { since?: string; until?: string } | null {
   const filter = state.columnFilters[column];
-  return filter?.kind === "date" ? filter : null;
+  return filter?.kind === "date" ? dateFilterBounds(filter) : null;
 }
 
 function assertData<T>(data: T | null, error: unknown): T {

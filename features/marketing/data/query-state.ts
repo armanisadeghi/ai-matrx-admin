@@ -13,6 +13,7 @@ import {
   encodeLayeredFilterRules,
 } from "@ai-matrx/design-system/data-table/layered-filters";
 import { pushAddressWithoutNavigating, replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { TIME_RANGE_PRESET_VALUES } from "@ai-matrx/design-system/data-table/date-filter";
 
 const PAGE_SIZE_OPTIONS = new Set([10, 25, 50, 100, 250]);
 
@@ -42,7 +43,7 @@ function positiveInt(value: string | null, fallback: number): number {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function decodeFilter(raw: string): ColumnFilterValue | undefined {
+export function decodeFilter(raw: string): ColumnFilterValue | undefined {
   const separator = raw.indexOf(":");
   if (separator < 0) return undefined;
   const kind = raw.slice(0, separator);
@@ -58,6 +59,22 @@ function decodeFilter(raw: string): ColumnFilterValue | undefined {
       : { kind: "select", value };
   }
   if (kind === "boolean") return { kind: "boolean", value: value === "true" };
+  if (kind === "date") {
+    // `date:last:<preset>` (relative — resolves when the page reads it, so a shared "Today" link
+    // means today) or `date:<since>,<until>` (an explicit range; either side may be empty).
+    if (value.startsWith("last:")) {
+      const preset = value.slice(5);
+      return (TIME_RANGE_PRESET_VALUES as readonly string[]).includes(preset)
+        ? { kind: "date", preset: preset as (typeof TIME_RANGE_PRESET_VALUES)[number] }
+        : undefined;
+    }
+    const [since = "", until = ""] = value.split(",", 2);
+    return {
+      kind: "date",
+      ...(since ? { since } : {}),
+      ...(until ? { until } : {}),
+    };
+  }
   if (kind === "number") {
     const [minRaw, maxRaw] = value.split(",", 2);
     const min = minRaw === "" ? undefined : Number(minRaw);
@@ -71,7 +88,7 @@ function decodeFilter(raw: string): ColumnFilterValue | undefined {
   return undefined;
 }
 
-function encodeFilter(filter: ColumnFilterValue): string {
+export function encodeFilter(filter: ColumnFilterValue): string {
   if (filter.kind === "text") return `text:${filter.value}`;
   if (filter.kind === "select") {
     return filter.values && filter.values.length > 1
@@ -80,6 +97,9 @@ function encodeFilter(filter: ColumnFilterValue): string {
   }
   if (filter.kind === "boolean") return `boolean:${filter.value}`;
   if (filter.kind === "number") return `number:${filter.min ?? ""},${filter.max ?? ""}`;
+  if (filter.kind === "date") {
+    return filter.preset ? `date:last:${filter.preset}` : `date:${filter.since ?? ""},${filter.until ?? ""}`;
+  }
   throw new Error("Marketing source does not support this column filter kind");
 }
 

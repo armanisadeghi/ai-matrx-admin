@@ -1,3 +1,4 @@
+import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import type {
   BacklinkChangeEventRow,
@@ -390,8 +391,10 @@ export async function listLatestBacklinks(
     query = query.in("state", states);
   }
   for (const column of ["first_seen_at", "last_seen_at"] as const) {
-    const range = state.columnFilters[column];
-    if (range?.kind !== "date") continue;
+    const filter = state.columnFilters[column];
+    if (filter?.kind !== "date") continue;
+    // A relative preset resolves to bounds here, exactly as the table resolves it locally.
+    const range = dateFilterBounds(filter);
     if (range.since) query = query.gte(column, range.since);
     if (range.until) query = query.lt(column, range.until);
   }
@@ -542,8 +545,10 @@ export async function listBacklinkChangeEvents(
     }
   }
   for (const column of ["detected_at", "observed_at"] as const) {
-    const range = state.columnFilters[column];
-    if (range?.kind !== "date") continue;
+    const filter = state.columnFilters[column];
+    if (filter?.kind !== "date") continue;
+    // A relative preset resolves to bounds here, exactly as the table resolves it locally.
+    const range = dateFilterBounds(filter);
     if (range.since) query = query.gte(column, range.since);
     if (range.until) query = query.lt(column, range.until);
   }
