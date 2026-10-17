@@ -1,10 +1,10 @@
 {
  "packVersion": 1,
  "catalogueId": "SP0302",
- "version": 1,
- "title": "Client Portal",
- "description": "Give each client one page with their tasks, files and updates in a single place.",
- "forWho": "Freelancers and agencies sharing progress",
+ "version": 2,
+ "title": "Freelance Client Portal",
+ "description": "Share deliverables, approvals and invoices with each freelance client on one private page.",
+ "forWho": "Solo freelancers delivering work to clients",
  "icon": {
   "emoji": "🪟"
  },
@@ -1029,13 +1029,13 @@
     "Tallow Court"
    ]
   },
-  "version": 1
+  "version": 2
  },
  "pages": [
   {
-   "key": "client-portal",
+   "key": "freelance-client-portal",
    "parent": null,
-   "title": "Client Portal",
+   "title": "Freelance Client Portal",
    "icon": {
     "emoji": "🪟"
    },
@@ -1299,7 +1299,7 @@
   },
   {
    "key": "dashboard",
-   "parent": "client-portal",
+   "parent": "freelance-client-portal",
    "title": "Dashboard",
    "icon": {
     "emoji": "📊"
@@ -1501,7 +1501,7 @@
   },
   {
    "key": "sample-portal",
-   "parent": "client-portal",
+   "parent": "freelance-client-portal",
    "title": "Sample portal: Bluff Creek Farm",
    "icon": {
     "emoji": "🌾"
@@ -1663,7 +1663,7 @@
   },
   {
    "key": "setup-guide",
-   "parent": "client-portal",
+   "parent": "freelance-client-portal",
    "title": "Set up a client portal",
    "icon": {
     "emoji": "🛠️"
@@ -1728,7 +1728,7 @@
   },
   {
    "key": "approvals",
-   "parent": "client-portal",
+   "parent": "freelance-client-portal",
    "title": "Approval checklist",
    "icon": {
     "emoji": "✅"

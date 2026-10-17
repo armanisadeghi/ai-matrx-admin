@@ -1,0 +1,2497 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0306",
+ "version": 1,
+ "title": "Agency OS",
+ "description": "Run a small service agency: clients, retainers, projects, capacity and proposals.",
+ "forWho": "Small design, marketing and dev agencies",
+ "icon": {
+  "emoji": "🏗️"
+ },
+ "cover": {
+  "url": "gallery:photo-golden-palms",
+  "offsetY": 50
+ },
+ "category": "operations",
+ "tags": [
+  "agency",
+  "retainers",
+  "capacity",
+  "proposals"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-agency-os",
+  "catalogueId": "SP0306",
+  "useCase": "Nadine Okonkwo-Reyes runs a small agency and uses this to see retainer hours used, who is overbooked, which proposals are out and which projects are slipping.",
+  "industry": "cross_industry",
+  "vertical": "Agency operations",
+  "job": "projects",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Harbourlight Creative",
+   "describes": "A five-person creative agency doing brand, web and campaign work on monthly retainers and fixed projects.",
+   "address": {
+    "line1": "61 Ketterick Wharf",
+    "city": "Providence",
+    "region": "RI",
+    "postalCode": "02903",
+    "country": "US"
+   },
+   "phone": "(401) 555-0134",
+   "website": "harbourlightcreative.net",
+   "email": "studio@harbourlightcreative.net",
+   "timezone": "America/New_York"
+  },
+  "cleanupTag": "use-case:spaces-agency-os",
+  "tables": [
+   {
+    "token": "client",
+    "name": "Clients",
+    "labelSingular": "Client",
+    "labelPlural": "Clients",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "building-2",
+    "titleField": "client_name",
+    "describes": "The businesses the agency serves.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "client_name",
+      "label": "Client",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Lead",
+       "Active",
+       "Paused",
+       "Past"
+      ],
+      "choiceColors": {
+       "Lead": "slate",
+       "Active": "green",
+       "Paused": "blue",
+       "Past": "red"
+      },
+      "required": true,
+      "default": "Lead"
+     },
+     {
+      "key": "industry",
+      "label": "Industry",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Retail",
+       "Fitness",
+       "Healthcare",
+       "Hospitality"
+      ],
+      "choiceColors": {
+       "Retail": "slate",
+       "Fitness": "blue",
+       "Healthcare": "amber",
+       "Hospitality": "violet"
+      }
+     },
+     {
+      "key": "email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "since",
+      "label": "Client since",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "account_lead",
+      "label": "Account lead",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "retainers",
+      "label": "Retainers",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "retainer",
+      "multi": true
+     },
+     {
+      "key": "projects",
+      "label": "Projects",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "project",
+      "multi": true
+     },
+     {
+      "key": "project_count",
+      "label": "Project count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "projects",
+      "pick": "project_name",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "c1",
+      "values": {
+       "client_name": "Tidepool Coffee",
+       "status": "Active",
+       "industry": "Retail",
+       "email": "hello@tidepoolcoffee.net",
+       "since": "@today-160d",
+       "account_lead": "tm-bryony",
+       "retainers": [
+        "r1"
+       ],
+       "projects": [
+        "pj1",
+        "pj6"
+       ]
+      }
+     },
+     {
+      "key": "c2",
+      "values": {
+       "client_name": "Granite Peak Fitness",
+       "status": "Active",
+       "industry": "Fitness",
+       "email": "hello@granitepeakfit.net",
+       "since": "@today-320d",
+       "account_lead": "tm-nadine",
+       "retainers": [
+        "r2"
+       ],
+       "projects": [
+        "pj2"
+       ]
+      }
+     },
+     {
+      "key": "c3",
+      "values": {
+       "client_name": "Lumen Optics",
+       "status": "Active",
+       "industry": "Healthcare",
+       "email": "hello@lumenoptics.net",
+       "since": "@today-480d",
+       "account_lead": "tm-bryony",
+       "retainers": [
+        "r3"
+       ],
+       "projects": [
+        "pj3"
+       ]
+      }
+     },
+     {
+      "key": "c4",
+      "values": {
+       "client_name": "Kessler Hardware",
+       "status": "Paused",
+       "industry": "Retail",
+       "email": "hello@kessler-hardware.net",
+       "since": "@today-640d",
+       "account_lead": "tm-nadine",
+       "retainers": [],
+       "projects": [
+        "pj5"
+       ]
+      }
+     },
+     {
+      "key": "c5",
+      "values": {
+       "client_name": "Orchard Lane Hotel",
+       "status": "Lead",
+       "industry": "Hospitality",
+       "email": "hello@orchardlanehotel.net",
+       "since": "@today-800d",
+       "account_lead": "tm-bryony",
+       "retainers": [],
+       "projects": [
+        "pj4"
+       ]
+      }
+     }
+    ],
+    "independentOf": {
+     "account_lead": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "retainer",
+    "name": "Retainers",
+    "labelSingular": "Retainer",
+    "labelPlural": "Retainers",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "repeat",
+    "titleField": "retainer_name",
+    "describes": "Monthly agreements with hours included.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "retainer_name",
+      "label": "Retainer",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "monthly_fee",
+      "label": "Monthly fee",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "hours_included",
+      "label": "Hours included",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 500
+       }
+      ]
+     },
+     {
+      "key": "renews_on",
+      "label": "Renews on",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "client",
+      "label": "Client",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "client",
+      "relationMax": 1
+     },
+     {
+      "key": "entries",
+      "label": "Entries",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "time_entry",
+      "multi": true
+     },
+     {
+      "key": "hours_used",
+      "label": "Hours used",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "entries",
+      "pick": "hours",
+      "agg": "sum"
+     }
+    ],
+    "rows": [
+     {
+      "key": "r1",
+      "values": {
+       "client": "c1",
+       "retainer_name": "Social and email retainer",
+       "monthly_fee": 3200,
+       "hours_included": 40,
+       "renews_on": "@today+19d",
+       "entries": [
+        "tl0",
+        "tl1",
+        "tl2"
+       ]
+      }
+     },
+     {
+      "key": "r2",
+      "values": {
+       "client": "c2",
+       "retainer_name": "Website care plan",
+       "monthly_fee": 1400,
+       "hours_included": 15,
+       "renews_on": "@today+8d",
+       "entries": [
+        "tl3",
+        "tl4"
+       ]
+      }
+     },
+     {
+      "key": "r3",
+      "values": {
+       "client": "c3",
+       "retainer_name": "Quarterly campaign retainer",
+       "monthly_fee": 5200,
+       "hours_included": 60,
+       "renews_on": "@today+44d",
+       "entries": [
+        "tl5",
+        "tl6",
+        "tl7"
+       ]
+      }
+     }
+    ],
+    "independentOf": {
+     "client": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "project",
+    "name": "Projects",
+    "labelSingular": "Project",
+    "labelPlural": "Projects",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "folder-kanban",
+    "titleField": "project_name",
+    "describes": "Fixed-scope jobs outside retainers.",
+    "subject": "thing",
+    "before": [
+     [
+      "start_on",
+      "due_on"
+     ]
+    ],
+    "fields": [
+     {
+      "key": "project_name",
+      "label": "Project",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Proposed",
+       "In progress",
+       "Review",
+       "On hold",
+       "Done"
+      ],
+      "choiceColors": {
+       "Proposed": "slate",
+       "In progress": "blue",
+       "Review": "amber",
+       "On hold": "violet",
+       "Done": "green"
+      },
+      "required": true,
+      "default": "Proposed"
+     },
+     {
+      "key": "kind",
+      "label": "Kind",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Brand",
+       "Web",
+       "Campaign",
+       "Print"
+      ],
+      "choiceColors": {
+       "Brand": "slate",
+       "Web": "blue",
+       "Campaign": "amber",
+       "Print": "violet"
+      }
+     },
+     {
+      "key": "start_on",
+      "label": "Start",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "budget",
+      "label": "Budget",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 300000
+       }
+      ]
+     },
+     {
+      "key": "cost",
+      "label": "Estimated cost",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 300000
+       }
+      ]
+     },
+     {
+      "key": "margin",
+      "label": "Margin",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Budget} - {Estimated cost}"
+     },
+     {
+      "key": "lead",
+      "label": "Lead",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "client",
+      "label": "Client",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "client",
+      "relationMax": 1
+     },
+     {
+      "key": "tasks",
+      "label": "Tasks",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "task",
+      "multi": true
+     },
+     {
+      "key": "task_count",
+      "label": "Task count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "tasks",
+      "pick": "task_name",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "pj1",
+      "values": {
+       "client": "c1",
+       "project_name": "Seasonal menu campaign",
+       "status": "In progress",
+       "lead": "tm-felix",
+       "start_on": "@today-12d",
+       "due_on": "@today+15d",
+       "budget": 7400,
+       "cost": 4588,
+       "kind": "Campaign",
+       "tasks": [
+        "t1",
+        "t2",
+        "t3"
+       ]
+      }
+     },
+     {
+      "key": "pj2",
+      "values": {
+       "client": "c2",
+       "project_name": "Class booking site rebuild",
+       "status": "In progress",
+       "lead": "tm-soledad",
+       "start_on": "@today-30d",
+       "due_on": "@today+22d",
+       "budget": 16800,
+       "cost": 10416,
+       "kind": "Web",
+       "tasks": [
+        "t4",
+        "t5",
+        "t6",
+        "t11"
+       ]
+      }
+     },
+     {
+      "key": "pj3",
+      "values": {
+       "client": "c3",
+       "project_name": "Brand refresh and signage",
+       "status": "Review",
+       "lead": "tm-felix",
+       "start_on": "@today-50d",
+       "due_on": "@today+3d",
+       "budget": 12400,
+       "cost": 7688,
+       "kind": "Brand",
+       "tasks": [
+        "t7",
+        "t8",
+        "t12"
+       ]
+      }
+     },
+     {
+      "key": "pj4",
+      "values": {
+       "client": "c5",
+       "project_name": "Hotel launch microsite",
+       "status": "Proposed",
+       "lead": "tm-nadine",
+       "start_on": "@today+10d",
+       "due_on": "@today+55d",
+       "budget": 21000,
+       "cost": 13020,
+       "kind": "Web",
+       "tasks": [
+        "t9"
+       ]
+      }
+     },
+     {
+      "key": "pj5",
+      "values": {
+       "client": "c4",
+       "project_name": "Catalogue redesign",
+       "status": "On hold",
+       "lead": "tm-amit",
+       "start_on": "@today-70d",
+       "due_on": "@today+20d",
+       "budget": 6200,
+       "cost": 3844,
+       "kind": "Print",
+       "tasks": [
+        "t10"
+       ]
+      }
+     },
+     {
+      "key": "pj6",
+      "values": {
+       "client": "c1",
+       "project_name": "Loyalty app landing page",
+       "status": "Done",
+       "lead": "tm-soledad",
+       "start_on": "@today-65d",
+       "due_on": "@today-20d",
+       "budget": 4800,
+       "cost": 2976,
+       "kind": "Web",
+       "tasks": []
+      }
+     }
+    ],
+    "independentOf": {
+     "lead": "Either record can be created or change status before the other.",
+     "client": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "task",
+    "name": "Tasks",
+    "labelSingular": "Task",
+    "labelPlural": "Tasks",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "list-checks",
+    "titleField": "task_name",
+    "describes": "The work inside each project.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "task_name",
+      "label": "Task",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "To do",
+       "In progress",
+       "Review",
+       "Done"
+      ],
+      "choiceColors": {
+       "To do": "slate",
+       "In progress": "blue",
+       "Review": "amber",
+       "Done": "green"
+      },
+      "required": true,
+      "default": "To do"
+     },
+     {
+      "key": "estimate",
+      "label": "Estimate (hours)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 200
+       }
+      ]
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "assignee",
+      "label": "Assignee",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "project",
+      "label": "Project",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "project",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "t1",
+      "values": {
+       "project": "pj1",
+       "task_name": "Moodboard and key visual",
+       "status": "In progress",
+       "assignee": "tm-felix",
+       "due_on": "@today+2d",
+       "estimate": 12
+      }
+     },
+     {
+      "key": "t2",
+      "values": {
+       "project": "pj1",
+       "task_name": "Menu copy variations",
+       "status": "To do",
+       "assignee": "tm-amit",
+       "due_on": "@today+5d",
+       "estimate": 8
+      }
+     },
+     {
+      "key": "t3",
+      "values": {
+       "project": "pj1",
+       "task_name": "Social asset resizing",
+       "status": "To do",
+       "assignee": "tm-felix",
+       "due_on": "@today+10d",
+       "estimate": 6
+      }
+     },
+     {
+      "key": "t4",
+      "values": {
+       "project": "pj2",
+       "task_name": "Booking flow wireframes",
+       "status": "Done",
+       "assignee": "tm-felix",
+       "due_on": "@today-15d",
+       "estimate": 14
+      }
+     },
+     {
+      "key": "t5",
+      "values": {
+       "project": "pj2",
+       "task_name": "Class schedule component",
+       "status": "In progress",
+       "assignee": "tm-soledad",
+       "due_on": "@today+6d",
+       "estimate": 24
+      }
+     },
+     {
+      "key": "t6",
+      "values": {
+       "project": "pj2",
+       "task_name": "Payment integration test",
+       "status": "To do",
+       "assignee": "tm-soledad",
+       "due_on": "@today+14d",
+       "estimate": 10
+      }
+     },
+     {
+      "key": "t7",
+      "values": {
+       "project": "pj3",
+       "task_name": "Signage artwork proofs",
+       "status": "In progress",
+       "assignee": "tm-felix",
+       "due_on": "@today+1d",
+       "estimate": 9
+      }
+     },
+     {
+      "key": "t8",
+      "values": {
+       "project": "pj3",
+       "task_name": "Brand guideline PDF",
+       "status": "Review",
+       "assignee": "tm-amit",
+       "due_on": "@today+2d",
+       "estimate": 11
+      }
+     },
+     {
+      "key": "t9",
+      "values": {
+       "project": "pj4",
+       "task_name": "Discovery workshop prep",
+       "status": "To do",
+       "assignee": "tm-nadine",
+       "due_on": "@today+11d",
+       "estimate": 5
+      }
+     },
+     {
+      "key": "t10",
+      "values": {
+       "project": "pj5",
+       "task_name": "Print specs from printer",
+       "status": "To do",
+       "assignee": "tm-amit",
+       "due_on": "@today+25d",
+       "estimate": 3
+      }
+     },
+     {
+      "key": "t11",
+      "values": {
+       "project": "pj2",
+       "task_name": "Content migration",
+       "status": "To do",
+       "assignee": "tm-amit",
+       "due_on": "@today+12d",
+       "estimate": 15
+      }
+     },
+     {
+      "key": "t12",
+      "values": {
+       "project": "pj3",
+       "task_name": "Client sign-off call",
+       "status": "To do",
+       "assignee": "tm-nadine",
+       "due_on": "@today+3d",
+       "estimate": 2
+      }
+     }
+    ],
+    "independentOf": {
+     "assignee": "Either record can be created or change status before the other.",
+     "project": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "capacity",
+    "name": "Team capacity",
+    "labelSingular": "Capacity",
+    "labelPlural": "Capacity",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "gauge",
+    "titleField": "entry",
+    "describes": "Weekly hours each person can do against what is booked.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "entry",
+      "label": "Week plan",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "person",
+      "label": "Person",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "weekly_hours",
+      "label": "Weekly capacity (hours)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 80
+       }
+      ]
+     },
+     {
+      "key": "booked",
+      "label": "Booked this week (hours)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 120
+       }
+      ]
+     },
+     {
+      "key": "utilisation",
+      "label": "Utilisation (%)",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Booked this week (hours)} / {Weekly capacity (hours)} * 100"
+     }
+    ],
+    "rows": [
+     {
+      "key": "cp1",
+      "values": {
+       "entry": "Week plan: Nadine",
+       "person": "tm-nadine",
+       "weekly_hours": 30,
+       "booked": 34
+      }
+     },
+     {
+      "key": "cp2",
+      "values": {
+       "entry": "Week plan: Felix",
+       "person": "tm-felix",
+       "weekly_hours": 36,
+       "booked": 41
+      }
+     },
+     {
+      "key": "cp3",
+      "values": {
+       "entry": "Week plan: Soledad",
+       "person": "tm-soledad",
+       "weekly_hours": 36,
+       "booked": 32
+      }
+     },
+     {
+      "key": "cp4",
+      "values": {
+       "entry": "Week plan: Amit",
+       "person": "tm-amit",
+       "weekly_hours": 30,
+       "booked": 22
+      }
+     },
+     {
+      "key": "cp5",
+      "values": {
+       "entry": "Week plan: Bryony",
+       "person": "tm-bryony",
+       "weekly_hours": 32,
+       "booked": 18
+      }
+     }
+    ],
+    "independentOf": {
+     "person": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "proposal",
+    "name": "Proposals",
+    "labelSingular": "Proposal",
+    "labelPlural": "Proposals",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "file-signature",
+    "titleField": "proposal_name",
+    "describes": "Offers that are drafted, sent, won or lost.",
+    "subject": "thing",
+    "statusImplies": [
+     {
+      "field": "stage",
+      "when": [
+       "Sent",
+       "Won",
+       "Lost"
+      ],
+      "filled": [
+       "sent_on"
+      ]
+     }
+    ],
+    "fields": [
+     {
+      "key": "proposal_name",
+      "label": "Proposal",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "stage",
+      "label": "Stage",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Draft",
+       "Sent",
+       "Won",
+       "Lost"
+      ],
+      "choiceColors": {
+       "Draft": "slate",
+       "Sent": "green",
+       "Won": "blue",
+       "Lost": "red"
+      },
+      "required": true,
+      "default": "Draft"
+     },
+     {
+      "key": "value",
+      "label": "Value",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 300000
+       }
+      ]
+     },
+     {
+      "key": "sent_on",
+      "label": "Sent",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "client",
+      "label": "Client",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "client",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "ps1",
+      "values": {
+       "client": "c5",
+       "proposal_name": "Launch microsite proposal",
+       "stage": "Sent",
+       "value": 21000,
+       "sent_on": "@today-4d"
+      }
+     },
+     {
+      "key": "ps2",
+      "values": {
+       "client": "c2",
+       "proposal_name": "Member app discovery",
+       "stage": "Draft",
+       "value": 9500
+      }
+     },
+     {
+      "key": "ps3",
+      "values": {
+       "client": "c3",
+       "proposal_name": "Autumn campaign",
+       "stage": "Won",
+       "value": 11800,
+       "sent_on": "@today-26d"
+      }
+     },
+     {
+      "key": "ps4",
+      "values": {
+       "client": "c4",
+       "proposal_name": "Spring catalogue",
+       "stage": "Lost",
+       "value": 6200,
+       "sent_on": "@today-40d"
+      }
+     },
+     {
+      "key": "ps5",
+      "values": {
+       "client": "c1",
+       "proposal_name": "Second location launch kit",
+       "stage": "Sent",
+       "value": 8400,
+       "sent_on": "@today-7d"
+      }
+     }
+    ],
+    "independentOf": {
+     "client": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "time_entry",
+    "name": "Time log",
+    "labelSingular": "Time entry",
+    "labelPlural": "Time entries",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "clock",
+    "titleField": "entry",
+    "describes": "Hours logged against retainers.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "entry",
+      "label": "Work done",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "worked_on",
+      "label": "Date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "hours",
+      "label": "Hours",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 24
+       }
+      ]
+     },
+     {
+      "key": "person",
+      "label": "Person",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "retainer",
+      "label": "Retainer",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "retainer",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "tl0",
+      "values": {
+       "retainer": "r1",
+       "entry": "Weekly social posts",
+       "worked_on": "@today-6d",
+       "hours": 5,
+       "person": "tm-amit"
+      }
+     },
+     {
+      "key": "tl1",
+      "values": {
+       "retainer": "r1",
+       "entry": "Email template update",
+       "worked_on": "@today-4d",
+       "hours": 3.5,
+       "person": "tm-felix"
+      }
+     },
+     {
+      "key": "tl2",
+      "values": {
+       "retainer": "r1",
+       "entry": "Monthly report",
+       "worked_on": "@today-2d",
+       "hours": 2,
+       "person": "tm-bryony"
+      }
+     },
+     {
+      "key": "tl3",
+      "values": {
+       "retainer": "r2",
+       "entry": "Security and plugin updates",
+       "worked_on": "@today-9d",
+       "hours": 2.5,
+       "person": "tm-soledad"
+      }
+     },
+     {
+      "key": "tl4",
+      "values": {
+       "retainer": "r2",
+       "entry": "Content edits",
+       "worked_on": "@today-3d",
+       "hours": 1.5,
+       "person": "tm-soledad"
+      }
+     },
+     {
+      "key": "tl5",
+      "values": {
+       "retainer": "r3",
+       "entry": "Campaign concepting",
+       "worked_on": "@today-8d",
+       "hours": 12,
+       "person": "tm-nadine"
+      }
+     },
+     {
+      "key": "tl6",
+      "values": {
+       "retainer": "r3",
+       "entry": "Art direction",
+       "worked_on": "@today-5d",
+       "hours": 14,
+       "person": "tm-felix"
+      }
+     },
+     {
+      "key": "tl7",
+      "values": {
+       "retainer": "r3",
+       "entry": "Copy drafts",
+       "worked_on": "@today-3d",
+       "hours": 9,
+       "person": "tm-amit"
+      }
+     }
+    ],
+    "independentOf": {
+     "person": "Either record can be created or change status before the other.",
+     "retainer": "Either record can be created or change status before the other."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each client belongs to one team member.",
+    "fromTable": "client",
+    "fromField": "account_lead",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "client_by_account_lead"
+   },
+   {
+    "describes": "Each retainer belongs to one client.",
+    "fromTable": "retainer",
+    "fromField": "client",
+    "toTable": "client",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "retainer_by_client"
+   },
+   {
+    "describes": "A client lists its retainers.",
+    "fromTable": "client",
+    "fromField": "retainers",
+    "toTable": "retainer",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "client_from_retainers"
+   },
+   {
+    "describes": "Each project belongs to one client.",
+    "fromTable": "project",
+    "fromField": "client",
+    "toTable": "client",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "project_by_client"
+   },
+   {
+    "describes": "A client lists its projects.",
+    "fromTable": "client",
+    "fromField": "projects",
+    "toTable": "project",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "client_from_projects"
+   },
+   {
+    "describes": "Each project belongs to one team member.",
+    "fromTable": "project",
+    "fromField": "lead",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "project_by_lead"
+   },
+   {
+    "describes": "Each task belongs to one project.",
+    "fromTable": "task",
+    "fromField": "project",
+    "toTable": "project",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "task_by_project"
+   },
+   {
+    "describes": "A project lists its tasks.",
+    "fromTable": "project",
+    "fromField": "tasks",
+    "toTable": "task",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "project_from_tasks"
+   },
+   {
+    "describes": "Each task belongs to one team member.",
+    "fromTable": "task",
+    "fromField": "assignee",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "task_by_assignee"
+   },
+   {
+    "describes": "Each capacity belongs to one team member.",
+    "fromTable": "capacity",
+    "fromField": "person",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "capacity_by_person"
+   },
+   {
+    "describes": "Each proposal belongs to one client.",
+    "fromTable": "proposal",
+    "fromField": "client",
+    "toTable": "client",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "proposal_by_client"
+   },
+   {
+    "describes": "Each time entry belongs to one retainer.",
+    "fromTable": "time_entry",
+    "fromField": "retainer",
+    "toTable": "retainer",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "time_entry_by_retainer"
+   },
+   {
+    "describes": "A retainer lists its time entries.",
+    "fromTable": "retainer",
+    "fromField": "entries",
+    "toTable": "time_entry",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "retainer_from_entries"
+   },
+   {
+    "describes": "Each time entry belongs to one team member.",
+    "fromTable": "time_entry",
+    "fromField": "person",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "time_entry_by_person"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-nadine",
+      "values": {
+       "full_name": "Nadine Okonkwo-Reyes",
+       "role": "Founder and strategy",
+       "work_email": "nadine@harbourlightcreative.net",
+       "mobile": "(401) 555-0141",
+       "start_date": "@today-7y"
+      }
+     },
+     {
+      "key": "tm-felix",
+      "values": {
+       "full_name": "Felix Brandvold",
+       "role": "Art director",
+       "work_email": "felix@harbourlightcreative.net",
+       "mobile": "(401) 555-0142",
+       "start_date": "@today-5y"
+      }
+     },
+     {
+      "key": "tm-soledad",
+      "values": {
+       "full_name": "Soledad Vargas",
+       "role": "Developer",
+       "work_email": "soledad@harbourlightcreative.net",
+       "mobile": "(401) 555-0143",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-amit",
+      "values": {
+       "full_name": "Amit Raghavan",
+       "role": "Copywriter",
+       "work_email": "amit@harbourlightcreative.net",
+       "mobile": "(401) 555-0144",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-bryony",
+      "values": {
+       "full_name": "Bryony Castellane",
+       "role": "Account manager",
+       "work_email": "bryony@harbourlightcreative.net",
+       "mobile": "(401) 555-0145",
+       "start_date": "@today-1y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "project_request",
+    "name": "Request a project",
+    "describes": "Capture a new job before it becomes a project.",
+    "audience": "staff",
+    "table": "project",
+    "fields": [
+     {
+      "fieldKey": "project_name",
+      "ask": "What is the job?",
+      "required": true
+     },
+     {
+      "fieldKey": "client",
+      "ask": "Which client?",
+      "required": true
+     },
+     {
+      "fieldKey": "kind",
+      "ask": "What kind of work?"
+     },
+     {
+      "fieldKey": "due_on",
+      "ask": "When is it needed?"
+     }
+    ],
+    "submitLabel": "Send the request",
+    "confirmation": "Thanks. It is on the board as Proposed."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_time_entry",
+    "name": "All time entries",
+    "table": "time_entry",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_proposal",
+    "name": "All proposals",
+    "table": "proposal",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_capacity",
+    "name": "All capacity",
+    "table": "capacity",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_task",
+    "name": "All tasks",
+    "table": "task",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_project",
+    "name": "All projects",
+    "table": "project",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_retainer",
+    "name": "All retainers",
+    "table": "retainer",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_client",
+    "name": "All clients",
+    "table": "client",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "client_board",
+    "name": "Clients by status",
+    "table": "client",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "project_board",
+    "name": "Project board",
+    "table": "project",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "project_timeline",
+    "name": "Project timeline",
+    "table": "project",
+    "kind": "timeline",
+    "startField": "start_on",
+    "endField": "due_on"
+   },
+   {
+    "token": "task_board",
+    "name": "Tasks by person",
+    "table": "task",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "proposal_board",
+    "name": "Proposal board",
+    "table": "proposal",
+    "kind": "kanban",
+    "groupBy": "stage"
+   },
+   {
+    "token": "retainer_cal",
+    "name": "Renewals",
+    "table": "retainer",
+    "kind": "calendar",
+    "dateField": "renews_on",
+    "allDay": true
+   },
+   {
+    "token": "task_cal",
+    "name": "Task calendar",
+    "table": "task",
+    "kind": "calendar",
+    "dateField": "due_on",
+    "allDay": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Agency assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "project",
+     "describes": "Every project with its client, status, dates and budget."
+    },
+    {
+     "name": "related_tables",
+     "table": "client",
+     "describes": "The clients the projects belong to."
+    }
+   ],
+   "question": {
+    "ask": "How many projects are in review?",
+    "whyItMatters": "Nadine signs off projects in review on Fridays.",
+    "expect": {
+     "table": "project",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Review"
+     },
+     "answer": 1,
+     "unit": "projects"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open clients by status.",
+    "action": {
+     "kind": "open",
+     "surface": "client_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "client_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open project board.",
+    "action": {
+     "kind": "open",
+     "surface": "project_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "project_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open project timeline.",
+    "action": {
+     "kind": "open",
+     "surface": "project_timeline"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "project_timeline",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "harbourlightcreative.net",
+    "tidepoolcoffee.net",
+    "granitepeakfit.net",
+    "lumenoptics.net",
+    "kessler-hardware.net",
+    "orchardlanehotel.net"
+   ],
+   "fictionalStreets": [
+    "Ketterick Wharf"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "agency-os",
+   "parent": null,
+   "title": "Agency OS",
+   "icon": {
+    "emoji": "🏗️"
+   },
+   "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Clients, retainers, projects, capacity and proposals together. Check the retainers for hours used and the capacity table before accepting new work."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:kickoff"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:proposal-outline"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:monthly-report"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Projects"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "project",
+       "view": "project_board"
+      },
+      "inline": true,
+      "title": "Projects",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-tl",
+        "name": "Timeline",
+        "layout": "timeline",
+        "icon": "ChartGantt",
+        "dateField": "start_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All projects",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Tasks"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "task",
+       "view": "task_board"
+      },
+      "inline": true,
+      "title": "Tasks",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Board",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "due_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All tasks",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Retainers"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "retainer",
+       "view": "retainer_cal"
+      },
+      "inline": true,
+      "title": "Retainers",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-cal",
+        "name": "Renewals",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "renews_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All retainers",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-cal"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Capacity"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "capacity",
+       "view": "all_capacity"
+      },
+      "inline": true,
+      "title": "Capacity",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-tbl",
+        "name": "This week",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-tbl"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Proposals"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "proposal",
+       "view": "proposal_board"
+      },
+      "inline": true,
+      "title": "Proposals",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By stage",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "stage"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All proposals",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Clients"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "client",
+       "view": "client_board"
+      },
+      "inline": true,
+      "title": "Clients",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All clients",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "agency-os",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "project",
+           "view": "all_project"
+          },
+          "inline": true,
+          "title": "Projects by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "Projects by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "proposal",
+           "view": "all_proposal"
+          },
+          "inline": true,
+          "title": "Proposal value by stage",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Proposal value by stage",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "stage",
+             "op": "sum",
+             "field": "value"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "capacity",
+           "view": "all_capacity"
+          },
+          "inline": true,
+          "title": "Booked hours by person",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Booked hours by person",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "person",
+             "op": "sum",
+             "field": "booked"
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Projects in review"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "project",
+       "view": "all_project"
+      },
+      "inline": true,
+      "title": "Projects in review",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-rev",
+        "name": "In review",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "status": "Review"
+        }
+       }
+      ],
+      "activeViewId": "view-rev"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Open proposals"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "proposal",
+       "view": "all_proposal"
+      },
+      "inline": true,
+      "title": "Open proposals",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-sent",
+        "name": "Sent",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "stage": "Sent"
+        }
+       }
+      ],
+      "activeViewId": "view-sent"
+     }
+    }
+   ]
+  },
+  {
+   "key": "kickoff",
+   "parent": "agency-os",
+   "title": "Project kickoff checklist",
+   "icon": {
+    "emoji": "🚀"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Scope and budget confirmed in writing"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Lead and team assigned"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Tasks created with estimates"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "First client check-in booked"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Margin checked against the estimate"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "proposal-outline",
+   "parent": "agency-os",
+   "title": "Proposal outline",
+   "icon": {
+    "emoji": "📄"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "The problem in the client's words"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "What we will deliver"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Timeline and milestones"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Investment and payment terms"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Why us, in two paragraphs"
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Send the proposal within two days of the discovery call."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Send"
+     }
+    }
+   ]
+  },
+  {
+   "key": "monthly-report",
+   "parent": "agency-os",
+   "title": "Monthly retainer report",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Send to every retainer client"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Hours used versus hours included"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "What shipped this month"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "What is planned next month"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Anything that needs their decision"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

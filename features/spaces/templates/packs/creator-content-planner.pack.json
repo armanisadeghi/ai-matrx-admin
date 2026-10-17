@@ -1,10 +1,10 @@
 {
  "packVersion": 1,
  "catalogueId": "SP0301",
- "version": 1,
- "title": "Content Calendar",
- "description": "Plan posts across channels from idea to published, and see the month at a glance.",
- "forWho": "Creators and small marketing teams",
+ "version": 2,
+ "title": "Creator Content Planner",
+ "description": "Script and schedule videos, podcast episodes, posts and emails across all your channels.",
+ "forWho": "Solo creators with YouTube, podcast and newsletter",
  "icon": {
   "emoji": "🗓️"
  },
@@ -234,6 +234,7 @@
       "contextPolicy": "include",
       "choices": [
        "YouTube",
+       "Podcast",
        "Instagram",
        "TikTok",
        "LinkedIn",
@@ -242,11 +243,12 @@
       ],
       "choiceColors": {
        "YouTube": "slate",
-       "Instagram": "blue",
-       "TikTok": "amber",
-       "LinkedIn": "violet",
-       "Blog": "teal",
-       "Newsletter": "orange"
+       "Podcast": "blue",
+       "Instagram": "amber",
+       "TikTok": "violet",
+       "LinkedIn": "teal",
+       "Blog": "orange",
+       "Newsletter": "yellow"
       },
       "required": true
      },
@@ -258,6 +260,7 @@
       "contextPolicy": "include",
       "choices": [
        "Video",
+       "Episode",
        "Reel",
        "Short video",
        "Carousel",
@@ -267,12 +270,13 @@
       ],
       "choiceColors": {
        "Video": "slate",
-       "Reel": "blue",
-       "Short video": "amber",
-       "Carousel": "violet",
-       "Article": "teal",
-       "Post": "orange",
-       "Email": "yellow"
+       "Episode": "blue",
+       "Reel": "amber",
+       "Short video": "violet",
+       "Carousel": "teal",
+       "Article": "orange",
+       "Post": "yellow",
+       "Email": "pink"
       }
      },
      {
@@ -283,6 +287,7 @@
       "contextPolicy": "include",
       "choices": [
        "Idea",
+       "Scripting",
        "Drafting",
        "Review",
        "Scheduled",
@@ -290,10 +295,11 @@
       ],
       "choiceColors": {
        "Idea": "slate",
-       "Drafting": "blue",
-       "Review": "amber",
+       "Scripting": "blue",
+       "Drafting": "amber",
+       "Review": "violet",
        "Scheduled": "green",
-       "Published": "violet"
+       "Published": "teal"
       },
       "required": true,
       "default": "Idea"
@@ -518,7 +524,7 @@
        "title": "Low-light myths, busted",
        "platform": "TikTok",
        "format": "Short video",
-       "status": "Idea",
+       "status": "Scripting",
        "publish_on": "@today+14d",
        "pillar": "Myths",
        "priority": "Medium",
@@ -546,9 +552,9 @@
       "key": "co12",
       "values": {
        "title": "Studio tour: where the cuttings grow",
-       "platform": "YouTube",
-       "format": "Video",
-       "status": "Idea",
+       "platform": "Podcast",
+       "format": "Episode",
+       "status": "Scripting",
        "publish_on": "@today+20d",
        "pillar": "Behind the scenes",
        "priority": "Low",
@@ -956,13 +962,13 @@
     "Marrow Street"
    ]
   },
-  "version": 1
+  "version": 2
  },
  "pages": [
   {
-   "key": "content-calendar",
+   "key": "creator-content-planner",
    "parent": null,
-   "title": "Content Calendar",
+   "title": "Creator Content Planner",
    "icon": {
     "emoji": "🗓️"
    },
@@ -978,7 +984,7 @@
      "type": "callout",
      "text": [
       {
-       "text": "Ideas become drafts, drafts go to review, then get scheduled and published. Open the calendar to see the month; move cards on the board as work progresses."
+       "text": "Ideas get a script, scripts become drafts, drafts go to review, then get scheduled and published. Open the calendar to see the month; move cards on the board as work progresses."
       }
      ],
      "background": "blue",
@@ -1198,7 +1204,7 @@
   },
   {
    "key": "dashboard",
-   "parent": "content-calendar",
+   "parent": "creator-content-planner",
    "title": "Dashboard",
    "icon": {
     "emoji": "📊"
@@ -1412,7 +1418,7 @@
   },
   {
    "key": "workflow",
-   "parent": "content-calendar",
+   "parent": "creator-content-planner",
    "title": "How the pipeline works",
    "icon": {
     "emoji": "🔄"
@@ -1433,7 +1439,15 @@
      "type": "numbered",
      "text": [
       {
-       "text": "Drafting: one owner writes or shoots it."
+       "text": "Scripting: write the outline, hook and call to action."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Drafting: one owner writes, records or shoots it."
       }
      ]
     },
@@ -1477,7 +1491,7 @@
   },
   {
    "key": "channel-guide",
-   "parent": "content-calendar",
+   "parent": "creator-content-planner",
    "title": "Channel guide",
    "icon": {
     "emoji": "📱"
@@ -1541,7 +1555,7 @@
   },
   {
    "key": "publish-checklist",
-   "parent": "content-calendar",
+   "parent": "creator-content-planner",
    "title": "Publish checklist",
    "icon": {
     "emoji": "✅"
