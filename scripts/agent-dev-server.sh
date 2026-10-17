@@ -306,6 +306,14 @@ NM_PENDING=""
 NM_PENDING_SINCE=0
 NM_HELD_DEFER_SEC="${MATRX_PREVIEW_INSTALL_DEFER_SEC:-1200}"
 NM_DEFER_SAID=0
+NM_PENDING_LOG_OFFSET=0
+# Since the install was first seen, has the server logged a failure to resolve an @ai-matrx package or
+# one of its exports? (Module not found on an @ai-matrx path, or "doesn't exist in target module".)
+stale_graph_failing() {
+  [[ -f "$LOG" ]] || return 1
+  tail -c "+$(( ${NM_PENDING_LOG_OFFSET:-0} + 1 ))" "$LOG" 2>/dev/null |
+    grep -a -E "Can't resolve '@ai-matrx/|doesn't exist in target module" >/dev/null
+}
 restart_if_node_modules_moved() {
   local pid="$1" recorded current now moves
   recorded="$(meta_value NM_FINGERPRINT)"
@@ -319,6 +327,7 @@ restart_if_node_modules_moved() {
   if [[ "$current" != "$NM_PENDING" ]]; then
     NM_PENDING="$current"
     NM_PENDING_SINCE="$now"
+    NM_PENDING_LOG_OFFSET="$(stat_fmt %s %z "$LOG" || echo 0)"
     return 1
   fi
   [[ "$current" != missing ]] || return 1
@@ -332,7 +341,10 @@ restart_if_node_modules_moved() {
   # A test run holds the server: a restart now costs it a cold compile mid-run (2026-10-15: three
   # installs in six minutes restarted it three times). Defer while held, at most NM_HELD_DEFER_SEC;
   # a page that really breaks on the old graph is repaired by `pnpm preview:ready` (STALE SERVER).
-  if held && (( now - NM_PENDING_SINCE < NM_HELD_DEFER_SEC )); then
+  # ...unless the old graph is already failing to resolve our packages: then every page answers 500
+  # for everyone, held runs included (2026-10-16 06:06Z: "Can't resolve '@ai-matrx/chat/…/page-leaving'"
+  # while 13 holds deferred the restart). A broken server is restarted at once.
+  if held && (( now - NM_PENDING_SINCE < NM_HELD_DEFER_SEC )) && ! stale_graph_failing; then
     if (( ! NM_DEFER_SAID )); then
       printf '[preview] packages were installed under the server; a test run holds it, so the restart waits (at most %s min)\n' "$(( NM_HELD_DEFER_SEC / 60 ))" >>"$LOG"
       NM_DEFER_SAID=1
