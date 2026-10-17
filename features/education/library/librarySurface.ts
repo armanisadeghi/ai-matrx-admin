@@ -132,6 +132,10 @@ function compactFilters(
       if (f.values.length) out[key] = f.values;
     } else if (f.kind === "text") {
       if (f.value.trim()) out[key] = f.value;
+    } else if (f.kind === "date") {
+      out[key] = [f.since ? `since ${f.since}` : "", f.until ? `until ${f.until}` : ""]
+        .filter(Boolean)
+        .join(" ");
     } else out[key] = f.value;
   }
   return out;

@@ -27,6 +27,8 @@ function toTableFilter(filter: EntityFilterValue): ColumnFilterValue {
       };
     case "boolean":
       return { kind: "boolean", value: filter.value };
+    case "date":
+      return filter;
   }
 }
 
