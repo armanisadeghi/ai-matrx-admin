@@ -1,0 +1,73 @@
+// Package build waste (aidream billing.ci_package_build): one row per package built by one CI job.
+// Rules + reasons live in aidream/services/billing/build_waste_rules.py; this file only reads and groups.
+import { supabase } from "@/utils/supabase/client";
+
+export interface BuildRow {
+  ecosystem: "npm" | "pypi" | "docker";
+  package: string;
+  outcome: string;
+  no_op: boolean;
+  reason: string | null;
+  billed_minutes: number;
+  cost_usd: number;
+  requested_by: string | null;
+  trigger: string;
+  built_at: string;
+}
+
+export interface PackageWaste {
+  id: string;
+  ecosystem: string;
+  package: string;
+  builds: number;
+  noop: number;
+  noopPct: number;
+  minutes: number;
+  noopMinutes: number;
+  noopUsd: number;
+  topReason: string | null;
+}
+
+const PAGE = 1000;
+
+export async function fetchBuilds(days: number): Promise<BuildRow[]> {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const out: BuildRow[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .schema("billing")
+      .from("ci_package_build")
+      .select("ecosystem, package, outcome, no_op, reason, billed_minutes, cost_usd, requested_by, trigger, built_at")
+      .gte("built_at", since)
+      .is("deleted_at", null)
+      .order("built_at", { ascending: false })
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    out.push(...((data ?? []) as BuildRow[]));
+    if (!data || data.length < PAGE) return out;
+  }
+}
+
+export function byPackage(rows: BuildRow[]): PackageWaste[] {
+  const map = new Map<string, PackageWaste & { reasons: Map<string, number> }>();
+  for (const r of rows) {
+    const id = `${r.ecosystem}:${r.package}`;
+    const p = map.get(id) ?? { id, ecosystem: r.ecosystem, package: r.package, builds: 0, noop: 0, noopPct: 0, minutes: 0, noopMinutes: 0, noopUsd: 0, topReason: null, reasons: new Map() };
+    p.builds += 1;
+    p.minutes += r.billed_minutes;
+    if (r.no_op) {
+      p.noop += 1;
+      p.noopMinutes += r.billed_minutes;
+      p.noopUsd += Number(r.cost_usd);
+      if (r.reason) p.reasons.set(r.reason, (p.reasons.get(r.reason) ?? 0) + 1);
+    }
+    map.set(id, p);
+  }
+  return [...map.values()]
+    .map(({ reasons, ...p }) => ({
+      ...p,
+      noopPct: p.builds ? Math.round((1000 * p.noop) / p.builds) / 10 : 0,
+      topReason: [...reasons.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
+    }))
+    .sort((a, b) => b.noopMinutes - a.noopMinutes);
+}

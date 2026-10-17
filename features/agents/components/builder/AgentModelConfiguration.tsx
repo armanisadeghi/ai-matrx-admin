@@ -29,6 +29,7 @@ import { AgentVariablesModal } from "@/features/agents/components/variables-mana
 import { AgentToolsModal } from "@/features/agents/components/tools-management/AgentToolsModal";
 import { AgentSkillsButton } from "@/features/agents/components/skills-management/AgentSkillsButton";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { cn } from "@/lib/utils";
 import { useOpenAgentAdvancedSettingsWindow } from "@/features/overlays/openers/agentAdvancedSettingsWindow";
@@ -159,13 +160,14 @@ export function AgentModelConfiguration({
         <AgentVariablesModal agentId={agentId} />
         <AgentToolsModal agentId={agentId} />
         <AgentSkillsButton agentId={agentId} />
-        <button
+        <Button
           type="button"
-          className="rounded-md px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          variant="ghost"
+          size="sm"
           onClick={() => openAdvancedSettings({ agentId })}
         >
           Advanced settings
-        </button>
+        </Button>
       </div>
     </div>
   );

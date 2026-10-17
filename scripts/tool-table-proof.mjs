@@ -27,7 +27,12 @@ for (let i = 0; i < 4; i++) {
 }
 const box = page.locator('input[placeholder^="e.g."]').first();
 await box.waitFor({ timeout: 400000 });
-await box.fill(subject);
+await page.waitForTimeout(6000);
+for (let i = 0; i < 5; i++) {
+  await box.fill(subject);
+  await page.waitForTimeout(2500);
+  if ((await box.inputValue()) === subject) break;
+}
 await box.press("Enter");
 await page.waitForSelector('[data-tool-result="succeeded"]', { timeout: 300000 });
 await page.waitForSelector("[data-tool-table-bar]", { timeout: 60000 });

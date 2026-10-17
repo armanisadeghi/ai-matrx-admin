@@ -4,7 +4,7 @@
  * switch proof (R2: "every overlay must open in the app before the controller is deleted").
  *
  *   npx tsx scripts/overlays-convert/sweep.ts --url http://<your-session>.localhost:3001 \
- *       [--route /notes] [--only id1,id2] [--out sweep.json] [--settle 2500] [--headed]
+ *       [--route /notes] [--only id1,id2] [--out sweep.json] [--settle 2500] [--headed] [--data data.json]
  *
  * Needs a DEV build (the hook `window.__overlaysTest` is installed by features/overlays/host/
  * OverlayServices.tsx only when NODE_ENV === "development") and signs in as the test admin with
@@ -35,6 +35,12 @@ const ROUTE = arg("--route") ?? "/notes";
 const ONLY = arg("--only")?.split(",").filter(Boolean);
 const OUT = arg("--out") ?? path.resolve("tmp/overlays-sweep.json");
 const SETTLE = Number(arg("--settle") ?? 2500);
+/**
+ * --data: a JSON object { "<overlay id>": { ...open data } } for overlays that refuse to render
+ * without a record (share, review, access, conversation-bound windows). Ids not in it open with {}.
+ */
+const DATA_FILE = arg("--data");
+const OPEN_DATA: Record<string, Record<string, unknown>> = DATA_FILE ? JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) : {};
 
 function readEnv(): Record<string, string> {
   const appRoot = path.resolve(path.dirname(path.resolve(process.argv[1] ?? ".")), "../..");
@@ -53,6 +59,7 @@ function readEnv(): Record<string, string> {
 interface Row {
   id: string;
   status: "rendered" | "error-card" | "console-error" | "not-open";
+  withData?: boolean;
   consoleErrors: string[];
   errorCard?: string;
   ms: number;
@@ -91,7 +98,7 @@ async function main(): Promise<void> {
   for (const id of ids) {
     current = [];
     const t0 = Date.now();
-    const instanceId = await page.evaluate((x) => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.open(x), id);
+    const instanceId = await page.evaluate(([x, d]) => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.open(x, d), [id, OPEN_DATA[id] ?? {}] as const);
     await page.waitForTimeout(SETTLE);
     const open = await page.evaluate(([x, inst]) => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.isOpen(x, inst), [id, instanceId] as const);
     const errorCard = await page
@@ -101,7 +108,7 @@ async function main(): Promise<void> {
       .textContent({ timeout: 200 })
       .catch(() => null);
     const status: Row["status"] = errorCard ? "error-card" : open === false ? "not-open" : current.length ? "console-error" : "rendered";
-    rows.push({ id, status, consoleErrors: current, ...(errorCard ? { errorCard: errorCard.slice(0, 300) } : {}), ms: Date.now() - t0 });
+    rows.push({ id, status, ...(OPEN_DATA[id] ? { withData: true } : {}), consoleErrors: current, ...(errorCard ? { errorCard: errorCard.slice(0, 300) } : {}), ms: Date.now() - t0 });
     console.log(`${status.padEnd(13)} ${id}${current.length ? `  (${current.length} console errors)` : ""}`);
     await page.evaluate((x) => (window as unknown as { __overlaysTest: SummonTestHook }).__overlaysTest.close(x), id);
     await page.waitForTimeout(200);

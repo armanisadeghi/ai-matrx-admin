@@ -28,6 +28,7 @@ import { setAgentModelTiers } from "@/features/agents/redux/agent-builder.slice"
 import { selectAgentModelTiers } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import type { ModelTiers } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { Plus, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { longCacheLine } from "./advancedSettingsText";
 
 interface AgentAdvancedSettingsWindowProps {
@@ -150,43 +151,32 @@ export default function AgentAdvancedSettingsWindow({
                     selectionPurpose="agent"
                     modelOnly
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     aria-label={`Remove ${tier.label || key}`}
-                    className="rounded p-1 text-muted-foreground hover:text-foreground"
                     onClick={() => removeTier(key)}
                   >
                     <X className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </SettingRow>
             ))}
             <div className="flex items-center justify-between px-1 pt-1">
-              <button
-                type="button"
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                onClick={addTier}
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={addTier}>
                 <Plus className="h-3.5 w-3.5" /> Add tier
-              </button>
-              <button
-                type="button"
-                className="text-xs text-muted-foreground hover:text-foreground"
-                onClick={() => writeTiers(null)}
-              >
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => writeTiers(null)}>
                 Remove tiers
-              </button>
+              </Button>
             </div>
           </>
         ) : (
           <SettingRow label="Tiers" line="Off">
-            <button
-              type="button"
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              onClick={addTier}
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={addTier}>
               <Plus className="h-3.5 w-3.5" /> Add tier
-            </button>
+            </Button>
           </SettingRow>
         )}
       </RowGroup>
