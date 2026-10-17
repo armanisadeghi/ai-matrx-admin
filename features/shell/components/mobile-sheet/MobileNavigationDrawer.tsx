@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import { BottomSheet, BottomSheetBody } from "@ai-matrx/design-system";
 import { XTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import type {
@@ -99,7 +99,7 @@ function GroupButton({
           {content}
         </OutboundLink>
       ) : (
-        <AppLink
+        <NavLink
           href={item.href}
           className={className}
           data-nav-href={item.href}
@@ -108,7 +108,7 @@ function GroupButton({
           onClick={closeAfterNavigationStarts}
         >
           {content}
-        </AppLink>
+        </NavLink>
       )}
       <button
         type="button"

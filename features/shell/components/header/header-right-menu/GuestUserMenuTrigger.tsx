@@ -1,6 +1,6 @@
 "use client";
 
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import { LogIn } from "lucide-react";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 
@@ -13,7 +13,7 @@ export default function GuestUserMenuTrigger() {
   const loginHref = useLoginHref();
 
   return (
-    <AppLink
+    <NavLink
       href={loginHref}
       title="Sign in"
       className="shell-nav-item shell-nav-stable shell-tactile-subtle"
@@ -22,6 +22,6 @@ export default function GuestUserMenuTrigger() {
         <LogIn size={18} strokeWidth={1.75} aria-hidden="true" />
       </span>
       <span className="shell-nav-label">Sign in</span>
-    </AppLink>
+    </NavLink>
   );
 }

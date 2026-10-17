@@ -6,7 +6,7 @@
 //
 // Export MobileDockItem so custom route docks can reuse the same link shape.
 
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import ShellIcon from "../ShellIcon";
 import { dockItems, navItemsForViewer } from "../../constants/nav-data";
 import type { ShellNavItem } from "../../constants/nav-data";
@@ -27,14 +27,14 @@ export function MobileDockItem({ item }: { item: ShellNavItem }) {
   }
 
   return (
-    <AppLink
+    <NavLink
       href={item.href}
       data-nav-href={item.href}
       className="shell-dock-item"
       aria-label={item.label}
     >
       <ShellIcon name={item.iconName} size={22} strokeWidth={1.75} />
-    </AppLink>
+    </NavLink>
   );
 }
 

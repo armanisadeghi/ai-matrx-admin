@@ -19,7 +19,7 @@ import { useBackHref } from "@/lib/navigation/useBackHref";
 import { useState } from "react";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { usePhonePageActions } from "@/features/shell/components/header/phone-page-actions";
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import {
   Check,
   ChevronDown,
@@ -368,7 +368,7 @@ export function EntityModeHeader({
                         asChild
                         className={cn(opt.active && "bg-accent/60")}
                       >
-                        <AppLink
+                        <NavLink
                           href={opt.href}
                           className="flex items-center gap-2"
                         >
@@ -381,7 +381,7 @@ export function EntityModeHeader({
                             )}
                           />
                           <span className="truncate">{opt.label}</span>
-                        </AppLink>
+                        </NavLink>
                       </DropdownMenuItem>
                     ))}
                   </div>

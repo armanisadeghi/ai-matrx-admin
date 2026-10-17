@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { usePathname } from "next/navigation";
 import { Button } from "@ai-matrx/design-system/controls";
 import { loginHref } from "@/utils/auth/auth-destination";
@@ -13,9 +13,9 @@ import { loginHref } from "@/utils/auth/auth-destination";
  */
 export function GuestBrand() {
   return (
-    <Link href="/" aria-label="AI Matrx home" className="flex h-11 w-11 shrink-0 items-center justify-center">
+    <NavLink href="/" aria-label="AI Matrx home" className="flex h-11 w-11 shrink-0 items-center justify-center">
       <Image src="/matrx/matrx-icon.svg" width={20} height={20} alt="AI Matrx Logo" priority />
-    </Link>
+    </NavLink>
   );
 }
 
@@ -23,7 +23,7 @@ export function GuestSignIn() {
   const pathname = usePathname();
   return (
     <Button variant="quiet" asChild>
-      <Link href={loginHref(pathname)}>Sign in</Link>
+      <NavLink href={loginHref(pathname)}>Sign in</NavLink>
     </Button>
   );
 }

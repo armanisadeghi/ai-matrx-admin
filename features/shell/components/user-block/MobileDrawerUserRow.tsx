@@ -10,7 +10,7 @@
 // `userData` prop); a guest sees a "Sign in" row that goes straight to login.
 
 import { ChevronRight, LogIn, User } from "lucide-react";
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
@@ -39,7 +39,7 @@ export default function MobileDrawerUserRow() {
 
   if (!user.id) {
     return (
-      <AppLink
+      <NavLink
         href={loginHref}
         className="shell-mobile-nav-item shell-mobile-user-row"
         onClick={() => window.setTimeout(closeShellMobileMenu, 0)}
@@ -48,7 +48,7 @@ export default function MobileDrawerUserRow() {
           <LogIn size={20} strokeWidth={1.75} />
         </span>
         <span className="min-w-0 flex-1 truncate text-left">Sign in</span>
-      </AppLink>
+      </NavLink>
     );
   }
 

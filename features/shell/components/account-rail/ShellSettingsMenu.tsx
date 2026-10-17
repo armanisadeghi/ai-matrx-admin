@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -105,10 +105,10 @@ function SettingsMenuList({ onDone }: { onDone: () => void }) {
         <span className="min-w-0 flex-1 truncate text-left">Media</span>
       </button>
       {isAuthenticated ? (
-        <AppLink href="/trash" onClick={onDone} className={ROW} role="menuitem">
+        <NavLink href="/trash" onClick={onDone} className={ROW} role="menuitem">
           <Trash2 />
           <span className="min-w-0 flex-1 truncate">Trash</span>
-        </AppLink>
+        </NavLink>
       ) : null}
     </div>
   );
