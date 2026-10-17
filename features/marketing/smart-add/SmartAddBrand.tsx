@@ -432,6 +432,7 @@ export function SmartAddBrand({
       website: Boolean(seeds.website),
       accounts: seeds.socials.length > 0,
       name: Boolean(confirmedFacts.name),
+      person,
     });
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound && !email) return;
     emailPending.current = "";
