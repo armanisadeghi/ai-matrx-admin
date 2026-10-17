@@ -7,8 +7,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ChevronRight, Laptop } from "lucide-react";
+import Link, { useLinkStatus } from "next/link";
+import { ChevronRight, Laptop, Loader2 } from "lucide-react";
 import type { RelayDeviceStatusEvent } from "@ai-matrx/desktop-protocol";
 
 import PageHeader from "@/features/shell/components/header/PageHeader";
@@ -51,6 +51,16 @@ function useRelayStatuses(ids: string[]): Record<string, RelayDeviceStatusEvent 
   return statuses;
 }
 
+/** The row's trailing mark: a spinner the moment the row is tapped, until the console arrives (a cold route takes seconds). */
+export function RowOpening() {
+  const { pending } = useLinkStatus();
+  return pending ? (
+    <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" aria-label="Opening" role="status" />
+  ) : (
+    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/70" aria-hidden="true" />
+  );
+}
+
 function DeviceListRow({ device, status, now }: { device: DeviceRow; status: RelayDeviceStatusEvent | null | undefined; now: number }) {
   const name = device.instance_name?.trim() || "Unnamed device";
   const online = status?.online === true;
@@ -78,7 +88,7 @@ function DeviceListRow({ device, status, now }: { device: DeviceRow; status: Rel
           {osLine(device.platform, device.os_version)} · {seen}
         </span>
       </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/70" aria-hidden="true" />
+      <RowOpening />
     </Link>
   );
 }
