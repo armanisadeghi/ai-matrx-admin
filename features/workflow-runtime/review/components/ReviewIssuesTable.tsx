@@ -89,10 +89,10 @@ export function ReviewIssuesTable({
       width: 300,
       href: (row) => reviewIssueHref(row.definition_id, row.id),
       cell: (row) => (
-        <span className="block min-w-0 whitespace-normal break-words">
-          <span className="block">{row.what}</span>
+        <span className="block min-w-0">
+          <span className="block font-medium">{row.what}</span>
           {row.last_message ? (
-            <span className="line-clamp-2 block text-xs text-muted-foreground" title={row.last_message}>
+            <span className="block text-xs text-muted-foreground" title={row.last_message}>
               {row.last_message}
             </span>
           ) : null}
@@ -222,6 +222,7 @@ export function ReviewIssuesTable({
         getRowId={(row) => row.id}
         isLoading={loading}
         urlState={{ id: urlStateId }}
+        cellLines="four"
         rowActionDefs={rowActionDefs}
         toolbar={toolbarLeading ? { leading: toolbarLeading } : undefined}
         onRowOpen={(row) => {
