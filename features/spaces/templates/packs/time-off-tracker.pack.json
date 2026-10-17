@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0253",
-  "version": 1,
+  "version": 2,
   "title": "Time-Off Tracker",
   "description": "Request, approve and track leave with a team calendar and live balances.",
   "forWho": "Small teams and HR managers",
@@ -97,6 +97,13 @@
             }
           },
           {
+            "key": "cover_note",
+            "label": "Cover arrangement",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "allowance",
             "label": "Annual allowance",
             "parityType": "integer",
@@ -139,15 +146,6 @@
             "formula": "{Annual allowance} + {Carry-over}"
           },
           {
-            "key": "request_list",
-            "label": "Requests",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "request",
-            "multi": true
-          },
-          {
             "key": "used",
             "label": "Vacation days used",
             "parityType": "rollup",
@@ -174,6 +172,30 @@
               "status": "Approved",
               "type": "Sick"
             }
+          },
+          {
+            "key": "remaining",
+            "label": "Vacation days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Total available} - {Vacation days used}"
+          },
+          {
+            "key": "remaining_flag",
+            "label": "Balance check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Vacation days left} <= 3, \"Low\", IF({Vacation days left} < 0, \"Over\", \"Fine\"))"
+          },
+          {
+            "key": "used_pct",
+            "label": "Used (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Total available} > 0, ROUND({Vacation days used} / {Total available} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -185,9 +207,7 @@
               "team": "Management",
               "allowance": 20,
               "carry": 3,
-              "request_list": [
-                "rq06"
-              ]
+              "cover_note": "Jasper acts as manager on leave days"
             }
           },
           {
@@ -198,10 +218,7 @@
               "team": "Clinical",
               "allowance": 25,
               "carry": 0,
-              "request_list": [
-                "rq02",
-                "rq14"
-              ]
+              "cover_note": "Bianca covers patients; no overlap with Ravi"
             }
           },
           {
@@ -212,10 +229,7 @@
               "team": "Clinical",
               "allowance": 18,
               "carry": 2,
-              "request_list": [
-                "rq01",
-                "rq09"
-              ]
+              "cover_note": "Ravi covers the hygiene schedule"
             }
           },
           {
@@ -226,10 +240,7 @@
               "team": "Clinical",
               "allowance": 15,
               "carry": 0,
-              "request_list": [
-                "rq03",
-                "rq10"
-              ]
+              "cover_note": "Tomás swaps late shifts"
             }
           },
           {
@@ -240,10 +251,7 @@
               "team": "Front office",
               "allowance": 15,
               "carry": 1,
-              "request_list": [
-                "rq04",
-                "rq11"
-              ]
+              "cover_note": "Nadia answers the front desk phone"
             }
           },
           {
@@ -254,10 +262,7 @@
               "team": "Clinical",
               "allowance": 15,
               "carry": 0,
-              "request_list": [
-                "rq07",
-                "rq12"
-              ]
+              "cover_note": "Gabriel covers the Thursday clinic"
             }
           },
           {
@@ -268,10 +273,7 @@
               "team": "Front office",
               "allowance": 18,
               "carry": 4,
-              "request_list": [
-                "rq05",
-                "rq13"
-              ]
+              "cover_note": "Elise covers opening, Camille closing"
             }
           },
           {
@@ -282,10 +284,7 @@
               "team": "Clinical",
               "allowance": 12,
               "carry": 0,
-              "request_list": [
-                "rq08",
-                "rq15"
-              ]
+              "cover_note": "Jasper takes urgent cases"
             }
           }
         ]
@@ -418,7 +417,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -434,7 +433,13 @@
               "Cancelled": "slate"
             },
             "required": true,
-            "default": "Pending"
+            "default": "Pending",
+            "statusGroups": {
+              "Pending": "todo",
+              "Approved": "done",
+              "Declined": "done",
+              "Cancelled": "done"
+            }
           },
           {
             "key": "approver",
@@ -459,6 +464,35 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "updated",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approve_btn",
+            "label": "Approve",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "rq_approve"
+            }
+          },
+          {
+            "key": "decline_btn",
+            "label": "Decline",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "rq_decline"
+            }
           }
         ],
         "rows": [
@@ -702,6 +736,102 @@
               "submitted_on": "@today-59d"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Time-off request",
+            "values": {
+              "status": "Pending"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Dates and cover"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Confirm the dates above and name who covers your work."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Handover"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Hand over open work"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Set an out-of-office message"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Share contact details for emergencies"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Manager notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Approval conditions, if any."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -717,16 +847,6 @@
         "inverseKey": "balances"
       },
       {
-        "describes": "A balance lists the requests that draw on it.",
-        "fromTable": "balance",
-        "fromField": "request_list",
-        "toTable": "request",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "balance_of_request"
-      },
-      {
         "describes": "Each request counts against one balance.",
         "fromTable": "request",
         "fromField": "balance",
@@ -734,7 +854,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "requests"
+        "inverseKey": "request_list"
       },
       {
         "describes": "Each request is made by one employee.",
@@ -886,7 +1006,39 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "rq_approve",
+        "table": "request",
+        "name": "Approve",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "rq_decline",
+        "table": "request",
+        "name": "Decline",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Declined"
+          }
+        ],
+        "confirm": true,
+        "color": "red"
+      }
+    ],
     "views": [
       {
         "token": "all_requests",
@@ -943,6 +1095,50 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "rq_pending",
+        "name": "Pending",
+        "table": "request",
+        "kind": "grid",
+        "filters": {
+          "status": "Pending"
+        }
+      },
+      {
+        "token": "rq_next30",
+        "name": "Starting in the next 30 days",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "start_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "rq_week",
+        "name": "Starting this week",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "start_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "rq_recent",
+        "name": "Submitted, last 14 days",
+        "table": "request",
+        "kind": "grid",
+        "within": {
+          "submitted_on": {
+            "relative": "past_days",
+            "n": 14
+          }
+        }
       }
     ],
     "agent": {
@@ -1031,13 +1227,13 @@
         "Hollowmere Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
       "key": "time-off",
       "parent": null,
-      "title": "Time Off",
+      "title": "Time-Off Tracker",
       "icon": {
         "emoji": "🏖️"
       },
@@ -1062,111 +1258,90 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Who is out soon"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "request",
-                      "view": "request_calendar"
-                    },
-                    "inline": true,
-                    "title": "Requests",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-out",
-                        "name": "Approved",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": "Approved"
-                        },
-                        "sorts": [
-                          {
-                            "field": "start_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-out"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Pending approvals"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "request",
-                      "view": "all_requests"
-                    },
-                    "inline": true,
-                    "title": "Requests",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-pend",
-                        "name": "Pending",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "filters": {
-                          "status": "Pending"
-                        },
-                        "sorts": [
-                          {
-                            "field": "start_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-pend"
-                  }
-                }
-              ]
+              "text": "Who is out soon"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "request_calendar"
+            },
+            "inline": true,
+            "title": "Requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-out",
+                "name": "Approved",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Approved"
+                },
+                "sorts": [
+                  {
+                    "field": "start_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-out"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pending approvals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "all_requests"
+            },
+            "inline": true,
+            "title": "Requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-pend",
+                "name": "Pending",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Pending"
+                },
+                "sorts": [
+                  {
+                    "field": "start_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-pend"
+          }
         },
         {
           "type": "heading",
@@ -1192,6 +1367,18 @@
             "linked": true,
             "showTitle": false,
             "views": [
+              {
+                "id": "view-u4",
+                "name": "Starting in 30 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "start_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              },
               {
                 "id": "v-cal",
                 "name": "Calendar",
@@ -1224,6 +1411,15 @@
                     "direction": "asc"
                   }
                 ]
+              },
+              {
+                "id": "view-u5",
+                "name": "Pending",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Pending"
+                }
               }
             ],
             "activeViewId": "v-cal"
@@ -1505,8 +1701,23 @@
             "showTitle": false,
             "views": [
               {
-                "id": "d-s",
-                "name": "Sick leave",
+                "id": "view-u6",
+                "name": "Sick leave, last 90 days",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "type": "Sick"
+                },
+                "within": {
+                  "start_on": {
+                    "relative": "past_days",
+                    "n": 90
+                  }
+                }
+              },
+              {
+                "id": "view-u7",
+                "name": "All sick leave",
                 "layout": "list",
                 "icon": "List",
                 "filters": {
@@ -1514,7 +1725,7 @@
                 }
               }
             ],
-            "activeViewId": "d-s"
+            "activeViewId": "view-u6"
           }
         }
       ]
@@ -1638,6 +1849,60 @@
           "props": {
             "icon": "Info"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An employee with 20 days allowance and 3 carried over has 23 available. After 9 vacation days, 14 remain. The Balance check column flags anyone at 3 days or fewer so managers can plan cover."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Request steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Employee submits a request with dates and cover."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Manager reviews within two working days and presses Approve or Decline."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The balance updates from approved vacation days only."
+            }
+          ]
         }
       ]
     },

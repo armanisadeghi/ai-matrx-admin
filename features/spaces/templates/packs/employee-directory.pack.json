@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0255",
-  "version": 1,
+  "version": 2,
   "title": "Employee Directory",
   "description": "Find anyone: teams, managers, skills, time zones and anniversaries.",
   "forWho": "Teams of every size",
@@ -94,17 +94,8 @@
             "contextPolicy": "include"
           },
           {
-            "key": "profile_list",
-            "label": "Members",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "profile",
-            "multi": true
-          },
-          {
             "key": "member_count",
-            "label": "Active headcount",
+            "label": "Members",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -126,11 +117,7 @@
               "team_name": "Leadership",
               "lead": "tm-astrid",
               "mission": "Set direction and keep the company healthy.",
-              "channel": "#leadership",
-              "profile_list": [
-                "pf-astrid",
-                "pf-gareth"
-              ]
+              "channel": "#leadership"
             }
           },
           {
@@ -139,12 +126,7 @@
               "team_name": "Product",
               "lead": "tm-kofi",
               "mission": "Decide what to build next and why.",
-              "channel": "#product",
-              "profile_list": [
-                "pf-kofi",
-                "pf-lucia",
-                "pf-odalys"
-              ]
+              "channel": "#product"
             }
           },
           {
@@ -153,13 +135,7 @@
               "team_name": "Engineering",
               "lead": "tm-bjorn",
               "mission": "Build and run the software reliably.",
-              "channel": "#engineering",
-              "profile_list": [
-                "pf-bjorn",
-                "pf-sana",
-                "pf-ezra",
-                "pf-priyanka"
-              ]
+              "channel": "#engineering"
             }
           },
           {
@@ -168,12 +144,7 @@
               "team_name": "Customer care",
               "lead": "tm-hana",
               "mission": "Help customers succeed within a day.",
-              "channel": "#customer-care",
-              "profile_list": [
-                "pf-mirela",
-                "pf-hana",
-                "pf-theo"
-              ]
+              "channel": "#customer-care"
             }
           }
         ]
@@ -224,13 +195,31 @@
             "relationMax": 1
           },
           {
-            "key": "manager",
-            "label": "Manager",
+            "key": "reports_to",
+            "label": "Reports to",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "relationTarget": "team_member",
+            "relationTarget": "profile",
             "relationMax": 1
+          },
+          {
+            "key": "report_count",
+            "label": "Direct reports",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "direct_reports",
+            "pick": "profile_name",
+            "agg": "count"
+          },
+          {
+            "key": "role_type",
+            "label": "Level",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Direct reports} > 0, \"Manager\", \"Individual contributor\")"
           },
           {
             "key": "location",
@@ -367,6 +356,20 @@
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "summarize"
+          },
+          {
+            "key": "updated",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -393,7 +396,6 @@
               "profile_name": "Kofi Mensah-Boateng",
               "person": "tm-kofi",
               "team": "t-prod",
-              "manager": "tm-astrid",
               "location": "Austin",
               "timezone": "Central",
               "employment": "Full-time",
@@ -402,7 +404,8 @@
                 "Research"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/kofi"
+              "chat": "https://chat.sandpiperworks.net/kofi",
+              "reports_to": "pf-astrid"
             }
           },
           {
@@ -411,7 +414,6 @@
               "profile_name": "Lucía Santamaría",
               "person": "tm-lucia",
               "team": "t-prod",
-              "manager": "tm-kofi",
               "location": "Remote",
               "timezone": "Pacific",
               "employment": "Full-time",
@@ -420,7 +422,8 @@
                 "Prototyping"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/lucia"
+              "chat": "https://chat.sandpiperworks.net/lucia",
+              "reports_to": "pf-kofi"
             }
           },
           {
@@ -429,7 +432,6 @@
               "profile_name": "Björn Halvorsen",
               "person": "tm-bjorn",
               "team": "t-eng",
-              "manager": "tm-astrid",
               "location": "Austin",
               "timezone": "Central",
               "employment": "Full-time",
@@ -438,7 +440,8 @@
                 "Databases"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/bjorn"
+              "chat": "https://chat.sandpiperworks.net/bjorn",
+              "reports_to": "pf-astrid"
             }
           },
           {
@@ -447,7 +450,6 @@
               "profile_name": "Sana Qureshi",
               "person": "tm-sana",
               "team": "t-eng",
-              "manager": "tm-bjorn",
               "location": "Remote",
               "timezone": "Eastern",
               "employment": "Full-time",
@@ -456,7 +458,8 @@
                 "Accessibility"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/sana"
+              "chat": "https://chat.sandpiperworks.net/sana",
+              "reports_to": "pf-bjorn"
             }
           },
           {
@@ -465,7 +468,6 @@
               "profile_name": "Ezra Caldwell",
               "person": "tm-ezra",
               "team": "t-eng",
-              "manager": "tm-bjorn",
               "location": "Austin",
               "timezone": "Central",
               "employment": "Full-time",
@@ -474,7 +476,8 @@
                 "Testing"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/ezra"
+              "chat": "https://chat.sandpiperworks.net/ezra",
+              "reports_to": "pf-bjorn"
             }
           },
           {
@@ -483,7 +486,6 @@
               "profile_name": "Mirela Dragomir",
               "person": "tm-mirela",
               "team": "t-care",
-              "manager": "tm-hana",
               "location": "Remote",
               "timezone": "Eastern",
               "employment": "Full-time",
@@ -492,7 +494,8 @@
                 "Writing"
               ],
               "status": "On leave",
-              "chat": "https://chat.sandpiperworks.net/mirela"
+              "chat": "https://chat.sandpiperworks.net/mirela",
+              "reports_to": "pf-hana"
             }
           },
           {
@@ -501,7 +504,6 @@
               "profile_name": "Hana Yoshida",
               "person": "tm-hana",
               "team": "t-care",
-              "manager": "tm-astrid",
               "location": "Austin",
               "timezone": "Central",
               "employment": "Full-time",
@@ -510,7 +512,8 @@
                 "Escalations"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/hana"
+              "chat": "https://chat.sandpiperworks.net/hana",
+              "reports_to": "pf-astrid"
             }
           },
           {
@@ -519,7 +522,6 @@
               "profile_name": "Théo Lambert",
               "person": "tm-theo",
               "team": "t-care",
-              "manager": "tm-hana",
               "location": "Austin",
               "timezone": "Central",
               "employment": "Part-time",
@@ -527,7 +529,8 @@
                 "Chat support"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/theo"
+              "chat": "https://chat.sandpiperworks.net/theo",
+              "reports_to": "pf-hana"
             }
           },
           {
@@ -536,7 +539,6 @@
               "profile_name": "Priyanka Bhatt",
               "person": "tm-priyanka",
               "team": "t-eng",
-              "manager": "tm-bjorn",
               "location": "Remote",
               "timezone": "Pacific",
               "employment": "Full-time",
@@ -545,7 +547,8 @@
                 "Dashboards"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/priyanka"
+              "chat": "https://chat.sandpiperworks.net/priyanka",
+              "reports_to": "pf-bjorn"
             }
           },
           {
@@ -554,7 +557,6 @@
               "profile_name": "Gareth Pembroke",
               "person": "tm-gareth",
               "team": "t-lead",
-              "manager": "tm-astrid",
               "location": "Austin",
               "timezone": "Central",
               "employment": "Contract",
@@ -563,7 +565,8 @@
                 "Facilities"
               ],
               "status": "Active",
-              "chat": "https://chat.sandpiperworks.net/gareth"
+              "chat": "https://chat.sandpiperworks.net/gareth",
+              "reports_to": "pf-astrid"
             }
           },
           {
@@ -572,7 +575,6 @@
               "profile_name": "Odalys Ferreira",
               "person": "tm-odalys",
               "team": "t-prod",
-              "manager": "tm-kofi",
               "location": "Remote",
               "timezone": "Eastern",
               "employment": "Full-time",
@@ -580,7 +582,106 @@
                 "Roadmaps"
               ],
               "status": "Alumni",
-              "chat": "https://chat.sandpiperworks.net/odalys"
+              "chat": "https://chat.sandpiperworks.net/odalys",
+              "reports_to": "pf-kofi"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New profile",
+            "values": {
+              "status": "Active"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two lines on what this person does and what they are good to ask about."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Working hours and time zone"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "When they are online and how they prefer to be reached."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Ask me about"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Topic"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Topic"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outside work"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Optional: interests that help people start a conversation."
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -596,16 +697,6 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "teams_led"
-      },
-      {
-        "describes": "A team lists its member profiles.",
-        "fromTable": "team",
-        "fromField": "profile_list",
-        "toTable": "profile",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "team_of_profile"
       },
       {
         "describes": "Each profile describes one person.",
@@ -625,17 +716,17 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "members"
+        "inverseKey": "profile_list"
       },
       {
-        "describes": "Each profile has one manager.",
+        "describes": "Each profile can point at the profile of the person they report to.",
         "fromTable": "profile",
-        "fromField": "manager",
-        "toTable": "team_member",
+        "fromField": "reports_to",
+        "toTable": "profile",
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "reports"
+        "inverseKey": "direct_reports"
       }
     ],
     "sharedBlocks": [
@@ -843,6 +934,27 @@
         "table": "team_member",
         "kind": "calendar",
         "dateField": "start_date"
+      },
+      {
+        "token": "prof_leave",
+        "name": "On leave",
+        "table": "profile",
+        "kind": "grid",
+        "filters": {
+          "status": "On leave"
+        }
+      },
+      {
+        "token": "prof_added",
+        "name": "Added, last 90 days",
+        "table": "profile",
+        "kind": "grid",
+        "within": {
+          "added": {
+            "relative": "past_days",
+            "n": 90
+          }
+        }
       }
     ],
     "agent": {
@@ -931,7 +1043,7 @@
         "Emberglass Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1010,6 +1122,18 @@
                 "layout": "kanban",
                 "icon": "SquareKanban",
                 "groupField": "status"
+              },
+              {
+                "id": "view-u20",
+                "name": "Added in 90 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "added": {
+                    "relative": "past_days",
+                    "n": 90
+                  }
+                }
               }
             ],
             "activeViewId": "v-g"
@@ -1056,100 +1180,79 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "New this year"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "team_member",
-                      "view": "all_people"
-                    },
-                    "inline": true,
-                    "title": "People",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-n",
-                        "name": "Newest first",
-                        "layout": "list",
-                        "icon": "List",
-                        "sorts": [
-                          {
-                            "field": "start_date",
-                            "direction": "desc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-n"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Work anniversaries"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "team_member",
-                      "view": "anniversaries"
-                    },
-                    "inline": true,
-                    "title": "People",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-a",
-                        "name": "Anniversaries",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "start_date"
-                      }
-                    ],
-                    "activeViewId": "v-a"
-                  }
-                }
-              ]
+              "text": "New this year"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_people"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-n",
+                "name": "Newest first",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "start_date",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-n"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Work anniversaries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "anniversaries"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-a",
+                "name": "Anniversaries",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "start_date"
+              }
+            ],
+            "activeViewId": "v-a"
+          }
         },
         {
           "type": "columnList",
@@ -1257,6 +1360,18 @@
           ]
         },
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Reporting lines now come from the Reports to column on each profile. A manager's Direct reports count updates on its own when you change a link."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Network"
+          }
+        },
+        {
           "type": "database",
           "props": {
             "source": {
@@ -1350,6 +1465,41 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Maintaining reporting lines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Change the Reports to link on the profile when someone moves."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the Direct reports column on the manager."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update the team table if the team lead changed."
+            }
+          ]
         }
       ]
     },
@@ -1618,6 +1768,72 @@
           "background": "blue",
           "props": {
             "icon": "Info"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Profile checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photo or initials"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Role and team"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Time zone and working hours"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Three skills people can ask about"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Preferred way to be reached"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         }
       ]

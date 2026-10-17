@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0250",
-  "version": 1,
+  "version": 2,
   "title": "Student OS",
   "description": "Classes, tasks, notes and study time in one dashboard for the whole term.",
   "forWho": "Students in high school and college",
@@ -157,15 +157,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "task_list",
-            "label": "Task list",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "task",
-            "multi": true
-          },
-          {
             "key": "instructor_email",
             "label": "Instructor email",
             "parityType": "email",
@@ -184,6 +175,27 @@
             "filter": {
               "status": "Done"
             }
+          },
+          {
+            "key": "earned",
+            "label": "Points earned (%)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "task_list",
+            "pick": "weighted",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "grade",
+            "label": "Grade so far (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Weight graded (%)} > 0, ROUND({Points earned (%)} / {Weight graded (%)} * 100, 1), 0)"
           },
           {
             "key": "open_tasks",
@@ -222,12 +234,7 @@
               "schedule": "Mon Wed 10:00",
               "room": "Science Hall 214",
               "archived": false,
-              "instructor_email": "okoro@northfield-college.net",
-              "task_list": [
-                "t01",
-                "t02",
-                "t03"
-              ]
+              "instructor_email": "okoro@northfield-college.net"
             }
           },
           {
@@ -242,12 +249,7 @@
               "schedule": "Tue Thu 09:00",
               "room": "Gauss Building 108",
               "archived": false,
-              "instructor_email": "volkov@northfield-college.net",
-              "task_list": [
-                "t04",
-                "t05",
-                "t06"
-              ]
+              "instructor_email": "volkov@northfield-college.net"
             }
           },
           {
@@ -262,12 +264,7 @@
               "schedule": "Mon Wed 13:30",
               "room": "Humanities 305",
               "archived": false,
-              "instructor_email": "boyle@northfield-college.net",
-              "task_list": [
-                "t07",
-                "t08",
-                "t09"
-              ]
+              "instructor_email": "boyle@northfield-college.net"
             }
           },
           {
@@ -282,12 +279,7 @@
               "schedule": "Fri 11:00",
               "room": "Commerce Hall 120",
               "archived": false,
-              "instructor_email": "wrobel@northfield-college.net",
-              "task_list": [
-                "t10",
-                "t11",
-                "t12"
-              ]
+              "instructor_email": "wrobel@northfield-college.net"
             }
           },
           {
@@ -302,12 +294,7 @@
               "schedule": "Tue Thu 14:00",
               "room": "Languages Annex 12",
               "archived": false,
-              "instructor_email": "fernández@northfield-college.net",
-              "task_list": [
-                "t13",
-                "t14",
-                "t15"
-              ]
+              "instructor_email": "fernández@northfield-college.net"
             }
           }
         ]
@@ -375,9 +362,17 @@
             "format": "datetime"
           },
           {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 3, \"Due soon\", \"\")))"
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -391,7 +386,12 @@
               "Done": "green"
             },
             "required": true,
-            "default": "To do"
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "priority",
@@ -446,7 +446,7 @@
           },
           {
             "key": "hours",
-            "label": "Estimated hours",
+            "label": "Hours",
             "parityType": "number",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -471,11 +471,22 @@
           },
           {
             "key": "weighted",
-            "label": "Weighted earned",
+            "label": "Points earned (%)",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "{Score} * {Weight} / 100"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
           }
         ],
         "rows": [
@@ -512,7 +523,7 @@
               "task_name": "Read chapters 7 and 8",
               "class": "cl-bio",
               "type": "Reading",
-              "due_on": "@today+1d",
+              "due_on": "@today",
               "status": "In progress",
               "priority": "Medium",
               "weight": 0,
@@ -679,6 +690,113 @@
               "hours": 3
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New assignment",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is asked"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Copy the prompt or question in your own words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Read the brief and note the marking criteria"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Outline"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First draft"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Review against the criteria"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes for the instructor"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything to confirm before the due date."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -750,6 +868,20 @@
             "key": "reviewed",
             "label": "Reviewed",
             "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Captured at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
           }
@@ -841,6 +973,107 @@
               "type": "Reading",
               "topic": "Context",
               "reviewed": false
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Lecture note",
+            "values": {
+              "type": "Lecture"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Topic and date"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One line on what the session covered."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Key ideas"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Idea, in your own words"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Idea, in your own words"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Questions to ask"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Ask the instructor or look it up"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write three sentences from memory after class. If you cannot, that is what to review."
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -1007,16 +1240,6 @@
     ],
     "relationships": [
       {
-        "describes": "A class lists the tasks that belong to it.",
-        "fromTable": "class",
-        "fromField": "task_list",
-        "toTable": "task",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "class_of_task"
-      },
-      {
         "describes": "Each task belongs to one class.",
         "fromTable": "task",
         "fromField": "class",
@@ -1024,7 +1247,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "tasks"
+        "inverseKey": "task_list"
       },
       {
         "describes": "Each note comes from one class.",
@@ -1079,7 +1302,23 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_classes",
@@ -1149,6 +1388,87 @@
         "table": "session",
         "kind": "calendar",
         "dateField": "on"
+      },
+      {
+        "token": "task_today",
+        "name": "Today",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "task_overdue",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "This week",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "note_last7",
+        "name": "Notes, last 7 days",
+        "table": "note",
+        "kind": "grid",
+        "within": {
+          "noted_on": {
+            "relative": "past_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "session_week",
+        "name": "Study sessions this week",
+        "table": "session",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
       }
     ],
     "agent": {
@@ -1237,7 +1557,7 @@
         "Alder Quill Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1268,106 +1588,85 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Due soon"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-open",
-                        "name": "Not done",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": [
-                            "To do",
-                            "In progress"
-                          ]
-                        },
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "v-open"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "This week at a glance"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "task_calendar"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "v-cal",
-                        "name": "Calendar",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "due_on"
-                      }
-                    ],
-                    "activeViewId": "v-cal"
-                  }
-                }
-              ]
+              "text": "Due soon"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-open",
+                "name": "Not done",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-open"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This week at a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_calendar"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              }
+            ],
+            "activeViewId": "v-cal"
+          }
         },
         {
           "type": "heading",
@@ -1393,6 +1692,12 @@
             "linked": true,
             "showTitle": true,
             "views": [
+              {
+                "id": "view-u5",
+                "name": "Grades",
+                "layout": "grid",
+                "icon": "Table"
+              },
               {
                 "id": "v-term",
                 "name": "By term",
@@ -1438,25 +1743,34 @@
             "showTitle": false,
             "views": [
               {
-                "id": "v-exam",
-                "name": "Exams",
+                "id": "view-u3",
+                "name": "Exams and quizzes",
                 "layout": "grid",
                 "icon": "Table",
                 "filters": {
                   "type": [
                     "Exam",
-                    "Project"
+                    "Quiz"
                   ]
                 },
-                "sorts": [
-                  {
-                    "field": "due_on",
-                    "direction": "asc"
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
                   }
-                ]
+                }
+              },
+              {
+                "id": "view-u4",
+                "name": "All exams",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "type": "Exam"
+                }
               }
             ],
-            "activeViewId": "v-exam"
+            "activeViewId": "view-u3"
           }
         },
         {
@@ -1529,6 +1843,23 @@
             "showTitle": true,
             "views": [
               {
+                "id": "view-u1",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              },
+              {
                 "id": "v-b",
                 "name": "Board",
                 "layout": "kanban",
@@ -1553,6 +1884,24 @@
                     "direction": "asc"
                   }
                 ]
+              },
+              {
+                "id": "view-u2",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
               }
             ],
             "activeViewId": "v-b"
@@ -1942,6 +2291,133 @@
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A sample week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Review the weekend's lecture notes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "45 min"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wednesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Practice problems for the next quiz"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "60 min"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Write the first draft of the assignment due next week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "90 min"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sunday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan the week: check Next 7 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "15 min"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Study in short, spaced sessions. Three 30-minute sessions beat one 90-minute cram."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Brain"
+          }
         }
       ]
     },
@@ -2041,6 +2517,41 @@
               "text": "What will I change next term?"
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fill in your reflection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which class took more time than the credits suggested?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which study method gave the best results?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What will you change next term?"
+            }
+          ]
         }
       ]
     },
@@ -2076,6 +2587,18 @@
             "linked": true,
             "showTitle": true,
             "views": [
+              {
+                "id": "view-u6",
+                "name": "Last 7 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "noted_on": {
+                    "relative": "past_days",
+                    "n": 7
+                  }
+                }
+              },
               {
                 "id": "v-n1",
                 "name": "By class",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0251",
-  "version": 1,
+  "version": 2,
   "title": "Employee Onboarding Hub",
   "description": "A new-hire portal with 30-60-90 goals, tool access checklist and manager 1:1s.",
   "forWho": "HR teams and managers onboarding new hires",
@@ -89,6 +89,13 @@
             "required": true
           },
           {
+            "key": "success",
+            "label": "Success looks like",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner",
             "label": "New hire",
             "parityType": "relation",
@@ -107,17 +114,8 @@
             "relationMax": 1
           },
           {
-            "key": "kr_list",
-            "label": "Key results",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "key_result",
-            "multi": true
-          },
-          {
             "key": "progress",
-            "label": "Progress",
+            "label": "Progress (%)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -132,6 +130,29 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "days_left",
+            "label": "Days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "flag",
+            "label": "Status check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Progress (%)} >= 100, \"Complete\", IF({Days left} < 0, \"Overdue\", IF({Days left} <= 14, \"Due soon\", \"On pace\")))"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -143,11 +164,7 @@
               "owner": "tm-noor",
               "sponsor": "tm-ines",
               "due_on": "@today+9d",
-              "kr_list": [
-                "kr1",
-                "kr2",
-                "kr3"
-              ]
+              "success": "Can explain the product and our top three customers without notes"
             }
           },
           {
@@ -158,11 +175,7 @@
               "owner": "tm-noor",
               "sponsor": "tm-wes",
               "due_on": "@today+6d",
-              "kr_list": [
-                "kr4",
-                "kr5",
-                "kr6"
-              ]
+              "success": "All accounts active, two-factor on, laptop encrypted"
             }
           },
           {
@@ -173,10 +186,7 @@
               "owner": "tm-noor",
               "sponsor": "tm-ines",
               "due_on": "@today+39d",
-              "kr_list": [
-                "kr7",
-                "kr8"
-              ]
+              "success": "Resolves common tickets without help and within the response target"
             }
           },
           {
@@ -187,10 +197,7 @@
               "owner": "tm-noor",
               "sponsor": "tm-ines",
               "due_on": "@today+45d",
-              "kr_list": [
-                "kr9",
-                "kr10"
-              ]
+              "success": "Has sat in on three calls and written a summary for each"
             }
           },
           {
@@ -201,10 +208,7 @@
               "owner": "tm-noor",
               "sponsor": "tm-dana",
               "due_on": "@today+69d",
-              "kr_list": [
-                "kr11",
-                "kr12"
-              ]
+              "success": "A small improvement shipped, with before and after numbers"
             }
           },
           {
@@ -215,9 +219,119 @@
               "owner": "tm-noor",
               "sponsor": "tm-ines",
               "due_on": "@today+80d",
-              "kr_list": [
-                "kr13",
-                "kr14"
+              "success": "Delivered a 30-minute session and collected feedback"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New hire plan",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goal for this phase"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence on what success looks like at the end of the phase."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Key results"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Measurable result, with a number"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Measurable result, with a number"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Measurable result, with a number"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "People to meet"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Name, team, and why"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Support needed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Access, training or introductions the manager will arrange."
+                    }
+                  ]
+                }
               ]
             }
           }
@@ -257,7 +371,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -273,7 +387,13 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Not started"
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "To do next": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "completion",
@@ -495,6 +615,24 @@
             "parityType": "url",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "grant_btn",
+            "label": "Mark access granted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "tool_granted"
+            }
           }
         ],
         "rows": [
@@ -722,6 +860,108 @@
               "manager": "tm-ines"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Check-in",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How are things going?"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Start with the person, not the plan."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Wins since last time"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Something that went well"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Blockers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Anything slowing you down"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One thing for the new hire"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One thing for the manager"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -747,16 +987,6 @@
         "inverseKey": "objectives_sponsored"
       },
       {
-        "describes": "An objective lists its key results.",
-        "fromTable": "objective",
-        "fromField": "kr_list",
-        "toTable": "key_result",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "objective_of_kr"
-      },
-      {
         "describes": "Each key result belongs to one objective.",
         "fromTable": "key_result",
         "fromField": "objective",
@@ -764,7 +994,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "key_results"
+        "inverseKey": "kr_list"
       },
       {
         "describes": "Each tool has one person who grants access.",
@@ -891,7 +1121,23 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "tool_granted",
+        "table": "tool",
+        "name": "Mark access granted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "granted",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_objectives",
@@ -962,6 +1208,55 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "obj_next14",
+        "name": "Due in the next 14 days",
+        "table": "objective",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 14
+          }
+        }
+      },
+      {
+        "token": "obj_next30",
+        "name": "Due in the next 30 days",
+        "table": "objective",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "tool_recent",
+        "name": "Access granted, last 3 weeks",
+        "table": "tool",
+        "kind": "grid",
+        "within": {
+          "granted_on": {
+            "relative": "past_days",
+            "n": 21
+          }
+        }
+      },
+      {
+        "token": "oo_recent",
+        "name": "Check-ins, last 30 days",
+        "table": "one_on_one",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
       }
     ],
     "agent": {
@@ -1050,13 +1345,13 @@
         "Tidewrack Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
       "key": "onboarding-hub",
       "parent": null,
-      "title": "Onboarding Hub",
+      "title": "Employee Onboarding Hub",
       "icon": {
         "emoji": "🚀"
       },
@@ -1227,6 +1522,18 @@
             "showTitle": true,
             "views": [
               {
+                "id": "view-u1",
+                "name": "Due in 14 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                }
+              },
+              {
                 "id": "v-ob",
                 "name": "By phase",
                 "layout": "kanban",
@@ -1316,23 +1623,28 @@
             "showTitle": false,
             "views": [
               {
-                "id": "v-tl",
-                "name": "By category",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "category"
-              },
-              {
-                "id": "v-tm",
+                "id": "view-u2",
                 "name": "Missing access",
                 "layout": "list",
                 "icon": "List",
                 "filters": {
                   "granted": false
                 }
+              },
+              {
+                "id": "view-u3",
+                "name": "Granted, last 3 weeks",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "granted_on": {
+                    "relative": "past_days",
+                    "n": 21
+                  }
+                }
               }
             ],
-            "activeViewId": "v-tl"
+            "activeViewId": "view-u2"
           }
         },
         {
@@ -1590,6 +1902,53 @@
                 ]
               }
             ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to use this hub"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the 30, 60 and 90 day plans with your manager in week one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tick tool access off as it arrives; chase what is missing by Friday."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Hold a short check-in every week for the first month."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write down questions as they come up; nobody remembers them by the next meeting."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "HelpCircle"
           }
         }
       ]

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0254",
-  "version": 1,
+  "version": 2,
   "title": "Assignment & Exam Tracker",
   "description": "Deadlines, weights and grades for every course in one view.",
   "forWho": "Students tracking coursework",
@@ -136,17 +136,8 @@
             ]
           },
           {
-            "key": "assignment_list",
-            "label": "Assignments",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "assignment",
-            "multi": true
-          },
-          {
             "key": "open",
-            "label": "Open assignments",
+            "label": "Open work",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -162,7 +153,7 @@
           },
           {
             "key": "weight_done",
-            "label": "Weight completed",
+            "label": "Weight done (%)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -182,6 +173,14 @@
             "via": "assignment_list",
             "pick": "grade",
             "agg": "avg"
+          },
+          {
+            "key": "target_check",
+            "label": "Target check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Average grade} >= {Target grade}, \"On target\", \"Below target\")"
           }
         ],
         "rows": [
@@ -193,13 +192,7 @@
               "instructor_email": "helena.voss@riverbend-university.net",
               "term": "Fall",
               "credits": 4,
-              "target": 90,
-              "assignment_list": [
-                "a01",
-                "a02",
-                "a03",
-                "a04"
-              ]
+              "target": 90
             }
           },
           {
@@ -210,13 +203,7 @@
               "instructor_email": "anselm.baptiste@riverbend-university.net",
               "term": "Fall",
               "credits": 3,
-              "target": 88,
-              "assignment_list": [
-                "a05",
-                "a06",
-                "a07",
-                "a08"
-              ]
+              "target": 88
             }
           },
           {
@@ -227,13 +214,7 @@
               "instructor_email": "meiling.cho@riverbend-university.net",
               "term": "Fall",
               "credits": 3,
-              "target": 85,
-              "assignment_list": [
-                "a09",
-                "a10",
-                "a11",
-                "a12"
-              ]
+              "target": 85
             }
           },
           {
@@ -244,13 +225,7 @@
               "instructor_email": "yusuf.karimi@riverbend-university.net",
               "term": "Fall",
               "credits": 2,
-              "target": 95,
-              "assignment_list": [
-                "a13",
-                "a14",
-                "a15",
-                "a16"
-              ]
+              "target": 95
             }
           }
         ]
@@ -321,9 +296,17 @@
             "format": "datetime"
           },
           {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 3, \"Due soon\", \"\")))"
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -337,7 +320,12 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Not started"
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "priority",
@@ -407,7 +395,7 @@
           },
           {
             "key": "hours",
-            "label": "Estimated hours",
+            "label": "Hours needed",
             "parityType": "number",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -421,6 +409,24 @@
                 "value": 60
               }
             ]
+          },
+          {
+            "key": "created",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "asg_done"
+            }
           }
         ],
         "rows": [
@@ -545,7 +551,7 @@
               "assignment_name": "Homework 5: hypothesis tests",
               "course": "co-stat",
               "type": "Homework",
-              "due_on": "@today+1d",
+              "due_on": "@today",
               "status": "Not started",
               "priority": "Medium",
               "weight": 5,
@@ -656,20 +662,117 @@
         ],
         "independentOf": {
           "course": "An assignment can be due before or after the course meets on a given day."
-        }
+        },
+        "rowTemplates": [
+          {
+            "name": "New assignment",
+            "values": {
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The brief"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Paste or summarise the instructions."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Marking criteria"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What earns the most marks"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Outline"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Draft"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Check against the criteria"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Submit and keep proof"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
       }
     ],
     "relationships": [
-      {
-        "describes": "A course lists its assignments.",
-        "fromTable": "course",
-        "fromField": "assignment_list",
-        "toTable": "assignment",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "course_of_assignment"
-      },
       {
         "describes": "Each assignment belongs to one course.",
         "fromTable": "assignment",
@@ -678,7 +781,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "restrict",
-        "inverseKey": "assignments"
+        "inverseKey": "assignment_list"
       }
     ],
     "sharedBlocks": [],
@@ -717,7 +820,28 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "asg_done",
+        "table": "assignment",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          },
+          {
+            "field": "submitted",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_assignments",
@@ -759,6 +883,64 @@
         "table": "course",
         "kind": "kanban",
         "groupBy": "term"
+      },
+      {
+        "token": "asg_today",
+        "name": "Today",
+        "table": "assignment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "asg_overdue",
+        "name": "Overdue",
+        "table": "assignment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "asg_next7",
+        "name": "Next 7 days",
+        "table": "assignment",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "asg_week",
+        "name": "This week",
+        "table": "assignment",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        }
       }
     ],
     "agent": {
@@ -847,7 +1029,7 @@
         "Thornwick Avenue"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -902,25 +1084,53 @@
             "showTitle": false,
             "views": [
               {
-                "id": "v-wk",
-                "name": "Not done, by due day",
+                "id": "view-u17",
+                "name": "Overdue",
                 "layout": "list",
                 "icon": "List",
-                "filters": {
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
                   "status": [
                     "Not started",
                     "In progress"
                   ]
-                },
-                "sorts": [
-                  {
-                    "field": "due_on",
-                    "direction": "asc"
+                }
+              },
+              {
+                "id": "view-u18",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
                   }
-                ]
+                }
+              },
+              {
+                "id": "view-u19",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "In progress"
+                  ]
+                }
               }
             ],
-            "activeViewId": "v-wk"
+            "activeViewId": "view-u17"
           }
         },
         {
@@ -1460,6 +1670,108 @@
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Countdown plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time before the exam"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2 weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "List the topics; mark the weak ones"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1 week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Past papers under time, then mark them"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Summary sheets and weak topics only"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Night before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Light review, pack, sleep"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Do one timed practice paper before the last week; it shows what to revise better than rereading."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Timer"
+          }
         }
       ]
     },
@@ -1525,6 +1837,25 @@
           "props": {
             "icon": "AlarmClock"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open the Overdue and Next 7 days lists above. If three items are due in one day, move your own deadline for two of them two days earlier."
+            }
+          ]
         }
       ]
     }
