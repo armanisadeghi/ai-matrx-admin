@@ -23,6 +23,7 @@
  */
 
 import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import {
   Braces,
@@ -102,6 +103,14 @@ import type {
   UseSearchInputsReturn,
 } from "@/features/search/hooks/useSearchInputs";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { ToolSearchPanel } from "@/features/search/tools/ToolSearchPanel";
+import {
+  isToolTab,
+  TOOL_TABS,
+  TOOL_TAB_LABEL,
+  type ToolTab,
+} from "@/features/search/tools/searchToolPlan";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
@@ -126,9 +135,14 @@ export const SEARCH_TAB_LABEL: Record<SearchTab, string> = {
   trends: "Trends",
 };
 
-const TAB_OPTIONS = (Object.keys(SEARCH_TAB_LABEL) as SearchTab[]).map(
-  (value) => ({ value, label: SEARCH_TAB_LABEL[value] }),
-);
+/** Every tab, the engine tabs first and the catalog tabs (Deep · Reviews · AI answers) after them. */
+const TAB_OPTIONS: { value: SearchTab | ToolTab; label: string }[] = [
+  ...(Object.keys(SEARCH_TAB_LABEL) as SearchTab[]).map((value) => ({
+    value,
+    label: SEARCH_TAB_LABEL[value],
+  })),
+  ...TOOL_TABS.map((value) => ({ value, label: TOOL_TAB_LABEL[value] })),
+];
 
 const SOCIAL_PLATFORM_OPTIONS = KEYWORD_SOCIAL_PLATFORMS.map((value) => ({
   value,
@@ -385,6 +399,33 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
 
   const engineChoice = tabHasEngineChoice(vertical);
 
+  // The catalog tabs (Deep · Reviews · AI answers) run Tools through /tools/calls in their own panel;
+  // the tab and the call live in the address (`?tab=`, `?call=`), so a reload or a shared link reopens them.
+  const addressParams = useSearchParams();
+  const [toolTab, setToolTab] = useState<ToolTab | null>(() => {
+    const t = addressParams.get("tab");
+    return isToolTab(t) ? t : null;
+  });
+  const onAnyTab = (next: SearchTab | ToolTab) => {
+    if (isToolTab(next)) {
+      setToolTab(next);
+      const p = new URLSearchParams(window.location.search);
+      p.set("tab", next);
+      p.delete("lane");
+      p.delete("call");
+      replaceAddressWithoutNavigating(`${window.location.pathname}?${p.toString()}`);
+      return;
+    }
+    if (toolTab) {
+      setToolTab(null);
+      const p = new URLSearchParams(window.location.search);
+      for (const key of ["tab", "lane", "call"]) p.delete(key);
+      const qs = p.toString();
+      replaceAddressWithoutNavigating(qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+    }
+    onTab(next);
+  };
+
   /** Run the current tab now (an explicit press). */
   const runTab = (tab: SearchTab, overrides: Partial<Parameters<typeof handleSearch>[0]> = {}) => {
     inputs.clearSpecial();
@@ -524,6 +565,29 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
     </div>
   );
 
+  if (toolTab) {
+    // A catalog tab: the Tool's own box takes the pill's place under the same tab row.
+    return (
+      <>
+        <div className="flex-shrink-0 border-b border-border/60 px-3 pt-3 sm:px-4">
+          <div className={cn("mx-auto min-w-0 overflow-x-auto scrollbar-none", PAGE_WIDTH)}>
+            <Tabs
+              aria-label="Result type"
+              className="overflow-visible"
+              value={toolTab}
+              rule={false}
+              onValueChange={onAnyTab}
+              data={TAB_OPTIONS}
+            />
+          </div>
+        </div>
+        <div className="relative flex-1 overflow-auto px-3 py-6 sm:px-4 sm:py-10">
+          <ToolSearchPanel key={toolTab} tab={toolTab} seed={keywords.trim()} />
+        </div>
+      </>
+    );
+  }
+
   if (home) {
     // The start screen — Google's calm centre. The box sits at a fixed
     // height, so opening Options grows the page downward and never moves it.
@@ -538,8 +602,8 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
               aria-label="Result type"
               variant="capsule"
               className="flex-wrap justify-center"
-              value={vertical}
-              onValueChange={onTab}
+              value={toolTab ?? vertical}
+              onValueChange={onAnyTab}
               data={TAB_OPTIONS}
             />
             {engineControls}
@@ -575,9 +639,9 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
               <Tabs
                 aria-label="Result type"
                 className="overflow-visible"
-                value={vertical}
+                value={toolTab ?? vertical}
                 rule={false}
-                onValueChange={onTab}
+                onValueChange={onAnyTab}
                 data={TAB_OPTIONS}
               />
             </div>
