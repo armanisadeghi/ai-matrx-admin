@@ -147,7 +147,6 @@
   "components/matrx/FullscreenWrapper.tsx": 1,
   "components/matrx/MatrxGradientCard.tsx": 1,
   "components/matrx/MatrxHoverWrapper.tsx": 1,
-  "components/matrx/next-windows/parts/Window.tsx": 1,
   "components/matrx/pagination/index.tsx": 1,
   "components/membership/MembersPanel.tsx": 1,
   "components/mermaid/MermaidRenderer.tsx": 1,
