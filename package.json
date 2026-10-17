@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3300",
+  "version": "0.4.3302",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -1022,7 +1022,6 @@
     "@ai-matrx/rich-content": "latest",
     "@ai-matrx/summon": "latest",
     "@ai-matrx/terminal": "latest",
-    "@ai-matrx/vault": "latest",
     "@ai-sdk/google": "^4.0.82",
     "@anthropic-ai/sdk": "latest",
     "@babel/parser": "^8.0.7",

@@ -83,6 +83,10 @@ export type CxRequest = {
   input_tokens: number | null;
   output_tokens: number | null;
   cached_tokens: number | null;
+  /** Tokens written to the prompt cache (Anthropic cache_creation). Included in input_tokens. */
+  cache_write_tokens?: number | null;
+  /** Provider usage payload; carries the 5m / 1h write split under cache_creation. */
+  raw_usage?: Record<string, unknown> | null;
   total_tokens: number | null;
   cost: number | null;
   api_duration_ms: number | null;
@@ -245,6 +249,9 @@ export type CxConversationUsage = {
     input_tokens: number;
     output_tokens: number;
     cached_tokens: number;
+    cache_write_tokens: number;
+    cache_write_5m_tokens: number;
+    cache_write_1h_tokens: number;
     total_tokens: number;
     api_duration_ms: number;
     tool_duration_ms: number;
@@ -259,6 +266,7 @@ export type CxConversationUsage = {
     input_tokens: number;
     output_tokens: number;
     cached_tokens: number;
+    cache_write_tokens: number;
     total_tokens: number;
     avg_duration_ms: number;
   }[];

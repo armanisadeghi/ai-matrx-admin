@@ -13,6 +13,7 @@ import { CxCostVerificationModal } from "@/features/cx-dashboard/components/CxCo
 import {
   formatDateFull,
   formatTokens,
+  cacheWriteSplit,
   formatDuration,
   statusBadgeVariant,
   truncateId,
@@ -112,6 +113,36 @@ const apiRequestColumns: MatrxColumnDef<CxRequest>[] = [
       <span className="font-mono">{formatTokens(r.cached_tokens)}</span>
     ),
   },
+  {
+    id: "cache_write_tokens",
+    header: "Cache write",
+    align: "right",
+    width: 100,
+    accessorFn: (r) => cacheWriteSplit(r).total,
+    cell: (r) => (
+      <span className="font-mono">{formatTokens(cacheWriteSplit(r).total)}</span>
+    ),
+  },
+  {
+    id: "cache_write_5m",
+    header: "Write 5m",
+    align: "right",
+    width: 90,
+    accessorFn: (r) => cacheWriteSplit(r).m5,
+    cell: (r) => (
+      <span className="font-mono">{formatTokens(cacheWriteSplit(r).m5)}</span>
+    ),
+  },
+  {
+    id: "cache_write_1h",
+    header: "Write 1h",
+    align: "right",
+    width: 90,
+    accessorFn: (r) => cacheWriteSplit(r).h1,
+    cell: (r) => (
+      <span className="font-mono">{formatTokens(cacheWriteSplit(r).h1)}</span>
+    ),
+  },
   ...adminCostColumns<CxRequest>({ id: "cost", value: (r) => r.cost }),
   {
     id: "api_duration_ms",
@@ -205,6 +236,7 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
             input_tokens: r.input_tokens,
             output_tokens: r.output_tokens,
             cached_tokens: r.cached_tokens,
+            cache_write_tokens: cacheWriteSplit(r).total,
             cost: r.cost,
             api_duration_ms: r.api_duration_ms,
             finish_reason: r.finish_reason,
@@ -393,6 +425,18 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
               {formatTokens(ur.total_cached_tokens)}
             </span>
           </div>
+          <div className="flex flex-col gap-0.5 p-2 rounded border border-border bg-card">
+            <span className="text-[10px] text-muted-foreground">
+              Cache Written
+            </span>
+            <span className="text-sm font-semibold font-mono">
+              {formatTokens(requests.reduce((n, r) => n + cacheWriteSplit(r).total, 0))}
+            </span>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {formatTokens(requests.reduce((n, r) => n + cacheWriteSplit(r).m5, 0))} 5m ·{" "}
+              {formatTokens(requests.reduce((n, r) => n + cacheWriteSplit(r).h1, 0))} 1h
+            </span>
+          </div>
         </div>
 
         {/* Error display */}
@@ -450,7 +494,7 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
                     [
                       `Iteration: ${r.iteration}`,
                       `Model: ${r.model_name ?? "—"}`,
-                      `Tokens: ${formatTokens(r.input_tokens)} in / ${formatTokens(r.output_tokens)} out / ${formatTokens(r.cached_tokens)} cached`,
+                      `Tokens: ${formatTokens(r.input_tokens)} in / ${formatTokens(r.output_tokens)} out / ${formatTokens(r.cached_tokens)} cache read / ${formatTokens(cacheWriteSplit(r).total)} cache write (${formatTokens(cacheWriteSplit(r).m5)} 5m, ${formatTokens(cacheWriteSplit(r).h1)} 1h)`,
                       `Cost: ${formatAdminCost(r.cost)}`,
                       `Duration: ${formatDuration(r.api_duration_ms)}`,
                       `Finish: ${r.finish_reason ?? "intermediate"}`,

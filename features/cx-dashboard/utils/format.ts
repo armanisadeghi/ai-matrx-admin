@@ -114,3 +114,25 @@ export function truncateId(
   if (!id) return "";
   return id.slice(0, chars);
 }
+
+/**
+ * Cache writes of one model call, from the row. The 5m / 1h split lives in raw_usage
+ * (cache_creation.ephemeral_5m_input_tokens / ephemeral_1h_input_tokens); when the split is absent the
+ * whole write counts as 5m, the provider default.
+ */
+export function cacheWriteSplit(r: {
+  cache_write_tokens?: number | null;
+  raw_usage?: Record<string, unknown> | null;
+}): { total: number; m5: number; h1: number; hasSplit: boolean } {
+  const raw = r.raw_usage ?? null;
+  const total = Number(r.cache_write_tokens ?? raw?.["cache_creation_input_tokens"]) || 0;
+  const cc = raw?.["cache_creation"] as Record<string, unknown> | undefined;
+  const hasSplit = !!cc && (cc["ephemeral_5m_input_tokens"] != null || cc["ephemeral_1h_input_tokens"] != null);
+  if (!hasSplit) return { total, m5: total, h1: 0, hasSplit: false };
+  return {
+    total,
+    m5: Number(cc!["ephemeral_5m_input_tokens"]) || 0,
+    h1: Number(cc!["ephemeral_1h_input_tokens"]) || 0,
+    hasSplit: true,
+  };
+}
