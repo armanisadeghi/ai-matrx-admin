@@ -65,6 +65,10 @@ export function logApiTarget(url: string, context: ApiTargetLogContext): void {
   }
 
   const suspect = looksSuspect(url);
+  // A normal target prints only while the page-load trace is on (localhost, `?trace=load`, or admin
+  // debug mode — the flag installLoadTrace sets); in production it was one line per server call for
+  // everyone. A suspect (sandbox) target always prints.
+  if (!suspect && (globalThis as { __matrxLoadTraceOn?: boolean }).__matrxLoadTraceOn !== true) return;
   const tag = suspect ? "🚨 API TARGET (SANDBOX?)" : "📡 API TARGET";
   const style = suspect
     ? "font-weight:bold;color:#fff;background:#c0392b;padding:1px 4px;border-radius:3px;"
