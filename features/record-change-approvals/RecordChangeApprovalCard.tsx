@@ -37,6 +37,7 @@ import {
   type ApplyApprovedOutcome,
 } from "./applyRecordChange";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { Button } from "@/components/ui/button";
 import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { createClient } from "@/utils/supabase/client";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
@@ -257,9 +258,30 @@ export function RecordChangeApprovalCard({
       </Link>
     ) : null;
 
+  // A JOB APPROVED SOMEWHERE ELSE (the inbox, another tab) runs only when the agent is told: the card in its chat
+  // offers that one step, so a yes given anywhere is never a dead end (HOST-RUN-2).
+  const runApprovedJob =
+    decidedElsewhere &&
+    onDecided &&
+    standing?.state === "approved" &&
+    standing.kind === "host_run" &&
+    (!standing.runState || standing.runState === "failed") ? (
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => {
+          setDecision({ state: "decided", sentence: "Sent. It runs now." });
+          onDecided({ choice: "approve", sentence: `Approved${standing.decidedByName ? ` by ${standing.decidedByName}` : ""}.` });
+        }}
+      >
+        Run it now
+      </Button>
+    ) : null;
+
   const outcome = decidedElsewhere ? (
       <span className="flex flex-wrap items-center gap-1.5">
         <span data-held-write-outcome="">{decidedElsewhere}</span>
+        {runApprovedJob}
         {openTable}
       </span>
     ) : decision.state === "applying" ? (

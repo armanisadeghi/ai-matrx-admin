@@ -46,6 +46,10 @@ export interface ApprovalStanding {
   decidedAt: string | null;
   /** The decider's name as the store says it; null when it could not say. */
   decidedByName?: string | null;
+  /** The change's kind (`host_run` for a job the server runs after the yes). */
+  kind?: string | null;
+  /** A host_run's run: null (not run yet) · running · background · done · failed. */
+  runState?: string | null;
 }
 
 function text(v: unknown): string | null {
@@ -61,7 +65,10 @@ export async function readApprovalStanding(
     "work_approval_read",
     { p_organization_id: organizationId, p_approval_id: approvalId },
     { schema: "custom" },
-  )) as { data?: { state?: unknown; decided_at?: unknown; decided_by_name?: unknown } | null; error?: unknown };
+  )) as {
+    data?: { state?: unknown; decided_at?: unknown; decided_by_name?: unknown; run_state?: unknown; change?: { kind?: unknown } } | null;
+    error?: unknown;
+  };
   if (read.error) return null;
   const state = read.data?.state;
   if (typeof state !== "string" || !KNOWN.has(state)) return null;
@@ -69,6 +76,8 @@ export async function readApprovalStanding(
     state: state as ApprovalState,
     decidedAt: text(read.data?.decided_at),
     decidedByName: text(read.data?.decided_by_name),
+    kind: text(read.data?.change?.kind),
+    runState: text(read.data?.run_state),
   };
 }
 
@@ -111,6 +120,12 @@ export function standingFromDecidedOnce(error: unknown): ApprovalStanding | null
 export function standingSentence(standing: ApprovalStanding, now: Date = new Date()): string | null {
   const by = standing.decidedByName ? ` by ${standing.decidedByName}` : "";
   const when = standing.decidedAt ? ` ${whenWords(standing.decidedAt, now)}` : "";
+  if (standing.state === "approved" && standing.kind === "host_run") {
+    // A JOB runs after the yes, on the agent's next call — the sentence says where it stands, never "made".
+    if (standing.runState === "done") return `Approved${by}${when}. It ran.`;
+    if (standing.runState === "running" || standing.runState === "background") return `Approved${by}${when}. It is running.`;
+    return `Approved${by}${when}. It has not run yet.`;
+  }
   if (standing.state === "approved") return `Approved${by}${when}. The change was made.`;
   if (standing.state === "declined") return `Refused${by}${when}. Nothing was changed.`;
   if (standing.state === "withdrawn") return `This request was withdrawn${when}, so nothing was changed.`;
