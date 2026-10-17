@@ -5,7 +5,7 @@
  * mounted in lib/redux), the app's ports, every rendered overlay inside the chat surface layer
  * boundary, and the admin "Copy for AI" report in the error card.
  */
-import { Suspense, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { locationRouter, type RouterPort } from "@ai-matrx/summon";
 import { SummonProvider, type OverlayErrorExtrasContext } from "@ai-matrx/summon/react";
@@ -28,11 +28,12 @@ const errorReportExtras = (ctx: OverlayErrorExtrasContext) => <OverlayErrorCopyF
 /** useNextRouterPort reads search params, so it sits in its own Suspense island. */
 function RouterPortBridge({ onPort }: { onPort: (port: RouterPort) => void }) {
   const port = useNextRouterPort();
-  const [published, setPublished] = useState<RouterPort | null>(null);
-  if (published !== port) {
-    setPublished(port);
+  // PUBLISHED IN AN EFFECT, NEVER IN RENDER: `onPort` sets the PARENT's state, and doing that while this child
+  // renders is React's "Cannot update a component (`AppSummonProvider`) while rendering a different
+  // component (`RouterPortBridge`)" (walk 2026-10-17, D13).
+  useEffect(() => {
     onPort(port);
-  }
+  }, [port, onPort]);
   return null;
 }
 
