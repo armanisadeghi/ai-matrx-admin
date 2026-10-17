@@ -2028,6 +2028,41 @@ def guard_twins():
         "lockfile, and sync again. Everything else is committed locally; nothing is lost." % err)
 
 
+# ── THE FROZEN-LOCKFILE GUARD (2026-10-17) ──────────────────────────────────────────────────
+# v0.4.3297 failed on Vercel with ERR_PNPM_OUTDATED_LOCKFILE: a sweep committed package.json
+# (@ai-matrx/summon "latest") without the lockfile change `pnpm sync:matrx-packages` wrote with it.
+# Right before every push, HEAD is judged by the check Vercel runs (scripts/lockfile-frozen.sh:
+# `pnpm install --frozen-lockfile --lockfile-only --ignore-scripts`, ~1 s). A disagreement this
+# push would ADD is not pushed; one origin/main already has is announced, never a stop (refusing
+# would not remove it, and release.sh's own frozen guard keeps it out of a release).
+def guard_frozen_lockfile():
+    helper = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lockfile-frozen.sh")
+    if not os.path.isfile(helper) or not blob_at("HEAD", "pnpm-lock.yaml"):
+        return
+
+    def judge(rev):
+        try:
+            r = subprocess.run(["bash", helper, rev], capture_output=True, text=True, timeout=180)
+            return r.returncode, r.stderr.strip()
+        except (OSError, subprocess.TimeoutExpired) as e:
+            return 2, str(e)
+
+    rc, err = judge("HEAD")
+    if rc == 0:
+        return
+    if rc == 2:
+        say("FROZEN-LOCKFILE GUARD could not judge HEAD (%s) — not checked before push." % (err.splitlines() or ["?"])[-1])
+        return
+    rc_remote, _ = judge("%s/%s" % (REMOTE, BRANCH))
+    if rc_remote == 1:
+        say("FROZEN LOCKFILE already out of step on %s/%s, so this push does not add it:\n%s\n"
+            "Fix main: `pnpm install --lockfile-only`, commit package.json and pnpm-lock.yaml TOGETHER." % (REMOTE, BRANCH, err))
+        return
+    die("NOT PUSHED — pnpm-lock.yaml in HEAD does not match package.json, so `pnpm install "
+        "--frozen-lockfile` (Vercel, CI, every agent) fails:\n%s\nRun `pnpm install --lockfile-only`, commit "
+        "package.json and pnpm-lock.yaml together, and sync again. Everything is committed locally; nothing is lost." % err)
+
+
 def report(fixed, docs, held, headline):
     say(headline + ": %d auto-fixed, %d docs/comments flagged, %d held" % (len(fixed), len(docs), len(held)))
     for p in fixed:
@@ -2157,6 +2192,7 @@ def main():
                 total_local += commit_all()
         guard_lockfiles()   # after the sweep, the merge and the package update: what is about to be pushed
         guard_twins()       # the same lockfile, judged as Vercel's postinstall judges it
+        guard_frozen_lockfile()   # package.json and pnpm-lock.yaml must agree, as Vercel's frozen install sees them
         if not push:
             break
         rc, _, err = git("push", "-q", REMOTE, "HEAD:%s" % BRANCH, check=False)

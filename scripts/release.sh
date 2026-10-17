@@ -461,12 +461,42 @@ ship_guard_twins() {  # $1 = the temporary index (lockfile repairs already appli
     esac
     rm -f "$out" "$err"
 }
+# THE FROZEN-LOCKFILE GUARD (2026-10-17) — v0.4.3297 failed at Vercel install with
+# ERR_PNPM_OUTDATED_LOCKFILE: package.json said @ai-matrx/summon "latest", pnpm-lock.yaml said
+# ^0.1.0 (a sweep committed one without the other). scripts/lockfile-frozen.sh runs Vercel's own
+# `pnpm install --frozen-lockfile --lockfile-only --ignore-scripts` on the release tree (~1 s).
+# A tree pnpm refuses stops the release; a tree it could not judge is a WARNING finding only.
+ship_guard_frozen() {  # $1 = the temporary index (lockfile repairs already applied)
+    local idx="$1" helper="$SCRIPT_DIR/lockfile-frozen.sh" tree err rc
+    [[ -f "$helper" ]] || {
+        ship_finding "WARNING" "Lockfile" "Frozen-lockfile guard missing ($helper) — package.json vs pnpm-lock.yaml NOT checked" "pnpm install --frozen-lockfile --lockfile-only --ignore-scripts"
+        return 0
+    }
+    tree=$(GIT_INDEX_FILE="$idx" git write-tree) || return 1
+    err=$(mktemp); rc=0
+    bash "$helper" "$tree" 2>"$err" || rc=$?
+    cat "$err" >>"${RELEASE_LOG_FILE:-/dev/null}" 2>/dev/null || true
+    case "$rc" in
+        0) ;;
+        1)
+            echo "--- lockfile-frozen ---" >&2; tail -12 "$err" >&2
+            rm -f "$err"
+            ship_finding "ERROR" "Lockfile" "pnpm-lock.yaml does not match package.json on $REMOTE/$BRANCH (frozen install fails) — release NOT pushed" "pnpm install --lockfile-only, commit package.json and pnpm-lock.yaml together, release again"
+            fail "pnpm-lock.yaml in the release tree is out of step with package.json (ERR_PNPM_OUTDATED_LOCKFILE) — every Vercel build would fail at install, so nothing was pushed. Run: pnpm install --lockfile-only ; commit package.json and pnpm-lock.yaml together ; release again."
+            ;;
+        *)
+            ship_finding "WARNING" "Lockfile" "Frozen-lockfile guard could not judge the release tree (exit $rc: $(tail -1 "$err")) — not checked" "bash scripts/lockfile-frozen.sh origin/main"
+            ;;
+    esac
+    rm -f "$err"
+}
 ship_build_commit() {  # uses CURRENT_VERSION NEW_VERSION RELEASE_COMMIT_MSG; sets RELEASE_SHA
     local idx blob tree
     idx=$(mktemp) && rm -f "$idx"
     GIT_INDEX_FILE="$idx" git read-tree "$SHIP_BASE_TREE" || return 1
     ship_guard_lockfiles "$idx" || return 1
     ship_guard_twins "$idx" || return 1
+    ship_guard_frozen "$idx" || return 1
     blob=$(git cat-file -p "$SHIP_BASE_TREE:$VERSION_FILE" \
         | sed "s/^  \"version\": \"${CURRENT_VERSION}\"/  \"version\": \"${NEW_VERSION}\"/" \
         | git hash-object -w --stdin) || return 1
