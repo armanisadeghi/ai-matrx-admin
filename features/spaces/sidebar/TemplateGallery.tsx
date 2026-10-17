@@ -9,7 +9,12 @@
 // organization, the pages made there, the root opened). The library is the ONE template catalogue
 // (custom.space_templates over custom.template; features/spaces/templates/use-pack.ts).
 
-import { Badge, Button, RegionSkeleton, SearchField } from "@ai-matrx/design-system/controls";
+import {
+  Badge,
+  Button,
+  RegionSkeleton,
+  SearchField,
+} from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ArrowLeft, FileText, LayoutGrid, LayoutTemplate } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -25,7 +30,13 @@ import { Cover } from "../page/Cover";
 import { Preview } from "../page/PageHistory";
 import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
 import { StaticSpacesProvider, useSpaces } from "../state/SpacesProvider";
-import { listSpaceTemplates, previewPages, readSpaceTemplate, type SpaceTemplateCard, type SpaceTemplateFull } from "../templates/use-pack";
+import {
+  listSpaceTemplates,
+  previewPages,
+  readSpaceTemplate,
+  type SpaceTemplateCard,
+  type SpaceTemplateFull,
+} from "../templates/use-pack";
 
 const ALL = "all";
 const MINE = "mine";
@@ -33,7 +44,13 @@ const READ_ONLY = () => {
   throw new Error("This is a preview.");
 };
 
-export function TemplateGallery({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function TemplateGallery({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const spaces = useSpaces();
   const { templates, store, packs } = spaces;
   // org-filter: write-target "Use template" files into the active organization; the cards mark what it already has
@@ -52,7 +69,11 @@ export function TemplateGallery({ open, onOpenChange }: { open: boolean; onOpenC
     setError(null);
     listSpaceTemplates(activeOrg).then(
       (c) => live && setCards(c),
-      (e: unknown) => live && setError(e instanceof Error ? e.message : "We couldn't list the templates."),
+      (e: unknown) =>
+        live &&
+        setError(
+          e instanceof Error ? e.message : "We couldn't list the templates.",
+        ),
     );
     return () => {
       live = false;
@@ -82,11 +103,22 @@ export function TemplateGallery({ open, onOpenChange }: { open: boolean; onOpenC
 
   const needle = q.trim().toLowerCase();
   const matches = (c: SpaceTemplateCard) =>
-    !needle || [c.space.title, c.space.description, c.space.forWho, ...(c.space.tags ?? [])].some((s) => s?.toLowerCase().includes(needle));
+    !needle ||
+    [
+      c.space.title,
+      c.space.description,
+      c.space.forWho,
+      ...(c.space.tags ?? []),
+    ].some((s) => s?.toLowerCase().includes(needle));
   const counts = new Map<string, number>();
-  for (const c of cards ?? []) counts.set(c.space.category, (counts.get(c.space.category) ?? 0) + 1);
-  const shown = (cards ?? []).filter((c) => (category === ALL || c.space.category === category) && matches(c));
-  const ownShown = ownPages.filter((id) => !needle || (mine[id]?.title ?? "").toLowerCase().includes(needle));
+  for (const c of cards ?? [])
+    counts.set(c.space.category, (counts.get(c.space.category) ?? 0) + 1);
+  const shown = (cards ?? []).filter(
+    (c) => (category === ALL || c.space.category === category) && matches(c),
+  );
+  const ownShown = ownPages.filter(
+    (id) => !needle || (mine[id]?.title ?? "").toLowerCase().includes(needle),
+  );
 
   const pick = (key: string | null) => setPicked(key);
   const close = (next: boolean) => {
@@ -101,53 +133,147 @@ export function TemplateGallery({ open, onOpenChange }: { open: boolean; onOpenC
         <div className="spaces-tg-body">
           <aside className="spaces-tg-rail">
             <div className="spaces-tg-search">
-              <SearchField placeholder="Search templates" value={q} onChange={(e) => setQ(e.target.value)} className="w-full" />
+              <SearchField
+                placeholder="Search templates"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                className="w-full"
+              />
             </div>
             <nav className="spaces-tg-cats" aria-label="Template categories">
-              <RailRow icon={<LayoutGrid size={16} />} label="All templates" count={cards?.length} active={category === ALL && !picked} onClick={() => (setCategory(ALL), pick(null))} />
-              {SPACE_TEMPLATE_CATEGORIES.filter((c) => counts.get(c.key)).map((c) => (
-                <RailRow key={c.key} label={c.label} count={counts.get(c.key)} active={category === c.key && !picked} onClick={() => (setCategory(c.key), pick(null))} />
-              ))}
-              {ownPages.length ? <RailRow icon={<LayoutTemplate size={16} />} label="Your templates" count={ownPages.length} active={category === MINE && !picked} onClick={() => (setCategory(MINE), pick(null))} /> : null}
+              <RailRow
+                icon={<LayoutGrid size={16} />}
+                label="All templates"
+                count={cards?.length}
+                active={category === ALL && !picked}
+                onClick={() => (setCategory(ALL), pick(null))}
+              />
+              {SPACE_TEMPLATE_CATEGORIES.filter((c) => counts.get(c.key)).map(
+                (c) => (
+                  <RailRow
+                    key={c.key}
+                    label={c.label}
+                    count={counts.get(c.key)}
+                    active={category === c.key && !picked}
+                    onClick={() => (setCategory(c.key), pick(null))}
+                  />
+                ),
+              )}
+              {ownPages.length ? (
+                <RailRow
+                  icon={<LayoutTemplate size={16} />}
+                  label="Your templates"
+                  count={ownPages.length}
+                  active={category === MINE && !picked}
+                  onClick={() => (setCategory(MINE), pick(null))}
+                />
+              ) : null}
             </nav>
           </aside>
           <section className="spaces-tg-main">
             {picked?.startsWith("mine:") ? (
-              <OwnPreview doc={mine[picked.slice(5)] ?? null} onBack={() => pick(null)} onUse={async (d) => (await templates.use(d.id, d.title), close(false))} titleOf={(id) => spaces.byId.get(id)?.title ?? null} />
+              <OwnPreview
+                doc={mine[picked.slice(5)] ?? null}
+                onBack={() => pick(null)}
+                onUse={async (d) => (
+                  await templates.use(d.id, d.title),
+                  close(false)
+                )}
+                titleOf={(id) => spaces.byId.get(id)?.title ?? null}
+              />
             ) : picked ? (
-              <PackPreview card={(cards ?? []).find((c) => c.id === picked)!} onBack={() => pick(null)} stage={packs.stage} onUse={async () => (close(false), await packs.use(picked))} />
+              <PackPreview
+                card={(cards ?? []).find((c) => c.id === picked)!}
+                onBack={() => pick(null)}
+                stage={packs.stage}
+                onUse={async () => (close(false), await packs.use(picked))}
+              />
             ) : (
               <div className="spaces-tg-scroll">
-                <h2 className="type-title spaces-tg-heading">{category === ALL ? "All templates" : category === MINE ? "Your templates" : (SPACE_TEMPLATE_CATEGORIES.find((c) => c.key === category)?.label ?? "Templates")}</h2>
-                {error ? <ErrorNotice title="Templates could not be listed" message={error} size="compact" /> : null}
-                {cards === null && !error ? <RegionSkeleton shape="cards" count={6} aria-label="Loading templates" /> : null}
+                <h2 className="type-title spaces-tg-heading">
+                  {category === ALL
+                    ? "All templates"
+                    : category === MINE
+                      ? "Your templates"
+                      : (SPACE_TEMPLATE_CATEGORIES.find(
+                          (c) => c.key === category,
+                        )?.label ?? "Templates")}
+                </h2>
+                {error ? (
+                  <ErrorNotice
+                    title="Templates could not be listed"
+                    message={error}
+                    size="compact"
+                  />
+                ) : null}
+                {cards === null && !error ? (
+                  <RegionSkeleton
+                    shape="cards"
+                    count={6}
+                    aria-label="Loading templates"
+                  />
+                ) : null}
                 <div className="spaces-tg-grid">
                   {category !== MINE
                     ? shown.map((c) => (
-                        <button key={c.id} type="button" className="spaces-tg-card" onClick={() => pick(c.id)}>
+                        <button
+                          key={c.id}
+                          type="button"
+                          className="spaces-tg-card"
+                          onClick={() => pick(c.id)}
+                        >
                           <span className="spaces-tg-card-icon">
                             <SpaceIcon media={c.space.icon} size={28} />
                           </span>
-                          <span className="spaces-tg-card-title">{c.space.title}</span>
-                          <span className="spaces-tg-card-line type-secondary text-muted-foreground">{c.space.description}</span>
+                          <span className="spaces-tg-card-title">
+                            {c.space.title}
+                          </span>
+                          <span className="spaces-tg-card-line type-secondary text-muted-foreground">
+                            {c.space.description}
+                          </span>
                           <span className="spaces-tg-card-foot type-secondary text-muted-foreground">
-                            {c.space.pages === 1 ? "1 page" : `${c.space.pages} pages`}
-                            {c.installed ? <Badge tone="success">In this organization</Badge> : null}
+                            {c.space.pages === 1
+                              ? "1 page"
+                              : `${c.space.pages} pages`}
+                            {c.installed ? (
+                              <Badge tone="success">In this organization</Badge>
+                            ) : null}
                           </span>
                         </button>
                       ))
                     : null}
                   {category === MINE || (category === ALL && needle)
                     ? ownShown.map((id) => (
-                        <button key={id} type="button" className="spaces-tg-card" onClick={() => pick(`mine:${id}`)}>
-                          <span className="spaces-tg-card-icon">{mine[id]?.icon ? <SpaceIcon media={mine[id]!.icon} size={28} /> : <LayoutTemplate size={26} />}</span>
-                          <span className="spaces-tg-card-title">{mine[id]?.title || "Untitled"}</span>
-                          <span className="spaces-tg-card-foot type-secondary text-muted-foreground">Your template</span>
+                        <button
+                          key={id}
+                          type="button"
+                          className="spaces-tg-card"
+                          onClick={() => pick(`mine:${id}`)}
+                        >
+                          <span className="spaces-tg-card-icon">
+                            {mine[id]?.icon ? (
+                              <SpaceIcon media={mine[id]!.icon} size={28} />
+                            ) : (
+                              <LayoutTemplate size={26} />
+                            )}
+                          </span>
+                          <span className="spaces-tg-card-title">
+                            {mine[id]?.title || "Untitled"}
+                          </span>
+                          <span className="spaces-tg-card-foot type-secondary text-muted-foreground">
+                            Your template
+                          </span>
                         </button>
                       ))
                     : null}
                 </div>
-                {cards && !shown.length && !(category === MINE && ownShown.length) ? <p className="type-secondary text-muted-foreground">No templates match.</p> : null}
+                {cards &&
+                !shown.length &&
+                !(category === MINE && ownShown.length) ? (
+                  <p className="type-secondary text-muted-foreground">
+                    No templates match.
+                  </p>
+                ) : null}
               </div>
             )}
           </section>
@@ -157,18 +283,47 @@ export function TemplateGallery({ open, onOpenChange }: { open: boolean; onOpenC
   );
 }
 
-function RailRow({ icon, label, count, active, onClick }: { icon?: ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
+function RailRow({
+  icon,
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  icon?: ReactNode;
+  label: string;
+  count?: number;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
-    <button type="button" className="spaces-tg-rail-row" data-active={active ? "true" : undefined} onClick={onClick}>
+    <button
+      type="button"
+      className="spaces-tg-rail-row"
+      data-active={active ? "true" : undefined}
+      onClick={onClick}
+    >
       {icon ? <span className="spaces-menu-row-icon">{icon}</span> : null}
       <span className="min-w-0 flex-1 truncate text-left">{label}</span>
-      {count ? <span className="type-secondary text-muted-foreground">{count}</span> : null}
+      {count ? (
+        <span className="type-secondary text-muted-foreground">{count}</span>
+      ) : null}
     </button>
   );
 }
 
 /** A pack's real pages, read-only, over its tables in memory; page links walk the preview. */
-function PackPreview({ card, onBack, onUse, stage }: { card: SpaceTemplateCard; onBack: () => void; onUse: () => void; stage: string | null }) {
+function PackPreview({
+  card,
+  onBack,
+  onUse,
+  stage,
+}: {
+  card: SpaceTemplateCard;
+  onBack: () => void;
+  onUse: () => void;
+  stage: string | null;
+}) {
   const spaces = useSpaces();
   const [full, setFull] = useState<SpaceTemplateFull | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
@@ -177,7 +332,11 @@ function PackPreview({ card, onBack, onUse, stage }: { card: SpaceTemplateCard; 
     let live = true;
     readSpaceTemplate(card.id).then(
       (t) => live && setFull(t),
-      (e: unknown) => live && setFailed(e instanceof Error ? e.message : "We couldn't open this template."),
+      (e: unknown) =>
+        live &&
+        setFailed(
+          e instanceof Error ? e.message : "We couldn't open this template.",
+        ),
     );
     return () => {
       live = false;
@@ -185,60 +344,148 @@ function PackPreview({ card, onBack, onUse, stage }: { card: SpaceTemplateCard; 
   }, [card.id]);
   const pages = full ? previewPages(full) : [];
   const current = pages.find((p) => p.key === pageKey) ?? pages[0];
-  const summaries = new Map<string, SpaceSummary>(pages.map((p) => [`preview-${p.key}`, { id: `preview-${p.key}`, parentId: null, position: "0", title: p.title, icon: p.doc.icon ?? null, isArchived: false, updatedAt: "" }]));
+  const summaries = new Map<string, SpaceSummary>(
+    pages.map((p) => [
+      `preview-${p.key}`,
+      {
+        id: `preview-${p.key}`,
+        parentId: null,
+        position: "0",
+        title: p.title,
+        icon: p.doc.icon ?? null,
+        isArchived: false,
+        updatedAt: "",
+      },
+    ]),
+  );
   const value = {
     ...spaces,
     linkTarget: (id: string) => summaries.get(id) ?? null,
     requestLink: () => undefined,
-    open: (id: string) => (id.startsWith("preview-") ? setPageKey(id.slice("preview-".length)) : undefined),
+    open: (id: string) =>
+      id.startsWith("preview-")
+        ? setPageKey(id.slice("preview-".length))
+        : undefined,
     pageHref: () => "#",
   };
   return (
     <div className="spaces-tg-preview">
       <div className="spaces-tg-bar">
-        <Button variant="quiet" icon={<ArrowLeft size={15} />} onClick={onBack} aria-label="Back to templates" />
+        <Button
+          variant="quiet"
+          icon={<ArrowLeft size={15} />}
+          onClick={onBack}
+          aria-label="Back to templates"
+        />
         <span className="spaces-tg-bar-icon">
           <SpaceIcon media={card.space.icon} size={18} />
         </span>
-        <span className="min-w-0 flex-1 truncate type-title">{card.space.title}</span>
+        <span className="min-w-0 flex-1 truncate type-title">
+          {card.space.title}
+        </span>
         <Button variant="primary" disabled={!full || !!stage} onClick={onUse}>
           {stage ? "Adding…" : "Use template"}
         </Button>
       </div>
       <div className="spaces-tg-preview-body">
         <aside className="spaces-tg-pages">
-          <p className="type-secondary text-muted-foreground spaces-tg-pages-head">{card.space.forWho}</p>
+          <p className="type-secondary text-muted-foreground spaces-tg-pages-head">
+            {card.space.forWho}
+          </p>
           {pages.map((p) => (
-            <button key={p.key} type="button" className="spaces-tg-rail-row" data-active={current?.key === p.key ? "true" : undefined} onClick={() => setPageKey(p.key)}>
-              <span className="spaces-menu-row-icon">{p.doc.icon ? <SpaceIcon media={p.doc.icon} size={16} /> : <FileText size={16} />}</span>
-              <span className="min-w-0 flex-1 truncate text-left">{p.title}</span>
+            <button
+              key={p.key}
+              type="button"
+              className="spaces-tg-rail-row"
+              data-active={current?.key === p.key ? "true" : undefined}
+              onClick={() => setPageKey(p.key)}
+            >
+              <span className="spaces-menu-row-icon">
+                {p.doc.icon ? (
+                  <SpaceIcon media={p.doc.icon} size={16} />
+                ) : (
+                  <FileText size={16} />
+                )}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-left">
+                {p.title}
+              </span>
             </button>
           ))}
         </aside>
         <div className="spaces-tg-page" data-matrx-page-scroll="">
-          {failed ? <ErrorNotice title="This template could not be opened" message={failed} size="compact" /> : null}
-          {!full && !failed ? <RegionSkeleton shape="rows" count={8} aria-label="Loading the template" /> : null}
+          {failed ? (
+            <ErrorNotice
+              title="This template could not be opened"
+              message={failed}
+              size="compact"
+            />
+          ) : null}
+          {!full && !failed ? (
+            <RegionSkeleton
+              shape="rows"
+              count={8}
+              aria-label="Loading the template"
+            />
+          ) : null}
           {current ? (
             <StaticSpacesProvider value={value}>
-              {current.doc.cover ? <Cover cover={current.doc.cover} editable={false} onChange={() => {}} /> : null}
-              <div className="spaces-content">
-                <div className="spaces-header" data-has-cover={current.doc.cover ? "true" : undefined} data-has-icon={current.doc.icon ? "true" : undefined}>
-                  {current.doc.icon ? (
-                    <span className="spaces-page-icon" data-image={isImageMedia(current.doc.icon) ? "true" : undefined}>
-                      <SpaceIcon media={current.doc.icon} size={isImageMedia(current.doc.icon) ? 136 : 78} />
-                    </span>
-                  ) : null}
-                  <h1 className="spaces-title">{current.title}</h1>
+              <div
+                className="spaces-page"
+                data-full-width={
+                  current.doc.settings.fullWidth ? "true" : undefined
+                }
+                data-small-text={
+                  current.doc.settings.smallText ? "true" : undefined
+                }
+              >
+                {current.doc.cover ? (
+                  <Cover
+                    cover={current.doc.cover}
+                    editable={false}
+                    onChange={() => {}}
+                  />
+                ) : null}
+                <div className="spaces-content">
+                  <div
+                    className="spaces-header"
+                    data-has-cover={current.doc.cover ? "true" : undefined}
+                    data-has-icon={current.doc.icon ? "true" : undefined}
+                  >
+                    {current.doc.icon ? (
+                      <span
+                        className="spaces-page-icon"
+                        data-image={
+                          isImageMedia(current.doc.icon) ? "true" : undefined
+                        }
+                      >
+                        <SpaceIcon
+                          media={current.doc.icon}
+                          size={isImageMedia(current.doc.icon) ? 136 : 78}
+                        />
+                      </span>
+                    ) : null}
+                    <h1 className="spaces-title">{current.title}</h1>
+                  </div>
+                  <SpaceEditor
+                    key={`${card.id}:${current.key}`}
+                    spaceId={`preview-${current.key}`}
+                    initialBlocks={current.doc.blocks}
+                    editable={false}
+                    onChange={() => {}}
+                    slash={{
+                      createSubpage: READ_ONLY,
+                      pickPage: async () => null,
+                      pickSource: async () => null,
+                      newDatabase: async () => null,
+                    }}
+                    menu={{
+                      moveBlocksTo: READ_ONLY,
+                      turnIntoPageIn: READ_ONLY,
+                      askAi: () => {},
+                    }}
+                  />
                 </div>
-                <SpaceEditor
-                  key={`${card.id}:${current.key}`}
-                  spaceId={`preview-${current.key}`}
-                  initialBlocks={current.doc.blocks}
-                  editable={false}
-                  onChange={() => {}}
-                  slash={{ createSubpage: READ_ONLY, pickPage: async () => null, pickSource: async () => null, newDatabase: async () => null }}
-                  menu={{ moveBlocksTo: READ_ONLY, turnIntoPageIn: READ_ONLY, askAi: () => {} }}
-                />
               </div>
             </StaticSpacesProvider>
           ) : null}
@@ -249,13 +496,30 @@ function PackPreview({ card, onBack, onUse, stage }: { card: SpaceTemplateCard; 
 }
 
 /** One of the person's own labelled pages: its text outline, and Use template = copy it. */
-function OwnPreview({ doc, onBack, onUse, titleOf }: { doc: SpaceDoc | null; onBack: () => void; onUse: (d: SpaceDoc) => Promise<void>; titleOf: (id: string) => string | null }) {
+function OwnPreview({
+  doc,
+  onBack,
+  onUse,
+  titleOf,
+}: {
+  doc: SpaceDoc | null;
+  onBack: () => void;
+  onUse: (d: SpaceDoc) => Promise<void>;
+  titleOf: (id: string) => string | null;
+}) {
   const [using, setUsing] = useState(false);
   return (
     <div className="spaces-tg-preview">
       <div className="spaces-tg-bar">
-        <Button variant="quiet" icon={<ArrowLeft size={15} />} onClick={onBack} aria-label="Back to templates" />
-        <span className="min-w-0 flex-1 truncate type-title">{doc?.title || "Untitled"}</span>
+        <Button
+          variant="quiet"
+          icon={<ArrowLeft size={15} />}
+          onClick={onBack}
+          aria-label="Back to templates"
+        />
+        <span className="min-w-0 flex-1 truncate type-title">
+          {doc?.title || "Untitled"}
+        </span>
         <Button
           variant="primary"
           disabled={!doc || using}
@@ -272,7 +536,17 @@ function OwnPreview({ doc, onBack, onUse, titleOf }: { doc: SpaceDoc | null; onB
           {using ? "Adding…" : "Use template"}
         </Button>
       </div>
-      <div className="spaces-tg-page">{doc ? <Preview blocks={doc.blocks} titleOf={titleOf} /> : <RegionSkeleton shape="rows" count={8} aria-label="Loading the template" />}</div>
+      <div className="spaces-tg-page">
+        {doc ? (
+          <Preview blocks={doc.blocks} titleOf={titleOf} />
+        ) : (
+          <RegionSkeleton
+            shape="rows"
+            count={8}
+            aria-label="Loading the template"
+          />
+        )}
+      </div>
     </div>
   );
 }

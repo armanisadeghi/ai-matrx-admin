@@ -1,0 +1,2292 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0100",
+  "version": 1,
+  "title": "Projects, Tasks & Sprints",
+  "description": "Projects with tasks, two-week sprints, points rollups and a live sprint dashboard.",
+  "forWho": "Software and product teams working in sprints",
+  "icon": {
+    "emoji": "🏃"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "projects",
+  "tags": [
+    "sprints",
+    "agile",
+    "projects",
+    "tasks"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-projects-tasks-sprints",
+    "catalogueId": "SP0100",
+    "useCase": "Dana Okonkwo-Reyes manages a six-person product team and uses this to see what is in the sprint, what is blocked and how many points each sprint really finishes.",
+    "industry": "cross_industry",
+    "vertical": "Software teams",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Harborline Labs",
+      "describes": "A small software company building a shopping app for independent grocers.",
+      "address": {
+        "line1": "4410 Fennimore Court",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78704",
+        "country": "US"
+      },
+      "phone": "(512) 555-0140",
+      "website": "harborline-labs.net",
+      "email": "hello@harborline-labs.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-projects-tasks-sprints",
+    "tables": [
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "project_name",
+        "describes": "Every initiative the team is building, who leads it and how far along it is.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "In progress",
+              "On hold",
+              "Done"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "In progress": "blue",
+              "On hold": "amber",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Planning"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 250000
+              }
+            ]
+          },
+          {
+            "key": "tasks",
+            "label": "Tasks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "relationMax": 40,
+            "multi": true
+          },
+          {
+            "key": "task_count",
+            "label": "Task count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "points_total",
+            "label": "Points planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "points",
+            "agg": "sum"
+          },
+          {
+            "key": "points_done",
+            "label": "Points done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "points",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pr-checkout",
+            "values": {
+              "project_name": "Checkout rebuild",
+              "status": "In progress",
+              "priority": "High",
+              "lead": "tm-felix",
+              "start_on": "@today-30d",
+              "due_on": "@today+25d",
+              "budget": 64000,
+              "tasks": [
+                "tk-01",
+                "tk-02",
+                "tk-03",
+                "tk-04",
+                "tk-05",
+                "tk-06",
+                "tk-07",
+                "tk-08",
+                "tk-18"
+              ]
+            }
+          },
+          {
+            "key": "pr-mobile",
+            "values": {
+              "project_name": "Mobile push notifications",
+              "status": "In progress",
+              "priority": "Medium",
+              "lead": "tm-nadia",
+              "start_on": "@today-14d",
+              "due_on": "@today+40d",
+              "budget": 38500,
+              "tasks": [
+                "tk-09",
+                "tk-10",
+                "tk-11",
+                "tk-12",
+                "tk-13",
+                "tk-19"
+              ]
+            }
+          },
+          {
+            "key": "pr-billing",
+            "values": {
+              "project_name": "Billing export to CSV",
+              "status": "Done",
+              "priority": "Medium",
+              "lead": "tm-tomas",
+              "start_on": "@today-60d",
+              "due_on": "@today-12d",
+              "budget": 9200,
+              "tasks": [
+                "tk-14",
+                "tk-15"
+              ]
+            }
+          },
+          {
+            "key": "pr-search",
+            "values": {
+              "project_name": "Search relevance tuning",
+              "status": "Planning",
+              "priority": "Low",
+              "lead": "tm-dana",
+              "start_on": "@today+14d",
+              "due_on": "@today+75d",
+              "budget": 22000,
+              "tasks": [
+                "tk-16",
+                "tk-17"
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "start_on",
+            "due_on"
+          ]
+        ],
+        "independentOf": {
+          "lead": "The two sides move on their own schedule and status; neither forces the other.",
+          "tasks": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "sprint",
+        "name": "Sprints",
+        "labelSingular": "Sprint",
+        "labelPlural": "Sprints",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "repeat",
+        "titleField": "sprint_name",
+        "describes": "Two-week sprints: dates, goal and how many points were committed and finished.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "sprint_name",
+            "label": "Sprint",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Past",
+              "Current",
+              "Next"
+            ],
+            "choiceColors": {
+              "Past": "slate",
+              "Current": "blue",
+              "Next": "amber"
+            },
+            "required": true,
+            "default": "Next"
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tasks",
+            "label": "Tasks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "relationMax": 40,
+            "multi": true
+          },
+          {
+            "key": "committed",
+            "label": "Points committed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "points",
+            "agg": "sum"
+          },
+          {
+            "key": "completed",
+            "label": "Points completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "points",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "sp-21",
+            "values": {
+              "sprint_name": "Cart summary sprint",
+              "phase": "Past",
+              "starts_on": "@today-34d",
+              "ends_on": "@today-21d",
+              "goal": "Ship the new cart summary behind a flag",
+              "tasks": [
+                "tk-01",
+                "tk-02",
+                "tk-14",
+                "tk-15"
+              ]
+            }
+          },
+          {
+            "key": "sp-22",
+            "values": {
+              "sprint_name": "Payments sprint",
+              "phase": "Past",
+              "starts_on": "@today-20d",
+              "ends_on": "@today-7d",
+              "goal": "Payment retries and the first push notification",
+              "tasks": [
+                "tk-03",
+                "tk-04",
+                "tk-09",
+                "tk-10"
+              ]
+            }
+          },
+          {
+            "key": "sp-23",
+            "values": {
+              "sprint_name": "Checkout address sprint",
+              "phase": "Current",
+              "starts_on": "@today-6d",
+              "ends_on": "@today+7d",
+              "goal": "Checkout address step and notification settings",
+              "tasks": [
+                "tk-05",
+                "tk-06",
+                "tk-07",
+                "tk-11",
+                "tk-12"
+              ]
+            }
+          },
+          {
+            "key": "sp-24",
+            "values": {
+              "sprint_name": "Search kickoff sprint",
+              "phase": "Next",
+              "starts_on": "@today+8d",
+              "ends_on": "@today+21d",
+              "goal": "Search tuning kickoff and checkout polish",
+              "tasks": [
+                "tk-08",
+                "tk-13"
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "statusByDate": {
+          "field": "phase",
+          "dateField": "ends_on",
+          "bands": [
+            {
+              "status": "Past",
+              "to": 0
+            },
+            {
+              "status": "Current",
+              "from": 0,
+              "to": 8
+            },
+            {
+              "status": "Next",
+              "from": 8
+            }
+          ]
+        },
+        "independentOf": {
+          "tasks": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Every piece of work, its project and sprint, owner, points and due day.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Blocked",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Blocked": "red",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do"
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Feature",
+              "Bug",
+              "Chore",
+              "Spike"
+            ],
+            "choiceColors": {
+              "Feature": "blue",
+              "Bug": "red",
+              "Chore": "slate",
+              "Spike": "violet"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "assignee",
+            "label": "Assignee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "points",
+            "label": "Points",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 21
+              }
+            ]
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "pull_request",
+            "label": "Pull request",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "days_left",
+            "label": "Days until due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tk-01",
+            "values": {
+              "task_name": "Design cart summary layout",
+              "status": "Done",
+              "priority": "Medium",
+              "assignee": "tm-kofi",
+              "points": 3,
+              "type": "Feature",
+              "due_on": "@today-28d",
+              "pull_request": "https://code.harborline-labs.net/pull/400"
+            }
+          },
+          {
+            "key": "tk-02",
+            "values": {
+              "task_name": "Build cart summary component",
+              "status": "Done",
+              "priority": "High",
+              "assignee": "tm-felix",
+              "points": 5,
+              "type": "Feature",
+              "due_on": "@today-24d",
+              "pull_request": "https://code.harborline-labs.net/pull/401"
+            }
+          },
+          {
+            "key": "tk-03",
+            "values": {
+              "task_name": "Retry failed card payments",
+              "status": "Done",
+              "priority": "High",
+              "assignee": "tm-nadia",
+              "points": 5,
+              "type": "Feature",
+              "due_on": "@today-12d",
+              "pull_request": "https://code.harborline-labs.net/pull/402"
+            }
+          },
+          {
+            "key": "tk-04",
+            "values": {
+              "task_name": "Fix rounding on discount codes",
+              "status": "Done",
+              "priority": "Medium",
+              "assignee": "tm-tomas",
+              "points": 2,
+              "type": "Bug",
+              "due_on": "@today-10d",
+              "pull_request": "https://code.harborline-labs.net/pull/403"
+            }
+          },
+          {
+            "key": "tk-05",
+            "values": {
+              "task_name": "Address autocomplete step",
+              "status": "In progress",
+              "priority": "High",
+              "assignee": "tm-felix",
+              "points": 8,
+              "type": "Feature",
+              "due_on": "@today+3d",
+              "pull_request": "https://code.harborline-labs.net/pull/404"
+            }
+          },
+          {
+            "key": "tk-06",
+            "values": {
+              "task_name": "Saved payment methods screen",
+              "status": "In progress",
+              "priority": "Medium",
+              "assignee": "tm-nadia",
+              "points": 5,
+              "type": "Feature",
+              "due_on": "@today+5d",
+              "pull_request": "https://code.harborline-labs.net/pull/405"
+            }
+          },
+          {
+            "key": "tk-07",
+            "values": {
+              "task_name": "Guest checkout email validation",
+              "status": "To do",
+              "priority": "Medium",
+              "assignee": "tm-tomas",
+              "points": 2,
+              "type": "Bug",
+              "due_on": "@today+6d"
+            }
+          },
+          {
+            "key": "tk-08",
+            "values": {
+              "task_name": "Order confirmation page polish",
+              "status": "To do",
+              "priority": "Low",
+              "assignee": "tm-kofi",
+              "points": 3,
+              "type": "Chore",
+              "due_on": "@today+16d"
+            }
+          },
+          {
+            "key": "tk-09",
+            "values": {
+              "task_name": "Choose a push provider",
+              "status": "Done",
+              "priority": "High",
+              "assignee": "tm-dana",
+              "points": 2,
+              "type": "Spike",
+              "due_on": "@today-9d",
+              "pull_request": "https://code.harborline-labs.net/pull/408"
+            }
+          },
+          {
+            "key": "tk-10",
+            "values": {
+              "task_name": "Register device tokens on login",
+              "status": "Done",
+              "priority": "High",
+              "assignee": "tm-nadia",
+              "points": 5,
+              "type": "Feature",
+              "due_on": "@today-8d",
+              "pull_request": "https://code.harborline-labs.net/pull/409"
+            }
+          },
+          {
+            "key": "tk-11",
+            "values": {
+              "task_name": "Notification settings screen",
+              "status": "In progress",
+              "priority": "Medium",
+              "assignee": "tm-kofi",
+              "points": 5,
+              "type": "Feature",
+              "due_on": "@today+4d",
+              "pull_request": "https://code.harborline-labs.net/pull/410"
+            }
+          },
+          {
+            "key": "tk-12",
+            "values": {
+              "task_name": "Quiet hours rule on the server",
+              "status": "Blocked",
+              "priority": "Medium",
+              "assignee": "tm-tomas",
+              "points": 3,
+              "type": "Feature",
+              "due_on": "@today+7d"
+            }
+          },
+          {
+            "key": "tk-13",
+            "values": {
+              "task_name": "Delivery receipts and retries",
+              "status": "To do",
+              "priority": "Medium",
+              "assignee": "tm-nadia",
+              "points": 8,
+              "type": "Feature",
+              "due_on": "@today+19d"
+            }
+          },
+          {
+            "key": "tk-14",
+            "values": {
+              "task_name": "Export invoices as CSV",
+              "status": "Done",
+              "priority": "Medium",
+              "assignee": "tm-tomas",
+              "points": 3,
+              "type": "Feature",
+              "due_on": "@today-25d",
+              "pull_request": "https://code.harborline-labs.net/pull/413"
+            }
+          },
+          {
+            "key": "tk-15",
+            "values": {
+              "task_name": "Escape commas in customer names",
+              "status": "Done",
+              "priority": "Low",
+              "assignee": "tm-tomas",
+              "points": 1,
+              "type": "Bug",
+              "due_on": "@today-22d",
+              "pull_request": "https://code.harborline-labs.net/pull/414"
+            }
+          },
+          {
+            "key": "tk-16",
+            "values": {
+              "task_name": "Collect search queries with no clicks",
+              "status": "To do",
+              "priority": "Low",
+              "assignee": "tm-ines",
+              "points": 3,
+              "type": "Spike",
+              "due_on": "@today+16d"
+            }
+          },
+          {
+            "key": "tk-17",
+            "values": {
+              "task_name": "Draft relevance test set",
+              "status": "To do",
+              "priority": "Low",
+              "assignee": "tm-ines",
+              "points": 5,
+              "type": "Chore",
+              "due_on": "@today+24d"
+            }
+          },
+          {
+            "key": "tk-18",
+            "values": {
+              "task_name": "Upgrade the logging library",
+              "status": "To do",
+              "priority": "Low",
+              "assignee": "tm-dana",
+              "points": 3,
+              "type": "Chore",
+              "due_on": "@today+30d"
+            }
+          },
+          {
+            "key": "tk-19",
+            "values": {
+              "task_name": "Slow product page on mobile data",
+              "status": "To do",
+              "priority": "High",
+              "assignee": "tm-felix",
+              "points": 5,
+              "type": "Bug",
+              "due_on": "@today+12d"
+            }
+          }
+        ],
+        "independentOf": {
+          "assignee": "Anyone can pick up a task, whenever they joined."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Lead links to team_member.",
+        "fromTable": "project",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "projects_led"
+      },
+      {
+        "describes": "A project holds its tasks.",
+        "fromTable": "project",
+        "fromField": "tasks",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "project"
+      },
+      {
+        "describes": "A sprint holds the tasks the team committed to.",
+        "fromTable": "sprint",
+        "fromField": "tasks",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "sprint"
+      },
+      {
+        "describes": "Assignee links to team_member.",
+        "fromTable": "task",
+        "fromField": "assignee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks_assigned"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-dana",
+            "values": {
+              "full_name": "Dana Okonkwo-Reyes",
+              "role": "Engineering manager",
+              "work_email": "dana@harborline-labs.net",
+              "mobile": "(512) 555-0141",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-felix",
+            "values": {
+              "full_name": "Felix Brandvold",
+              "role": "Senior engineer",
+              "work_email": "felix@harborline-labs.net",
+              "mobile": "(512) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-nadia",
+            "values": {
+              "full_name": "Nadia Qureshi",
+              "role": "Engineer",
+              "work_email": "nadia@harborline-labs.net",
+              "mobile": "(512) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-tomas",
+            "values": {
+              "full_name": "Tomas Wieczorek",
+              "role": "Engineer",
+              "work_email": "tomas@harborline-labs.net",
+              "mobile": "(512) 555-0144",
+              "start_date": "@today-18m"
+            }
+          },
+          {
+            "key": "tm-ines",
+            "values": {
+              "full_name": "Ines Calderon",
+              "role": "Product manager",
+              "work_email": "ines@harborline-labs.net",
+              "mobile": "(512) 555-0145",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-kofi",
+            "values": {
+              "full_name": "Kofi Mensah-Adler",
+              "role": "Designer",
+              "work_email": "kofi@harborline-labs.net",
+              "mobile": "(512) 555-0146",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "task_request",
+        "name": "Request a task",
+        "describes": "How anyone asks for work to be added to the backlog.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What needs to be done?",
+            "required": true
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When is it needed by?"
+          },
+          {
+            "fieldKey": "type",
+            "ask": "Is it a bug, a feature, a chore or a question to investigate?"
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How urgent is it?"
+          }
+        ],
+        "submitLabel": "Add to the backlog",
+        "confirmation": "Thanks. It is in the backlog as To do."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "project_board",
+        "name": "By status",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_timeline",
+        "name": "Timeline",
+        "table": "project",
+        "kind": "timeline",
+        "startField": "start_on",
+        "endField": "due_on"
+      },
+      {
+        "token": "all_sprint",
+        "name": "All sprints",
+        "table": "sprint",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "starts_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "sprint_timeline",
+        "name": "Timeline",
+        "table": "sprint",
+        "kind": "timeline",
+        "startField": "starts_on",
+        "endField": "ends_on"
+      },
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "Board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Sprint assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every task, its project, sprint, owner and points."
+        },
+        {
+          "name": "related_tables",
+          "table": "sprint",
+          "describes": "The sprints the tasks are planned in."
+        }
+      ],
+      "question": {
+        "ask": "How many tasks are blocked right now?",
+        "whyItMatters": "Dana clears blockers before every standup.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Blocked"
+          },
+          "answer": 1,
+          "unit": "tasks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open the sprint timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "sprint_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sprint_timeline",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open the project timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "project_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_timeline",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "harborline-labs.net"
+      ],
+      "fictionalStreets": [
+        "Fennimore Court"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "projects-tasks-sprints",
+      "parent": null,
+      "title": "Projects, Tasks & Sprints",
+      "icon": {
+        "emoji": "🏃"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan work in projects, break it into tasks, and pull tasks into two-week sprints. Open a sprint to see what the team committed to and how much got done."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sprint-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sprint-planning"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:backlog"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-we-work"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This sprint"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "Board",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Open work",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-1"
+              },
+              {
+                "layout": "grid",
+                "name": "All tasks",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sprints"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sprint",
+              "view": "all_sprint"
+            },
+            "inline": true,
+            "title": "Sprints",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All sprints",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "timeline",
+                "name": "Timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on",
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Current and next",
+                "icon": "List",
+                "filters": {
+                  "phase": [
+                    "Current",
+                    "Next"
+                  ]
+                },
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-0"
+              },
+              {
+                "layout": "timeline",
+                "name": "Timeline",
+                "icon": "ChartGantt",
+                "dateField": "start_on",
+                "id": "view-1"
+              },
+              {
+                "layout": "grid",
+                "name": "All projects",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sprint-dashboard",
+      "parent": "projects-tasks-sprints",
+      "title": "Sprint dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Tasks by status",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Points by priority",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "priority",
+                          "op": "sum",
+                          "field": "points"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Work by type",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "type",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Blocked right now"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Blocked",
+                "icon": "CircleAlert",
+                "filters": {
+                  "status": "Blocked"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Points planned and finished"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sprint",
+              "view": "all_sprint"
+            },
+            "inline": true,
+            "title": "Sprints",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Velocity",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "chart",
+                "name": "Points committed",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "phase",
+                  "op": "sum",
+                  "field": "committed"
+                },
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Project progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Completion",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "chart",
+                "name": "Projects by status",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "status",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sprint-planning",
+      "parent": "projects-tasks-sprints",
+      "title": "Sprint planning",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Run this in the first hour of every sprint. The goal is a commitment the team believes in, not a full board."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Product manager orders the backlog by priority"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Engineering manager notes who is away this sprint"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the last sprint’s done share on the dashboard"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the sprint goal",
+              "bold": true
+            },
+            {
+              "text": " — one sentence that tells a stranger what will be different at the end."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pull tasks",
+              "bold": true
+            },
+            {
+              "text": " from the backlog until the points are about the average of the last three sprints."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check dependencies",
+              "bold": true
+            },
+            {
+              "text": " — anything blocked on another team gets a named person and a date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Leave a buffer",
+              "bold": true
+            },
+            {
+              "text": " — about one task in five should be a bug fix or chore that can slip."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This sprint’s plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Planned",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                },
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By priority",
+                "icon": "SquareKanban",
+                "groupField": "priority",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retrospective"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Went well"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Write one thing per bullet"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Say who helped"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Slowed us down"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Name the cause, not the person"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Try next sprint"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Pick at most two changes"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "backlog",
+      "parent": "projects-tasks-sprints",
+      "title": "Backlog",
+      "icon": {
+        "emoji": "📥"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything not yet in a sprint. Open a task and set its sprint when the team agrees to commit."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "To do",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "priority",
+                    "direction": "desc"
+                  }
+                ],
+                "filters": {
+                  "status": "To do"
+                },
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By priority",
+                "icon": "SquareKanban",
+                "groupField": "priority",
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Bugs",
+                "icon": "List",
+                "filters": {
+                  "type": "Bug",
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                },
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "how-we-work",
+      "parent": "projects-tasks-sprints",
+      "title": "How we work",
+      "icon": {
+        "emoji": "📘"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A short guide so everyone uses the board the same way."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statuses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "To do",
+              "bold": true
+            },
+            {
+              "text": " — agreed, not started."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "In progress",
+              "bold": true
+            },
+            {
+              "text": " — someone is working on it today."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Blocked",
+              "bold": true
+            },
+            {
+              "text": " — write what is needed and from whom, in the task."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Done",
+              "bold": true
+            },
+            {
+              "text": " — merged and checked by a second person."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Points"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Points"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A small fix; under an hour of focused work"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Half a day; no unknowns"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "About a day; one small unknown"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "5"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two to three days; split it if you can"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "8"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Most of a sprint; always split first"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Why points and not hours"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Hours invite precision nobody has. Points compare tasks to each other, and the sprint dashboard shows how many the team really finishes."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "What counts as a bug"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Something that used to work, or was meant to work, and does not. New wishes are features."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "projects-tasks-sprints",
+      "title": "Team",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Team",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Team",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -85,14 +85,14 @@ export function previewTables(t: SpaceTemplateFull): Record<string, ResolvedTabl
 }
 
 /** The template's pages as previewable docs (root first), over the in-memory tables. */
-export function previewPages(t: SpaceTemplateFull): Array<{ key: string; title: string; doc: Pick<SpaceDoc, "title" | "icon" | "cover" | "blocks"> }> {
+export function previewPages(t: SpaceTemplateFull): Array<{ key: string; title: string; doc: Pick<SpaceDoc, "title" | "icon" | "cover" | "blocks" | "settings"> }> {
   const tables = previewTables(t);
   const pages = Object.fromEntries(t.pack.pages.map((p) => [p.key, `preview-${p.key}`]));
   let n = 0;
   return packPagesInOrder(t.pack.pages).map((p) => ({
     key: p.key,
     title: p.title,
-    doc: { title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, blocks: resolvePackBlocks(p.blocks, { tables, pages, newId: () => `preview-${p.key}-${++n}` }) },
+    doc: { title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, settings: packPageSettings(p), blocks: resolvePackBlocks(p.blocks, { tables, pages, newId: () => `preview-${p.key}-${++n}` }) },
   }));
 }
 

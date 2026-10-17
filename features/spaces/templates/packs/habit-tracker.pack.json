@@ -1,0 +1,1862 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0202",
+  "version": 1,
+  "title": "Habit Tracker",
+  "description": "Check habits off daily, see streaks and completion, and review the month at a glance.",
+  "forWho": "Anyone building routines",
+  "icon": {
+    "emoji": "✅"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "habits",
+    "routine",
+    "streaks",
+    "health"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-habit-tracker",
+    "catalogueId": "SP0202",
+    "useCase": "Noor Haddadi tracks eight small habits and checks in each evening to see which ones are sticking.",
+    "industry": "cross_industry",
+    "vertical": "Personal habits",
+    "job": "personal",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-habit-tracker",
+    "tables": [
+      {
+        "token": "habit",
+        "name": "Habits",
+        "labelSingular": "Habit",
+        "labelPlural": "Habits",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "repeat",
+        "titleField": "habit_name",
+        "describes": "Each habit you are building, how often, and how steady you have been.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "habit_name",
+            "label": "Habit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "frequency",
+            "label": "Frequency",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Daily",
+              "Weekdays",
+              "Weekly"
+            ],
+            "choiceColors": {
+              "Daily": "slate",
+              "Weekdays": "blue",
+              "Weekly": "green"
+            }
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Health",
+              "Mind",
+              "Work",
+              "Home"
+            ],
+            "choiceColors": {
+              "Health": "slate",
+              "Mind": "blue",
+              "Work": "green",
+              "Home": "amber"
+            }
+          },
+          {
+            "key": "active",
+            "label": "Active",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "days_logged",
+            "label": "Days logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "logs",
+            "pick": "log_name",
+            "agg": "count"
+          },
+          {
+            "key": "days_done",
+            "label": "Days done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "logs",
+            "pick": "log_name",
+            "agg": "count",
+            "filter": {
+              "done": true
+            }
+          },
+          {
+            "key": "completion",
+            "label": "Completion %",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Days done} / {Days logged} * 100",
+            "source": "formula",
+            "computeOn": "read"
+          }
+        ],
+        "rows": [
+          {
+            "key": "h-water",
+            "values": {
+              "habit_name": "Drink 2 litres of water",
+              "frequency": "Daily",
+              "category": "Health",
+              "active": true
+            }
+          },
+          {
+            "key": "h-walk",
+            "values": {
+              "habit_name": "Walk 30 minutes",
+              "frequency": "Daily",
+              "category": "Health",
+              "active": true
+            }
+          },
+          {
+            "key": "h-read",
+            "values": {
+              "habit_name": "Read 20 pages",
+              "frequency": "Daily",
+              "category": "Mind",
+              "active": true
+            }
+          },
+          {
+            "key": "h-med",
+            "values": {
+              "habit_name": "Meditate 10 minutes",
+              "frequency": "Weekdays",
+              "category": "Mind",
+              "active": true
+            }
+          },
+          {
+            "key": "h-plan",
+            "values": {
+              "habit_name": "Plan tomorrow",
+              "frequency": "Weekdays",
+              "category": "Work",
+              "active": true
+            }
+          },
+          {
+            "key": "h-inbox",
+            "values": {
+              "habit_name": "Clear the inbox",
+              "frequency": "Weekdays",
+              "category": "Work",
+              "active": true
+            }
+          },
+          {
+            "key": "h-laundry",
+            "values": {
+              "habit_name": "Laundry day",
+              "frequency": "Weekly",
+              "category": "Home",
+              "active": true
+            }
+          },
+          {
+            "key": "h-stretch",
+            "values": {
+              "habit_name": "Evening stretch",
+              "frequency": "Daily",
+              "category": "Health",
+              "active": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "habit_log",
+        "name": "Habit log",
+        "labelSingular": "Log entry",
+        "labelPlural": "Habit log",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "log_name",
+        "describes": "One row per habit per day: did you do it or not.",
+        "subject": "thing",
+        "independentOf": {
+          "habit": "A habit can be logged on any day, whenever it was first created."
+        },
+        "fields": [
+          {
+            "key": "log_name",
+            "label": "Entry",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "habit",
+            "label": "Habit",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "habit",
+            "relationMax": 1
+          },
+          {
+            "key": "logged_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "note",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "l01",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -0",
+              "habit": "h-water",
+              "logged_on": "@today-0d",
+              "done": true,
+              "note": "Carried the bottle all day"
+            }
+          },
+          {
+            "key": "l02",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -1",
+              "habit": "h-water",
+              "logged_on": "@today-1d",
+              "done": true
+            }
+          },
+          {
+            "key": "l03",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -2",
+              "habit": "h-water",
+              "logged_on": "@today-2d",
+              "done": true
+            }
+          },
+          {
+            "key": "l04",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -3",
+              "habit": "h-water",
+              "logged_on": "@today-3d",
+              "done": false,
+              "note": "Hit it by 3pm"
+            }
+          },
+          {
+            "key": "l05",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -4",
+              "habit": "h-water",
+              "logged_on": "@today-4d",
+              "done": true,
+              "note": "Hit it by 3pm"
+            }
+          },
+          {
+            "key": "l06",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -5",
+              "habit": "h-water",
+              "logged_on": "@today-5d",
+              "done": true,
+              "note": "Carried the bottle all day"
+            }
+          },
+          {
+            "key": "l07",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -6",
+              "habit": "h-water",
+              "logged_on": "@today-6d",
+              "done": true,
+              "note": "Carried the bottle all day"
+            }
+          },
+          {
+            "key": "l08",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -7",
+              "habit": "h-water",
+              "logged_on": "@today-7d",
+              "done": true,
+              "note": "Carried the bottle all day"
+            }
+          },
+          {
+            "key": "l09",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -8",
+              "habit": "h-water",
+              "logged_on": "@today-8d",
+              "done": true
+            }
+          },
+          {
+            "key": "l10",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -9",
+              "habit": "h-water",
+              "logged_on": "@today-9d",
+              "done": true
+            }
+          },
+          {
+            "key": "l11",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -10",
+              "habit": "h-water",
+              "logged_on": "@today-10d",
+              "done": true,
+              "note": "Hit it by 3pm"
+            }
+          },
+          {
+            "key": "l12",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -11",
+              "habit": "h-water",
+              "logged_on": "@today-11d",
+              "done": true
+            }
+          },
+          {
+            "key": "l13",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -12",
+              "habit": "h-water",
+              "logged_on": "@today-12d",
+              "done": true,
+              "note": "Carried the bottle all day"
+            }
+          },
+          {
+            "key": "l14",
+            "values": {
+              "log_name": "Drink 2 litres of water · day -13",
+              "habit": "h-water",
+              "logged_on": "@today-13d",
+              "done": true
+            }
+          },
+          {
+            "key": "l15",
+            "values": {
+              "log_name": "Walk 30 minutes · day -0",
+              "habit": "h-walk",
+              "logged_on": "@today-0d",
+              "done": true,
+              "note": "Loop around the park"
+            }
+          },
+          {
+            "key": "l16",
+            "values": {
+              "log_name": "Walk 30 minutes · day -1",
+              "habit": "h-walk",
+              "logged_on": "@today-1d",
+              "done": true
+            }
+          },
+          {
+            "key": "l17",
+            "values": {
+              "log_name": "Walk 30 minutes · day -2",
+              "habit": "h-walk",
+              "logged_on": "@today-2d",
+              "done": true
+            }
+          },
+          {
+            "key": "l18",
+            "values": {
+              "log_name": "Walk 30 minutes · day -3",
+              "habit": "h-walk",
+              "logged_on": "@today-3d",
+              "done": true
+            }
+          },
+          {
+            "key": "l19",
+            "values": {
+              "log_name": "Walk 30 minutes · day -4",
+              "habit": "h-walk",
+              "logged_on": "@today-4d",
+              "done": true,
+              "note": "Loop around the park"
+            }
+          },
+          {
+            "key": "l20",
+            "values": {
+              "log_name": "Walk 30 minutes · day -5",
+              "habit": "h-walk",
+              "logged_on": "@today-5d",
+              "done": true,
+              "note": "Walked to the market"
+            }
+          },
+          {
+            "key": "l21",
+            "values": {
+              "log_name": "Walk 30 minutes · day -6",
+              "habit": "h-walk",
+              "logged_on": "@today-6d",
+              "done": true
+            }
+          },
+          {
+            "key": "l22",
+            "values": {
+              "log_name": "Walk 30 minutes · day -7",
+              "habit": "h-walk",
+              "logged_on": "@today-7d",
+              "done": true
+            }
+          },
+          {
+            "key": "l23",
+            "values": {
+              "log_name": "Walk 30 minutes · day -8",
+              "habit": "h-walk",
+              "logged_on": "@today-8d",
+              "done": true,
+              "note": "Walked to the market"
+            }
+          },
+          {
+            "key": "l24",
+            "values": {
+              "log_name": "Walk 30 minutes · day -9",
+              "habit": "h-walk",
+              "logged_on": "@today-9d",
+              "done": true
+            }
+          },
+          {
+            "key": "l25",
+            "values": {
+              "log_name": "Walk 30 minutes · day -10",
+              "habit": "h-walk",
+              "logged_on": "@today-10d",
+              "done": true
+            }
+          },
+          {
+            "key": "l26",
+            "values": {
+              "log_name": "Walk 30 minutes · day -11",
+              "habit": "h-walk",
+              "logged_on": "@today-11d",
+              "done": true
+            }
+          },
+          {
+            "key": "l27",
+            "values": {
+              "log_name": "Walk 30 minutes · day -12",
+              "habit": "h-walk",
+              "logged_on": "@today-12d",
+              "done": false
+            }
+          },
+          {
+            "key": "l28",
+            "values": {
+              "log_name": "Walk 30 minutes · day -13",
+              "habit": "h-walk",
+              "logged_on": "@today-13d",
+              "done": false,
+              "note": "Walked to the market"
+            }
+          },
+          {
+            "key": "l29",
+            "values": {
+              "log_name": "Read 20 pages · day -0",
+              "habit": "h-read",
+              "logged_on": "@today-0d",
+              "done": true
+            }
+          },
+          {
+            "key": "l30",
+            "values": {
+              "log_name": "Read 20 pages · day -1",
+              "habit": "h-read",
+              "logged_on": "@today-1d",
+              "done": false,
+              "note": "Finished a chapter"
+            }
+          },
+          {
+            "key": "l31",
+            "values": {
+              "log_name": "Read 20 pages · day -2",
+              "habit": "h-read",
+              "logged_on": "@today-2d",
+              "done": false
+            }
+          },
+          {
+            "key": "l32",
+            "values": {
+              "log_name": "Read 20 pages · day -3",
+              "habit": "h-read",
+              "logged_on": "@today-3d",
+              "done": false,
+              "note": "Read on the train"
+            }
+          },
+          {
+            "key": "l33",
+            "values": {
+              "log_name": "Read 20 pages · day -4",
+              "habit": "h-read",
+              "logged_on": "@today-4d",
+              "done": true
+            }
+          },
+          {
+            "key": "l34",
+            "values": {
+              "log_name": "Read 20 pages · day -5",
+              "habit": "h-read",
+              "logged_on": "@today-5d",
+              "done": false
+            }
+          },
+          {
+            "key": "l35",
+            "values": {
+              "log_name": "Read 20 pages · day -6",
+              "habit": "h-read",
+              "logged_on": "@today-6d",
+              "done": false
+            }
+          },
+          {
+            "key": "l36",
+            "values": {
+              "log_name": "Read 20 pages · day -7",
+              "habit": "h-read",
+              "logged_on": "@today-7d",
+              "done": true
+            }
+          },
+          {
+            "key": "l37",
+            "values": {
+              "log_name": "Read 20 pages · day -8",
+              "habit": "h-read",
+              "logged_on": "@today-8d",
+              "done": true
+            }
+          },
+          {
+            "key": "l38",
+            "values": {
+              "log_name": "Read 20 pages · day -9",
+              "habit": "h-read",
+              "logged_on": "@today-9d",
+              "done": true,
+              "note": "Too tired"
+            }
+          },
+          {
+            "key": "l39",
+            "values": {
+              "log_name": "Read 20 pages · day -10",
+              "habit": "h-read",
+              "logged_on": "@today-10d",
+              "done": true,
+              "note": "Too tired"
+            }
+          },
+          {
+            "key": "l40",
+            "values": {
+              "log_name": "Read 20 pages · day -11",
+              "habit": "h-read",
+              "logged_on": "@today-11d",
+              "done": false
+            }
+          },
+          {
+            "key": "l41",
+            "values": {
+              "log_name": "Read 20 pages · day -12",
+              "habit": "h-read",
+              "logged_on": "@today-12d",
+              "done": true
+            }
+          },
+          {
+            "key": "l42",
+            "values": {
+              "log_name": "Read 20 pages · day -13",
+              "habit": "h-read",
+              "logged_on": "@today-13d",
+              "done": true,
+              "note": "Too tired"
+            }
+          },
+          {
+            "key": "l43",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -0",
+              "habit": "h-med",
+              "logged_on": "@today-0d",
+              "done": false,
+              "note": "Mind wandered a lot"
+            }
+          },
+          {
+            "key": "l44",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -1",
+              "habit": "h-med",
+              "logged_on": "@today-1d",
+              "done": false
+            }
+          },
+          {
+            "key": "l45",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -2",
+              "habit": "h-med",
+              "logged_on": "@today-2d",
+              "done": true,
+              "note": "Quiet start"
+            }
+          },
+          {
+            "key": "l46",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -3",
+              "habit": "h-med",
+              "logged_on": "@today-3d",
+              "done": true,
+              "note": "Quiet start"
+            }
+          },
+          {
+            "key": "l47",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -4",
+              "habit": "h-med",
+              "logged_on": "@today-4d",
+              "done": true
+            }
+          },
+          {
+            "key": "l48",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -7",
+              "habit": "h-med",
+              "logged_on": "@today-7d",
+              "done": true,
+              "note": "Quiet start"
+            }
+          },
+          {
+            "key": "l49",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -8",
+              "habit": "h-med",
+              "logged_on": "@today-8d",
+              "done": true
+            }
+          },
+          {
+            "key": "l50",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -9",
+              "habit": "h-med",
+              "logged_on": "@today-9d",
+              "done": true
+            }
+          },
+          {
+            "key": "l51",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -10",
+              "habit": "h-med",
+              "logged_on": "@today-10d",
+              "done": false
+            }
+          },
+          {
+            "key": "l52",
+            "values": {
+              "log_name": "Meditate 10 minutes · day -11",
+              "habit": "h-med",
+              "logged_on": "@today-11d",
+              "done": true
+            }
+          },
+          {
+            "key": "l53",
+            "values": {
+              "log_name": "Plan tomorrow · day -0",
+              "habit": "h-plan",
+              "logged_on": "@today-0d",
+              "done": true
+            }
+          },
+          {
+            "key": "l54",
+            "values": {
+              "log_name": "Plan tomorrow · day -1",
+              "habit": "h-plan",
+              "logged_on": "@today-1d",
+              "done": false
+            }
+          },
+          {
+            "key": "l55",
+            "values": {
+              "log_name": "Plan tomorrow · day -2",
+              "habit": "h-plan",
+              "logged_on": "@today-2d",
+              "done": false
+            }
+          },
+          {
+            "key": "l56",
+            "values": {
+              "log_name": "Plan tomorrow · day -3",
+              "habit": "h-plan",
+              "logged_on": "@today-3d",
+              "done": true,
+              "note": "Left it for morning"
+            }
+          },
+          {
+            "key": "l57",
+            "values": {
+              "log_name": "Plan tomorrow · day -4",
+              "habit": "h-plan",
+              "logged_on": "@today-4d",
+              "done": true,
+              "note": "Wrote the top three"
+            }
+          },
+          {
+            "key": "l58",
+            "values": {
+              "log_name": "Plan tomorrow · day -7",
+              "habit": "h-plan",
+              "logged_on": "@today-7d",
+              "done": true,
+              "note": "Wrote the top three"
+            }
+          },
+          {
+            "key": "l59",
+            "values": {
+              "log_name": "Plan tomorrow · day -8",
+              "habit": "h-plan",
+              "logged_on": "@today-8d",
+              "done": true
+            }
+          },
+          {
+            "key": "l60",
+            "values": {
+              "log_name": "Plan tomorrow · day -9",
+              "habit": "h-plan",
+              "logged_on": "@today-9d",
+              "done": false
+            }
+          },
+          {
+            "key": "l61",
+            "values": {
+              "log_name": "Plan tomorrow · day -10",
+              "habit": "h-plan",
+              "logged_on": "@today-10d",
+              "done": false,
+              "note": "Wrote the top three"
+            }
+          },
+          {
+            "key": "l62",
+            "values": {
+              "log_name": "Plan tomorrow · day -11",
+              "habit": "h-plan",
+              "logged_on": "@today-11d",
+              "done": false,
+              "note": "Left it for morning"
+            }
+          },
+          {
+            "key": "l63",
+            "values": {
+              "log_name": "Clear the inbox · day -0",
+              "habit": "h-inbox",
+              "logged_on": "@today-0d",
+              "done": false
+            }
+          },
+          {
+            "key": "l64",
+            "values": {
+              "log_name": "Clear the inbox · day -1",
+              "habit": "h-inbox",
+              "logged_on": "@today-1d",
+              "done": true,
+              "note": "Backlog of 40"
+            }
+          },
+          {
+            "key": "l65",
+            "values": {
+              "log_name": "Clear the inbox · day -2",
+              "habit": "h-inbox",
+              "logged_on": "@today-2d",
+              "done": false
+            }
+          },
+          {
+            "key": "l66",
+            "values": {
+              "log_name": "Clear the inbox · day -3",
+              "habit": "h-inbox",
+              "logged_on": "@today-3d",
+              "done": true,
+              "note": "Down to zero"
+            }
+          },
+          {
+            "key": "l67",
+            "values": {
+              "log_name": "Clear the inbox · day -4",
+              "habit": "h-inbox",
+              "logged_on": "@today-4d",
+              "done": false
+            }
+          },
+          {
+            "key": "l68",
+            "values": {
+              "log_name": "Clear the inbox · day -7",
+              "habit": "h-inbox",
+              "logged_on": "@today-7d",
+              "done": true
+            }
+          },
+          {
+            "key": "l69",
+            "values": {
+              "log_name": "Clear the inbox · day -8",
+              "habit": "h-inbox",
+              "logged_on": "@today-8d",
+              "done": true,
+              "note": "Backlog of 40"
+            }
+          },
+          {
+            "key": "l70",
+            "values": {
+              "log_name": "Clear the inbox · day -9",
+              "habit": "h-inbox",
+              "logged_on": "@today-9d",
+              "done": true
+            }
+          },
+          {
+            "key": "l71",
+            "values": {
+              "log_name": "Clear the inbox · day -10",
+              "habit": "h-inbox",
+              "logged_on": "@today-10d",
+              "done": true
+            }
+          },
+          {
+            "key": "l72",
+            "values": {
+              "log_name": "Clear the inbox · day -11",
+              "habit": "h-inbox",
+              "logged_on": "@today-11d",
+              "done": false
+            }
+          },
+          {
+            "key": "l73",
+            "values": {
+              "log_name": "Laundry day · day -0",
+              "habit": "h-laundry",
+              "logged_on": "@today-0d",
+              "done": true,
+              "note": "Done on Sunday"
+            }
+          },
+          {
+            "key": "l74",
+            "values": {
+              "log_name": "Laundry day · day -7",
+              "habit": "h-laundry",
+              "logged_on": "@today-7d",
+              "done": false
+            }
+          },
+          {
+            "key": "l75",
+            "values": {
+              "log_name": "Laundry day · day -14",
+              "habit": "h-laundry",
+              "logged_on": "@today-14d",
+              "done": true
+            }
+          },
+          {
+            "key": "l76",
+            "values": {
+              "log_name": "Laundry day · day -21",
+              "habit": "h-laundry",
+              "logged_on": "@today-21d",
+              "done": true
+            }
+          },
+          {
+            "key": "l77",
+            "values": {
+              "log_name": "Evening stretch · day -0",
+              "habit": "h-stretch",
+              "logged_on": "@today-0d",
+              "done": false
+            }
+          },
+          {
+            "key": "l78",
+            "values": {
+              "log_name": "Evening stretch · day -1",
+              "habit": "h-stretch",
+              "logged_on": "@today-1d",
+              "done": false,
+              "note": "Hips felt tight"
+            }
+          },
+          {
+            "key": "l79",
+            "values": {
+              "log_name": "Evening stretch · day -2",
+              "habit": "h-stretch",
+              "logged_on": "@today-2d",
+              "done": false
+            }
+          },
+          {
+            "key": "l80",
+            "values": {
+              "log_name": "Evening stretch · day -3",
+              "habit": "h-stretch",
+              "logged_on": "@today-3d",
+              "done": true
+            }
+          },
+          {
+            "key": "l81",
+            "values": {
+              "log_name": "Evening stretch · day -4",
+              "habit": "h-stretch",
+              "logged_on": "@today-4d",
+              "done": false,
+              "note": "Hips felt tight"
+            }
+          },
+          {
+            "key": "l82",
+            "values": {
+              "log_name": "Evening stretch · day -5",
+              "habit": "h-stretch",
+              "logged_on": "@today-5d",
+              "done": false
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each log entry belongs to one habit.",
+        "fromTable": "habit_log",
+        "fromField": "habit",
+        "toTable": "habit",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "logs"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "log_form",
+        "name": "Log a habit",
+        "describes": "Check in on a habit for a day.",
+        "audience": "staff",
+        "table": "habit_log",
+        "fields": [
+          {
+            "fieldKey": "log_name",
+            "ask": "What did you do?",
+            "required": true
+          },
+          {
+            "fieldKey": "habit",
+            "ask": "Which habit?"
+          },
+          {
+            "fieldKey": "logged_on",
+            "ask": "Which day?"
+          },
+          {
+            "fieldKey": "done",
+            "ask": "Did you do it?"
+          }
+        ],
+        "submitLabel": "Save entry",
+        "confirmation": "Logged."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_habits",
+        "name": "All habits",
+        "table": "habit",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "habit_board",
+        "name": "By category",
+        "table": "habit",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_logs",
+        "name": "All entries",
+        "table": "habit_log",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "logged_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "log_calendar",
+        "name": "Calendar",
+        "table": "habit_log",
+        "kind": "calendar",
+        "dateField": "logged_on",
+        "allDay": true
+      },
+      {
+        "token": "log_board",
+        "name": "By habit",
+        "table": "habit_log",
+        "kind": "kanban",
+        "groupBy": "habit"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "habit",
+          "describes": "Every habit, its category and completion rate."
+        },
+        {
+          "name": "related_tables",
+          "table": "habit_log",
+          "describes": "The daily check-ins for each habit."
+        }
+      ],
+      "question": {
+        "ask": "How many habits are active right now?",
+        "whyItMatters": "Noor trims the list when it grows past seven.",
+        "expect": {
+          "table": "habit",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "active": true
+          },
+          "answer": 7,
+          "unit": "habits"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the habit list.",
+        "action": {
+          "kind": "open",
+          "surface": "all_habits"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_habits",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open the log calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "log_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "log_calendar",
+          "minItems": 20
+        }
+      },
+      {
+        "says": "Open habits by category.",
+        "action": {
+          "kind": "open",
+          "surface": "habit_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "habit_board",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "habit-tracker",
+      "parent": null,
+      "title": "Habit Tracker",
+      "icon": {
+        "emoji": "✅"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Check in each day, see the week fill up, and watch the habits that stick. Add an entry for today in the log below."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Today"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "habit_log",
+                      "view": "all_logs"
+                    },
+                    "inline": true,
+                    "title": "Today's check-ins",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "Today",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "logged_on": "@today"
+                        },
+                        "sorts": [
+                          {
+                            "field": "habit",
+                            "direction": "asc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "view-2",
+                        "name": "Recent",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "logged_on",
+                            "direction": "desc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Progress by habit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "habit_log",
+                      "view": "all_logs"
+                    },
+                    "inline": true,
+                    "title": "Done by habit",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-3",
+                        "name": "Done by habit",
+                        "layout": "chart",
+                        "icon": "ChartBar",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "habit",
+                          "op": "count"
+                        }
+                      },
+                      {
+                        "id": "view-4",
+                        "name": "Done vs missed",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "done",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Habits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "habit",
+              "view": "all_habits"
+            },
+            "inline": true,
+            "title": "Habits",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-5",
+                "name": "All habits",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-6",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "view-7",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "view-5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Month view"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "habit_log",
+              "view": "all_logs"
+            },
+            "inline": true,
+            "title": "Habit log",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "logged_on"
+              },
+              {
+                "id": "view-9",
+                "name": "By habit",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "habit"
+              },
+              {
+                "id": "view-10",
+                "name": "All entries",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "logged_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-8"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-reset"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:habit-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Paused habits"
+            }
+          ],
+          "children": [
+            {
+              "type": "database",
+              "props": {
+                "source": {
+                  "kind": "template",
+                  "table": "habit",
+                  "view": "all_habits"
+                },
+                "inline": true,
+                "title": "Paused",
+                "linked": true,
+                "showTitle": false,
+                "views": [
+                  {
+                    "id": "view-11",
+                    "name": "Paused",
+                    "layout": "list",
+                    "icon": "List",
+                    "filters": {
+                      "active": false
+                    }
+                  }
+                ],
+                "activeViewId": "view-11"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "weekly-reset",
+      "parent": "habit-tracker",
+      "title": "Weekly reset",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ten minutes every Sunday keeps the system honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Look back"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open the calendar view and note which days were empty"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Find the habit with the most missed days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check whether a paused habit deserves another try"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Look ahead"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick one habit to make easier this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Decide where each habit fits in the day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Archive anything you no longer care about"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "habit_log",
+              "view": "all_logs"
+            },
+            "inline": true,
+            "title": "This week's misses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-12",
+                "name": "Missed",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "done": false
+                },
+                "sorts": [
+                  {
+                    "field": "logged_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-12"
+          }
+        }
+      ]
+    },
+    {
+      "key": "habit-guide",
+      "parent": "habit-tracker",
+      "title": "How to build a habit",
+      "icon": {
+        "emoji": "📘"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Small and specific beats ambitious and vague."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules of thumb"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Start with a habit that takes two minutes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Attach it to something you already do every day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never miss twice in a row."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Track the habit, not your mood about it."
+            }
+          ]
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "A habit you can do on your worst day is a habit you will keep."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Frequency choices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false
+          },
+          "rows": [
+            {
+              "cells": [
+                [
+                  {
+                    "text": "Frequency"
+                  }
+                ],
+                [
+                  {
+                    "text": "Use it when"
+                  }
+                ]
+              ]
+            },
+            {
+              "cells": [
+                [
+                  {
+                    "text": "Daily"
+                  }
+                ],
+                [
+                  {
+                    "text": "The habit works only with repetition"
+                  }
+                ]
+              ]
+            },
+            {
+              "cells": [
+                [
+                  {
+                    "text": "Weekdays"
+                  }
+                ],
+                [
+                  {
+                    "text": "It belongs to the work rhythm"
+                  }
+                ]
+              ]
+            },
+            {
+              "cells": [
+                [
+                  {
+                    "text": "Weekly"
+                  }
+                ],
+                [
+                  {
+                    "text": "It is a chore or a long session"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
