@@ -1,0 +1,1543 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0310",
+ "version": 1,
+ "title": "Brand Deals Tracker",
+ "description": "Manage sponsored deals from pitch to payment, with deliverables and due dates.",
+ "forWho": "Influencers and UGC creators",
+ "icon": {
+  "emoji": "🤝"
+ },
+ "cover": {
+  "url": "gallery:photo-ocean-horizon",
+  "offsetY": 50
+ },
+ "category": "sales",
+ "tags": [
+  "brand deals",
+  "sponsorships",
+  "influencer",
+  "payments"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-brand-deals-tracker",
+  "catalogueId": "SP0310",
+  "useCase": "Juno Vale is a travel and lifestyle creator who uses this to see every brand deal's stage, what is due to which brand and which payments are still outstanding.",
+  "industry": "media_creators",
+  "vertical": "Sponsorship management",
+  "job": "crm_pipeline",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Juno Vale Creates",
+   "describes": "A lifestyle and travel creator working with outdoor and home brands on sponsored posts and videos.",
+   "address": {
+    "line1": "540 Sandpiper Terrace",
+    "city": "San Diego",
+    "region": "CA",
+    "postalCode": "92101",
+    "country": "US"
+   },
+   "phone": "(619) 555-0131",
+   "website": "junovalecreates.net",
+   "email": "collabs@junovalecreates.net",
+   "timezone": "America/Los_Angeles"
+  },
+  "cleanupTag": "use-case:spaces-brand-deals-tracker",
+  "tables": [
+   {
+    "token": "deal",
+    "name": "Deals",
+    "labelSingular": "Deal",
+    "labelPlural": "Deals",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "handshake",
+    "titleField": "deal_name",
+    "describes": "Every brand partnership and where it stands.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "deal_name",
+      "label": "Deal",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "brand",
+      "label": "Brand",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Pitched",
+       "Negotiating",
+       "In production",
+       "Approved",
+       "Invoiced",
+       "Closed",
+       "Declined"
+      ],
+      "choiceColors": {
+       "Pitched": "slate",
+       "Negotiating": "blue",
+       "In production": "amber",
+       "Approved": "green",
+       "Invoiced": "violet",
+       "Closed": "teal",
+       "Declined": "red"
+      },
+      "required": true,
+      "default": "Pitched"
+     },
+     {
+      "key": "fee",
+      "label": "Fee",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "contract",
+      "label": "Contract",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "None",
+       "Draft",
+       "Contract signed"
+      ],
+      "choiceColors": {
+       "None": "slate",
+       "Draft": "blue",
+       "Contract signed": "amber"
+      }
+     },
+     {
+      "key": "terms",
+      "label": "Payment terms (days)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 120
+       }
+      ]
+     },
+     {
+      "key": "follow_up",
+      "label": "Follow up on",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "contact",
+      "label": "Brand contact",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "usage",
+      "label": "Usage rights",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "deliverables",
+      "label": "Deliverables",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "deliverable",
+      "multi": true
+     },
+     {
+      "key": "payments",
+      "label": "Payments",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "payment",
+      "multi": true
+     },
+     {
+      "key": "paid_so_far",
+      "label": "Amount received",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "payments",
+      "pick": "amount",
+      "agg": "sum",
+      "filter": {
+       "received": true
+      }
+     },
+     {
+      "key": "open_items",
+      "label": "Open deliverables",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "deliverables",
+      "pick": "item",
+      "agg": "count",
+      "filter": {
+       "status": "To do"
+      }
+     }
+    ],
+    "rows": [
+     {
+      "key": "bd1",
+      "values": {
+       "deal_name": "Trailkind Gear: spring trail series",
+       "brand": "Trailkind Gear",
+       "status": "Closed",
+       "fee": 3200,
+       "contract": "Contract signed",
+       "terms": 30,
+       "follow_up": "@today+2d",
+       "contact": "media@trailkindgear.net",
+       "usage": "90 days paid usage",
+       "deliverables": [
+        "dv1",
+        "dv2",
+        "dv8"
+       ],
+       "payments": [
+        "py1"
+       ]
+      }
+     },
+     {
+      "key": "bd2",
+      "values": {
+       "deal_name": "Hearth & Pine Home: cabin makeover reels",
+       "brand": "Hearth & Pine Home",
+       "status": "In production",
+       "fee": 2400,
+       "contract": "Contract signed",
+       "terms": 45,
+       "follow_up": "@today+9d",
+       "contact": "collab@hearthandpine.net",
+       "usage": "30 days organic",
+       "deliverables": [
+        "dv3",
+        "dv4",
+        "dv7"
+       ],
+       "payments": [
+        "py2",
+        "py4"
+       ]
+      }
+     },
+     {
+      "key": "bd3",
+      "values": {
+       "deal_name": "Aerolite Luggage: travel week video",
+       "brand": "Aerolite Luggage",
+       "status": "Approved",
+       "fee": 4800,
+       "contract": "Contract signed",
+       "terms": 30,
+       "follow_up": "@today+18d",
+       "contact": "creators@aeroliteluggage.net",
+       "usage": "6 months paid usage",
+       "deliverables": [
+        "dv5",
+        "dv6"
+       ],
+       "payments": [
+        "py3"
+       ]
+      }
+     },
+     {
+      "key": "bd4",
+      "values": {
+       "deal_name": "Sunstitch Swimwear: summer launch posts",
+       "brand": "Sunstitch Swimwear",
+       "status": "Negotiating",
+       "fee": 1900,
+       "contract": "Draft",
+       "terms": 30,
+       "follow_up": "@today+25d",
+       "contact": "partners@sunstitchswim.net",
+       "usage": "Negotiating",
+       "deliverables": [],
+       "payments": []
+      }
+     },
+     {
+      "key": "bd5",
+      "values": {
+       "deal_name": "Kettle & Crumb Cafe: opening week reel",
+       "brand": "Kettle & Crumb Cafe",
+       "status": "Pitched",
+       "fee": 900,
+       "contract": "None",
+       "terms": 15,
+       "follow_up": "@today+7d",
+       "contact": "hello@kettleandcrumb.net",
+       "usage": "None",
+       "deliverables": [],
+       "payments": []
+      }
+     },
+     {
+      "key": "bd6",
+      "values": {
+       "deal_name": "Aerolite Luggage: autumn feature",
+       "brand": "Aerolite Luggage",
+       "status": "Declined",
+       "fee": 2000,
+       "contract": "None",
+       "terms": 30,
+       "follow_up": "@today-14d",
+       "contact": "ops@aeroliteluggage.net",
+       "usage": "None",
+       "deliverables": [],
+       "payments": []
+      }
+     }
+    ]
+   },
+   {
+    "token": "deliverable",
+    "name": "Deliverables",
+    "labelSingular": "Deliverable",
+    "labelPlural": "Deliverables",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "clipboard-check",
+    "titleField": "item",
+    "describes": "Each thing a brand is owed.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "item",
+      "label": "Deliverable",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "platform",
+      "label": "Platform",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Instagram",
+       "TikTok",
+       "YouTube",
+       "Stories",
+       "Blog"
+      ],
+      "choiceColors": {
+       "Instagram": "slate",
+       "TikTok": "blue",
+       "YouTube": "amber",
+       "Stories": "violet",
+       "Blog": "teal"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "To do",
+       "Drafted",
+       "Submitted",
+       "Approved",
+       "Live"
+      ],
+      "choiceColors": {
+       "To do": "slate",
+       "Drafted": "blue",
+       "Submitted": "amber",
+       "Approved": "green",
+       "Live": "violet"
+      },
+      "required": true,
+      "default": "To do"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "deal",
+      "label": "Deal",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "deal",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "dv1",
+      "values": {
+       "deal": "bd1",
+       "platform": "Instagram",
+       "item": "Three carousel posts",
+       "due_on": "@today-20d",
+       "status": "Live"
+      }
+     },
+     {
+      "key": "dv2",
+      "values": {
+       "deal": "bd1",
+       "platform": "TikTok",
+       "item": "Unboxing video",
+       "due_on": "@today-12d",
+       "status": "Live"
+      }
+     },
+     {
+      "key": "dv3",
+      "values": {
+       "deal": "bd2",
+       "platform": "Instagram",
+       "item": "Four-reel makeover series",
+       "due_on": "@today+5d",
+       "status": "Drafted"
+      }
+     },
+     {
+      "key": "dv4",
+      "values": {
+       "deal": "bd2",
+       "platform": "YouTube",
+       "item": "Integrated mention in vlog",
+       "due_on": "@today+9d",
+       "status": "To do"
+      }
+     },
+     {
+      "key": "dv5",
+      "values": {
+       "deal": "bd3",
+       "platform": "YouTube",
+       "item": "Dedicated travel-week video",
+       "due_on": "@today+14d",
+       "status": "To do"
+      }
+     },
+     {
+      "key": "dv6",
+      "values": {
+       "deal": "bd3",
+       "platform": "Instagram",
+       "item": "Story set with link",
+       "due_on": "@today+16d",
+       "status": "To do"
+      }
+     },
+     {
+      "key": "dv7",
+      "values": {
+       "deal": "bd2",
+       "platform": "Stories",
+       "item": "Behind the scenes stories",
+       "due_on": "@today+8d",
+       "status": "Submitted"
+      }
+     },
+     {
+      "key": "dv8",
+      "values": {
+       "deal": "bd1",
+       "platform": "Blog",
+       "item": "Gear review post",
+       "due_on": "@today-6d",
+       "status": "Approved"
+      }
+     }
+    ],
+    "independentOf": {
+     "deal": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "payment",
+    "name": "Payments",
+    "labelSingular": "Payment",
+    "labelPlural": "Payments",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "banknote",
+    "titleField": "label",
+    "describes": "Invoices sent to brands and when they were paid.",
+    "subject": "thing",
+    "before": [
+     [
+      "invoice_sent",
+      "due_on"
+     ]
+    ],
+    "withinParent": [
+     {
+      "relation": "deal",
+      "field": "amount",
+      "op": "<=",
+      "parentField": "fee"
+     }
+    ],
+    "fields": [
+     {
+      "key": "label",
+      "label": "Payment",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "amount",
+      "label": "Amount",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "invoice_sent",
+      "label": "Invoice sent",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "received_on",
+      "label": "Paid on",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "received",
+      "label": "Payment received",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "deal",
+      "label": "Deal",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "deal",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "py1",
+      "values": {
+       "deal": "bd1",
+       "label": "Trailkind: full fee",
+       "amount": 3200,
+       "invoice_sent": "@today-30d",
+       "due_on": "@today-5d",
+       "received": true,
+       "received_on": "@today-3d"
+      }
+     },
+     {
+      "key": "py2",
+      "values": {
+       "deal": "bd2",
+       "label": "Hearth & Pine: deposit",
+       "amount": 1200,
+       "invoice_sent": "@today-3d",
+       "due_on": "@today+12d",
+       "received": false
+      }
+     },
+     {
+      "key": "py3",
+      "values": {
+       "deal": "bd3",
+       "label": "Aerolite: first half",
+       "amount": 2400,
+       "invoice_sent": "@today-10d",
+       "due_on": "@today+20d",
+       "received": false
+      }
+     },
+     {
+      "key": "py4",
+      "values": {
+       "deal": "bd2",
+       "label": "Hearth & Pine: balance",
+       "amount": 1200,
+       "invoice_sent": "@today+9d",
+       "due_on": "@today+54d",
+       "received": false
+      }
+     }
+    ],
+    "independentOf": {
+     "deal": "Either record can be created or change status before the other."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each deliverable belongs to one deal.",
+    "fromTable": "deliverable",
+    "fromField": "deal",
+    "toTable": "deal",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "deliverable_by_deal"
+   },
+   {
+    "describes": "A deal lists its deliverables.",
+    "fromTable": "deal",
+    "fromField": "deliverables",
+    "toTable": "deliverable",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "deal_from_deliverables"
+   },
+   {
+    "describes": "Each payment belongs to one deal.",
+    "fromTable": "payment",
+    "fromField": "deal",
+    "toTable": "deal",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "payment_by_deal"
+   },
+   {
+    "describes": "A deal lists its payments.",
+    "fromTable": "deal",
+    "fromField": "payments",
+    "toTable": "payment",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "deal_from_payments"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "brand_inbound",
+    "name": "Brand enquiry",
+    "describes": "A form a brand can use to start a conversation.",
+    "audience": "staff",
+    "table": "deal",
+    "fields": [
+     {
+      "fieldKey": "deal_name",
+      "ask": "What would you like to collaborate on?",
+      "required": true
+     },
+     {
+      "fieldKey": "brand",
+      "ask": "Which brand are you?",
+      "required": true
+     },
+     {
+      "fieldKey": "contact",
+      "ask": "Where can we reach you?",
+      "required": true
+     },
+     {
+      "fieldKey": "fee",
+      "ask": "Budget range"
+     }
+    ],
+    "submitLabel": "Send the enquiry",
+    "confirmation": "Thanks. The enquiry is on the board as Pitched."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_payment",
+    "name": "All payments",
+    "table": "payment",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_deliverable",
+    "name": "All deliverables",
+    "table": "deliverable",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_deal",
+    "name": "All deals",
+    "table": "deal",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "deal_board",
+    "name": "Deal board",
+    "table": "deal",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "deal_cal",
+    "name": "Follow-up calendar",
+    "table": "deal",
+    "kind": "calendar",
+    "dateField": "follow_up",
+    "allDay": true
+   },
+   {
+    "token": "deliverable_board",
+    "name": "Deliverable board",
+    "table": "deliverable",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "deliverable_cal",
+    "name": "Deadlines",
+    "table": "deliverable",
+    "kind": "calendar",
+    "dateField": "due_on",
+    "allDay": true
+   },
+   {
+    "token": "payment_cal",
+    "name": "Payments due",
+    "table": "payment",
+    "kind": "calendar",
+    "dateField": "due_on",
+    "allDay": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Deals assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "deal",
+     "describes": "Every brand deal with its stage, fee and follow-up date."
+    },
+    {
+     "name": "related_tables",
+     "table": "deliverable",
+     "describes": "What each brand is owed."
+    }
+   ],
+   "question": {
+    "ask": "How many deals are in production?",
+    "whyItMatters": "Juno checks production status before each Monday planning session.",
+    "expect": {
+     "table": "deal",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "In production"
+     },
+     "answer": 1,
+     "unit": "deals"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open deal board.",
+    "action": {
+     "kind": "open",
+     "surface": "deal_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "deal_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open follow-up calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "deal_cal"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "deal_cal",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open deliverable board.",
+    "action": {
+     "kind": "open",
+     "surface": "deliverable_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "deliverable_board",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "junovalecreates.net",
+    "trailkindgear.net",
+    "hearthandpine.net",
+    "aeroliteluggage.net",
+    "sunstitchswim.net",
+    "kettleandcrumb.net"
+   ],
+   "fictionalStreets": [
+    "Sandpiper Terrace"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "brand-deals-tracker",
+   "parent": null,
+   "title": "Brand Deals Tracker",
+   "icon": {
+    "emoji": "🤝"
+   },
+   "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Keep the deal, what you owe and what you are owed together. Follow-up dates and due dates sit on calendars so nothing is missed."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:deal-brief"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:pitch-template"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:payment-checklist"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Deals"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "deal",
+       "view": "deal_board"
+      },
+      "inline": true,
+      "title": "Deals",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Pipeline",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Follow-ups",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "follow_up"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All deals",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "follow_up",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Deliverables"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "deliverable",
+       "view": "deliverable_board"
+      },
+      "inline": true,
+      "title": "Deliverables",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Deadlines",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "due_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All items",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Payments"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "payment",
+       "view": "payment_cal"
+      },
+      "inline": true,
+      "title": "Payments",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-cal",
+        "name": "Due dates",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "due_on"
+       },
+       {
+        "id": "view-out",
+        "name": "Outstanding",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "received": false
+        }
+       },
+       {
+        "id": "view-tbl",
+        "name": "All payments",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-cal"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "brand-deals-tracker",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "deal",
+           "view": "all_deal"
+          },
+          "inline": true,
+          "title": "Deals by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "Deals by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "deal",
+           "view": "all_deal"
+          },
+          "inline": true,
+          "title": "Fees by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Fees by status",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "status",
+             "op": "sum",
+             "field": "fee"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "payment",
+           "view": "all_payment"
+          },
+          "inline": true,
+          "title": "Payments by received",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Payments by received",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "received",
+             "op": "sum",
+             "field": "amount"
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Money outstanding"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "payment",
+       "view": "all_payment"
+      },
+      "inline": true,
+      "title": "Money outstanding",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-oo",
+        "name": "Not received",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "received": false
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-oo"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Content due"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "deliverable",
+       "view": "all_deliverable"
+      },
+      "inline": true,
+      "title": "Content due",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-dd",
+        "name": "Not live",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": [
+          "To do",
+          "Drafted",
+          "Submitted"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-dd"
+     }
+    }
+   ]
+  },
+  {
+   "key": "deal-brief",
+   "parent": "brand-deals-tracker",
+   "title": "Deal brief template",
+   "icon": {
+    "emoji": "📋"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Before you say yes"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Fee, payment terms and deposit"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Deliverables, formats and dates"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Usage rights and how long they last"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Exclusivity, if any"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Approval steps and revision rounds"
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "If usage rights are not written down, assume they are not granted."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Scale"
+     }
+    }
+   ]
+  },
+  {
+   "key": "pitch-template",
+   "parent": "brand-deals-tracker",
+   "title": "Pitch outline",
+   "icon": {
+    "emoji": "✉️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "One line on who you reach"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "One result from a past partnership"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "The idea for this brand"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Rates and timeline"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "A single clear ask"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "payment-checklist",
+   "parent": "brand-deals-tracker",
+   "title": "Getting paid checklist",
+   "icon": {
+    "emoji": "💵"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Contract signed before work starts"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Invoice sent the day content goes live"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Reminder set for the due date"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Late payment note sent after seven days"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Mark the deal Closed when funds arrive"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  }
+ ]
+}

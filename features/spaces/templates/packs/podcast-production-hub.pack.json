@@ -1,0 +1,1915 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0309",
+ "version": 1,
+ "title": "Podcast Production Hub",
+ "description": "Plan episodes, book guests, manage sponsors and track every production task.",
+ "forWho": "Podcasters and small audio teams",
+ "icon": {
+  "emoji": "🎙️"
+ },
+ "cover": {
+  "url": "gallery:photo-lavender-dusk",
+  "offsetY": 50
+ },
+ "category": "marketing",
+ "tags": [
+  "podcast",
+  "episodes",
+  "guests",
+  "sponsors"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-podcast-production-hub",
+  "catalogueId": "SP0309",
+  "useCase": "Cassius Whitford hosts and produces a weekly interview show and uses this to see what is recording, what is in edit, which guests still need a reply and which sponsors are booked.",
+  "industry": "media_creators",
+  "vertical": "Podcast production",
+  "job": "content",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Slow Orbit Audio",
+   "describes": "An independent weekly interview podcast about people who change careers, produced by a team of three.",
+   "address": {
+    "line1": "9 Dovecote Mews",
+    "city": "Pittsburgh",
+    "region": "PA",
+    "postalCode": "15212",
+    "country": "US"
+   },
+   "phone": "(412) 555-0156",
+   "website": "sloworbitaudio.net",
+   "email": "hello@sloworbitaudio.net",
+   "timezone": "America/New_York"
+  },
+  "cleanupTag": "use-case:spaces-podcast-production-hub",
+  "tables": [
+   {
+    "token": "guest",
+    "name": "Guests",
+    "labelSingular": "Guest",
+    "labelPlural": "Guests",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "user",
+    "titleField": "guest_name",
+    "describes": "People you invite to the show.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "guest_name",
+      "label": "Guest",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "stage",
+      "label": "Stage",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Prospect",
+       "Invited",
+       "Confirmed",
+       "Recorded",
+       "Published"
+      ],
+      "choiceColors": {
+       "Prospect": "slate",
+       "Invited": "blue",
+       "Confirmed": "green",
+       "Recorded": "amber",
+       "Published": "violet"
+      },
+      "required": true,
+      "default": "Prospect"
+     },
+     {
+      "key": "topic",
+      "label": "Story",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "follow_up",
+      "label": "Follow up on",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "episodes",
+      "label": "Episodes",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "episode",
+      "multi": true
+     }
+    ],
+    "rows": [
+     {
+      "key": "g1",
+      "values": {
+       "guest_name": "Marisela Quintero",
+       "stage": "Published",
+       "topic": "furniture restorer",
+       "email": "marisela@guestmail.net",
+       "follow_up": "@today-40d",
+       "episodes": [
+        "e1"
+       ]
+      }
+     },
+     {
+      "key": "g2",
+      "values": {
+       "guest_name": "Ansgar Boyle",
+       "stage": "Recorded",
+       "topic": "former air traffic controller",
+       "email": "ansgar@guestmail.net",
+       "follow_up": "@today-5d",
+       "episodes": [
+        "e3"
+       ]
+      }
+     },
+     {
+      "key": "g3",
+      "values": {
+       "guest_name": "Delphine Okoro",
+       "stage": "Confirmed",
+       "topic": "bakery founder turned teacher",
+       "email": "delphine@guestmail.net",
+       "follow_up": "@today+6d",
+       "episodes": [
+        "e4"
+       ]
+      }
+     },
+     {
+      "key": "g4",
+      "values": {
+       "guest_name": "Tomás Reilly",
+       "stage": "Confirmed",
+       "topic": "paramedic turned illustrator",
+       "email": "tomas@guestmail.net",
+       "follow_up": "@today+10d",
+       "episodes": [
+        "e5"
+       ]
+      }
+     },
+     {
+      "key": "g5",
+      "values": {
+       "guest_name": "Wei-Ling Hartmann",
+       "stage": "Invited",
+       "topic": "ceramics studio owner",
+       "email": "wei-ling@guestmail.net",
+       "follow_up": "@today+17d",
+       "episodes": [
+        "e6"
+       ]
+      }
+     },
+     {
+      "key": "g6",
+      "values": {
+       "guest_name": "Itzel Bannister",
+       "stage": "Prospect",
+       "topic": "midlife nursing student",
+       "email": "itzel@guestmail.net",
+       "follow_up": "@today+30d",
+       "episodes": [
+        "e8"
+       ]
+      }
+     },
+     {
+      "key": "g7",
+      "values": {
+       "guest_name": "Osei Lindqvist",
+       "stage": "Invited",
+       "topic": "shipping clerk turned coder",
+       "email": "osei@guestmail.net",
+       "follow_up": "@today+21d",
+       "episodes": [
+        "e7"
+       ]
+      }
+     },
+     {
+      "key": "g8",
+      "values": {
+       "guest_name": "Prudence Calloway",
+       "stage": "Published",
+       "topic": "forensic accountant turned beekeeper",
+       "email": "prudence@guestmail.net",
+       "follow_up": "@today-18d",
+       "episodes": [
+        "e2"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "token": "sponsor",
+    "name": "Sponsors",
+    "labelSingular": "Sponsor",
+    "labelPlural": "Sponsors",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "badge-dollar",
+    "titleField": "brand",
+    "describes": "Brands that sponsor episodes.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "brand",
+      "label": "Brand",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "contract",
+      "label": "Contract",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Prospect",
+       "Negotiating",
+       "Signed",
+       "Complete"
+      ],
+      "choiceColors": {
+       "Prospect": "slate",
+       "Negotiating": "blue",
+       "Signed": "amber",
+       "Complete": "green"
+      },
+      "required": true,
+      "default": "Prospect"
+     },
+     {
+      "key": "value",
+      "label": "Value",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "package",
+      "label": "Package",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "email",
+      "label": "Contact",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "episodes",
+      "label": "Episodes",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "episode",
+      "multi": true
+     },
+     {
+      "key": "episode_count",
+      "label": "Episode count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "episodes",
+      "pick": "title",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "sp1",
+      "values": {
+       "brand": "Loom & Lathe Tools",
+       "contract": "Signed",
+       "value": 1800,
+       "package": "Spring maker series",
+       "email": "hello@loomandlathe.net",
+       "episodes": [
+        "e1",
+        "e2",
+        "e5"
+       ]
+      }
+     },
+     {
+      "key": "sp2",
+      "values": {
+       "brand": "Harbor Pass Insurance",
+       "contract": "Negotiating",
+       "value": 2600,
+       "package": "Next quarter slot",
+       "email": "media@harborpass.net",
+       "episodes": [
+        "e6",
+        "e8"
+       ]
+      }
+     },
+     {
+      "key": "sp3",
+      "values": {
+       "brand": "Nightingale Apps",
+       "contract": "Signed",
+       "value": 1200,
+       "package": "Always-on host read",
+       "email": "partners@nightingaleapps.net",
+       "episodes": [
+        "e3",
+        "e4"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "token": "episode",
+    "name": "Episodes",
+    "labelSingular": "Episode",
+    "labelPlural": "Episodes",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "mic",
+    "titleField": "title",
+    "describes": "Each episode from idea to published.",
+    "subject": "thing",
+    "before": [
+     [
+      "record_on",
+      "release_on"
+     ]
+    ],
+    "fields": [
+     {
+      "key": "title",
+      "label": "Title",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "number",
+      "label": "Episode number",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 1
+       },
+       {
+        "kind": "max",
+        "value": 1000
+       }
+      ]
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Idea",
+       "Booked",
+       "Recorded",
+       "Editing",
+       "Scheduled",
+       "Published"
+      ],
+      "choiceColors": {
+       "Idea": "slate",
+       "Booked": "green",
+       "Recorded": "blue",
+       "Editing": "amber",
+       "Scheduled": "violet",
+       "Published": "teal"
+      },
+      "required": true,
+      "default": "Idea"
+     },
+     {
+      "key": "record_on",
+      "label": "Record on",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "release_on",
+      "label": "Release on",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "minutes",
+      "label": "Runtime (minutes)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 300
+       }
+      ]
+     },
+     {
+      "key": "audio_link",
+      "label": "Audio link",
+      "parityType": "url",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "guest",
+      "label": "Guest",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "guest",
+      "relationMax": 1
+     },
+     {
+      "key": "sponsor",
+      "label": "Sponsor",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "sponsor",
+      "relationMax": 1
+     },
+     {
+      "key": "tasks",
+      "label": "Tasks",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "task",
+      "multi": true
+     },
+     {
+      "key": "open_tasks",
+      "label": "Open tasks",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "tasks",
+      "pick": "task_name",
+      "agg": "count",
+      "filter": {
+       "status": "To do"
+      }
+     }
+    ],
+    "rows": [
+     {
+      "key": "e1",
+      "values": {
+       "number": 41,
+       "title": "The furniture whisperer",
+       "status": "Published",
+       "guest": "g1",
+       "sponsor": "sp1",
+       "record_on": "@today-45d",
+       "release_on": "@today-38d",
+       "minutes": 52,
+       "audio_link": "https://audio.sloworbitaudio.net/ep41",
+       "tasks": [
+        "t10"
+       ]
+      }
+     },
+     {
+      "key": "e2",
+      "values": {
+       "number": 42,
+       "title": "From tower to tea shop",
+       "status": "Published",
+       "guest": "g8",
+       "sponsor": "sp1",
+       "record_on": "@today-24d",
+       "release_on": "@today-17d",
+       "minutes": 47,
+       "audio_link": "https://audio.sloworbitaudio.net/ep42",
+       "tasks": [
+        "t9"
+       ]
+      }
+     },
+     {
+      "key": "e3",
+      "values": {
+       "number": 43,
+       "title": "Radar screens and second acts",
+       "status": "Editing",
+       "guest": "g2",
+       "sponsor": "sp3",
+       "record_on": "@today-4d",
+       "release_on": "@today+3d",
+       "minutes": 58,
+       "audio_link": "https://audio.sloworbitaudio.net/ep43",
+       "tasks": [
+        "t1",
+        "t2",
+        "t3"
+       ]
+      }
+     },
+     {
+      "key": "e4",
+      "values": {
+       "number": 44,
+       "title": "Flour, then chalk",
+       "status": "Recorded",
+       "guest": "g3",
+       "sponsor": "sp3",
+       "record_on": "@today+5d",
+       "release_on": "@today+12d",
+       "minutes": 0,
+       "audio_link": "https://audio.sloworbitaudio.net/ep44",
+       "tasks": [
+        "t4",
+        "t5"
+       ]
+      }
+     },
+     {
+      "key": "e5",
+      "values": {
+       "number": 45,
+       "title": "Sirens to sketchbooks",
+       "status": "Booked",
+       "guest": "g4",
+       "sponsor": "sp1",
+       "record_on": "@today+9d",
+       "release_on": "@today+16d",
+       "minutes": 0,
+       "audio_link": "https://audio.sloworbitaudio.net/ep45",
+       "tasks": [
+        "t6",
+        "t7"
+       ]
+      }
+     },
+     {
+      "key": "e6",
+      "values": {
+       "number": 46,
+       "title": "Glaze and patience",
+       "status": "Booked",
+       "guest": "g5",
+       "sponsor": "sp2",
+       "record_on": "@today+16d",
+       "release_on": "@today+23d",
+       "minutes": 0,
+       "audio_link": "https://audio.sloworbitaudio.net/ep46",
+       "tasks": [
+        "t8"
+       ]
+      }
+     },
+     {
+      "key": "e7",
+      "values": {
+       "number": 47,
+       "title": "A clerk learns to code",
+       "status": "Idea",
+       "guest": "g7",
+       "record_on": "@today+20d",
+       "release_on": "@today+30d",
+       "minutes": 0,
+       "audio_link": "https://audio.sloworbitaudio.net/ep47",
+       "tasks": []
+      }
+     },
+     {
+      "key": "e8",
+      "values": {
+       "number": 48,
+       "title": "Bedside to classroom",
+       "status": "Idea",
+       "guest": "g6",
+       "sponsor": "sp2",
+       "record_on": "@today+29d",
+       "release_on": "@today+37d",
+       "minutes": 0,
+       "audio_link": "https://audio.sloworbitaudio.net/ep48",
+       "tasks": []
+      }
+     }
+    ],
+    "independentOf": {
+     "guest": "Either record can be created or change status before the other.",
+     "sponsor": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "task",
+    "name": "Tasks",
+    "labelSingular": "Task",
+    "labelPlural": "Tasks",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "list-checks",
+    "titleField": "task_name",
+    "describes": "Production steps for each episode.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "task_name",
+      "label": "Task",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "To do",
+       "In progress",
+       "Waiting",
+       "Done"
+      ],
+      "choiceColors": {
+       "To do": "slate",
+       "In progress": "blue",
+       "Waiting": "amber",
+       "Done": "green"
+      },
+      "required": true,
+      "default": "To do"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "episode",
+      "label": "Episode",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "episode",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "t1",
+      "values": {
+       "episode": "e3",
+       "task_name": "Rough cut and level pass",
+       "status": "In progress",
+       "owner": "tm-jolene",
+       "due_on": "@today+1d"
+      }
+     },
+     {
+      "key": "t2",
+      "values": {
+       "episode": "e3",
+       "task_name": "Draft show notes",
+       "status": "To do",
+       "owner": "tm-cassius",
+       "due_on": "@today+2d"
+      }
+     },
+     {
+      "key": "t3",
+      "values": {
+       "episode": "e3",
+       "task_name": "Sponsor read approval",
+       "status": "Waiting",
+       "owner": "tm-pavel",
+       "due_on": "@today+1d"
+      }
+     },
+     {
+      "key": "t4",
+      "values": {
+       "episode": "e4",
+       "task_name": "Send pre-interview questions",
+       "status": "Done",
+       "owner": "tm-pavel",
+       "due_on": "@today-1d"
+      }
+     },
+     {
+      "key": "t5",
+      "values": {
+       "episode": "e4",
+       "task_name": "Check recording levels",
+       "status": "To do",
+       "owner": "tm-jolene",
+       "due_on": "@today+4d"
+      }
+     },
+     {
+      "key": "t6",
+      "values": {
+       "episode": "e5",
+       "task_name": "Confirm studio time",
+       "status": "To do",
+       "owner": "tm-pavel",
+       "due_on": "@today+6d"
+      }
+     },
+     {
+      "key": "t7",
+      "values": {
+       "episode": "e5",
+       "task_name": "Research guest background",
+       "status": "In progress",
+       "owner": "tm-cassius",
+       "due_on": "@today+5d"
+      }
+     },
+     {
+      "key": "t8",
+      "values": {
+       "episode": "e6",
+       "task_name": "Send invitation and calendar hold",
+       "status": "In progress",
+       "owner": "tm-pavel",
+       "due_on": "@today+3d"
+      }
+     },
+     {
+      "key": "t9",
+      "values": {
+       "episode": "e2",
+       "task_name": "Publish and share on socials",
+       "status": "Done",
+       "owner": "tm-cassius",
+       "due_on": "@today-17d"
+      }
+     },
+     {
+      "key": "t10",
+      "values": {
+       "episode": "e1",
+       "task_name": "Pull audiogram clips",
+       "status": "Done",
+       "owner": "tm-jolene",
+       "due_on": "@today-37d"
+      }
+     }
+    ],
+    "independentOf": {
+     "owner": "Either record can be created or change status before the other.",
+     "episode": "Either record can be created or change status before the other."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each episode belongs to one guest.",
+    "fromTable": "episode",
+    "fromField": "guest",
+    "toTable": "guest",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "episode_by_guest"
+   },
+   {
+    "describes": "A guest lists its episodes.",
+    "fromTable": "guest",
+    "fromField": "episodes",
+    "toTable": "episode",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "guest_from_episodes"
+   },
+   {
+    "describes": "Each episode belongs to one sponsor.",
+    "fromTable": "episode",
+    "fromField": "sponsor",
+    "toTable": "sponsor",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "episode_by_sponsor"
+   },
+   {
+    "describes": "A sponsor lists its episodes.",
+    "fromTable": "sponsor",
+    "fromField": "episodes",
+    "toTable": "episode",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "sponsor_from_episodes"
+   },
+   {
+    "describes": "Each task belongs to one episode.",
+    "fromTable": "task",
+    "fromField": "episode",
+    "toTable": "episode",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "task_by_episode"
+   },
+   {
+    "describes": "A episode lists its tasks.",
+    "fromTable": "episode",
+    "fromField": "tasks",
+    "toTable": "task",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "episode_from_tasks"
+   },
+   {
+    "describes": "Each task belongs to one team member.",
+    "fromTable": "task",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "task_by_owner"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-cassius",
+      "values": {
+       "full_name": "Cassius Whitford",
+       "role": "Host and producer",
+       "work_email": "cassius@sloworbitaudio.net",
+       "mobile": "(412) 555-0171",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-jolene",
+      "values": {
+       "full_name": "Jolene Adebayo",
+       "role": "Audio editor",
+       "work_email": "jolene@sloworbitaudio.net",
+       "mobile": "(412) 555-0172",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-pavel",
+      "values": {
+       "full_name": "Pavel Strand",
+       "role": "Booking and outreach",
+       "work_email": "pavel@sloworbitaudio.net",
+       "mobile": "(412) 555-0173",
+       "start_date": "@today-1y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "guest_pitch",
+    "name": "Suggest a guest",
+    "describes": "Anyone can recommend a guest.",
+    "audience": "staff",
+    "table": "guest",
+    "fields": [
+     {
+      "fieldKey": "guest_name",
+      "ask": "Who should we invite?",
+      "required": true
+     },
+     {
+      "fieldKey": "topic",
+      "ask": "What is their story?",
+      "required": true
+     },
+     {
+      "fieldKey": "email",
+      "ask": "How can we reach them?"
+     }
+    ],
+    "submitLabel": "Send the suggestion",
+    "confirmation": "Thanks. They are on the board as a Prospect."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_task",
+    "name": "All tasks",
+    "table": "task",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_episode",
+    "name": "All episodes",
+    "table": "episode",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_sponsor",
+    "name": "All sponsors",
+    "table": "sponsor",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_guest",
+    "name": "All guests",
+    "table": "guest",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "episode_board",
+    "name": "Episode board",
+    "table": "episode",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "release_cal",
+    "name": "Release calendar",
+    "table": "episode",
+    "kind": "calendar",
+    "dateField": "release_on",
+    "allDay": true
+   },
+   {
+    "token": "episode_tl",
+    "name": "Production timeline",
+    "table": "episode",
+    "kind": "timeline",
+    "startField": "record_on",
+    "endField": "release_on"
+   },
+   {
+    "token": "guest_board",
+    "name": "Guest pipeline",
+    "table": "guest",
+    "kind": "kanban",
+    "groupBy": "stage"
+   },
+   {
+    "token": "sponsor_board",
+    "name": "Sponsor board",
+    "table": "sponsor",
+    "kind": "kanban",
+    "groupBy": "contract"
+   },
+   {
+    "token": "task_board",
+    "name": "Task board",
+    "table": "task",
+    "kind": "kanban",
+    "groupBy": "status"
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Podcast assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "guest",
+     "describes": "Every guest with their stage and follow-up date."
+    },
+    {
+     "name": "related_tables",
+     "table": "episode",
+     "describes": "The episodes each guest appears in."
+    }
+   ],
+   "question": {
+    "ask": "How many guests are confirmed?",
+    "whyItMatters": "Pavel reconfirms every guest two days before recording.",
+    "expect": {
+     "table": "guest",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "stage": "Confirmed"
+     },
+     "answer": 2,
+     "unit": "guests"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open episode board.",
+    "action": {
+     "kind": "open",
+     "surface": "episode_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "episode_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open release calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "release_cal"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "release_cal",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open production timeline.",
+    "action": {
+     "kind": "open",
+     "surface": "episode_tl"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "episode_tl",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "sloworbitaudio.net",
+    "loomandlathe.net",
+    "harborpass.net",
+    "nightingaleapps.net",
+    "guestmail.net"
+   ],
+   "fictionalStreets": [
+    "Dovecote Mews"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "podcast-production-hub",
+   "parent": null,
+   "title": "Podcast Production Hub",
+   "icon": {
+    "emoji": "🎙️"
+   },
+   "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Episodes link to a guest and a sponsor. Move each one from Idea to Published and keep the task list short."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:episode-template"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:guest-outreach"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:publish-day"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Episodes"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "episode",
+       "view": "episode_board"
+      },
+      "inline": true,
+      "title": "Episodes",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Release calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "release_on"
+       },
+       {
+        "id": "view-tl",
+        "name": "Timeline",
+        "layout": "timeline",
+        "icon": "ChartGantt",
+        "dateField": "record_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All episodes",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "number",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Guests"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "guest",
+       "view": "guest_board"
+      },
+      "inline": true,
+      "title": "Guests",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Pipeline",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "stage"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All guests",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "follow_up",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Sponsors"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "sponsor",
+       "view": "sponsor_board"
+      },
+      "inline": true,
+      "title": "Sponsors",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By contract",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "contract"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All sponsors",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Tasks"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "task",
+       "view": "task_board"
+      },
+      "inline": true,
+      "title": "Tasks",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Board",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-due",
+        "name": "Due soon",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": [
+          "To do",
+          "In progress",
+          "Waiting"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "podcast-production-hub",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "episode",
+           "view": "all_episode"
+          },
+          "inline": true,
+          "title": "Episodes by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "Episodes by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "guest",
+           "view": "all_guest"
+          },
+          "inline": true,
+          "title": "Guests by stage",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Guests by stage",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "stage",
+             "op": "count"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "sponsor",
+           "view": "all_sponsor"
+          },
+          "inline": true,
+          "title": "Sponsor value by contract",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Sponsor value by contract",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "contract",
+             "op": "sum",
+             "field": "value"
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Waiting on someone"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "task",
+       "view": "all_task"
+      },
+      "inline": true,
+      "title": "Waiting on someone",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-w",
+        "name": "Waiting",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "status": "Waiting"
+        }
+       }
+      ],
+      "activeViewId": "view-w"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Unsponsored upcoming"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "episode",
+       "view": "all_episode"
+      },
+      "inline": true,
+      "title": "Unsponsored upcoming",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-up",
+        "name": "Idea or booked",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": [
+          "Idea",
+          "Booked"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "release_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-up"
+     }
+    }
+   ]
+  },
+  {
+   "key": "episode-template",
+   "parent": "podcast-production-hub",
+   "title": "Episode run sheet",
+   "icon": {
+    "emoji": "📝"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Before"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Questions sent to the guest"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Release form signed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Levels checked"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "During"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Welcome and thank-yous"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Origin story"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "The turning point"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Lessons"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Where to find the guest"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "After"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Thank-you note sent"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "File to the editor"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Show notes drafted"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "guest-outreach",
+   "parent": "podcast-production-hub",
+   "title": "Guest outreach script",
+   "icon": {
+    "emoji": "✉️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Keep the first message under 120 words."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Say what you loved about their story."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Name the show, the audience size and recording length."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Offer two time windows."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Thank them for considering it."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "publish-day",
+   "parent": "podcast-production-hub",
+   "title": "Publish day checklist",
+   "icon": {
+    "emoji": "✅"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Audio uploaded and checked on a phone"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Show notes and chapters live"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Sponsor read confirmed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Social clips scheduled"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Guest sent the link"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  }
+ ]
+}
