@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1592 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1597 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "1b6095248173";
+export const KIND_REGISTRY_FINGERPRINT = "2152481caae2";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -29,7 +29,7 @@ export const KIND_REGISTRY_FINGERPRINT = "1b6095248173";
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface AccessoryComponent {
   notes?: string | null;
@@ -60,7 +60,7 @@ export interface Account {
     [key: string]: JsonValue | string | undefined;
   };
   handle?: string | null;
-  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch" | "xiaohongshu" | "douyin";
   verified?: boolean | null;
   followers?: number | null;
   following?: number | null;
@@ -69,6 +69,26 @@ export interface Account {
   total_likes?: number | null;
   display_name?: string | null;
   platform_user_id?: string | null;
+}
+
+/**
+ * * From kind `social_data_accounts`.
+ */
+export interface AccountItem {
+  bio?: string | null;
+  url?: string | null;
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  handle?: string | null;
+  row_key?: string | null;
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch" | "xiaohongshu" | "douyin";
+  verified?: boolean | null;
+  followers?: number | null;
+  account_id?: string | null;
+  avatar_url?: string | null;
 }
 
 /**
@@ -340,7 +360,7 @@ export interface AgentFactoryCriterionVerdict {
 /**
  * Whether one agent can do the job, or it is workflow-sized.
  *  *
- *  * Shared by 7 kinds (agent_factory.contract_step.offer, agent_factory.goal_step.offer, agent_factory.instructions_step.offer, agent_factory.proof_step.offer, …).
+ *  * Shared by 2 kinds (agent_factory_build, agent_factory_contract).
  */
 export interface AgentFactoryFit {
   /**
@@ -376,7 +396,7 @@ export interface AgentFactoryGateResult {
 /**
  * One input the new agent receives at runtime.
  *  *
- *  * Shared by 7 kinds (agent_factory.contract_step.offer, agent_factory.goal_step.offer, agent_factory.instructions_step.offer, agent_factory.proof_step.offer, …).
+ *  * Shared by 2 kinds (agent_factory_build, agent_factory_contract).
  */
 export interface AgentFactoryInput {
   /**
@@ -413,7 +433,7 @@ export interface AgentFactoryInput {
 /**
  * A shape no active kind provides — filed to the data-to-kinds lane, never created here.
  *  *
- *  * Shared by 7 kinds (agent_factory.contract_step.offer, agent_factory.goal_step.offer, agent_factory.instructions_step.offer, agent_factory.proof_step.offer, …).
+ *  * Shared by 2 kinds (agent_factory_build, agent_factory_contract).
  */
 export interface AgentFactoryKindProposal {
   /**
@@ -443,7 +463,7 @@ export interface AgentFactoryKindProposal {
 /**
  * What the new agent answers with.
  *  *
- *  * Shared by 7 kinds (agent_factory.contract_step.offer, agent_factory.goal_step.offer, agent_factory.instructions_step.offer, agent_factory.proof_step.offer, …).
+ *  * Shared by 2 kinds (agent_factory_build, agent_factory_contract).
  */
 export interface AgentFactoryOutputChoice {
   /**
@@ -472,7 +492,7 @@ export interface AgentFactoryOutputChoice {
 /**
  * One field of a proposed new kind.
  *  *
- *  * Shared by 7 kinds (agent_factory.contract_step.offer, agent_factory.goal_step.offer, agent_factory.instructions_step.offer, agent_factory.proof_step.offer, …).
+ *  * Shared by 2 kinds (agent_factory_build, agent_factory_contract).
  */
 export interface AgentFactoryOutputField {
   name: string;
@@ -491,7 +511,7 @@ export interface AgentFactoryOutputField {
 /**
  * The model profile class. Code maps it through the live catalog; a caller pin wins.
  *  *
- *  * Shared by 5 kinds (agent_factory.instructions_step.offer, agent_factory.proof_step.offer, agent_factory.tool_step.offer, agent_factory_build, …).
+ *  * Shared by 2 kinds (agent_factory_build, agent_factory_tool_choice).
  */
 export interface AgentFactoryProfile {
   tier: "fast" | "standard" | "deep";
@@ -529,7 +549,7 @@ export interface AgentFactorySendBack {
 /**
  * One tool the agent gets.
  *  *
- *  * Shared by 5 kinds (agent_factory.instructions_step.offer, agent_factory.proof_step.offer, agent_factory.tool_step.offer, agent_factory_build, …).
+ *  * Shared by 2 kinds (agent_factory_build, agent_factory_tool_choice).
  */
 export interface AgentFactoryToolPick {
   /**
@@ -963,7 +983,7 @@ export interface AnchorCandidate {
 /**
  * A cheap, early impression — 🚨 NOT a certified grade (that is M6).
  *  *
- *  * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ *  * From kind `item_vision_extraction`.
  */
 export interface ApparentCondition {
   /**
@@ -1665,7 +1685,7 @@ export interface BrandFactRow {
 /**
  * One finding of an identify round (site, account or web), as the Provision window shows it.
  *  *
- *  * Shared by 4 kinds (brand_identify_findings, brand_intake.early_facts.offer, brand_intake.identity_match.offer, brand_intake.key_people_finder.offer).
+ *  * Shared by 3 kinds (brand_identify_findings, brand_intake.early_facts.offer, brand_intake.key_people_finder.offer).
  */
 export interface BrandFinding {
   url?: string | null;
@@ -2033,7 +2053,7 @@ export interface Cadence {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_analysis_v1`.
  */
 export interface CannibalizationRisk {
   why?: string;
@@ -2238,7 +2258,7 @@ export interface ChannelConditionMapping {
 }
 
 /**
- * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
+ * * From kind `product_research`.
  */
 export interface ChannelRef {
   /**
@@ -2399,7 +2419,7 @@ export interface CommentItem {
     [key: string]: JsonValue | string | undefined;
   };
   row_key?: string | null;
-  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch" | "xiaohongshu" | "douyin";
   posted_at?: string | null;
   author_name?: string | null;
   reply_count?: number | null;
@@ -2548,7 +2568,7 @@ export interface ComponentAuthoringBundle {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_analysis_v1`.
  */
 export interface ContentGap {
   gap: string;
@@ -2682,28 +2702,8 @@ export interface CouldNotVerify {
  *  *
  *  * From kind `counterparty_profile`.
  */
-export interface CounterpartyFact_CounterpartyProfile {
+export interface CounterpartyFact {
   id?: string;
-  excerpt?: string;
-  decisive?: boolean;
-  requires?: string[];
-  locked_by?: string[];
-  statement?: string;
-  sensitivity?: number;
-  unlocked_by?: string[];
-}
-
-/**
- * One thing this person knows and has not necessarily said.
- *  *
- *  * From kind `masterwork.counterparty_turn.offer`.
- */
-export interface CounterpartyFact_MasterworkCounterpartyTurnOffer {
-  id?: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
   excerpt?: string;
   decisive?: boolean;
   requires?: string[];
@@ -2719,25 +2719,7 @@ export interface CounterpartyFact_MasterworkCounterpartyTurnOffer {
  *  *
  *  * From kind `counterparty_profile`.
  */
-export interface CounterpartyPolicy_CounterpartyProfile {
-  guardedness?: number;
-  locking_moves?: string[];
-  lockout_turns?: number;
-  unlocking_moves?: string[];
-  premature_advice_moves?: string[];
-}
-
-/**
- * How this person reacts to how they are treated. The Expert's judgment,
- * stored as data — never a rule in code.
- *  *
- *  * From kind `masterwork.counterparty_turn.offer`.
- */
-export interface CounterpartyPolicy_MasterworkCounterpartyTurnOffer {
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
+export interface CounterpartyPolicy {
   guardedness?: number;
   locking_moves?: string[];
   lockout_turns?: number;
@@ -2852,7 +2834,7 @@ export interface DailySpendPoint {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface DamageFlag {
   /**
@@ -3418,7 +3400,7 @@ export interface EnvelopeFallback {
 }
 
 /**
- * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, enrichment_verification, value_assessment).
+ * * Shared by 2 kinds (enrichment_verification, value_assessment).
  */
 export interface EstimatedValue {
   max: number;
@@ -3586,7 +3568,7 @@ export interface Expected {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface ExtractedProduct {
   /**
@@ -3599,7 +3581,7 @@ export interface ExtractedProduct {
   best_image_id?: string | null;
   image_indices?: number[];
   product_index: number;
-  identification: ProductIdentification_CommerceIntakeDisposalChallengeOffer;
+  identification: ProductIdentification_ItemVisionExtraction;
   not_assessable?: string[];
   photo_coverage?: PhotoCoverage | null;
   apparent_condition?: ApparentCondition | null;
@@ -3752,7 +3734,7 @@ export interface FixAltText {
 }
 
 /**
- * * Shared by 2 kinds (seo.finding_fix.offer, seo_finding_fix_context).
+ * * From kind `seo_finding_fix_context`.
  */
 export interface FixFindingContext {
   /**
@@ -3771,7 +3753,7 @@ export interface FixFindingContext {
 }
 
 /**
- * * Shared by 2 kinds (seo.finding_fix.offer, seo_finding_fix_context).
+ * * From kind `seo_finding_fix_context`.
  */
 export interface FixLimits {
   /**
@@ -3785,7 +3767,7 @@ export interface FixLimits {
 }
 
 /**
- * * Shared by 2 kinds (seo.finding_fix.offer, seo_finding_fix_context).
+ * * From kind `seo_finding_fix_context`.
  */
 export interface FixPageContext {
   url: string;
@@ -3806,7 +3788,7 @@ export interface FixPageContext {
 /**
  * One live Search Console query for this page — what people actually type.
  *  *
- *  * Shared by 2 kinds (seo.finding_fix.offer, seo_finding_fix_context).
+ *  * From kind `seo_finding_fix_context`.
  */
 export interface FixSearchQuery {
   query: string;
@@ -3820,7 +3802,7 @@ export interface FixSearchQuery {
 }
 
 /**
- * * Shared by 2 kinds (seo.finding_fix.offer, seo_finding_fix_context).
+ * * From kind `seo_finding_fix_context`.
  */
 export interface FixSiteContext {
   /**
@@ -4272,7 +4254,7 @@ export interface HookOption {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface IdentifierConflict {
   claim: string;
@@ -4288,7 +4270,7 @@ export interface IdentifierConflict {
 /**
  * One transcribed identifier — character-faithful, ambiguity as alternatives.
  *  *
- *  * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ *  * From kind `item_vision_extraction`.
  */
 export interface IdentifierReading {
   value: string;
@@ -4524,7 +4506,7 @@ export interface IntakeClassifyEstimate {
 }
 
 /**
- * * Shared by 2 kinds (gsc_site_intake_bundle, seo.site_intake.offer).
+ * * From kind `gsc_site_intake_bundle`.
  */
 export interface IntakePeriod {
   end: string;
@@ -4609,7 +4591,7 @@ export interface IntakeSource {
 /**
  * Column-compressed result table — the token-efficient wire/agent shape.
  *  *
- *  * Shared by 2 kinds (gsc_site_intake_bundle, seo.site_intake.offer).
+ *  * From kind `gsc_site_intake_bundle`.
  */
 export interface IntakeTable {
   rows: unknown[][];
@@ -4787,7 +4769,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 125 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 124 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
 
@@ -4893,7 +4875,26 @@ export interface KeptTopicCoverage {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * One keyword in the gap between a website and a competitor (each field is a table column).
+ *  *
+ *  * From kind `keyword_gap`.
+ */
+export interface KeywordGapRow {
+  cpc?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  keyword: string;
+  their_url?: string | null;
+  difficulty?: number | null;
+  our_position?: number | null;
+  search_volume?: number | null;
+  their_position?: number | null;
+}
+
+/**
+ * * From kind `page_keyword_analysis_v1`.
  */
 export interface KeywordRef {
   __kind?: "keyword_ref_v1";
@@ -6847,7 +6848,7 @@ export interface OpportunityAssessment {
 }
 
 /**
- * * Shared by 6 kinds (asset_grading, commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, …).
+ * * Shared by 2 kinds (asset_grading, item_vision_extraction).
  */
 export interface OtherIdentifier {
   label: string;
@@ -6888,7 +6889,7 @@ export interface OverruledFinding {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_map_v1`.
  */
 export interface PageConflict {
   urls?: string[];
@@ -6976,7 +6977,7 @@ export interface PageOnManyTopics {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_map_v1`.
  */
 export interface PagePlan {
   page: PageRef_PageKeywordMapV1;
@@ -6989,7 +6990,7 @@ export interface PagePlan {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_map_v1`.
  */
 export interface PageRef_PageKeywordMapV1 {
   __kind?: "page_ref_v1";
@@ -7248,7 +7249,7 @@ export interface PerspectiveAnchors {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface PhotoCoverage {
   /**
@@ -7455,7 +7456,7 @@ export interface PositioningSection {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface PositiveFlag {
   /**
@@ -7495,7 +7496,7 @@ export interface Post {
   metrics?: Metrics;
   row_key?: string | null;
   hashtags?: string[];
-  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch" | "xiaohongshu" | "douyin";
   posted_at?: string | null;
   author_name?: string | null;
   author_handle?: string | null;
@@ -7605,9 +7606,9 @@ export interface ProductDetails {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
-export interface ProductIdentification_CommerceIntakeDisposalChallengeOffer {
+export interface ProductIdentification_ItemVisionExtraction {
   brand?: IdentifierReading | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
@@ -7651,7 +7652,7 @@ export interface ProductOffer {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface ProductQuantity {
   /**
@@ -7664,7 +7665,7 @@ export interface ProductQuantity {
 }
 
 /**
- * * Shared by 2 kinds (brand_intake.identity_match.offer, social_profile_answer_list).
+ * * From kind `social_profile_answer_list`.
  */
 export interface ProfileAnswer {
   /**
@@ -7759,7 +7760,7 @@ export interface ProposedAgentConfig {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_map_v1`.
  */
 export interface ProposedPage {
   title: string;
@@ -7788,7 +7789,7 @@ export interface ProposedRegionValue {
 }
 
 /**
- * * Shared by 2 kinds (brand_intake.identity_match.offer, provider_section_list).
+ * * From kind `provider_section_list`.
  */
 export interface ProviderSectionRow {
   /**
@@ -7876,7 +7877,7 @@ export interface QualitySummary {
 }
 
 /**
- * * Shared by 6 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * Shared by 2 kinds (item_vision_extraction, lot_detection).
  */
 export interface QuantityRange {
   max: number;
@@ -8068,6 +8069,25 @@ export interface RankedGroup {
 }
 
 /**
+ * One keyword a website ranks for in Google (each field is a table column).
+ *  *
+ *  * From kind `ranked_keywords`.
+ */
+export interface RankedKeywordRow {
+  cpc?: number | null;
+  url?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  keyword: string;
+  position?: number | null;
+  difficulty?: number | null;
+  search_volume?: number | null;
+  traffic_estimate?: number | null;
+}
+
+/**
  * One step of a ReAct trace.
  *
  * Each step captures the agent's reasoning ("Thought") followed by
@@ -8163,7 +8183,7 @@ export interface RegisterAxis {
 }
 
 /**
- * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
+ * * From kind `product_research`.
  */
 export interface RejectedCandidate {
   /**
@@ -8294,7 +8314,7 @@ export interface RequestView {
 }
 
 /**
- * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
+ * * From kind `product_research`.
  */
 export interface ResolvedIdentity {
   /**
@@ -8459,7 +8479,7 @@ export interface ReviewTopic {
 }
 
 /**
- * * Shared by 8 kinds (person_candidate_list, person_clue_list, person_find_history, person_search_filters, …).
+ * * Shared by 7 kinds (person_candidate_list, person_clue_list, person_find_history, person_search_filters, …).
  */
 export interface Row {
   /**
@@ -8572,6 +8592,23 @@ export interface ScriptBeat {
 }
 
 /**
+ * One website that ranks for the asked keywords (each field is a table column).
+ *  *
+ *  * From kind `search_competitors`.
+ */
+export interface SearchCompetitorRow {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  domain: string;
+  visibility?: number | null;
+  avg_position?: number | null;
+  keywords_count?: number | null;
+  traffic_estimate?: number | null;
+}
+
+/**
  * * From kind `topical_map_result`.
  */
 export interface SearchHit {
@@ -8626,7 +8663,7 @@ export interface SearchResultItem {
 }
 
 /**
- * * Shared by 2 kinds (brand_intake.identity_match.offer, search_result_list).
+ * * From kind `search_result_list`.
  */
 export interface SearchResultRow {
   url?: string | null;
@@ -9519,7 +9556,7 @@ export interface SeoRobotsPathCheck {
  * One allowed value of a dimension. Shape only — it has no meaning outside
  * the dimension that lists it.
  *  *
- *  * Shared by 4 kinds (seo.ruling_session_proposal.offer, seo.ruling_session_teach.offer, seo_ruling_dimension, seo_ruling_dimension_catalog).
+ *  * Shared by 2 kinds (seo_ruling_dimension, seo_ruling_dimension_catalog).
  */
 export interface SeoRulingDimensionValue {
   slug: string;
@@ -9958,7 +9995,7 @@ export interface SkippedFoldRow {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_map_v1`.
  */
 export interface SkippedKeyword {
   __kind?: "skipped_keyword_v1";
@@ -10212,7 +10249,7 @@ export interface SourceStatusEntry {
 }
 
 /**
- * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
+ * * From kind `product_research`.
  */
 export interface SourcedSpec {
   field: string;
@@ -10534,7 +10571,7 @@ export interface TableSource {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * * From kind `page_keyword_analysis_v1`.
  */
 export interface TargetAlignment {
   notes?: string;
@@ -10655,24 +10692,9 @@ export interface Tier3Concept {
 /**
  * What the practitioner did next at this step, and why.
  *  *
- *  * From kind `masterwork.case_disclosure.offer`.
- */
-export interface TimelineAction_MasterworkCaseDisclosureOffer {
-  why?: string;
-  kind?: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  target?: string;
-}
-
-/**
- * What the practitioner did next at this step, and why.
- *  *
  *  * From kind `serial_observation_timeline`.
  */
-export interface TimelineAction_SerialObservationTimeline {
+export interface TimelineAction {
   why?: string;
   kind?: string;
   target?: string;
@@ -10682,39 +10704,10 @@ export interface TimelineAction_SerialObservationTimeline {
  * What was known before anything was done — the state the practitioner
  * walks into.
  *  *
- *  * From kind `masterwork.case_disclosure.offer`.
- */
-export interface TimelineOpening_MasterworkCaseDisclosureOffer {
-  facts?: string[];
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-}
-
-/**
- * What was known before anything was done — the state the practitioner
- * walks into.
- *  *
  *  * From kind `serial_observation_timeline`.
  */
-export interface TimelineOpening_SerialObservationTimeline {
+export interface TimelineOpening {
   facts?: string[];
-}
-
-/**
- * How it actually turned out — the answer, as the source printed it.
- *  *
- *  * From kind `masterwork.case_disclosure.offer`.
- */
-export interface TimelineResolution_MasterworkCaseDisclosureOffer {
-  step?: number;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  excerpt?: string;
-  outcome?: string;
 }
 
 /**
@@ -10722,7 +10715,7 @@ export interface TimelineResolution_MasterworkCaseDisclosureOffer {
  *  *
  *  * From kind `serial_observation_timeline`.
  */
-export interface TimelineResolution_SerialObservationTimeline {
+export interface TimelineResolution {
   step?: number;
   excerpt?: string;
   outcome?: string;
@@ -10731,30 +10724,12 @@ export interface TimelineResolution_SerialObservationTimeline {
 /**
  * One moment: what became known, what was done, what was still unknown.
  *  *
- *  * From kind `masterwork.case_disclosure.offer`.
- */
-export interface TimelineStep_MasterworkCaseDisclosureOffer {
-  at?: string;
-  step?: number;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  action?: TimelineAction_MasterworkCaseDisclosureOffer | null;
-  excerpt?: string;
-  newly_known?: string[];
-  not_yet_known?: string[];
-}
-
-/**
- * One moment: what became known, what was done, what was still unknown.
- *  *
  *  * From kind `serial_observation_timeline`.
  */
-export interface TimelineStep_SerialObservationTimeline {
+export interface TimelineStep {
   at?: string;
   step?: number;
-  action?: TimelineAction_SerialObservationTimeline | null;
+  action?: TimelineAction | null;
   excerpt?: string;
   newly_known?: string[];
   not_yet_known?: string[];
@@ -11041,7 +11016,7 @@ export interface TurnSpec {
 }
 
 /**
- * * Shared by 2 kinds (brand_intake.identity_match.offer, typed_account_list).
+ * * From kind `typed_account_list`.
  */
 export interface TypedAccount {
   /**
@@ -11053,7 +11028,7 @@ export interface TypedAccount {
 }
 
 /**
- * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
+ * * From kind `product_research`.
  */
 export interface UnresolvedIdentity {
   /**
@@ -11064,7 +11039,7 @@ export interface UnresolvedIdentity {
 }
 
 /**
- * * Shared by 5 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, commerce_intake.valuation_dossier.offer, …).
+ * * From kind `item_vision_extraction`.
  */
 export interface UnseenItem {
   /**
@@ -11127,7 +11102,7 @@ export interface Usage {
 }
 
 /**
- * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, enrichment_verification, value_assessment).
+ * * Shared by 2 kinds (enrichment_verification, value_assessment).
  */
 export interface ValueUnknown {
   /**
@@ -11630,7 +11605,7 @@ export interface WeatherPlace {
 }
 
 /**
- * * Shared by 4 kinds (brand_intake.identity_match.offer, seo.page_intent_proposer.offer, seo.page_mapper.offer, web_page_list).
+ * * From kind `web_page_list`.
  */
 export interface WebPageRow {
   url?: string | null;
@@ -11644,7 +11619,7 @@ export interface WebPageRow {
 }
 
 /**
- * * Shared by 4 kinds (brand_identify_web_results, brand_intake.early_facts.offer, brand_intake.identity_match.offer, brand_intake.key_people_finder.offer).
+ * * Shared by 3 kinds (brand_identify_web_results, brand_intake.early_facts.offer, brand_intake.key_people_finder.offer).
  */
 export interface WebSearchResultRow {
   url?: string;
@@ -12111,7 +12086,7 @@ export interface AgentFactoryBuildRequestOffer {
 }
 
 /**
- * Kind `agent_factory.contract_step.offer` (registry v10).
+ * Kind `agent_factory.contract_step.offer` (registry v11).
  */
 export interface AgentFactoryContractStepOffer {
   /**
@@ -12203,24 +12178,9 @@ export interface AgentFactoryContractStepOffer {
    */
   active_kind_count: number;
   /**
-   * The new agent's contract, for a build no Mandate backs (greenfield).
-   *
-   * A Mandate-backed build skips this step: its Provision and output kind ARE
-   * the contract, and the factory never re-decides them.
+   * This step's own previous answer, which the findings are about. When absent: first attempt.
    */
-  previous_contract?: {
-    fit: AgentFactoryFit;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_contract";
-    inputs: AgentFactoryInput[];
-    output: AgentFactoryOutputChoice;
-    /**
-     * True when a run carries the person's own typed text beside the inputs.
-     */
-    accepts_user_input: boolean;
-  };
+  previous_contract?: unknown;
   /**
    * Findings this step must act on, one per line: the judge's or a code gate's findings when the build was sent back to this step, and — on the instructions step — the factory's flags on goal-spec rules with no source in the locked contract and the goal step's unanswered questions. When absent: first attempt, nothing flagged.
    */
@@ -12272,7 +12232,7 @@ export interface AgentFactoryContractStepOffer {
 }
 
 /**
- * Kind `agent_factory.goal_step.offer` (registry v9).
+ * Kind `agent_factory.goal_step.offer` (registry v10).
  */
 export interface AgentFactoryGoalStepOffer {
   /**
@@ -12300,24 +12260,9 @@ export interface AgentFactoryGoalStepOffer {
    */
   summary?: string;
   /**
-   * The new agent's contract, for a build no Mandate backs (greenfield).
-   *
-   * A Mandate-backed build skips this step: its Provision and output kind ARE
-   * the contract, and the factory never re-decides them.
+   * The greenfield contract step's answer: inputs, output kind or new-kind proposal, fit verdict. When absent: the build is Mandate-backed, and the Mandate's offered values and output kind are the contract.
    */
-  contract?: {
-    fit: AgentFactoryFit;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_contract";
-    inputs: AgentFactoryInput[];
-    output: AgentFactoryOutputChoice;
-    /**
-     * True when a run carries the person's own typed text beside the inputs.
-     */
-    accepts_user_input: boolean;
-  };
+  contract?: unknown;
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -12401,32 +12346,7 @@ export interface AgentFactoryGoalStepOffer {
   /**
    * The goal step's previous answer the findings are about. When absent: first attempt.
    */
-  previous_goal_spec?: {
-    goal: {
-    role?: string;
-    __kind: "agent_goal";
-    objective?: string;
-    constraints?: string[];
-    deliverable?: string;
-    failure_modes?: ({
-    name?: string;
-    __kind: "failure_mode";
-    description?: string;
-  })[];
-    success_criteria?: ({
-    gate?: boolean;
-    name?: string;
-    __kind: "success_criterion";
-    anchor?: string;
-    weight?: number;
-    criterion?: string;
-  })[];
-    operating_context?: string;
-  };
-    __kind: "agent_mandate_specification";
-    charge: string;
-    questions?: string[];
-  };
+  previous_goal_spec?: unknown;
   /**
    * The judge's concrete findings when it sent the build back to the goal step. When absent: first attempt.
    */
@@ -12474,7 +12394,7 @@ export interface AgentFactoryGoalStepOffer {
 }
 
 /**
- * Kind `agent_factory.instructions_step.offer` (registry v10).
+ * Kind `agent_factory.instructions_step.offer` (registry v11).
  */
 export interface AgentFactoryInstructionsStepOffer {
   /**
@@ -12494,53 +12414,13 @@ export interface AgentFactoryInstructionsStepOffer {
    */
   summary?: string;
   /**
-   * The new agent's contract, for a build no Mandate backs (greenfield).
-   *
-   * A Mandate-backed build skips this step: its Provision and output kind ARE
-   * the contract, and the factory never re-decides them.
+   * The greenfield contract step's answer: inputs, output kind or new-kind proposal, fit verdict. When absent: the build is Mandate-backed, and the Mandate's offered values and output kind are the contract.
    */
-  contract?: {
-    fit: AgentFactoryFit;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_contract";
-    inputs: AgentFactoryInput[];
-    output: AgentFactoryOutputChoice;
-    /**
-     * True when a run carries the person's own typed text beside the inputs.
-     */
-    accepts_user_input: boolean;
-  };
+  contract?: unknown;
   /**
    * The Goal Writer's answer: role, objective, operating context, deliverable, weighted success criteria (gates marked), constraints, failure modes, charge.
    */
-  goal_spec: {
-    goal: {
-    role?: string;
-    __kind: "agent_goal";
-    objective?: string;
-    constraints?: string[];
-    deliverable?: string;
-    failure_modes?: ({
-    name?: string;
-    __kind: "failure_mode";
-    description?: string;
-  })[];
-    success_criteria?: ({
-    gate?: boolean;
-    name?: string;
-    __kind: "success_criterion";
-    anchor?: string;
-    weight?: number;
-    criterion?: string;
-  })[];
-    operating_context?: string;
-  };
-    __kind: "agent_mandate_specification";
-    charge: string;
-    questions?: string[];
-  };
+  goal_spec: unknown;
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -12562,20 +12442,9 @@ export interface AgentFactoryInstructionsStepOffer {
    */
   owner_scope: string;
   /**
-   * The tools the new agent gets, and the profile class its model is chosen by.
+   * The tool step's answer: the chosen tools with reasons and the profile class.
    */
-  tool_choice: {
-    tools?: AgentFactoryToolPick[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_tool_choice";
-    profile: AgentFactoryProfile;
-    /**
-     * Set when tools is empty: why the job needs none.
-     */
-    no_tools_reason?: string | null;
-  };
+  tool_choice: unknown;
   /**
    * The name people see, when the caller locked one. When absent: the agent name stands.
    */
@@ -12641,23 +12510,9 @@ export interface AgentFactoryInstructionsStepOffer {
    */
   locked_variable_names?: string[];
   /**
-   * The new agent's two messages.
+   * This step's own previous answer, which the findings are about. When absent: first attempt.
    */
-  previous_instructions?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_instructions";
-    /**
-     * The user message template; each input appears as {{name}} and reads like a real request.
-     */
-    user_message: string;
-    system_message: string;
-    /**
-     * Every input name the user message places — the guard checks it equals the contract's inputs.
-     */
-    placed_variables: string[];
-  };
+  previous_instructions?: unknown;
   /**
    * Each locked variable as its name, a dash, then its description, one per line. When absent: no variable is locked.
    */
@@ -12693,7 +12548,7 @@ export interface AgentFactoryInstructionsStepOffer {
 }
 
 /**
- * Kind `agent_factory.proof_step.offer` (registry v9).
+ * Kind `agent_factory.proof_step.offer` (registry v10).
  */
 export interface AgentFactoryProofStepOffer {
   /**
@@ -12713,53 +12568,13 @@ export interface AgentFactoryProofStepOffer {
    */
   summary?: string;
   /**
-   * The new agent's contract, for a build no Mandate backs (greenfield).
-   *
-   * A Mandate-backed build skips this step: its Provision and output kind ARE
-   * the contract, and the factory never re-decides them.
+   * The greenfield contract step's answer: inputs, output kind or new-kind proposal, fit verdict. When absent: the build is Mandate-backed, and the Mandate's offered values and output kind are the contract.
    */
-  contract?: {
-    fit: AgentFactoryFit;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_contract";
-    inputs: AgentFactoryInput[];
-    output: AgentFactoryOutputChoice;
-    /**
-     * True when a run carries the person's own typed text beside the inputs.
-     */
-    accepts_user_input: boolean;
-  };
+  contract?: unknown;
   /**
    * The Goal Writer's answer: role, objective, operating context, deliverable, weighted success criteria (gates marked), constraints, failure modes, charge.
    */
-  goal_spec: {
-    goal: {
-    role?: string;
-    __kind: "agent_goal";
-    objective?: string;
-    constraints?: string[];
-    deliverable?: string;
-    failure_modes?: ({
-    name?: string;
-    __kind: "failure_mode";
-    description?: string;
-  })[];
-    success_criteria?: ({
-    gate?: boolean;
-    name?: string;
-    __kind: "success_criterion";
-    anchor?: string;
-    weight?: number;
-    criterion?: string;
-  })[];
-    operating_context?: string;
-  };
-    __kind: "agent_mandate_specification";
-    charge: string;
-    questions?: string[];
-  };
+  goal_spec: unknown;
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -12785,20 +12600,9 @@ export interface AgentFactoryProofStepOffer {
    */
   owner_scope: string;
   /**
-   * The tools the new agent gets, and the profile class its model is chosen by.
+   * The tool step's answer — for naming a send-back target.
    */
-  tool_choice: {
-    tools?: AgentFactoryToolPick[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_tool_choice";
-    profile: AgentFactoryProfile;
-    /**
-     * Set when tools is empty: why the job needs none.
-     */
-    no_tools_reason?: string | null;
-  };
+  tool_choice: unknown;
   /**
    * Each case: its id, the captured real input, answer A and answer B. One is the candidate's, one is the baseline's (today's holder); the order is random per case and never revealed.
    */
@@ -12808,23 +12612,9 @@ export interface AgentFactoryProofStepOffer {
    */
   display_name?: string;
   /**
-   * The new agent's two messages.
+   * The instructions step's answer — for naming a send-back target.
    */
-  instructions: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_instructions";
-    /**
-     * The user message template; each input appears as {{name}} and reads like a real request.
-     */
-    user_message: string;
-    system_message: string;
-    /**
-     * Every input name the user message places — the guard checks it equals the contract's inputs.
-     */
-    placed_variables: string[];
-  };
+  instructions: unknown;
   /**
    * Tool names the caller fixed. LOCKED: the tool step keeps every one and may only add. When absent: the tool step chooses freely.
    */
@@ -12938,7 +12728,7 @@ export interface AgentFactorySystemPlanOffer {
 }
 
 /**
- * Kind `agent_factory.tool_step.offer` (registry v10).
+ * Kind `agent_factory.tool_step.offer` (registry v11).
  */
 export interface AgentFactoryToolStepOffer {
   /**
@@ -12958,53 +12748,13 @@ export interface AgentFactoryToolStepOffer {
    */
   summary?: string;
   /**
-   * The new agent's contract, for a build no Mandate backs (greenfield).
-   *
-   * A Mandate-backed build skips this step: its Provision and output kind ARE
-   * the contract, and the factory never re-decides them.
+   * The greenfield contract step's answer: inputs, output kind or new-kind proposal, fit verdict. When absent: the build is Mandate-backed, and the Mandate's offered values and output kind are the contract.
    */
-  contract?: {
-    fit: AgentFactoryFit;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_contract";
-    inputs: AgentFactoryInput[];
-    output: AgentFactoryOutputChoice;
-    /**
-     * True when a run carries the person's own typed text beside the inputs.
-     */
-    accepts_user_input: boolean;
-  };
+  contract?: unknown;
   /**
    * The Goal Writer's answer: role, objective, operating context, deliverable, weighted success criteria (gates marked), constraints, failure modes, charge.
    */
-  goal_spec: {
-    goal: {
-    role?: string;
-    __kind: "agent_goal";
-    objective?: string;
-    constraints?: string[];
-    deliverable?: string;
-    failure_modes?: ({
-    name?: string;
-    __kind: "failure_mode";
-    description?: string;
-  })[];
-    success_criteria?: ({
-    gate?: boolean;
-    name?: string;
-    __kind: "success_criterion";
-    anchor?: string;
-    weight?: number;
-    criterion?: string;
-  })[];
-    operating_context?: string;
-  };
-    __kind: "agent_mandate_specification";
-    charge: string;
-    questions?: string[];
-  };
+  goal_spec: unknown;
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -13090,20 +12840,9 @@ export interface AgentFactoryToolStepOffer {
    */
   tool_catalog_prompt: string;
   /**
-   * The tools the new agent gets, and the profile class its model is chosen by.
+   * This step's own previous answer, which the findings are about. When absent: first attempt.
    */
-  previous_tool_choice?: {
-    tools?: AgentFactoryToolPick[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "agent_factory_tool_choice";
-    profile: AgentFactoryProfile;
-    /**
-     * Set when tools is empty: why the job needs none.
-     */
-    no_tools_reason?: string | null;
-  };
+  previous_tool_choice?: unknown;
   /**
    * Variable names the caller declared. LOCKED: every one is used exactly as spelled, none renamed, none added. When absent: the contract or the Mandate's offered values decide the names.
    */
@@ -16582,7 +16321,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v17).
+ * Kind `brand_intake.identity_match.offer` (registry v18).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -16590,68 +16329,29 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   __kind?: "brand_intake.identity_match.offer";
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each expanded address in the profile's url and description entities.
    */
-  x_links?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  x_links?: unknown;
   /**
-   * A front page that only routes visitors elsewhere (a division chooser, age gate, splash), as the
-   * page reader found it.
+   * When the homepage only routes visitors (a division chooser …): its type, signals, branches.
    */
-  site_gate?: {
-    type?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "site_gate";
-  };
+  site_gate?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The account's creation date as written.
    */
-  x_created?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  x_created?: unknown;
   /**
    * The Smart Add tab the person started on, exactly as sent.
    */
   entry_kind?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The professional category (and type).
    */
-  x_category?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  x_category?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The profile's location as written.
    */
-  x_location?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  x_location?: unknown;
   /**
    * The address read by fixed rules: its domain, whether that is a free mailbox host, the website candidate, the name and handle hints from the part before the @, a shared-mailbox flag.
    */
@@ -16665,27 +16365,13 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   typed_email?: string;
   /**
-   * Every raw web result an identify round read, from every search engine, in rank order.
+   * Engine, query, rank, title, address and snippet of every result read.
    */
-  web_results?: {
-    items?: WebSearchResultRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_web_results";
-  };
+  web_results?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each response's top-level FAQ block as returned.
    */
-  brave_faq_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_faq_raw?: unknown;
   /**
    * The account's bio from the social lookup's raw provider JSON; absent when not looked up.
    */
@@ -16705,166 +16391,67 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   searched_name?: string;
   /**
-   * One page as read: its address and its clean main text (plus footer text when it holds contact
-   * details).
+   * The homepage address and its clean main text (+ footer text when it holds contacts).
    */
-  site_homepage?: {
-    url?: string | null;
-    text?: string;
-    label?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page";
-    footer_text?: string | null;
-  };
+  site_homepage?: unknown;
   /**
    * The website text exactly as typed this round.
    */
   typed_website?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The channel's email as returned.
    */
-  youtube_email?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  youtube_email?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each link: label, address and the platform its host belongs to.
    */
-  youtube_links?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  youtube_links?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each #hashtag in a description or extra snippet.
    */
-  brave_hashtags?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_hashtags?: unknown;
   /**
    * The name the search result's title shows for the account.
    */
   candidate_name?: string;
   confirmed_name?: string;
   /**
-   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   * Each website, account and name the email step found, with its source ('found from the email: ...') and its certainty.
    */
-  email_findings?: {
-    items?: BrandFinding[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_findings";
-  };
-  /**
-   * The findings one source of a Smart Add identify round produced (site, accounts or web).
-   */
-  later_findings?: {
-    items?: BrandFinding[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_findings";
-  };
+  email_findings?: unknown;
+  later_findings?: unknown;
   /**
    * The homepage address after redirects.
    */
   site_final_url?: string;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * Each read once: address, label, kind, how it was found (the menu, the page body, or a guessed address) and its main text.
    */
-  site_key_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_key_pages?: unknown;
   /**
-   * The social accounts a person typed, exactly as typed, with the platform when they named one.
+   * Each social account exactly as typed, with its platform when known.
    */
-  typed_accounts?: {
-    items?: TypedAccount[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "typed_account_list";
-  };
+  typed_accounts?: unknown;
   /**
-   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   * Every profile and listing the rules found, certainty, reasons and where it was found.
    */
-  web_candidates?: {
-    items?: BrandFinding[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_findings";
-  };
+  web_candidates?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * joinedDateText as written.
    */
-  youtube_joined?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  youtube_joined?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each location: title, postal address, telephone, coordinates, rating and address.
    */
-  brave_locations?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_locations?: unknown;
   /**
-   * What the person has confirmed about the brand so far in Smart Add (empty until they confirm).
+   * Every fact the person confirmed so far, by name (name, domain, location, category …).
    */
-  confirmed_facts?: {
-    name?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_confirmed_facts";
-    domain?: string | null;
-    location?: string | null;
-  };
+  confirmed_facts?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * rating and ratingCount as returned.
    */
-  facebook_rating?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  facebook_rating?: unknown;
   /**
    * How sure the fixed rules are (certain, likely or possible); no AI.
    */
@@ -16874,65 +16461,29 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   site_final_host?: string;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * Each page the gate leads to: address, label and main text.
    */
-  site_gate_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_gate_pages?: unknown;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * The about pages whose address or label names a team, leadership, doctors, providers or staff.
    */
-  site_team_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_team_pages?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Created time, hearts, videos, followers.
    */
-  tiktok_activity?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  tiktok_activity?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * isOrganization, ttSeller, commerceUserInfo as returned.
    */
-  tiktok_business?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  tiktok_business?: unknown;
   /**
    * A link-in-bio or social-network address typed in the website or account box this round. It is a source of links, never the brand's own website.
    */
   typed_link_page?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The channel's country.
    */
-  youtube_country?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  youtube_country?: unknown;
   /**
    * The account's handle as its address shows it.
    */
@@ -16943,212 +16494,74 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   email_found_text?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each page's email, phone, address, website and links.
    */
-  facebook_contact?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  facebook_contact?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * creationDate as written.
    */
-  facebook_created?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  facebook_created?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each organic result's sitelinks (title and address).
    */
-  google_sitelinks?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  google_sitelinks?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The funding block as returned.
    */
-  linkedin_funding?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  linkedin_funding?: unknown;
   /**
-   * Every raw web result an identify round read, from every search engine, in rank order.
+   * Search results whose address is the brand's domain, fact fields only.
    */
-  own_site_results?: {
-    items?: WebSearchResultRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_web_results";
-  };
+  own_site_results?: unknown;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * Each about / team page the site names, read once: address, label and main text.
    */
-  site_about_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_about_pages?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * viewCount, videoCount, subscriberCount.
    */
-  youtube_activity?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  youtube_activity?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The channel's keywords and tags.
    */
-  youtube_keywords?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  youtube_keywords?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each FAQ entry: question, answer, title and address.
    */
-  brave_faq_answers?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_faq_answers?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each response's infobox block as returned.
    */
-  brave_infobox_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_infobox_raw?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_name_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  brave_name_search?: unknown;
   candidate_engines?: string[];
   /**
    * The search result's title and snippet for this account (often its bio's first line).
    */
   candidate_snippet?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The services the page lists.
    */
-  facebook_services?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  facebook_services?: unknown;
   /**
-   * One page as read: its address and its clean main text (plus footer text when it holds contact
-   * details).
+   * The contact page's address and main text.
    */
-  site_contact_page?: {
-    url?: string | null;
-    text?: string;
-    label?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page";
-    footer_text?: string | null;
-  };
+  site_contact_page?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The channel's links list and every labelled link key (label → address) as returned.
    */
-  youtube_links_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  youtube_links_raw?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_local_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  brave_local_search?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each result's page_age and age.
    */
-  brave_result_dates?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_result_dates?: unknown;
   /**
    * The result rank and the query that found it.
    */
@@ -17164,46 +16577,17 @@ export interface BrandIntakeIdentityMatchOffer {
   confirmed_category?: string;
   confirmed_location?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each 'people also search for' entity of a knowledge graph: name, address, extensions.
    */
-  google_competitors?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  google_competitors?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  google_name_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  google_name_search?: unknown;
   /**
-   * A page's header as the page writes it: title, meta description, og / twitter tags, canonical.
+   * Title, meta description, og / twitter tags, canonical — as the page writes them.
    */
-  site_homepage_head?: {
-    title?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_head";
-    description?: string | null;
-  };
+  site_homepage_head?: unknown;
   /**
    * The homepage HTML exactly as fetched.
    */
@@ -17213,361 +16597,125 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   site_homepage_text?: string;
   /**
-   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   * The fixed rules' findings from the whole page: accounts, phones, emails, addresses.
    */
-  site_page_findings?: {
-    items?: BrandFinding[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_findings";
-  };
+  site_page_findings?: unknown;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * The site's pricing pages: address, label and main text.
    */
-  site_pricing_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_pricing_pages?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_domain_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  brave_domain_search?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each infobox entry: title, category, description, attributes, profiles, ratings, address.
    */
-  brave_infobox_facts?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_infobox_facts?: unknown;
   /**
    * The account's follower count from the raw provider JSON; absent when not looked up.
    */
   candidate_followers?: number;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  google_local_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  google_local_search?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each employee shown: name, title, profile address.
    */
-  linkedin_key_people?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  linkedin_key_people?: unknown;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * Each division as an offering candidate: address, label, certainty, provenance.
    */
-  site_gate_offerings?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_gate_offerings?: unknown;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * The site's products pages: address, label and main text.
    */
-  site_products_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_products_pages?: unknown;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * The site's services pages: address, label and main text.
    */
-  site_services_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_services_pages?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each looked-up account's own id on its platform (Instagram/TikTok/X user id, Facebook page id, YouTube channel id, LinkedIn company id) and the field it came from.
    */
-  social_platform_ids?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  social_platform_ids?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each flagged logo's full-size original address, the result address and its host.
    */
-  brave_logo_originals?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_logo_originals?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * email, phone, address, website, links as returned.
    */
-  facebook_contact_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  facebook_contact_raw?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The ad library status as written, and whether it says ads are running.
    */
-  facebook_running_ads?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  facebook_running_ads?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each knowledge graph's title, type, phone, address, hours, rating, review count, website and whether the listing is unclaimed.
    */
-  google_business_card?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  google_business_card?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  google_domain_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  google_domain_search?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each organic result's highlighted (matched) words.
    */
-  google_matched_words?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  google_matched_words?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * business_category_name, overall_category_name, category_name.
    */
-  instagram_categories?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  instagram_categories?: unknown;
   /**
-   * Every raw web result an identify round read, from every search engine, in rank order.
+   * The same results' full provider objects.
    */
-  own_site_results_raw?: {
-    items?: WebSearchResultRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_web_results";
-  };
+  own_site_results_raw?: unknown;
   /**
-   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   * The fixed rules' findings from the page header.
    */
-  site_header_findings?: {
-    items?: BrandFinding[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_findings";
-  };
+  site_header_findings?: unknown;
   /**
-   * Every structured-data (JSON-LD) block a page carries, parsed, exactly as written.
+   * Every JSON-LD block, parsed, as written.
    */
-  site_homepage_jsonld?: {
-    items?: unknown[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "structured_data_list";
-  };
+  site_homepage_jsonld?: unknown;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * The site's locations pages: address, label and main text.
    */
-  site_locations_pages?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  site_locations_pages?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * The response's faq block, as returned.
    */
-  brave_name_search_faq?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_name_search_faq?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Person-name candidates read deterministically from the descriptions and extra snippets (a cue such as 'contact' or 'founder' before a full name), each with the cue, the snippet and the result. Candidates, not facts.
    */
-  brave_people_mentions?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_people_mentions?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each result host's profile name and long name.
    */
-  brave_site_long_names?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_site_long_names?: unknown;
   /**
    * The link on the account's profile, from the raw provider JSON; absent when not looked up.
    */
   candidate_link_in_bio?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each recent post: text, date, likes, address.
    */
-  linkedin_recent_posts?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  linkedin_recent_posts?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * The response's faq block, as returned.
    */
-  brave_local_search_faq?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_local_search_faq?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_name_news_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  brave_name_news_search?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * The response's news block, as returned.
    */
-  brave_name_search_news?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_name_search_news?: unknown;
   /**
    * The account's display name from the social lookup's raw provider JSON; absent when the account was not looked up this round.
    */
@@ -17577,1451 +16725,426 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   candidate_profile_full?: string;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each #hashtag in the bio's entities.
    */
-  instagram_bio_hashtags?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  instagram_bio_hashtags?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each @account in the bio's entities.
    */
-  instagram_bio_mentions?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  instagram_bio_mentions?: unknown;
+  later_own_site_results?: unknown;
   /**
-   * Every raw web result an identify round read, from every search engine, in rank order.
+   * founded, size, employees on LinkedIn, headquarters, locations, specialties, industries, slogan, type.
    */
-  later_own_site_results?: {
-    items?: WebSearchResultRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_web_results";
-  };
+  linkedin_firmographics?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Name, bio, followers, website on the profile, link-in-bio links — each with its source.
    */
-  linkedin_firmographics?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  typed_account_findings?: unknown;
   /**
-   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   * The same answers with only fact fields (names, bio, links, counts, location, experience, each post's caption and date); no pictures or bookkeeping.
    */
-  typed_account_findings?: {
-    items?: BrandFinding[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "brand_identify_findings";
-  };
+  typed_account_profiles?: unknown;
   /**
-   * Social accounts as their provider answered a profile lookup, one row per account: the whole
-   * answer (raw form) or only its fact fields (clean form).
+   * The response's faq block, as returned.
    */
-  typed_account_profiles?: {
-    items?: ProfileAnswer[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "social_profile_answer_list";
-  };
+  brave_domain_search_faq?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * The response's news block, as returned.
    */
-  brave_domain_search_faq?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_local_search_news?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * Each web result's organization block as returned.
    */
-  brave_local_search_news?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_organizations_raw?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_organizations_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  google_name_news_search?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The company page's employees list as returned.
    */
-  google_name_news_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  linkedin_key_people_raw?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The response's news block, as returned.
    */
-  linkedin_key_people_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_domain_search_news?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * Each web result's extra snippets as returned, with its title and address.
    */
-  brave_domain_search_news?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_extra_snippets_raw?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each result's location block and each response's locations block, as returned.
    */
-  brave_extra_snippets_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_location_cards_raw?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each web result whose thumbnail Brave flags as a logo: the thumbnail object as returned, with the result.
    */
-  brave_location_cards_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_logo_originals_raw?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_logo_originals_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_name_images_search?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The response's videos block, as returned.
    */
-  brave_name_images_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  brave_name_search_videos?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_name_search_videos?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_name_videos_search?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * Each result's organization name and type, with the result address.
    */
-  brave_name_videos_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  brave_organization_names?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each question with its snippet, title and address.
    */
-  brave_organization_names?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  google_related_questions?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * Each query and whether Brave read it as navigational (a search for one site).
    */
-  google_related_questions?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_domain_navigational?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The response's videos block, as returned.
    */
-  brave_domain_navigational?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  brave_local_search_videos?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_local_search_videos?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_name_reviews_search?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The response's infobox block, as returned.
    */
-  brave_name_reviews_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  brave_name_search_infobox?: unknown;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
    */
-  brave_name_search_infobox?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+  brave_name_search_results?: unknown;
   /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
+   * Results on another host whose text writes the brand's domain (a social post naming the site is an identity link).
    */
-  brave_name_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
+  brave_own_domain_mentions?: unknown;
   /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  brave_own_domain_mentions?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  google_name_images_search?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The whole provider response, exactly as returned (result list and every block).
    */
-  google_name_images_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
+  google_name_videos_search?: unknown;
   /**
-   * One search's whole provider response, exactly as the engine returned it.
+   * The Facebook profile the bio links (as returned).
    */
-  google_name_videos_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  instagram_linked_facebook?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
+  instagram_linked_facebook?: unknown;
   /**
    * The footer text, only when it holds a phone, email or address.
    */
   site_homepage_footer_text?: string;
   /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_domain_search_videos?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_local_search_infobox?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_local_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  google_knowledge_graph_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One search's whole provider response, exactly as the engine returned it.
-   */
-  google_name_reviews_search?: {
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_response";
-    engine: string;
-    endpoint?: string;
-    response?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  instagram_business_contact?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  instagram_related_accounts?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  linkedin_similar_companies?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * Social accounts as their provider answered a profile lookup, one row per account: the whole
-   * answer (raw form) or only its fact fields (clean form).
-   */
-  typed_account_profiles_raw?: {
-    items?: ProfileAnswer[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "social_profile_answer_list";
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_domain_search_infobox?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_domain_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_search_locations?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  brave_organization_contacts?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_local_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_local_search_locations?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  google_ai_overview_available?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_domain_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  google_related_questions_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_domain_search_locations?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_reviews_search_faq?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_search_discussions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_search_answer_box?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_local_search_discussions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_local_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_news_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_reviews_search_news?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_local_search_answer_box?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_search_ai_overview?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_search_top_stories?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One section of the provider answers available at a point, one row per source, each row naming its source.
-   * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
-   */
-  instagram_business_contact_raw?: {
-    items?: ProviderSectionRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "provider_section_list";
-    section?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_domain_search_discussions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_domain_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_domain_search_answer_box?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_local_search_ai_overview?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_local_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_local_search_top_stories?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_news_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_images_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_reviews_search_videos?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_videos_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_domain_search_ai_overview?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_domain_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_domain_search_top_stories?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_search_local_results?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_reviews_search_infobox?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_reviews_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_local_search_local_results?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_images_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_videos_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_news_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_domain_search_local_results?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_reviews_search_results?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_search_knowledge_graph?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_reviews_search_locations?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_local_search_knowledge_graph?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_news_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_images_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_videos_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_domain_search_knowledge_graph?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_search_related_questions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  brave_name_reviews_search_discussions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  brave_name_reviews_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_local_search_related_questions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_images_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_reviews_search_answer_box?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_videos_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_domain_search_related_questions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_reviews_search_ai_overview?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One search's result list in rank order: the provider's full objects (raw form) or only the
-   * fields that carry facts (clean form).
-   */
-  google_name_reviews_search_results_raw?: {
-    items?: SearchResultRow[];
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_list";
-    engine: string;
-    endpoint?: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_reviews_search_top_stories?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_reviews_search_local_results?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_reviews_search_knowledge_graph?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
-  /**
-   * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
-   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
-   */
-  google_name_reviews_search_related_questions?: {
-    data?: unknown;
-    block: string;
-    query?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "search_result_block";
-    engine: string;
-  };
+   * The response's videos block, as returned.
+   */
+  brave_domain_search_videos?: unknown;
+  /**
+   * The response's infobox block, as returned.
+   */
+  brave_local_search_infobox?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  brave_local_search_results?: unknown;
+  /**
+   * Each response's knowledge graph as returned.
+   */
+  google_knowledge_graph_raw?: unknown;
+  /**
+   * The whole provider response, exactly as returned (result list and every block).
+   */
+  google_name_reviews_search?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  google_name_search_results?: unknown;
+  /**
+   * Each account's public business email, phone and address (address parsed).
+   */
+  instagram_business_contact?: unknown;
+  /**
+   * The accounts Instagram suggests beside it: username, name, verified.
+   */
+  instagram_related_accounts?: unknown;
+  /**
+   * Each similar page LinkedIn lists: name, address, location, industry.
+   */
+  linkedin_similar_companies?: unknown;
+  /**
+   * Each typed account's profile lookup, the provider's whole answer, typed order.
+   */
+  typed_account_profiles_raw?: unknown;
+  /**
+   * The response's infobox block, as returned.
+   */
+  brave_domain_search_infobox?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  brave_domain_search_results?: unknown;
+  /**
+   * The response's locations block, as returned.
+   */
+  brave_name_search_locations?: unknown;
+  /**
+   * Each contact point an organization block lists (telephone, email, type), one row each.
+   */
+  brave_organization_contacts?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  google_local_search_results?: unknown;
+  /**
+   * The response's locations block, as returned.
+   */
+  brave_local_search_locations?: unknown;
+  /**
+   * Each query and whether the response carries an AI overview (or its page token).
+   */
+  google_ai_overview_available?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  google_domain_search_results?: unknown;
+  /**
+   * Each response's related questions as returned.
+   */
+  google_related_questions_raw?: unknown;
+  /**
+   * The response's locations block, as returned.
+   */
+  brave_domain_search_locations?: unknown;
+  /**
+   * The response's faq block, as returned.
+   */
+  brave_name_reviews_search_faq?: unknown;
+  /**
+   * The response's discussions block, as returned.
+   */
+  brave_name_search_discussions?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  brave_name_search_results_raw?: unknown;
+  /**
+   * The response's answer box block, as returned.
+   */
+  google_name_search_answer_box?: unknown;
+  /**
+   * The response's discussions block, as returned.
+   */
+  brave_local_search_discussions?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  brave_local_search_results_raw?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  brave_name_news_search_results?: unknown;
+  /**
+   * The response's news block, as returned.
+   */
+  brave_name_reviews_search_news?: unknown;
+  /**
+   * The response's answer box block, as returned.
+   */
+  google_local_search_answer_box?: unknown;
+  /**
+   * The response's ai overview block, as returned.
+   */
+  google_name_search_ai_overview?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  google_name_search_results_raw?: unknown;
+  /**
+   * The response's top stories block, as returned.
+   */
+  google_name_search_top_stories?: unknown;
+  /**
+   * business_email, business_phone_number, business_address_json, business_contact_method as returned.
+   */
+  instagram_business_contact_raw?: unknown;
+  /**
+   * The response's discussions block, as returned.
+   */
+  brave_domain_search_discussions?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  brave_domain_search_results_raw?: unknown;
+  /**
+   * The response's answer box block, as returned.
+   */
+  google_domain_search_answer_box?: unknown;
+  /**
+   * The response's ai overview block, as returned.
+   */
+  google_local_search_ai_overview?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  google_local_search_results_raw?: unknown;
+  /**
+   * The response's top stories block, as returned.
+   */
+  google_local_search_top_stories?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  google_name_news_search_results?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  brave_name_images_search_results?: unknown;
+  /**
+   * The response's videos block, as returned.
+   */
+  brave_name_reviews_search_videos?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  brave_name_videos_search_results?: unknown;
+  /**
+   * The response's ai overview block, as returned.
+   */
+  google_domain_search_ai_overview?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  google_domain_search_results_raw?: unknown;
+  /**
+   * The response's top stories block, as returned.
+   */
+  google_domain_search_top_stories?: unknown;
+  /**
+   * The response's local results block, as returned.
+   */
+  google_name_search_local_results?: unknown;
+  /**
+   * The response's infobox block, as returned.
+   */
+  brave_name_reviews_search_infobox?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  brave_name_reviews_search_results?: unknown;
+  /**
+   * The response's local results block, as returned.
+   */
+  google_local_search_local_results?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  google_name_images_search_results?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  google_name_videos_search_results?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  brave_name_news_search_results_raw?: unknown;
+  /**
+   * The response's local results block, as returned.
+   */
+  google_domain_search_local_results?: unknown;
+  /**
+   * The same results with only the fields that carry facts (title, url, description, extra_snippets, cluster, faq, article, organization, site name, logo original …), text decoded, rank kept.
+   */
+  google_name_reviews_search_results?: unknown;
+  /**
+   * The response's knowledge graph block, as returned.
+   */
+  google_name_search_knowledge_graph?: unknown;
+  /**
+   * The response's locations block, as returned.
+   */
+  brave_name_reviews_search_locations?: unknown;
+  /**
+   * The response's knowledge graph block, as returned.
+   */
+  google_local_search_knowledge_graph?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  google_name_news_search_results_raw?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  brave_name_images_search_results_raw?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  brave_name_videos_search_results_raw?: unknown;
+  /**
+   * The response's knowledge graph block, as returned.
+   */
+  google_domain_search_knowledge_graph?: unknown;
+  /**
+   * The response's related questions block, as returned.
+   */
+  google_name_search_related_questions?: unknown;
+  /**
+   * The response's discussions block, as returned.
+   */
+  brave_name_reviews_search_discussions?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  brave_name_reviews_search_results_raw?: unknown;
+  /**
+   * The response's related questions block, as returned.
+   */
+  google_local_search_related_questions?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  google_name_images_search_results_raw?: unknown;
+  /**
+   * The response's answer box block, as returned.
+   */
+  google_name_reviews_search_answer_box?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  google_name_videos_search_results_raw?: unknown;
+  /**
+   * The response's related questions block, as returned.
+   */
+  google_domain_search_related_questions?: unknown;
+  /**
+   * The response's ai overview block, as returned.
+   */
+  google_name_reviews_search_ai_overview?: unknown;
+  /**
+   * The result list in rank order, each result's full provider object.
+   */
+  google_name_reviews_search_results_raw?: unknown;
+  /**
+   * The response's top stories block, as returned.
+   */
+  google_name_reviews_search_top_stories?: unknown;
+  /**
+   * The response's local results block, as returned.
+   */
+  google_name_reviews_search_local_results?: unknown;
+  /**
+   * The response's knowledge graph block, as returned.
+   */
+  google_name_reviews_search_knowledge_graph?: unknown;
+  /**
+   * The response's related questions block, as returned.
+   */
+  google_name_reviews_search_related_questions?: unknown;
 }
 
 /**
@@ -21509,7 +19632,7 @@ export interface CommerceIntakeBenchGradingOffer {
 }
 
 /**
- * Kind `commerce_intake.disposal_challenge.offer` (registry v15).
+ * Kind `commerce_intake.disposal_challenge.offer` (registry v16).
  */
 export interface CommerceIntakeDisposalChallengeOffer {
   /**
@@ -21525,65 +19648,21 @@ export interface CommerceIntakeDisposalChallengeOffer {
    */
   quantity: number;
   /**
-   * M4 output: definitive identity with cited sources. Exactly one of
-   * ``identity`` / ``identity_unresolved`` is set — an unresolved identity with
-   * the candidates considered is a legal, useful output, not a failure.
+   * The sourced research output ({} when research produced nothing).
    */
-  research: {
-    specs?: SourcedSpec[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "product_research";
-    sources?: string[];
-    identity?: ResolvedIdentity | null;
-    reasoning?: string | null;
-    confidence?: number | null;
-    channel_refs?: ChannelRef[];
-    identity_unresolved?: UnresolvedIdentity | null;
-    undetermined_by_part_number?: string[];
-  };
+  research: unknown;
   /**
-   * M2 output: photos → metadata complete enough that nothing downstream
-   * reopens the images. ``products`` normally holds exactly one entry; it is an
-   * array only so a mid-extraction discovery of a second product is expressible.
+   * The full extraction output — the same evidence the original saw.
    */
-  extraction: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "item_vision_extraction";
-    status: string;
-    products?: ExtractedProduct[];
-    status_notes?: string | null;
-    image_count_received: number;
-  };
+  extraction: unknown;
   /**
    * The grading standard in force for this org.
    */
   grading_standard: string;
   /**
-   * M5 output — the recall-critical mandate. ``bucket`` is one of
-   * definite_value | conditional_value | possible_value | no_value | unknown
-   * (the DB column vocabulary calls this the value bucket). A ``no_value``
-   * verdict must carry item-and-quantity-specific reasoning and, by contract,
-   * never ships with confidence < 0.8 — below that the bucket is ``unknown``
-   * by construction.
+   * The no-value verdict under challenge, complete with its reasoning.
    */
-  original_valuation: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "value_assessment";
-    bucket: string;
-    unknowns?: ValueUnknown[];
-    reasoning?: string | null;
-    confidence: number;
-    gem_reasoning?: string | null;
-    estimated_value?: EstimatedValue | null;
-    bucket_reasoning: string;
-    is_gem_candidate?: boolean;
-  };
+  original_valuation: unknown;
   /**
    * The original verdict's stored confidence (may be absent).
    */
@@ -21591,7 +19670,7 @@ export interface CommerceIntakeDisposalChallengeOffer {
 }
 
 /**
- * Kind `commerce_intake.enrichment_bundle.offer` (registry v15).
+ * Kind `commerce_intake.enrichment_bundle.offer` (registry v16).
  */
 export interface CommerceIntakeEnrichmentBundleOffer {
   /**
@@ -21599,86 +19678,21 @@ export interface CommerceIntakeEnrichmentBundleOffer {
    */
   __kind?: "commerce_intake.enrichment_bundle.offer";
   /**
-   * M4 output: definitive identity with cited sources. Exactly one of
-   * ``identity`` / ``identity_unresolved`` is set — an unresolved identity with
-   * the candidates considered is a legal, useful output, not a failure.
+   * The research output, for conclusions that trace to it.
    */
-  research?: {
-    specs?: SourcedSpec[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "product_research";
-    sources?: string[];
-    identity?: ResolvedIdentity | null;
-    reasoning?: string | null;
-    confidence?: number | null;
-    channel_refs?: ChannelRef[];
-    identity_unresolved?: UnresolvedIdentity | null;
-    undetermined_by_part_number?: string[];
-  };
+  research?: unknown;
   /**
-   * M5 output — the recall-critical mandate. ``bucket`` is one of
-   * definite_value | conditional_value | possible_value | no_value | unknown
-   * (the DB column vocabulary calls this the value bucket). A ``no_value``
-   * verdict must carry item-and-quantity-specific reasoning and, by contract,
-   * never ships with confidence < 0.8 — below that the bucket is ``unknown``
-   * by construction.
+   * The standing value assessment whose unknowns were answered.
    */
-  valuation: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "value_assessment";
-    bucket: string;
-    unknowns?: ValueUnknown[];
-    reasoning?: string | null;
-    confidence: number;
-    gem_reasoning?: string | null;
-    estimated_value?: EstimatedValue | null;
-    bucket_reasoning: string;
-    is_gem_candidate?: boolean;
-  };
+  valuation: unknown;
   /**
-   * M2 output: photos → metadata complete enough that nothing downstream
-   * reopens the images. ``products`` normally holds exactly one entry; it is an
-   * array only so a mid-extraction discovery of a second product is expressible.
+   * The extraction output, for conclusions that trace to it.
    */
-  extraction?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "item_vision_extraction";
-    status: string;
-    products?: ExtractedProduct[];
-    status_notes?: string | null;
-    image_count_received: number;
-  };
+  extraction?: unknown;
   /**
-   * The ``lot_detection`` ledger row's payload — MATCHES W5'S EMITTER
-   * (``commerce_intake/pipeline.py::_do_extraction``), which materialises this
-   * from the M2 extraction's per-product ``quantity`` block (M3 folded into M2
-   * per the review; ``fulfillment_source`` stays ``agent``, ``mandate_key``
-   * stays the extraction's).
-   *
-   * MANDATES.md drift (its shapes LOSE to W5's live code): the M3 contract
-   * still specifies a richer standalone shape — three-valued
-   * ``is_lot: true|false|suspected``, ``quantity_estimate.basis``,
-   * ``homogeneity``, ``mix_dimensions``, ``recommended_tracking_mode``,
-   * required ``reasoning``. If a standalone M3 mandate is ever revived, those
-   * fields return as optional-with-default (additive supersede).
+   * The folded lot signal.
    */
-  lot_context?: {
-    notes?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "lot_detection";
-    is_lot: boolean;
-    unit_type?: string;
-    folded_from?: string | null;
-    quantity_estimate?: QuantityRange | null;
-  };
+  lot_context?: unknown;
   /**
    * Any client-supplied free-text information accompanying the answers.
    */
@@ -21690,7 +19704,7 @@ export interface CommerceIntakeEnrichmentBundleOffer {
 }
 
 /**
- * Kind `commerce_intake.extraction_dossier.offer` (registry v12).
+ * Kind `commerce_intake.extraction_dossier.offer` (registry v13).
  */
 export interface CommerceIntakeExtractionDossierOffer {
   /**
@@ -21698,45 +19712,13 @@ export interface CommerceIntakeExtractionDossierOffer {
    */
   __kind?: "commerce_intake.extraction_dossier.offer";
   /**
-   * M2 output: photos → metadata complete enough that nothing downstream
-   * reopens the images. ``products`` normally holds exactly one entry; it is an
-   * array only so a mid-extraction discovery of a second product is expressible.
+   * The complete extraction output: identifiers with alternatives, physical description, damage/positive flags, coverage verdict.
    */
-  extraction: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "item_vision_extraction";
-    status: string;
-    products?: ExtractedProduct[];
-    status_notes?: string | null;
-    image_count_received: number;
-  };
+  extraction: unknown;
   /**
-   * The ``lot_detection`` ledger row's payload — MATCHES W5'S EMITTER
-   * (``commerce_intake/pipeline.py::_do_extraction``), which materialises this
-   * from the M2 extraction's per-product ``quantity`` block (M3 folded into M2
-   * per the review; ``fulfillment_source`` stays ``agent``, ``mandate_key``
-   * stays the extraction's).
-   *
-   * MANDATES.md drift (its shapes LOSE to W5's live code): the M3 contract
-   * still specifies a richer standalone shape — three-valued
-   * ``is_lot: true|false|suspected``, ``quantity_estimate.basis``,
-   * ``homogeneity``, ``mix_dimensions``, ``recommended_tracking_mode``,
-   * required ``reasoning``. If a standalone M3 mandate is ever revived, those
-   * fields return as optional-with-default (additive supersede).
+   * The lot signal: whether it is a lot, the unit type, and a bounded quantity estimate.
    */
-  lot_context: {
-    notes?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "lot_detection";
-    is_lot: boolean;
-    unit_type?: string;
-    folded_from?: string | null;
-    quantity_estimate?: QuantityRange | null;
-  };
+  lot_context: unknown;
 }
 
 /**
@@ -21775,7 +19757,7 @@ export interface CommerceIntakeInstantCaptureOffer {
 }
 
 /**
- * Kind `commerce_intake.valuation_dossier.offer` (registry v12).
+ * Kind `commerce_intake.valuation_dossier.offer` (registry v13).
  */
 export interface CommerceIntakeValuationDossierOffer {
   /**
@@ -21787,64 +19769,17 @@ export interface CommerceIntakeValuationDossierOffer {
    */
   quantity: number;
   /**
-   * M4 output: definitive identity with cited sources. Exactly one of
-   * ``identity`` / ``identity_unresolved`` is set — an unresolved identity with
-   * the candidates considered is a legal, useful output, not a failure.
+   * The sourced identity/specs research output ({} when research produced nothing).
    */
-  research: {
-    specs?: SourcedSpec[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "product_research";
-    sources?: string[];
-    identity?: ResolvedIdentity | null;
-    reasoning?: string | null;
-    confidence?: number | null;
-    channel_refs?: ChannelRef[];
-    identity_unresolved?: UnresolvedIdentity | null;
-    undetermined_by_part_number?: string[];
-  };
+  research: unknown;
   /**
-   * M2 output: photos → metadata complete enough that nothing downstream
-   * reopens the images. ``products`` normally holds exactly one entry; it is an
-   * array only so a mid-extraction discovery of a second product is expressible.
+   * The full extraction output (condition observations live here).
    */
-  extraction: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "item_vision_extraction";
-    status: string;
-    products?: ExtractedProduct[];
-    status_notes?: string | null;
-    image_count_received: number;
-  };
+  extraction: unknown;
   /**
-   * The ``lot_detection`` ledger row's payload — MATCHES W5'S EMITTER
-   * (``commerce_intake/pipeline.py::_do_extraction``), which materialises this
-   * from the M2 extraction's per-product ``quantity`` block (M3 folded into M2
-   * per the review; ``fulfillment_source`` stays ``agent``, ``mandate_key``
-   * stays the extraction's).
-   *
-   * MANDATES.md drift (its shapes LOSE to W5's live code): the M3 contract
-   * still specifies a richer standalone shape — three-valued
-   * ``is_lot: true|false|suspected``, ``quantity_estimate.basis``,
-   * ``homogeneity``, ``mix_dimensions``, ``recommended_tracking_mode``,
-   * required ``reasoning``. If a standalone M3 mandate is ever revived, those
-   * fields return as optional-with-default (additive supersede).
+   * The folded lot signal (quantity changes value verdicts).
    */
-  lot_context: {
-    notes?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "lot_detection";
-    is_lot: boolean;
-    unit_type?: string;
-    folded_from?: string | null;
-    quantity_estimate?: QuantityRange | null;
-  };
+  lot_context: unknown;
   /**
    * The grading standard in force for this org.
    */
@@ -22935,7 +20870,7 @@ export interface ContentPlanPageBriefOffer {
 }
 
 /**
- * Kind `content_plan.page_build.offer` (registry v17).
+ * Kind `content_plan.page_build.offer` (registry v18).
  */
 export interface ContentPlanPageBuildOffer {
   /**
@@ -22986,36 +20921,7 @@ export interface ContentPlanPageBuildOffer {
   /**
    * The approved written draft for this page. When there is one, the page is built from it; when there isn't, the page is written from the page's brief.
    */
-  approved_content?: {
-    /**
-     * The page's single h1 — its headline.
-     */
-    h1: string;
-    /**
-     * The opening paragraph, before the first section.
-     */
-    intro?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind: "plan_page_draft";
-    /**
-     * The body sections, in page order.
-     */
-    sections?: PlanDraftSection[];
-    /**
-     * The page's title tag, for search results.
-     */
-    meta_title?: string;
-    /**
-     * What the page asks the reader to do next.
-     */
-    call_to_action?: string;
-    /**
-     * The page's meta description, for search results.
-     */
-    meta_description?: string;
-  };
+  approved_content?: unknown;
   /**
    * The site's merged theme as CSS custom properties.
    */
@@ -23101,42 +21007,13 @@ export interface ContentPlanPageFamilyOffer {
 }
 
 /**
- * Kind `content_plan.page_review.offer` (registry v21).
+ * Kind `content_plan.page_review.offer` (registry v22).
  */
 export interface ContentPlanPageReviewOffer {
   /**
    * The written draft being reviewed.
    */
-  draft: {
-    /**
-     * The page's single h1 — its headline.
-     */
-    h1: string;
-    /**
-     * The opening paragraph, before the first section.
-     */
-    intro?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind: "plan_page_draft";
-    /**
-     * The body sections, in page order.
-     */
-    sections?: PlanDraftSection[];
-    /**
-     * The page's title tag, for search results.
-     */
-    meta_title?: string;
-    /**
-     * What the page asks the reader to do next.
-     */
-    call_to_action?: string;
-    /**
-     * The page's meta description, for search results.
-     */
-    meta_description?: string;
-  };
+  draft: unknown;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -23963,14 +21840,14 @@ export interface CounterpartyMove {
  *  * Kind `counterparty_profile` (registry v4).
  */
 export interface CounterpartyProfile {
-  facts?: CounterpartyFact_CounterpartyProfile[];
+  facts?: CounterpartyFact[];
   title?: string;
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "counterparty_profile";
   domain?: string;
-  policy?: CounterpartyPolicy_CounterpartyProfile;
+  policy?: CounterpartyPolicy;
   sealed?: boolean;
   persona?: string;
   role_label?: string;
@@ -27973,22 +25850,13 @@ export interface FlashcardsExpandCardOffer {
 }
 
 /**
- * Kind `flashcards.fix_giveaway_cards.offer` (registry v7).
+ * Kind `flashcards.fix_giveaway_cards.offer` (registry v8).
  */
 export interface FlashcardsFixGiveawayCardsOffer {
   /**
    * Every card in the deck, in order, each with its id, front and back.
    */
-  cards: {
-    /**
-     * Every card in the deck, in deck order.
-     */
-    cards: FlashcardCardRefV1[];
-    /**
-     * Block discriminator for render pipeline.
-     */
-    __kind: "flashcard_deck_cards_v1";
-  };
+  cards: unknown;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -31280,6 +29148,22 @@ export interface KeywordData {
 }
 
 /**
+ * Keywords a competitor ranks for in Google next to where your website ranks (empty when it does not).
+ *  *
+ *  * Kind `keyword_gap` (registry v1).
+ */
+export interface KeywordGap {
+  items?: KeywordGapRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "keyword_gap";
+  domain?: string | null;
+  competitor?: string | null;
+  total_count?: number | null;
+}
+
+/**
  * Kind `keyword_list` (registry v6).
  */
 export interface KeywordList {
@@ -34007,7 +31891,7 @@ export interface MasterworkBadExampleGenerationOffer {
 }
 
 /**
- * Kind `masterwork.case_disclosure.offer` (registry v17).
+ * Kind `masterwork.case_disclosure.offer` (registry v18).
  */
 export interface MasterworkCaseDisclosureOffer {
   /**
@@ -34023,21 +31907,9 @@ export interface MasterworkCaseDisclosureOffer {
    */
   request: unknown;
   /**
-   * A narrative re-read as WHAT WAS KNOWN WHEN — the source shape the
-   * unfolding-case lane distils by time instead of by paragraph.
+   * The sealed case in full, including how it turned out.
    */
-  timeline: {
-    steps?: TimelineStep_MasterworkCaseDisclosureOffer[];
-    title?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "serial_observation_timeline";
-    domain?: string;
-    sealed?: boolean;
-    opening?: TimelineOpening_MasterworkCaseDisclosureOffer | null;
-    resolution?: TimelineResolution_MasterworkCaseDisclosureOffer | null;
-  };
+  timeline: unknown;
   /**
    * Every fact already released to the desk in this run.
    */
@@ -34265,7 +32137,7 @@ export interface MasterworkCorpusSynthesisOffer {
 }
 
 /**
- * Kind `masterwork.counterparty_turn.offer` (registry v17).
+ * Kind `masterwork.counterparty_turn.offer` (registry v18).
  */
 export interface MasterworkCounterpartyTurnOffer {
   /**
@@ -34277,68 +32149,13 @@ export interface MasterworkCounterpartyTurnOffer {
    */
   __kind?: "masterwork.counterparty_turn.offer";
   /**
-   * The mechanical record of the conversation. EVERY number here is derived
-   * from the sealed profile and what this node actually released — never from
-   * the persona agent's own account of how it went.
+   * The conversation so far, including how many turns have happened and how the conversation is going. Absent on the very first move, when an opening line is returned instead.
    */
-  ledger?: {
-    moves?: CounterpartyMove[];
-    /**
-     * How many moves the desk has spent.
-     */
-    turns?: number;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "counterparty_ledger";
-    locked_until?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: number | string | undefined;
-  };
-    /**
-     * How many decisive facts the sealed profile holds.
-     */
-    decisive_total?: number;
-    /**
-     * How many facts the desk's own moves closed down.
-     */
-    lockouts_caused?: number;
-    /**
-     * How many of them the desk has actually got out.
-     */
-    decisive_surfaced?: number;
-    disclosed_fact_ids?: string[];
-    /**
-     * How many times the desk advised before the frame held.
-     */
-    premature_advice_events?: number;
-  };
+  ledger?: unknown;
   /**
-   * A sealed person the desk has to earn its way through.
-   *
-   * 🚨 SEALED LIKE A HELD-OUT CASE. `sealed: true` is DATA on the row, exactly
-   * as on `serial_observation_timeline`: a held-out profile is the EXAM, is
-   * never distilled into rules, and its facts reach exactly two callers — the
-   * counterparty node (which filters everything it emits against this list) and
-   * the Audition's judge.
+   * The sealed person in full, including every fact they have not yet said and the rules for when they would say it.
    */
-  profile: {
-    facts?: CounterpartyFact_MasterworkCounterpartyTurnOffer[];
-    title?: string;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "counterparty_profile";
-    domain?: string;
-    policy?: CounterpartyPolicy_MasterworkCounterpartyTurnOffer;
-    sealed?: boolean;
-    persona?: string;
-    role_label?: string;
-    opening_line?: string;
-  };
+  profile: unknown;
   /**
    * The only facts about this person that are allowed to come out this turn.
    */
@@ -37561,7 +35378,7 @@ export interface NerUserScopeTree {
 }
 
 /**
- * Kind `news.angles.offer` (registry v9).
+ * Kind `news.angles.offer` (registry v10).
  */
 export interface NewsAnglesOffer {
   /**
@@ -37577,27 +35394,9 @@ export interface NewsAnglesOffer {
    */
   __kind?: "news.angles.offer";
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * Everything the monitor knows about the client, including the brief and the facts on file.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * The exact moment this monitor run started, ISO-8601 with offset. Freshness is judged against this clock, never against today's date.
    */
@@ -37605,7 +35404,7 @@ export interface NewsAnglesOffer {
 }
 
 /**
- * Kind `news.coarse_relevance.offer` (registry v6).
+ * Kind `news.coarse_relevance.offer` (registry v7).
  */
 export interface NewsCoarseRelevanceOffer {
   /**
@@ -37617,27 +35416,9 @@ export interface NewsCoarseRelevanceOffer {
    */
   signal: unknown;
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * Who the client is: company, competitors, topics, search terms, standing and exclusions. Never the client brief — collection stays brief-agnostic.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * The exact moment this monitor run started, ISO-8601 with offset. Freshness is judged against this clock, never against today's date.
    */
@@ -37645,7 +35426,7 @@ export interface NewsCoarseRelevanceOffer {
 }
 
 /**
- * Kind `news.monitor_setup_proposer.offer` (registry v6).
+ * Kind `news.monitor_setup_proposer.offer` (registry v7).
  */
 export interface NewsMonitorSetupProposerOffer {
   /**
@@ -37665,27 +35446,9 @@ export interface NewsMonitorSetupProposerOffer {
    */
   feed_catalog: unknown;
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * The brand: company, confirmed facts (each with its ref), competitors and the existing tracker fields.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * Recent web.news_item titles matching the brand name (last 30 days), each {ref, title, url, published_at}.
    */
@@ -37693,7 +35456,7 @@ export interface NewsMonitorSetupProposerOffer {
 }
 
 /**
- * Kind `news.report.offer` (registry v7).
+ * Kind `news.report.offer` (registry v8).
  */
 export interface NewsReportOffer {
   /**
@@ -37709,13 +35472,9 @@ export interface NewsReportOffer {
    */
   coarse: unknown;
   /**
-   * Kind ``news_triage`` — derived field-for-field from engine ``NewsTriage``.
+   * The run's triage, when a triage performer is bound.
    */
-  triage?: {
-    __kind?: "news_triage";
-    summary?: NewsTriageSummary;
-    triaged?: NewsTriagedSignal[];
-  };
+  triage?: unknown;
   /**
    * Every story of the run with its freshness status (news_targeted_candidates).
    */
@@ -37733,27 +35492,9 @@ export interface NewsReportOffer {
    */
   run_summary: unknown;
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * Everything the monitor knows about the client, including the brief's presentation rules.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * The exact moment this monitor run started, ISO-8601 with offset. Freshness is judged against this clock, never against today's date.
    */
@@ -37761,7 +35502,7 @@ export interface NewsReportOffer {
 }
 
 /**
- * Kind `news.story_origin.offer` (registry v6).
+ * Kind `news.story_origin.offer` (registry v7).
  */
 export interface NewsStoryOriginOffer {
   /**
@@ -37773,27 +35514,9 @@ export interface NewsStoryOriginOffer {
    */
   signal: unknown;
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * The client's company and competitors, as context only — never as proof of freshness.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * The exact moment this monitor run started, ISO-8601 with offset. Freshness is judged against this clock, never against today's date.
    */
@@ -37801,7 +35524,7 @@ export interface NewsStoryOriginOffer {
 }
 
 /**
- * Kind `news.triage.offer` (registry v6).
+ * Kind `news.triage.offer` (registry v7).
  */
 export interface NewsTriageOffer {
   /**
@@ -37813,27 +35536,9 @@ export interface NewsTriageOffer {
    */
   signals: unknown;
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * Everything the monitor knows about the client, including the brief and the facts on file.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * The exact moment this monitor run started, ISO-8601 with offset. Freshness is judged against this clock, never against today's date.
    */
@@ -44709,6 +42414,21 @@ export interface RandomStringResult {
 }
 
 /**
+ * The keywords one website ranks for in Google, with its position, the page that ranks and the searches.
+ *  *
+ *  * Kind `ranked_keywords` (registry v1).
+ */
+export interface RankedKeywords {
+  items?: RankedKeywordRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "ranked_keywords";
+  domain?: string | null;
+  total_count?: number | null;
+}
+
+/**
  * Kind `rating` (registry v17).
  */
 export interface Rating {
@@ -47745,6 +45465,43 @@ export interface SealedCaseToolResult {
 }
 
 /**
+ * How a website performed in Google last month: free search visits, ad clicks and monthly ad budget.
+ *  *
+ *  * Kind `search_ads_overview` (registry v1).
+ */
+export interface SearchAdsOverview {
+  year?: number | null;
+  month?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "search_ads_overview";
+  domain: string;
+  ad_budget?: number | null;
+  ads_bought?: number | null;
+  paid_clicks?: number | null;
+  organic_value?: number | null;
+  site_strength?: number | null;
+  organic_clicks?: number | null;
+  average_ad_rank?: number | null;
+  organic_keywords?: number | null;
+  average_organic_rank?: number | null;
+}
+
+/**
+ * The websites that rank in Google for a set of keywords, best placed first.
+ *  *
+ *  * Kind `search_competitors` (registry v1).
+ */
+export interface SearchCompetitors {
+  items?: SearchCompetitorRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "search_competitors";
+}
+
+/**
  * One search's whole provider response, exactly as the engine returned it.
  *  *
  *  * Kind `search_response` (registry v2).
@@ -48500,7 +46257,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
 }
 
 /**
- * Kind `seo.competitor_page_autopsy.offer` (registry v21).
+ * Kind `seo.competitor_page_autopsy.offer` (registry v22).
  */
 export interface SeoCompetitorPageAutopsyOffer {
   /**
@@ -48532,40 +46289,13 @@ export interface SeoCompetitorPageAutopsyOffer {
    */
   competitor_page: unknown;
   /**
-   * `page_keyword_map_v1` — the Page↔Keyword Mapper's artifact.
+   * The topic keyword map covering that owned page.
    */
-  page_keyword_map?: {
-    error?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind: "page_keyword_map_v1";
-    skipped?: SkippedKeyword[];
-    conflicts?: PageConflict[];
-    page_plans: PagePlan[];
-    topic_slug?: string;
-    mapper_version?: string;
-  };
+  page_keyword_map?: unknown;
   /**
-   * `page_keyword_analysis_v1` — the Page Analyzer's artifact.
+   * The page analyst's read of that owned page.
    */
-  owned_page_analysis?: {
-    gaps?: ContentGap[];
-    error?: string | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind: "page_keyword_analysis_v1";
-    page_url?: string;
-    content_role: "money_page" | "supporting_content" | "local_landing" | "faq_only" | "no_action";
-    funnel_position?: "problem_aware" | "solution_aware" | "vendor_evaluation" | "purchase_ready" | null;
-    analyzer_version?: string;
-    declared_vs_actual?: TargetAlignment | null;
-    supported_keywords?: KeywordRef[];
-    discovered_keywords?: KeywordRef[];
-    cannibalization_risk?: CannibalizationRisk[];
-    inferred_primary_keyword: KeywordRef;
-  };
+  owned_page_analysis?: unknown;
 }
 
 /**
@@ -48602,7 +46332,7 @@ export interface SeoCoverageAnalysisOffer {
 }
 
 /**
- * Kind `seo.finding_fix.offer` (registry v28).
+ * Kind `seo.finding_fix.offer` (registry v29).
  */
 export interface SeoFindingFixOffer {
   /**
@@ -48626,20 +46356,9 @@ export interface SeoFindingFixOffer {
    */
   finding_id?: string;
   /**
-   * The fixer's whole world: one finding, one page, one site.
+   * The whole SeoFindingFixContext: the finding (id, code, severity, analyzer reasoning), the page (url, title, content excerpt), and the site's brand guidance.
    */
-  fix_context: {
-    page: FixPageContext;
-    site: FixSiteContext;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind: "seo_finding_fix_context";
-    limits: FixLimits;
-    finding: FixFindingContext;
-    finding_id: string;
-    fixer_version: string;
-  };
+  fix_context: unknown;
   /**
    * The site's domain.
    */
@@ -49179,59 +46898,29 @@ export interface SeoPageAnalysisOffer {
 }
 
 /**
- * Kind `seo.page_intent_proposer.offer` (registry v10).
+ * Kind `seo.page_intent_proposer.offer` (registry v11).
  */
 export interface SeoPageIntentProposerOffer {
   /**
-   * Several pages as read, each once, in the order they were read.
+   * Every claimed page as the claim returned it.
    */
-  pages: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  pages: unknown;
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "seo.page_intent_proposer.offer";
   map_id: string;
   /**
-   * Several pages as read, each once, in the order they were read.
+   * The topic's own pages ranked by the traffic they receive, each row whole.
    */
-  roster?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
-  /**
-   * Several pages as read, each once, in the order they were read.
-   */
-  planned?: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  roster?: unknown;
+  planned?: unknown;
   site_id: string;
   /**
    * The brand that owns the map; every brand fact is offered with it.
    */
   brand_id?: string;
-  /**
-   * Keywords as the database holds them (keyword, value tier, volume, intent…), one row each.
-   */
-  keywords?: {
-    items?: Row[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_keyword_rows";
-  };
+  keywords?: unknown;
   site_name?: string;
   /**
    * A fact about how this map organizes location: this map does not yet split pages by region, so a city page that repeats a general service page is not a duplicate.
@@ -49243,15 +46932,9 @@ export interface SeoPageIntentProposerOffer {
   page_batch: string;
   page_count: number;
   /**
-   * Each page's stored renditions (summaries and other derived text), one row per rendition.
+   * Pages that are renditions of another page: kind and the canonical page.
    */
-  renditions?: {
-    items?: Row[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_page_renditions";
-  };
+  renditions?: unknown;
   topic_name?: string;
   topic_slug: string;
   /**
@@ -49268,14 +46951,9 @@ export interface SeoPageIntentProposerOffer {
    */
   planned_pages: string;
   /**
-   * One map topic's whole context as the database returns it: its pages, planned pages and keywords.
+   * The topic's context as the database returns it: roster, planned pages, keywords.
    */
-  topic_context?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_topic_context";
-  };
+  topic_context?: unknown;
   pages_on_topic?: number;
   /**
    * Every strong page on this topic, ranked by the traffic it actually receives, whether or not it's in this batch — with its clicks, impressions, content length, internal links pointing to it, backlinks from other sites, page status, and whether someone has already decided what happens to it. This is the complete and only set of pages a merge or redirect may point to, delivered on its own so a topic split across several batches still has one consistent answer to 'which page wins'.
@@ -49316,19 +46994,13 @@ export interface SeoPageKeywordMappingOffer {
 }
 
 /**
- * Kind `seo.page_mapper.offer` (registry v10).
+ * Kind `seo.page_mapper.offer` (registry v11).
  */
 export interface SeoPageMapperOffer {
   /**
-   * Several pages as read, each once, in the order they were read.
+   * Every claimed page as the claim returned it: id, url, crawled title, headings and length, Search Console clicks and impressions, the stored summary.
    */
-  pages: {
-    items?: WebPageRow[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "web_page_list";
-  };
+  pages: unknown;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -49382,7 +47054,7 @@ export interface SeoPageMapperOffer {
 }
 
 /**
- * Kind `seo.press_calendar_planner.offer` (registry v6).
+ * Kind `seo.press_calendar_planner.offer` (registry v7).
  */
 export interface SeoPressCalendarPlannerOffer {
   /**
@@ -49402,27 +47074,9 @@ export interface SeoPressCalendarPlannerOffer {
    */
   pass_mode: string;
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * The brand: company, facts with spokespeople and proof assets, proof_on_file, competitors, topics, standing, exclusions and the brief.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * Pass 2 only: per shortlisted moment id, the windowed news_search results code fetched for last year's occurrence. Empty in pass 1.
    */
@@ -49528,7 +47182,7 @@ export interface SeoPressMomentResearcherOffer {
 }
 
 /**
- * Kind `seo.press_newsworthiness_check.offer` (registry v6).
+ * Kind `seo.press_newsworthiness_check.offer` (registry v7).
  */
 export interface SeoPressNewsworthinessCheckOffer {
   /**
@@ -49544,27 +47198,9 @@ export interface SeoPressNewsworthinessCheckOffer {
    */
   __kind?: "seo.press_newsworthiness_check.offer";
   /**
-   * Kind ``news_client_context`` — derived field-for-field from engine ``NewsClientContext``.
+   * The client's company, facts on file, standing and competitors. Never the brief.
    */
-  client_context: {
-    brief?: NewsClientBrief | null;
-    facts?: NewsClientFacts | null;
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "news_client_context";
-    topics?: string[] | null;
-    company?: NewsClientCompany | null;
-    brand_id: string;
-    standing?: string[] | null;
-    exclusions?: string[] | null;
-    tracker_id?: string | null;
-    competitors?: string[] | null;
-    search_terms?: string[] | null;
-    proof_on_file?: boolean | null;
-    organization_id?: string | null;
-    run_generated_at: string;
-  };
+  client_context: unknown;
   /**
    * The exact moment this monitor run started, ISO-8601 with offset. Freshness is judged against this clock, never against today's date.
    */
@@ -49864,7 +47500,7 @@ export interface SeoReputationIntelligenceOffer {
 }
 
 /**
- * Kind `seo.ruling_session_proposal.offer` (registry v7).
+ * Kind `seo.ruling_session_proposal.offer` (registry v8).
  */
 export interface SeoRulingSessionProposalOffer {
   /**
@@ -49876,49 +47512,25 @@ export interface SeoRulingSessionProposalOffer {
    */
   site_context?: string;
   /**
-   * The keywords to propose a value for.
+   * The keywords to propose a value for: {keywords: [{keyword_id, phrase, clicks, impressions}]}.
    */
-  keywords_json?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_keyword_set";
-    keywords?: SeoRulingKeyword[];
-  };
+  keywords_json?: unknown;
   /**
-   * Keywords the site's own rules already explained. Empty on the blind check.
+   * Keywords the site's own rules already explained: {hits: [{phrase, value_slug, matcher_kind, pattern}]}. Empty on the blind check.
    */
-  matcher_hits_json?: {
-    hits?: SeoRulingMatcherHit[];
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_matcher_hit_set";
-  };
+  matcher_hits_json?: unknown;
   /**
-   * The rulings the person already made. Empty on the blind check.
+   * The rulings the person already made, with their reasons: {examples: [{phrase, dimension_slug, dimension_label, value_slug, value_label, reason}]}. Empty on the blind check.
    */
-  human_examples_json?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_example_set";
-    examples?: SeoRulingExample[];
-  };
+  human_examples_json?: unknown;
   /**
-   * The dimension being ruled and the only values allowed.
+   * The dimension being ruled and the only values allowed: {dimensions: [{slug, label, description, values: [{slug, label, description}]}]}.
    */
-  dimension_catalog_json?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_dimension_catalog";
-    dimensions?: SeoRulingDimension[];
-  };
+  dimension_catalog_json?: unknown;
 }
 
 /**
- * Kind `seo.ruling_session_teach.offer` (registry v7).
+ * Kind `seo.ruling_session_teach.offer` (registry v8).
  */
 export interface SeoRulingSessionTeachOffer {
   /**
@@ -49926,45 +47538,21 @@ export interface SeoRulingSessionTeachOffer {
    */
   __kind?: "seo.ruling_session_teach.offer";
   /**
-   * Proposals the person ruled wrong.
+   * Proposals the person ruled wrong: {corrections: [{phrase, proposed_value_slug, proposed_value_label, corrected_value_slug, corrected_value_label, human_reason}]}.
    */
-  corrections_json?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_correction_set";
-    corrections?: SeoRulingCorrection[];
-  };
+  corrections_json?: unknown;
   /**
-   * Proposals the person ruled right.
+   * Proposals the person ruled right: {confirmations: [{phrase, value_slug, value_label}]}.
    */
-  confirmations_json?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_confirmation_set";
-    confirmations?: SeoRulingConfirmation[];
-  };
+  confirmations_json?: unknown;
   /**
-   * The dimension being ruled and the only values allowed.
+   * The dimension being ruled and the only values allowed: {dimensions: [{slug, label, description, values: [{slug, label, description}]}]}.
    */
-  dimension_catalog_json?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_dimension_catalog";
-    dimensions?: SeoRulingDimension[];
-  };
+  dimension_catalog_json?: unknown;
   /**
-   * The site rules behind the proposals being taught from. Empty on the blind check.
+   * The site rules behind the proposals being taught from: {matchers: [{value_slug, matcher_kind, pattern}]}. Empty on the blind check.
    */
-  existing_matchers_json?: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind?: "seo_ruling_matcher_set";
-    matchers?: SeoRulingMatcher[];
-  };
+  existing_matchers_json?: unknown;
 }
 
 /**
@@ -50065,7 +47653,7 @@ export interface SeoSiteEvidenceOffer {
 }
 
 /**
- * Kind `seo.site_intake.offer` (registry v33).
+ * Kind `seo.site_intake.offer` (registry v34).
  */
 export interface SeoSiteIntakeOffer {
   /**
@@ -50109,24 +47697,9 @@ export interface SeoSiteIntakeOffer {
    */
   data_min_date?: string;
   /**
-   * The intake agent's input — four period slices + site-level headlines.
+   * The site's full intake snapshot: its domain, the date range the data covers, four Search Console trajectory periods, queries, and pages.
    */
-  intake_bundle: {
-    /**
-     * The registered kind this payload is an instance of.
-     */
-    __kind: "gsc_site_intake_bundle";
-    domain: string;
-    periods?: IntakePeriod[];
-    site_id: string;
-    site_name?: string | null;
-    brand_name?: string | null;
-    juice_pages: IntakeTable;
-    data_max_date?: string | null;
-    data_min_date?: string | null;
-    cannibalization: IntakeTable;
-    current_brand_aliases?: string[];
-  };
+  intake_bundle: unknown;
   /**
    * Pages competing with each other for the same query, as the compressed intake table.
    */
@@ -51892,7 +49465,7 @@ export interface SeoWebAnalyticsReadResult {
  *  * Kind `serial_observation_timeline` (registry v5).
  */
 export interface SerialObservationTimeline {
-  steps?: TimelineStep_SerialObservationTimeline[];
+  steps?: TimelineStep[];
   title?: string;
   /**
    * The registered kind this payload is an instance of.
@@ -51900,8 +49473,8 @@ export interface SerialObservationTimeline {
   __kind?: "serial_observation_timeline";
   domain?: string;
   sealed?: boolean;
-  opening?: TimelineOpening_SerialObservationTimeline | null;
-  resolution?: TimelineResolution_SerialObservationTimeline | null;
+  opening?: TimelineOpening | null;
+  resolution?: TimelineResolution | null;
 }
 
 /**
@@ -52344,6 +49917,19 @@ export interface SocialPostBreakdownOffer {
 }
 
 /**
+ * Social accounts that match a keyword, one flat row each.
+ *  *
+ *  * Kind `social_data_accounts` (registry v1).
+ */
+export interface SocialDataAccounts {
+  items?: AccountItem[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_data_accounts";
+}
+
+/**
  * One page of ads from an ad library.
  *  *
  *  * Kind `social_data_ads` (registry v2).
@@ -52361,7 +49947,7 @@ export interface SocialDataAds {
 /**
  * One page of comments on a post.
  *  *
- *  * Kind `social_data_comments` (registry v2).
+ *  * Kind `social_data_comments` (registry v3).
  */
 export interface SocialDataComments {
   items?: CommentItem[];
@@ -52376,7 +49962,7 @@ export interface SocialDataComments {
 /**
  * One post as a source read it.
  *  *
- *  * Kind `social_data_post` (registry v1).
+ *  * Kind `social_data_post` (registry v2).
  */
 export interface SocialDataPost {
   url?: string | null;
@@ -52399,7 +49985,7 @@ export interface SocialDataPost {
   caption?: string | null;
   metrics?: Metrics;
   hashtags?: string[];
-  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch" | "xiaohongshu" | "douyin";
   posted_at?: string | null;
   duration_seconds?: number | null;
   platform_post_id: string;
@@ -52408,7 +49994,7 @@ export interface SocialDataPost {
 /**
  * One page of posts (an account's posts, a search, trending).
  *  *
- *  * Kind `social_data_posts` (registry v2).
+ *  * Kind `social_data_posts` (registry v3).
  */
 export interface SocialDataPosts {
   items?: Post[];
@@ -52423,7 +50009,7 @@ export interface SocialDataPosts {
 /**
  * One social account as a source read it.
  *  *
- *  * Kind `social_data_profile` (registry v1).
+ *  * Kind `social_data_profile` (registry v2).
  */
 export interface SocialDataProfile {
   bio?: string | null;
@@ -52440,7 +50026,7 @@ export interface SocialDataProfile {
     [key: string]: JsonValue | string | undefined;
   };
   handle?: string | null;
-  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch" | "xiaohongshu" | "douyin";
   verified?: boolean | null;
   followers?: number | null;
   following?: number | null;
@@ -52454,7 +50040,7 @@ export interface SocialDataProfile {
 /**
  * What is said in one video.
  *  *
- *  * Kind `social_data_transcript` (registry v1).
+ *  * Kind `social_data_transcript` (registry v2).
  */
 export interface SocialDataTranscript {
   text?: string | null;
@@ -52463,7 +50049,7 @@ export interface SocialDataTranscript {
    */
   __kind?: "social_data_transcript";
   language?: string | null;
-  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
+  platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch" | "xiaohongshu" | "douyin";
   segments?: Segment[];
   platform_post_id?: string | null;
 }
@@ -62632,6 +60218,7 @@ export type GeneratedKindSlug =
   | "json_path_result"
   | "keyword_classification_batch_v1"
   | "keyword_data"
+  | "keyword_gap"
   | "keyword_list"
   | "keyword_relationship_list"
   | "keyword_relationship_map"
@@ -63098,6 +60685,7 @@ export type GeneratedKindSlug =
   | "rag_synthesize_result"
   | "rag_upsert_result"
   | "random_string_result"
+  | "ranked_keywords"
   | "rating"
   | "reading_list_book"
   | "real_estate_listing_copy"
@@ -63190,6 +60778,8 @@ export type GeneratedKindSlug =
   | "sealed_case_answer"
   | "sealed_case_commit_status"
   | "sealed_case_tool_result"
+  | "search_ads_overview"
+  | "search_competitors"
   | "search_response"
   | "search_result_block"
   | "search_result_list"
@@ -63335,6 +60925,7 @@ export type GeneratedKindSlug =
   | "skill_tool_result"
   | "slug_result"
   | "social.post_breakdown.offer"
+  | "social_data_accounts"
   | "social_data_ads"
   | "social_data_comments"
   | "social_data_post"
@@ -64227,6 +61818,7 @@ export interface KindPayloadBySlug {
   "json_path_result": JsonPathResult;
   "keyword_classification_batch_v1": KeywordClassificationBatchV1;
   "keyword_data": KeywordData;
+  "keyword_gap": KeywordGap;
   "keyword_list": KeywordList;
   "keyword_relationship_list": KeywordRelationshipList;
   "keyword_relationship_map": KeywordRelationshipMap;
@@ -64693,6 +62285,7 @@ export interface KindPayloadBySlug {
   "rag_synthesize_result": RagSynthesizeResult;
   "rag_upsert_result": RagUpsertResult;
   "random_string_result": RandomStringResult;
+  "ranked_keywords": RankedKeywords;
   "rating": Rating;
   "reading_list_book": ReadingListBook;
   "real_estate_listing_copy": RealEstateListingCopy;
@@ -64785,6 +62378,8 @@ export interface KindPayloadBySlug {
   "sealed_case_answer": SealedCaseAnswer;
   "sealed_case_commit_status": SealedCaseCommitStatus;
   "sealed_case_tool_result": SealedCaseToolResult;
+  "search_ads_overview": SearchAdsOverview;
+  "search_competitors": SearchCompetitors;
   "search_response": SearchResponse;
   "search_result_block": SearchResultBlock;
   "search_result_list": SearchResultList;
@@ -64930,6 +62525,7 @@ export interface KindPayloadBySlug {
   "skill_tool_result": SkillToolResult;
   "slug_result": SlugResult;
   "social.post_breakdown.offer": SocialPostBreakdownOffer;
+  "social_data_accounts": SocialDataAccounts;
   "social_data_ads": SocialDataAds;
   "social_data_comments": SocialDataComments;
   "social_data_post": SocialDataPost;
@@ -65826,6 +63422,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "json_path_result",
   "keyword_classification_batch_v1",
   "keyword_data",
+  "keyword_gap",
   "keyword_list",
   "keyword_relationship_list",
   "keyword_relationship_map",
@@ -66292,6 +63889,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "rag_synthesize_result",
   "rag_upsert_result",
   "random_string_result",
+  "ranked_keywords",
   "rating",
   "reading_list_book",
   "real_estate_listing_copy",
@@ -66384,6 +63982,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "sealed_case_answer",
   "sealed_case_commit_status",
   "sealed_case_tool_result",
+  "search_ads_overview",
+  "search_competitors",
   "search_response",
   "search_result_block",
   "search_result_list",
@@ -66529,6 +64129,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "skill_tool_result",
   "slug_result",
   "social.post_breakdown.offer",
+  "social_data_accounts",
   "social_data_ads",
   "social_data_comments",
   "social_data_post",
