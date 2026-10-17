@@ -15,6 +15,9 @@ import { CAPTION_PRESETS, CAPTION_PRESET_IDS, loadVideoFonts, programInputFromCo
 import { VideoPlayer } from "@ai-matrx/media/video/react";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { downloadUrl } from "@ai-matrx/kit/download";
+import { useMediaClient } from "@ai-matrx/media/core";
+
+import { toast } from "@/lib/toast";
 
 import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -265,26 +268,29 @@ export function CompositionPreview({ doc, className }: { doc: Composition; class
 // ── outputs ─────────────────────────────────────────────────────────────────────────────────────────
 
 export function OutputDownload({ fileId, label }: { fileId: string; label: string }) {
+  const client = useMediaClient();
   const { facts } = useFileUrls([fileId]);
   const f = facts[fileId];
   const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true);
+    try {
+      // The bytes come through the media door as a blob so the file saves under its name (a cross-origin link
+      // would only open in a tab).
+      const handle = await client.getBlob({ file_id: fileId, mime_type: "video/mp4" });
+      downloadUrl(handle.url, f?.name ?? `${label}.mp4`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't download the video");
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <div className="flex min-w-0 items-center gap-2">
       <Badge tone="success">mp4</Badge>
       <span className="type-label truncate text-foreground">{label}</span>
-      <Button
-        variant="outline"
-        icon={<Download />}
-        className="ml-auto"
-        disabled={!f?.url || busy}
-        onClick={() => {
-          if (!f?.url) return;
-          setBusy(true);
-          downloadUrl(f.url, f.name ?? `${label}.mp4`, { newTab: true });
-          setBusy(false);
-        }}
-      >
-        Download
+      <Button variant="outline" icon={<Download />} className="ml-auto" disabled={busy} onClick={() => void save()}>
+        {busy ? "Downloading…" : "Download"}
       </Button>
     </div>
   );
