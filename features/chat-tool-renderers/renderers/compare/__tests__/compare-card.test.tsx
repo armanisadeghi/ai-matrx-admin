@@ -1,0 +1,129 @@
+/**
+ * The `compare` chat card: the agent only finds and quotes, so a paid run starts ONLY from the
+ * person's Confirm click; a reload follows the reserved run id; the finished card is compact.
+ */
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+const followRun = jest.fn();
+const startChatComparison = jest.fn();
+
+jest.mock("@/features/comparison/server", () => ({ followRun: (...a: unknown[]) => followRun(...a) }));
+jest.mock("@/features/comparison/chat", () => ({ startChatComparison: (...a: unknown[]) => startChatComparison(...a) }));
+jest.mock("@/components/cost/useCostDisplay", () => ({ useSeesDollars: () => false }));
+jest.mock("@/features/organizations/useOrganizationRequired", () => ({
+  useOrganizationRequired: () => ({ organizationId: "org-1" }),
+}));
+
+import { ComparisonRefusal, type ComparisonResult } from "@/features/comparison/contract";
+import { CompareInline } from "../CompareInline";
+import { parseCompare } from "../parseCompare";
+
+const REQUEST = { kind: "companies_reviews", items: [{ label: "Acme" }, { label: "Globex" }] };
+const awaiting = {
+  status: "awaiting_confirmation", kind: "companies_reviews", run_id: "11111111-1111-1111-1111-111111111111",
+  request: REQUEST, lookup_points: 14,
+  quote: { kind: "companies_reviews", kind_label: "Companies", item_count: 2, records_per_item: 10, total_records: 20,
+    points_per_record: 3, total_points: 60 },
+  found: [
+    { typed: "acme", status: "found", name: "Acme", detail: "acme.com", website: "acme.com", rating: 4.2 },
+    { typed: "globex", status: "found", name: "Globex", detail: "globex.com", website: "globex.com", rating: 3.1 },
+  ],
+  message: "Found 2 of 2.",
+};
+const entry = (result: unknown) => ({ callId: "c1", toolName: "compare", status: "completed", arguments: {}, result, events: [] }) as never;
+
+function value(display: string, best: boolean) { return { value: Number.parseFloat(display), display, is_best: best, basis: "" }; }
+const RESULT: ComparisonResult = {
+  kind: "companies_reviews", kind_label: "Companies", status: "live", primary_field: "rating", notices: [],
+  fields: [{ key: "rating", label: "Overall rating", type: "rating", direction: "higher_better", is_primary: true, help: "" }],
+  items: [
+    { item_id: "a", name: "Acme", rank: 1, website: "acme.com", logo_url: null, values: { rating: value("4.2", true) } },
+    { item_id: "g", name: "Globex", rank: 2, website: "globex.com", logo_url: null, values: { rating: value("3.1", false) } },
+  ] as never,
+  total_records_billed: 20, total_cost_usd: 0.01, total_cost_display: "$0.01", total_points: 60, generated_at: null,
+};
+
+async function mount(result: unknown) {
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  const root = createRoot(host);
+  await act(async () => {
+    root.render(<CompareInline entry={entry(result)} expanded onToggleExpanded={() => {}} {...({} as object)} />);
+  });
+  return host;
+}
+const confirmButton = (h: HTMLElement) => h.querySelector<HTMLButtonElement>("[data-compare-confirm-button]");
+
+beforeEach(() => { followRun.mockReset(); startChatComparison.mockReset(); });
+
+describe("parseCompare", () => {
+  it("reads the quote, found list, reserved run id and the exact request", () => {
+    const d = parseCompare(entry(awaiting));
+    expect(d?.status).toBe("awaiting_confirmation");
+    expect(d?.runId).toBe(awaiting.run_id);
+    expect(d?.quote?.total_points).toBe(60);
+    expect(d?.found.map((f) => f.name)).toEqual(["Acme", "Globex"]);
+    expect(d?.request).toEqual(REQUEST);
+  });
+  it("is null while the call has no result", () => {
+    expect(parseCompare(entry(null))).toBeNull();
+  });
+});
+
+describe("no paid run before Confirm", () => {
+  it("an unconfirmed card shows Confirm with its points and starts nothing on its own", async () => {
+    followRun.mockRejectedValue(new ComparisonRefusal("not_found", "none"));
+    const host = await mount(awaiting);
+    expect(confirmButton(host)).not.toBeNull();
+    expect(host.textContent).toContain("Acme");
+    expect(host.textContent).toMatch(/60/);
+    expect(startChatComparison).not.toHaveBeenCalled();
+  });
+
+  it("the click starts exactly the quoted request under the reserved id, then follows it", async () => {
+    followRun.mockRejectedValueOnce(new ComparisonRefusal("not_found", "none")).mockReturnValue(new Promise(() => {}));
+    startChatComparison.mockResolvedValue(undefined);
+    const host = await mount(awaiting);
+    await act(async () => { confirmButton(host)?.click(); });
+    expect(startChatComparison).toHaveBeenCalledTimes(1);
+    expect(startChatComparison).toHaveBeenCalledWith(awaiting.run_id, REQUEST, { organizationId: "org-1" });
+    expect(followRun).toHaveBeenCalledTimes(2); // the first look, then following the started run
+    expect(host.querySelector("[data-compare-progress]")).not.toBeNull();
+    expect(confirmButton(host)).toBeNull();
+  });
+});
+
+describe("a reload", () => {
+  it("follows a run that already exists (no Confirm, no second start) and settles into the compact result", async () => {
+    followRun.mockResolvedValue(RESULT);
+    const host = await mount(awaiting);
+    expect(startChatComparison).not.toHaveBeenCalled();
+    expect(confirmButton(host)).toBeNull();
+    const result = host.querySelector("[data-compare-result]");
+    expect(result?.textContent).toContain("Acme");
+    expect(result?.textContent).toContain("4.2");
+    const open = host.querySelector<HTMLAnchorElement>("[data-compare-open]");
+    expect(open?.getAttribute("href")).toBe(`/compare?run=${awaiting.run_id}`);
+    expect(open?.getAttribute("target")).toBe("_blank");
+  });
+
+  it("a failed run says why, in the server's words", async () => {
+    followRun.mockRejectedValue(new ComparisonRefusal("usage_limit", "Your points are used up."));
+    const host = await mount(awaiting);
+    expect(host.textContent).toContain("Your points are used up.");
+    expect(confirmButton(host)).toBeNull();
+  });
+});
+
+describe("results that are not a confirmable quote", () => {
+  it("needs_clarification shows the note and never a Confirm or a run lookup", async () => {
+    const host = await mount({ status: "needs_clarification", found: [
+      { typed: "zzz", status: "not_found", message: "We could not find zzz." }], message: "Ask the person to clarify." });
+    expect(confirmButton(host)).toBeNull();
+    expect(host.textContent).toContain("We could not find zzz.");
+    expect(followRun).not.toHaveBeenCalled();
+  });
+});
