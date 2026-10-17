@@ -2,15 +2,12 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { Button, Chip } from "@ai-matrx/design-system/controls";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { HelpCircle, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
-import {
-  rootKindSlug,
-  valueCarriesKind,
-} from "@/features/content-ir/surfaces/json-kind-signal";
-import { useReportKindAtRawRenderer } from "@/features/content-ir/surfaces/report-kind-at-raw-renderer";
+import { valueCarriesKind } from "@/features/content-ir/surfaces/json-kind-signal";
 
 export interface UnknownDataEventBlockProps {
   dataType: string;
@@ -18,6 +15,13 @@ export interface UnknownDataEventBlockProps {
   /** Provenance for the "Copy for AI" payload — threaded by BlockRenderer. */
   conversationId?: string;
   messageId?: string;
+}
+
+/** The stream layer's own `_dataType` tag is plumbing, never part of the value. */
+function withoutEnvelopeTag(data: Record<string, unknown>): Record<string, unknown> {
+  const { _dataType: _tag, ...rest } = data;
+  void _tag;
+  return rest;
 }
 
 /**
@@ -40,15 +44,23 @@ const UnknownDataEventBlock: React.FC<UnknownDataEventBlockProps> = ({
   const [aiCopied, setAiCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const pretty = JSON.stringify(data, null, 2);
-  // A payload carrying `__kind` is a kind whatever its event type: it renders
-  // through the one value door, never as this card's JSON dump (Arman,
-  // 2026-09-30). The unregistered event type is still filed for the team.
+  // A payload carrying `__kind` (at its root or inside) is a kind whatever its
+  // event type: it renders through the one value door and that is the CORRECT
+  // outcome, not a defect — nothing is filed (2026-10-17: a red "the caller
+  // should render this through AnswerValueView" blamed a caller that does not
+  // exist; this block IS the door for a stream data event). Only a payload with
+  // no kind in it and no registered screen is a real gap, so only that is filed.
   const kindPayload = valueCarriesKind(data);
-  useReportKindAtRawRenderer(
-    "UnknownDataEventBlock",
-    kindPayload ? (rootKindSlug(data) ?? dataType) : null,
-    kindPayload,
-  );
+  useEffect(() => {
+    if (kindPayload) return;
+    captureError({
+      source: "content-ir",
+      relation: dataType,
+      message: `The server sent a "${dataType}" event that no screen handles.`,
+      hint: `Register a screen for the "${dataType}" data event type, or have the server send it as a kind value. Find the emitter with a search for "${dataType}" in aidream.`,
+      recoverable: true,
+    });
+  }, [kindPayload, dataType]);
 
   const handleCopy = async () => {
     if (!(await copyText(pretty))) return;
@@ -80,7 +92,7 @@ const UnknownDataEventBlock: React.FC<UnknownDataEventBlockProps> = ({
   if (kindPayload) {
     return (
       <div className="my-2 min-w-0">
-        <KindValueFrontDoor value={data} />
+        <KindValueFrontDoor value={withoutEnvelopeTag(data)} />
       </div>
     );
   }

@@ -61,11 +61,38 @@ describe("UnknownDataEventBlock", () => {
     expect(container.querySelector('[data-kind-route="flashcard_set"]')).not.toBeNull();
     expect(container.querySelector("pre")).toBeNull();
     expect(container.textContent).not.toContain("__kind");
-    expect(
-      mockCaptureError.mock.calls.some(([i]) =>
-        (i as { message: string }).message.startsWith("UnknownDataEventBlock"),
+    // Rendering a kind is the right outcome: no red report, no "caller" blame.
+    expect(mockCaptureError).not.toHaveBeenCalled();
+  });
+
+  it("draws a nested-kind event envelope as its kind with no report", async () => {
+    await act(async () =>
+      root.render(
+        <UnknownDataEventBlock
+          dataType="youtube_analysis_complete"
+          data={{
+            _dataType: "youtube_analysis_complete",
+            video_id: "jwQYWxC0tUU",
+            video: { __kind: "flashcard_set", title: "Cells", cards: [] },
+          }}
+        />,
       ),
-    ).toBe(true);
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(container.querySelector("pre")).toBeNull();
+    expect(mockCaptureError).not.toHaveBeenCalled();
+  });
+
+  it("files a plain-words report for a truly unhandled, kindless event", () => {
+    act(() =>
+      root.render(<UnknownDataEventBlock dataType="mystery" data={{ name: "Ada" }} />),
+    );
+    expect(mockCaptureError).toHaveBeenCalledTimes(1);
+    const input = mockCaptureError.mock.calls[0][0] as { message: string };
+    expect(input.message).toBe('The server sent a "mystery" event that no screen handles.');
+    expect(input.message).not.toMatch(/caller/i);
   });
 
   it("keeps the catch-all card for a kindless payload", () => {
