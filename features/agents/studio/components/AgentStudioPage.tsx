@@ -72,7 +72,7 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { studioMode } from "../modes";
-import { planImprove } from "../improve";
+import { planImprove, runToSave } from "../improve";
 import {
   CAPTURE_QUESTION,
   CHAT_CASE_SOURCE,
@@ -157,6 +157,12 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [rerunSeed, setRerunSeed] = useState<{ variables: Record<string, string>; userInput: string } | null>(null);
   const [phase, setPhase] = useState<MakePhase>({ kind: "idle" });
   const [paneTab, setPaneTab] = useState<"assistant" | "agent" | "controls">("assistant");
+  /** The assistant's open conversation, kept out of the URL until the person sends something. */
+  const [openChat, setOpenChat] = useState<string | null>(null);
+  const openChatSent = useAppSelector((s) => (openChat ? selectOrderedMessageIds(openChat)(s).length > 0 : false));
+  useEffect(() => {
+    if (openChat && openChatSent && openChat !== state.chatId) go({ chatId: openChat });
+  }, [openChat, openChatSent, state.chatId, go]);
   const hasAnswer = useAppSelector((s) => (state.chatId ? selectLatestAnswerText(state.chatId)(s).trim().length > 0 : false));
   const agentName = useAppSelector((s) => (state.agentId ? selectAgentById(s, state.agentId)?.name : undefined));
 
@@ -190,9 +196,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   /** Bumped when the agent's test cases change, so the Cases list re-reads them. */
   const [casesVersion, setCasesVersion] = useState(0);
 
-  // Mode "Improve": the agent's recent real runs become its test cases (once per agent), and the
-  // latest opens in the center. The center waits until that run is in the URL (or the agent has
-  // none), so it never starts a fresh run on top of the one it is about to open.
+  // Mode "Improve": the latest real run opens in the center (read only; nothing is saved on open).
+  // A run becomes a test case only when the person presses "Save as test case" on it. The center
+  // waits until that run is in the URL (or the agent has none), so it never starts a fresh run on
+  // top of the one it is about to open.
   const [improveSettled, setImproveSettled] = useState(false);
   const improveReady = mode.id !== "improve" || Boolean(state.runId) || improveSettled;
   const plannedFor = useRef<string | null>(null);
@@ -202,22 +209,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     plannedFor.current = agentId;
     void (async () => {
       try {
-        const [runs, samples] = await Promise.all([fetchCandidateRuns(agentId, { limit: 15 }), fetchAgentSamples(agentId)]);
-        const already = new Set(samples.map((s) => s.source_conversation_id).filter((id): id is string => Boolean(id)));
-        const plan = planImprove(runs, already);
-        let saved = 0;
-        for (const run of plan.borrow) {
-          try {
-            await borrowSampleFromRun({ agentId, run });
-            saved += 1;
-          } catch (e) {
-            toast.error("A run did not become a test case", { description: e instanceof Error ? e.message : String(e) });
-          }
-        }
-        if (saved > 0) {
-          toast.success(saved === 1 ? "Its latest run is now a test case" : `Its ${saved} latest runs are now test cases`);
-          setCasesVersion((v) => v + 1);
-        }
+        const runs = await fetchCandidateRuns(agentId, { limit: 15 });
+        const plan = planImprove(runs);
         if (plan.latest && !state.runId) go({ runId: plan.latest.conversationId });
         else setImproveSettled(true);
       } catch (e) {
@@ -226,6 +219,36 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       }
     })();
   }, [mode.id, state.agentId, state.runId, go]);
+
+  /** "Save as test case" on the run on screen (Improve mode). */
+  const [savingCase, setSavingCase] = useState(false);
+  const [savedRuns, setSavedRuns] = useState<ReadonlySet<string>>(new Set());
+  const shownRun = runConversation ?? state.runId;
+  const saveRunAsCase = async () => {
+    const agentId = state.agentId;
+    if (!agentId || !shownRun) return;
+    setSavingCase(true);
+    try {
+      const [runs, samples] = await Promise.all([fetchCandidateRuns(agentId, { limit: 25 }), fetchAgentSamples(agentId)]);
+      const already = new Set(samples.map((x) => x.source_conversation_id).filter((id): id is string => Boolean(id)));
+      const target = runToSave(runs, shownRun, new Set([...already, ...savedRuns]));
+      if (target === "already") {
+        setSavedRuns((prev) => new Set(prev).add(shownRun));
+        toast.info("This run is already a test case");
+      } else if (!target) {
+        toast.error("This run is not saved yet", { description: "Send it first, then save it as a test case" });
+      } else {
+        await borrowSampleFromRun({ agentId, run: target });
+        setSavedRuns((prev) => new Set(prev).add(shownRun));
+        setCasesVersion((v) => v + 1);
+        toast.success("Saved as a test case");
+      }
+    } catch (e) {
+      toast.error("It did not become a test case", { description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setSavingCase(false);
+    }
+  };
 
   // (c) The approved answer becomes the agent's first test case, once ("From examples": every
   // example becomes one, with the input it was made from when the person gave it).
@@ -423,7 +446,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       surfaceKey={ASSISTANT_SURFACE}
       context={DOER_CONTEXT}
       onConversation={(id) => {
-        if (id !== state.chatId) go({ chatId: id });
+        // Opening the Studio creates nothing: the chat goes into the URL on the first send.
+        if (id !== state.chatId) setOpenChat(id);
       }}
     />
   );
@@ -534,6 +558,16 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
             onClick={() => void makeThisAnAgent()}
           >
             Make this an agent
+          </Button>
+        )}
+        {mode.id === "improve" && state.agentId && shownRun && (
+          <Button
+            variant="outline"
+            data-testid="studio-save-case"
+            disabled={savingCase || savedRuns.has(shownRun)}
+            onClick={() => void saveRunAsCase()}
+          >
+            {savedRuns.has(shownRun) ? "Saved as test case" : "Save as test case"}
           </Button>
         )}
         {state.agentId && (

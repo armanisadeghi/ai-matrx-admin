@@ -14,7 +14,7 @@ import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
-import { parsePlannerAnswer, stepBadge, studioHrefForStep } from "./parse-plan";
+import { parsePlannerAnswer, planText, stepBadge, studioHrefForStep } from "./parse-plan";
 import { runPlanner } from "./planner";
 import { listMyPlans, loadPlan, saveNewPlan, savePlanChanges, type SavedPlanSummary } from "./plan-store";
 import type { SystemPlan, SystemPlanStep } from "./types";
@@ -231,7 +231,7 @@ export default function SystemBuilderPage() {
               <details className="rounded-lg border border-border bg-card p-3" open={plan.steps.length === 0}>
                 <summary className="cursor-pointer type-secondary text-muted-foreground">The Architect&apos;s full answer</summary>
                 <div className="mt-2" data-message-content>
-                  <MarkdownStream content={plan.answer} hideCopyButton allowFullScreenEditor={false} />
+                  <MarkdownStream content={planText(plan.answer)} hideCopyButton allowFullScreenEditor={false} />
                 </div>
               </details>
             </div>

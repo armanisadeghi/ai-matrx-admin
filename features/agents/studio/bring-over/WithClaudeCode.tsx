@@ -95,7 +95,7 @@ function DraftReview({ draftId }: { draftId: string }) {
     <BringOverFrame title="What Claude Code sent" testId="claude-code-draft">
       <p className="text-sm text-muted-foreground">Nothing is built yet. Check it, then build.</p>
       <section className="space-y-1">
-        <h2 className="text-sm font-medium">The job</h2>
+        <p className="text-xs font-medium text-muted-foreground">The job</p>
         <p className="whitespace-pre-wrap text-sm">{draft.task}</p>
       </section>
       <ul className="list-disc space-y-1 pl-5 text-sm">

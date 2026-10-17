@@ -79,7 +79,7 @@ export function StudioControls({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {!agentId ? (
-          <StudioControlsPreview />
+          <StudioControlsPreview tab={tab} />
         ) : tab === "settings" ? (
           <SettingsTab agentId={agentId} onFeedback={onFeedback} onSaved={onSaved} />
         ) : tab === "cases" ? (

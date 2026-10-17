@@ -66,27 +66,24 @@ export function StudioPath({ mode, current }: { mode: "describe" | "do-with-me";
   );
 }
 
-const CONTROLS: Step[] = [
-  { icon: Settings2, title: "Settings", line: "Name, goal, model — each save is a new version" },
-  { icon: GitBranch, title: "Versions", line: "Every version kept; open any of them" },
-  { icon: Swords, title: "Battle", line: "Compare models on this agent, blind" },
-  { icon: Lightbulb, title: "Debrief", line: "A top model reviews the run as its own" },
-  { icon: FlaskConical, title: "Test cases", line: "Your approved result becomes the first" },
-];
+const CONTROLS: Record<string, Step> = {
+  settings: { icon: Settings2, title: "Settings", line: "Name, goal, model. Each save is a new version" },
+  cases: { icon: FlaskConical, title: "Test cases", line: "Your approved result becomes the first" },
+  versions: { icon: GitBranch, title: "Versions", line: "Every version kept; open any of them" },
+  battle: { icon: Swords, title: "Battle", line: "Compare models on this agent, blind" },
+  debrief: { icon: Lightbulb, title: "Debrief", line: "A top model reviews the run as its own" },
+};
 
-/** RIGHT pane before the agent exists: what each control will do. */
-export function StudioControlsPreview() {
+/** RIGHT pane before the agent exists: what the selected tab will do. The tab row above is the only list. */
+export function StudioControlsPreview({ tab = "settings" }: { tab?: string }) {
+  const { icon: Icon, title, line } = CONTROLS[tab] ?? CONTROLS.settings;
   return (
-    <ul className="flex flex-col gap-0.5 p-1" data-testid="studio-controls-preview">
-      {CONTROLS.map(({ icon: Icon, title, line }) => (
-        <li key={title} className="flex items-start gap-2.5 rounded-md px-2 py-2">
-          <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="min-w-0">
-            <span className="block text-sm text-foreground">{title}</span>
-            <span className="block text-xs text-muted-foreground">{line}</span>
-          </span>
-        </li>
-      ))}
-    </ul>
+    <div className="flex items-start gap-2.5 px-2 py-2" data-testid="studio-controls-preview">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="min-w-0">
+        <span className="block text-sm text-foreground">{title} comes with the agent</span>
+        <span className="block text-xs text-muted-foreground">{line}</span>
+      </span>
+    </div>
   );
 }

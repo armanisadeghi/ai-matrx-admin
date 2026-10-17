@@ -1,4 +1,4 @@
-import { canEditAgent, planImprove } from "../improve";
+import { canEditAgent, planImprove, runToSave } from "../improve";
 import type { CandidateRun } from "@/features/agents/samples/service";
 
 const run = (id: string, sourceFeature: string | null, userInput: string | null = "Summarize the Q3 board deck"): CandidateRun => ({
@@ -13,17 +13,25 @@ const run = (id: string, sourceFeature: string | null, userInput: string | null 
 });
 
 describe("Improve an agent I have", () => {
-  it("opens on the latest real run and turns recent real runs (not Studio tries) into new test cases", () => {
-    const runs = [run("s1", "agent-studio"), run("r1", "chat"), run("r2", null), run("r3", "chat", null), run("r4", "chat")];
-    const plan = planImprove(runs, new Set(["r2"]), 3);
+  it("opens on the latest real run (not a Studio try) and plans nothing to save", () => {
+    const runs = [run("s1", "agent-studio"), run("r1", "chat"), run("r2", null), run("r3", "chat", null)];
+    const plan = planImprove(runs);
     expect(plan.latest?.conversationId).toBe("r1");
-    // r3 has no input (nothing to re-run), r2 already is a case, s1 is a Studio try.
-    expect(plan.borrow.map((r) => r.conversationId)).toEqual(["r1", "r4"]);
+    // Opening a run creates nothing: the plan has no "borrow" list any more.
+    expect(Object.keys(plan)).toEqual(["latest"]);
   });
 
   it("uses Studio tries only when the agent has no other runs", () => {
-    expect(planImprove([run("s1", "agent-studio")], new Set()).latest?.conversationId).toBe("s1");
-    expect(planImprove([], new Set())).toEqual({ latest: null, borrow: [] });
+    expect(planImprove([run("s1", "agent-studio")]).latest?.conversationId).toBe("s1");
+    expect(planImprove([])).toEqual({ latest: null });
+  });
+
+  it("saves a run as a test case only for the run on screen, once", () => {
+    const runs = [run("r1", "chat"), run("r2", "chat")];
+    expect(runToSave(runs, "r2", new Set())).toMatchObject({ conversationId: "r2" });
+    expect(runToSave(runs, "r2", new Set(["r2"]))).toBe("already");
+    expect(runToSave(runs, "unsent", new Set())).toBeNull();
+    expect(runToSave(runs, null, new Set())).toBeNull();
   });
 
   it("offers only agents the person can edit", () => {

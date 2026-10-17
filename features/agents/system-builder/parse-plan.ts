@@ -142,13 +142,83 @@ export function stepBadge(step: Pick<SystemPlanStep, "doer" | "modelClass">): st
   }
 }
 
+/**
+ * Ordered lists restart at 1 inside a step. The Architect numbers the daily run 1-4 and the reply
+ * step 5, but a step shown on its own (badged 3) must not open on "5.".
+ */
+export function renumberLists(md: string): string {
+  const out: string[] = [];
+  let next = 0;
+  let inFence = false;
+  for (const line of md.split("\n")) {
+    if (/^\s*```/.test(line)) inFence = !inFence;
+    const m = inFence ? null : /^(\s{0,3})(\d+)([.)])(\s+.*)$/.exec(line);
+    if (m) {
+      next += 1;
+      out.push(`${m[1]}${next}${m[3]}${m[4]}`);
+    } else {
+      // A blank line or an indented continuation keeps the list going; any other text ends it.
+      if (line.trim() !== "" && !/^\s{2,}\S/.test(line) && !/^\s*[-*•]\s/.test(line)) next = 0;
+      out.push(line);
+    }
+  }
+  return out.join("\n");
+}
+
+/**
+ * Markdown tables to bullet lists. The shared renderer wraps every table in its own tool strip
+ * ("Turn into a table", "Window", "Data", "Save to", "Edit"), which is chrome, not plan text.
+ */
+export function tablesToLists(md: string): string {
+  const lines = md.split("\n");
+  const out: string[] = [];
+  const cells = (l: string) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+  for (let i = 0; i < lines.length; i++) {
+    const isSep = i + 1 < lines.length && /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(lines[i + 1]);
+    if (/\|/.test(lines[i]) && isSep) {
+      const head = cells(lines[i]);
+      i += 2;
+      for (; i < lines.length && /\|/.test(lines[i]) && lines[i].trim() !== ""; i++) {
+        const row = cells(lines[i]);
+        const first = row[0] ?? "";
+        const rest = row.slice(1).map((c, k) => (head[k + 1] && row.length > 2 ? `${head[k + 1]}: ${c}` : c)).filter(Boolean);
+        out.push(`- **${first}**${rest.length ? ` — ${rest.join("; ")}` : ""}`);
+      }
+      i -= 1;
+    } else {
+      out.push(lines[i]);
+    }
+  }
+  return out.join("\n");
+}
+
+/** What the plan shows as text: no table chrome, lists numbered from 1. */
+export function planText(md: string): string {
+  return renumberLists(tablesToLists(md));
+}
+
+/** Top-level numbered items of a step body ("1. **Pull the appointments** …"), by title. */
+function numberedParts(body: string): string[] {
+  const parts: string[] = [];
+  for (const line of body.split("\n")) {
+    const m = /^\s{0,3}\d+[.)]\s+(.*)$/.exec(line);
+    if (!m) continue;
+    const bold = /^\*\*(.+?)\*\*/.exec(m[1]);
+    const t = stripMd(bold ? bold[1] : m[1]).replace(/[.:]\s*$/, "");
+    if (t) parts.push(clip(t, 60));
+  }
+  return parts;
+}
+
 function stepFrom(n: number, title: string, body: string): SystemPlanStep {
   const plain = plainOf(body);
+  const parts = numberedParts(body);
   return {
     n,
     title: clip(stripMd(title), 120),
-    markdown: body.replace(/\n{3,}/g, "\n\n").trim(),
-    summary: summaryOf(plain),
+    markdown: planText(body.replace(/\n{3,}/g, "\n\n").trim()),
+    // A step with several numbered parts says them all, not just the first one's sentence.
+    summary: parts.length >= 2 ? `${parts.length} parts: ${parts.join("; ")}.` : summaryOf(plain),
     job: plain,
     doer: doerOf(`${title} ${body}`),
     modelClass: modelClassOf(`${title} ${body}`),

@@ -1,4 +1,4 @@
-import { jobForStep, parsePlannerAnswer, plainOf, stepBadge, studioHrefForStep } from "../parse-plan";
+import { jobForStep, parsePlannerAnswer, planText, plainOf, stepBadge, studioHrefForStep } from "../parse-plan";
 
 const ANSWER = `# Weekly AP Biology quiz system
 
@@ -117,5 +117,35 @@ describe("step cards are clean prose with one badge", () => {
 
   it("plainOf strips emphasis and list markers into sentences", () => {
     expect(plainOf("1. Pull the rows. *Rules, no AI.*\n- Why: it is free")).toBe("Pull the rows. Rules, no AI. Why: it is free.");
+  });
+});
+
+describe("the dental reminders answer (real Architect answer, 2026-10-17)", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const real = require("fs").readFileSync(require("path").join(__dirname, "real-planner-answer-4.fixture.md"), "utf8") as string;
+  const plan = parsePlannerAnswer(real, "dental reminders");
+
+  it("reads three steps", () => {
+    expect(plan.steps.map((s) => s.title.split(" (")[0])).toEqual(["Setup", "Daily run", "Whenever a patient replies"]);
+  });
+
+  it("numbers each step's list from 1 (the reply step is not '5.')", () => {
+    expect(plan.steps[2].markdown).toMatch(/^\s*1\.\s/m);
+    expect(plan.steps[2].markdown).not.toMatch(/^\s*5\.\s/m);
+    expect(plan.steps[1].markdown).toMatch(/^\s*4\.\s/m);
+  });
+
+  it("summarises a multi-part step by all its parts, not its first sub-step", () => {
+    const daily = plan.steps[1].summary ?? "";
+    expect(daily).toContain("4 parts");
+    for (const t of ["Pull the appointments", "Build the messages", "Flag unconfirmed patients", "Write the manager summary"]) {
+      expect(daily).toContain(t);
+    }
+  });
+
+  it("turns tables into lists so no table tool strip lands in plan text", () => {
+    const shown = planText(real);
+    expect(shown).not.toMatch(/^\s*\|/m);
+    expect(shown).toContain("- **Send time** — 10:00 local");
   });
 });
