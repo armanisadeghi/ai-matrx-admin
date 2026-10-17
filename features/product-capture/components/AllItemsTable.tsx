@@ -15,6 +15,7 @@
  * real inventory.
  */
 
+import { ALL_ITEMS_DRILL } from "./allItemsDrill";
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -447,6 +448,7 @@ export function AllItemsTable() {
       >
       <div className="flex min-h-0 flex-1 flex-col">
       <MatrxDataTable<ItemTableRow>
+        drill={ALL_ITEMS_DRILL}
         data={rows ?? []}
         columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
           <>

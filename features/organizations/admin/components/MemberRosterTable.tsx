@@ -4,6 +4,7 @@
  * The org-admin member roster — every user in the org with org-scoped metrics.
  * Search + sort + engagement signal; each row links to the member detail surface.
  */
+import { ROSTER_DRILL } from "./rosterDrill";
 import React, { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, ShieldCheck, UserCog } from "lucide-react";
@@ -348,6 +349,7 @@ export function MemberRosterTable({ orgSlug, members }: Props) {
           The table contributes non-destructive selection and selected-row
           Alchemy copy; each row keeps its richer member-specific menu. */}
       <MatrxDataTable<OrgAdminMember>
+        drill={ROSTER_DRILL}
         tableId="organizations/admin/member-roster"
         data={rows}
         columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (member) => (

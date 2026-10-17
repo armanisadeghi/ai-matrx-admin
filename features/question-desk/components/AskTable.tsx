@@ -4,6 +4,7 @@
 // can resolve several questions without leaving the table; the canonical table
 // supplies the surrounding search, filters, density, footer, and column tools.
 
+import { ASK_DRILL } from "./askDrill";
 import { useState, type ReactNode } from "react";
 import {
   MatrxDataTable,
@@ -157,6 +158,7 @@ export function AskTable({
 
   return (
     <MatrxDataTable<DecisionQuestionRow>
+      drill={ASK_DRILL}
       data={questions}
       columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (question) => {
         const line = lines[question.id];

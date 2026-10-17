@@ -1,5 +1,6 @@
 "use client";
 
+import { SHORTCUTS_DRILL } from "./shortcutsDrill";
 import { useMemo, useState } from "react";
 import {
   MatrxDataTable,
@@ -376,6 +377,7 @@ export function ShortcutList({
       <div className={`flex h-full min-h-0 flex-col ${className ?? ""}`}>
         {/* The shortcuts read's failure is said once, by the table (read=). */}
         <MatrxDataTable<AgentShortcutRecord>
+          drill={SHORTCUTS_DRILL}
           data={filteredShortcuts}
           columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (shortcut) => (
             <div

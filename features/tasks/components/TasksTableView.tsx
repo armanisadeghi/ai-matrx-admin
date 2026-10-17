@@ -1,5 +1,6 @@
 "use client";
 
+import { TASKS_DRILL } from "./tasksDrill";
 import { getStore } from "@/lib/redux/store-singleton";
 import { useTasksRead } from "@/features/tasks/hooks/useTasksRead";
 import React from "react";
@@ -459,6 +460,7 @@ export default function TasksTableView() {
   return (
     <div className="h-full min-h-0 flex flex-col">
       <MatrxDataTable<TaskWithProject>
+        drill={TASKS_DRILL}
         tableId="tasks-table"
         data={tasks}
         columns={columns}

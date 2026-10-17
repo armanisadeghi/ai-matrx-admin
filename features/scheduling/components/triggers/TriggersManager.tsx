@@ -11,6 +11,7 @@
  * The numbers are the Costs tab's own rollup; this adds creator, created time,
  * last fired, the extra flags, and the controls.
  */
+import { TRIGGERS_DRILL } from "./triggersDrill";
 import { useAutomationReadiness } from "@/features/scheduling/service/automationReadiness";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -421,6 +422,7 @@ export function TriggersManager({
       )}
       <div className="min-h-0 flex-1">
         <MatrxDataTable
+          drill={TRIGGERS_DRILL}
           data={shown}
           columns={columns}
           getRowId={(t) => t.overview.trigger_id}

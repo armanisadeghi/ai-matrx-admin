@@ -74,6 +74,26 @@ export function useRecordsNoun(
   return grainNoun(sibling.def.grain) ?? own;
 }
 
+/**
+ * THE QUESTION'S SORT AS THE RECORDS' SORT: the question sorts by a Measure ("cost"), a Dimension or a
+ * records column; the door sorts records by a records column. A Measure sorts by the column it reads
+ * (`of`), a Dimension by its own key (the door maps it to its column). A sort no records column can
+ * carry (a ratio, a count) is null: the records keep the door's newest-first order.
+ */
+export function recordsSortOf(
+  def: DrillDefinition,
+  records: Pick<DrillRecordsDeclaration, "columns">,
+  sort: MatrxDrillQuestion["sort"],
+): { key: string; direction: "asc" | "desc" } | null {
+  if (!sort?.key) return null;
+  const columns = new Set(records.columns);
+  const dim = def.dimensions.find((d) => d.key === sort.key);
+  if (dim) return columns.has((dim as { from?: string }).from ?? dim.key) || columns.has(dim.key) ? { key: sort.key, direction: sort.direction ?? "asc" } : null;
+  const measure = def.measures?.find((m) => m.key === sort.key) as { of?: string; op?: string } | undefined;
+  if (measure) return measure.op === "sum" && measure.of && columns.has(measure.of) ? { key: measure.of, direction: sort.direction ?? "desc" } : null;
+  return columns.has(sort.key) ? { key: sort.key, direction: sort.direction ?? "asc" } : null;
+}
+
 /** The first moment the platform holds any record: "All time" as the window records are listed for. */
 export const DRILL_ALL_TIME_FROM = "2020-01-01T00:00:00Z";
 
@@ -136,6 +156,7 @@ export function DrillRecords({
   const recordNames = useDrillNames(book);
   const askKey = JSON.stringify({ where: question.where, window: question.window ?? null, sort: question.sort ?? null, carried: carried?.where ?? null });
   const sourceKey = JSON.stringify(source);
+  const sortKey = JSON.stringify(recordsSortOf(def, records, question.sort));
   const columnsKey = records.columns.join(",");
 
   // A new question starts at the first page.
@@ -147,6 +168,7 @@ export function DrillRecords({
 
   useEffect(() => {
     if (!client) return;
+    const recordsSort = JSON.parse(sortKey) as { key: string; direction: "asc" | "desc" } | null;
     const asked = JSON.parse(askKey) as Pick<MatrxDrillQuestion, "where" | "window" | "sort"> & { carried: Record<string, unknown> | null };
     // RECORDS ARE LISTED FOR A WINDOW (the door requires a start): "All time" is every record there is,
     // so it is asked as the whole span from the platform's first day to now — never a refusal on screen
@@ -162,6 +184,8 @@ export function DrillRecords({
         source: JSON.parse(sourceKey) as DrillSource,
         where: { ...(asked.carried ?? {}), ...doorWhere({ by: [], show: [], where: asked.where }) },
         ...(win ? { window: win } : {}),
+        // THE QUESTION'S SORT, end to end (K1): the records come in the order the question asked, never the door's newest-first.
+        ...(recordsSort ? { sort: recordsSort } : {}),
         lane,
         columns: columnsKey.split(","),
         limit: PAGE,

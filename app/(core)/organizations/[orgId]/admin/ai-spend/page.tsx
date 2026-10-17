@@ -14,10 +14,12 @@ import { OrgAdminBoundary } from "@/features/organizations/admin/components/OrgA
 import { orgAdminHref } from "@/features/organizations/admin/routes";
 import { AgentSpendBoard } from "@/features/admin/agent-spend/AgentSpendBoard";
 import { useSpendWindow } from "@/features/admin/agent-spend/useSpendWindow";
+import { DrillOrList } from "@/components/official/drill-explorer/DrillOrList";
+import { OrganizationUsageExplorer } from "@/features/entitlements/usage-drill/MemberUsageExplorer";
 
 function Board({ orgId, orgSlug }: { orgId: string; orgSlug: string }) {
   const [days, setDays] = useSpendWindow();
-  return (
+  const board = (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col gap-2 p-4 md:p-6">
       <Link href={orgAdminHref(orgSlug)} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-3.5 w-3.5" /> User management
@@ -26,6 +28,16 @@ function Board({ orgId, orgSlug }: { orgId: string; orgSlug: string }) {
         <AgentSpendBoard orgId={orgId} seat="org" orgSlug={orgSlug} days={days} onDaysChange={setDays} />
       </div>
     </div>
+  );
+  // the organization's numbers first (the declared definition `ai_usage`, organization lane); the agent board is one control away
+  return (
+    <DrillOrList
+      definition="ai_usage"
+      listLabel="Agents and mandates"
+      organizationId={orgId}
+      list={board}
+      renderDrill={(extras) => <OrganizationUsageExplorer organizationId={orgId} headerExtras={extras} />}
+    />
   );
 }
 

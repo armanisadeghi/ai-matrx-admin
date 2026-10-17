@@ -7,6 +7,7 @@
 // per-column filters, and search. Row "Open" navigates into the parent room
 // (or mints a new room for an orphan via the existing thunk).
 
+import { THREADS_DRILL } from "./threadsDrill";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createSelector } from "@reduxjs/toolkit";
@@ -290,6 +291,7 @@ export function WarRoomThreadsTable({
       {/* `asChild` needs a real DOM element to hang the handler on. */}
       <div className="flex h-full min-h-0 flex-col">
         <MatrxDataTable<ThreadTableRow>
+          drill={THREADS_DRILL}
           urlState={{ id: "war-room-threads" }}
           data={rows}
           columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => <OpenThreadAction row={row} /> }]}

@@ -22,7 +22,8 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, Hammer, Loader2, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Hammer, Plus } from "lucide-react";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { AgentListDropdown, useAgentListCore } from "@ai-matrx/agents/catalog/react";
 import { Button, RegionSkeleton, Tile } from "@ai-matrx/design-system/controls";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -174,7 +175,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
               variant="outline"
               // An in-place way in is a toggle (only the open one is pressed). One that opens another
               // page is not a toggle: a quiet chevron says "goes somewhere", a spinner while it goes.
-              iconEnd={inPlace ? undefined : pending ? <Loader2 className="animate-spin" /> : <ChevronRight />}
+              iconEnd={inPlace ? undefined : pending ? <Spinner size="xs" label="Opening" /> : <ChevronRight />}
               pressed={inPlace && open === mode.id}
               aria-pressed={inPlace ? open === mode.id : undefined}
               aria-busy={pending || undefined}
@@ -190,7 +191,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              iconEnd={importing ? <Loader2 className="animate-spin" /> : <ChevronDown />}
+              iconEnd={importing ? <Spinner size="xs" label="Opening" /> : <ChevronDown />}
               aria-busy={importing || undefined}
               className="col-span-2 @xl:col-span-1"
               data-testid="studio-mode-import"
@@ -199,11 +200,13 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
               Import
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="w-72">
+          <DropdownMenuContent align="center">
             {importModes.map((mode) => (
-              <DropdownMenuItem key={mode.id} onSelect={() => pick(mode)} data-testid={`studio-mode-${mode.id}`} className="flex-col items-start gap-0.5">
-                <span className="text-foreground">{mode.label}</span>
-                <span className="type-meta text-muted-foreground">{mode.line}</span>
+              <DropdownMenuItem key={mode.id} onSelect={() => pick(mode)} data-testid={`studio-mode-${mode.id}`}>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-foreground">{mode.label}</span>
+                  <span className="type-meta text-muted-foreground">{mode.line}</span>
+                </div>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

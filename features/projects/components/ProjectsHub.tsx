@@ -11,6 +11,7 @@
  * all projects' counts/preview (no per-card round-trips).
  */
 
+import { PROJECTS_DRILL } from "./projectsDrill";
 import { isRecordsErr } from "@ai-matrx/records";
 import React from "react";
 import Link from "next/link";
@@ -1147,6 +1148,7 @@ function ProjectsTable({
 
   return (
     <MatrxDataTable<ProjectWithRole>
+      drill={PROJECTS_DRILL}
       tableId="projects-hub"
       data={projects}
       columns={columns}

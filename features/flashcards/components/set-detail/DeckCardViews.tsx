@@ -13,6 +13,7 @@
 
 "use client";
 
+import { DECK_CARDS_DRILL } from "./deckCardsDrill";
 import { useState } from "react";
 import {
   LayoutGrid,
@@ -374,6 +375,7 @@ export function DeckCardTable({
 
   return (
     <MatrxDataTable<DeckCardEntry>
+      drill={DECK_CARDS_DRILL}
       tableId="flashcards-deck-cards"
       data={items}
       columns={columns}

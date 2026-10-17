@@ -1,5 +1,6 @@
 "use client";
 
+import { SURFACES_DRILL } from "./surfacesDrill";
 import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -420,6 +421,7 @@ export function SurfacesTable({
 
   return (
     <MatrxDataTable<SurfaceWithStats>
+      drill={SURFACES_DRILL}
       data={rows}
       columns={[...(surfaceColumns(
         navigatingName,

@@ -7,6 +7,7 @@
 // (an org runs dozens, not thousands), so the table runs in local mode —
 // sort/filter over the loaded set.
 
+import { OUTREACH_LISTS_DRILL } from "./outreachListsDrill";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState } from "react";
@@ -425,6 +426,7 @@ export function OutreachListsPage() {
                   />
                 ) : (
                 <MatrxDataTable<OutreachListWithCount>
+                  drill={OUTREACH_LISTS_DRILL}
                   data={rows}
                   columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
                     <ItemMenu config={menuFor(row)} align="end">

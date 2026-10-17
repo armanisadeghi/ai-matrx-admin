@@ -11,7 +11,7 @@
 
 "use client";
 
-import { Building2, Gauge, UserRound } from "lucide-react";
+import { BarChart3, Building2, Gauge, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
@@ -23,6 +23,7 @@ import { RedeemCodeField } from "@/features/entitlements/coupons/RedeemCodeField
 import { BillingSummary } from "@/features/entitlements/components/BillingSummary";
 import { MyCostSoFar } from "@/features/entitlements/usage-history/MyCostSoFar";
 import { UsageHistory } from "@/features/entitlements/usage-history/UsageHistory";
+import { MyUsageExplorer } from "@/features/entitlements/usage-drill/MemberUsageExplorer";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -50,6 +51,10 @@ export function PlanUsageTab() {
       <MyUsageCard />
       <MyCostSoFar />
       <UsageHistory />
+      <SettingsSubHeader title="My usage" icon={BarChart3} />
+      <div className="h-[80vh] min-h-[560px] overflow-hidden rounded-md border border-border bg-card" data-my-usage-drill="">
+        <MyUsageExplorer />
+      </div>
       {/* Free-time coupons for this account (rule 18): POST /api/billing/coupons/redeem. */}
       <RedeemCodeField />
       <SettingsSubHeader
