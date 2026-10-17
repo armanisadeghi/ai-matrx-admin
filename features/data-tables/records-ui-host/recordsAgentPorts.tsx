@@ -19,7 +19,7 @@
 
 import { useState, type ReactNode } from "react";
 import { MessageCircleQuestion } from "lucide-react";
-import { type FormulaHelpAsk, type RecordsUiHost, type TableSettingsAgent } from "@ai-matrx/records-ui";
+import type { FormulaHelpAsk, RecordsUiHost, TableSettingsAgent } from "@ai-matrx/records-ui";
 import { FORMULA_FUNCTIONS } from "@ai-matrx/kit/formula";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { Button, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";

@@ -43,6 +43,15 @@ mode (`?ai_test_mode=stand_in` on the app URL, or header `X-Matrx-AI-Test-Mode: 
 AI steps answer from saved baselines and cost nothing. Never for an `intelligence` test, and you still
 owe one `real` run before calling an AI-backed flow done. [ai-test-mode](/policies/ai-test-mode.md).
 
+## 2b. Never test through General Chat
+
+Arman, 2026-10-17: "General chat is for users who chat ... if you want a test agent, create a super
+cheap, fast simple agent." When a test needs any AI reply, run **Test Reply**
+(agent `8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f`, plumbing model, reasoning low, 300 output tokens,
+no tools, about $0.00002 a reply): `agent_run agent_id=8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f
+user_message="ok"`. The test seats' new-chat default is already Test Reply (user binding of
+`chat.default_new_chat`). General Chat stays held for agent seats.
+
 ## 3. Never a restricted model
 
 Max-tier, Fable, Astra, Mythos, and anything at or above the cost rating the answer reports

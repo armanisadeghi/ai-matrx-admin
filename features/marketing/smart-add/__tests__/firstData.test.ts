@@ -164,13 +164,18 @@ describe("the facts agent's statements and accounts reach their slots", () => {
 
 describe("the facts agent runs on what is known and again when evidence arrives (MKT-180)", () => {
   const NONE = { site: false, social: false, name: false };
-  const round = (over: Partial<{ firstData: boolean; website: boolean; accounts: boolean; name: boolean }> = {}) => ({
+  const round = (over: Partial<{ firstData: boolean; website: boolean; accounts: boolean; name: boolean; person: boolean }> = {}) => ({
     firstData: false, website: false, accounts: false, name: false, ...over,
   });
   it("the round started from what was typed wakes it", () => {
     const r = wakesFacts(NONE, round({ firstData: true, name: true }));
     expect(r.wake).toBe(true);
     expect(r.saw).toEqual({ site: false, social: false, name: true });
+  });
+  it("a person page never wakes the business facts agent: the person facts agent owns a person's facts (MKT-186)", () => {
+    const r = wakesFacts(NONE, round({ firstData: true, website: true, accounts: true, name: true, person: true }));
+    expect(r.wake).toBe(false);
+    expect(r.saw).toEqual(NONE);
   });
   it("a website found after a name-only run wakes it again", () => {
     const first = wakesFacts(NONE, round({ firstData: true, name: true }));

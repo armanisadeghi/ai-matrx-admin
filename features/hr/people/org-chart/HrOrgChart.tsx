@@ -32,7 +32,7 @@
 // registered, so the box renders honestly disabled with a registered promise
 // behind it rather than pretending to work or silently vanishing.
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, CalendarClock, Download, Users } from "lucide-react";
@@ -106,7 +106,10 @@ function useOrgChart(organizationId: string | null, on: string | null) {
   const state = useHrRequest<ChartRequest, HrOrgChartData>(request, runChart);
 
   return {
-    data: state.data,
+    // While another date loads, keep the chart that is on screen (marked
+    // "Updating…") — never flash "No managers assigned yet" and never unmount
+    // the chart, which would throw away the person's zoom and pan.
+    data: state.data ?? state.previousData,
     isLoading: state.isLoading,
     isFetching: state.isFetching,
     error: (state.denied ?? state.error) as HrDenied | HrFailed | null,
@@ -184,10 +187,16 @@ export function HrOrgChart() {
     ...(data?.cycles ?? []),
     ...forest.cycleLinks.map((link) => link.childId),
   ]);
+  // A transition, so the page's Suspense boundary keeps the chart on screen
+  // while the new date loads. Without it the fallback replaced the chart and
+  // remounted it, throwing away the person's zoom and pan on every date change.
+  const [, startDateChange] = useTransition();
   const setAsOf = (value: string | null) => {
-    router.push(
-      hrOrgChartHref({ org: orgRef, focus: focusParam, asOf: value }),
-    );
+    startDateChange(() => {
+      router.push(
+        hrOrgChartHref({ org: orgRef, focus: focusParam, asOf: value }),
+      );
+    });
   };
 
   const historyAvailable = data?.history_available ?? false;

@@ -44,6 +44,7 @@ import {
 import type { DeclaredVariable } from "@ai-matrx/rich-content/editor/core/variables";
 import type { VariableDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { nextSendConversationId } from "@/features/agents/hooks/agentBuilderContextBundle";
+import { selectResolvedVariables } from "@ai-matrx/chat/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 
 export interface PromptInsertSources {
   variables: string[];
@@ -121,14 +122,24 @@ export function promptVariableDefinitions(
     });
 }
 
+/**
+ * The Test panel's values AS THE PANEL SHOWS THEM: what the person typed, else what the context
+ * filled, else the variable's default (the same merge Send submits). Reading only the typed values
+ * left a Dropdown showing "bug" in the panel and "No value yet" in the Peek (live, 2026-10-17).
+ * Null until the panel has a conversation with its variables, so no value is claimed before then.
+ */
+export function useTestPanelValues(agentId: string): Readonly<Record<string, unknown>> | null {
+  const conversationId = useAppSelector((state) => nextSendConversationId(state, agentId));
+  const resolved = useMemo(() => (conversationId ? selectResolvedVariables(conversationId) : null), [conversationId]);
+  return useAppSelector((state) =>
+    resolved && conversationId && state.instanceVariableValues.byConversationId[conversationId] ? resolved(state) : null,
+  );
+}
+
 export function usePromptInsertSources(agentId: string, place?: PromptPlace): PromptInsertSources {
   const variableDefinitions = useAppSelector((state) => selectAgentVariableDefinitions(state, agentId));
   const messages = useAppSelector((state) => selectAgentMessages(state, agentId));
-  // The Test panel's values (its conversation's user values), read as the stored object — no copy.
-  const testValues = useAppSelector((state) => {
-    const conversationId = nextSendConversationId(state, agentId);
-    return conversationId ? (state.instanceVariableValues.byConversationId[conversationId]?.userValues ?? null) : null;
-  });
+  const testValues = useTestPanelValues(agentId);
   const definitions = useMemo(
     () => promptVariableDefinitions(variableDefinitions, messages, place, testValues),
     [variableDefinitions, messages, place, testValues],

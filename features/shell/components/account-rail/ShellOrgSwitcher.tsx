@@ -55,7 +55,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
   const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
   // The closed trigger never asks for the scope tree (startup read); the open menu's panel does.
-  const { activeOrgId, activeOrgName, organizations, promptForOrg, loadFailed } =
+  const { activeOrgId, activeOrgName, organizations, belongsToNone, loadFailed } =
     useActiveOrganizationPicker({ load: open });
   const objectOrganization = usePageObjectOrganization();
   const pathname = usePathname() ?? "";
@@ -65,7 +65,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
   const name = active?.name ?? activeOrgName ?? null;
   // An object page names its own organization, and the admin seat never acts
   // as itself: nothing there waits on a choice.
-  const asking = promptForOrg && !activeOrgId && objectOrganization === null && !adminSeat;
+  const asking = belongsToNone && !activeOrgId && objectOrganization === null && !adminSeat;
 
   const offer =
     objectOrganization &&

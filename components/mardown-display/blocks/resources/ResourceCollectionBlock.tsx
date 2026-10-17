@@ -41,7 +41,7 @@ import { matchesSearch as matchesSearchScoring } from "@ai-matrx/kit/search-scor
 import { DisclosureHeader, Select } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
-import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 interface ResourceCollectionBlockProps {
   collection: ResourceCollectionData;
@@ -334,7 +334,9 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
-                        {collection.title}
+                        <InlineControlText controls={controls} fieldKey="title" value={collection.title}>
+                          {collection.title}
+                        </InlineControlText>
                       </h1>
                       {collection.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">

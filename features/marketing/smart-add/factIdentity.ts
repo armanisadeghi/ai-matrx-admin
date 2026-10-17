@@ -8,7 +8,7 @@
 
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
-import { aliasProfileHost } from "../social/link";
+import { aliasProfileHost, canonicalProfileUrl } from "../social/link";
 
 /** The mandate behind the facts agent's findings (keptFacts.ts re-exports the same key). */
 export const EARLY_FACTS_MANDATE = "brand_intake.early_facts";
@@ -31,14 +31,12 @@ export function normalizePhone(value: string): string {
 
 /**
  * An address compares without scheme, `www.`, fragment or trailing slash; an account address (`social_profile`)
- * also without its query, and an alias host is its platform's own (`twitter.com` -> `x.com`, `m.facebook.com` ->
- * `facebook.com`; link.ts `PROFILE_HOST_ALIASES`). `https://www.facebook.com/snowpeak/` and `http://fb.com/snowpeak`
- * are one account.
+ * also without its query and without any sub-page (`/about`, `/videos`), and an alias host is its platform's own
+ * (`twitter.com` -> `x.com`, `m.facebook.com` -> `facebook.com`). This is the server's rule, `canonical_profile_url`
+ * (link.ts `canonicalProfileUrl`): `https://www.facebook.com/snowpeak/about` and `http://fb.com/snowpeak` are one account.
  */
 export function normalizeAddress(kind: string, value: string): string {
-  // An alias host is the same account page (MKT-185): `twitter.com/MichaelHyatt` is `x.com/MichaelHyatt`.
-  let v = aliasProfileHost(value.split("#", 1)[0]);
-  if (kind === "social_profile") v = v.split("?", 1)[0];
+  const v = kind === "social_profile" ? canonicalProfileUrl(value) : aliasProfileHost(value.split("#", 1)[0]);
   return v.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/+$/, "").toLowerCase();
 }
 

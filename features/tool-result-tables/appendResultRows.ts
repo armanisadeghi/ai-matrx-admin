@@ -76,7 +76,7 @@ async function addMissingChoices(
  * table first made from the answer's grid holds every cell as words) is written as "true" / "false", and
  * a number into a text column as its digits. Boolean and number columns keep the real value.
  */
-function rowsForColumns(described: ResultRows, mapping: Record<string, string>, fields: TableField[]): ResultRows["rows"] {
+export function rowsForColumns(described: ResultRows, mapping: Record<string, string>, fields: TableField[]): ResultRows["rows"] {
   const typeOf = new Map(
     fields.map((f) => {
       const format = (f.metadata as { format?: { id?: string } } | null | undefined)?.format?.id;

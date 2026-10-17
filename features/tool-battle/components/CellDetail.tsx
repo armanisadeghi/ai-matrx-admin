@@ -67,7 +67,7 @@ export function CellDetail({
                   <ErrorNotice
                     size="compact"
                     title={reasonLabel(cell) || "Did not count"}
-                    message={[cell.errorMessage, ...(cell.evidence?.problems ?? [])].filter(Boolean).join(" · ")}
+                    message={[...new Set([cell.errorMessage, ...(cell.evidence?.problems ?? [])].filter(Boolean))].join(" · ")}
                     code={cell.errorCode ?? undefined}
                   />
                 )}

@@ -4,7 +4,7 @@
  * The server backfills and writes `web.property.handle` with the Python twin; this keeps them equal.
  */
 import cases from "./profile_handle_cases.json";
-import { classifySocialLink } from "../link";
+import { canonicalProfileUrl, classifySocialLink } from "../link";
 
 type Case = [string, string | null, string | null, boolean];
 
@@ -30,5 +30,12 @@ describe("one account address across alias hosts (shared with matrx-social, MKT-
   });
   it.each(table.different_account)("%s is not %s", (a, b) => {
     expect(normalizeAddress("social_profile", a)).not.toBe(normalizeAddress("social_profile", b));
+  });
+});
+
+describe("canonical account address: the server's sub-page cut (shared with matrx-social)", () => {
+  const table = cases as unknown as { canonical_url: [string, string][] };
+  it.each(table.canonical_url)("%s", (url, expected) => {
+    expect(canonicalProfileUrl(url)).toBe(expected);
   });
 });

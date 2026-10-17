@@ -701,6 +701,8 @@
     "check:server-trace-scope:self-test": "node --test scripts/check-server-trace-scope.test.mjs",
     "check:import-fanout": "node scripts/check-import-fanout.mjs",
     "check:import-fanout:self-test": "node scripts/check-import-fanout.mjs --self-test",
+    "check:records-ui-front-door": "node scripts/check-records-ui-front-door.mjs",
+    "check:records-ui-front-door:self-test": "node scripts/check-records-ui-front-door.mjs --self-test",
     "check:shell-eager-graph": "tsx scripts/check-shell-eager-graph.ts",
     "generate:surface-index": "tsx scripts/generate-surface-index.ts --write",
     "check:surface-index": "tsx scripts/generate-surface-index.ts",

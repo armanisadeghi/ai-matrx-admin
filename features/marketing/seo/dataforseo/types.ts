@@ -264,6 +264,13 @@ export interface BrokenLinkProspectingReport {
    */
   not_a_candidate?: string[];
   errors: string[];
+  /**
+   * The pass ended at its time budget, not because it finished: pages not reached stay unchecked
+   * (the next pass takes them) and `notice` is the sentence to show. Optional: an older server omits all three.
+   */
+  stopped_at_time_budget?: boolean;
+  pages_not_reached?: number;
+  notice?: string | null;
 }
 
 export interface BrokenLinkCheckedPage {

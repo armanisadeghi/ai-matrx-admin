@@ -1,5 +1,5 @@
 {
-  "_doc": "The ONE profile-link rule. Mirrored byte-for-byte in matrx-frontend features/marketing/social/__tests__/profile_handle_cases.json; both suites run it. [url, platform|null, handle|null, personal] same_account: [a, b] pairs that are ONE account address (MKT-185: alias hosts such as twitter.com -> x.com); different_account: pairs that must stay two.",
+  "_doc": "The ONE profile-link rule. Mirrored byte-for-byte in matrx-frontend features/marketing/social/__tests__/profile_handle_cases.json; both suites run it. [url, platform|null, handle|null, personal] same_account: [a, b] pairs that are ONE account address (MKT-185: alias hosts such as twitter.com -> x.com); different_account: pairs that must stay two. canonical_url: [address, expected] pairs for the sub-page cut (canonical_profile_url / canonicalProfileUrl): an account address loses its query, fragment, trailing slash and every sub-page (/about, /videos...), on the platform's own host over https; anything that is not an account address only loses query/fragment/slash. same_account also carries sub-page pairs.",
   "cases": [
     [
       "https://www.instagram.com/allgreen_itad/?hl=en",
@@ -406,6 +406,34 @@
     [
       "https://old.reddit.com/user/spez",
       "https://www.reddit.com/user/spez"
+    ],
+    [
+      "https://www.facebook.com/snowpeak/about",
+      "https://www.facebook.com/snowpeak"
+    ],
+    [
+      "https://m.facebook.com/snowpeak/photos/",
+      "https://fb.com/snowpeak"
+    ],
+    [
+      "https://x.com/MichaelHyatt/with_replies",
+      "https://twitter.com/MichaelHyatt/"
+    ],
+    [
+      "https://www.linkedin.com/company/acme/about/",
+      "https://uk.linkedin.com/company/acme"
+    ],
+    [
+      "https://www.instagram.com/natgeo/reels/",
+      "https://instagr.am/natgeo/"
+    ],
+    [
+      "https://www.youtube.com/@MrBeast/videos",
+      "https://m.youtube.com/@MrBeast"
+    ],
+    [
+      "https://www.facebook.com/p/Acme-Co-100012345678901/about",
+      "https://www.facebook.com/p/Acme-Co-100012345678901"
     ]
   ],
   "different_account": [
@@ -420,6 +448,124 @@
     [
       "https://www.facebook.com/snowpeak",
       "https://www.instagram.com/snowpeak"
+    ],
+    [
+      "https://www.facebook.com/snowpeak/about",
+      "https://www.facebook.com/snowpeakresort/about"
+    ],
+    [
+      "https://www.linkedin.com/company/acme/about",
+      "https://www.linkedin.com/company/acme-labs/about"
+    ]
+  ],
+  "canonical_url": [
+    [
+      "https://www.linkedin.com/company/17891469/admin",
+      "https://www.linkedin.com/company/17891469"
+    ],
+    [
+      "https://www.linkedin.com/company/acme/about/?x=1",
+      "https://www.linkedin.com/company/acme"
+    ],
+    [
+      "https://www.linkedin.com/in/jane-doe-8b17/details/experience",
+      "https://www.linkedin.com/in/jane-doe-8b17"
+    ],
+    [
+      "https://www.linkedin.com/school/mit/posts",
+      "https://www.linkedin.com/school/mit"
+    ],
+    [
+      "https://www.facebook.com/Acme/about",
+      "https://www.facebook.com/Acme"
+    ],
+    [
+      "https://m.facebook.com/acme/photos/",
+      "https://www.facebook.com/acme"
+    ],
+    [
+      "https://es-la.facebook.com/snowpeak/about/",
+      "https://www.facebook.com/snowpeak"
+    ],
+    [
+      "https://www.facebook.com/p/Acme-Co-100012345678901/about",
+      "https://www.facebook.com/p/Acme-Co-100012345678901"
+    ],
+    [
+      "https://www.facebook.com/profile.php?id=61555299431119&sk=about",
+      "https://www.facebook.com/profile.php?id=61555299431119"
+    ],
+    [
+      "https://twitter.com/acme/with_replies?x=1",
+      "https://x.com/acme"
+    ],
+    [
+      "twitter.com/acme/about",
+      "https://x.com/acme"
+    ],
+    [
+      "http://www.twitter.com/MichaelHyatt/",
+      "https://x.com/MichaelHyatt"
+    ],
+    [
+      "https://www.instagram.com/acme/reels/",
+      "https://www.instagram.com/acme"
+    ],
+    [
+      "https://www.instagram.com/acme/?hl=en",
+      "https://www.instagram.com/acme"
+    ],
+    [
+      "https://www.youtube.com/channel/UCF4Ku_RBslqV3A36j6KddZQ/videos",
+      "https://www.youtube.com/channel/UCF4Ku_RBslqV3A36j6KddZQ"
+    ],
+    [
+      "https://www.youtube.com/c/acme/about",
+      "https://www.youtube.com/c/acme"
+    ],
+    [
+      "https://youtube.com/@acme/featured?x=1",
+      "https://www.youtube.com/@acme"
+    ],
+    [
+      "https://www.tiktok.com/@acme/video/123",
+      "https://www.tiktok.com/@acme/video/123"
+    ],
+    [
+      "https://www.tiktok.com/@acme/followers",
+      "https://www.tiktok.com/@acme"
+    ],
+    [
+      "https://www.threads.net/@zuck/replies",
+      "https://www.threads.com/@zuck"
+    ],
+    [
+      "https://www.pinterest.com/acme/boards",
+      "https://www.pinterest.com/acme"
+    ],
+    [
+      "https://www.reddit.com/r/foo/hot",
+      "https://www.reddit.com/r/foo"
+    ],
+    [
+      "https://www.snapchat.com/add/acme/x",
+      "https://www.snapchat.com/add/acme"
+    ],
+    [
+      "https://www.facebook.com/Acme%20Co/about",
+      "https://www.facebook.com/Acme%20Co"
+    ],
+    [
+      "https://www.acme.com/about",
+      "https://www.acme.com/about"
+    ],
+    [
+      "https://x.com/acme/status/123",
+      "https://x.com/acme/status/123"
+    ],
+    [
+      "https://www.instagram.com/stories/acme/123",
+      "https://www.instagram.com/stories/acme/123"
     ]
   ]
 }

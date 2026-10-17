@@ -134,13 +134,16 @@ function pushUndoEntry(
   record: NoteRecord,
   field: NoteUndoableField,
   previousValue: Note[NoteUndoableField],
+  linked = false,
 ): void {
   const now = Date.now();
   const bytes = estimateBytes(previousValue);
   const top = record._undoPast[record._undoPast.length - 1];
 
   if (
+    !linked &&
     top &&
+    !top.linked &&
     top.field === field &&
     now - top.timestamp < NOTE_UNDO_COALESCE_MS
   ) {
@@ -151,6 +154,7 @@ function pushUndoEntry(
       value: previousValue,
       timestamp: now,
       byteEstimate: bytes,
+      ...(linked ? { linked: true } : {}),
     });
   }
 
@@ -199,6 +203,7 @@ function applyFieldEdit<K extends NoteUndoableField>(
   record: NoteRecord,
   field: K,
   value: Note[K],
+  linked = false,
 ): void {
   const previousValue = record[field] as Note[K];
 
@@ -207,7 +212,7 @@ function applyFieldEdit<K extends NoteUndoableField>(
     (record._fieldHistory as NoteFieldSnapshot)[field] = previousValue;
   }
 
-  pushUndoEntry(record, field, previousValue);
+  pushUndoEntry(record, field, previousValue, linked);
 
   writeNoteUndoableField(record, field, value);
   record._dirtyFields.add(field);
@@ -622,44 +627,59 @@ const notesSlice = createSlice({
       const record = state.notes[action.payload.id];
       if (!record || record._undoPast.length === 0) return;
 
-      const entry = popNonEmpty(record._undoPast);
-      const currentValue = record[entry.field] as Note[NoteUndoableField];
-      record._undoFuture.push({
-        field: entry.field,
-        value: currentValue,
-        timestamp: Date.now(),
-        byteEstimate: estimateBytes(currentValue),
-      });
+      // A step the app made together with the one beneath it (a generated
+      // title) is undone with it — one Undo reverses what the person typed.
+      let entry = popNonEmpty(record._undoPast);
+      for (;;) {
+        const currentValue = record[entry.field] as Note[NoteUndoableField];
+        record._undoFuture.push({
+          field: entry.field,
+          value: currentValue,
+          timestamp: Date.now(),
+          byteEstimate: estimateBytes(currentValue),
+          ...(entry.linked ? { linked: true } : {}),
+        });
 
-      writeNoteUndoableField(record, entry.field, entry.value);
+        writeNoteUndoableField(record, entry.field, entry.value);
 
-      // Recalculate dirty: compare against clean baseline
-      const originalValue = record._fieldHistory[entry.field];
-      if (originalValue !== undefined && entry.value === originalValue) {
-        record._dirtyFields.delete(entry.field);
-      } else if (!record._dirtyFields.has(entry.field)) {
-        record._dirtyFields.add(entry.field);
+        // Recalculate dirty: compare against clean baseline
+        const originalValue = record._fieldHistory[entry.field];
+        if (originalValue !== undefined && entry.value === originalValue) {
+          record._dirtyFields.delete(entry.field);
+        } else if (!record._dirtyFields.has(entry.field)) {
+          record._dirtyFields.add(entry.field);
+        }
+        record._dirty = record._dirtyFields.size > 0;
+
+        if (!entry.linked || record._undoPast.length === 0) break;
+        entry = popNonEmpty(record._undoPast);
       }
-      record._dirty = record._dirtyFields.size > 0;
     },
 
     redoNoteEdit(state, action: PayloadAction<{ id: string }>) {
       const record = state.notes[action.payload.id];
       if (!record || record._undoFuture.length === 0) return;
 
-      const entry = popNonEmpty(record._undoFuture);
-      const currentValue = record[entry.field] as Note[NoteUndoableField];
-      record._undoPast.push({
-        field: entry.field,
-        value: currentValue,
-        timestamp: Date.now(),
-        byteEstimate: estimateBytes(currentValue),
-      });
+      // The step's linked partner (its generated title) comes back with it.
+      for (;;) {
+        const entry = popNonEmpty(record._undoFuture);
+        const currentValue = record[entry.field] as Note[NoteUndoableField];
+        record._undoPast.push({
+          field: entry.field,
+          value: currentValue,
+          timestamp: Date.now(),
+          byteEstimate: estimateBytes(currentValue),
+          ...(entry.linked ? { linked: true } : {}),
+        });
 
-      writeNoteUndoableField(record, entry.field, entry.value);
+        writeNoteUndoableField(record, entry.field, entry.value);
 
-      record._dirtyFields.add(entry.field);
-      record._dirty = true;
+        record._dirtyFields.add(entry.field);
+        record._dirty = true;
+
+        const next = record._undoFuture[record._undoFuture.length - 1];
+        if (!next?.linked) break;
+      }
     },
 
     clearNoteUndoHistory(state, action: PayloadAction<{ id: string }>) {
@@ -1001,11 +1021,11 @@ const notesSlice = createSlice({
     /** Update note label — shorthand for setNoteField with field="label" */
     updateNoteLabel(
       state,
-      action: PayloadAction<{ id: string; label: string }>,
+      action: PayloadAction<{ id: string; label: string; generated?: boolean }>,
     ) {
       const record = state.notes[action.payload.id];
       if (!record) return;
-      applyFieldEdit(record, "label", action.payload.label);
+      applyFieldEdit(record, "label", action.payload.label, action.payload.generated === true);
     },
 
     /**

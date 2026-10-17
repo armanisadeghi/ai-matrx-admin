@@ -7,17 +7,17 @@
  * Organization group, whose behavioural tests went with them; this file
  * carries their states forward onto the control that owns them now:
  *
- *   1. none chosen → asks "Choose organization", ringed — except on an
- *      /administration page (the admin seat never acts as itself) and on an
- *      object page that names its own organization;
+ *   1. NEVER a prompt (STATE rule 12: the ladder always picks one, nothing
+ *      prompts) — belonging to no organization at all says "Create an
+ *      organization", quietly, with no ring, on every page;
  *   2. chosen → the organization's abbreviation (its logo when it has one);
  *   3. the memberships read failed → a red mark and a label that says so;
  *   4. the page's object lives in another of the person's organizations → a
  *      dot, and the picker opens with a one-click switch to it;
  *   5. an object in an organization she is not in → named, quietly.
  *
- * PROVEN FAILING BEFORE PASSING: drop `&& !adminSeat` from `asking` → case
- * "never asks on an admin page" RED; drop `loadFailed ||` from the mark →
+ * PROVEN FAILING BEFORE PASSING: case 1 was RED against the old switcher
+ * ("Choose organization" + a primary ring); drop `loadFailed ||` from the mark →
  * case 3 RED; drop the `viewingIn` header → case 5 RED.
  */
 
@@ -32,7 +32,7 @@ let picker: {
   activeOrgId: string | null;
   activeOrgName: string | null;
   organizations: Org[];
-  promptForOrg: boolean;
+  belongsToNone: boolean;
   loadFailed: boolean;
 };
 let objectOrganization: {
@@ -95,7 +95,7 @@ function mount() {
 const trigger = () => host.querySelector<HTMLButtonElement>("[data-shell-org-switcher]")!;
 
 beforeEach(() => {
-  picker = { activeOrgId: null, activeOrgName: null, organizations: [ACME, BETA], promptForOrg: false, loadFailed: false };
+  picker = { activeOrgId: null, activeOrgName: null, organizations: [ACME, BETA], belongsToNone: false, loadFailed: false };
   objectOrganization = null;
   pathname = "/notes";
 });
@@ -107,29 +107,28 @@ afterEach(() => {
 });
 
 describe("ShellOrgSwitcher — every organization state shows on the one control", () => {
-  it("asks for an organization, ringed, when boot answered with none", () => {
-    picker = { ...picker, promptForOrg: true };
-    mount();
-    expect(trigger().textContent).toContain("Choose organization");
-    expect(trigger().getAttribute("aria-label")).toBe("Choose an organization");
-    expect(host.querySelector(".ring-primary")).not.toBeNull();
-  });
+  it.each(["/notes", "/administration/users/usage"])(
+    "never prompts for an organization — belonging to none says so on %s",
+    (path) => {
+      pathname = path;
+      picker = { ...picker, belongsToNone: true };
+      mount();
+      expect(host.textContent).not.toMatch(/choose (an )?organization|pick one/i);
+      expect(trigger().getAttribute("aria-label")).not.toMatch(/choose/i);
+      expect(host.querySelector(".ring-primary")).toBeNull();
+      expect(host.querySelector(".text-primary")).toBeNull();
+      expect(trigger().textContent).toContain("Create an organization");
+      expect(host.querySelector('a[href="/organizations"]')).not.toBeNull();
+    },
+  );
 
   it("while the name is still loading, shows a skeleton - never the word Organization or 'no organization'", () => {
-    picker = { ...picker, activeOrgId: null, activeOrgName: null, promptForOrg: false };
+    picker = { ...picker, activeOrgId: null, activeOrgName: null, belongsToNone: false };
     mount();
     expect(trigger().querySelector("[data-org-name-skeleton]")).not.toBeNull();
     expect(trigger().textContent?.trim()).toBe("");
     expect(host.textContent).not.toMatch(/no organization/i);
     expect(host.textContent).not.toContain("Pick one below");
-  });
-
-  it("never asks on an admin page — the admin seat never acts as itself", () => {
-    picker = { ...picker, promptForOrg: true };
-    pathname = "/administration/users/usage";
-    mount();
-    expect(trigger().textContent).not.toContain("Choose organization");
-    expect(host.querySelector(".ring-primary")).toBeNull();
   });
 
   it("names the chosen organization with its abbreviation", () => {
@@ -179,7 +178,7 @@ describe("ShellOrgSwitcher — every organization state shows on the one control
   });
 
   it("an object page that names its own organization asks nothing", () => {
-    picker = { ...picker, promptForOrg: true };
+    picker = { ...picker, belongsToNone: true };
     objectOrganization = { organizationId: BETA.id, name: BETA.name, shownByPage: true, member: true };
     mount();
     expect(trigger().textContent).not.toContain("Choose organization");

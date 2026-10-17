@@ -25,7 +25,9 @@ import {
   selectUsageGateRefusal,
   selectUsageGateResetsAt,
 } from "../state/selectors";
-import { setUsageRefusal } from "../state/entitlementsSlice";
+import { setUsageRefusal, setUsageSnapshot } from "../state/entitlementsSlice";
+import { takeStreamedUsageSeed } from "./usageRead";
+import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { applyServerUsageState, refreshUsageInBackground } from "./usageGate";
 import { resetSubject, usageNoticeKey } from "./usageState";
 import { ensureEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
@@ -103,11 +105,32 @@ export function UsageGateBridge() {
   const freePeriod = useAppSelector(selectUsageGateFreePeriod);
   const bootReadFor = useRef<string | null>(null);
 
-  // Boot fallback: no landing answer for this person → one background read.
+  // Boot fallback: no landing answer for this person. The layout's late answer
+  // streams in (`takeStreamedUsageSeed`) — no request. Only when none came does
+  // it read, and only after the page settled: the answer drives a background
+  // notice, and a send with no answer is honored (USAGE-GATE.md rule 4).
   useEffect(() => {
-    if (!userId || fetchedAt !== null || bootReadFor.current === userId) return;
+    if (!userId || fetchedAt !== null || bootReadFor.current === userId) return undefined;
     bootReadFor.current = userId;
-    void refreshUsageInBackground(dispatch, store.getState);
+    const adopt = () => {
+      const streamed = takeStreamedUsageSeed();
+      if (streamed) dispatch(setUsageSnapshot({ snapshot: streamed, fetchedAt: Date.now() }));
+      return streamed !== null;
+    };
+    if (adopt()) return undefined;
+    const controller = new AbortController();
+    let settled = false;
+    void whenLateIdle(undefined, controller.signal).then((ready) => {
+      if (!ready) return;
+      settled = true;
+      if (adopt() || selectUsageGateFetchedAt(store.getState()) !== null) return;
+      void refreshUsageInBackground(dispatch, store.getState);
+    });
+    return () => {
+      controller.abort();
+      // Cancelled before it ran (a remount): the next mount waits again.
+      if (!settled) bootReadFor.current = null;
+    };
   }, [userId, fetchedAt, dispatch, store]);
 
   // Server notification: the full state, published per user.

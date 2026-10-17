@@ -38,6 +38,12 @@ export interface NoteUndoEntry {
   value: Note[NoteUndoableField];
   timestamp: number;
   byteEstimate: number;
+  /**
+   * Made by the app together with the step beneath it (the generated title of a
+   * new note's first words): undo and redo carry both, so one Undo reverts what
+   * the person typed rather than only the title the app derived from it.
+   */
+  linked?: boolean;
 }
 
 export const NOTE_UNDO_MAX_ENTRIES = 50;

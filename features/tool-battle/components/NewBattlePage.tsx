@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
-import { createBattle, listBattleJobs, listBattleSources } from "../service";
+import { createBattle, fetchJobParameters, listBattleJobs, listBattleSources } from "../service";
 import { coerce, inputFields, subjectLabel, type InputField } from "../subjectFields";
 import type { BattleJob, BattleSource } from "../types";
 import { BypassStrip } from "./BypassStrip";
@@ -66,6 +66,10 @@ export function NewBattlePage() {
     setSourcesError(null);
     setPicked([]);
     setRows([{}]);
+    fetchJobParameters(next.toolId).then(
+      (parameters) => setJob((current) => (current?.toolId === next.toolId ? { ...current, parameters } : current)),
+      (e) => setSourcesError(e),
+    );
     listBattleSources(next.toolId).then(
       (s) => {
         setSources(s);

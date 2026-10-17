@@ -4,6 +4,7 @@
  * The brand home's Overview tab: one bounded card per area, each a SUMMARY that opens its own
  * tab or page (never the full list on the home). Reads only what BrandWorkspace already loaded.
  */
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, AtSign, Globe2, Images, ListChecks } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -81,44 +82,59 @@ export function BrandOverviewAbout({
   return (
     <SectionCard title="About" anchor="about">
       <div className="grid gap-3 p-3">
-        <PropertyRow label="Tagline" value={tagline ? businessFactValueText(tagline.value) : null} missing />
-        <PropertyRow label="Description" missing>
-          {description ? (
-            <span className="line-clamp-4" title={description}>
-              {description}
-            </span>
-          ) : null}
-        </PropertyRow>
+        <PropertyRow label="Tagline" value={tagline ? businessFactValueText(tagline.value) : null} />
+        <PropertyRow
+          label="Description"
+          value={
+            description ? (
+              <span className="line-clamp-4" title={description}>
+                {description}
+              </span>
+            ) : null
+          }
+        />
         <div className="grid gap-3 sm:grid-cols-2">
-          <PropertyRow label="Industry" value={industry} missing />
-          <PropertyRow label="Founded" value={founded ? businessFactValueText(founded.value) : null} missing />
-          <PropertyRow label="Legal name" value={legal ? businessFactValueText(legal.value) : null} missing />
-          <PropertyRow label="Website" missing>
-            {websiteUrl ? contactFactValue({ kind: "website", value: websiteUrl }) : null}
-          </PropertyRow>
+          <PropertyRow label="Industry" value={industry} />
+          <PropertyRow label="Founded" value={founded ? businessFactValueText(founded.value) : null} />
+          <PropertyRow label="Legal name" value={legal ? businessFactValueText(legal.value) : null} />
+          <PropertyRow
+            label="Website"
+            value={websiteUrl ? contactFactValue({ kind: "website", value: websiteUrl }) : null}
+          />
         </div>
       </div>
     </SectionCard>
   );
 }
 
-export function BrandOverviewContact({ facts, onOpen }: { facts: BusinessFact[]; onOpen: () => void }) {
+export function BrandOverviewContact({
+  facts,
+  websiteUrl,
+  onOpen,
+}: {
+  facts: BusinessFact[];
+  /** The brand's own website when no website fact was kept. */
+  websiteUrl: string | null;
+  onOpen: () => void;
+}) {
   return (
     <SectionCard title="Contact" anchor="contact" headerExtra={<OpenLink label="All facts" onClick={onOpen} />}>
       <div className="grid gap-3 p-3">
         {CONTACT_KINDS.map(({ kind, label }) => {
           const matches = facts.filter((fact) => fact.kind === kind);
           const first = matches[0];
-          const value = first ? businessFactValueText(first.value) : "";
+          const value = first
+            ? businessFactValueText(first.value)
+            : kind === "website" && websiteUrl
+              ? websiteUrl
+              : "";
           return (
             <PropertyRow
               key={kind}
               label={label}
-              missing
               meta={matches.length > 1 ? `+${matches.length - 1}` : undefined}
-            >
-              {value ? contactFactValue({ kind, value }) ?? value : null}
-            </PropertyRow>
+              value={value ? (contactFactValue({ kind, value }) ?? value) : null}
+            />
           );
         })}
       </div>
@@ -148,6 +164,7 @@ export function BrandOverviewWebsites({
           {sites.slice(0, PREVIEW_SITES).map((site) => (
             <li key={site.id}>
               <Link
+                prefetch={false}
                 href={marketingRoutes.site(brandId, site.id)}
                 className="flex min-h-11 items-center gap-3 px-3 py-1.5 hover:bg-accent/40"
               >
@@ -250,6 +267,8 @@ export function BrandOverviewAssets({
   total: number;
   onOpen: () => void;
 }) {
+  // A dead image URL keeps its tile (nothing moves) and shows the asset's kind, never a broken image.
+  const [failed, setFailed] = useState<ReadonlySet<string>>(() => new Set());
   const shown = assets.filter((asset) => asset.preview || asset.color).slice(0, PREVIEW_ASSETS);
   return (
     <SectionCard
@@ -270,13 +289,21 @@ export function BrandOverviewAssets({
               aria-label={asset.label}
               className="relative aspect-square overflow-hidden rounded-md border border-border bg-background"
             >
-              {asset.preview ? (
+              {asset.preview && failed.has(asset.preview) ? (
+                <span className="absolute inset-0 flex items-center justify-center p-1 type-meta text-muted-foreground">
+                  {asset.label}
+                </span>
+              ) : asset.preview ? (
                 <img
                   src={asset.preview}
                   alt=""
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-contain p-1"
+                  onError={() => {
+                    const src = asset.preview;
+                    if (src) setFailed((prev) => new Set(prev).add(src));
+                  }}
                 />
               ) : (
                 <span className="absolute inset-1 rounded" style={{ background: asset.color ?? undefined }} />

@@ -40,6 +40,13 @@ export type HrRequestState<T> = {
   isLoading: boolean;
   /** Something is on screen and a newer request is in flight. */
   isFetching: boolean;
+  /**
+   * While a newer request is in flight, the previous request's data — so a
+   * surface can keep what it drew (with an "Updating…" note) instead of
+   * flashing an empty or "nothing here" state. Null otherwise, and null after a
+   * refusal: a refused answer never keeps the old page behind it.
+   */
+  previousData: T | null;
   refresh: () => void;
 };
 
@@ -103,6 +110,7 @@ export function useHrRequest<TArgs, T>(
     error: current?.error ?? null,
     isLoading: key !== null && entry === null,
     isFetching: key !== null && current === null,
+    previousData: current === null ? (entry?.data ?? null) : null,
     refresh,
   };
 }

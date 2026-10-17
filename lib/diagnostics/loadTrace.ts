@@ -8,8 +8,9 @@
  *      core markers, the first click/key, route changes, PAGE SETTLED;
  *   3. "Lazy loads", "Heavy" (RED before the first engagement), "Layout shifts" (with the shifted
  *      element), "Stalls" (long frames) — Heavy and Layout shifts always print, "clean" when empty;
- *   4. ONE collapsed group "Requests (N) — DB n, server n, next n": database calls first (table or
- *      rpc, method, ms, size), identical requests and repeated Next RSC fetches flagged ×N in yellow;
+ *   4. ONE collapsed group "Requests (N) — DB n, server n, next n", printed when the network goes
+ *      quiet after settle (1.5 s, at most 10 s): database calls first (table or rpc, method, ms,
+ *      size), identical requests and repeated Next RSC fetches flagged ×N in yellow;
  *   5. a collapsed "Biggest scripts" group (plain lines, never console.table).
  * Anything that happens later prints as an "after settle" line, in order, below that block.
  *
@@ -57,6 +58,9 @@ const traceConsole: Console = globalThis.console;
 const SETTLE_CAP_MS = 15_000;
 const STALL_MS = 100;
 const SHIFT_MIN = 0.005;
+/** The requests group prints once the network has been quiet this long after settle (or at the cap). */
+const NET_QUIET_MS = 1_500;
+const NET_GROUP_CAP_MS = 10_000;
 
 export type LoadTraceKind =
   | "nav"
@@ -135,6 +139,8 @@ let lcp: { at: number; element: string } | null = null;
 let cls = 0;
 let clsBeforeSettle = 0;
 let printedLive = false;
+let requestsPrinted = false;
+let lastResourceAt = 0;
 let installed = false;
 const seenOnce = new Set<string>();
 const seenResources = new WeakSet<PerformanceEntry>();
@@ -278,6 +284,9 @@ function print(e: LoadTraceEvent, prefix = ""): void {
 
 function push(event: LoadTraceEvent): void {
   events.push(event);
+  // A request that finishes after settle waits for the requests group (it lists every request,
+  // in place, once the network goes quiet); only one after THAT prints as its own late line.
+  if (event.kind === "net" && !requestsPrinted) return;
   if (printedLive) print(event, "after settle ");
 }
 
@@ -326,6 +335,7 @@ function onResource(entry: PerformanceEntry): void {
   if (r.initiatorType !== "fetch" && r.initiatorType !== "xmlhttprequest") return;
   if (seenResources.has(r)) return;
   seenResources.add(r);
+  lastResourceAt = performance.now();
   const method = methodFor(r.name, r.startTime);
   const { group, label, dupKey } = classifyRequest(r.name, method, window.location.origin);
   const times = (dupCounts.get(dupKey) ?? 0) + 1;
@@ -438,32 +448,20 @@ function section(title: string, list: LoadTraceEvent[], emptyText?: string): voi
   for (const e of list) print(e);
 }
 
-function printTimelineAndSummary(): void {
+/**
+ * 4. Requests: ONE collapsed group, database calls first. Printed once the network has been quiet
+ * for NET_QUIET_MS after settle (most of a page's reads finish after the idle flush begins), so
+ * every request of the load sits in it — never as a stream of loose lines.
+ */
+function printRequests(): void {
+  if (requestsPrinted) return;
+  flushObservers();
+  requestsPrinted = true;
   const report = loadTraceReport();
-  printedLive = true;
-  const heavy = report.violations.filter((v) => v.kind === "heavy-before-engagement").length;
-  const lazy = report.violations.filter((v) => v.kind === "lazy-before-settle").length;
-  const shifts = report.violations.filter((v) => v.kind === "shift").length;
-  const smoke = heavy + lazy + shifts;
-  const byGroup = (g: LoadTraceRequestGroup) => report.requests.filter((r) => r.group === g);
+  const byGroup = (g: LoadTraceRequestGroup) => report.requests.filter((r) => r.group === g).sort((a, b) => a.at - b.at);
   const wasted = report.duplicates.reduce((a, d) => a + d.times - 1, 0);
-
-  // 1. The headline.
-  traceConsole.log(
-    `%c[load] SUMMARY ${report.route} · settled +${report.settledAt}ms · TTFB ${report.ttfb ?? "?"}ms · FCP ${report.fcp ?? "?"}ms · LCP ${report.lcp ? `${report.lcp.at}ms ${report.lcp.element}` : "?"} · CLS ${report.cls} · ${report.renders.length} renders · ${report.requests.length} requests${wasted ? ` (${wasted} duplicate)` : ""} · ${report.scripts.count} scripts ${report.scripts.wireKB} KB wire / ${report.scripts.unpackedKB} KB unpacked · smoke ${smoke ? `🔴 ${heavy} heavy, ${lazy} lazy, ${shifts} shifts` : "clean"}`,
-    smoke ? STYLE.red : STYLE.milestone,
-  );
-
-  // 2–3. The ordered timeline, grouped.
-  section("Paint & renders", report.events.filter((e) => PAINT_KINDS.includes(e.kind)));
-  section("Lazy loads", report.events.filter((e) => e.kind === "lazy"));
-  section("Heavy", report.events.filter((e) => e.kind === "heavy"), "clean, nothing heavy before engagement");
-  section("Layout shifts", report.events.filter((e) => e.kind === "shift"), `clean, CLS ${report.cls}`);
-  section("Stalls", report.events.filter((e) => e.kind === "stall"));
-
-  // 4. Requests: one collapsed group, database calls first.
   traceConsole.groupCollapsed(
-    `[load] Requests (${report.requests.length}) — DB ${byGroup("db").length}, server ${byGroup("server").length}, next ${byGroup("next").length}${byGroup("other").length ? `, other ${byGroup("other").length}` : ""}${wasted ? ` · ${wasted} duplicate` : ""}`,
+    `[load] Requests (${report.requests.length}, to +${Math.round(performance.now())}ms) — DB ${byGroup("db").length}, server ${byGroup("server").length}, next ${byGroup("next").length}${byGroup("other").length ? `, other ${byGroup("other").length}` : ""}${wasted ? ` · ${wasted} duplicate` : ""}`,
   );
   for (const g of GROUP_ORDER) {
     const list = byGroup(g);
@@ -481,6 +479,29 @@ function printTimelineAndSummary(): void {
   for (const s of report.scripts.biggest)
     traceConsole.log(`[load] ${at(s.at)}  ${String(s.unpackedKB).padStart(5)} KB unpacked  ${String(s.wireKB).padStart(4)} KB wire  ${s.file}`);
   traceConsole.groupEnd();
+}
+
+function printTimelineAndSummary(): void {
+  const report = loadTraceReport();
+  printedLive = true;
+  const heavy = report.violations.filter((v) => v.kind === "heavy-before-engagement").length;
+  const lazy = report.violations.filter((v) => v.kind === "lazy-before-settle").length;
+  const shifts = report.violations.filter((v) => v.kind === "shift").length;
+  const smoke = heavy + lazy + shifts;
+  const wasted = report.duplicates.reduce((a, d) => a + d.times - 1, 0);
+
+  // 1. The headline (request counts so far; the requests group below prints when the network is quiet).
+  traceConsole.log(
+    `%c[load] SUMMARY ${report.route} · settled +${report.settledAt}ms · TTFB ${report.ttfb ?? "?"}ms · FCP ${report.fcp ?? "?"}ms · LCP ${report.lcp ? `${report.lcp.at}ms ${report.lcp.element}` : "?"} · CLS ${report.cls} · ${report.renders.length} renders · ${report.requests.length} requests${wasted ? ` (${wasted} duplicate)` : ""} · ${report.scripts.count} scripts ${report.scripts.wireKB} KB wire / ${report.scripts.unpackedKB} KB unpacked · smoke ${smoke ? `🔴 ${heavy} heavy, ${lazy} lazy, ${shifts} shifts` : "clean"}`,
+    smoke ? STYLE.red : STYLE.milestone,
+  );
+
+  // 2–3. The ordered timeline, grouped.
+  section("Paint & renders", report.events.filter((e) => PAINT_KINDS.includes(e.kind)));
+  section("Lazy loads", report.events.filter((e) => e.kind === "lazy"));
+  section("Heavy", report.events.filter((e) => e.kind === "heavy"), "clean, nothing heavy before engagement");
+  section("Layout shifts", report.events.filter((e) => e.kind === "shift"), `clean, CLS ${report.cls}`);
+  section("Stalls", report.events.filter((e) => e.kind === "stall"));
 }
 
 function markKind(name: string): { kind: LoadTraceKind; label: string } {
@@ -599,6 +620,14 @@ export function installLoadTrace(): void {
     settledAt = Math.round(performance.now());
     events.push({ at: settledAt, kind: "settle", name: "PAGE SETTLED" });
     printTimelineAndSummary();
+    const quietCheck = window.setInterval(() => {
+      flushObservers();
+      const now = performance.now();
+      if (now - Math.max(lastResourceAt, settledAt ?? 0) >= NET_QUIET_MS || now - (settledAt ?? 0) >= NET_GROUP_CAP_MS) {
+        window.clearInterval(quietCheck);
+        printRequests();
+      }
+    }, 250);
   };
   // Settled = the moment the page-load idle flush BEGINS (priority 1, registered first, so it runs
   // before every other idle task — the lazy work that must come after it).
@@ -615,6 +644,8 @@ export function resetLoadTraceForTests(): void {
   cls = 0;
   clsBeforeSettle = 0;
   printedLive = false;
+  requestsPrinted = false;
+  lastResourceAt = 0;
   installed = false;
   seenOnce.clear();
   dupCounts.clear();
@@ -624,4 +655,4 @@ export function resetLoadTraceForTests(): void {
 }
 
 /** For tests: the request recorder and classifier without a browser's resource timing. */
-export const __loadTraceTesting = { onResource, recordRequestMethods, printTimelineAndSummary, push };
+export const __loadTraceTesting = { onResource, recordRequestMethods, printTimelineAndSummary, printRequests, push };

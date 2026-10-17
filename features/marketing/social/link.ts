@@ -294,6 +294,93 @@ const FACEBOOK_SECTIONS = new Set([
   "hashtag", "stories", "media", "notes", "note", "event", "l.php", "flx", "sharer", "sharer.php", "share", "share.php",
 ]);
 
+/** `address` on its platform's own account host, always `https` (twin of matrx_social `_aliased`). */
+function aliasedHttps(address: string): string {
+  const url = parseUrl(address);
+  if (!url || !detectPlatform(address)) return address;
+  const hostName = url.hostname.toLowerCase();
+  const canon = profileHost(hostName);
+  if (canon === hostName && /^https:\/\//i.test(address)) return address;
+  const rest = address.replace(/^[a-z]+:\/\//i, "");
+  const at = rest.toLowerCase().indexOf(hostName);
+  return `https://${canon}${at >= 0 ? rest.slice(at + hostName.length) : ""}`;
+}
+
+/**
+ * Which path segment NAMES the account (every later segment is a sub-page: /about, /videos, /reels...). Twin of
+ * matrx_social `account_segment`, returned as an index into `segs`; null = this shape names no account.
+ */
+function accountSegmentIndex(platform: SocialPlatform, segs: string[]): number | null {
+  if (!segs.length) return null;
+  const first = segs[0].toLowerCase();
+  if (NON_ACCOUNT_SEGMENTS.has(first)) return null;
+  switch (platform) {
+    case "linkedin":
+      return ["in", "company", "school", "showcase"].includes(first) && segs.length > 1 ? 1 : null;
+    case "youtube":
+      for (let i = 0; i < segs.length; i++) {
+        if (segs[i].startsWith("@") && segs[i].length > 1) return i;
+        if (["channel", "c", "user"].includes(segs[i]) && i + 1 < segs.length) return i + 1;
+      }
+      return null;
+    case "tiktok":
+    case "threads": {
+      const i = segs.findIndex((s) => s.startsWith("@") && s.length > 1);
+      return i >= 0 ? i : null;
+    }
+    case "reddit":
+      for (let i = 0; i < segs.length; i++) {
+        if (["r", "u", "user"].includes(segs[i].toLowerCase()) && i + 1 < segs.length) return i + 1;
+      }
+      return null;
+    case "snapchat":
+      return first === "add" ? (segs.length > 1 ? 1 : null) : 0;
+    case "facebook":
+      if (first === "p") return FACEBOOK_P_SEGMENT.test(segs[1] ?? "") ? 1 : null;
+      return FACEBOOK_SECTIONS.has(first) ? null : 0;
+    case "instagram":
+      if (first === "stories") return segs.length > 1 ? 1 : null;
+      return IG_SKIP.has(first) ? null : 0;
+    case "pinterest":
+      return ["pin", "ideas", "search"].includes(first) ? null : 0;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * An account address cut back to the account's own page: no query, fragment, trailing slash or sub-page
+ * (`linkedin.com/company/17891469/admin` -> `linkedin.com/company/17891469`), on the platform's own host over
+ * https. Anything that is not an account address (a post, a website) only loses its query, fragment and trailing
+ * slash. Twin of matrx_social `canonical_profile_url`, pinned by the `canonical_url` and `same_account` tables of
+ * `__tests__/profile_handle_cases.json` (the same file the Python suite runs).
+ */
+export function canonicalProfileUrl(address: string): string {
+  const noFragment = address.split("#", 1)[0];
+  const base = noFragment.split("?", 1)[0].replace(/\/+$/, "") || address;
+  const url = parseUrl(noFragment);
+  const platform = detectPlatform(base);
+  if (url && platform === "facebook") {
+    const id = facebookProfilePhpId(url);
+    if (id) return aliasedHttps(`${base}?id=${id}`);
+  }
+  if (!platform || classifySocialLink(base)?.kind !== "profile") return base;
+  const parsed = parseUrl(base);
+  if (!parsed) return base;
+  const raw = parsed.pathname.split("/").filter(Boolean);
+  const decoded = raw.map((s) => {
+    try {
+      return decodeURIComponent(s);
+    } catch {
+      return s;
+    }
+  });
+  const idx = accountSegmentIndex(platform, decoded);
+  if (idx === null || parsed.pathname.includes(":/")) return aliasedHttps(base);
+  const hostPart = /^(?:[a-z]+:\/\/)?[^/]+/i.exec(base)?.[0] ?? base;
+  return aliasedHttps(`${hostPart}/${raw.slice(0, idx + 1).join("/")}`);
+}
+
 // ---------------------------------------------------------------------------
 // The ONE account-input parser: any way a person writes a social account -> platform + handle + URL.
 // ---------------------------------------------------------------------------

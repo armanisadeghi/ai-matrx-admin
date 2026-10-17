@@ -89,6 +89,7 @@ describe("the settle block", () => {
     onResource(resource("http://localhost/login?redirectTo=x&_rsc=bbb", 150));
     onResource(resource("https://db.matrxserver.com/rest/v1/notes?select=id", 200));
     printTimelineAndSummary();
+    __loadTraceTesting.printRequests();
 
     const texts = logged.map((l) => l.text);
     expect(texts[0]).toMatch(/^\[load\] SUMMARY /);
@@ -100,7 +101,7 @@ describe("the settle block", () => {
     expect(sidebar).toBeGreaterThan(shell);
     expect(texts.some((t) => /HEAVY RENDERED BEFORE ENGAGEMENT {2}PDF viewer/.test(t))).toBe(true);
 
-    const group = logged.findIndex((l) => l.method === "groupCollapsed" && /Requests \(3\) — DB 1, server 0, next 2/.test(l.text));
+    const group = logged.findIndex((l) => l.method === "groupCollapsed" && /Requests \(3, to \+\d+ms\) — DB 1, server 0, next 2/.test(l.text));
     expect(group).toBeGreaterThan(sidebar);
     // No request line anywhere before the requests group.
     expect(texts.slice(0, group).some((t) => /GET {4}/.test(t))).toBe(false);
@@ -111,6 +112,20 @@ describe("the settle block", () => {
     expect(texts[rsc]).toMatch(/×2 DUPLICATE/);
     expect(texts.some((t) => /DUPLICATE ×2 \(Next RSC fetch of the same route\)/.test(t))).toBe(true);
     expect(loadTraceReport().duplicates).toEqual([expect.objectContaining({ times: 2, group: "next", rsc: true })]);
+  });
+
+  it("holds a request that finishes after settle for the requests group, never a loose line", () => {
+    const logged = captureConsole();
+    __loadTraceTesting.printTimelineAndSummary();
+    const before = logged.length;
+    __loadTraceTesting.onResource(resource("https://db.matrxserver.com/rest/v1/user_preferences?select=*", 5000));
+    expect(logged.length).toBe(before);
+    __loadTraceTesting.printRequests();
+    expect(logged.slice(before).some((l) => /GET {4}user_preferences/.test(l.text))).toBe(true);
+    // After the group, a late request is its own "after settle" line.
+    const mid = logged.length;
+    __loadTraceTesting.onResource(resource("https://db.matrxserver.com/rest/v1/user_preferences?select=*", 72000));
+    expect(logged[mid].text).toMatch(/after settle .*user_preferences.*×2 DUPLICATE/);
   });
 
   it("prints a later event as an 'after settle' line below the block", () => {

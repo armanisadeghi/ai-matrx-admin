@@ -33,7 +33,7 @@ import { recipeShoppingList } from "./recipe-shopping-list";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
-import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 interface Ingredient {
@@ -350,7 +350,9 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
-                        {recipe.title}
+                        <InlineControlText controls={controls} fieldKey="title" value={recipe.title}>
+                          {recipe.title}
+                        </InlineControlText>
                       </h1>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                         {recipe.yields}

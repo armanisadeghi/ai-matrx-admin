@@ -163,32 +163,58 @@ export async function archiveBattle(id: string): Promise<void> {
 
 type Loose = Record<string, unknown>;
 
-async function catalogRows(table: string, build: (q: never) => unknown): Promise<Loose[]> {
+async function catalogRows(table: string, build: (q: never) => unknown, columns = "*"): Promise<Loose[]> {
   const base = db().from(table as never) as unknown as { select(cols: string): unknown };
-  const query = build(base.select("*") as never) as PromiseLike<{ data: Loose[] | null; error: { message: string } | null }>;
+  const query = build(base.select(columns) as never) as PromiseLike<{ data: Loose[] | null; error: { message: string } | null }>;
   const { data, error } = await query;
   if (error) throw new Error(`Could not read the catalog (${table}): ${error.message}`);
   return data ?? [];
 }
 
-/** Catalog Tools a battle can compare. Empty until the catalog has rows; an unreadable catalog throws. */
+/** Every row of a catalog table, a page at a time (PostgREST caps one read at 1000 rows). */
+async function allCatalogRows(table: string, columns: string): Promise<Loose[]> {
+  const PAGE = 1000;
+  const out: Loose[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const page = await catalogRows(
+      table,
+      (q) => (q as never as { range(a: number, b: number): unknown }).range(from, from + PAGE - 1),
+      columns,
+    );
+    out.push(...page);
+    if (page.length < PAGE) return out;
+  }
+}
+
+/**
+ * Catalog Tools a battle can compare: those with at least two sources. Their input declaration is read when one
+ * is chosen (`fetchJobParameters`), never for the whole catalog. Empty until the catalog has rows.
+ */
 export async function listBattleJobs(): Promise<BattleJob[]> {
-  const entries = await catalogRows("catalog_entry", (q) => (q as never as { limit(n: number): unknown }).limit(2000));
-  if (entries.length === 0) return [];
-  const ids = entries.map((e) => str(e.tool_id));
-  const defs = await catalogRows("definition", (q) =>
-    (q as never as { in(c: string, v: string[]): { limit(n: number): unknown } }).in("id", ids).limit(2000),
-  );
-  const params = new Map(defs.map((d) => [str(d.id), isJsonObject(d.parameters) ? (d.parameters as Loose) : {}]));
+  const endpoints = await allCatalogRows("catalog_endpoint", "tool_id,state");
+  const sources = new Map<string, number>();
+  for (const e of endpoints) {
+    if (str(e.state) === "retired") continue;
+    sources.set(str(e.tool_id), (sources.get(str(e.tool_id)) ?? 0) + 1);
+  }
+  const entries = await allCatalogRows("catalog_entry", "tool_id,job_key,display_name,job_family");
   return entries
+    .filter((e) => (sources.get(str(e.tool_id)) ?? 0) >= 2)
     .map((e) => ({
       toolId: str(e.tool_id),
       jobKey: str(e.job_key),
       displayName: str(e.display_name) || str(e.job_key),
       jobFamily: str(e.job_family),
-      parameters: params.get(str(e.tool_id)) ?? {},
+      parameters: {},
     }))
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
+}
+
+/** One job's declared inputs (JSON Schema `parameters`). */
+export async function fetchJobParameters(toolId: string): Promise<Record<string, unknown>> {
+  const rows = await catalogRows("definition", (q) => (q as never as { eq(c: string, v: string): { limit(n: number): unknown } }).eq("id", toolId).limit(1), "id,parameters");
+  const p = rows[0]?.parameters;
+  return isJsonObject(p) ? (p as Record<string, unknown>) : {};
 }
 
 /** The endpoints of one job with their provider's admin name. */

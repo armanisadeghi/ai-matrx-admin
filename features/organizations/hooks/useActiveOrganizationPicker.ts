@@ -26,7 +26,10 @@ export function useActiveOrganizationPicker({ load = true }: { load?: boolean } 
   const dispatch = useAppDispatch();
   const activeOrgId = useAppSelector(selectOrganizationId);
   const activeOrgName = useAppSelector(selectOrganizationName);
-  const promptForOrg = useAppSelector(selectShouldPromptForOrganization);
+  // True only when the load ladder READ the memberships and found none: the
+  // ladder picks an organization for anyone who has one (STATE rule 12), so
+  // this is "you belong to no organization", never "choose one".
+  const belongsToNone = useAppSelector(selectShouldPromptForOrganization);
   const { organizations, status } = useScopeTree({ enabled: load });
   const isAuthenticated = useAppSelector(selectHasAccount);
 
@@ -47,7 +50,7 @@ export function useActiveOrganizationPicker({ load = true }: { load?: boolean } 
   return {
     activeOrgId,
     activeOrgName,
-    promptForOrg,
+    belongsToNone,
     organizations,
     // Only "loading" once we've actually fired (i.e. authenticated). An
     // anonymous visitor never dispatches ensureScopeTree, so treeStatus stays

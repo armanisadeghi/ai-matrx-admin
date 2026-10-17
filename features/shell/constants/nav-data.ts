@@ -553,6 +553,15 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     dashboard: true,
   },
   {
+    // Bases: each Home's group of tables (/data/bases), one door from the Data menu.
+    label: "Bases",
+    href: "/data/bases",
+    iconName: "Database",
+    description: "Every base of tables you can open",
+    color: "cyan",
+    guestHidden: true,
+  },
+  {
     // THE template gallery (lane CHAIR-GALLERY): one public route for everyone, signed in or out.
     label: "Templates",
     href: "/templates",
@@ -569,6 +578,7 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     description: "Find, try and give Tools to your agents",
     color: "cyan",
     dashboard: true,
+    guestHidden: true,
   },
   {
     // One list of same-type things, the real facts, a ranked side-by-side. Metered in points.
@@ -578,6 +588,7 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     description: "Line up companies, places or products and see the numbers side by side",
     color: "cyan",
     dashboard: true,
+    guestHidden: true,
   },
   {
     // Fetched records beside what a model would receive: handed over vs fetched by a tool.
@@ -586,6 +597,7 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     iconName: "FlaskConical",
     description: "What a model receives from fetched data, and its cost",
     color: "cyan",
+    guestHidden: true,
   },
   {
     label: "Data Tables Window",
@@ -1203,34 +1215,6 @@ export const primaryNavItems: ShellNavItem[] = [
     ],
   },
   {
-    // web: scraper, web-search, persistent-cloud-browser, residential-egress —
-    // every way the platform reaches the web.
-    label: "Web",
-    href: "/scraper",
-    guestHref: "/features",
-    iconName: "Globe",
-    section: "primary",
-    profileMenu: false,
-    dashboard: false,
-    description: "Scrape, search and reach the web",
-    color: "orange",
-    children: [
-      {
-        label: "Webscraper",
-        href: "/scraper",
-        guestHref: "/features",
-        iconName: "Globe",
-        description: "Extract and process data from web sources",
-        color: "orange",
-        profileMenu: true,
-        dashboard: true,
-      },
-      { label: "Search", href: "/search", iconName: "Search" },
-      { label: "Web Scraper Window", href: "/scraper", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-web-scraper-panel" },
-      { label: "Site Workbench Window", href: "/tools/pdf-extractor", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-site-workbench-panel" },
-    ],
-  },
-  {
     // content: notes, documents, visual-maps, esign, utilities —
     // authored text and the content store.
     label: "Content",
@@ -1263,17 +1247,6 @@ export const primaryNavItems: ShellNavItem[] = [
         group: "Write",
       },
       {
-        label: "Presentations",
-        href: "/presentations",
-        iconName: "Presentation",
-        description: "Slide decks — edit in place, present, share",
-        color: "amber",
-        profileMenu: true,
-        dashboard: true,
-        guestHidden: true,
-        group: "Write",
-      },
-      {
         label: "Visual Maps",
         href: "/maps",
         iconName: "Network",
@@ -1285,11 +1258,6 @@ export const primaryNavItems: ShellNavItem[] = [
       },
       // Same destinations as the Workspace / Data / Utilities / Publish / Communications menus, linked here too so
       // everything authored is one click from Content (domain tree: content = spaces, notes, documents, workbooks, utilities).
-      { label: "Spaces", href: "/spaces", iconName: "NotebookTabs", description: "Pages, databases and templates in one workspace", color: "amber", guestHidden: true, group: "Write" },
-      { label: "Workbooks", href: "/workbooks", iconName: "FileSpreadsheet", description: "Lossless spreadsheets — multi-sheet, formulas, formatting", color: "emerald", guestHidden: true, group: "Write" },
-      { label: "Markdown Studio", href: "/markdown-studio", iconName: "PenLine", description: "Interactive markdown editor and parser comparison", color: "slate", group: "Write" },
-      { label: "Message Templates", href: "/chat/message-templates", iconName: "MessageSquareQuote", guestHidden: true, group: "Write" },
-      { label: "Print or PDF", href: "/print/documents", iconName: "Printer", description: "Written content as a styled document or a PDF", color: "blue", group: "Write" },
       { label: "E-Signatures", href: "/esign", iconName: "FileSignature", guestHidden: true, group: "Write" },
       { label: "E-Sign Templates", href: "/esign/templates", iconName: "FileSignature", guestHidden: true, group: "Write" },
       { label: "Notes Window", href: "/notes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-notes-panel" },
@@ -1297,66 +1265,6 @@ export const primaryNavItems: ShellNavItem[] = [
       { label: "New Note", href: "/notes", iconName: "Plus", action: "create-note" },
       { label: "New Document", href: "/documents", iconName: "Plus", action: "create-document" },
       { label: "Send for Signature", href: "/esign/new", iconName: "FileSignature", actionItem: true, guestHidden: true },
-    ],
-  },
-  {
-    // utilities: small free text and data tools — their own domain, not part of Content.
-    label: "Utilities",
-    href: "/markdown-studio",
-    iconName: "Wrench",
-    section: "primary",
-    profileMenu: false,
-    dashboard: false,
-    description: "Small text and data tools",
-    color: "orange",
-    children: [
-      {
-        label: "Markdown Studio",
-        href: "/markdown-studio",
-        iconName: "PenLine",
-        description: "Interactive markdown editor and parser comparison",
-        color: "slate",
-        profileMenu: true,
-        dashboard: true,
-      },
-      {
-        label: "Data Truncator",
-        href: "/free/data-truncator",
-        iconName: "Scissors",
-        description: "Trim and preview truncated text for UI limits",
-        color: "orange",
-        profileMenu: true,
-        dashboard: true,
-      },
-      {
-        label: "Character Counter",
-        href: "/free/character-counter",
-        iconName: "TextCursorInput",
-        description: "Count characters, words, limits, and keyword density locally",
-        color: "orange",
-        profileMenu: true,
-        dashboard: true,
-      },
-      {
-        label: "UUID Generator",
-        href: "/free/uuid/generator",
-        iconName: "Hash",
-        description: "Generate UUIDs on the client — single or bulk",
-        color: "orange",
-        profileMenu: true,
-        dashboard: true,
-      },
-      {
-        label: "Zip Code Heatmap",
-        href: "/free/zip-code-heatmap",
-        iconName: "Map",
-        description: "Visualize US zip code density on an interactive map",
-        color: "orange",
-        profileMenu: true,
-        dashboard: true,
-      },
-      { label: "JSON Truncator Window", href: "/free/data-truncator", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-json-truncator-panel" },
-      { label: "Character Counter Window", href: "/free/character-counter", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-character-counter-panel" },
     ],
   },
   {
@@ -1470,6 +1378,16 @@ export const primaryNavItems: ShellNavItem[] = [
     description: "Images, video libraries and capture",
     color: "pink",
     children: [
+      {
+        label: "Presentations",
+        href: "/presentations",
+        iconName: "Presentation",
+        description: "Slide decks — edit in place, present, share",
+        color: "amber",
+        profileMenu: true,
+        dashboard: true,
+        guestHidden: true,
+      },
       {
         label: "Images",
         href: "/images",
@@ -1590,23 +1508,6 @@ export const primaryNavItems: ShellNavItem[] = [
       { label: "Code Files Window", href: "/code", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-code-files-panel" },
       // `?create=1` opens the canonical Create Sandbox modal on the list page.
       { label: "New Sandbox", href: "/sandbox?create=1", iconName: "Plus", actionItem: true },
-    ],
-  },
-  {
-    // computer (Arman, 2026-10-04): the person's own computer, through the
-    // desktop app — connecting it and the devices already connected.
-    label: "Computer",
-    href: "/local",
-    iconName: "Monitor",
-    section: "primary",
-    profileMenu: false,
-    dashboard: false,
-    description: "Your computer, via the desktop app",
-    color: "slate",
-    guestHidden: true,
-    children: [
-      { label: "My Devices", href: "/local", iconName: "Laptop", guestHidden: true },
-      { label: "Connect a Computer", href: "/connect-computer", iconName: "Monitor", guestHidden: true },
     ],
   },
   {
@@ -1825,6 +1726,111 @@ export const primaryNavItems: ShellNavItem[] = [
       { label: "HR Tasks", href: hrTasksHref(NO_EMPLOYER), iconName: "ListTodo", description: "Everything in HR waiting on a decision from you", color: "indigo", guestHidden: true },
       { label: "HR Reports", href: hrReportsHref(NO_EMPLOYER), iconName: "BarChart3", description: "Headcount, turnover, cost and compliance reporting", color: "indigo", guestHidden: true },
       { label: "HR Settings", href: hrSettingsHref(null, { org: NO_EMPLOYER }), iconName: "Settings", description: "How HR works for this employer", color: "indigo", guestHidden: true },
+    ],
+  },
+  {
+    // web: scraper, web-search, persistent-cloud-browser, residential-egress —
+    // every way the platform reaches the web.
+    label: "Web",
+    href: "/scraper",
+    guestHref: "/features",
+    iconName: "Globe",
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "Scrape, search and reach the web",
+    color: "orange",
+    children: [
+      {
+        label: "Webscraper",
+        href: "/scraper",
+        guestHref: "/features",
+        iconName: "Globe",
+        description: "Extract and process data from web sources",
+        color: "orange",
+        profileMenu: true,
+        dashboard: true,
+      },
+      { label: "Search", href: "/search", iconName: "Search" },
+      { label: "Web Scraper Window", href: "/scraper", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-web-scraper-panel" },
+      { label: "Site Workbench Window", href: "/tools/pdf-extractor", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-site-workbench-panel" },
+    ],
+  },
+  {
+    // utilities: small free text and data tools — their own domain, not part of Content.
+    label: "Utilities",
+    href: "/markdown-studio",
+    iconName: "Wrench",
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "Small text and data tools",
+    color: "orange",
+    children: [
+      {
+        label: "Markdown Studio",
+        href: "/markdown-studio",
+        iconName: "PenLine",
+        description: "Interactive markdown editor and parser comparison",
+        color: "slate",
+        profileMenu: true,
+        dashboard: true,
+      },
+      {
+        label: "Data Truncator",
+        href: "/free/data-truncator",
+        iconName: "Scissors",
+        description: "Trim and preview truncated text for UI limits",
+        color: "orange",
+        profileMenu: true,
+        dashboard: true,
+      },
+      {
+        label: "Character Counter",
+        href: "/free/character-counter",
+        iconName: "TextCursorInput",
+        description: "Count characters, words, limits, and keyword density locally",
+        color: "orange",
+        profileMenu: true,
+        dashboard: true,
+      },
+      {
+        label: "UUID Generator",
+        href: "/free/uuid/generator",
+        iconName: "Hash",
+        description: "Generate UUIDs on the client — single or bulk",
+        color: "orange",
+        profileMenu: true,
+        dashboard: true,
+      },
+      {
+        label: "Zip Code Heatmap",
+        href: "/free/zip-code-heatmap",
+        iconName: "Map",
+        description: "Visualize US zip code density on an interactive map",
+        color: "orange",
+        profileMenu: true,
+        dashboard: true,
+      },
+      { label: "JSON Truncator Window", href: "/free/data-truncator", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-json-truncator-panel" },
+      { label: "Character Counter Window", href: "/free/character-counter", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-character-counter-panel" },
+    ],
+  },
+  {
+    // computer (Arman, 2026-10-04): the person's own computer, through the
+    // desktop app — connecting it and the devices already connected.
+    label: "Computer",
+    href: "/local",
+    iconName: "Monitor",
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "Your computer, via the desktop app",
+    color: "slate",
+    guestHidden: true,
+    children: [
+      { label: "My Devices", href: "/local", iconName: "Laptop", guestHidden: true },
+      { label: "Connect a Computer", href: "/connect-computer", iconName: "Monitor", guestHidden: true },
     ],
   },
   {

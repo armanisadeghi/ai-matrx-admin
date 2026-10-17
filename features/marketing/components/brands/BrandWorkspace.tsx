@@ -908,6 +908,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   {/* Fixed minimum width, so the count arriving never resizes the row. */}
                   <Button asChild variant="outline" className="min-w-[3.5rem] tabular-nums">
                     <Link
+                      prefetch={false}
                       href={marketingRoutes.brandDiscovery(brandId)}
                       aria-label={`${(pending.data ?? 0).toLocaleString()} to review`}
                       title={`${(pending.data ?? 0).toLocaleString()} to review`}
@@ -919,7 +920,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   {canEdit ? (
                     <>
                       <Button asChild variant="outline">
-                        <Link href={marketingRoutes.smartAddEnrich(current.id)} data-testid="brand-enrich-smart-add">
+                        <Link prefetch={false} href={marketingRoutes.smartAddEnrich(current.id)} data-testid="brand-enrich-smart-add">
                           <ScanSearch className="h-3.5 w-3.5" />
                           Enrich Brand
                         </Link>
@@ -987,6 +988,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                         : label;
                       return internal && href ? (
                         <Link
+                          prefetch={false}
                           key={property.id}
                           href={href}
                           title={title}
@@ -1107,7 +1109,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 />
               </div>
               <div className="grid min-w-0 gap-3">
-                <BrandOverviewContact facts={factRows} onOpen={() => setTab("facts")} />
+                <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
                 <BrandOverviewWebsites brandId={brandId} sites={websiteSites} onOpen={() => setTab("web")} />
                 <BrandOverviewSocial properties={socialProperties} onOpen={() => setTab("social")} />
                 <BrandOverviewAssets
@@ -1239,6 +1241,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     className="flex flex-wrap items-center gap-3 px-3 py-2 transition-colors hover:bg-accent/40"
                   >
                     <Link
+                      prefetch={false}
                       href={marketingRoutes.site(brandId, site.id)}
                       className="flex min-w-0 flex-1 basis-48 items-center gap-3"
                     >
@@ -1357,7 +1360,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 asChild
                 variant="outline"
               >
-                <Link href={marketingRoutes.brandAssets(brandId)}>
+                <Link prefetch={false} href={marketingRoutes.brandAssets(brandId)}>
                   <Images className="h-3.5 w-3.5" />
                   Open asset desk
                 </Link>

@@ -49,7 +49,7 @@ import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTroubleshootingToTasks } from "@/features/tasks/utils/importConverters";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
-import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
 interface TroubleshootingData {
@@ -398,7 +398,9 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                     </div>
                     <div className="flex-1">
                       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        {troubleshooting.title}
+                        <InlineControlText controls={controls} fieldKey="title" value={troubleshooting.title}>
+                          {troubleshooting.title}
+                        </InlineControlText>
                       </h1>
                       {troubleshooting.description && (
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">

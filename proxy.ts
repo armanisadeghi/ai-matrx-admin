@@ -11,6 +11,7 @@ import {
   type NextRequest,
 } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
+import { isCurrentAuthCookie } from "@/utils/supabase/authCookie";
 import { ADMIN_LANE_HEADER, isAdminLanePath } from "@/utils/supabase/adminLane";
 import { siteConfig } from "@/config/extras/site";
 import {
@@ -324,6 +325,31 @@ function stampAdminLane(request: NextRequest): void {
   }
 }
 
+/** A session pass slower than this is logged (with whether it refreshed the token). */
+const PROXY_SLOW_MS = 300;
+
+/**
+ * The proxy's share of the time before the first byte, on every response it shapes: a
+ * `Server-Timing: proxy;dur=…` entry (DevTools › Network › Timing shows it beside the page's own
+ * wait) and, when slow, one `[proxy-timing]` log line saying whether the pass refreshed the
+ * session (a refresh is the auth round trip a local `getClaims()` otherwise avoids).
+ */
+function stampProxyTiming(request: NextRequest, response: NextResponse, ms: number): void {
+  const refreshed = response.headers
+    .getSetCookie()
+    .some((raw) => isCurrentAuthCookie(raw.slice(0, raw.indexOf("="))));
+  response.headers.append(
+    "Server-Timing",
+    `proxy;dur=${ms.toFixed(1)};desc="session pass${refreshed ? ", refreshed" : ""}"`,
+  );
+  if (ms >= PROXY_SLOW_MS) {
+    console.warn(
+      `[proxy-timing] ${request.nextUrl.pathname} session-pass=${Math.round(ms)}ms refreshed=${refreshed} ` +
+        `dest=${request.headers.get("sec-fetch-dest") ?? "?"}`,
+    );
+  }
+}
+
 export async function proxy(request: NextRequest, event: NextFetchEvent) {
   // This development-only endpoint must precede auth/session work: SSE status
   // and explicit activity are not page requests and must never refresh a walk.
@@ -348,7 +374,9 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   // THE INDEXED SWITCH (access ladder T-12): a published-record page that is not indexed
   // carries X-Robots-Tag. Started before the session pass so the two run side by side.
   const robotsLookup = startRecordRobotsLookup(request.nextUrl.pathname);
+  const sessionStarted = performance.now();
   const response = await routeRequest(request);
+  stampProxyTiming(request, response, performance.now() - sessionStarted);
   await applyRecordRobotsHeader(robotsLookup, response);
   return applyLocalAgentTrafficCookie(
     applyAcquisitionCookie(response, capture, request),

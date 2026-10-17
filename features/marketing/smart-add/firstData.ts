@@ -249,8 +249,10 @@ export interface FactsSaw {
  */
 export function wakesFacts(
   saw: FactsSaw,
-  round: { firstData: boolean; website: boolean; accounts: boolean; name: boolean },
+  round: { firstData: boolean; website: boolean; accounts: boolean; name: boolean; person?: boolean },
 ): { wake: boolean; saw: FactsSaw } {
+  // MKT-186: a person's facts come from the person facts agent alone — the business facts agent never also runs on a person page.
+  if (round.person) return { wake: false, saw };
   const blind = !saw.site && !saw.social && !saw.name;
   const wake = round.firstData || (round.website && !saw.site) || (round.accounts && !saw.social) || (round.name && blind);
   return {
