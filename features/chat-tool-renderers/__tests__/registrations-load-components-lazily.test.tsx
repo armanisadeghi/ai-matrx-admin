@@ -32,7 +32,7 @@ jest.mock("@/features/chat-tool-renderers/toolRendererImpls", () => {
     "TaskListInline", "DocumentInline", "DocumentOverlay", "DatasetInline", "DatasetOverlay",
     "KnowledgeSearchInline", "KnowledgeSearchOverlay", "DocumentSearchInline", "KnowledgeBrowseInline",
     "DocumentContentInline", "NoteToolInline", "NoteToolOverlay", "TopicalMapInline",
-    "RecordsAnswerBody", "RefusalLine",
+    "RecordsAnswerBody", "RefusalLine", "CompareInline", "SiteDataInline",
   ];
   return Object.fromEntries(names.map((n) => [n, stub(n)]));
 });
@@ -87,6 +87,8 @@ const LIGHT_RENDERER_HELPERS = [
   "./renderers/seo/resolve",
   "./renderers/topical-map/topicalMapResult",
   "./renderers/document-content/documentContentView",
+  "./renderers/site-data/parseSiteData",
+  "./renderers/compare/parseCompare",
 ];
 
 /** An app module (never a package's own light helpers, e.g. the chat `renderers/_shared`). */

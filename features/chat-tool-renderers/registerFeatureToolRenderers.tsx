@@ -27,6 +27,7 @@ import { resolveSeoVariant, seoVariantSub } from "./renderers/seo/resolve";
 import { lazyToolRenderer } from "./lazyToolRenderer";
 import { resolveDocumentContentView } from "./renderers/document-content/documentContentView";
 import { parseSiteData } from "./renderers/site-data/parseSiteData";
+import { parseCompare } from "./renderers/compare/parseCompare";
 import {
   TOPICAL_MAP_ACTION_LABELS,
   humanizeAction,
@@ -56,6 +57,7 @@ const NoteToolInline = lazyToolRenderer("NoteToolInline");
 const NoteToolOverlay = lazyToolRenderer("NoteToolOverlay");
 const TopicalMapInline = lazyToolRenderer("TopicalMapInline");
 const SiteDataInline = lazyToolRenderer("SiteDataInline");
+const CompareInline = lazyToolRenderer("CompareInline");
 const WebReadInline = lazyToolRenderer("WebReadInline");
 
 function seoHeaderExtras(entry: ToolLifecycleEntry): React.ReactNode {
@@ -552,6 +554,29 @@ const FEATURE_TOOL_RENDERERS: ToolRegistry = {
     keepExpandedOnStream: true,
     displayMode: "stay-open",
     getHeaderSubtitle: (entry) => parseSiteData(entry)?.label ?? null,
+  },
+
+  // `compare` — the agent finds and quotes; THIS card's Confirm starts the paid run, then it fills in
+  // live and settles into a compact side-by-side. It survives a reload (it follows the reserved run id).
+  compare: {
+    toolName: "compare",
+    displayName: "Compare",
+    chrome: "card",
+    phaseLabels: {
+      running: "Finding what to compare",
+      complete: "Ready to compare",
+      errorPrefix: "Compare failed",
+    },
+    resultsLabel: "Comparison",
+    InlineComponent: CompareInline,
+    keepExpandedOnStream: true,
+    displayMode: "stay-open",
+    getHeaderSubtitle: (entry) => {
+      const d = parseCompare(entry);
+      if (!d) return null;
+      const names = d.found.map((f) => f.name ?? f.typed).filter(Boolean);
+      return names.length ? names.join(" vs ") : null;
+    },
   },
 
   note: {
