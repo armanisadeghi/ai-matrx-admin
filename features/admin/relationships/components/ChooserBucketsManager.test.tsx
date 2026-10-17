@@ -114,10 +114,10 @@ describe("ChooserBucketsManager", () => {
     });
 
     const categoryTable = tables.findLast(
-      (table) => table.urlState?.id === "chooser-slug",
+      (table) => (table.urlState || undefined)?.id === "chooser-slug",
     );
     const schemaTable = tables.findLast(
-      (table) => table.urlState?.id === "chooser-schema",
+      (table) => (table.urlState || undefined)?.id === "chooser-schema",
     );
     if (!categoryTable || !schemaTable)
       throw new Error("Tables did not render");

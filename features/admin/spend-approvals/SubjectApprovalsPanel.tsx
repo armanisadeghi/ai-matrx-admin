@@ -13,7 +13,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SpendApprovalsBoard, HistoryList } from "./SpendApprovalsBoard";
 import {
   SUBJECT_KIND_LABEL,
-  approvalHref,
+  approvalRecordHref,
   approvalSubjectHref,
   mandateKeyHref,
   type ApprovalSeat,
@@ -28,7 +28,7 @@ import {
   type HeldRun,
 } from "@/features/admin/held-runs/heldRuns";
 
-function HeldRunsList({ approvalId }: { approvalId: string }) {
+export function HeldRunsList({ approvalId }: { approvalId: string }) {
   const [runs, setRuns] = useState<HeldRun[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -84,8 +84,8 @@ function ApprovalDetail({ row, seat, orgSlug, own }: { row: SpendApprovalRow; se
               Mandate
             </Link>
           )}
-          <Link className="text-primary hover:underline" href={approvalHref(row.id, seat, orgSlug)}>
-            In the list
+          <Link className="text-primary hover:underline" href={approvalRecordHref(row.subject_kind, row.subject_id, seat, orgSlug)}>
+            Full page
           </Link>
         </span>
       </div>

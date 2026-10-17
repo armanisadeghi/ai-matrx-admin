@@ -99,10 +99,10 @@ describe("JurisdictionVerificationClient", () => {
     act(() => root.render(<JurisdictionVerificationClient />));
 
     const seedTable = tables.find(
-      (table) => table.urlState?.id === "jurisdiction-seed-progress",
+      (table) => (table.urlState || undefined)?.id === "jurisdiction-seed-progress",
     );
     const overdueTable = tables.find(
-      (table) => table.urlState?.id === "jurisdiction-overdue-rules",
+      (table) => (table.urlState || undefined)?.id === "jurisdiction-overdue-rules",
     );
     if (!seedTable || !overdueTable)
       throw new Error("Verification tables did not render");

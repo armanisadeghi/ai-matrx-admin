@@ -8,13 +8,18 @@
  *
  * Arman 2026-10-10: default columns in his order; every $ to the cent; points hidden by default;
  * colours from knobs (billing.run_approval/color_*); "Temporary" approvals with an expiry; "Reset
- * tracking" restarts the "since" stats; ?id=<approval> pages to and highlights that row (the table's focusRowId; nothing is filtered).
+ * tracking" restarts the "since" stats.
+ *
+ * Arman 2026-10-17: every view is a link (search, sort, filters, status and the open record live in
+ * the URL); a row opens a View/Edit window with an "Open full page" door to the record's own route
+ * (`approvalRecordHref`), and on that route this same board is the page's sidebar
+ * (`presentation="list"`, the layout in app/(admin)/administration/billing/approvals).
  */
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { CalendarClock, Check, History, Loader2, RefreshCw, RotateCcw, TimerReset, X } from "lucide-react";
-import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { enumUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
+import { CalendarClock, Check, History, RefreshCw, RotateCcw, TimerReset, X } from "lucide-react";
+import { Button, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import { FirstPlusMore } from "@/components/official/first-plus-more/FirstPlusMore";
 import { ApprovalStatusText } from "./RunApprovalCell";
@@ -27,7 +32,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
-import { toast } from "@/lib/toast";
+import { recordToast, toast } from "@/lib/toast";
 import {
   APPROVAL_STATUS_LABEL,
   SUBJECT_KIND_LABEL,
@@ -39,10 +44,10 @@ import {
   resetSpendApprovalTracking,
   startedByLabel,
   fetchSpendApprovalHistory,
-  fetchSpendApprovals,
   firstRunHref,
   subjectHref,
   approvalSubjectHref,
+  approvalRecordHref,
   rowMatchesSubject,
   type ApprovalSubject,
   mandateKeyHref,
@@ -57,7 +62,18 @@ import {
 
 import { readOf } from "@ai-matrx/design-system";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
+import { useSpendApprovalsData } from "./useSpendApprovalsData";
+import { ApprovalEditBody } from "./ApprovalEditBody";
+/** The board's table id — and so its URL namespace (`table.<id>.*`). */
+export const spendApprovalsTableId = (seat: ApprovalSeat) => `spend-approvals-${seat}`;
 type StatusFilter = ApprovalStatus | "all";
+const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "waiting", label: "Waiting" },
+  { value: "approved", label: "Approved" },
+  { value: "temporary", label: "Temporary" },
+  { value: "rejected", label: "Rejected" },
+];
 type Tone = "danger" | "warning" | null;
 
 const TONE_CLASS: Record<"danger" | "warning", string> = {
@@ -83,26 +99,6 @@ const EVENT_LABEL: Record<string, string> = {
   volume_hold: "Held by volume",
   merged: "Duplicates merged",
 };
-
-function useApprovals(orgId: string | null) {
-  const [rows, setRows] = useState<SpendApprovalRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    let live = true;
-    setLoading(true);
-    setError(null);
-    fetchSpendApprovals(orgId)
-      .then((r) => live && setRows(r))
-      .catch((e: unknown) => live && setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => live && setLoading(false));
-    return () => {
-      live = false;
-    };
-  }, [orgId, tick]);
-  return { rows, setRows, loading, error, reload: () => setTick((t) => t + 1) };
-}
 
 function eventUntil(e: SpendApprovalEvent): string | null {
   const d = e.data as { expires_at?: string } | null;
@@ -143,12 +139,12 @@ export function HistoryList({ id }: { id: string }) {
   );
 }
 
-interface Pending {
+export interface Pending {
   row: SpendApprovalRow;
   decision: ApprovalDecision | "history" | "reset";
 }
 
-function DecisionDialog({
+export function DecisionDialog({
   pending,
   knobs,
   onClose,
@@ -177,6 +173,7 @@ function DecisionDialog({
   if (!pending) return null;
   const { row, decision } = pending;
   const name = row.subject_name ?? row.subject_id;
+  const approvalRef = { type: "spend_approval", id: row.id, title: name };
   const runsPerMonth = perMonth.trim() === "" ? null : Number(perMonth);
   const perRun = row.avg_cost_since ?? row.first_run_cost;
   const monthly = (runsPerMonth ?? row.runs_30d) * perRun;
@@ -218,7 +215,7 @@ function DecisionDialog({
     try {
       if (decision === "reset") {
         await resetSpendApprovalTracking([row.id], note);
-        toast.success(`Tracking reset: ${name}`);
+        recordToast.success(approvalRef, `Tracking reset: ${name}`);
       } else {
         await decideSpendApproval(row.id, decision, {
           note,
@@ -226,9 +223,13 @@ function DecisionDialog({
           expectedRunsPerMonth: runsPerMonth != null && Number.isFinite(runsPerMonth) ? runsPerMonth : null,
           expiresAt: untilIso,
         });
-        const next: ApprovalStatus =
-          decision === "approve" ? "approved" : decision === "approve_temporary" ? "temporary" : decision === "reject" ? "rejected" : "waiting";
-        toast.success(`${APPROVAL_STATUS_LABEL[next]}: ${name}`);
+        if (decision === "details") {
+          recordToast.success(approvalRef, `Saved: ${name}`);
+        } else {
+          const next: ApprovalStatus =
+            decision === "approve" ? "approved" : decision === "approve_temporary" ? "temporary" : decision === "reject" ? "rejected" : "waiting";
+          recordToast.success(approvalRef, `${APPROVAL_STATUS_LABEL[next]}: ${name}`);
+        }
       }
       onDone();
       onClose();
@@ -238,7 +239,8 @@ function DecisionDialog({
       setBusy(false);
     }
   };
-  const approving = decision === "approve" || decision === "approve_temporary";
+  // "details" edits the same expected result / runs a month an approval records.
+  const approving = decision === "approve" || decision === "approve_temporary" || decision === "details";
   return (
     <ConfirmDialog
       open
@@ -335,6 +337,8 @@ export function SpendApprovalsBoard({
   orgSlug,
   subject,
   onRows,
+  presentation = "table",
+  activeSubject,
 }: {
   orgId: string | null;
   seat: ApprovalSeat;
@@ -343,20 +347,34 @@ export function SpendApprovalsBoard({
   subject?: ApprovalSubject;
   /** The subject's rows, each time they load or change (the subject page's history + held runs). */
   onRows?: (rows: SpendApprovalRow[]) => void;
+  /** `list`: the record page's sidebar — one linked line per approval, the open one highlighted. */
+  presentation?: "table" | "list";
+  /** The approval the record page beside this list shows. */
+  activeSubject?: ApprovalSubject | null;
 }) {
-  const { rows, setRows, loading, error, reload } = useApprovals(orgId);
+  const { rows, setRows, loading, error, reload, decide } = useSpendApprovalsData(orgId);
   const { format } = useCostDisplay();
   const knobs = useApprovalColorKnobs();
   const { prefs: viewPrefs, setPrefs: setViewPrefs } = useListViewPrefs(`spend-approvals-${seat}`);
-  const params = useSearchParams();
-  const focusId = params.get("id");
-  const [status, setStatus] = useState<StatusFilter>("all");
+  // The status filter is part of the view, so it lives in the URL under the table's own
+  // `table.<id>.` namespace — record links carry it with the rest of the view (a subject's
+  // embedded board keeps it local: two boards never share one parameter).
+  const [urlStatus, setUrlStatus] = useUrlState(
+    `table.${spendApprovalsTableId(seat)}.status`,
+    enumUrlCodec<StatusFilter>(["all", "waiting", "approved", "temporary", "rejected"], "all"),
+  );
+  const [localStatus, setLocalStatus] = useState<StatusFilter>("all");
+  const status = subject ? localStatus : urlStatus;
+  const setStatus = (next: StatusFilter) => (subject ? setLocalStatus(next) : setUrlStatus(next));
   const [pending, setPending] = useState<Pending | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulk, setBulk] = useState<{ decision: "approve" | "reject" | "reset"; rows: SpendApprovalRow[] } | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const own = subject ? rows.filter((r) => rowMatchesSubject(r, subject)) : rows;
+  const activeRowId = activeSubject
+    ? (rows.find((r) => r.subject_kind === activeSubject.kind && r.subject_id === activeSubject.id)?.id ?? null)
+    : null;
   const visible = own.filter((r) => status === "all" || r.status === status);
   useEffect(() => {
     if (onRows && !loading) onRows(own);
@@ -368,25 +386,7 @@ export function SpendApprovalsBoard({
     knobs ? costTone(v, knobs.monthlyRedUsd, knobs.monthlyAmberUsd) : null;
   const rowTone = (t: Tone) => t ?? undefined;
 
-  const setRowStatus = (id: string, st: ApprovalStatus, expiresAt?: string | null) =>
-    setRows((rs) => rs.map((x) => (x.id === id ? { ...x, status: st, expires_at: expiresAt ?? (st === "temporary" ? x.expires_at : null) } : x)));
-  const decideInline = async (
-    r: SpendApprovalRow,
-    decision: ApprovalDecision,
-    next: ApprovalStatus,
-    note: string,
-    expiresAt: string | null,
-  ) => {
-    const before = { status: r.status, expires_at: r.expires_at };
-    setRowStatus(r.id, next, expiresAt);
-    try {
-      await decideSpendApproval(r.id, decision, { note, expiresAt });
-      toast.success(`${APPROVAL_STATUS_LABEL[next]}: ${r.subject_name ?? r.subject_id}`);
-    } catch (e: unknown) {
-      setRowStatus(r.id, before.status, before.expires_at);
-      toast.error(e instanceof Error ? e.message : String(e));
-    }
-  };
+  const decideInline = decide;
 
   const decideBulk = async () => {
     if (!bulk) return;
@@ -788,7 +788,7 @@ export function SpendApprovalsBoard({
           <Button variant="quiet" onClick={() => setPending({ row: r, decision: "history" })} aria-label="History" title="History">
             <History className="h-4 w-4" />
           </Button>
-          {!r.can_decide && <span className="text-[10px] text-muted-foreground">Platform decides</span>}
+          {!r.can_decide && <span className="type-meta text-muted-foreground">Platform decides</span>}
         </div>
       ),
     },
@@ -808,12 +808,32 @@ export function SpendApprovalsBoard({
           columns={columns}
           getRowId={(r) => r.id}
           isLoading={loading}
-          tableId={subject ? `spend-approvals-${seat}-subject` : `spend-approvals-${seat}`}
+          tableId={subject ? `${spendApprovalsTableId(seat)}-subject` : spendApprovalsTableId(seat)}
           viewTabsStore={{
             views: viewPrefs.savedViews ?? [],
             onChange: (savedViews) => setViewPrefs({ savedViews }),
           }}
-          focusRowId={focusId}
+          getRowHref={(r) => approvalRecordHref(r.subject_kind, r.subject_id, seat, orgSlug)}
+          presentation={presentation}
+          activeRowId={activeRowId}
+          listItem={{
+            title: (r) => r.subject_name ?? r.subject_id,
+            subtitle: (r) =>
+              [APPROVAL_STATUS_LABEL[r.status], SUBJECT_KIND_LABEL[r.subject_kind], r.est_monthly_cost == null ? null : `${cents(r.est_monthly_cost)}/mo`]
+                .filter(Boolean)
+                .join(" · "),
+          }}
+          window={{
+            title: (r) => r.subject_name ?? r.subject_id,
+            defaultTab: "view",
+            renderEdit: (r) => (
+              <ApprovalEditBody
+                row={r}
+                onDecide={(decision, next, note, expiresAt) => decideInline(r, decision, next, note, expiresAt)}
+                onAction={(decision) => setPending({ row: r, decision })}
+              />
+            ),
+          }}
           headerWrap="two-lines"
           read={readOf({ loading, error }, { what: "spend approvals" })}
           emptyState={{ title: subject ? "No spend approval for this" : "No spend approvals" }}
@@ -843,20 +863,23 @@ export function SpendApprovalsBoard({
             searchPlaceholder: "Search names, features, keys, agents…",
             actions: (
               <div className="flex items-center gap-2">
+                {presentation === "list" ? (
+                  <Select<StatusFilter>
+                    aria-label="Status"
+                    value={status}
+                    onValueChange={setStatus}
+                    options={STATUS_OPTIONS}
+                  />
+                ) : (
                 <SegmentedControl<StatusFilter>
                   aria-label="Status"
                   value={status}
                   onValueChange={setStatus}
-                  data={[
-                    { value: "all", label: "All" },
-                    { value: "waiting", label: "Waiting" },
-                    { value: "approved", label: "Approved" },
-                    { value: "temporary", label: "Temporary" },
-                    { value: "rejected", label: "Rejected" },
-                  ]}
+                  data={STATUS_OPTIONS}
                 />
+                )}
                 <Button variant="outline" onClick={reload} disabled={loading} aria-label="Refresh">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
             ),
