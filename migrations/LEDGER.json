@@ -11365,6 +11365,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/20261017120000_w2e_a_connected_app_triggers_and_github_issue_step.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261017120000_w2e_a_connected_app_triggers_and_github_issue_step.sql",
+      "checksum": "80db5dfaeeb795487bdc42c6bf387f1d487b73920ae7a75ceca40d84bb716f0c",
+      "applied_at": "2026-10-17 21:09:53.403222+00"
     }
   }
 }
