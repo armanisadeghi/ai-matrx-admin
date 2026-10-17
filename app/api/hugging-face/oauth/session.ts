@@ -38,3 +38,17 @@ export function parseHuggingFaceOAuthSession(value: string): HuggingFaceOAuthSes
   }
   return null;
 }
+
+/**
+ * The sentence aidream wrote for the person in a refusal. Its error envelope carries
+ * `user_message` / `message`; FastAPI's own shape carries `detail`. Null when none is a string.
+ */
+export function refusalWords(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const record = body as Record<string, unknown>;
+  for (const key of ["user_message", "message", "detail"]) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return null;
+}
