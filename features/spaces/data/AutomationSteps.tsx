@@ -442,6 +442,7 @@ const KIND_TITLE: Record<string, string> = {
   gmail: "Send Gmail",
   sms: "Send a text",
   google_calendar_event: "Google Calendar event",
+  github_issue: "GitHub issue",
   add_row: "Add a record",
   email: "Send email",
   slack: "Slack message",
@@ -461,6 +462,7 @@ function newStep(kind: string, env: Env): Step {
     case "gmail": return { do: "gmail", to: "", subject: "", body: "" };
     case "sms": return { do: "sms", to: "", message: "" };
     case "google_calendar_event": return { do: "google_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" };
+    case "github_issue": return { do: "github_issue", repo: "", title: "", body: "", labels: "" };
     case "add_row": return { do: "add_row", table_id: env.tableId, values: {} };
     case "email": return { do: "email", to: { address: "" }, subject: "", body: "" };
     case "slack": return { do: "slack", url: "", text: "" };
@@ -469,7 +471,7 @@ function newStep(kind: string, env: Env): Step {
   }
 }
 
-const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "email", "slack", "webhook"] as const;
+const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "email", "slack", "webhook"] as const;
 
 function AddStep({ onAdd, kinds = STEP_KINDS }: { onAdd: (kind: string) => void; kinds?: readonly string[] }) {
   const [open, setOpen] = useState(false);
@@ -597,6 +599,14 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
         <div className="flex flex-col gap-1">
           <TokenText label="Phone number" value={str(step.to)} onChange={(v) => set({ to: v })} sources={sources} placeholder="Phone number" />
           <TokenText label="Text" value={str(step.message)} onChange={(v) => set({ message: v })} sources={sources} placeholder="Message" />
+        </div>
+      ) : null}
+      {step.do === "github_issue" ? (
+        <div className="flex flex-col gap-1">
+          <TokenText label="Repository" value={str(step.repo)} onChange={(v) => set({ repo: v })} sources={sources} placeholder="owner/name" />
+          <TokenText label="Title" value={str(step.title)} onChange={(v) => set({ title: v })} sources={sources} placeholder="Issue title" />
+          <TokenText label="Body" value={str(step.body)} onChange={(v) => set({ body: v })} sources={sources} placeholder="Issue text" />
+          <TokenText label="Labels" value={str(step.labels)} onChange={(v) => set({ labels: v })} sources={sources} placeholder="Labels, comma-separated" />
         </div>
       ) : null}
       {step.do === "google_calendar_event" ? (

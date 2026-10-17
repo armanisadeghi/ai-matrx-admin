@@ -85,6 +85,8 @@ async function lineStream(path: string, body: unknown, o: CallOptions, onEvent: 
     if (!text) return;
     try {
       const evt = JSON.parse(text) as LineEvent;
+      // The server writes a heartbeat line while it waits (the load balancer cuts a silent stream); it is not an event.
+      if (evt.type === "heartbeat") return;
       all.push(evt);
       onEvent(evt);
     } catch {
