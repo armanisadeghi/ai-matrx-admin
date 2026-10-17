@@ -1531,7 +1531,7 @@
 .spaces-chart-donut { display: flex; flex: 1 1 auto; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 20px; min-height: 160px; min-width: 0; padding: 8px 0; }
 .spaces-chart-donut svg { flex: none; max-width: 100%; height: auto; overflow: visible; }
 .spaces-chart-center { font-weight: 600; letter-spacing: -0.02em; fill: var(--spaces-ink); }
-.spaces-chart-legend { display: flex; flex: 1 1 140px; flex-direction: column; gap: 4px; min-width: 0; max-width: 100%; max-height: 220px; overflow-y: auto; font-size: 12px; color: var(--spaces-ink-soft); }
+.spaces-chart-legend { display: flex; flex: 1 1 140px; flex-direction: column; gap: 4px; min-width: 0; max-width: min(100%, 300px); max-height: 220px; overflow-y: auto; font-size: 12px; color: var(--spaces-ink-soft); }
 .spaces-chart-legend li { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .spaces-chart-legend span { flex: none; width: 8px; height: 8px; border-radius: 999px; }
 .spaces-chart-legend b { flex: 1 1 auto; min-width: 0; overflow: hidden; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }

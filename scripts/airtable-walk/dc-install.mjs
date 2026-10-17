@@ -10,7 +10,7 @@ await page.waitForTimeout(6000);
 await page.getByRole("button", { name: "Templates" }).first().click();
 await page.waitForTimeout(2500);
 await page.locator('input[type=search], input[placeholder*="earch"]').last().fill(name); await page.waitForTimeout(2500);
-await page.getByText(name, { exact: true }).first().click();
+await page.getByText(/\d+ pages?/).first().click();
 await page.waitForTimeout(5000);
 await page.screenshot({ path: `${D}/preview-${name.replace(/\W/g,"")}.png` });
 await page.getByRole("button", { name: /Use template/ }).first().click();

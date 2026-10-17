@@ -76,6 +76,9 @@ describe("the double-padding detector", () => {
     expect(isDoublePadded(40, 1440)).toBe(true);
     expect(isDoublePadded(16, 375)).toBe(false);
     expect(isDoublePadded(17, 375)).toBe(true);
+    // A scroller that ends 8px above the viewport floor is 8px further from the floating chrome already.
+    expect(isDoublePadded(25, 1440, 8)).toBe(false);
+    expect(isDoublePadded(29, 1440, 8)).toBe(true);
   });
 
   function rect(top: number, bottom: number) {

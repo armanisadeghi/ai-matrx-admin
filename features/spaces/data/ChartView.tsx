@@ -215,7 +215,7 @@ function Donut({ data, settings }: { data: ChartData; settings: ChartSettings })
   }, []);
   const center = settings.op === "count" || settings.op === "sum" ? data.total ?? sum : data.total;
   const shown = pretty(center);
-  const fontSize = shown.length <= 5 ? 20 : shown.length <= 7 ? 16 : 13;
+  const fontSize = shown.length <= 5 ? 20 : shown.length <= 7 ? 16 : shown.length <= 9 ? 12 : 10;
   return (
     <div className="spaces-chart-donut">
       <svg viewBox={`0 0 ${RING} ${RING}`} width={RING} height={RING} role="img" aria-label={shown}>

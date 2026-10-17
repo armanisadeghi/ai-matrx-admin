@@ -95,6 +95,11 @@ function isScroller(el: Element): el is HTMLElement {
   return (oy === "auto" || oy === "scroll") && el.scrollHeight > el.clientHeight + 1;
 }
 
+/** True for a scroll owner the shell gives its own bottom runway (see styles/shell.css, "NO STACKING"). */
+export function ownsShellRunway(el: HTMLElement): boolean {
+  return el.hasAttribute("data-matrx-page-scroll") && el.getAttribute("data-floating-clearance") !== "off" && el.closest(".shell-main") !== null;
+}
+
 function scrollersUnder(dock: DOMRect): HTMLElement[] {
   const found = new Set<HTMLElement>();
   const main = document.querySelector("main");
@@ -105,6 +110,9 @@ function scrollersUnder(dock: DOMRect): HTMLElement[] {
     const hit = stack.find((el) => !el.closest(DOCK_SELECTOR));
     for (let el: Element | null = hit ?? null; el && el !== document.body; el = el.parentElement) {
       if (el instanceof HTMLElement && isPageMainArea(el, main, mainRect)) break;
+      // A scroll owner that takes the shell's runway (`data-matrx-page-scroll`) already ends clear of the
+      // dock; an inset on top of it padded the page twice (Table Settings: 123px, `[page-rhythm]`).
+      if (el instanceof HTMLElement && ownsShellRunway(el)) break;
       if (isScroller(el)) {
         found.add(el);
         break;
