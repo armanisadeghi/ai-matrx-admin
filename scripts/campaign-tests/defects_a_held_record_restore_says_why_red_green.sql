@@ -20,21 +20,15 @@ begin;
 set local lock_timeout = '10s';
 set local statement_timeout = '120s';
 
+\i scripts/campaign-tests/_defects_jobs_fixture.sql
+
 do $t$
 declare
-  c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com
-  v_org uuid := gen_random_uuid();
-  v_table uuid; v_a uuid; v_b uuid; v_msg text; v_state text;
+  v_org uuid; v_table uuid; v_a uuid; v_b uuid; v_msg text; v_state text;
 begin
-  perform set_config('app.actor_system', 'campaign-test/defects-held-restore', true);
-  insert into iam.organizations (id, name, slug, abbreviation, created_by) values
-    (v_org, 'Defects Dispatch ' || substr(v_org::text, 1, 6), 'defects-dispatch-' || substr(v_org::text, 1, 8), 'DD', c_admin);
-  insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status) values
-    (v_org, 'organization', v_org, c_admin, 'owner', 'active');
-  perform set_config('request.jwt.claims', json_build_object('sub', c_admin, 'role', 'authenticated')::text, true);
+  select v into v_org from dj where k = 'org';
+  select v into v_table from dj where k = 'jobs';
   perform set_config('role', 'authenticated', true);
-  v_table := (custom.table_declare(v_org, jsonb_build_object('name', 'Jobs',
-    'fields', jsonb_build_array(jsonb_build_object('key', 'wo', 'label', 'Work order #', 'kind', 'text', 'unique', true)))) ->> 'table_id')::uuid;
   v_a := custom.record_write(v_org, v_table, '{"wo": "WO-1"}'::jsonb);
   perform custom.record_delete(v_org, v_a);
   v_b := custom.record_write(v_org, v_table, '{"wo": "WO-1"}'::jsonb);
