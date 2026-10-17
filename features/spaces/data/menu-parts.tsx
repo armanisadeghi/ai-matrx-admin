@@ -3,11 +3,12 @@
 // features/spaces/data/menu-parts.tsx — the small pieces every database block's toolbar shares: a view
 // tab (rename / duplicate / delete), a menu row, a field list.
 
-import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
-import { Button, Input } from "@ai-matrx/design-system/controls";
+import { ErrorNotice, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { Badge, Button, Input } from "@ai-matrx/design-system/controls";
 import { ChevronDown, Copy, FileText, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import type { NewRowPick, RowTemplateChoice } from "./row-templates";
 import type { SpaceDbView } from "./sources";
 
 export function ViewTab({
@@ -287,21 +288,86 @@ export function SidePeek({ onClose, focusFirstField = false, children }: { onClo
 }
 
 /** Notion's blue "New" in a database toolbar: a new row in place, and the template chevron. */
-export function NewButton({ onNew }: { onNew: () => void }) {
+export function NewButton({
+  onNew,
+  loadTemplates,
+  onSetDefault,
+  templatesOff,
+}: {
+  /** No pick = plain "New" (the table's default template when it has one). */
+  onNew: (pick?: NewRowPick) => void;
+  /** The table's row templates, read when the chevron opens (left out = this source has none). */
+  loadTemplates?: () => Promise<RowTemplateChoice[]>;
+  /** "Set as default" on a template row (left out = this person may not change the table). */
+  onSetDefault?: (templateId: string) => Promise<void>;
+  /** Why the chevron is closed here (the in-memory preview): drawn disabled with this tooltip. */
+  templatesOff?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [list, setList] = useState<{ state: "idle" | "loading" } | { state: "ready"; templates: RowTemplateChoice[] } | { state: "failed"; message: string }>({ state: "idle" });
+  const load = () => {
+    if (!loadTemplates) return;
+    setList({ state: "loading" });
+    loadTemplates().then(
+      (templates) => setList({ state: "ready", templates }),
+      (err: unknown) => setList({ state: "failed", message: err instanceof Error ? err.message : String(err) }),
+    );
+  };
+  const pick = (p: NewRowPick) => {
+    setOpen(false);
+    onNew(p);
+  };
   return (
     <div className="spaces-db-new">
-      <Button variant="quiet" onClick={onNew}>
+      <Button variant="quiet" onClick={() => onNew()}>
         New
       </Button>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="quiet" icon={<ChevronDown size={14} />} aria-label="Templates" />
-        </PopoverTrigger>
-        <PopoverContent surface="solid" align="end" width="sm" padding="xs">
-          <div className="px-2 py-1 type-secondary text-muted-foreground">Templates</div>
-          <MenuRow icon={<FileText size={15} />} label="Empty page" onClick={onNew} />
-        </PopoverContent>
-      </Popover>
+      {templatesOff ? (
+        <Button variant="quiet" icon={<ChevronDown size={14} />} aria-label="Templates" title={templatesOff} disabled />
+      ) : (
+        <Popover
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o);
+            if (o) load();
+          }}
+        >
+          <PopoverTrigger asChild>
+            <Button variant="quiet" icon={<ChevronDown size={14} />} aria-label="Templates" />
+          </PopoverTrigger>
+          <PopoverContent surface="solid" align="end" width="sm" padding="xs">
+            <div className="px-2 py-1 type-secondary text-muted-foreground">Templates</div>
+            {list.state === "loading" ? <div className="spaces-db-loading" aria-label="Loading templates" /> : null}
+            {list.state === "failed" ? <ErrorNotice size="inline" message={list.message} /> : null}
+            {list.state === "ready"
+              ? list.templates.map((t) => (
+                  <MenuRow
+                    key={t.id}
+                    icon={<FileText size={15} />}
+                    label={t.name}
+                    onClick={() => pick({ kind: "template", id: t.id })}
+                    end={
+                      t.isDefault ? (
+                        <Badge>Default</Badge>
+                      ) : onSetDefault ? (
+                        <Button
+                          variant="quiet"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void onSetDefault(t.id).then(load, (err: unknown) => setList({ state: "failed", message: err instanceof Error ? err.message : String(err) }));
+                          }}
+                        >
+                          Set as default
+                        </Button>
+                      ) : null
+                    }
+                  />
+                ))
+              : null}
+            <MenuRow icon={<FileText size={15} />} label="Empty page" onClick={() => pick({ kind: "empty" })} />
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 }

@@ -59,7 +59,10 @@ import { FieldList, MenuRow, SidePeek, ViewerSaveBar, ViewerSortButton, ViewTab,
 import { ChartView, choicesOfField } from "./ChartView";
 import { DEFAULT_CHART } from "./first-reads";
 import { blockQuestion, effectiveHidden, kindOf, viewSpec, type ViewWithSummaries } from "./view-spec";
-import { useOwningRow } from "./owning-row";
+import { primeOwningRow, useOwningRow } from "./owning-row";
+import { readRowTemplates, setDefaultRowTemplate, startNewRow, templateFor, type NewRowPick } from "./row-templates";
+import type { RowPageDb } from "../embed/row-page";
+import { createClient } from "@/utils/supabase/client";
 import { resolveThisRow, thisRowValues, THIS_ROW, THIS_ROW_LABEL, usesThisRow } from "./this-row";
 import { BlockRecordsSeed } from "../page/space-seed-context";
 import { NewPropertyPanel } from "./NewProperty";
@@ -176,15 +179,49 @@ function DatabaseFrame({
 
   // "+ New record" (F7): Notion adds a row in place and opens it. A refused empty row (a required
   // column, a read-only sample) falls back to the whole-record form, which says why.
-  const addRow = () => {
+  // Notion's "New ▾" (data/row-templates.ts): plain New starts from the table's default row template, a
+  // picked template from that one (its preset values on the row, its body on the row's page), "Empty page" from
+  // nothing. The row's page is made before the row opens, through the one row-page path.
+  const tableOrg = (table.data as { organization_id?: string } | null)?.organization_id ?? null;
+  const rowPageDb = () => createClient() as unknown as RowPageDb;
+  const loadTemplates = () => (tableOrg ? readRowTemplates(rowPageDb(), tableOrg, tableId) : Promise.resolve([]));
+  const addRow = (pick: NewRowPick = { kind: "default" }) => {
     // A row added in a "This page's row" view starts linked to that row, so it stays in the view.
-    void client.recordWrite({ table_id: tableId, data: thisRowValues(asked.filters, ownerId) }).then((res) => {
-      if (res.ok) {
-        setFresh(res.data);
-        setOpen(res.data);
-      } else if (sample) toast.info("The sample is read-only. Add your own table to add rows.");
-      else setCreating(true);
-    });
+    const viewValues = thisRowValues(asked.filters, ownerId);
+    const refused = () => (sample ? toast.info("The sample is read-only. Add your own table to add rows.") : setCreating(true));
+    if (sample || !tableOrg) {
+      void client.recordWrite({ table_id: tableId, data: viewValues }).then((res) => {
+        if (res.ok) {
+          setFresh(res.data);
+          setOpen(res.data);
+        } else refused();
+      });
+      return;
+    }
+    const db = rowPageDb();
+    void (pick.kind === "empty" ? Promise.resolve([]) : readRowTemplates(db, tableOrg, tableId))
+      .then((templates) =>
+        startNewRow(db, {
+          organizationId: tableOrg,
+          tableId,
+          template: templateFor(pick, templates),
+          viewValues,
+          writeRow: async (data) => {
+            const res = await client.recordWrite({ table_id: tableId, data });
+            return res.ok ? { ok: true, id: res.data } : { ok: false, message: res.error.message };
+          },
+          onPage: (spaceId, recordId) => primeOwningRow(spaceId, { recordId, tableId, organizationId: tableOrg }),
+        }),
+      )
+      .then(
+        (res) => {
+          if (res.ok) {
+            setFresh(res.recordId);
+            setOpen(res.recordId);
+          } else refused();
+        },
+        (err: unknown) => toast.error(err instanceof Error ? err.message : "The new row's page could not be started."),
+      );
   };
 
   // A row added in the view starts linked to this page's row (records-ui newRowValues), so it stays in the view.
@@ -367,7 +404,14 @@ function DatabaseFrame({
             )}
             <Button variant="quiet" icon={<Maximize2 size={15} strokeWidth={1.8} />} aria-label="Open as full page" title="Open as full page" onClick={() => setExpanded(true)} />
             {shape ? <ViewSettings tableId={tableId} sample={sample} view={active} fields={fields} props={props} onView={saveView} onBlock={save} editable={shape} /> : null}
-            {published ? null : <NewButton onNew={addRow} />}
+            {published ? null : (
+              <NewButton
+                onNew={(pick) => addRow(pick)}
+                loadTemplates={loadTemplates}
+                onSetDefault={shape && tableOrg ? (id) => setDefaultRowTemplate(rowPageDb(), tableOrg, tableId, id) : undefined}
+                templatesOff={sample ? "Templates open once this template is in your workspace" : undefined}
+              />
+            )}
           </div>
         ) : null}
       </div>

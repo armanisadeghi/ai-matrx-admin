@@ -88,10 +88,16 @@ export async function ensureRowPage(
     document?: Record<string, unknown> | null;
     /** Writes the presets to the row (a version-checked update). Called once, only when the page is made now. */
     applyValues?: (patch: Record<string, unknown>) => Promise<void>;
+    /**
+     * The body to start from, chosen by the caller (the New menu's pick; null = an empty page). Left out = the
+     * table's default template, read here. A chosen body applies no presets: the caller wrote them with the row.
+     */
+    template?: RowPageBody | null;
   },
 ): Promise<{ spaceId: string; created: boolean }> {
-  const found = await readDefaultTemplate(db, args.organizationId, args.tableId);
-  const snapshot = rowPageSnapshot({ recordId: args.recordId, notes: args.notes, template: found?.body ?? null });
+  const chosen = args.template !== undefined;
+  const found = chosen ? null : await readDefaultTemplate(db, args.organizationId, args.tableId);
+  const snapshot = rowPageSnapshot({ recordId: args.recordId, notes: args.notes, template: chosen ? (args.template ?? null) : (found?.body ?? null) });
   const problems = validateBlocks(snapshot.blocks);
   if (problems.length) throw new Error(`This row's page could not be started: ${problems[0]}`);
   const { data, error } = await db.schema("content").rpc<Array<{ space_id: string; created: boolean }>>("row_page_ensure", {
