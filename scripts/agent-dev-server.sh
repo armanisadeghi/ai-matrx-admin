@@ -167,6 +167,13 @@ log() { printf '[preview] %s\n' "$1"; }
 fail() { printf '[preview] ERROR: %s\n' "$1" >&2; exit 1; }
 alive() { [[ "${1:-}" =~ ^[0-9]+$ ]] && kill -0 "$1" 2>/dev/null; }
 meta_value() { sed -n "s/^$1=//p" "$META" 2>/dev/null | head -1; }
+# drop_lease_of <pid> — remove the lease (and its ready/used markers) ONLY while it still names that pid.
+# 2026-10-16: an old server's monitor stopped "its" server and deleted the lease a NEW server had just
+# written; the new server ran on untracked ("UNMANAGED") and every preflight refused it.
+drop_lease_of() {
+  [[ -n "${1:-}" && "$(meta_value PID)" == "$1" ]] || return 0
+  rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
+}
 server_cwd() { lsof -a -p "$1" -d cwd -Fn 2>/dev/null | awk '/^n/{print substr($0,2); exit}'; }
 # `stat` speaks two dialects and they disagree about `-f`. On BSD/macOS `-f` is
 # the format flag; on GNU coreutils it means "filesystem status", so
@@ -511,7 +518,7 @@ clear_stale_state() {
   local pid
   pid="$(meta_value PID)"
   if ! alive "$pid"; then
-    rm -f "$META" "$READY" "$JAR"
+    drop_lease_of "$pid"
   fi
 }
 
@@ -1155,7 +1162,7 @@ stop_for_limit() {
     log "$reason"
   fi
   # The lease goes FIRST: the server's own monitor reads "lease still names a dead pid" as a crash.
-  rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
+  drop_lease_of "$pid"
   killtree "$pid" TERM
   for _ in 1 2 3 4 5 6; do
     alive "$pid" || break
@@ -1257,7 +1264,7 @@ cmd_monitor() {
     fi
     printf 'preview died on its own (last error: %s)\n' "${last_error:-none logged}" >"$FAILED"
     printf '[preview] WATCHDOG: the preview pid %s died on its own (last error: %s)\n' "$expected_pid" "${last_error:-none logged}" >>"$LOG"
-    rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
+    drop_lease_of "$expected_pid"
     # Its next-server child can outlive it and keep the port: end the whole group first.
     kill -TERM -- -"$expected_pid" 2>/dev/null || true
     restart_after_stop "it died on its own (${last_error:-no error logged})" || true
@@ -1348,7 +1355,7 @@ cmd_stop() {
   local stop_mode
   stop_mode="$(meta_value MODE)"
   # The lease goes FIRST (see stop_for_limit): a deliberate stop is never read as a crash.
-  rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
+  drop_lease_of "$pid"
   if alive "$pid"; then
     log "stopping the managed preview pid $pid (${stop_mode:-unknown} mode)"
     killtree "$pid" TERM
