@@ -22,7 +22,7 @@ import {
   type HubItem,
   type HubReadContext,
 } from "@/features/unified-data/hub/capabilities";
-import type { ArchivedEverywhereRow, ArchivedPortalEverywhereRow, DataHomeAnswer, DataHomeTableRow, DoorFailure } from "@/features/unified-data/hub/doors";
+import type { ArchivedEverywhereRow, ArchivedFormEverywhereRow, ArchivedPortalEverywhereRow, DataHomeAnswer, DataHomeTableRow, DoorFailure } from "@/features/unified-data/hub/doors";
 import { isPublicVisibility, type ScopeFacts } from "@/features/unified-data/hub/dataHomeScope";
 import type { DataHomeCustomFieldsRow } from "@/features/unified-data/hub/doors";
 import { plainKindWord } from "./dataHomeKindWords";
@@ -154,6 +154,28 @@ export function archivedPortalRow(portal: ArchivedPortalEverywhereRow): DataHome
     kind: "portal",
     parentName: portal.client_table,
     href: `/data/${portal.client_table_id}?rail=portals&item=${portal.portal_id}`,
+  };
+}
+
+/** ONE ARCHIVED FORM OR BOOKING PAGE AS A ROW: it is brought back with Restore (`custom.form_restore`). */
+export function archivedFormRow(form: ArchivedFormEverywhereRow): DataHomeRow {
+  const when = form.archived_at ? new Date(form.archived_at).toLocaleDateString() : null;
+  return {
+    ...archivedTableRow({
+      id: form.table_id,
+      document: null,
+      archived_at: form.archived_at,
+      archived_by_name: null,
+      organization_id: form.organization_id,
+      organization_name: form.organization_name,
+    }),
+    id: `form:${form.organization_id}:${form.form_id}`,
+    itemId: form.form_id,
+    name: form.title || (form.kind === "booking" ? "Book a time" : "Untitled form"),
+    kind: form.kind === "booking" ? "booking" : "form",
+    parentName: form.table_name,
+    details: ["Archived", when].filter(Boolean).join(" "),
+    href: `/data/${form.table_id}?rail=${form.kind === "booking" ? "bookings" : "forms"}`,
   };
 }
 
