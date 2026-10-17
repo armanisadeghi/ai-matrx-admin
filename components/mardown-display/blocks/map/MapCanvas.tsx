@@ -29,7 +29,7 @@ export interface MapMarker {
   bubble?: { text: string; className: string };
 }
 
-function bubbleIcon(bubble: { text: string; className: string }): L.DivIcon {
+export function bubbleIcon(bubble: { text: string; className: string }): L.DivIcon {
   return L.divIcon({
     className: "",
     html: `<span class="flex size-7 items-center justify-center rounded-full border-2 text-xs font-semibold tabular-nums shadow-sm ${escapeHtml(bubble.className)}">${escapeHtml(bubble.text)}</span>`,
@@ -41,7 +41,7 @@ function bubbleIcon(bubble: { text: string; className: string }): L.DivIcon {
 
 // A self-contained SVG pin — avoids leaflet's default-marker asset (which 404s
 // under bundlers) entirely.
-const PIN = L.divIcon({
+export const PIN = L.divIcon({
   className: "",
   html: `<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg"><path d="M13 0C5.8 0 0 5.8 0 13c0 9.2 13 21 13 21s13-11.8 13-21C26 5.8 20.2 0 13 0z" fill="#4F46E5"/><circle cx="13" cy="13" r="5" fill="#fff"/></svg>`,
   iconSize: [26, 34],
@@ -49,7 +49,7 @@ const PIN = L.divIcon({
   popupAnchor: [0, -30],
 });
 
-function FitBounds({ markers, hasExplicitCenter }: { markers: MapMarker[]; hasExplicitCenter: boolean }) {
+export function FitBounds({ markers, hasExplicitCenter }: { markers: MapMarker[]; hasExplicitCenter: boolean }) {
   const map = useMap();
   const key = useMemo(() => markers.map((m) => `${m.lat},${m.lng}`).join("|"), [markers]);
   useEffect(() => {
@@ -97,7 +97,7 @@ function FocusMarker({ focus }: { focus: { lat: number; lng: number; seq: number
 }
 
 /** Leaflet measures its box once; a pane that resizes (list toggled, canvas split) re-measures. */
-function InvalidateOnResize() {
+export function InvalidateOnResize() {
   const map = useMap();
   useEffect(() => {
     const el = map.getContainer();
@@ -107,6 +107,18 @@ function InvalidateOnResize() {
     return () => ro.disconnect();
   }, [map]);
   return null;
+}
+
+/** The one tile layer every map in the app draws (OpenStreetMap, no key; attribution kept per its terms). */
+export function OsmTiles() {
+  return (
+    <TileLayer
+      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      // CORS tiles (OSM serves them so) keep a drawn copy readable: print and Copy image.
+      crossOrigin="anonymous"
+    />
+  );
 }
 
 export default function MapCanvas({
@@ -123,12 +135,7 @@ export default function MapCanvas({
   const initialCenter: [number, number] = center ?? (markers[0] ? [markers[0].lat, markers[0].lng] : [20, 0]);
   return (
     <MapContainer center={initialCenter} zoom={zoom ?? (center ? 11 : 4)} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        // CORS tiles (OSM serves them so) keep a drawn copy readable: print and Copy image.
-        crossOrigin="anonymous"
-      />
+      <OsmTiles />
       {markers.map((m, i) => (
         <Marker key={i} position={[m.lat, m.lng]} icon={m.bubble ? bubbleIcon(m.bubble) : PIN}>
           {(m.label || m.description) && (
