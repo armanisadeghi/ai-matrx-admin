@@ -78,7 +78,7 @@ export function ExamplesStart({ onStart }: { onStart: (patch: Partial<StudioStat
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4" data-testid="studio-examples">
+    <div className="flex flex-col gap-3" data-testid="studio-examples">
       <ProTextarea
         aria-label="What are these? (optional)"
         placeholder="What are these? (optional)"
@@ -88,9 +88,9 @@ export function ExamplesStart({ onStart }: { onStart: (patch: Partial<StudioStat
         autoGrow
       />
       {examples.map((example, i) => (
-        <div key={i} className="flex flex-col gap-2 rounded-lg border border-border p-2" data-testid="studio-example">
+        <div key={i} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3" data-testid="studio-example">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Example {i + 1}</span>
+            <span className="type-label">Example {i + 1}</span>
             {!withInput[i] && example.input === "" && (
               <Button
                 variant="quiet"
@@ -154,7 +154,7 @@ export function ExamplesStart({ onStart }: { onStart: (patch: Partial<StudioStat
             e.target.value = "";
           }}
         />
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="type-meta ml-auto text-muted-foreground">
           {given.length < EXAMPLES_MIN ? `${given.length} of ${EXAMPLES_MIN} needed` : `${given.length} examples`}
         </span>
         <Button
