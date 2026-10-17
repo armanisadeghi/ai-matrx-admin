@@ -54,3 +54,16 @@ describe("a test case is an eval case the runner can decide", () => {
     expect(fact?.statement).not.toContain("x".repeat(APPROVED_ANSWER_FACT_CHARS + 1));
   });
 });
+
+describe("the answer a run's case approves", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { pickRunAnswer } = require("@/features/agents/samples/service") as typeof import("@/features/agents/samples/service");
+  it("is the full reply, never a trailing stored prefill (live conversation 7d2ac34a)", () => {
+    expect(pickRunAnswer(["Dear", "Dear Dana,\n\nA buckle cracking…"])).toBe("Dear Dana,\n\nA buckle cracking…");
+  });
+  it("is the newest reply otherwise", () => {
+    expect(pickRunAnswer(["Second answer", "First answer"])).toBe("Second answer");
+    expect(pickRunAnswer(["Only"])).toBe("Only");
+    expect(pickRunAnswer([])).toBeNull();
+  });
+});

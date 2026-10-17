@@ -536,23 +536,8 @@ export async function fetchCandidateRuns(
 }
 
 /** The run's final assistant answer — the "end result" a borrower judges by. */
-export async function fetchRunFinalResponse(
-  conversationId: string,
-): Promise<string | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .schema("chat")
-    .from("message")
-    .select("content")
-    .eq("conversation_id", conversationId)
-    .eq("role", "assistant")
-    .is("deleted_at", null)
-    .order("position", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
-  const content = data?.content;
+/** A stored message's text, read the way every other consumer reads it (raw JSON only when it has no text). */
+function storedMessageText(content: Database["chat"]["Tables"]["message"]["Row"]["content"] | null): string | null {
   if (content == null) return null;
   if (typeof content === "string") return content;
   // A message's stored content is an array of typed parts. Stringifying it put
@@ -566,6 +551,38 @@ export async function fetchRunFinalResponse(
     if (text) return text;
   }
   return JSON.stringify(content);
+}
+
+/**
+ * The run's answer from its newest assistant messages (newest first). A run started from an
+ * authored prefill can store that prefill as its own trailing assistant message after the full
+ * reply (live 2026-10-17: conversation 7d2ac34a stored "Dear" after "Dear Dana, …"); the answer
+ * is then the reply the prefill begins, never the bare prefill.
+ */
+export function pickRunAnswer(newestFirst: readonly (string | null)[]): string | null {
+  const [newest, previous] = newestFirst;
+  if (newest && previous && newest.trim() && previous.length > newest.length && previous.startsWith(newest.trim())) {
+    return previous;
+  }
+  return newest ?? null;
+}
+
+export async function fetchRunFinalResponse(
+  conversationId: string,
+): Promise<string | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .schema("chat")
+    .from("message")
+    .select("content")
+    .eq("conversation_id", conversationId)
+    .eq("role", "assistant")
+    .is("deleted_at", null)
+    .order("position", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(2);
+  if (error) throw error;
+  return pickRunAnswer((data ?? []).map((row) => storedMessageText(row.content)));
 }
 
 /**

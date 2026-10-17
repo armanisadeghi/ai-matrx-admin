@@ -1421,7 +1421,7 @@ export const ProTextarea = React.forwardRef<
           ? "rounded-2xl"
           : "rounded-md",
       hero
-        ? "focus-visible:outline-none focus-visible:border-primary/50 focus-visible:shadow-[0_0_0_4px_hsl(var(--primary)/0.12),0_12px_32px_-12px_hsl(var(--foreground)/0.18)]"
+        ? "focus-visible:outline-none focus-visible:border-primary/60"
         : "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
       "disabled:cursor-not-allowed disabled:opacity-50",
       fillHeight ? "min-h-0 flex-1 resize-none overflow-y-auto" : "resize-y",

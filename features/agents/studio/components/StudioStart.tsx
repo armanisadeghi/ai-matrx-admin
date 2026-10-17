@@ -111,7 +111,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
           {planLink}
         </div>
 
-        <main className="mx-auto flex w-full max-w-[48rem] flex-col items-stretch pt-[clamp(1.5rem,9vh,6rem)]">
+        <main className="mx-auto flex w-full max-w-[48rem] flex-col items-stretch @container pt-[clamp(1.5rem,9vh,6rem)]">
           <h1 key={`h-${open}`} className={`type-display ${stage.enter} text-center text-foreground`} data-testid="studio-headline">
             {openMode.headline ?? openMode.title}
           </h1>
@@ -174,20 +174,18 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
             {open === "from-examples" && <ExamplesStart onStart={onStart} />}
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center" role="group" aria-label="Ways to start" data-testid="studio-modes">
+          <div className="mt-4 grid grid-cols-2 gap-2 @lg:grid-cols-3 @3xl:flex @3xl:justify-center" role="group" aria-label="Ways to start" data-testid="studio-modes">
             {STUDIO_MODES.map((mode) => {
-              const Icon = mode.icon;
               const inPlace = opensInPlace(mode);
               return (
                 <Button
                   key={mode.id}
                   variant="outline"
-                  icon={<Icon />}
                   iconEnd={inPlace ? undefined : <ArrowUpRight />}
                   pressed={inPlace ? open === mode.id : undefined}
                   title={`${mode.title} — ${mode.comingSoonId ? "Coming soon" : mode.line}`}
                   data-testid={`studio-mode-${mode.id}`}
-                  className="w-full sm:w-auto"
+                  className="w-full @3xl:w-auto"
                   onClick={() => pick(mode)}
                 >
                   {mode.label}
