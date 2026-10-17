@@ -1,0 +1,2156 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0357",
+ "version": 1,
+ "title": "Fundraising CRM",
+ "description": "Run an investor pipeline with rounds, interactions, monthly updates and a cap table.",
+ "forWho": "Startup founders",
+ "icon": {
+  "emoji": "💰"
+ },
+ "cover": {
+  "url": "gallery:photo-golden-palms",
+  "offsetY": 50
+ },
+ "category": "sales",
+ "tags": [
+  "fundraising",
+  "investors",
+  "pipeline",
+  "startup"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-fundraising-crm",
+  "catalogueId": "SP0357",
+  "useCase": "Avery Lindqvist tracks every investor conversation and what is committed against the round target.",
+  "industry": "cross_industry",
+  "vertical": "Startup fundraising",
+  "job": "crm_pipeline",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Mossgrove Labs",
+   "describes": "A climate hardware startup raising a seed extension.",
+   "address": {
+    "line1": "5 Hollin Wharf",
+    "city": "Boston",
+    "region": "MA",
+    "postalCode": "02210",
+    "country": "US"
+   },
+   "phone": "(617) 555-0180",
+   "website": "mossgrove-labs.net",
+   "email": "hello@mossgrove-labs.net",
+   "timezone": "America/New_York"
+  },
+  "cleanupTag": "use-case:spaces-fundraising-crm",
+  "tables": [
+   {
+    "token": "investor",
+    "name": "Investors",
+    "labelSingular": "Investor",
+    "labelPlural": "Investors",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "handshake",
+    "titleField": "investor_name",
+    "describes": "Each investor, where they stand in the process and what they may invest.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "investor_name",
+      "label": "Investor",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "firm",
+      "label": "Firm",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "stage",
+      "label": "Stage",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Target",
+       "Contacted",
+       "Meeting",
+       "Diligence",
+       "Term sheet",
+       "Closed",
+       "Passed"
+      ],
+      "choiceColors": {
+       "Target": "slate",
+       "Contacted": "blue",
+       "Meeting": "violet",
+       "Diligence": "orange",
+       "Term sheet": "teal",
+       "Closed": "green",
+       "Passed": "gray"
+      }
+     },
+     {
+      "key": "check_min",
+      "label": "Check size min",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "check_max",
+      "label": "Check size max",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "sector",
+      "label": "Sector",
+      "parityType": "multi_select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Climate",
+       "Hardware",
+       "Software"
+      ],
+      "choiceColors": {
+       "Climate": "blue",
+       "Hardware": "violet",
+       "Software": "teal"
+      },
+      "multi": true
+     },
+     {
+      "key": "focus",
+      "label": "Stage focus",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Pre-seed",
+       "Seed",
+       "Series A"
+      ],
+      "choiceColors": {
+       "Pre-seed": "blue",
+       "Seed": "violet",
+       "Series A": "teal"
+      }
+     },
+     {
+      "key": "intro",
+      "label": "Intro by",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "last_contact",
+      "label": "Last contact",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "next_step",
+      "label": "Next step",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "next_step_on",
+      "label": "Next step date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "probability",
+      "label": "Probability",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Medium",
+       "High",
+       "Committed"
+      ],
+      "choiceColors": {
+       "Low": "slate",
+       "Medium": "amber",
+       "High": "blue",
+       "Committed": "green"
+      }
+     },
+     {
+      "key": "expected",
+      "label": "Expected amount",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "round",
+      "label": "Round",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "round",
+      "relationMax": 1
+     },
+     {
+      "key": "interactions",
+      "label": "Interactions",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "interaction",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "askOfSubject": true
+     }
+    ],
+    "rows": [
+     {
+      "key": "iv1",
+      "values": {
+       "investor_name": "Corinna Valdez",
+       "firm": "Larchwood Ventures",
+       "stage": "Closed",
+       "check_min": 250000,
+       "check_max": 500000,
+       "sector": [
+        "Climate",
+        "Hardware"
+       ],
+       "focus": "Seed",
+       "intro": "Warm intro by an advisor",
+       "last_contact": "@today-30d",
+       "next_step": "Send signed documents",
+       "next_step_on": "@today+3d",
+       "probability": "Committed",
+       "expected": 400000,
+       "round": "rd1",
+       "email": "corinna@larchwood-demo.net"
+      }
+     },
+     {
+      "key": "iv2",
+      "values": {
+       "investor_name": "Bertrand Ossei",
+       "firm": "Ossei Family Office",
+       "stage": "Term sheet",
+       "check_min": 150000,
+       "check_max": 300000,
+       "sector": [
+        "Climate",
+        "Software"
+       ],
+       "focus": "Seed",
+       "intro": "Former colleague",
+       "last_contact": "@today-6d",
+       "next_step": "Review the term sheet with counsel",
+       "next_step_on": "@today+2d",
+       "probability": "High",
+       "expected": 250000,
+       "round": "rd1",
+       "email": "bertrand@osseifo-demo.net"
+      }
+     },
+     {
+      "key": "iv3",
+      "values": {
+       "investor_name": "Hana Takeuchi",
+       "firm": "Kitewing Capital",
+       "stage": "Diligence",
+       "check_min": 300000,
+       "check_max": 750000,
+       "sector": [
+        "Hardware"
+       ],
+       "focus": "Seed",
+       "intro": "Demo day",
+       "last_contact": "@today-4d",
+       "next_step": "Share the customer reference list",
+       "next_step_on": "@today+5d",
+       "probability": "Medium",
+       "expected": 500000,
+       "round": "rd1",
+       "email": "hana@kitewing-demo.net"
+      }
+     },
+     {
+      "key": "iv4",
+      "values": {
+       "investor_name": "Gideon Marsh",
+       "firm": "Marsh Angel Network",
+       "stage": "Meeting",
+       "check_min": 50000,
+       "check_max": 150000,
+       "sector": [
+        "Software"
+       ],
+       "focus": "Pre-seed",
+       "intro": "Conference",
+       "last_contact": "@today-9d",
+       "next_step": "Second meeting with two members",
+       "next_step_on": "@today+9d",
+       "probability": "Medium",
+       "expected": 100000,
+       "round": "rd1",
+       "email": "gideon@marshangels-demo.net"
+      }
+     },
+     {
+      "key": "iv5",
+      "values": {
+       "investor_name": "Leilani Kahale",
+       "firm": "Pacific Rim Fund",
+       "stage": "Meeting",
+       "check_min": 200000,
+       "check_max": 400000,
+       "sector": [
+        "Climate"
+       ],
+       "focus": "Seed",
+       "intro": "Cold email",
+       "last_contact": "@today-11d",
+       "next_step": "Send the product demo recording",
+       "next_step_on": "@today+6d",
+       "probability": "Low",
+       "expected": 200000,
+       "round": "rd1",
+       "email": "leilani@pacificrim-demo.net"
+      }
+     },
+     {
+      "key": "iv6",
+      "values": {
+       "investor_name": "Anders Holm",
+       "firm": "Holm & Berg",
+       "stage": "Contacted",
+       "check_min": 100000,
+       "check_max": 250000,
+       "sector": [
+        "Hardware",
+        "Software"
+       ],
+       "focus": "Seed",
+       "intro": "Alumni network",
+       "last_contact": "@today-15d",
+       "next_step": "Follow up on the intro email",
+       "next_step_on": "@today+4d",
+       "probability": "Low",
+       "expected": 150000,
+       "round": "rd1",
+       "email": "anders@holmberg-demo.net"
+      }
+     },
+     {
+      "key": "iv7",
+      "values": {
+       "investor_name": "Noura Bashir",
+       "firm": "Basalt Partners",
+       "stage": "Target",
+       "check_min": 400000,
+       "check_max": 900000,
+       "sector": [
+        "Climate"
+       ],
+       "focus": "Series A",
+       "intro": "Press article",
+       "last_contact": "@today",
+       "next_step": "Research partner focus and past deals",
+       "next_step_on": "@today+12d",
+       "probability": "Low",
+       "expected": 0,
+       "round": "rd3",
+       "email": "noura@basalt-demo.net"
+      }
+     },
+     {
+      "key": "iv8",
+      "values": {
+       "investor_name": "Felix Aranda",
+       "firm": "Aranda Syndicate",
+       "stage": "Contacted",
+       "check_min": 25000,
+       "check_max": 100000,
+       "sector": [
+        "Software"
+       ],
+       "focus": "Pre-seed",
+       "intro": "Existing customer",
+       "last_contact": "@today-20d",
+       "next_step": "Request a call",
+       "next_step_on": "@today+7d",
+       "probability": "Medium",
+       "expected": 50000,
+       "round": "rd1",
+       "email": "felix@arandasyn-demo.net"
+      }
+     },
+     {
+      "key": "iv9",
+      "values": {
+       "investor_name": "Camille Duret",
+       "firm": "Duret Industrial Fund",
+       "stage": "Passed",
+       "check_min": 500000,
+       "check_max": 1000000,
+       "sector": [
+        "Hardware"
+       ],
+       "focus": "Series A",
+       "intro": "Warm intro by an advisor",
+       "last_contact": "@today-45d",
+       "next_step": "Send a thank-you note",
+       "next_step_on": "@today+30d",
+       "probability": "Low",
+       "expected": 0,
+       "round": "rd3",
+       "email": "camille@duretfund-demo.net"
+      }
+     },
+     {
+      "key": "iv10",
+      "values": {
+       "investor_name": "Isaac Brightwell",
+       "firm": "Brightwell Growth",
+       "stage": "Diligence",
+       "check_min": 200000,
+       "check_max": 500000,
+       "sector": [
+        "Climate",
+        "Hardware"
+       ],
+       "focus": "Seed",
+       "intro": "Board member",
+       "last_contact": "@today-3d",
+       "next_step": "Schedule a technical review",
+       "next_step_on": "@today+2d",
+       "probability": "High",
+       "expected": 350000,
+       "round": "rd1",
+       "email": "isaac@brightwellgrowth-demo.net"
+      }
+     },
+     {
+      "key": "iv11",
+      "values": {
+       "investor_name": "Mei-Ling Zhao",
+       "firm": "Zhao Impact Capital",
+       "stage": "Target",
+       "check_min": 100000,
+       "check_max": 300000,
+       "sector": [
+        "Climate"
+       ],
+       "focus": "Seed",
+       "intro": "Conference",
+       "last_contact": "@today",
+       "next_step": "Ask a mutual contact for an intro",
+       "next_step_on": "@today+10d",
+       "probability": "Low",
+       "expected": 0,
+       "round": "rd3",
+       "email": "meiling@zhaoimpact-demo.net"
+      }
+     },
+     {
+      "key": "iv12",
+      "values": {
+       "investor_name": "Oskar Lindgren",
+       "firm": "Lindgren Angels",
+       "stage": "Meeting",
+       "check_min": 75000,
+       "check_max": 200000,
+       "sector": [
+        "Software",
+        "Hardware"
+       ],
+       "focus": "Seed",
+       "intro": "Advisor",
+       "last_contact": "@today-7d",
+       "next_step": "Prepare a financial model walkthrough",
+       "next_step_on": "@today+8d",
+       "probability": "Medium",
+       "expected": 125000,
+       "round": "rd1",
+       "email": "oskar@lindgrenangels-demo.net"
+      }
+     }
+    ],
+    "before": [
+     [
+      "last_contact",
+      "next_step_on"
+     ]
+    ],
+    "statusAgrees": [
+     {
+      "relation": "round",
+      "field": "stage",
+      "childStatus": [
+       "Closed",
+       "Term sheet"
+      ],
+      "parentField": "status",
+      "parentStatus": [
+       "Open",
+       "Closed"
+      ]
+     }
+    ],
+    "independentOf": {
+     "round": "An investor conversation runs on its own schedule inside the round.",
+     "interactions": "History is logged separately from the next step date."
+    }
+   },
+   {
+    "token": "round",
+    "name": "Rounds",
+    "labelSingular": "Round",
+    "labelPlural": "Rounds",
+    "type": "entity",
+    "display": "list",
+    "weight": "light",
+    "ordered": false,
+    "icon": "target",
+    "titleField": "round_name",
+    "describes": "Each fundraising round with its goal and what is committed.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "round_name",
+      "label": "Round",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Planning",
+       "Open",
+       "Closed"
+      ],
+      "choiceColors": {
+       "Planning": "blue",
+       "Open": "violet",
+       "Closed": "green"
+      }
+     },
+     {
+      "key": "target",
+      "label": "Target",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000000
+       }
+      ]
+     },
+     {
+      "key": "investors",
+      "label": "Investors",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "investor",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "committed",
+      "label": "Committed",
+      "parityType": "rollup",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "via": "investors",
+      "pick": "expected",
+      "agg": "sum"
+     },
+     {
+      "key": "investor_count",
+      "label": "Investors engaged",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "investors",
+      "pick": "investor_name",
+      "agg": "count"
+     },
+     {
+      "key": "close_on",
+      "label": "Target close",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "lead",
+      "label": "Lead",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "rd1",
+      "values": {
+       "round_name": "Seed extension",
+       "target": 1800000,
+       "close_on": "@today+75d",
+       "lead": "tm-avery",
+       "status": "Open"
+      }
+     },
+     {
+      "key": "rd2",
+      "values": {
+       "round_name": "Pre-seed round",
+       "target": 600000,
+       "close_on": "@today-400d",
+       "lead": "tm-avery",
+       "status": "Closed"
+      }
+     },
+     {
+      "key": "rd3",
+      "values": {
+       "round_name": "Series A preparation",
+       "target": 9000000,
+       "close_on": "@today+320d",
+       "lead": "tm-sunil",
+       "status": "Planning"
+      }
+     }
+    ]
+   },
+   {
+    "token": "interaction",
+    "name": "Interactions",
+    "labelSingular": "Interaction",
+    "labelPlural": "Interactions",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "message-square",
+    "titleField": "summary",
+    "describes": "Every call, email and meeting with an investor.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "summary",
+      "label": "Interaction",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "investor",
+      "label": "Investor",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "investor",
+      "relationMax": 1
+     },
+     {
+      "key": "held_on",
+      "label": "Date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "kind",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Call",
+       "Email",
+       "Meeting"
+      ],
+      "choiceColors": {
+       "Call": "blue",
+       "Email": "violet",
+       "Meeting": "teal"
+      }
+     },
+     {
+      "key": "notes",
+      "label": "Notes",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "n1",
+      "values": {
+       "summary": "Intro call with Corinna",
+       "investor": "iv1",
+       "held_on": "@today-58d",
+       "kind": "Call",
+       "notes": "Discussed the climate hardware roadmap; asked for the pilot data."
+      }
+     },
+     {
+      "key": "n2",
+      "values": {
+       "summary": "Partner meeting at Larchwood",
+       "investor": "iv1",
+       "held_on": "@today-40d",
+       "kind": "Meeting",
+       "notes": "Presented to two partners; positive on unit economics."
+      }
+     },
+     {
+      "key": "n3",
+      "values": {
+       "summary": "Data room walkthrough with Hana",
+       "investor": "iv3",
+       "held_on": "@today-14d",
+       "kind": "Meeting",
+       "notes": "Walked the technical diligence list item by item."
+      }
+     },
+     {
+      "key": "n4",
+      "values": {
+       "summary": "Pitch email to Bertrand",
+       "investor": "iv2",
+       "held_on": "@today-26d",
+       "kind": "Email",
+       "notes": "Sent the deck and a three-line summary."
+      }
+     },
+     {
+      "key": "n5",
+      "values": {
+       "summary": "Term sheet call with Bertrand",
+       "investor": "iv2",
+       "held_on": "@today-8d",
+       "kind": "Call",
+       "notes": "Clarified board seat and pro-rata terms."
+      }
+     },
+     {
+      "key": "n6",
+      "values": {
+       "summary": "Intro email to Gideon",
+       "investor": "iv4",
+       "held_on": "@today-22d",
+       "kind": "Email",
+       "notes": "Sent a short intro and a link to the demo."
+      }
+     },
+     {
+      "key": "n7",
+      "values": {
+       "summary": "Coffee with Oskar",
+       "investor": "iv12",
+       "held_on": "@today-18d",
+       "kind": "Meeting",
+       "notes": "Strong interest in the software margin story."
+      }
+     },
+     {
+      "key": "n8",
+      "values": {
+       "summary": "Reference call with Isaac",
+       "investor": "iv10",
+       "held_on": "@today-5d",
+       "kind": "Call",
+       "notes": "Two customers spoke with the fund about onboarding."
+      }
+     }
+    ],
+    "independentOf": {
+     "investor": "Meetings are logged on their own dates."
+    }
+   },
+   {
+    "token": "update",
+    "name": "Updates",
+    "labelSingular": "Update",
+    "labelPlural": "Updates",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "mail",
+    "titleField": "month_label",
+    "describes": "Monthly investor updates with revenue, burn and runway.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "month_label",
+      "label": "Update",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "mrr",
+      "label": "Monthly revenue",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "burn",
+      "label": "Monthly burn",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "cash",
+      "label": "Cash in bank",
+      "parityType": "currency",
+      "sensitivity": "restricted",
+      "contextPolicy": "exclude",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000000
+       }
+      ]
+     },
+     {
+      "key": "runway",
+      "label": "Runway in months",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "ROUND({Cash in bank} / {Monthly burn}, 1)"
+     },
+     {
+      "key": "sent",
+      "label": "Sent to investors",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "u1",
+      "values": {
+       "month_label": "Update on the first pilot results",
+       "mrr": 41800,
+       "burn": 62000,
+       "cash": 410000,
+       "sent": true
+      }
+     },
+     {
+      "key": "u2",
+      "values": {
+       "month_label": "Update on the hardware milestone",
+       "mrr": 46200,
+       "burn": 64500,
+       "cash": 380000,
+       "sent": true
+      }
+     },
+     {
+      "key": "u3",
+      "values": {
+       "month_label": "Update on pipeline and runway",
+       "mrr": 51400,
+       "burn": 66000,
+       "cash": 352000,
+       "sent": false
+      }
+     }
+    ]
+   },
+   {
+    "token": "holder",
+    "name": "Cap table",
+    "labelSingular": "Holder",
+    "labelPlural": "Holders",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "pie-chart",
+    "titleField": "holder_name",
+    "describes": "Who owns what, by class of share.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "holder_name",
+      "label": "Holder",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "shares",
+      "label": "Shares",
+      "parityType": "integer",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 1000000000
+       }
+      ]
+     },
+     {
+      "key": "share_class",
+      "label": "Class",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Common",
+       "Preferred",
+       "Options"
+      ],
+      "choiceColors": {
+       "Common": "blue",
+       "Preferred": "violet",
+       "Options": "teal"
+      }
+     },
+     {
+      "key": "percent_owned",
+      "label": "Percent owned",
+      "parityType": "percent",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100
+       }
+      ]
+     }
+    ],
+    "rows": [
+     {
+      "key": "h1",
+      "values": {
+       "holder_name": "Avery Lindqvist",
+       "shares": 4200000,
+       "share_class": "Common",
+       "percent_owned": 42.0
+      }
+     },
+     {
+      "key": "h2",
+      "values": {
+       "holder_name": "Sunil Ramaswamy",
+       "shares": 2200000,
+       "share_class": "Common",
+       "percent_owned": 22.0
+      }
+     },
+     {
+      "key": "h3",
+      "values": {
+       "holder_name": "Employee option pool",
+       "shares": 1000000,
+       "share_class": "Options",
+       "percent_owned": 10.0
+      }
+     },
+     {
+      "key": "h4",
+      "values": {
+       "holder_name": "Larchwood Ventures",
+       "shares": 1500000,
+       "share_class": "Preferred",
+       "percent_owned": 15.0
+      }
+     },
+     {
+      "key": "h5",
+      "values": {
+       "holder_name": "Early angels",
+       "shares": 1100000,
+       "share_class": "Preferred",
+       "percent_owned": 11.0
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each investor is part of one round.",
+    "fromTable": "investor",
+    "fromField": "round",
+    "toTable": "round",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "round_investors"
+   },
+   {
+    "describes": "A round gathers its investors.",
+    "fromTable": "round",
+    "fromField": "investors",
+    "toTable": "investor",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "in_round"
+   },
+   {
+    "describes": "An investor has many logged interactions.",
+    "fromTable": "investor",
+    "fromField": "interactions",
+    "toTable": "interaction",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "with_investor"
+   },
+   {
+    "describes": "Each interaction is with one investor.",
+    "fromTable": "interaction",
+    "fromField": "investor",
+    "toTable": "investor",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "interaction_investor"
+   },
+   {
+    "describes": "Each round has a lead.",
+    "fromTable": "round",
+    "fromField": "lead",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "rounds_led"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-avery",
+      "values": {
+       "full_name": "Avery Lindqvist",
+       "role": "Chief executive",
+       "work_email": "avery@mossgrove-labs.net",
+       "mobile": "(617) 555-0181",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-sunil",
+      "values": {
+       "full_name": "Sunil Ramaswamy",
+       "role": "Chief financial officer",
+       "work_email": "sunil@mossgrove-labs.net",
+       "mobile": "(617) 555-0182",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-tess",
+      "values": {
+       "full_name": "Tess Oyelaran",
+       "role": "Head of operations",
+       "work_email": "tess@mossgrove-labs.net",
+       "mobile": "(617) 555-0183",
+       "start_date": "@today-2y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "log_contact",
+    "name": "Log an investor interaction",
+    "describes": "Record a call, email or meeting.",
+    "audience": "staff",
+    "table": "interaction",
+    "fields": [
+     {
+      "fieldKey": "summary",
+      "ask": "What was it about?",
+      "required": true
+     },
+     {
+      "fieldKey": "investor",
+      "ask": "Which investor?",
+      "required": true
+     },
+     {
+      "fieldKey": "held_on",
+      "ask": "When did it happen?"
+     },
+     {
+      "fieldKey": "kind",
+      "ask": "Was it a call, email or meeting?"
+     },
+     {
+      "fieldKey": "notes",
+      "ask": "What was said?"
+     }
+    ],
+    "submitLabel": "Log it",
+    "confirmation": "Logged."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_investors",
+    "name": "All investors",
+    "table": "investor",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "next_step_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "pipeline",
+    "name": "Pipeline",
+    "table": "investor",
+    "kind": "kanban",
+    "groupBy": "stage"
+   },
+   {
+    "token": "followup_calendar",
+    "name": "Follow-ups",
+    "table": "investor",
+    "kind": "calendar",
+    "dateField": "next_step_on",
+    "allDay": true
+   },
+   {
+    "token": "investor_firms",
+    "name": "By firm",
+    "table": "investor",
+    "kind": "grid"
+   },
+   {
+    "token": "all_rounds",
+    "name": "Rounds",
+    "table": "round",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_interactions",
+    "name": "Interactions",
+    "table": "interaction",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "held_on",
+      "direction": "desc"
+     }
+    ]
+   },
+   {
+    "token": "all_updates",
+    "name": "Updates",
+    "table": "update",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_holders",
+    "name": "Cap table",
+    "table": "holder",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Fundraising assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "investor",
+     "describes": "Each investor with stage, expected amount and next step."
+    },
+    {
+     "name": "related_tables",
+     "table": "round",
+     "describes": "The round and its target."
+    }
+   ],
+   "question": {
+    "ask": "How many investors are in diligence?",
+    "whyItMatters": "The founder watches late-stage investors closely.",
+    "expect": {
+     "table": "investor",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "stage": "Diligence"
+     },
+     "answer": 2,
+     "unit": "investors"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the pipeline.",
+    "action": {
+     "kind": "open",
+     "surface": "pipeline"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "pipeline",
+     "minItems": 12
+    }
+   },
+   {
+    "says": "Open the follow-up calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "followup_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "followup_calendar",
+     "minItems": 12
+    }
+   },
+   {
+    "says": "Open the cap table.",
+    "action": {
+     "kind": "open",
+     "surface": "all_holders"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_holders",
+     "minItems": 5
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "mossgrove-labs.net",
+    "larchwood-demo.net",
+    "osseifo-demo.net",
+    "kitewing-demo.net",
+    "marshangels-demo.net",
+    "pacificrim-demo.net",
+    "holmberg-demo.net",
+    "basalt-demo.net",
+    "arandasyn-demo.net",
+    "duretfund-demo.net",
+    "brightwellgrowth-demo.net",
+    "zhaoimpact-demo.net",
+    "lindgrenangels-demo.net"
+   ],
+   "fictionalStreets": [
+    "Hollin Wharf"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "fundraising",
+   "parent": null,
+   "title": "Fundraising",
+   "icon": {
+    "emoji": "💰"
+   },
+   "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Run a raise like a pipeline. Every investor has a stage, a next step and an expected amount; the round shows what is committed against the target."
+      }
+     ],
+     "background": "green",
+     "props": {
+      "icon": "Handshake"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "investor",
+           "view": "pipeline"
+          },
+          "inline": true,
+          "title": "Investors",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Investors by stage",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "stage",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "investor",
+           "view": "all_investors"
+          },
+          "inline": true,
+          "title": "Investors",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Expected by stage",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "stage",
+             "op": "sum",
+             "field": "expected"
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Round"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "round",
+       "view": "all_rounds"
+      },
+      "inline": true,
+      "title": "Rounds",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-r",
+        "name": "Round",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "v-r"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Pipeline"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "investor",
+       "view": "pipeline"
+      },
+      "inline": true,
+      "title": "Investors",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-p",
+        "name": "Pipeline",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "stage"
+       },
+       {
+        "id": "v-n",
+        "name": "Next steps",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "next_step_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "v-c",
+        "name": "Follow-ups",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "next_step_on"
+       },
+       {
+        "id": "v-f",
+        "name": "By firm",
+        "layout": "gallery",
+        "icon": "Building2"
+       }
+      ],
+      "activeViewId": "v-p"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.25
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:fundraising-guide"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.25
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:diligence-checklist"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.25
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:pitch-outline"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.25
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:cap-table-page"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Interactions"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "interaction",
+       "view": "all_interactions"
+      },
+      "inline": true,
+      "title": "Interactions",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-i",
+        "name": "Latest first",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "held_on",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "v-i"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Investor updates"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "update",
+       "view": "all_updates"
+      },
+      "inline": true,
+      "title": "Updates",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-u",
+        "name": "Updates",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "v-u"
+     }
+    }
+   ]
+  },
+  {
+   "key": "fundraising-guide",
+   "parent": "fundraising",
+   "title": "Fundraising guide",
+   "icon": {
+    "emoji": "📘"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "How a round runs"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "List a target set of investors and research who fits."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Warm intros first; log every contact."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Move interested investors to Meeting, then Diligence."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Collect term sheets together, compare, and close."
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "This workspace tracks the process only. Terms and legal questions belong with your lawyer."
+      }
+     ],
+     "background": "gray",
+     "props": {
+      "icon": "Scale"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Weekly rhythm"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Update next steps on every active investor"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Send the monthly update"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Review committed vs target"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "diligence-checklist",
+   "parent": "fundraising",
+   "title": "Due-diligence checklist",
+   "icon": {
+    "emoji": "🧾"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Corporate"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Certificate of incorporation"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Cap table with all holders"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Board and shareholder minutes"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Financial"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Last 24 months of statements"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Current budget and forecast"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Monthly revenue and burn history"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Product and team"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Architecture overview"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Customer references"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Employment agreements and option plan"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "pitch-outline",
+   "parent": "fundraising",
+   "title": "Pitch deck outline",
+   "icon": {
+    "emoji": "🎤"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "The problem"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Our solution and demo"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Traction"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Market"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Business model"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Team"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Financials and use of funds"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "The ask"
+      }
+     ]
+    },
+    {
+     "type": "quote",
+     "text": [
+      {
+       "text": "One idea per slide."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "cap-table-page",
+   "parent": "fundraising",
+   "title": "Cap table",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "holder",
+       "view": "all_holders"
+      },
+      "inline": true,
+      "title": "Cap table",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-h",
+        "name": "Holders",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-ch",
+        "name": "Ownership",
+        "layout": "chart",
+        "icon": "ChartPie",
+        "chart": {
+         "type": "donut",
+         "groupBy": "share_class",
+         "op": "sum",
+         "field": "shares",
+         "centerValue": true
+        }
+       }
+      ],
+      "activeViewId": "v-h"
+     }
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Update this whenever shares are issued or options are granted."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Pencil"
+     }
+    }
+   ]
+  }
+ ]
+}

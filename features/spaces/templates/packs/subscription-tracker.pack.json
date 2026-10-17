@@ -1,0 +1,1007 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0356",
+ "version": 1,
+ "title": "Subscription Tracker",
+ "description": "Track recurring payments with monthly and yearly cost, renewal dates and reminders.",
+ "forWho": "Individuals and small teams",
+ "icon": {
+  "emoji": "🔁"
+ },
+ "cover": {
+  "url": "gallery:photo-lavender-dusk",
+  "offsetY": 50
+ },
+ "category": "finance",
+ "tags": [
+  "subscriptions",
+  "renewals",
+  "recurring",
+  "budget"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-subscription-tracker",
+  "catalogueId": "SP0356",
+  "useCase": "Tomas Weaver lists every recurring payment to see what renews soon and what each costs per month.",
+  "industry": "cross_industry",
+  "vertical": "Personal finance",
+  "job": "reporting",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Tomas Weaver household",
+   "describes": "A single household tracking its recurring bills.",
+   "address": {
+    "line1": "88 Quillon Terrace",
+    "city": "Madison",
+    "region": "WI",
+    "postalCode": "53703",
+    "country": "US"
+   },
+   "phone": "(608) 555-0125",
+   "website": "weaver-home.net",
+   "email": "tomas@weaver-home.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-subscription-tracker",
+  "tables": [
+   {
+    "token": "subscription",
+    "name": "Subscriptions",
+    "labelSingular": "Subscription",
+    "labelPlural": "Subscriptions",
+    "type": "entity",
+    "display": "list",
+    "weight": "light",
+    "ordered": false,
+    "icon": "repeat",
+    "titleField": "sub_name",
+    "describes": "Every recurring payment with its cycle, renewal day and normalized monthly and yearly cost.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "sub_name",
+      "label": "Subscription",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "cost",
+      "label": "Cost",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 5000
+       }
+      ]
+     },
+     {
+      "key": "cycle",
+      "label": "Billing cycle",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Weekly",
+       "Monthly",
+       "Quarterly",
+       "Bi-yearly",
+       "Yearly"
+      ],
+      "choiceColors": {
+       "Weekly": "pink",
+       "Monthly": "blue",
+       "Quarterly": "teal",
+       "Bi-yearly": "orange",
+       "Yearly": "violet"
+      }
+     },
+     {
+      "key": "monthly_cost",
+      "label": "Monthly cost",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "ROUND(SWITCH({Billing cycle}, 'Weekly', {Cost} * 52 / 12, 'Monthly', {Cost}, 'Quarterly', {Cost} / 3, 'Bi-yearly', {Cost} / 6, 'Yearly', {Cost} / 12, 0), 2)",
+      "unit": "USD"
+     },
+     {
+      "key": "yearly_cost",
+      "label": "Yearly cost",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "ROUND(SWITCH({Billing cycle}, 'Weekly', {Cost} * 52, 'Monthly', {Cost} * 12, 'Quarterly', {Cost} * 4, 'Bi-yearly', {Cost} * 2, 'Yearly', {Cost}, 0), 2)",
+      "unit": "USD"
+     },
+     {
+      "key": "next_renewal",
+      "label": "Next renewal",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "days_left",
+      "label": "Days until renewal",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "DATEDIFF(TODAY(), {Next renewal}, 'days')"
+     },
+     {
+      "key": "category",
+      "label": "Category",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Software",
+       "Media",
+       "Health",
+       "Cloud",
+       "Other"
+      ],
+      "choiceColors": {
+       "Software": "blue",
+       "Media": "violet",
+       "Health": "teal",
+       "Cloud": "orange",
+       "Other": "pink"
+      }
+     },
+     {
+      "key": "payment",
+      "label": "Payment method",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Card",
+       "Bank transfer",
+       "Wallet",
+       "Cash"
+      ],
+      "choiceColors": {
+       "Card": "blue",
+       "Bank transfer": "violet",
+       "Wallet": "teal",
+       "Cash": "orange"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Active",
+       "Paused",
+       "Cancelled"
+      ],
+      "choiceColors": {
+       "Active": "green",
+       "Paused": "amber",
+       "Cancelled": "red"
+      }
+     },
+     {
+      "key": "login",
+      "label": "Login page",
+      "parityType": "url",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "remind",
+      "label": "Remind me",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "s1",
+      "values": {
+       "sub_name": "Studio Suite design app",
+       "cost": 24.0,
+       "cycle": "Monthly",
+       "category": "Software",
+       "payment": "Card",
+       "status": "Active",
+       "next_renewal": "@today+9d",
+       "login": "https://accounts.s1-demo.net",
+       "remind": true
+      }
+     },
+     {
+      "key": "s2",
+      "values": {
+       "sub_name": "Harborlight streaming",
+       "cost": 15.99,
+       "cycle": "Monthly",
+       "category": "Media",
+       "payment": "Card",
+       "status": "Active",
+       "next_renewal": "@today+17d",
+       "login": "https://accounts.s2-demo.net",
+       "remind": false
+      }
+     },
+     {
+      "key": "s3",
+      "values": {
+       "sub_name": "Cloud drive 2 TB",
+       "cost": 99.0,
+       "cycle": "Yearly",
+       "category": "Cloud",
+       "payment": "Card",
+       "status": "Active",
+       "next_renewal": "@today+140d",
+       "login": "https://accounts.s3-demo.net",
+       "remind": true
+      }
+     },
+     {
+      "key": "s4",
+      "values": {
+       "sub_name": "Pulse fitness membership",
+       "cost": 39.5,
+       "cycle": "Monthly",
+       "category": "Health",
+       "payment": "Bank transfer",
+       "status": "Active",
+       "next_renewal": "@today+4d",
+       "login": "https://accounts.s4-demo.net",
+       "remind": true
+      }
+     },
+     {
+      "key": "s5",
+      "values": {
+       "sub_name": "Notebook sync plan",
+       "cost": 29.0,
+       "cycle": "Quarterly",
+       "category": "Software",
+       "payment": "Wallet",
+       "status": "Active",
+       "next_renewal": "@today+26d",
+       "login": "https://accounts.s5-demo.net",
+       "remind": true
+      }
+     },
+     {
+      "key": "s6",
+      "values": {
+       "sub_name": "Daily Ledger news",
+       "cost": 8.0,
+       "cycle": "Weekly",
+       "category": "Media",
+       "payment": "Card",
+       "status": "Active",
+       "next_renewal": "@today+3d",
+       "login": "https://accounts.s6-demo.net",
+       "remind": false
+      }
+     },
+     {
+      "key": "s7",
+      "values": {
+       "sub_name": "Domain and email hosting",
+       "cost": 72.0,
+       "cycle": "Bi-yearly",
+       "category": "Cloud",
+       "payment": "Card",
+       "status": "Active",
+       "next_renewal": "@today+58d",
+       "login": "https://accounts.s7-demo.net",
+       "remind": true
+      }
+     },
+     {
+      "key": "s8",
+      "values": {
+       "sub_name": "Language lessons app",
+       "cost": 12.99,
+       "cycle": "Monthly",
+       "category": "Health",
+       "payment": "Wallet",
+       "status": "Paused",
+       "next_renewal": "@today+33d",
+       "login": "https://accounts.s8-demo.net",
+       "remind": false
+      }
+     },
+     {
+      "key": "s9",
+      "values": {
+       "sub_name": "Backup vault",
+       "cost": 4.5,
+       "cycle": "Monthly",
+       "category": "Cloud",
+       "payment": "Card",
+       "status": "Active",
+       "next_renewal": "@today+12d",
+       "login": "https://accounts.s9-demo.net",
+       "remind": false
+      }
+     },
+     {
+      "key": "s10",
+      "values": {
+       "sub_name": "Podcast network pass",
+       "cost": 6.0,
+       "cycle": "Monthly",
+       "category": "Media",
+       "payment": "Wallet",
+       "status": "Cancelled",
+       "next_renewal": "@today+20d",
+       "login": "https://accounts.s10-demo.net",
+       "remind": false
+      }
+     },
+     {
+      "key": "s11",
+      "values": {
+       "sub_name": "Password manager family",
+       "cost": 48.0,
+       "cycle": "Yearly",
+       "category": "Software",
+       "payment": "Card",
+       "status": "Active",
+       "next_renewal": "@today+210d",
+       "login": "https://accounts.s11-demo.net",
+       "remind": true
+      }
+     },
+     {
+      "key": "s12",
+      "values": {
+       "sub_name": "Meal kit box",
+       "cost": 74.0,
+       "cycle": "Quarterly",
+       "category": "Other",
+       "payment": "Bank transfer",
+       "status": "Paused",
+       "next_renewal": "@today+44d",
+       "login": "https://accounts.s12-demo.net",
+       "remind": false
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "add_sub",
+    "name": "Add a subscription",
+    "describes": "Record a new recurring payment.",
+    "audience": "staff",
+    "table": "subscription",
+    "fields": [
+     {
+      "fieldKey": "sub_name",
+      "ask": "What is the subscription called?",
+      "required": true
+     },
+     {
+      "fieldKey": "cost",
+      "ask": "How much does it cost each time?",
+      "required": true
+     },
+     {
+      "fieldKey": "cycle",
+      "ask": "How often is it billed?",
+      "required": true
+     },
+     {
+      "fieldKey": "next_renewal",
+      "ask": "When does it renew next?"
+     },
+     {
+      "fieldKey": "payment",
+      "ask": "How do you pay for it?"
+     }
+    ],
+    "submitLabel": "Add subscription",
+    "confirmation": "Added. It appears in renewals."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "active_subs",
+    "name": "Active",
+    "table": "subscription",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "next_renewal",
+      "direction": "asc"
+     }
+    ],
+    "filters": {
+     "status": "Active"
+    }
+   },
+   {
+    "token": "renewal_calendar",
+    "name": "Renewals",
+    "table": "subscription",
+    "kind": "calendar",
+    "dateField": "next_renewal",
+    "allDay": true
+   },
+   {
+    "token": "category_board",
+    "name": "By category",
+    "table": "subscription",
+    "kind": "kanban",
+    "groupBy": "category"
+   },
+   {
+    "token": "all_subs",
+    "name": "All",
+    "table": "subscription",
+    "kind": "grid"
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Subscription assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "subscription",
+     "describes": "Every subscription with cost, cycle, status and renewal date."
+    },
+    {
+     "name": "related_tables",
+     "table": "subscription",
+     "describes": "The same list."
+    }
+   ],
+   "question": {
+    "ask": "How many subscriptions are active?",
+    "whyItMatters": "Tomas checks what is still being paid for.",
+    "expect": {
+     "table": "subscription",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Active"
+     },
+     "answer": 9,
+     "unit": "subscriptions"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the active list.",
+    "action": {
+     "kind": "open",
+     "surface": "active_subs"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "active_subs",
+     "minItems": 9
+    }
+   },
+   {
+    "says": "Open the renewal calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "renewal_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "renewal_calendar",
+     "minItems": 9
+    }
+   },
+   {
+    "says": "Open by category.",
+    "action": {
+     "kind": "open",
+     "surface": "category_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "category_board",
+     "minItems": 9
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "weaver-home.net",
+    "accounts.s1-demo.net",
+    "accounts.s2-demo.net",
+    "accounts.s3-demo.net",
+    "accounts.s4-demo.net",
+    "accounts.s5-demo.net",
+    "accounts.s6-demo.net",
+    "accounts.s7-demo.net",
+    "accounts.s8-demo.net",
+    "accounts.s9-demo.net",
+    "accounts.s10-demo.net",
+    "accounts.s11-demo.net",
+    "accounts.s12-demo.net"
+   ],
+   "fictionalStreets": [
+    "Quillon Terrace"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "subscription-tracker",
+   "parent": null,
+   "title": "Subscription Tracker",
+   "icon": {
+    "emoji": "🔁"
+   },
+   "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "List every recurring payment once. Costs are converted to monthly and yearly figures so a weekly charge and an annual plan compare fairly."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Repeat"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "subscription",
+           "view": "active_subs"
+          },
+          "inline": true,
+          "title": "Subscriptions",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Monthly cost by category",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "category",
+             "op": "sum",
+             "field": "monthly_cost",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "subscription",
+           "view": "active_subs"
+          },
+          "inline": true,
+          "title": "Subscriptions",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Yearly cost by category",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "category",
+             "op": "sum",
+             "field": "yearly_cost"
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "subscription",
+           "view": "all_subs"
+          },
+          "inline": true,
+          "title": "Subscriptions",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "By status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Subscriptions"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "subscription",
+       "view": "active_subs"
+      },
+      "inline": true,
+      "title": "Subscriptions",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-a",
+        "name": "Active",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": "Active"
+        },
+        "sorts": [
+         {
+          "field": "next_renewal",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "v-c",
+        "name": "Renewals",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "next_renewal"
+       },
+       {
+        "id": "v-b",
+        "name": "By category",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "category"
+       },
+       {
+        "id": "v-all",
+        "name": "All",
+        "layout": "grid",
+        "icon": "LayoutGrid"
+       },
+       {
+        "id": "v-ch",
+        "name": "Monthly cost by category",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "category",
+         "op": "sum",
+         "field": "monthly_cost"
+        }
+       }
+      ],
+      "activeViewId": "v-a"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:renewal-routine"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:cancel-checklist"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "renewal-routine",
+   "parent": "subscription-tracker",
+   "title": "Renewal routine",
+   "icon": {
+    "emoji": "📆"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Once a month"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Check subscriptions renewing in the next 30 days"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Cancel or pause anything unused"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Compare the yearly total with last quarter"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Renewing soon"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "subscription",
+       "view": "active_subs"
+      },
+      "inline": true,
+      "title": "Subscriptions",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-r",
+        "name": "Next renewals",
+        "layout": "list",
+        "icon": "Clock",
+        "filters": {
+         "status": "Active",
+         "remind": true
+        },
+        "sorts": [
+         {
+          "field": "next_renewal",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "v-r"
+     }
+    }
+   ]
+  },
+  {
+   "key": "cancel-checklist",
+   "parent": "subscription-tracker",
+   "title": "Cancelling checklist",
+   "icon": {
+    "emoji": "✂️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Cancel a few days before the renewal date, then set the status to Cancelled so it stops counting."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Scissors"
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Download any data you need"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Cancel in the account settings"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Keep the confirmation email"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Set Status to Cancelled"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Check the next statement"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  }
+ ]
+}

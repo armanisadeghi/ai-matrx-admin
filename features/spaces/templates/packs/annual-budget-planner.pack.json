@@ -1,0 +1,1634 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0358",
+ "version": 1,
+ "title": "Annual Budget Planner",
+ "description": "Plan income, fixed, variable and savings lines and compare with what actually moved.",
+ "forWho": "Individuals and households",
+ "icon": {
+  "emoji": "📅"
+ },
+ "cover": {
+  "url": "gallery:photo-ocean-horizon",
+  "offsetY": 50
+ },
+ "category": "finance",
+ "tags": [
+  "budget",
+  "planning",
+  "savings",
+  "income"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-annual-budget-planner",
+  "catalogueId": "SP0358",
+  "useCase": "Imani Brooks plans each month and checks plan against actual at year end.",
+  "industry": "cross_industry",
+  "vertical": "Personal finance",
+  "job": "reporting",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Imani Brooks household",
+   "describes": "One person planning her year of income and spending.",
+   "address": {
+    "line1": "731 Cobble Mill Road",
+    "city": "Raleigh",
+    "region": "NC",
+    "postalCode": "27604",
+    "country": "US"
+   },
+   "phone": "(919) 555-0136",
+   "website": "brooks-home.net",
+   "email": "imani@brooks-home.net",
+   "timezone": "America/New_York"
+  },
+  "cleanupTag": "use-case:spaces-annual-budget-planner",
+  "tables": [
+   {
+    "token": "line",
+    "name": "Budget lines",
+    "labelSingular": "Budget line",
+    "labelPlural": "Budget lines",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "wallet",
+    "titleField": "line_name",
+    "describes": "Every planned income, fixed, variable and savings line with its monthly amount.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "line_name",
+      "label": "Budget line",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "line_type",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Income",
+       "Fixed",
+       "Variable",
+       "Savings"
+      ],
+      "choiceColors": {
+       "Income": "green",
+       "Fixed": "blue",
+       "Variable": "amber",
+       "Savings": "violet"
+      }
+     },
+     {
+      "key": "category",
+      "label": "Category",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Salary",
+       "Side income",
+       "Housing",
+       "Insurance",
+       "Utilities",
+       "Transport",
+       "Food",
+       "Shopping",
+       "Leisure",
+       "Savings"
+      ],
+      "choiceColors": {
+       "Salary": "blue",
+       "Side income": "violet",
+       "Housing": "teal",
+       "Insurance": "orange",
+       "Utilities": "pink",
+       "Transport": "yellow",
+       "Food": "brown",
+       "Shopping": "amber",
+       "Leisure": "slate",
+       "Savings": "gray"
+      }
+     },
+     {
+      "key": "planned_monthly",
+      "label": "Planned monthly",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "importance",
+      "label": "Importance",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Must have",
+       "Flexible",
+       "Nice to have"
+      ],
+      "choiceColors": {
+       "Must have": "red",
+       "Flexible": "amber",
+       "Nice to have": "blue"
+      }
+     },
+     {
+      "key": "planned_annual",
+      "label": "Planned annual",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Planned monthly} * 12",
+      "unit": "USD"
+     },
+     {
+      "key": "transactions",
+      "label": "Transactions",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "transaction",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "actual_total",
+      "label": "Actual so far",
+      "parityType": "rollup",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "via": "transactions",
+      "pick": "amount",
+      "agg": "sum"
+     }
+    ],
+    "rows": [
+     {
+      "key": "l1",
+      "values": {
+       "line_name": "Salary and wages",
+       "line_type": "Income",
+       "category": "Salary",
+       "planned_monthly": 5400,
+       "importance": "Must have"
+      }
+     },
+     {
+      "key": "l2",
+      "values": {
+       "line_name": "Freelance projects",
+       "line_type": "Income",
+       "category": "Side income",
+       "planned_monthly": 650,
+       "importance": "Flexible"
+      }
+     },
+     {
+      "key": "l3",
+      "values": {
+       "line_name": "Rent",
+       "line_type": "Fixed",
+       "category": "Housing",
+       "planned_monthly": 1650,
+       "importance": "Must have"
+      }
+     },
+     {
+      "key": "l4",
+      "values": {
+       "line_name": "Health insurance",
+       "line_type": "Fixed",
+       "category": "Insurance",
+       "planned_monthly": 310,
+       "importance": "Must have"
+      }
+     },
+     {
+      "key": "l5",
+      "values": {
+       "line_name": "Phone and internet",
+       "line_type": "Fixed",
+       "category": "Utilities",
+       "planned_monthly": 115,
+       "importance": "Flexible"
+      }
+     },
+     {
+      "key": "l6",
+      "values": {
+       "line_name": "Car payment",
+       "line_type": "Fixed",
+       "category": "Transport",
+       "planned_monthly": 385,
+       "importance": "Must have"
+      }
+     },
+     {
+      "key": "l7",
+      "values": {
+       "line_name": "Groceries",
+       "line_type": "Variable",
+       "category": "Food",
+       "planned_monthly": 560,
+       "importance": "Must have"
+      }
+     },
+     {
+      "key": "l8",
+      "values": {
+       "line_name": "Dining out",
+       "line_type": "Variable",
+       "category": "Food",
+       "planned_monthly": 220,
+       "importance": "Nice to have"
+      }
+     },
+     {
+      "key": "l9",
+      "values": {
+       "line_name": "Fuel and parking",
+       "line_type": "Variable",
+       "category": "Transport",
+       "planned_monthly": 180,
+       "importance": "Flexible"
+      }
+     },
+     {
+      "key": "l10",
+      "values": {
+       "line_name": "Clothing",
+       "line_type": "Variable",
+       "category": "Shopping",
+       "planned_monthly": 120,
+       "importance": "Nice to have"
+      }
+     },
+     {
+      "key": "l11",
+      "values": {
+       "line_name": "Entertainment",
+       "line_type": "Variable",
+       "category": "Leisure",
+       "planned_monthly": 150,
+       "importance": "Nice to have"
+      }
+     },
+     {
+      "key": "l12",
+      "values": {
+       "line_name": "Emergency fund",
+       "line_type": "Savings",
+       "category": "Savings",
+       "planned_monthly": 500,
+       "importance": "Must have"
+      }
+     },
+     {
+      "key": "l13",
+      "values": {
+       "line_name": "Retirement contribution",
+       "line_type": "Savings",
+       "category": "Savings",
+       "planned_monthly": 450,
+       "importance": "Flexible"
+      }
+     },
+     {
+      "key": "l14",
+      "values": {
+       "line_name": "Vacation fund",
+       "line_type": "Savings",
+       "category": "Savings",
+       "planned_monthly": 250,
+       "importance": "Nice to have"
+      }
+     }
+    ]
+   },
+   {
+    "token": "transaction",
+    "name": "Transactions",
+    "labelSingular": "Transaction",
+    "labelPlural": "Transactions",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "arrow-left-right",
+    "titleField": "description",
+    "describes": "Money in and out, tied to a budget line and a month.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "description",
+      "label": "Description",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "line",
+      "label": "Budget line",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "line",
+      "relationMax": 1
+     },
+     {
+      "key": "flow",
+      "label": "Flow",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Income",
+       "Expense"
+      ],
+      "choiceColors": {
+       "Income": "blue",
+       "Expense": "violet"
+      }
+     },
+     {
+      "key": "amount",
+      "label": "Amount",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 1000000
+       }
+      ]
+     },
+     {
+      "key": "paid_on",
+      "label": "Date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "month",
+      "label": "Month",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "month",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "t1",
+      "values": {
+       "description": "Paycheck for the latest period",
+       "line": "l1",
+       "flow": "Income",
+       "amount": 5400,
+       "paid_on": "@today-2d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t2",
+      "values": {
+       "description": "Paycheck for the period before",
+       "line": "l1",
+       "flow": "Income",
+       "amount": 5400,
+       "paid_on": "@today-33d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t3",
+      "values": {
+       "description": "Rent to Cobble Court Properties",
+       "line": "l3",
+       "flow": "Expense",
+       "amount": 1650,
+       "paid_on": "@today-1d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t4",
+      "values": {
+       "description": "Rent, paid by bank draft",
+       "line": "l3",
+       "flow": "Expense",
+       "amount": 1650,
+       "paid_on": "@today-31d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t5",
+      "values": {
+       "description": "Market run on Saturday",
+       "line": "l7",
+       "flow": "Expense",
+       "amount": 138.4,
+       "paid_on": "@today-5d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t6",
+      "values": {
+       "description": "Midweek grocery top-up",
+       "line": "l7",
+       "flow": "Expense",
+       "amount": 121.75,
+       "paid_on": "@today-12d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t7",
+      "values": {
+       "description": "Bulk pantry shop",
+       "line": "l7",
+       "flow": "Expense",
+       "amount": 147.2,
+       "paid_on": "@today-38d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t8",
+      "values": {
+       "description": "Poster design project",
+       "line": "l2",
+       "flow": "Income",
+       "amount": 720,
+       "paid_on": "@today-9d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t9",
+      "values": {
+       "description": "Logo refresh project",
+       "line": "l2",
+       "flow": "Income",
+       "amount": 480,
+       "paid_on": "@today-41d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t10",
+      "values": {
+       "description": "Pizza night",
+       "line": "l8",
+       "flow": "Expense",
+       "amount": 58.3,
+       "paid_on": "@today-6d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t11",
+      "values": {
+       "description": "Brunch with friends",
+       "line": "l8",
+       "flow": "Expense",
+       "amount": 84.9,
+       "paid_on": "@today-40d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t12",
+      "values": {
+       "description": "Gas station",
+       "line": "l9",
+       "flow": "Expense",
+       "amount": 46.1,
+       "paid_on": "@today-8d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t13",
+      "values": {
+       "description": "Transit pass",
+       "line": "l9",
+       "flow": "Expense",
+       "amount": 72,
+       "paid_on": "@today-36d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t14",
+      "values": {
+       "description": "Winter jacket",
+       "line": "l10",
+       "flow": "Expense",
+       "amount": 189,
+       "paid_on": "@today-44d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t15",
+      "values": {
+       "description": "Concert tickets",
+       "line": "l11",
+       "flow": "Expense",
+       "amount": 128,
+       "paid_on": "@today-15d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t16",
+      "values": {
+       "description": "Transfer to emergency account",
+       "line": "l12",
+       "flow": "Expense",
+       "amount": 500,
+       "paid_on": "@today-3d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t17",
+      "values": {
+       "description": "Automatic savings sweep",
+       "line": "l12",
+       "flow": "Expense",
+       "amount": 500,
+       "paid_on": "@today-34d",
+       "month": "m11"
+      }
+     },
+     {
+      "key": "t18",
+      "values": {
+       "description": "Health plan premium",
+       "line": "l4",
+       "flow": "Expense",
+       "amount": 310,
+       "paid_on": "@today-4d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t19",
+      "values": {
+       "description": "Car loan installment",
+       "line": "l6",
+       "flow": "Expense",
+       "amount": 385,
+       "paid_on": "@today-7d",
+       "month": "m12"
+      }
+     },
+     {
+      "key": "t20",
+      "values": {
+       "description": "Phone plan",
+       "line": "l5",
+       "flow": "Expense",
+       "amount": 115,
+       "paid_on": "@today-10d",
+       "month": "m12"
+      }
+     }
+    ],
+    "independentOf": {
+     "line": "A payment can fall in any month the plan runs.",
+     "month": "The month is chosen by the payment date."
+    }
+   },
+   {
+    "token": "month",
+    "name": "Months",
+    "labelSingular": "Month",
+    "labelPlural": "Months",
+    "type": "entity",
+    "display": "list",
+    "weight": "light",
+    "ordered": false,
+    "icon": "calendar-days",
+    "titleField": "month_name",
+    "describes": "Each month of the plan with its income and expenses.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "month_name",
+      "label": "Month",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "starts_on",
+      "label": "Starts",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "transactions",
+      "label": "Transactions",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "transaction",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "income",
+      "label": "Income",
+      "parityType": "rollup",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "via": "transactions",
+      "pick": "amount",
+      "agg": "sum",
+      "filter": {
+       "flow": "Income"
+      }
+     },
+     {
+      "key": "expenses",
+      "label": "Expenses",
+      "parityType": "rollup",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "via": "transactions",
+      "pick": "amount",
+      "agg": "sum",
+      "filter": {
+       "flow": "Expense"
+      }
+     },
+     {
+      "key": "entries",
+      "label": "Entries",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "transactions",
+      "pick": "description",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "m1",
+      "values": {
+       "month_name": "Eleven months back",
+       "starts_on": "@today-11m"
+      }
+     },
+     {
+      "key": "m2",
+      "values": {
+       "month_name": "Ten months back",
+       "starts_on": "@today-10m"
+      }
+     },
+     {
+      "key": "m3",
+      "values": {
+       "month_name": "Nine months back",
+       "starts_on": "@today-9m"
+      }
+     },
+     {
+      "key": "m4",
+      "values": {
+       "month_name": "Eight months back",
+       "starts_on": "@today-8m"
+      }
+     },
+     {
+      "key": "m5",
+      "values": {
+       "month_name": "Seven months back",
+       "starts_on": "@today-7m"
+      }
+     },
+     {
+      "key": "m6",
+      "values": {
+       "month_name": "Six months back",
+       "starts_on": "@today-6m"
+      }
+     },
+     {
+      "key": "m7",
+      "values": {
+       "month_name": "Five months back",
+       "starts_on": "@today-5m"
+      }
+     },
+     {
+      "key": "m8",
+      "values": {
+       "month_name": "Four months back",
+       "starts_on": "@today-4m"
+      }
+     },
+     {
+      "key": "m9",
+      "values": {
+       "month_name": "Three months back",
+       "starts_on": "@today-3m"
+      }
+     },
+     {
+      "key": "m10",
+      "values": {
+       "month_name": "Two months back",
+       "starts_on": "@today-2m"
+      }
+     },
+     {
+      "key": "m11",
+      "values": {
+       "month_name": "Previous month",
+       "starts_on": "@today-1m"
+      }
+     },
+     {
+      "key": "m12",
+      "values": {
+       "month_name": "Current month",
+       "starts_on": "@today-0m"
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "A budget line gathers its transactions.",
+    "fromTable": "line",
+    "fromField": "transactions",
+    "toTable": "transaction",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "on_line"
+   },
+   {
+    "describes": "Each transaction belongs to one budget line.",
+    "fromTable": "transaction",
+    "fromField": "line",
+    "toTable": "line",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "line_payments"
+   },
+   {
+    "describes": "Each transaction belongs to one month.",
+    "fromTable": "transaction",
+    "fromField": "month",
+    "toTable": "month",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "month_payments"
+   },
+   {
+    "describes": "A month gathers its transactions.",
+    "fromTable": "month",
+    "fromField": "transactions",
+    "toTable": "transaction",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "in_month"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "log_payment",
+    "name": "Log a payment",
+    "describes": "Add money in or out.",
+    "audience": "staff",
+    "table": "transaction",
+    "fields": [
+     {
+      "fieldKey": "description",
+      "ask": "What was it for?",
+      "required": true
+     },
+     {
+      "fieldKey": "line",
+      "ask": "Which budget line?",
+      "required": true
+     },
+     {
+      "fieldKey": "flow",
+      "ask": "Was it income or an expense?",
+      "required": true
+     },
+     {
+      "fieldKey": "amount",
+      "ask": "How much?",
+      "required": true
+     },
+     {
+      "fieldKey": "paid_on",
+      "ask": "On what day?"
+     }
+    ],
+    "submitLabel": "Add it",
+    "confirmation": "Logged."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_lines",
+    "name": "Budget lines",
+    "table": "line",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "lines_by_type",
+    "name": "By type",
+    "table": "line",
+    "kind": "kanban",
+    "groupBy": "line_type"
+   },
+   {
+    "token": "all_transactions",
+    "name": "Transactions",
+    "table": "transaction",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "paid_on",
+      "direction": "desc"
+     }
+    ]
+   },
+   {
+    "token": "transaction_calendar",
+    "name": "Calendar",
+    "table": "transaction",
+    "kind": "calendar",
+    "dateField": "paid_on",
+    "allDay": true
+   },
+   {
+    "token": "all_months",
+    "name": "Months",
+    "table": "month",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Budget assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "line",
+     "describes": "Budget lines with type, category and planned amount."
+    },
+    {
+     "name": "related_tables",
+     "table": "transaction",
+     "describes": "Transactions linked to lines."
+    }
+   ],
+   "question": {
+    "ask": "How many budget lines are savings lines?",
+    "whyItMatters": "Imani checks her savings targets.",
+    "expect": {
+     "table": "line",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "line_type": "Savings"
+     },
+     "answer": 3,
+     "unit": "lines"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open budget lines.",
+    "action": {
+     "kind": "open",
+     "surface": "all_lines"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_lines",
+     "minItems": 14
+    }
+   },
+   {
+    "says": "Open the calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "transaction_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "transaction_calendar",
+     "minItems": 15
+    }
+   },
+   {
+    "says": "Open months.",
+    "action": {
+     "kind": "open",
+     "surface": "all_months"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_months",
+     "minItems": 12
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "brooks-home.net"
+   ],
+   "fictionalStreets": [
+    "Cobble Mill Road"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "annual-budget",
+   "parent": null,
+   "title": "Annual Budget Planner",
+   "icon": {
+    "emoji": "📅"
+   },
+   "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Plan each line once a month, log payments as they happen and compare the plan to what actually moved. Savings lines are targets you set for yourself."
+      }
+     ],
+     "background": "green",
+     "props": {
+      "icon": "Wallet"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "line",
+           "view": "all_lines"
+          },
+          "inline": true,
+          "title": "Budget lines",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Plan by type",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "line_type",
+             "op": "sum",
+             "field": "planned_monthly",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "line",
+           "view": "all_lines"
+          },
+          "inline": true,
+          "title": "Budget lines",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Actual by type",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "line_type",
+             "op": "sum",
+             "field": "actual_total"
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "transaction",
+           "view": "all_transactions"
+          },
+          "inline": true,
+          "title": "Transactions",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Flow",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "flow",
+             "op": "sum",
+             "field": "amount",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Budget lines"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "line",
+       "view": "all_lines"
+      },
+      "inline": true,
+      "title": "Budget lines",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-t",
+        "name": "All lines",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-b",
+        "name": "By type",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "line_type"
+       },
+       {
+        "id": "v-p",
+        "name": "Plan vs actual",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "category",
+         "op": "sum",
+         "field": "actual_total"
+        }
+       }
+      ],
+      "activeViewId": "v-t"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Months"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "month",
+       "view": "all_months"
+      },
+      "inline": true,
+      "title": "Months",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-m",
+        "name": "Months",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-mi",
+        "name": "Income by month",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "month_name",
+         "op": "sum",
+         "field": "income"
+        }
+       },
+       {
+        "id": "v-me",
+        "name": "Expenses by month",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "month_name",
+         "op": "sum",
+         "field": "expenses"
+        }
+       }
+      ],
+      "activeViewId": "v-m"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Transactions"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "transaction",
+       "view": "all_transactions"
+      },
+      "inline": true,
+      "title": "Transactions",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-tr",
+        "name": "Latest",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "paid_on",
+          "direction": "desc"
+         }
+        ]
+       },
+       {
+        "id": "v-tc",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "paid_on"
+       }
+      ],
+      "activeViewId": "v-tr"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:budget-setup"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:year-end-review"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "Notes"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Write anything unusual about the year here: a move, a new job, a big purchase."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "budget-setup",
+   "parent": "annual-budget",
+   "title": "Setting up the year",
+   "icon": {
+    "emoji": "🧰"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "List your income lines first."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Add fixed costs: rent, insurance, loan installments."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Add variable costs using last quarter as a guide."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Choose savings targets and treat them like bills."
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Planned annual is simply the monthly figure times twelve. Change the monthly number and it follows."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Calculator"
+     }
+    },
+    {
+     "type": "table",
+     "props": {
+      "headerRow": true,
+      "headerColumn": false,
+      "rows": [
+       {
+        "cells": [
+         [
+          {
+           "text": "Type"
+          }
+         ],
+         [
+          {
+           "text": "What it holds"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Income"
+          }
+         ],
+         [
+          {
+           "text": "Pay and other money in"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Fixed"
+          }
+         ],
+         [
+          {
+           "text": "Costs that do not change"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Variable"
+          }
+         ],
+         [
+          {
+           "text": "Costs that move month to month"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Savings"
+          }
+         ],
+         [
+          {
+           "text": "Targets you set aside"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "key": "year-end-review",
+   "parent": "annual-budget",
+   "title": "Year-end review",
+   "icon": {
+    "emoji": "🔚"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Questions"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Which lines went over their plan most often?"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Which savings lines hit their target?"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "What should be fixed next year?"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Largest variable lines"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "line",
+       "view": "all_lines"
+      },
+      "inline": true,
+      "title": "Budget lines",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-v",
+        "name": "Variable lines",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "line_type": "Variable"
+        },
+        "sorts": [
+         {
+          "field": "planned_monthly",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "v-v"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Notes"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Write the lessons here."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
