@@ -116,9 +116,14 @@ export function scanSource(file: string, text: string, map: Record<string, { typ
           const fmt = formatId(node);
           const filter = filterValue(node);
           const nearby = lines.slice(Math.max(0, line - 2), line + 12).join("\n");
-          const push = (kind: Finding["kind"], detail: string) => out.push({ file, line, column: key, expected, kind, detail });
+          // A reviewed exception says why, on the column: `// table-filter-off: <reason>` (the field is
+          // filtered another way, or is not what its name suggests). Never rename a column to pass.
+          const excused = /table-filter-off:\s*\S/.test(nearby);
+          const push = (kind: Finding["kind"], detail: string) => {
+            if (!excused) out.push({ file, line, column: key, expected, kind, detail });
+          };
           if (filter === false) {
-            if (!/table-filter-off:/.test(nearby)) push("filter-off", `filter: false on a ${expected} column — restore it, or say why: // table-filter-off: <reason>`);
+            push("filter-off", `filter: false on a ${expected} column — restore it, or say why: // table-filter-off: <reason>`);
           } else if (fmt !== "dynamic" && filter !== "dynamic") {
             if (expected === "moment") {
               const typed = (fmt && MOMENT_FORMATS.has(fmt)) || filter === "date";
@@ -157,6 +162,7 @@ function selfTest(): void {
     [`const c = [{ accessorKey: "status", header: "Status", filter: "select" }];`, null],
     [`// table-filter-off: a fixed one-day report\nconst c = [{ accessorKey: "created_at", header: "Created", filter: false }];`, null],
     [`const c = [{ accessorKey: "name", header: "Name" }];`, null],
+    [`const c = [{\n  // table-filter-off: holds free text, not a state\n  accessorKey: "state", header: "State" }];`, null],
   ];
   let failed = 0;
   for (const [src, want] of cases) {
