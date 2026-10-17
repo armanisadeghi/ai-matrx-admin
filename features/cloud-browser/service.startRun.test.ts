@@ -12,7 +12,7 @@ import appContextReducer, {
   setOrgBootstrapResolved,
 } from "@/lib/redux/slices/appContextSlice";
 import { setStoreSingleton } from "@/lib/redux/store-singleton";
-import { listProfiles, loadSnapshot, loadSnapshotForRun } from "./service";
+import { forgetProfileAccess, listProfiles, loadSnapshot, loadSnapshotForRun } from "./service";
 
 /**
  * A REAL store with the REAL appContext reducer, published through the REAL
@@ -69,6 +69,7 @@ const runRow = {
 
 type QueryResult = { data: unknown; error: null };
 let mockMaybeSingleRun: typeof runRow | null = null;
+let mockProfileRows: Array<typeof profileRow> = [profileRow];
 // Declared with a rest parameter so the mock below can FORWARD its arguments into
 // it. Without one, `mockGetResourceAccess(...args)` is a TS2556 spread into a
 // zero-arity function — which broke `pnpm type-check` for the whole repo.
@@ -78,7 +79,7 @@ const mockGetResourceAccess = jest.fn(
 
 function queryFor(table: string) {
   const result = (): QueryResult => {
-    if (table === "profile") return { data: [profileRow], error: null };
+    if (table === "profile") return { data: mockProfileRows, error: null };
     return { data: [], error: null };
   };
   const q: Record<string, unknown> & PromiseLike<QueryResult> = {
@@ -135,6 +136,8 @@ describe("run admission", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockMaybeSingleRun = null;
+    mockProfileRows = [profileRow];
+    forgetProfileAccess();
     mockGetResourceAccess.mockResolvedValue({ level: "admin" });
     // The person has chosen an organization and boot has answered — the only
     // state in which the fleet accepts a start at all.
@@ -143,9 +146,27 @@ describe("run admission", () => {
   });
 
   it("drops super-admin-readable profiles with no canonical access", async () => {
+    // Someone else's profile, readable only through the super-admin lane.
+    mockProfileRows = [{ ...profileRow, id: "prof-other", owner_user_id: "user-2" }];
     mockGetResourceAccess.mockResolvedValue({ level: "none" });
 
     await expect(listProfiles()).resolves.toEqual([]);
+  });
+
+  // 2026-10-17: opening the Computer tab as an admin fired ~250
+  // get_resource_access calls, one per visible profile, on every listing.
+  it("asks the database about each profile at most once, never about one's own", async () => {
+    mockProfileRows = [
+      profileRow,
+      { ...profileRow, id: "prof-a", owner_user_id: "user-2", is_default: false },
+      { ...profileRow, id: "prof-b", owner_user_id: "user-3", is_default: false },
+    ];
+    const first = await listProfiles();
+    await listProfiles();
+    expect(first.map((p) => p.id)).toEqual(["prof-1", "prof-a", "prof-b"]);
+    expect(first[0].accessLevel).toBe("admin");
+    expect(mockGetResourceAccess).toHaveBeenCalledTimes(2);
+    expect(mockGetResourceAccess.mock.calls.map((c) => c[1])).toEqual(["prof-a", "prof-b"]);
   });
 
   it("does not start a browser for a run that is not live", async () => {
