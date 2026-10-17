@@ -108,7 +108,7 @@ const RAW_SEED = {
   counts: COUNTS,
   organizations_total: 2,
   organizations_has_more: false,
-  organizations_next_cursor: null,
+  organizations_next_cursor: null as string | null,
   organizations_page_size: 50,
   preferences_row: PREFS_ROW,
   preferences_row_read: true,

@@ -12,6 +12,7 @@ import { getUserOrganizationsPage } from "@/features/organizations/service";
 import type { OrganizationWithRole } from "@/features/organizations/types";
 import type { OrganizationArchiveFilter } from "@/features/organizations/service/organizationArchive";
 import { DEFAULT_ARCHIVE_FILTER } from "@ai-matrx/design-system/archive-filter";
+import type { OrganizationPickerMore } from "@ai-matrx/design-system";
 
 const SEARCH_DEBOUNCE_MS = 200;
 
@@ -132,12 +133,16 @@ export function usePagedOrganizations(archiveFilter: OrganizationArchiveFilter =
   };
 }
 
-/**
- * The paged half of `OrganizationPicker`'s props. INTERIM until `@ai-matrx/design-system` with
- * `OrganizationPicker`'s `more` prop is on npm (aidream 7fb2afe636): returns {} so the tree compiles
- * against the installed version; the picker then filters the loaded page locally.
- * TODO(lane A, bounded organizations): return `{ more: { … } }` once the package is adopted.
- */
-export function pagedPickerProps(_paged: ReturnType<typeof usePagedOrganizations>): Record<string, never> {
-  return {};
+/** The paged half of `OrganizationPicker`'s props: `more` only while the list is a page. */
+export function pagedPickerProps(paged: ReturnType<typeof usePagedOrganizations>): { more?: OrganizationPickerMore } {
+  if (!paged.isPartial) return {};
+  return {
+    more: {
+      onQueryChange: paged.setQuery,
+      hasMore: paged.hasMore,
+      onLoadMore: paged.loadMore,
+      loadingMore: paged.loadingMore,
+      ...(paged.total !== null ? { total: paged.total } : {}),
+    },
+  };
 }
