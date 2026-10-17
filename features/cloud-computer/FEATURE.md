@@ -84,6 +84,9 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
   viewers froze the one being typed in (2026-10-16). Hold the seat before opening a stream.
 - **A gone stream is a state.** Renew 404/410 or `superseded`/`taken_over` (`isStreamGone`)
   stops the renew loop and shows "Take control again"; it never keeps renewing a dead claim.
+- **The frame enters with a code.** The frame loads `streamFrameAddress(ticket)` (endpoint +
+  the claim's one-use `?enter=`), never the bare endpoint: the page's claim cookie never reaches
+  a cross-site frame, so the frame's own request must set its cookie (401 on local, 2026-10-17).
 - **One chip.** The Computer view clears the `cloud_browser_profile` value chip; the composer
   pill (from `@ai-matrx/chat`) is the only browser chip and toggles this tab.
 
@@ -93,6 +96,9 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 - `features/canvas/` — host pane.
 
 ## Change log
+
+- **2026-10-17 (c)** — Frame address carries the claim's one-use entry code
+  (`streamFrameAddress`); fixes the 401 page on every cross-site (local) embed.
 
 - **2026-10-17 (b)** — One Computer tab per machine; our own connection status over the frame
   (stream page contract); Keyboard reconnect + focus on return; plain control row (tap-target
