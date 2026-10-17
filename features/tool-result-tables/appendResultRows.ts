@@ -77,14 +77,19 @@ async function addMissingChoices(
  * a number into a text column as its digits. Boolean and number columns keep the real value.
  */
 function rowsForColumns(described: ResultRows, mapping: Record<string, string>, fields: TableField[]): ResultRows["rows"] {
-  const typeOf = new Map(fields.map((f) => [f.field_name, f.data_type]));
+  const typeOf = new Map(
+    fields.map((f) => {
+      const format = (f.metadata as { format?: { id?: string } } | null | undefined)?.format?.id;
+      return [f.field_name, format === "choice" || format === "multi_choice" ? "choice" : f.data_type] as const;
+    }),
+  );
   return described.rows.map((row) => {
     const out = { ...row };
     for (const [header, value] of Object.entries(row)) {
       const type = typeOf.get(mapping[header] ?? "");
       if (type === undefined || value === null) continue;
-      if (typeof value === "boolean" && type !== "boolean") out[header] = String(value);
-      else if (typeof value === "number" && (type === "string" || type === "text")) out[header] = String(value);
+      if (typeof value === "boolean" && (type === "choice" || type !== "boolean")) out[header] = String(value);
+      else if (typeof value === "number" && (type === "string" || type === "text" || type === "choice")) out[header] = String(value);
     }
     return out;
   });
