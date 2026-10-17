@@ -1,0 +1,1321 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0355",
+ "version": 1,
+ "title": "Competitor Analysis",
+ "description": "Profile competitors, compare features and track pricing and threat level.",
+ "forWho": "Product and marketing teams",
+ "icon": {
+  "emoji": "🧭"
+ },
+ "cover": {
+  "url": "gallery:photo-pine-forest",
+  "offsetY": 50
+ },
+ "category": "marketing",
+ "tags": [
+  "competitors",
+  "research",
+  "pricing",
+  "strategy"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-competitor-analysis",
+  "catalogueId": "SP0355",
+  "useCase": "A product marketer keeps six rival profiles and a feature matrix current.",
+  "industry": "cross_industry",
+  "vertical": "Competitive intelligence",
+  "job": "content",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Ravenbrook Field Software",
+   "describes": "A software company serving crews that work at customer sites.",
+   "address": {
+    "line1": "27 Tansy Lane",
+    "city": "Minneapolis",
+    "region": "MN",
+    "postalCode": "55408",
+    "country": "US"
+   },
+   "phone": "(612) 555-0170",
+   "website": "ravenbrook-demo.net",
+   "email": "hello@ravenbrook-demo.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-competitor-analysis",
+  "tables": [
+   {
+    "token": "competitor",
+    "name": "Competitors",
+    "labelSingular": "Competitor",
+    "labelPlural": "Competitors",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "swords",
+    "titleField": "competitor_name",
+    "describes": "Every rival worth watching, how they price and how much they threaten us.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "competitor_name",
+      "label": "Competitor",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "website",
+      "label": "Website",
+      "parityType": "url",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "tier",
+      "label": "Tier",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Direct",
+       "Indirect",
+       "Emerging"
+      ],
+      "choiceColors": {
+       "Direct": "blue",
+       "Indirect": "violet",
+       "Emerging": "teal"
+      }
+     },
+     {
+      "key": "pricing_model",
+      "label": "Pricing model",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "starting_price",
+      "label": "Starting price",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 5000
+       }
+      ]
+     },
+     {
+      "key": "segment",
+      "label": "Target segment",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Solo operators",
+       "Small teams",
+       "Mid-size firms",
+       "Enterprise",
+       "Startups"
+      ],
+      "choiceColors": {
+       "Solo operators": "blue",
+       "Small teams": "violet",
+       "Mid-size firms": "teal",
+       "Enterprise": "orange",
+       "Startups": "pink"
+      }
+     },
+     {
+      "key": "threat",
+      "label": "Threat level",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Medium",
+       "High"
+      ],
+      "choiceColors": {
+       "Low": "green",
+       "Medium": "amber",
+       "High": "red"
+      }
+     },
+     {
+      "key": "last_reviewed",
+      "label": "Last reviewed",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     }
+    ],
+    "rows": [
+     {
+      "key": "c1",
+      "values": {
+       "competitor_name": "Routewise",
+       "website": "https://routewise-demo.net",
+       "tier": "Direct",
+       "pricing_model": "Per seat per month",
+       "starting_price": 29,
+       "segment": "Small teams",
+       "threat": "High",
+       "last_reviewed": "@today-20d"
+      }
+     },
+     {
+      "key": "c2",
+      "values": {
+       "competitor_name": "FieldNest",
+       "website": "https://fieldnest-demo.net",
+       "tier": "Direct",
+       "pricing_model": "Per seat per month",
+       "starting_price": 45,
+       "segment": "Mid-size firms",
+       "threat": "High",
+       "last_reviewed": "@today-35d"
+      }
+     },
+     {
+      "key": "c3",
+      "values": {
+       "competitor_name": "Tradeloop",
+       "website": "https://tradeloop-demo.net",
+       "tier": "Indirect",
+       "pricing_model": "Flat monthly plan",
+       "starting_price": 99,
+       "segment": "Solo operators",
+       "threat": "Medium",
+       "last_reviewed": "@today-60d"
+      }
+     },
+     {
+      "key": "c4",
+      "values": {
+       "competitor_name": "Dispatchly",
+       "website": "https://dispatchly-demo.net",
+       "tier": "Direct",
+       "pricing_model": "Usage based",
+       "starting_price": 19,
+       "segment": "Small teams",
+       "threat": "Medium",
+       "last_reviewed": "@today-12d"
+      }
+     },
+     {
+      "key": "c5",
+      "values": {
+       "competitor_name": "Crewmint",
+       "website": "https://crewmint-demo.net",
+       "tier": "Emerging",
+       "pricing_model": "Free with paid add-ons",
+       "starting_price": 0,
+       "segment": "Startups",
+       "threat": "Low",
+       "last_reviewed": "@today-8d"
+      }
+     },
+     {
+      "key": "c6",
+      "values": {
+       "competitor_name": "Jobberwell",
+       "website": "https://jobberwell-demo.net",
+       "tier": "Indirect",
+       "pricing_model": "Per seat per month",
+       "starting_price": 62,
+       "segment": "Enterprise",
+       "threat": "Medium",
+       "last_reviewed": "@today-90d"
+      }
+     }
+    ]
+   },
+   {
+    "token": "feature",
+    "name": "Features",
+    "labelSingular": "Feature",
+    "labelPlural": "Features",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "check-check",
+    "titleField": "feature_name",
+    "describes": "What the market offers and which competitors have each feature.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "feature_name",
+      "label": "Feature",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "category",
+      "label": "Category",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Scheduling",
+       "Communication",
+       "Billing",
+       "Mobile",
+       "Integrations"
+      ],
+      "choiceColors": {
+       "Scheduling": "blue",
+       "Communication": "violet",
+       "Billing": "teal",
+       "Mobile": "orange",
+       "Integrations": "pink"
+      }
+     },
+     {
+      "key": "we_offer",
+      "label": "We offer it",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "competitors",
+      "label": "Competitors offering",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "competitor",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "coverage",
+      "label": "Coverage",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "competitors",
+      "pick": "competitor_name",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "f1",
+      "values": {
+       "feature_name": "Drag-and-drop scheduling",
+       "category": "Scheduling",
+       "we_offer": true,
+       "competitors": [
+        "c1",
+        "c2",
+        "c4"
+       ]
+      }
+     },
+     {
+      "key": "f2",
+      "values": {
+       "feature_name": "Recurring jobs",
+       "category": "Scheduling",
+       "we_offer": true,
+       "competitors": [
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f3",
+      "values": {
+       "feature_name": "Route optimization",
+       "category": "Scheduling",
+       "we_offer": false,
+       "competitors": [
+        "c1",
+        "c2",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f4",
+      "values": {
+       "feature_name": "Customer text reminders",
+       "category": "Communication",
+       "we_offer": true,
+       "competitors": [
+        "c1",
+        "c3",
+        "c4",
+        "c5"
+       ]
+      }
+     },
+     {
+      "key": "f5",
+      "values": {
+       "feature_name": "Two-way customer messaging",
+       "category": "Communication",
+       "we_offer": false,
+       "competitors": [
+        "c2",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f6",
+      "values": {
+       "feature_name": "Online booking page",
+       "category": "Communication",
+       "we_offer": true,
+       "competitors": [
+        "c3",
+        "c4",
+        "c5"
+       ]
+      }
+     },
+     {
+      "key": "f7",
+      "values": {
+       "feature_name": "Invoicing",
+       "category": "Billing",
+       "we_offer": true,
+       "competitors": [
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f8",
+      "values": {
+       "feature_name": "Card payments in the field",
+       "category": "Billing",
+       "we_offer": true,
+       "competitors": [
+        "c2",
+        "c4",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f9",
+      "values": {
+       "feature_name": "Quote builder",
+       "category": "Billing",
+       "we_offer": true,
+       "competitors": [
+        "c2",
+        "c3"
+       ]
+      }
+     },
+     {
+      "key": "f10",
+      "values": {
+       "feature_name": "Offline mobile app",
+       "category": "Mobile",
+       "we_offer": false,
+       "competitors": [
+        "c2",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f11",
+      "values": {
+       "feature_name": "GPS crew tracking",
+       "category": "Mobile",
+       "we_offer": false,
+       "competitors": [
+        "c1",
+        "c2",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f12",
+      "values": {
+       "feature_name": "Photo attachments",
+       "category": "Mobile",
+       "we_offer": true,
+       "competitors": [
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5"
+       ]
+      }
+     },
+     {
+      "key": "f13",
+      "values": {
+       "feature_name": "Accounting export",
+       "category": "Integrations",
+       "we_offer": true,
+       "competitors": [
+        "c1",
+        "c2",
+        "c3",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f14",
+      "values": {
+       "feature_name": "Open programming interface",
+       "category": "Integrations",
+       "we_offer": true,
+       "competitors": [
+        "c2",
+        "c6"
+       ]
+      }
+     },
+     {
+      "key": "f15",
+      "values": {
+       "feature_name": "Calendar sync",
+       "category": "Integrations",
+       "we_offer": true,
+       "competitors": [
+        "c1",
+        "c3",
+        "c4",
+        "c5"
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "A feature is offered by several competitors.",
+    "fromTable": "feature",
+    "fromField": "competitors",
+    "toTable": "competitor",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "features_offered"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "tip_in",
+    "name": "Share a competitor sighting",
+    "describes": "Anyone on the team can log something they heard.",
+    "audience": "staff",
+    "table": "competitor",
+    "fields": [
+     {
+      "fieldKey": "competitor_name",
+      "ask": "Who did you hear about?",
+      "required": true
+     },
+     {
+      "fieldKey": "website",
+      "ask": "What is their website?"
+     },
+     {
+      "fieldKey": "segment",
+      "ask": "Who do they sell to?"
+     }
+    ],
+    "submitLabel": "Add competitor",
+    "confirmation": "Added to the list."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "competitor_gallery",
+    "name": "All competitors",
+    "table": "competitor",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "threat_board",
+    "name": "By threat",
+    "table": "competitor",
+    "kind": "kanban",
+    "groupBy": "threat"
+   },
+   {
+    "token": "all_features",
+    "name": "Feature matrix",
+    "table": "feature",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "feature_board",
+    "name": "By category",
+    "table": "feature",
+    "kind": "kanban",
+    "groupBy": "category"
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Competitor assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "competitor",
+     "describes": "Competitors with pricing and threat level."
+    },
+    {
+     "name": "related_tables",
+     "table": "feature",
+     "describes": "Features and who offers them."
+    }
+   ],
+   "question": {
+    "ask": "How many competitors are a high threat?",
+    "whyItMatters": "The team watches high threats first.",
+    "expect": {
+     "table": "competitor",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "threat": "High"
+     },
+     "answer": 2,
+     "unit": "competitors"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open competitors.",
+    "action": {
+     "kind": "open",
+     "surface": "competitor_gallery"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "competitor_gallery",
+     "minItems": 6
+    }
+   },
+   {
+    "says": "Open the feature matrix.",
+    "action": {
+     "kind": "open",
+     "surface": "all_features"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_features",
+     "minItems": 15
+    }
+   },
+   {
+    "says": "Open threats.",
+    "action": {
+     "kind": "open",
+     "surface": "threat_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "threat_board",
+     "minItems": 6
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "ravenbrook-demo.net",
+    "routewise-demo.net",
+    "fieldnest-demo.net",
+    "tradeloop-demo.net",
+    "dispatchly-demo.net",
+    "crewmint-demo.net",
+    "jobberwell-demo.net"
+   ],
+   "fictionalStreets": [
+    "Tansy Lane"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "competitor-analysis",
+   "parent": null,
+   "title": "Competitor Analysis",
+   "icon": {
+    "emoji": "🧭"
+   },
+   "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Where we win and where we do not. Review each competitor on a schedule, keep the feature matrix honest and record threat levels so the team knows where to look."
+      }
+     ],
+     "background": "purple",
+     "props": {
+      "icon": "Compass"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Competitors"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "competitor",
+       "view": "competitor_gallery"
+      },
+      "inline": true,
+      "title": "Competitors",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-g",
+        "name": "Pricing",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-b",
+        "name": "By threat",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "threat"
+       },
+       {
+        "id": "v-c",
+        "name": "By tier",
+        "layout": "chart",
+        "icon": "ChartPie",
+        "chart": {
+         "type": "donut",
+         "groupBy": "tier",
+         "op": "count",
+         "centerValue": true
+        }
+       },
+       {
+        "id": "v-p",
+        "name": "Price by competitor",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "competitor_name",
+         "op": "sum",
+         "field": "starting_price"
+        }
+       }
+      ],
+      "activeViewId": "v-g"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Feature matrix"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "feature",
+       "view": "all_features"
+      },
+      "inline": true,
+      "title": "Features",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-f",
+        "name": "Matrix",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-fb",
+        "name": "By category",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "category"
+       },
+       {
+        "id": "v-gap",
+        "name": "Gaps we have",
+        "layout": "list",
+        "icon": "CircleOff",
+        "filters": {
+         "we_offer": false
+        }
+       }
+      ],
+      "activeViewId": "v-f"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:competitor-profile"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:positioning"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:review-routine"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "competitor-profile",
+   "parent": "competitor-analysis",
+   "title": "Competitor profile (template)",
+   "icon": {
+    "emoji": "🪪"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Overview"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Who they are, who they serve, how they describe themselves."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Pricing"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Plans, limits and discounts."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "SWOT"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "callout",
+         "text": [
+          {
+           "text": "Strengths: what they do better than anyone."
+          }
+         ],
+         "background": "green",
+         "props": {
+          "icon": "ThumbsUp"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "callout",
+         "text": [
+          {
+           "text": "Weaknesses: where customers complain."
+          }
+         ],
+         "background": "red",
+         "props": {
+          "icon": "ThumbsDown"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "callout",
+         "text": [
+          {
+           "text": "Opportunities: gaps we can use."
+          }
+         ],
+         "background": "blue",
+         "props": {
+          "icon": "Sparkles"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "callout",
+         "text": [
+          {
+           "text": "Threats: moves that hurt us."
+          }
+         ],
+         "background": "orange",
+         "props": {
+          "icon": "TriangleAlert"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Notes"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Quotes, screenshots described in words, and links."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "positioning",
+   "parent": "competitor-analysis",
+   "title": "Positioning",
+   "icon": {
+    "emoji": "🎯"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Fill this in after each review so the sales team always has a current answer."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Target"
+     }
+    },
+    {
+     "type": "table",
+     "props": {
+      "headerRow": true,
+      "headerColumn": false,
+      "rows": [
+       {
+        "cells": [
+         [
+          {
+           "text": "Against"
+          }
+         ],
+         [
+          {
+           "text": "We win when"
+          }
+         ],
+         [
+          {
+           "text": "They win when"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Routewise"
+          }
+         ],
+         [
+          {
+           "text": "Teams need quotes and invoices together"
+          }
+         ],
+         [
+          {
+           "text": "Teams only need a simple calendar"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "FieldNest"
+          }
+         ],
+         [
+          {
+           "text": "Price matters and setup must be quick"
+          }
+         ],
+         [
+          {
+           "text": "The customer needs deep reporting"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Tradeloop"
+          }
+         ],
+         [
+          {
+           "text": "The business has a crew"
+          }
+         ],
+         [
+          {
+           "text": "A single operator runs everything"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Where we are behind"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "feature",
+       "view": "all_features"
+      },
+      "inline": true,
+      "title": "Features",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-gap",
+        "name": "Not offered",
+        "layout": "list",
+        "icon": "CircleOff",
+        "filters": {
+         "we_offer": false
+        }
+       }
+      ],
+      "activeViewId": "v-gap"
+     }
+    }
+   ]
+  },
+  {
+   "key": "review-routine",
+   "parent": "competitor-analysis",
+   "title": "Review routine",
+   "icon": {
+    "emoji": "📆"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Every month"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Re-check pricing pages for every Direct competitor"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Update Last reviewed on each row"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Add any new feature to the matrix"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Every quarter"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Re-rate threat levels"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Share a one-page summary with the team"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "competitor",
+       "view": "competitor_gallery"
+      },
+      "inline": true,
+      "title": "Competitors",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-s",
+        "name": "Longest since review",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "last_reviewed",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "v-s"
+     }
+    }
+   ]
+  }
+ ]
+}
