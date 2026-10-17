@@ -117,7 +117,8 @@ export function SocialsShell({ children }: { children: ReactNode }) {
       ) : (
         <PageSurfaceMenu sourceFeature="marketing" menuDesign="global">
           <div className="h-full overflow-y-auto overflow-x-hidden pt-[var(--shell-header-h)]">
-            <div className="mx-auto w-full max-w-[1600px] px-3 pb-6 pt-3 sm:px-4">{children}</div>
+            {/* No bottom padding: the shell's runway is the page end, once (page-rhythm). */}
+            <div className="mx-auto w-full max-w-[1600px] px-3 pt-3 sm:px-4">{children}</div>
           </div>
         </PageSurfaceMenu>
       )}

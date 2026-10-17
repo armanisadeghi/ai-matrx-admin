@@ -12,7 +12,9 @@ export function brandNameIn(text: string | null | undefined, ownBrand?: string):
   const handle = /(?:^|\s)@([A-Za-z0-9_.]{3,})/.exec(t);
   const possessive = /\b[A-Z][a-zA-Z]+'s(?:\s+[A-Z][A-Za-z]+)*/.exec(t);
   const words = t.split(" ");
-  const allCaps = words.find((w) => {
+  // Text written entirely in capitals ("OUR FIRST-EVER VINYL") carries no name signal in its case.
+  const shouting = t === t.toUpperCase();
+  const allCaps = shouting ? undefined : words.find((w) => {
     const letters = w.replace(/[^A-Za-z]/g, "");
     return letters.length >= 3 && letters === letters.toUpperCase() && !COMMON_CAPS.has(letters);
   });

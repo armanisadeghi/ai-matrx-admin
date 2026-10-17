@@ -57,6 +57,7 @@ describe("hook brand name", () => {
   });
   it("ignores plain hooks and the person's own brand", () => {
     expect(brandNameIn("stop scrolling")).toBeNull();
+    expect(brandNameIn("OUR FIRST-EVER VINYL · NOTES IN REPOSE · COMING 10.06")).toBeNull();
     expect(brandNameIn("Try Dragon Lair Knives today", "Dragon Lair Knives")).toBeNull();
   });
 });
