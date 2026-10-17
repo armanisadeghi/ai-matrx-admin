@@ -31,6 +31,7 @@ const ticketResponse = {
   ticket: "one-use-ticket",
   expires_at: 1_800_000_000,
   endpoint: "https://stream.aimatrx.com/cb-session/",
+  entryCode: null,
   stream_session_id: "session",
   control: {
     control_revision: 3,

@@ -22,7 +22,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import type { ControllerState, StreamTicketEnvelope } from "../types";
-import { renewStreamTicket } from "../service";
+import { renewStreamTicket, streamFrameAddress } from "../service";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export function TakeoverCanvas({
@@ -144,7 +144,7 @@ export function TakeoverCanvas({
             ) : null}
             <iframe
               key={ticket.streamSessionId}
-              src={ticket.endpoint}
+              src={streamFrameAddress(ticket)}
               aria-label="Live cloud browser"
               className="absolute inset-0 h-full w-full border-0"
               allow="autoplay; fullscreen"

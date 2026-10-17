@@ -262,6 +262,12 @@ export interface StreamTicketEnvelope {
   expiresAt: number;
   /** DATA — the client never constructs it (S4 §2.1). */
   endpoint: string;
+  /**
+   * One-use code from the claim: the stream frame's own first request trades it
+   * for its cookie (a cookie set by the page's fetch never reaches a cross-site
+   * frame). Frame address = `streamFrameAddress(ticket)`. Null until claimed.
+   */
+  entryCode: string | null;
   protocol: string;
   streamSessionId: string;
   mode: StreamMode;

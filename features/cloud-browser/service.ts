@@ -1033,6 +1033,7 @@ export async function mintStreamTicket(
     organizationId,
     expiresAt: requiredNumber(value.expires_at, "ticket expiry"),
     endpoint: requiredText(value.endpoint, "stream endpoint"),
+    entryCode: null,
     protocol: "selkies_webrtc",
     streamSessionId: requiredText(value.stream_session_id, "stream session"),
     mode,
@@ -1062,13 +1063,30 @@ export async function mintStreamTicket(
       height: requiredNumber(viewport.height, "viewport height"),
     },
   } satisfies StreamTicketEnvelope;
-  await claimStreamTicket(envelope);
-  return envelope;
+  const entryCode = await claimStreamTicket(envelope);
+  return { ...envelope, entryCode };
 }
+
+/**
+ * The address a stream frame loads: the endpoint plus the claim's one-use
+ * `?enter=` code, which the frame's OWN request trades for its cookie. Every
+ * embed of the stream uses this, never the bare endpoint.
+ */
+export function streamFrameAddress(ticket: StreamTicketEnvelope): string {
+  if (!ticket.entryCode) return ticket.endpoint;
+  try {
+    const url = new URL(ticket.endpoint);
+    url.searchParams.set("enter", ticket.entryCode);
+    return url.toString();
+  } catch {
+    return ticket.endpoint;
+  }
+}
+
 async function streamRequest(
   ticket: StreamTicketEnvelope,
   operation: "claim" | "renew",
-): Promise<void> {
+): Promise<Response> {
   const endpoint = new URL(operation, ticket.endpoint);
   if (
     endpoint.protocol !== "https:" ||
@@ -1102,6 +1120,7 @@ async function streamRequest(
     },
   );
   if (!response.ok) throw await streamConnectError(response);
+  return response;
 }
 
 /**
@@ -1182,10 +1201,18 @@ export function isViewStreamUnavailable(error: unknown): boolean {
     error.status === 409 || error.status === 422 || String(error.code) === "not_controller"
   );
 }
+/** Claims the ticket; resolves to the one-use frame entry code (null from a server without one). */
 export async function claimStreamTicket(
   ticket: StreamTicketEnvelope,
-): Promise<void> {
-  await streamRequest(ticket, "claim");
+): Promise<string | null> {
+  const response = await streamRequest(ticket, "claim");
+  if (response.status === 204) return null;
+  try {
+    const body = (await response.json()) as { enter?: unknown };
+    return typeof body.enter === "string" && body.enter ? body.enter : null;
+  } catch {
+    return null;
+  }
 }
 export async function renewStreamTicket(
   ticket: StreamTicketEnvelope,

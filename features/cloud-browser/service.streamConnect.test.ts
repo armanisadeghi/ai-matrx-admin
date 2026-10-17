@@ -46,6 +46,7 @@ import {
   mintStreamTicket,
   renewStreamTicket,
   StreamConnectError,
+  streamFrameAddress,
 } from "./service";
 import type { StreamTicketEnvelope } from "./types";
 
@@ -57,6 +58,7 @@ const streamTicket = {
   organizationId: TEST_ORGANIZATION_ID,
   expiresAt: 1_800_000_000,
   endpoint: "https://stream.aimatrx.com/cb-abc/",
+  entryCode: null,
   protocol: "selkies_webrtc",
   streamSessionId: "abc",
   mode: "control",
@@ -129,6 +131,28 @@ describe("Cloud Browser stream transport", () => {
       expect(headers.get("x-organization-id")).toBe(TEST_ORGANIZATION_ID);
     },
   );
+
+  it("carries the claim's one-use entry code into the frame address", async () => {
+    // The frame's OWN request must set its cookie: a cookie the page's claim
+    // fetch sets is never sent on a cross-site frame's navigation (401 live,
+    // 2026-10-17). The bare endpoint is never the frame address.
+    global.fetch = jest.fn().mockResolvedValue(response(200, { enter: "code-1" }));
+    const ticket = await mintStreamTicket("run-1", "control");
+    expect(ticket.entryCode).toBe("code-1");
+    expect(streamFrameAddress(ticket)).toBe(
+      "https://stream.aimatrx.com/cb-abc/?enter=code-1",
+    );
+    // Renewal still posts to the claim's own path, never with the code.
+    await renewStreamTicket(ticket);
+    expect(jest.mocked(global.fetch).mock.calls[1][0]).toBe(
+      "https://stream.aimatrx.com/cb-abc/renew",
+    );
+  });
+
+  it("keeps the bare endpoint when the server returns no entry code (204)", async () => {
+    await expect(claimStreamTicket(streamTicket)).resolves.toBeNull();
+    expect(streamFrameAddress(streamTicket)).toBe(streamTicket.endpoint);
+  });
 
   it("refuses stream-ticket minting before networking when no active organization exists", async () => {
     mockActiveOrganizationId = null;

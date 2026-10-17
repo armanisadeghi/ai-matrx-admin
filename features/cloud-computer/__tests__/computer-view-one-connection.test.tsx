@@ -114,6 +114,8 @@ const mintStreamTicket = jest.fn();
 jest.mock("@/features/cloud-browser/service", () => ({
   mintStreamTicket: (...args: unknown[]) => mintStreamTicket(...args),
   renewStreamTicket: jest.fn().mockResolvedValue(undefined),
+  streamFrameAddress: (t: { endpoint: string; entryCode: string | null }) =>
+    t.entryCode ? `${t.endpoint}?enter=${t.entryCode}` : t.endpoint,
   isStreamGone: () => false,
   browserActionBlockedReason: () => null,
   isViewStreamUnavailable: (e: unknown) => e instanceof FakeBackendApiError && e.status === 409,
@@ -127,6 +129,7 @@ function ticket(mode: "view" | "control", sid: string) {
     organizationId: "org",
     expiresAt: 0,
     endpoint: `https://stream.aimatrx.com/cb-${sid}/`,
+    entryCode: `enter-${sid}`,
     protocol: "selkies_webrtc",
     streamSessionId: sid,
     mode,
@@ -171,6 +174,8 @@ it("watching is the live stream; Take control drives the same frame with no seco
   expect(mintStreamTicket).toHaveBeenCalledWith("run-1", "view", false);
   const watching = iframe();
   expect(watching).not.toBeNull();
+  // The frame trades the claim's one-use code for its own cookie.
+  expect(new URL(watching!.src).searchParams.get("enter")).toBe("enter-watch1");
   expect(watching!.style.pointerEvents).toBe("none");
   expect(container.querySelector("img")).toBeNull();
   expect(startStills).not.toHaveBeenCalled();

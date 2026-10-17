@@ -32,6 +32,7 @@ import {
   isViewStreamUnavailable,
   mintStreamTicket,
   renewStreamTicket,
+  streamFrameAddress,
 } from "@/features/cloud-browser/service";
 import type { StreamTicketEnvelope } from "@/features/cloud-browser/types";
 import { useCloudComputer } from "./useCloudComputer";
@@ -345,7 +346,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
             // control must not remount (reconnect) the live picture.
             <ScaledFrame
               key={stream.ticket.streamSessionId}
-              src={stream.ticket.endpoint}
+              src={streamFrameAddress(stream.ticket)}
               width={viewport.width}
               height={viewport.height}
               title={label}
