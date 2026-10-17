@@ -443,22 +443,24 @@ function Versions({ automationId, onRestored }: { automationId: string; onRestor
 /**
  * AT-AUTO2: the table's Scripting panel — JavaScript run by hand in the person's own sandbox (the same runner as a
  * script step), with this table's rows as `input.rows`. `output.set("writes", [{ id, values: { <field key>: v } }])`
- * asks for edits; they are applied through the store's own record door, as the person.
+ * asks for edits; they are applied through the store's own record door, as the person. The script also has
+ * `await table.select({ filter, fields, limit })`, `table.create(fields)` and `table.update(id, fields)` on this table,
+ * answered by the server as the person.
  */
 function TableScripting({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
   const client = useRecordsClient();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; output: Record<string, unknown>; logs: string[]; error: string | null; wrote?: number } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; output: Record<string, unknown>; logs: string[]; error: string | null; wrote?: number; table?: { created: string[]; updated: string[] } | null } | null>(null);
   const run = async () => {
     setBusy(true);
     setResult(null);
     try {
       const page = await client.listPage({ table_id: tableId as never, search: null, limit: 200 });
       const rows = page.ok ? (page.data as unknown as { rows?: unknown[] }).rows ?? page.data : [];
-      const { data } = await postJson<{ ok: boolean; output: Record<string, unknown>; logs: string[]; error: string | null }>(
+      const { data } = await postJson<{ ok: boolean; output: Record<string, unknown>; logs: string[]; error: string | null; table?: { created: string[]; updated: string[] } | null }>(
         "/automations/script/run",
-        { code, input: { table_id: tableId, rows } },
+        { code, table_id: tableId, input: { table_id: tableId, rows } },
         { organizationId: organizationId ?? undefined },
       );
       let wrote = 0;
@@ -477,12 +479,12 @@ function TableScripting({ tableId, organizationId }: { tableId: string; organiza
   return (
     <div className="flex flex-col gap-1" data-testid="spaces-table-scripting">
       <span className="type-secondary text-muted-foreground">Scripting</span>
-      <textarea aria-label="Table script" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder={'console.log(input.rows.length); output.set("writes", []);'} value={code} onChange={(e) => setCode(e.target.value)} />
+      <textarea aria-label="Table script" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder={'const open = await table.select({ filter: { status: "open" } }); await table.create({ name: "Open", count: open.length });'} value={code} onChange={(e) => setCode(e.target.value)} />
       <div className="flex items-center gap-2">
         <Button variant="quiet" disabled={busy || !code.trim()} onClick={() => void run()}>
           {busy ? "Running" : "Run script"}
         </Button>
-        {result ? <span className={result.ok ? "type-secondary" : "type-secondary text-destructive"}>{result.ok ? `Ran${result.wrote ? ` · ${result.wrote} edited` : ""}` : result.error}</span> : null}
+        {result ? <span className={result.ok ? "type-secondary" : "type-secondary text-destructive"}>{result.ok ? `Ran${result.wrote ? ` · ${result.wrote} edited` : ""}${result.table?.created.length ? ` · ${result.table.created.length} added` : ""}${result.table?.updated.length ? ` · ${result.table.updated.length} changed` : ""}` : result.error}</span> : null}
       </div>
       {result && (result.logs.length > 0 || Object.keys(result.output).length > 0) ? (
         <pre className="max-h-48 overflow-auto rounded bg-muted p-1 font-mono text-xs" data-testid="spaces-table-scripting-result">
