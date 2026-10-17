@@ -22,20 +22,23 @@ describe("planLookup: the one box picks the Tool", () => {
 });
 
 describe("found is not verified", () => {
-  const found = { __kind: "work_email", email: "ari@zingermans.com", first_name: "Ari", last_name: "Weinzweig", domain: "zingermans.com", verification: "valid" };
+  const found = { __kind: "work_email", email: "ari@zingermans.com", first_name: "Ari", last_name: "Weinzweig", domain: "zingermans.com", role: "Co-founder", status: "deliverable" };
   it("a finder's own claim never reads as confirmed", () => {
     expect(foundEmailWords(found)).toBe("Found, not confirmed yet");
   });
   it("only a good email check reads as confirmed", () => {
-    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", result: "ok" })?.tone).toBe("good");
-    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", result: "catch_all" })?.tone).toBe("warn");
-    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", result: "invalid" })?.tone).toBe("bad");
-    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", result: "error" })).toBeNull();
+    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", deliverable: "yes", reason: "mailbox_found" })?.tone).toBe("good");
+    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", deliverable: "risky", reason: "accepts_any_address" })?.tone).toBe("warn");
+    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", deliverable: "unknown" })?.tone).toBe("warn");
+    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", deliverable: "no", reason: "no_mailbox" })?.tone).toBe("bad");
+    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co" })).toBeNull();
+    // a source's own words are not ours: an old-shape answer says nothing
+    expect(emailVerdictWords({ __kind: "email_verdict", email: "a@b.co", result: "ok" })).toBeNull();
     expect(emailVerdictWords(found)).toBeNull();
   });
   it("never attaches a found address to the CRM until a check confirmed that very address", () => {
     const unconfirmed = partyToKeep(found);
-    expect(unconfirmed).toMatchObject({ kind: "person", displayName: "Ari Weinzweig", emails: [], unconfirmedEmail: "ari@zingermans.com" });
+    expect(unconfirmed).toMatchObject({ kind: "person", displayName: "Ari Weinzweig", jobTitle: "Co-founder", emails: [], unconfirmedEmail: "ari@zingermans.com" });
     expect(unconfirmed?.note).toMatch(/waits until a check/);
     expect(partyToKeep(found, { confirmedEmail: "someone@else.com" })?.emails).toEqual([]);
     expect(partyToKeep(found, { confirmedEmail: "ARI@zingermans.com" })).toMatchObject({ emails: ["ari@zingermans.com"], unconfirmedEmail: null });

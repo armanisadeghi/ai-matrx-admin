@@ -173,10 +173,11 @@ export function nextSteps(output: unknown): NextStep[] {
 export function emailVerdictWords(output: unknown): { text: string; tone: "good" | "warn" | "bad" } | null {
   const o = asRecord(output);
   if (kindOf(output) !== "email_verdict") return null;
-  const result = (text(o, "result") ?? "").toLowerCase();
-  if (["ok", "good", "valid", "deliverable"].includes(result)) return { text: "Confirmed: this address can receive mail", tone: "good" };
-  if (["risky", "catch_all", "catch-all", "unknown", "accept_all"].includes(result)) return { text: "Risky: the mailbox may not exist", tone: "warn" };
-  if (["invalid", "bad", "undeliverable", "disposable"].includes(result)) return { text: "This address does not exist", tone: "bad" };
+  // kind email_verdict v2: `deliverable` is yes | risky | no | unknown (our words, never a source's own value)
+  const deliverable = (text(o, "deliverable") ?? "").toLowerCase();
+  if (deliverable === "yes") return { text: "Confirmed: this address can receive mail", tone: "good" };
+  if (deliverable === "risky" || deliverable === "unknown") return { text: "Risky: the mailbox may not exist", tone: "warn" };
+  if (deliverable === "no") return { text: "This address does not exist", tone: "bad" };
   return null;
 }
 
@@ -259,7 +260,7 @@ export function partyToKeep(
       displayName: full,
       firstName: first ?? undefined,
       lastName: last ?? undefined,
-      jobTitle: text(o, "position") ?? undefined,
+      jobTitle: text(o, "role") ?? undefined,
       // A person carries no company website of their own (the party table refuses it), so the company's
       // website rides on the record's data beside where the address was found.
       emails: confirmed ? [confirmed] : [],
