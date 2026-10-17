@@ -30,7 +30,7 @@ export async function appendResultRows(tableId: string, described: ResultRows): 
   const identifierField = rec.mapping[described.keyHeader] ?? sanitizeFieldName(described.keyHeader);
   const result = await appendToTable({
     tableId,
-    rows: described.rows,
+    rows: rowsForColumns(described, rec.mapping, fields),
     mapping: rec.mapping,
     newColumns: rec.incomingOnly,
     dedupe: { identifierField, onDuplicate: "update" },
@@ -69,4 +69,23 @@ async function addMissingChoices(
     if (isServiceFailure(done)) return done.error;
   }
   return null;
+}
+
+/**
+ * Cells in the words the target column takes: a true/false answer going into a text or choice column (a
+ * table first made from the answer's grid holds every cell as words) is written as "true" / "false", and
+ * a number into a text column as its digits. Boolean and number columns keep the real value.
+ */
+function rowsForColumns(described: ResultRows, mapping: Record<string, string>, fields: TableField[]): ResultRows["rows"] {
+  const typeOf = new Map(fields.map((f) => [f.field_name, f.data_type]));
+  return described.rows.map((row) => {
+    const out = { ...row };
+    for (const [header, value] of Object.entries(row)) {
+      const type = typeOf.get(mapping[header] ?? "");
+      if (type === undefined || value === null) continue;
+      if (typeof value === "boolean" && type !== "boolean") out[header] = String(value);
+      else if (typeof value === "number" && (type === "string" || type === "text")) out[header] = String(value);
+    }
+    return out;
+  });
 }
