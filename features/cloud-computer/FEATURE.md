@@ -31,7 +31,7 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 | `ComputerView.tsx` | Waking → screen. The screen is the Cloud Browser run ON the machine (`useCloudBrowser(…, "sandbox")`). |
 | `ScaledFrame.tsx` | One live Selkies iframe scaled to any box; measures on the next animation frame. `interactive` turns input on in the same frame and makes it own the keyboard (focus on control start / press; a self-focusing field elsewhere hands it back). |
 | `liveStream.ts` | Which held stream is the live picture (`liveStream`): any held stream on a watch-capable server, else only this revision's control stream. |
-| `useOpenCloudComputerCanvas.ts` | Canvas item + `cloudComputerCanvasSourceId(conversationId)`. |
+| `useOpenCloudComputerCanvas.ts` | Canvas item; identity `CLOUD_COMPUTER_CANVAS_SOURCE_ID` — ONE per person, never per chat. |
 
 ---
 
@@ -58,7 +58,23 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
    refocused back to the iframe. Keys typed into the cross-origin frame never reach the page, so
    app shortcuts cannot fire. `allow` carries `keyboard-map`. Clicks map 1:1: the scale is a CSS
    transform on the iframe, the stream page itself is unscaled.
-6. **Chip says Computer.** Host slot `useCloudBrowserSurfaceKind` (registered in
+6. **One Computer tab.** The canvas identity is the machine's (`"cloud-computer"`), so the main chat,
+   a chat window panel bound to the same machine, and every browser opener focus the one tab
+   (2026-10-17: a window panel stacked a second one). The first opener's chat binds Take control.
+7. **Our own status, never the stream's.** The frame src carries `?parent=<page origin>`; the stream
+   page posts `{type:"matrx-stream", state:"connecting"|"connected"|"reconnecting"|"disconnected"}`
+   to it. Only the endpoint's origin and the frame's own window are believed. Until `connected`,
+   `ScaledFrame` covers the frame (absolute, no shift) with a shimmering "Connecting…" /
+   "Reconnecting…" (or a still "Disconnected"). A page that never speaks is revealed 8 s after `load`
+   (`SILENT_STREAM_REVEAL_MS`) — the fallback until the stream page that posts state ships.
+8. **Keyboard comes back.** While in control the row shows a Keyboard control ("Reconnect keyboard"):
+   it focuses the frame and posts `{type:"matrx-stream-cmd", cmd:"keyboard-reset"}` (target origin =
+   the endpoint's). Coming back to the page (window focus, visibility) refocuses the frame and posts
+   `cmd:"focus"`; so does a press on the stream (window blur into the frame) or its letterbox.
+   Anything that takes focus by itself while in control is handed back, except a dialog or menu.
+9. **No step-list poll.** The tab calls `useCloudBrowser(…, "sandbox", { followProgress: false })`: it
+   never shows written progress, so it never reads `action_event` every 2 s.
+10. **Chip says Computer.** Host slot `useCloudBrowserSurfaceKind` (registered in
    `providers/chatUiRegistrationBase.ts`, defined in `cloud-browser/hooks/useOpenCloudBrowserCanvas.ts`)
    answers "computer" when the slice's run is on the machine or the person has one.
 
@@ -77,6 +93,10 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 - `features/canvas/` — host pane.
 
 ## Change log
+
+- **2026-10-17 (b)** — One Computer tab per machine; our own connection status over the frame
+  (stream page contract); Keyboard reconnect + focus on return; plain control row (tap-target
+  guard); no action_event poll; profile access asked once per profile (`cloud-browser/service.profileAccess`).
 
 - **2026-10-17** — Watching is the live view stream (no white still); Take control turns input on
   in the same frame; the frame owns the keyboard while in control; composer pill reads Computer.
