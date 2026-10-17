@@ -217,7 +217,7 @@ export function FactoryDoorsTable() {
         id: "place",
         accessorKey: "place",
         header: "Place",
-        width: 260,
+        width: 230,
         cell: (r) =>
           r.href ? (
             <Link
@@ -237,7 +237,7 @@ export function FactoryDoorsTable() {
         accessorFn: (r) => BUILDER_LABEL[r.builder],
         header: "Runs on",
         filter: "select",
-        width: 130,
+        width: 115,
         cell: (r) => (
           <span
             className={
@@ -253,35 +253,35 @@ export function FactoryDoorsTable() {
       {
         id: "factory_7",
         accessorFn: (r) => r.factory?.people.d7 ?? -1,
-        header: "People on factory 7d",
-        width: 110,
+        header: "People 7d",
+        width: 90,
         cell: (r) => <Count value={r.factory?.people.d7} />,
       },
       {
         id: "factory_30",
         accessorFn: (r) => r.factory?.people.d30 ?? -1,
-        header: "People on factory 30d",
-        width: 115,
+        header: "People 30d",
+        width: 95,
         cell: (r) => <Count value={r.factory?.people.d30} />,
       },
       {
         id: "factory_test_30",
         accessorFn: (r) => r.factory?.test.d30 ?? -1,
-        header: "Our test runs 30d",
-        width: 110,
+        header: "Our tests 30d",
+        width: 105,
         cell: (r) => <Count value={r.factory?.test.d30} />,
       },
       {
         id: "old_7",
         accessorFn: (r) => r.old?.counts.d7 ?? -1,
-        header: "Old builder 7d",
-        width: 120,
+        header: "Old 7d",
+        width: 100,
         cell: (r) => <OldCount old={r.old} days={7} />,
       },
       {
         id: "old_30",
         accessorFn: (r) => r.old?.counts.d30 ?? -1,
-        header: "Old builder 30d",
+        header: "Old 30d",
         width: 120,
         cell: (r) => <OldCount old={r.old} days={30} />,
       },

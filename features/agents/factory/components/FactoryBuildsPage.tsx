@@ -126,7 +126,7 @@ export function FactoryBuildsPage() {
         cell: (r) =>
           r.userId ? (
             <div className="min-w-0">
-              <AdminUserRef userId={r.userId} />
+              <AdminUserRef userId={r.userId} hideEmail={r.originClass === "system"} />
               {r.originClass === "system" ? (
                 <div className="truncate text-[11px] text-muted-foreground">
                   {r.origin === "script"
