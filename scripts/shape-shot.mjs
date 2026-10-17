@@ -1,6 +1,6 @@
 // scripts/shape-shot.mjs — screenshot one app route in headless Chromium, signed in through the
 // single-use dev-login nonce (the in-app browser pane blocks the sealed kind frame; this does not).
-//   node scripts/shape-shot.mjs <path> <out.png> [--member] [--dark] [--width=1200] [--height=900] [--wait=12000] [--type="text then Enter in the first input"] [--click="text | text2 | ..."]
+//   node scripts/shape-shot.mjs <path> <out.png> [--member] [--dark] [--width=1200] [--height=900] [--wait=12000] [--type="text then Enter in the first input"] [--click="text | text2 | ..."] [--block="url substring"]
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -24,6 +24,8 @@ const context = await browser.newContext({
   viewport: { width: Number(flag("width", 1200)), height: Number(flag("height", 900)) },
   colorScheme: dark ? "dark" : "light",
 });
+const blocked = flag("block", "");
+if (blocked) await context.route((u) => u.href.includes(blocked), (route) => route.abort("blockedbyclient"));
 const page = await context.newPage();
 const bad = [];
 page.on("response", (r) => r.status() >= 400 && /matrxserver|\/api\//.test(r.url()) && bad.push(`${r.status()} ${r.url().slice(0, 140)}`));
