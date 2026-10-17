@@ -159,7 +159,7 @@ function AssetActions({
         aria-label={asset.is_primary ? "Unset primary" : "Set as primary"}
         className={ACTION_CLASS}
       >
-        <Star className={asset.is_primary ? "h-3.5 w-3.5 fill-amber-400 text-amber-400" : "h-3.5 w-3.5"} />
+        <Star className={asset.is_primary ? "h-3.5 w-3.5 fill-warning text-warning" : "h-3.5 w-3.5"} />
       </button>
       {asset.file_id ? (
         <button
@@ -334,7 +334,7 @@ function AssetTile({
           <Star
             className={
               asset.is_primary
-                ? "h-3.5 w-3.5 fill-amber-400 text-amber-400"
+                ? "h-3.5 w-3.5 fill-warning text-warning"
                 : "h-3.5 w-3.5"
             }
           />

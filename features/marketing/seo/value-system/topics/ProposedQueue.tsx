@@ -124,7 +124,7 @@ export function ProposedQueue({
 
   return (
     <section className="flex min-h-[24rem] flex-col rounded-lg border border-warning/40 bg-card">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
+      <div className="flex min-h-10 flex-wrap items-center gap-1 border-b border-border px-3 py-1">
         <h2 className="type-title text-foreground">Check these placements</h2>
         <AboutPeek
           title="Check these placements"
@@ -142,8 +142,7 @@ export function ProposedQueue({
           extraColumns={(data) => [confidenceColumn(data)]}
           emptyState={{
             title: "Nothing is waiting for you",
-            description:
-              "Every placement on this site is either your own ruling or one the assigner was sure enough about.",
+            description: "Every placement here is yours or a sure one.",
           }}
           customActions={(row, controls) =>
             row.keyword_id ? (

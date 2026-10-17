@@ -8,8 +8,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { Search, Share2 } from "lucide-react";
-import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { SearchField } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -22,6 +21,7 @@ import { useMarketingSite } from "@/features/marketing/components/site/Marketing
 import { useSiteMedia } from "@/features/marketing/data/hooks";
 import {
   LoadingSurface,
+  SectionCard,
   QueryError,
 } from "@/features/marketing/components/shared/MarketingUi";
 import {
@@ -193,18 +193,29 @@ export function CrawledMediaView({
   const hasInventory = assets.length > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      <SectionCard
+        title="Crawled images"
+        about={`Every image the crawler found on this site's pages. Click any tile for full metadata, usage and actions.${withoutSrc > 0 ? ` ${withoutSrc} inventory entr${withoutSrc === 1 ? "y" : "ies"} had no src and were skipped.` : ""}`}
+        headerExtra={
+          hasInventory ? (
+            <span className="type-meta tabular-nums text-muted-foreground">
+              {filtered.length}/{assets.length}
+            </span>
+          ) : null
+        }
+        copy={hasInventory ? copy : undefined}
+      >
+      <div className="space-y-3 p-3">
       {hasInventory ? (
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-0 flex-1 basis-48">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search src or alt text…"
-              className="h-7 w-full rounded-md border border-border bg-card pl-7 pr-2 text-[11px] text-foreground outline-none placeholder:text-muted-foreground max-md:text-base"
-            />
-          </div>
+          <SearchField
+            aria-label="Search images"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search src or alt text…"
+            className="min-w-0 flex-1 basis-48"
+          />
           <Select
             value={tierFilter}
             onValueChange={(value) => setTierFilter(value as TierFilter)}
@@ -246,10 +257,6 @@ export function CrawledMediaView({
               ))}
             </SelectContent>
           </Select>
-          <span className="text-[10px] tabular-nums text-muted-foreground">
-            {filtered.length}/{assets.length}
-          </span>
-          <CopyButtons size="icon" {...copy} />
         </div>
       ) : null}
 
@@ -269,35 +276,33 @@ export function CrawledMediaView({
       ) : rows.length === 0 ? (
         <MediaEmptyState
           title="No crawled pages yet"
-          detail="This site has no pages with snapshots. Run a crawl to capture media evidence."
+          detail="Run a crawl to capture this site's images."
         />
       ) : (
         <MediaEmptyState
           title={
             countedImages > 0
-              ? `${countedImages.toLocaleString()} images counted across ${rows.length.toLocaleString()} crawled pages — inventories not captured yet`
+              ? `${countedImages.toLocaleString()} images on ${rows.length.toLocaleString()} pages`
               : "No image inventory captured yet"
           }
           detail={
-            countedImages > 0
-              ? `The latest snapshots only persisted image counts${countedMissingAlt > 0 ? ` (${countedMissingAlt.toLocaleString()} missing alt)` : ""}. The per-image inventory (src, dimensions, alt) will appear after the next crawl of this site.`
-              : "The latest snapshots carry no image inventory or counts. The inventory will appear after the next crawl of this site."
+            countedImages > 0 && countedMissingAlt > 0
+              ? `${countedMissingAlt.toLocaleString()} missing alt · full list after the next crawl`
+              : "The full list appears after the next crawl."
           }
         />
       )}
+      </div>
+      </SectionCard>
 
       {shareImages.length > 0 ? (
-        <section className="space-y-2">
-          <div className="flex items-center gap-1.5 px-1">
-            <Share2 className="h-3.5 w-3.5 text-foreground/60" />
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
-              Social share images
-            </h3>
-            <span className="text-[10px] tabular-nums text-muted-foreground">
-              {shareImages.length}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <SectionCard
+          title="Social share images"
+          headerExtra={
+            <span className="type-meta tabular-nums text-muted-foreground">{shareImages.length}</span>
+          }
+        >
+          <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 lg:grid-cols-3">
             {shareImages.map((image) => (
               <div
                 key={image.url}
@@ -347,17 +352,9 @@ export function CrawledMediaView({
               </div>
             ))}
           </div>
-        </section>
+        </SectionCard>
       ) : null}
 
-      {hasInventory ? (
-        <p className="px-1 text-[10px] text-muted-foreground/70">
-          Click any tile for full metadata, usage, and actions.
-          {withoutSrc > 0
-            ? ` ${withoutSrc} inventory entr${withoutSrc === 1 ? "y" : "ies"} had no src and were skipped.`
-            : ""}
-        </p>
-      ) : null}
 
       <AssetImageEditorDialog
         asset={editingImported}

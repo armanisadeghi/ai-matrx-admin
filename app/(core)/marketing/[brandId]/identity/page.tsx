@@ -153,7 +153,7 @@ export default async function BrandIdentityPage({
                     </span>
                     <span className="min-w-0 truncate text-sm font-medium text-foreground">{room.name}</span>
                   </span>
-                  <span className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">
+                  <span className="text-xs leading-relaxed text-muted-foreground">
                     {room.description}
                   </span>
                 </Link>

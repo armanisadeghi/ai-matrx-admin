@@ -245,6 +245,7 @@ export function GenerateMediaView({
                 type="button"
                 onClick={() => patch({ type: item.id })}
                 aria-pressed={active}
+                title={item.description}
                 className={cn(
                   "rounded-lg border p-3 text-left transition-colors",
                   active
@@ -259,16 +260,13 @@ export function GenerateMediaView({
                   {dims.source === "standard" ? (
                     <Badge
                       variant="outline"
-                      className="text-emerald-600 dark:text-emerald-400"
+                      className="text-success-ink"
                       title={`Dimensions from your “${dims.slotName}” standard`}
                     >
                       std
                     </Badge>
                   ) : null}
                 </div>
-                <p className="mt-0.5 line-clamp-2 type-secondary text-muted-foreground">
-                  {item.description}
-                </p>
                 <p className="mt-1 type-meta tabular-nums text-muted-foreground">
                   {dims.width}×{dims.height}
                   {dims.format ? ` · ${dims.format}` : ""}

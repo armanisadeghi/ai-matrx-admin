@@ -22,6 +22,7 @@
  * handing a batch of unplaced keywords to it is a thing only this surface does.
  */
 
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { useEffect, useState } from "react";
 import { Loader2, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,14 +107,12 @@ export function UnplacedQueue({
 
   return (
     <section className="flex min-h-[28rem] flex-col rounded-lg border border-border bg-card">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <h2 className="text-sm font-semibold text-foreground">
-          Not placed on the tree
-        </h2>
-        <p className="hidden text-[11px] text-muted-foreground sm:block">
-          Traffic that maps to nothing you sell cannot be counted as demand for
-          it.
-        </p>
+      <div className="flex min-h-10 flex-wrap items-center gap-1 border-b border-border px-3 py-1">
+        <h2 className="type-title text-foreground">Not placed on the tree</h2>
+        <AboutPeek
+          title="Not placed on the tree"
+          about="Traffic that maps to nothing you sell cannot be counted as demand for it."
+        />
       </div>
 
       {assigner.error ? (

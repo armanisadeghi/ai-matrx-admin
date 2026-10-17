@@ -258,7 +258,7 @@ function TileChrome({
           title="Primary asset"
           className="absolute left-1 top-1 flex h-5 w-5 items-center justify-center rounded-md bg-card/90 shadow-sm"
         >
-          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+          <Star className="h-3 w-3 fill-warning text-warning" />
         </span>
       ) : null}
       <div className="absolute right-1 top-1 flex items-center gap-0.5 rounded-md bg-card/90 opacity-0 shadow-sm transition-opacity focus-within:opacity-100 group-hover:opacity-100">
