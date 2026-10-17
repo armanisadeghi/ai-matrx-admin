@@ -41,6 +41,7 @@ import type {
 } from "./types";
 
 import { getClaimsUser } from "@ai-matrx/auth";
+import { BackendApiError } from "@ai-matrx/api";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 type ProfileRow = Database["browser"]["Tables"]["profile"]["Row"];
 type RunRow = Database["browser"]["Tables"]["run"]["Row"];
@@ -1145,7 +1146,7 @@ export function isStreamGone(error: unknown): boolean {
  */
 export function isViewStreamUnavailable(error: unknown): boolean {
   if (!(error instanceof BackendApiError)) return false;
-  return error.status === 409 || error.code === "not_controller";
+  return error.status === 409 || String(error.code) === "not_controller";
 }
 export async function claimStreamTicket(
   ticket: StreamTicketEnvelope,
