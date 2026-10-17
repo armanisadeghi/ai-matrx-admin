@@ -1,6 +1,7 @@
 [
   "app/(admin)/administration/compute/resilience-lab/page.tsx",
   "features/admin/tool-control/service.ts",
+  "features/cloud-browser/service.ts",
   "features/cloud-computer/service.ts",
   "features/data-sources/lab/labServer.ts",
   "features/file-analysis/api/file-analysis.ts",
