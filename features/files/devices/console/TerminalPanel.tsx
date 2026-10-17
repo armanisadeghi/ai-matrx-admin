@@ -246,8 +246,10 @@ export function TerminalPanel({ client, deviceId, blocked, live, resourceId, onR
   }
 
   // First connection: reattach to the shell in the URL, else the oldest running one, else a new one.
+  // Only once the Terminal view is on screen: opening Sessions or Files never starts a shell on the
+  // computer, nor writes `&t=` into the address (2026-10-17: ?view=sessions on an online computer did both).
   useEffect(() => {
-    if (!live || !ready || !pageVisible || streamRef.current || startingRef.current || ended !== null) return;
+    if (!visible || !live || !ready || !pageVisible || streamRef.current || startingRef.current || ended !== null) return;
     void (async () => {
       const running = await refreshSessions();
       if (streamRef.current || startingRef.current) return;
@@ -261,7 +263,7 @@ export function TerminalPanel({ client, deviceId, blocked, live, resourceId, onR
     // Runs when the connection opens, the terminal mounts or the page comes on screen; the
     // handlers read refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, ready, pageVisible]);
+  }, [visible, live, ready, pageVisible]);
 
   // A reconnect brings other people's (or agents') shells: refresh the chips.
   useEffect(() => {

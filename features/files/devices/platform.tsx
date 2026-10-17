@@ -49,7 +49,11 @@ export function relaySinceIso(sinceMs: number | null | undefined): string | null
  * (`sinceLabel`), so two screens can never disagree about the same computer.
  */
 export function lastSeenIso(row: { last_seen: string | null }, relay: { online: boolean; since_ms: number | null } | null | undefined): string | null {
-  return (relay && !relay.online ? relaySinceIso(relay.since_ms) : null) ?? row.last_seen;
+  // The LATER of the two, so a reload never shows an older answer first (2026-10-17: 52 minutes, then 19).
+  const fromRelay = relay && !relay.online ? relaySinceIso(relay.since_ms) : null;
+  const fromRow = row.last_seen && Number.isFinite(Date.parse(row.last_seen)) ? row.last_seen : null;
+  if (fromRelay && fromRow) return Date.parse(fromRelay) >= Date.parse(fromRow) ? fromRelay : fromRow;
+  return fromRelay ?? fromRow;
 }
 
 /** "5 minutes ago" — the kit's long voice, one formatter platform-wide; "never" for no check-in. */
